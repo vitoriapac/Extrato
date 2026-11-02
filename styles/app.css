@@ -71,7 +71,7 @@
   .statement-account strong{color:var(--on-brand);display:block;font-size:13px;}
   .statement-body{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-end;}
   .balance-block{flex:1;min-width:220px;}
-  .balance-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:color-mix(in srgb,var(--on-brand) 55%,transparent);margin-bottom:6px;}
+  .balance-label{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:color-mix(in srgb,var(--on-brand) 80%,transparent);margin-bottom:6px;}
   .balance-figure{
     font-family:'Fraunces',serif;font-weight:600;
     font-size:54px;line-height:1;color:var(--attention);
@@ -440,7 +440,7 @@
   #kpiGrid{grid-template-columns:repeat(5,minmax(0,1fr));}
   .kpi-cell{background:var(--brand);color:var(--on-brand);padding:16px 18px;}
   .kpi-cell .n{font-family:'Fraunces',serif;font-size:24px;font-weight:600;color:var(--brand-on-header);}
-  .kpi-cell .l{font-size:11px;color:color-mix(in srgb,var(--on-brand) 72%,transparent);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;overflow-wrap:anywhere;}
+  .kpi-cell .l{font-size:12px;color:color-mix(in srgb,var(--on-brand) 80%,transparent);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;overflow-wrap:anywhere;}
   .kpi-cell.warn .n{color:var(--warn-on-dark);}
   .kpi-cell.ok .n{color:var(--ok-on-dark);}
 
@@ -868,7 +868,8 @@
   .backup-desc{font-size:12px;color:var(--ink-soft);max-width:420px;margin-top:2px;}
   .backup-actions{display:flex;gap:8px;align-items:flex-end;flex-shrink:1;min-width:0;flex-wrap:wrap}.backup-period{display:flex;flex-direction:column;gap:5px}.backup-period>span,.backup-danger-zone strong{font:600 var(--text-micro) var(--font-body);text-transform:uppercase;color:var(--heading)}
   .backup-block>.backup-danger-zone{display:flex;flex:1 0 100%;align-items:center;justify-content:space-between;gap:16px;margin:8px 0 0;padding:14px 0 0;border-left:0;border-top:1px solid var(--paper-line)}.backup-danger-zone>div{display:grid;gap:3px}.backup-danger-zone span{font-size:var(--text-caption);color:var(--ink-soft);text-transform:none}
-  .demo-banner{position:sticky;top:0;z-index:95;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:0;padding:12px 14px;border:1px solid var(--accent);background:var(--highlight-bg);color:var(--ink)}
+  /* A faixa da demo rola com a página: fixa, ela somava ~90px às barras presas no topo. */
+  .demo-banner{position:static;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:0;padding:12px 14px;border:1px solid var(--accent);background:var(--highlight-bg);color:var(--ink)}
   .demo-banner[hidden]{display:none}.demo-banner>div:first-child{display:flex;flex-direction:column;gap:2px}.demo-banner strong{color:var(--heading);font:600 11px var(--font-body);letter-spacing:.08em}.demo-banner span{font-size:12px;color:var(--ink-soft)}.demo-banner-actions{display:flex;gap:8px;flex-shrink:0}
   .demo-tour{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.demo-tour button{border:0;background:transparent;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:2px}.demo-empty-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border-subtle);background:var(--paper)}.demo-empty-cta[hidden]{display:none}.demo-empty-cta div{display:grid;gap:4px}.demo-empty-cta span{color:var(--ink-soft);font-size:12px}
   .demo-header-badge{display:flex;width:max-content;max-width:100%;align-items:center;gap:8px;margin-top:6px;padding:4px 8px;border:1px solid var(--brand-on-header);color:var(--brand-on-header);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em}.demo-header-badge[hidden]{display:none}.demo-header-badge small{font:400 var(--text-micro) var(--font-body);letter-spacing:0;color:var(--on-brand)}
@@ -1145,7 +1146,7 @@
 .today-secondary-title{margin:22px 0 10px;padding-top:18px;border-top:1px solid var(--paper-line);font:600 var(--text-md) var(--font-display);color:var(--heading)}
 @media (min-width:761px) and (max-width:1050px){
   .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
-  .tab-btn{flex:0 0 auto;padding:10px 12px;font-size:11px;letter-spacing:.035em;white-space:nowrap}
+  .tab-btn{flex:0 0 auto;padding:10px 12px;font-size:var(--text-micro);letter-spacing:.035em;white-space:nowrap}
   #kpiGrid{grid-template-columns:repeat(6,minmax(0,1fr))}
   #kpiGrid .kpi-cell{grid-column:span 2}
   #kpiGrid .kpi-cell:nth-last-child(-n+2){grid-column:span 3}
@@ -1556,7 +1557,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 .instructions-section kbd{display:inline-block;min-width:22px;padding:2px 5px;border:1px solid var(--paper-line);border-bottom-width:2px;border-radius:var(--radius-control);background:var(--paper-soft);color:var(--heading);font:600 var(--text-micro) var(--font-data);text-align:center}
 .guide-faq{display:grid;gap:8px}.guide-faq details{border:1px solid var(--paper-line);background:var(--white)}.guide-faq summary{cursor:pointer;padding:14px 16px;color:var(--heading);font-weight:600}.guide-faq details[open] summary{border-bottom:1px solid var(--paper-line);background:var(--paper-soft)}.guide-faq p{margin:0;padding:14px 16px;color:var(--ink-soft);line-height:1.55}
 .back-to-top{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:120;display:inline-flex;align-items:center;gap:6px;min-width:48px;min-height:48px;padding:10px 13px;border:1px solid var(--brand-on-header);border-radius:var(--radius-control);background:var(--brand);color:var(--on-brand);box-shadow:0 4px 14px var(--shadow-color);font:600 var(--text-micro) var(--font-body);letter-spacing:.04em;text-transform:uppercase;cursor:pointer}.back-to-top:hover{background:var(--brand-secondary)}.back-to-top:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.back-to-top[hidden]{display:inline-flex}
-@media(max-width:600px){.back-to-top{right:12px;bottom:12px}.back-to-top span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}}
+/* Só a seta em toda largura: com o rótulo, o botão cobria valores na borda das tabelas. */
+.back-to-top span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:600px){.back-to-top{right:12px;bottom:12px}}
 @media(max-width:760px){.breakdown-line{grid-template-columns:1fr 1fr}.breakdown-subject,.breakdown-result{grid-column:1/-1}.breakdown-line>.icon-btn{justify-self:end}.instructions-hero{align-items:flex-start;flex-direction:column;padding:22px 16px}.instructions-hero nav{justify-content:flex-start}.instruction-grid,.guide-glossary{grid-template-columns:1fr}.guide-flow{grid-template-columns:1fr}.guide-flow>span{display:none}}
 /* Guia editorial da Central de Ajuda */
 .module-heading{display:grid;gap:5px;margin:0 0 20px;padding:0 0 16px;border-bottom:1px solid var(--paper-line)}
@@ -2430,7 +2433,7 @@ body.timer-focus-active .study-distribution-heading{display:none}
   .primary-nav-shell{position:fixed;z-index:110;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--paper-line);background:var(--paper);box-shadow:0 -4px 12px color-mix(in srgb,var(--shadow-color) 25%,transparent)}
   .primary-nav-shell .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0;overflow:visible;border-bottom:0}
   .primary-nav-shell .tabs .tab-secondary{display:none}
-  .primary-nav-shell .tab-btn,.primary-nav-shell .more-tab-btn{min-height:56px;padding:6px 2px;font-size:clamp(11px,2.8vw,12px);font-weight:500;letter-spacing:0;white-space:normal;overflow-wrap:normal;line-height:1.25;text-align:center;border-radius:0}
+  .primary-nav-shell .tab-btn,.primary-nav-shell .more-tab-btn{min-height:56px;padding:6px 2px;font-size:var(--text-micro);font-weight:500;letter-spacing:0;white-space:normal;overflow-wrap:normal;line-height:1.25;text-align:center;border-radius:0}
   .primary-nav-shell .more-tab-btn{min-width:64px;border-bottom:0}
   .primary-nav-shell .mobile-more-menu{top:auto;right:8px;bottom:calc(100% + 6px)}
   .back-to-top{bottom:calc(72px + env(safe-area-inset-bottom))}
@@ -2801,3 +2804,7 @@ button.metas-subtab{appearance:none;background:transparent;border:0;border-botto
 .readiness-factors>summary{cursor:pointer;color:var(--on-brand);font:12px var(--font-body);text-decoration:underline;text-underline-offset:2px}
 .readiness-factors>summary:focus-visible{outline:2px solid var(--brand-on-header);outline-offset:2px}
 [data-essential="on"] .term-hint::before{content:"?"}
+/* Cronômetro parado = "Sessão livre": só o contexto e Iniciar; relógio e controles de sessão surgem ao começar. */
+.study-timer-card.is-idle :is(.timer-display,#timerResetBtn,#timerFinishBtn,#timerPipBtn){display:none}
+.weekly-priority-choice{align-items:flex-start}.weekly-priority-choice span small{display:block;margin-top:2px;color:var(--ink-soft);font-size:var(--text-xs)}
+.weekly-applied{display:grid;gap:var(--space-2);justify-items:start;padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);border:1px solid var(--border-default);border-top:3px solid var(--gold)}.weekly-applied p{margin:0;color:var(--heading)}

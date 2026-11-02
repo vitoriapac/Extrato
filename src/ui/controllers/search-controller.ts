@@ -251,7 +251,7 @@ export function createSearchController(options: SearchControllerOptions) {
     const panel = document.getElementById('globalSearchResults');
     if (!input || !panel) return;
     // Em tela de toque não há teclado para o atalho; a dica só confunde.
-    if (window?.matchMedia?.('(pointer: coarse)').matches)
+    if (window?.matchMedia?.('(pointer: coarse), (max-width: 760px)').matches)
       input.placeholder = input.placeholder.replace(/\s*\(Ctrl\+K\)$/, '');
 
     input.addEventListener('input', renderResults);

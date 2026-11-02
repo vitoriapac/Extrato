@@ -83,7 +83,7 @@ export function renderCalendarMonth({
       isToday = iso === today,
       outside = cursor.getMonth() !== monthIndex;
     const load = pending.get(iso) || 0;
-    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} load-${loadLevel(load)}"${load ? ` title="${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only">, ${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'}</span>` : ''}</div>`;
+    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} load-${loadLevel(load)}"${load ? ` title="${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'})</span>` : ''}</div>`;
     dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
       const stage = calendarEventStage(event, daysUntil);
       const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${event.subject || '—'} · ${event.label} (${event.origem})`;

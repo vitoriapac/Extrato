@@ -3,6 +3,7 @@ import { openDemo, activateTab } from './helpers.js';
 test('mostra resultado mensurável da recomendação com comparação e confiança', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'hoje');
+  await page.locator('#studyRecommendation .recommendation-context > summary').click();
   const card = page.locator('.recommendation-impact');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Resultado da recomendação');

@@ -57,13 +57,15 @@ export function buildDemoRecommendations(
       completed = accepted && Boolean(session && session.date > date!);
     const beforeScore = Math.round((before.correct / before.resolved) * 100),
       afterScore = after ? Math.round((after.correct / after.resolved) * 100) : null;
+    // O domínio é um índice composto e se move mais devagar que o acerto bruto; na demo, metade da variação.
+    const masteryOf = (accuracy: number) => Math.round(beforeScore * 0.9 + (accuracy - beforeScore) * 0.5);
     const score = Math.round(100 * (item.topic.examImportance || 0) * (1 - beforeScore / 100));
     const reasons = [
       `Prova: impacto configurado de ${Math.round((item.topic.examImportance || 0) * 100)}/100.`,
       `Você: ${before.correct} acertos em ${before.resolved} questões (${beforeScore}%) antes da recomendação.`,
     ];
     const baseline = captureRecommendationBaseline({
-      mastery: beforeScore,
+      mastery: masteryOf(beforeScore),
       accuracy: beforeScore,
       questionVolume: before.resolved,
       measuredAt: stamp(before.date),
@@ -110,7 +112,7 @@ export function buildDemoRecommendations(
     };
     if (measured)
       measureRecommendationOutcome(row, {
-        masteryAfter: afterScore,
+        masteryAfter: masteryOf(afterScore!),
         accuracyAfter: afterScore,
         questionVolumeAfter: after.resolved,
         measuredAt: stamp(after.date),

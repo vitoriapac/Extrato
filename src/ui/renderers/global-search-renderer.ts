@@ -12,7 +12,7 @@ export function renderGlobalSearchPanel({
   escapeAttr: (value: string) => string;
 }) {
   if (results.length === 0 && commands.length === 0)
-    return `<div class="search-result-empty">Nada encontrado para "${escapeHtml(query)}"</div>`;
+    return `<div class="search-result-empty">Nada encontrado para "${escapeHtml(query)}". Tente uma palavra mais curta ou o nome de uma aba; a Central de Ajuda fica em Instruções.</div>`;
   const commandItem = (command: Record<string, any>) =>
     `<button type="button" role="option" aria-selected="false" class="search-result-item search-command" data-search-tab="${escapeAttr(command.tab || '')}" data-search-action="${escapeAttr(command.action || '')}"><strong>${escapeHtml(command.label)}</strong><span>${command.action ? 'Ação' : 'Navegação'}</span></button>`;
   const topicItems = results.map(

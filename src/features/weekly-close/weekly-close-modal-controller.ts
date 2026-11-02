@@ -105,6 +105,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   // Prévia do retrato aberta e retrato acabado de salvar (mensagem de confirmação).
   let recordPreviewOpen = false;
   let recordSavedNow = false;
+  let appliedSummary: { ids: string[]; names: string[]; minutes: number; days: number } | null =
+    null;
   let strategicTimelineFilter = 'all';
   let strategicTimelineGroup = 'none';
   let priorityHistorySubject = '';
@@ -156,11 +158,22 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         deps.captureReadinessBeforeStrategy('Antes de aplicar as prioridades do fechamento');
       }
     },
-    onApplied: () => {
+    onApplied: ({ proposal }: Record<string, any>) => {
+      // O ritual termina com o que foi agendado, no mesmo tom do selo do retrato.
+      const allocations = proposal?.allocations || [];
+      appliedSummary = {
+        ids: allocations.map((item: any) => item.priorityId).filter(Boolean),
+        names: [
+          ...new Set(allocations.map((item: any) => deps.getTopicName(item.topicId)).filter(Boolean)),
+        ] as string[],
+        minutes: allocations.reduce((sum: number, item: any) => sum + (Number(item.minutes) || 0), 0),
+        days: new Set(allocations.map((item: any) => item.date)).size,
+      };
       scheduleSave();
       if (deps.renderApprovalDashboard) deps.renderApprovalDashboard();
       if (deps.renderPlanoHoje) deps.renderPlanoHoje();
-      showToast('Prioridades aceitas aplicadas ao plano diário.');
+      renderStudyTrack32Insights();
+      (doc?.getElementById('weeklyAppliedStatus') as HTMLElement | null)?.focus();
     },
   });
 
@@ -197,17 +210,30 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   }
 
   function renderWeeklyCloseActions(close: Record<string, any>): string {
-    const priorities = close?.priorities || [];
-    if (!priorities.length) return '';
+    // O que já foi agendado sai da decisão; resta o selo e o que ainda dá para escolher.
+    const done = new Set(appliedSummary?.ids || []);
+    const priorities = (close?.priorities || []).filter((item: any) => !done.has(item.priorityId));
+    if (!priorities.length && !appliedSummary) return '';
     const draft = weeklyCloseController.view();
     const checks = priorities
       .map((item: any, index: any) => {
         const id = item.priorityId || item.topicId || String(index);
-        return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${(draft.selectedIds || []).includes(id) ? 'checked' : ''}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
+        return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${(draft.selectedIds || []).includes(id) ? 'checked' : ''}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}${item.reason ? `<small>${escapeHtml(item.reason)}</small>` : ''}</span></label>`;
       })
       .join('');
-    const proposal = draft.proposal;
-    return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4><p>Selecione até três, confira a capacidade restante e confirme o próximo plano.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ''}</section>`;
+    const proposal = draft.proposal,
+      none = !(draft.selectedIds || []).length;
+    // Sem seleção não há impacto a conferir, e sem alocação não há o que aplicar.
+    const allocated = proposal?.allocations?.length || 0,
+      left = Number(proposal?.unallocatedMinutes) || 0;
+    const previewHtml = proposal
+      ? `<div class="weekly-action-preview"><strong>${allocated ? `${allocated} ${allocated === 1 ? 'bloco entra' : 'blocos entram'} na agenda dos próximos 7 dias` : 'Nada coube na capacidade livre dos próximos 7 dias'}${left ? ` · ${formatPlanMinutes(left)} não couberam` : ''}</strong>${allocated ? '<button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button>' : '<p class="analytics-note">Libere horas em Disponibilidade semanal ou escolha outra prioridade.</p>'}</div>`
+      : '';
+    const applied = appliedSummary
+      ? `<div class="weekly-applied" id="weeklyAppliedStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Agendado</span></span><p>Próxima semana: ${escapeHtml(appliedSummary.names.join(', ') || 'prioridades escolhidas')} · ${formatPlanMinutes(appliedSummary.minutes)} reservados em ${appliedSummary.days} ${appliedSummary.days === 1 ? 'dia' : 'dias'}. Os blocos já estão no plano diário.</p></div>`
+      : '';
+    if (!priorities.length) return `<section class="weekly-close-actions">${applied}</section>`;
+    return `<section class="weekly-close-actions">${applied}<h4>Decida as prioridades</h4><p>Selecione até três, confira a capacidade restante e confirme o próximo plano.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
   }
 
   function previewWeeklyCloseActions() {
@@ -416,7 +442,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         }) +
         '<section class="weekly-close-act" aria-labelledby="weeklyNextTitle"><h4 class="weekly-close-act__title" id="weeklyNextTitle">A decisão</h4>' +
         ((model.weeklyClose.priorities || []).length
-          ? renderWeeklyCloseNext(withTopicNames(model.weeklyClose), options) +
+          ? renderWeeklyCloseNext({ ...model.weeklyClose, priorities: [] }, options) +
             renderWeeklyCloseActions(withTopicNames(model.weeklyClose))
           : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
         '</section>';

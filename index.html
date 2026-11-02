@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=4652ba22ade3">
-<link rel="stylesheet" href="styles/app.css?v=4652ba22ade3">
+<link rel="stylesheet" href="styles/tailwind.css?v=fc8679404a52">
+<link rel="stylesheet" href="styles/app.css?v=fc8679404a52">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -287,12 +287,15 @@
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
     <h2 class="section-title today-title">Hoje</h2>
+    <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
+      <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
+      <div id="planoHojeContent"></div>
+    </section>
 
-    <div id="todayConsistency"></div>
     <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
     <div class="chart-card study-timer-card" id="study-timer">
-      <h3>Cronômetro de estudo</h3>
+      <h3 id="studyTimerTitle">Cronômetro de estudo</h3>
       <div class="timer-block" role="region" aria-label="Cronômetro de estudo">
         <section class="timer-focus-context" id="timerFocusContext" hidden aria-live="polite" aria-label="Contexto do modo foco">
           <span>STUDYTRACK · MODO FOCO</span>
@@ -328,10 +331,6 @@
       <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
     </div>
 
-    <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
-      <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
-      <div id="planoHojeContent"></div>
-    </section>
 
     <section class="chart-card today-recommendation-card" aria-labelledby="todaySuggestionTitle">
       <header class="module-heading module-heading--compact"><span class="module-heading__eyebrow">Estratégia</span><h3 class="module-heading__title" id="todaySuggestionTitle">Sugestão opcional</h3><p class="module-heading__description">Explica o porquê da prioridade atual ou sugere alternativas sem alterar seu planejamento.</p></header>
@@ -354,6 +353,7 @@
     </div>
 
     <div id="errorNotebookDueToday"></div>
+    <div id="todayConsistency"></div>
 
     <details class="chart-card today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
       <summary>Ver resumo, diagnóstico e replanejamento</summary>
@@ -685,7 +685,7 @@
         <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-database icon-inline" aria-hidden="true"><path d="M4 6a8 3 0 1 0 16 0a8 3 0 1 0 -16 0"></path><path d="M4 6v6a8 3 0 0 0 16 0v-6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></svg>Gerenciar dados e backups</button>
       </div>
     </div>
-    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
+    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–9</strong> troca de área · <strong>Esc</strong> fecha</span>
   </footer>
 </main>
 
@@ -958,7 +958,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=4652ba22ade3"></script>
+  <script src="src/app.bundle.js?v=fc8679404a52"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

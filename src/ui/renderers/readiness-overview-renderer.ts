@@ -1,13 +1,11 @@
 import { renderScoreProjectionEvidence } from './score-projection-renderer.js';
 import { renderProjectionCalibration } from './projection-calibration-renderer.js';
 import { renderContextualHelp, renderActionGroup } from '../components/analytical-presentation.js';
-import { hasEnoughReadinessEvidence } from '../../application/analytics/build-header-view-model.js';
 
 // Presentation only: the application supplies measured values and frozen history.
 export function renderReadinessOverview(
   {
     m,
-    score,
     level,
     confidence,
     projection,
@@ -21,7 +19,6 @@ export function renderReadinessOverview(
   { escapeHtml, escapeAttr, getMetricDataState, metricStateLabel }: any
 ) {
   return `<div class="metric-state metric-state--${approvalState}">${approvalState !== 'ready' ? '<span>Registre mais atividades para liberar uma classificação definitiva.</span>' : approvalLabel}</div><div class="kpi-grid">
-    <div class="kpi-cell ${approvalState === 'ready' ? (level.cor === 'danger' ? 'warn' : level.cor) : 'neutral'}"><div class="n">${approvalState === 'empty' || !hasEnoughReadinessEvidence(factors.filter((item: any) => item[1]?.available).map((item: any) => item[2])) ? '—' : score + '/100'}</div><div class="l">Índice de Prontidão</div></div>
     <div class="kpi-cell ${approvalState === 'ready' ? (level.cor === 'danger' ? 'warn' : level.cor) : 'neutral'}"><div class="n" style="font-size:18px">${approvalState === 'ready' ? level.nivel : approvalLabel}</div><div class="l">${approvalState === 'ready' ? 'Nível de preparação · ' + level.faixa : 'Sem classificação definitiva'}</div></div>
     <div class="kpi-cell"><div class="n">${confidence.nivel}</div><div class="l">Confiança do índice · ${Math.round(confidence.value * 100)}%</div></div>
     <div class="kpi-cell"><div class="n">${m.retencao.available ? Math.round(m.retencao.raw) + '%' : '—'}</div><div class="l">Retenção média</div></div>

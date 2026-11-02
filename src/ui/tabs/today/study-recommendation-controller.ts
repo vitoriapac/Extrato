@@ -505,7 +505,8 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       moreRecommendations = moreCards
         ? `<details class="study-recommendation-more"><summary>Ver outras ${cards.length - 1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>`
         : '';
-    container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
+    // Só a sugestão e a pergunta pendente ficam à vista; o contexto da sugestão fica recolhido.
+    container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${renderPendingRecommendationOutcome()}<details class="recommendation-context editorial-disclosure"><summary>Resultado anterior, capacidade e histórico</summary>${impact}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}</details>`;
   }
 
   function recommendationBaseline(recommendation: Record<string, any>) {

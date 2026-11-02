@@ -179,6 +179,12 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
       const el = document.getElementById(id) as HTMLSelectElement | null;
       if (el) el.disabled = hasTime;
     });
+
+    // Parado, o cartão é só uma "Sessão livre"; relógio e controles de sessão aparecem ao começar.
+    const idle = !hasTime && !isRunning;
+    document.getElementById('study-timer')?.classList?.toggle('is-idle', idle);
+    const title = document.getElementById('studyTimerTitle');
+    if (title) title.textContent = idle ? 'Sessão livre' : 'Cronômetro de estudo';
   }
 
   function populateTimerTopicSelect(subjectId: string, selectedTopicId: string | null) {

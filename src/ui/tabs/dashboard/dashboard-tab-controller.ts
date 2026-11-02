@@ -394,7 +394,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
     const today = todayISO();
     const revisoesPrevistas =
-      (state.calendar || []).filter((c: any) => c.date >= today).length +
+      (state.calendar || []).filter((c: any) => c.date >= today && c.status !== 'Concluído')
+        .length +
       (state.reviewAgenda || []).filter((a: any) => a.date >= today && a.status !== 'Concluído')
         .length;
     const activityDates = deps.getActivityDates ? deps.getActivityDates() : new Set<string>();
