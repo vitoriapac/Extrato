@@ -1,6 +1,7 @@
 import { SubjectTopicRow } from './SubjectTopicRow.js';
 import { Icon } from '../../primitives/icon.js';
 import { Sparkline, StackedBar } from '../../primitives/charts/charts.js';
+import { SUBJECT_COLOR_NAMES } from '../../../domain/subjects/subject-color.js';
 
 export interface SubjectBlockProps {
   subject: any;
@@ -9,6 +10,8 @@ export interface SubjectBlockProps {
   progressPercent: number;
   /** Weekly question accuracy, oldest first; missing when the subject has no recent questions. */
   accuracyTrend?: Array<number | null>;
+  /** Palette slot 1–8; the swatch always sits next to the name. */
+  colorSlot?: number;
   subjectTopics: any[];
   visibleTopics: any[];
   allVisibleTopicsCount: number;
@@ -33,6 +36,7 @@ export function SubjectBlock({
   totalSubjects,
   progressPercent,
   accuracyTrend,
+  colorSlot = 1,
   subjectTopics,
   visibleTopics,
   allVisibleTopicsCount,
@@ -58,7 +62,11 @@ export function SubjectBlock({
     subjectTopics.filter((topic: any) => (topic.status || 'Não iniciado') === status).length;
 
   return (
-    <div class="subject-block" data-subject-id={subject.id}>
+    <div
+      class={`subject-block subject-color-${colorSlot}`}
+      data-subject-id={subject.id}
+      data-subject-color={colorSlot}
+    >
       <div class="subject-header" data-delegated-click={`toggleSubject('${subject.id}')`}>
         <div class="subject-header-left">
           <div class="subject-order-btns" data-delegated-click="event.stopPropagation()">
@@ -96,6 +104,11 @@ export function SubjectBlock({
             <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={16} />
           </button>
           <span
+            class={`subject-color-swatch subject-color-${colorSlot}`}
+            title={`Cor: ${SUBJECT_COLOR_NAMES[colorSlot - 1]}`}
+            aria-hidden="true"
+          />
+          <span
             class="subject-name"
             contentEditable={true}
             data-delegated-click="event.stopPropagation()"
@@ -127,6 +140,19 @@ export function SubjectBlock({
               >
                 Duplicar disciplina
               </button>
+              <label class="subject-color-field" data-delegated-click="event.stopPropagation()">
+                <span>Cor</span>
+                <select
+                  aria-label={`Cor de ${subject.name}`}
+                  data-delegated-change={`setSubjectColor('${subject.id}', this.value)`}
+                >
+                  {SUBJECT_COLOR_NAMES.map((name, index) => (
+                    <option value={index + 1} selected={colorSlot === index + 1}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <button
                 type="button"
                 data-delegated-click={`event.stopPropagation();archiveSubject('${subject.id}')`}

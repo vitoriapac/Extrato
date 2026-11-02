@@ -20,7 +20,9 @@ const memoryStorage = (initial = {}) => {
   const data = { 'studytrack.sectionsOpen': JSON.stringify(initial) };
   return { getItem: key => data[key] ?? null, setItem: (key, value) => (data[key] = value), data };
 };
-const root = sections => ({ querySelectorAll: () => sections, addEventListener() {} });
+// Minimal stand-ins for the DOM pieces the module touches.
+const root = sections =>
+  /** @type {any} */ ({ querySelectorAll: () => sections, addEventListener() {} });
 
 test('seções lembradas: padrão por largura, escolha salva e restaurada', () => {
   const a = section('a', 'wide'),
@@ -46,7 +48,7 @@ test('seções lembradas: armazenamento indisponível não quebra e âncora abre
   s.toggle(true);
   assert.equal(s.open, true);
   const closed = section('y', 'wide');
-  openSectionFor({ closest: () => closed });
+  openSectionFor(/** @type {any} */ ({ closest: () => closed }));
   assert.equal(closed.open, true);
   openSectionFor(null);
 });

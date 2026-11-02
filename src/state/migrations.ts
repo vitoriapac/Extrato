@@ -1,4 +1,5 @@
 import { uid } from '../core/utils.ts';
+import { assignSubjectColors } from '../domain/subjects/subject-color.js';
 import {
   REVIEW_RATINGS,
   createAdaptiveReviewState,
@@ -427,6 +428,12 @@ export function createStateMigrator({
     data.schemaVersion = 28;
     return data;
   }
+  // v29: subject color slots; older data and backups get one automatically.
+  function migrateV28toV29(data: Record<string, any>) {
+    assignSubjectColors(Array.isArray(data.subjects) ? data.subjects : []);
+    data.schemaVersion = 29;
+    return data;
+  }
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -458,6 +465,7 @@ export function createStateMigrator({
         25: migrateV25toV26,
         26: migrateV26toV27,
         27: migrateV27toV28,
+        28: migrateV28toV29,
       },
     });
   }

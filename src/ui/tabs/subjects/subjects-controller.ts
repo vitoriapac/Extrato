@@ -2,6 +2,7 @@ import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { SubjectsTab } from './SubjectsTab.js';
 import { buildSubjectWeeklyAccuracy } from '../../../application/analytics/build-subject-accuracy.js';
+import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 
 export interface SubjectsControllerContext {
   state: any;
@@ -86,6 +87,7 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
         searchQuery: query,
         subjectExamFilter: ctx.subjectExamFilter,
         subjectProgressFn: ctx.subjectProgress,
+        subjectColorFn: (subject: any) => subjectColorOf(subject, ctx.state.subjects || []),
         accuracyTrends: buildSubjectWeeklyAccuracy(
           ctx.state.questoes || [],
           ctx.today || new Date().toISOString().slice(0, 10)

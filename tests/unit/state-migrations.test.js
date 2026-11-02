@@ -29,3 +29,20 @@ test('createStateMigrator — estado v1 chega à versão atual com vínculos por
   assert.equal(completed.topicId, topic.id);
   assert.equal(completed.localDate, '2026-01-10');
 });
+
+test('migração v28 → v29 dá cor às disciplinas sem cor e preserva as válidas', () => {
+  const migrated = migrateState({
+    schemaVersion: 28,
+    subjects: [
+      { id: 'a', name: 'A', topics: [] },
+      { id: 'b', name: 'B', topics: [], color: 1 },
+      { id: 'c', name: 'C', topics: [], color: 42 },
+      { id: 'd', name: 'D', topics: [] },
+    ],
+  });
+  assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
+  assert.deepEqual(
+    migrated.subjects.map(subject => subject.color),
+    [2, 1, 3, 4]
+  );
+});

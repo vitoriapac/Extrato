@@ -7,6 +7,7 @@ export interface SubjectsTabProps {
   subjectExamFilter?: string;
   subjectProgressFn: (subject: any) => number;
   accuracyTrends?: Map<string, Array<number | null>>;
+  subjectColorFn?: (subject: any) => number;
   subjectTopicFilters: Map<string, { status: string; difficulty: string }>;
   subjectTopicLimits: Map<string, number>;
   openNotesIds: Set<string>;
@@ -30,6 +31,7 @@ export function SubjectsTab({
   subjectExamFilter = 'all',
   subjectProgressFn,
   accuracyTrends,
+  subjectColorFn,
   subjectTopicFilters,
   subjectTopicLimits,
   openNotesIds,
@@ -153,6 +155,7 @@ export function SubjectsTab({
               totalSubjects={subjects.length}
               progressPercent={progress}
               accuracyTrend={accuracyTrends?.get(subject.id)}
+              colorSlot={subjectColorFn ? subjectColorFn(subject) : 1}
               subjectTopics={subjectTopics}
               visibleTopics={visibleTopics}
               allVisibleTopicsCount={allVisibleTopics.length}

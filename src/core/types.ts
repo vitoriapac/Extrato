@@ -63,6 +63,8 @@ export interface Subject {
   createdAt: string;
   topics: Topic[];
   examMetrics?: Record<string, ExamMetric>;
+  /** Palette slot 1–8 (see domain/subjects/subject-color.ts). */
+  color?: number;
 }
 
 export interface QuestionRecord {

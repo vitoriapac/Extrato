@@ -300,7 +300,8 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### C5: Cor por disciplina (4.7) — PR próprio
 **Descrição:** Paleta de 8 tons em tokens (sem âmbar e sem vermelho), atribuída automaticamente e editável. Campo novo `subject.color`, com migração e backup.
-**Aceite:** [ ] Contraste ≥ 3:1 contra o fundo nos dois temas · [ ] Nome sempre ao lado da cor · [ ] Backup antigo importa sem a cor e recebe uma automática
+**Aceite:** [x] Contraste ≥ 3:1 contra o fundo nos dois temas · [x] Nome sempre ao lado da cor · [x] Backup antigo importa sem a cor e recebe uma automática
+**Resultado (02/11/2026):** schema 29. `subject.color` guarda o slot da paleta (1–8), não a cor, e cada tema mapeia o slot para `--subject-1`…`--subject-8` (Sálvia, Azul, Índigo, Violeta, Petróleo, Oliva, Ardósia, Ameixa; sem âmbar nem vermelho). Contraste contra a página: 4,66–6,56:1 no claro, 6,90–9,84:1 no escuro. `assignSubjectColors` (`src/domain/subjects/subject-color.ts`) dá à disciplina sem cor válida o slot menos usado; roda na migração v28→v29 e no `ensureStateDefaults`, que também passa pela importação de backup (cor inválida é corrigida, não rejeitada). Disciplina criada na sessão usa a posição na lista até a próxima carga. Interface: amostra antes do nome e borda esquerda do bloco na cor; seletor "Cor" com os nomes no menu de ações da disciplina. Testes: unit de domínio e migração; E2E com dados v28 (cor automática, troca para Ameixa, persistência após recarregar) e importação de backup antigo pela ponte de teste; `npm run test:full`.
 **Verificação:** testes de migração e de backup; `npm run test:full`
 **Dependências:** G1–G6 · **Tamanho:** M
 

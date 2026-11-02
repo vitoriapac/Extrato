@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { isSubjectColor } from '../../../domain/subjects/subject-color.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { VerticalizedSyllabusView } from '../../views/VerticalizedSyllabusView.js';
 import { createSubjectsController } from './subjects-controller.js';
@@ -456,6 +457,14 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     );
   }
 
+  function setSubjectColor(id: string, value: unknown): void {
+    const color = Number(value);
+    const subject = ctx.getSubjectById(id);
+    if (!subject || !isSubjectColor(color) || subject.color === color) return;
+    subject.color = color;
+    ctx.persistAndRender();
+  }
+
   function archiveSubject(id: string): void {
     const subject = ctx.getSubjectById(id);
     if (!subject) return ctx.showToast('Disciplina não encontrada.');
@@ -719,6 +728,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     renderTopicAnalyticsState,
     moveSubject,
     duplicateSubject,
+    setSubjectColor,
     toggleSubject,
     renameSubject,
     addSubject,

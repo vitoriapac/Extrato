@@ -8,6 +8,7 @@ import { ADAPTIVE_PLANNING_VERSION } from '../domain/planning/adaptive-planning.
 import { createAdaptiveReviewState, REVIEW_RATINGS } from '../domain/reviews.js';
 import { normalizeStudySession } from '../domain/sessions/study-session.js';
 import { CURRENT_SCHEMA_VERSION, DIFFICULTY_OPTIONS } from './schema.js';
+import { assignSubjectColors } from '../domain/subjects/subject-color.js';
 import {
   normalizeAlgorithmVersions,
   normalizeExamBlueprint,
@@ -206,6 +207,7 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
   state.topicHistory.forEach(normalizeHistoryEvent);
   state.schemaVersion = CURRENT_SCHEMA_VERSION;
+  assignSubjectColors(state.subjects);
   state.subjects.forEach(s => {
     if (!Array.isArray(s.topics)) s.topics = [];
     if (typeof s.collapsed !== 'boolean') s.collapsed = false;

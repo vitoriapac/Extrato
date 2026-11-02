@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-268 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+269 arquivos Node e 63 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -73,6 +73,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/structured-content-import.spec.js | browser | Aplicação | critical | 11.8 | journey | none |
 | tests/e2e/study-action-cycle.spec.js | browser | Aplicação | functional | 13.2 | journey | none |
 | tests/e2e/subject-accuracy-target.spec.js | browser | Aplicação | functional | 6.4 | journey, viewport | none |
+| tests/e2e/subject-color.spec.js | browser | Aplicação | functional | — | journey, viewport | none |
 | tests/e2e/topic-strategy.spec.js | browser | Aplicação | functional | 18.1 | journey, demo | none |
 | tests/e2e/ux-baseline.spec.js | browser | Aplicação | visual | 70.6 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/verticalized-syllabus-and-cycle.spec.js | browser | Aplicação | functional | — | journey, demo | none |
@@ -307,6 +308,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/studytrack-3-2-analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/studytrack32-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-accuracy-target.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/subject-color.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-error-metrics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-target-editor-controller.test.js | node | Aplicação | functional | — | contract | none |

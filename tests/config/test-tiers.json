@@ -345,6 +345,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/subject-color.spec.js",
+      "tier": "FULL",
+      "rationale": "Migração de schema (cor por disciplina) e importação de backup antigo; exigido pelo gate Full."
+    },
+    {
       "file": "tests/e2e/topic-strategy.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -1242,6 +1247,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/remembered-sections.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/remote-sync-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1515,6 +1525,11 @@
       "file": "tests/unit/subject-accuracy-target.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/subject-color.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/subject-error-metrics.test.js",

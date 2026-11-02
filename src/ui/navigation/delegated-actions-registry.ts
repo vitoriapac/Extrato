@@ -143,6 +143,7 @@ export function buildDelegatedActionHandlers(
     archiveTopic: (...args: any[]) => c.subjects?.archiveTopic?.(...args),
     changeSubjectTopicLimit: (...args: any[]) => c.subjects?.changeSubjectTopicLimit?.(...args),
     duplicateSubject: (...args: any[]) => c.subjects?.duplicateSubject?.(...args),
+    setSubjectColor: (...args: any[]) => c.subjects?.setSubjectColor?.(...args),
     moveSubject: (...args: any[]) => c.subjects?.moveSubject?.(...args),
     renameSubject: (...args: any[]) => c.subjects?.renameSubject?.(...args),
     requestPermanentSubjectDelete: (...args: any[]) =>
