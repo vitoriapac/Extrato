@@ -9,6 +9,9 @@ export const RENDER_SCOPE_SECTIONS = {
     'resumo executivo',
     'central de diagnóstico',
     'replanejamento',
+    // Lacunas, retenção e histórico de sessões também saíram da Visão geral.
+    'dashboard de aprovação',
+    'histórico de sessões',
   ]),
   dashboard: new Set([
     'primeiro uso',
@@ -25,6 +28,7 @@ export const RENDER_SCOPE_SECTIONS = {
     'filtros do calendário',
     'calendário',
     'calendário mensal',
+    'visão geral',
   ]),
   agenda: new Set(['filtros da agenda', 'agenda', 'avisos do caderno de erros']),
   questoes: new Set(['questões', 'análise de questões', 'simulados']),

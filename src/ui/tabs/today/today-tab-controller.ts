@@ -540,7 +540,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
         <div class="plano-item-actions">
           ${actionButton}
-          <span class="plano-item-status">${active ? (running ? 'Sessão em andamento · cronômetro rodando' : 'Sessão em andamento · pausada') : escapeHtml(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
+          <span class="plano-item-status">${active ? (running ? 'Sessão em andamento · cronômetro rodando' : 'Sessão em andamento · pausada') + ' · ' : planItemStatusLabel(item.status) === (item.statusLabel || planItemStatusLabel(item.status)) ? '' : escapeHtml(planItemStatusLabel(item.status)) + ' · '}${formatDuration(item.executedSeconds)} executado</span>
         </div>
       </div>
     `;

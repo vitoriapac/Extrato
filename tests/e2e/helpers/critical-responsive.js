@@ -8,10 +8,7 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
   await activateTab(page, 'dashboard');
   await expectNoPageOverflow(page);
-  // Phones open with the overview sections folded (C3); open the one under test via its summary.
-  if (!(await page.locator('#overview-summary').evaluate(node => node.open)))
-    await page.locator('#overview-summary > summary').click();
-  await expect(page.locator('.overview-close-link')).toBeVisible();
+  await expect(page.locator('.overview-readiness')).toBeVisible();
   await activateTab(page, 'desempenho');
   const analyses = page.locator('.today-analysis-details');
   if ((await analyses.count()) && !(await analyses.first().evaluate(element => element.open)))

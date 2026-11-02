@@ -90,32 +90,3 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
   await expect(page.locator('#weeklyReplan')).toBeVisible();
 });
-
-test('atalhos da Visão Geral viram seletor acessível no celular', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 850 });
-  await openDemo(page);
-  const selector = page.locator('#overviewNavSelect');
-  await expect(selector).toBeVisible();
-  await expect(page.locator('.overview-nav-links a').first()).toBeHidden();
-  await selector.selectOption('overview-study');
-  await expect(page).toHaveURL(/#overview-study$/);
-  await expect
-    .poll(() =>
-      page.evaluate(() => document.getElementById('overview-study').getBoundingClientRect().top)
-    )
-    .toBeGreaterThanOrEqual(0);
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
-      )
-    )
-    .toBeLessThanOrEqual(1);
-});
-
-test('atalhos da Visão Geral permanecem horizontais no desktop', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await openDemo(page);
-  await expect(page.locator('.overview-nav-links a').first()).toBeVisible();
-  await expect(page.locator('#overviewNavSelect')).toBeHidden();
-});

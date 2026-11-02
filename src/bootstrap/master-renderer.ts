@@ -39,7 +39,9 @@ export function createMasterRenderer({
       scope === 'all' ||
       scope === 'dashboard' ||
       scope === 'metas' ||
-      (scope === 'active' && (activeTab === 'dashboard' || activeTab === 'metas'))
+      scope === 'desempenho' ||
+      (scope === 'active' &&
+        (activeTab === 'dashboard' || activeTab === 'metas' || activeTab === 'desempenho'))
     ) {
       try {
         renderStudyTrack32Insights?.();

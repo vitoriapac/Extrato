@@ -112,7 +112,6 @@ for (const width of [320, 375, 390, 430])
       const stack = await page.evaluate(() => {
         const shell = document.querySelector('.sticky-shell').getBoundingClientRect();
         const tabs = document.querySelector('.tabs').getBoundingClientRect();
-        const nav = document.querySelector('.overview-nav').getBoundingClientRect();
         const search = document.querySelector('.global-search-row').getBoundingClientRect();
         const brand = document.querySelector('.compact-brand').getBoundingClientRect();
         const meta = document.querySelector('.compact-meta').getBoundingClientRect();
@@ -121,7 +120,6 @@ for (const width of [320, 375, 390, 430])
           shellTop: shell.top,
           shellBottom: shell.bottom,
           tabsTop: tabs.top,
-          navTop: nav.top,
           searchBottom: search.bottom,
           brandTop: brand.top,
           metaTop: meta.top,
@@ -131,7 +129,6 @@ for (const width of [320, 375, 390, 430])
       expect(stack.shellTop).toBeGreaterThanOrEqual(0);
       expect(stack.shellTop).toBeLessThanOrEqual(1);
       expect(stack.searchBottom).toBeLessThan(0);
-      expect(stack.navTop).toBeGreaterThanOrEqual(stack.shellBottom - 1);
       expect(Math.abs(stack.brandTop - stack.metaTop)).toBeLessThan(8);
       expect(Math.abs(stack.moreTop - stack.tabsTop)).toBeLessThan(2);
     });

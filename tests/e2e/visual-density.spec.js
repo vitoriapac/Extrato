@@ -60,10 +60,8 @@ test('cabeçalhos analíticos com dados densos em desktop', async ({ page }) => 
     window.__EXTRATO_TEST__.renderAll();
   }, state);
   await expect(page.locator('#statSubjects')).toHaveText(String(state.subjects.length));
-  await activateTab(page, 'dashboard');
-  await expect(
-    page.locator('.intelligence-column > .analytics-card > .module-heading')
-  ).toHaveCount(2);
+  await activateTab(page, 'desempenho');
+  await expect(page.locator('#desempenho-gaps .analytics-card > .module-heading')).toHaveCount(2);
   await activateTab(page, 'metas');
   await expect(
     page.locator('.metas-history-section > .analytics-card > .module-heading')

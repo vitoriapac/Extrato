@@ -20,9 +20,6 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
     structuredClone(window.__EXTRATO_TEST__.getState().projectionSnapshots)
   );
   expect(initial.length).toBeGreaterThan(0);
-  // Phones open with the overview sections folded (C3); open the one under test via its summary.
-  if (!(await page.locator('#overview-summary').evaluate(node => node.open)))
-    await page.locator('#overview-summary > summary').click();
   await page.locator('#approvalDashboard .readiness-investigation > summary').click();
   const quality = page.locator('#approvalDashboard .evidence-quality').first();
   await quality.locator('summary').focus();

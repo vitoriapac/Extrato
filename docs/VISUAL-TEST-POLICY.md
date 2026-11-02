@@ -71,3 +71,5 @@ A hierarquia de títulos passou a ser título de página (h2, Fraunces `clamp(22
 ## Atualização das referências após clarify, distill, harden e layout (2026-11-02)
 
 Os rótulos do cabeçalho do extrato (`.balance-label`, `.kpi-cell .l`) subiram para 12px e 80% de `--on-brand` (contraste ≥ 4.5:1), o que desloca o hero; o cartão "Agora" mudou só na renderização do texto. As imagens `expected`, `actual` e `diff` foram inspecionadas antes da atualização: sem mudança de conteúdo. Foram atualizadas `agora-desktop-light` e `agora-mobile-dark` em `ux-baseline.spec.js` e as quatro capturas `hero-*` em `visual-regression.spec.js` (Windows/Chromium).
+
+- 2026-11-02: Visão geral virou resumo visual (KPIs, prontidão, próxima ação e atenção); análise foi para Desempenho e revisões próximas para o Calendário. Baselines atualizados após inspeção: `today-320-light`, `today-375-dark`, `agora-desktop-light`, `agora-mobile-dark`, `hero-mobile-375` e `historico-sessoes-desktop`. Diferença esperada: cartões "Agora/Atenção" mais compactos (títulos "Próxima ação" e "Atenção").

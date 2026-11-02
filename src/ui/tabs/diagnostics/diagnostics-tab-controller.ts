@@ -1,3 +1,4 @@
+import { renderNextBestAction as defaultRenderNextBestAction } from '../../renderers/next-best-action-renderer.js';
 import { buildExecutiveSummary as defaultBuildExecutiveSummary } from '../../../application/build-executive-summary.js';
 import {
   renderExecutiveSummary as defaultRenderExecutiveSummaryView,
@@ -11,7 +12,6 @@ import { buildDiagnosisPageModel as defaultBuildDiagnosisPageModel } from '../..
 import { renderDiagnosisCenter as defaultRenderDiagnosisCenterView } from '../../renderers/diagnosis-renderer.js';
 import { renderRecoveryReviewDebt as defaultRenderRecoveryReviewDebt } from '../../renderers/recovery-review-debt-renderer.js';
 import { analyzeFocusAndEnergy as defaultAnalyzeFocusAndEnergy } from '../../../domain/analytics/focus-energy-analytics.js';
-import { renderNextBestAction as defaultRenderNextBestAction } from '../../renderers/next-best-action-renderer.js';
 import { renderPreparationSignals as defaultRenderPreparationSignals } from '../../renderers/preparation-signals-renderer.js';
 import { buildDecisionCoherenceReport as defaultBuildDecisionCoherenceReport } from '../../../application/diagnostics/build-decision-coherence-report.js';
 import { renderDecisionCoherenceDebug as defaultRenderDecisionCoherenceDebug } from '../../renderers/decision-coherence-debug-renderer.js';
@@ -81,9 +81,9 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
   const buildDiagnosisPageModel = opts.buildDiagnosisPageModel || defaultBuildDiagnosisPageModel;
   const renderDiagnosisCenterView =
     opts.renderDiagnosisCenterView || defaultRenderDiagnosisCenterView;
+  const renderNextBestAction = opts.renderNextBestAction || defaultRenderNextBestAction;
   const renderRecoveryReviewDebt = opts.renderRecoveryReviewDebt || defaultRenderRecoveryReviewDebt;
   const analyzeFocusAndEnergy = opts.analyzeFocusAndEnergy || defaultAnalyzeFocusAndEnergy;
-  const renderNextBestAction = opts.renderNextBestAction || defaultRenderNextBestAction;
   const renderPreparationSignals = opts.renderPreparationSignals || defaultRenderPreparationSignals;
   const buildDecisionCoherenceReport =
     opts.buildDecisionCoherenceReport || defaultBuildDecisionCoherenceReport;

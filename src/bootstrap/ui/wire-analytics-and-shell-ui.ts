@@ -1,3 +1,4 @@
+import { initLazyDetails, initSearchableSelects } from '../../ui/lazy-details.js';
 import { formatDuration, formatPlanMinutes } from '../../core/format-duration.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { parseLocalDate } from '../../core/date-utils.js';
@@ -200,6 +201,8 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     },
   });
   shellUiController.initStickyHeaderAndOverviewNav();
+  initLazyDetails(document);
+  initSearchableSelects(document);
   shellUiController.registerShellEvents();
 
   createSearchController({

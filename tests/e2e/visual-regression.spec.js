@@ -73,6 +73,8 @@ test('regressão visual dos componentes críticos em desktop', async ({ page }) 
     screenshotOptions
   );
   await page.evaluate(() => scrollTo(0, 0));
+  await activateTab(page, 'desempenho');
+  await page.locator('#desempenho-study > summary').click();
   await page.evaluate(() => {
     for (const [id, height] of [
       ['studySessionsCard', '650px'],

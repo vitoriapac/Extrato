@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=44f4b60ce64e">
-<link rel="stylesheet" href="styles/app.css?v=44f4b60ce64e">
+<link rel="stylesheet" href="styles/tailwind.css?v=38c186272e4e">
+<link rel="stylesheet" href="styles/app.css?v=38c186272e4e">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -129,50 +129,96 @@
     <section class="overview-now" aria-label="Ação prioritária e atenção">
       <article class="chart-card overview-now-action">
         <span class="overview-eyebrow">Agora</span>
-        <h2>Próxima melhor ação</h2>
+        <h2>Próxima ação</h2>
         <div id="overviewNextAction"></div>
         <div id="dailyExecutionDashboard"></div>
       </article>
       <article class="chart-card overview-now-attention">
         <span class="overview-eyebrow">Precisa da sua atenção</span>
-        <h2>Alertas prioritários</h2>
+        <h2>Atenção</h2>
         <div id="overviewAttention"></div>
         <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção na aba Hoje</button>
       </article>
     </section>
+    <p class="overview-detail-links">Análise detalhada: <button class="btn ghost small" type="button" data-performance-jump="overview">Desempenho</button> <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Hoje</button></p>
     <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
       <div id="guidedOnboardingEntry"></div>
     </section>
     <div id="overviewExamPhase"></div>
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="stat-grid" id="quickStats"></div>
-
-    <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
-      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Prontidão</a><a href="#overview-study">Estudo</a><a href="#overview-next-actions">Próximas ações</a></div>
-      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Prontidão</option><option value="overview-study">Estudo</option><option value="overview-next-actions">Próximas ações</option></select></label>
-    </nav>
-
-    <details class="overview-section" id="overview-summary" data-remember="overview-readiness" data-default-open="wide">
-      <summary class="overview-section-heading"><span>Aprovação e retenção</span></summary>
-    <div class="overview-pair" id="overview-performance">
-    <div class="chart-card intelligence-column">
-      <h3>Índice de Prontidão</h3>
+    <section class="chart-card intelligence-column overview-readiness" aria-labelledby="overviewReadinessTitle">
+      <h3 id="overviewReadinessTitle">Índice de Prontidão</h3>
       <div id="approvalDashboard"></div>
       <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
-      <p class="overview-close-link">Fechamento semanal, linha do tempo e histórico de decisões ficam em Planejamento. <button class="btn ghost small" type="button" data-delegated-click="openWeeklyClose()">Abrir fechamento</button></p>
+    </section>
+  </div>
+
+
+  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
+    <div id="performancePage"></div>
+    <p class="sr-only" id="performanceStatus" role="status"></p>
+    <section class="performance-progress" id="performance-progress" aria-labelledby="performanceProgressTitle">
+      <header class="module-heading"><span class="module-heading__eyebrow">Evolução</span><h2 class="module-heading__title" id="performanceProgressTitle">Progresso e conquistas</h2></header>
+    <div class="chart-card">
+      <h3>Conquistas</h3>
+      <div class="badges-grid" id="badgesGrid"></div>
+    </div>
+    <details class="chart-card overview-fold">
+      <summary>Evolução, progresso por disciplina e radar</summary>
+    <div class="chart-card">
+      <h3>Evolução do progresso</h3>
+      <div id="progressChart"></div>
+    </div>
+
+    <div class="overview-pair">
+    <div class="chart-card">
+      <h3>Progresso por disciplina</h3>
+      <div id="progressBars"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Radar de disciplinas</h3>
+      <p class="helper-text helper-text--compact">
+        Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
+      </p>
+      <div id="radarChart"></div>
+    </div>
+    </div>
+    </details>
+    </section>
+    <div id="examIntelligenceParking" hidden>
+      <div class="exam-intelligence-hub" id="examIntelligenceHub" data-advanced="Inteligência da prova">
+        <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Histórico, incidência e impacto no concurso ativo. Questões históricas não alteram seu desempenho pessoal.</p></header>
+        <section class="exam-intelligence-level" aria-label="Saúde da evidência"><h4>Saúde da evidência</h4><div id="examIntelligenceOverview" class="exam-intelligence-overview" aria-label="Resumo da base histórica"></div><div id="examDataQuality"></div></section>
+        <section class="exam-historical-matrix exam-intelligence-level" aria-label="Incidência e domínio"><h4>Incidência × domínio</h4><p class="analytics-note">Compare o que aparece nas provas com seu domínio. Use os filtros para explorar concursos, bancas e anos.</p><div id="examHistoricalMatrix"></div></section>
+        <section class="exam-intelligence-level" aria-label="Configuração e evidência histórica"><h4>Configuração × histórico</h4><div id="examConfigurationAudit"></div><details class="exam-intelligence-topics"><summary>Explorar tópicos de maior impacto</summary><div id="examIntelligenceSummary"></div></details></section>
+        <section class="exam-intelligence-level" aria-label="Prova e situação pessoal"><h4>Prova × Você</h4><div id="examOpportunity"></div></section>
+        <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
+      </div>
+    </div>
+    <details class="chart-card today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
+      <summary>Ver resumo, diagnóstico e replanejamento</summary>
+      <div class="today-analysis-grid">
+        <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
+        <section class="chart-card"><h3>Central de diagnóstico</h3><div id="diagnosisCenter"></div></section>
+        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
+      </div>
+    </details>
+    <details class="chart-card desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
+      <summary>Ver lacunas, replanejamento e retenção</summary>
+      <div class="today-analysis-grid">
       <section class="analytics-card" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Gravidade combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A ordem de estudo segue a prioridade da Próxima melhor ação.</p></header><div id="gapMapDashboard"></div></section>
       <section class="analytics-card" data-advanced="Replanejamento pós-simulado"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
-    </div>
     <details class="chart-card overview-fold">
       <summary>Retenção por tópico</summary>
       <div id="topicRetentionDashboard"></div>
       <details class="performance-details"><summary>Como a retenção é calculada?</summary><p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
     </details>
-    </div>
+      </div>
     </details>
-
-    <details class="overview-section" id="overview-study" data-remember="overview-study" data-default-open="wide">
-      <summary class="overview-section-heading"><span>Estudo e sessões</span></summary>
+    <details class="chart-card desempenho-extra-details" id="desempenho-study" data-advanced="Estudo e sessões">
+      <summary>Ver tempo de estudo e histórico de sessões</summary>
     <div class="chart-card">
       <h3>Tempo de estudo</h3>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
@@ -229,67 +275,6 @@
         </table>
       </div>
     </div>
-    </details>
-
-    <details class="overview-section" id="overview-next-actions" data-remember="overview-next" data-default-open="wide">
-      <summary class="overview-section-heading"><span>Próximas ações</span></summary>
-    <div class="chart-card">
-      <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
-      <ul class="upcoming-list" id="upcomingList"></ul>
-      <div id="upcomingFooter"></div>
-    </div>
-    </details>
-  </div>
-
-  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
-    <div id="performancePage"></div>
-    <p class="sr-only" id="performanceStatus" role="status"></p>
-    <section class="performance-progress" id="performance-progress" aria-labelledby="performanceProgressTitle">
-      <header class="module-heading"><span class="module-heading__eyebrow">Evolução</span><h2 class="module-heading__title" id="performanceProgressTitle">Progresso e conquistas</h2></header>
-    <div class="chart-card">
-      <h3>Conquistas</h3>
-      <div class="badges-grid" id="badgesGrid"></div>
-    </div>
-    <details class="chart-card overview-fold">
-      <summary>Evolução, progresso por disciplina e radar</summary>
-    <div class="chart-card">
-      <h3>Evolução do progresso</h3>
-      <div id="progressChart"></div>
-    </div>
-
-    <div class="overview-pair">
-    <div class="chart-card">
-      <h3>Progresso por disciplina</h3>
-      <div id="progressBars"></div>
-    </div>
-
-    <div class="chart-card">
-      <h3>Radar de disciplinas</h3>
-      <p class="helper-text helper-text--compact">
-        Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
-      </p>
-      <div id="radarChart"></div>
-    </div>
-    </div>
-    </details>
-    </section>
-    <div id="examIntelligenceParking" hidden>
-      <div class="exam-intelligence-hub" id="examIntelligenceHub" data-advanced="Inteligência da prova">
-        <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Histórico, incidência e impacto no concurso ativo. Questões históricas não alteram seu desempenho pessoal.</p></header>
-        <section class="exam-intelligence-level" aria-label="Saúde da evidência"><h4>Saúde da evidência</h4><div id="examIntelligenceOverview" class="exam-intelligence-overview" aria-label="Resumo da base histórica"></div><div id="examDataQuality"></div></section>
-        <section class="exam-historical-matrix exam-intelligence-level" aria-label="Incidência e domínio"><h4>Incidência × domínio</h4><p class="analytics-note">Compare o que aparece nas provas com seu domínio. Use os filtros para explorar concursos, bancas e anos.</p><div id="examHistoricalMatrix"></div></section>
-        <section class="exam-intelligence-level" aria-label="Configuração e evidência histórica"><h4>Configuração × histórico</h4><div id="examConfigurationAudit"></div><details class="exam-intelligence-topics"><summary>Explorar tópicos de maior impacto</summary><div id="examIntelligenceSummary"></div></details></section>
-        <section class="exam-intelligence-level" aria-label="Prova e situação pessoal"><h4>Prova × Você</h4><div id="examOpportunity"></div></section>
-        <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
-      </div>
-    </div>
-    <details class="chart-card today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
-      <summary>Ver resumo, diagnóstico e replanejamento</summary>
-      <div class="today-analysis-grid">
-        <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
-        <section class="chart-card"><h3>Central de diagnóstico</h3><div id="diagnosisCenter"></div></section>
-        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
-      </div>
     </details>
   </div>
 
@@ -403,6 +388,12 @@
     <div class="chart-card">
       <h3>Tarefas do dia</h3>
       <ul class="upcoming-list" id="calTarefasHoje"></ul>
+    </div>
+
+    <div class="chart-card">
+      <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
+      <ul class="upcoming-list" id="upcomingList"></ul>
+      <div id="upcomingFooter"></div>
     </div>
 
     <div class="chart-card">
@@ -959,7 +950,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=44f4b60ce64e"></script>
+  <script src="src/app.bundle.js?v=38c186272e4e"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

@@ -4,6 +4,13 @@ import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
 
+async function showSessions(page) {
+  await activateTab(page, 'desempenho');
+  await page.evaluate(() => {
+    document.getElementById('desempenho-study').open = true;
+  });
+}
+
 test('históricos editoriais distinguem filtros e mantêm estudo legível com poucos e muitos dados', async ({
   page,
 }, testInfo) => {
@@ -12,7 +19,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
-  await activateTab(page, 'dashboard');
+  await showSessions(page);
   const inspect = async name => {
     for (const [width, theme] of [
       [390, 'light'],
@@ -44,7 +51,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
         for (const [id, selector, panel] of [
           ['timeline', '#strategicTimelineDashboard', 'metas'],
           ['study', '#study-timer', 'hoje'],
-          ['sessions', '#studySessionsCard', 'dashboard'],
+          ['sessions', '#studySessionsCard', 'desempenho'],
           ['close', '#weeklyCloseDashboard', 'metas'],
         ]) {
           // Navigation chrome is detached here, so show the owning panel directly for the capture.
@@ -77,7 +84,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
         await page.evaluate(() =>
           document
             .querySelectorAll('.panel')
-            .forEach(node => node.classList.toggle('active', node.id === 'panel-dashboard'))
+            .forEach(node => node.classList.toggle('active', node.id === 'panel-desempenho'))
         );
       }
     }
@@ -95,7 +102,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
   await expect(page.locator('#strategicTimelineDashboard')).toContainText(
     'Nenhum evento neste filtro'
   );
-  await activateTab(page, 'dashboard');
+  await showSessions(page);
   await inspect('empty');
   await page.setViewportSize({ width: 1440, height: 900 });
   await page
@@ -104,7 +111,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
     .click();
   await expect(page.locator('#timerStartBtn')).toBeFocused();
   await expect(page.locator('#panel-hoje')).toBeVisible();
-  await activateTab(page, 'dashboard');
+  await showSessions(page);
   await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState());
@@ -155,7 +162,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
     .click();
   await expect(page.locator('#studySessionsEmpty')).toBeHidden();
   await openDemo(page);
-  await activateTab(page, 'dashboard');
+  await showSessions(page);
   await inspect('dense');
 });
 

@@ -1,3 +1,4 @@
+import { hydrateLazy } from '../lazy-details.js';
 import {
   analysisContextInScope,
   createAnalysisContext,
@@ -104,6 +105,10 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
           document.querySelector('.today-analysis-details')?.setAttribute('open', '');
         if (destination === 'metas')
           document.querySelector('#examStudyPlan .study-plan-details')?.setAttribute('open', '');
+        if (destination === 'hoje') {
+          const center = document.getElementById('diagnosisCenter');
+          if (center) hydrateLazy(center);
+        }
         const targets: HTMLElement[] | NodeListOf<HTMLElement> =
           destination === 'hoje'
             ? document.querySelectorAll<HTMLElement>('#diagnosisCenter [data-diagnosis-subject-id]')
