@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { SubjectsTab } from './SubjectsTab.js';
+import { buildSubjectWeeklyAccuracy } from '../../../application/analytics/build-subject-accuracy.js';
 
 export interface SubjectsControllerContext {
   state: any;
@@ -22,6 +23,7 @@ export interface SubjectsControllerContext {
   examBadges?: (topic: any) => string;
   renderTopicAnalyticsState?: (subject: any, topic: any) => string;
   renderTopicStrategyEditor?: (subject: any, topic: any) => string;
+  today?: string;
 }
 
 export function createSubjectsController(ctx: SubjectsControllerContext) {
@@ -84,6 +86,10 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
         searchQuery: query,
         subjectExamFilter: ctx.subjectExamFilter,
         subjectProgressFn: ctx.subjectProgress,
+        accuracyTrends: buildSubjectWeeklyAccuracy(
+          ctx.state.questoes || [],
+          ctx.today || new Date().toISOString().slice(0, 10)
+        ),
         subjectTopicFilters,
         subjectTopicLimits,
         openNotesIds,

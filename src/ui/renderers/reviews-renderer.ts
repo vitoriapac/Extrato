@@ -33,3 +33,54 @@ export function renderReviewEdit({
   if (!draft) return '';
   return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ''}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ''} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<input type="text" value="${escapeAttr(topicName)}" ${draft.topicId ? 'readonly' : ''} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${typeOptions}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${statusOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
 }
+
+const shiftDate = (iso: string, days: number) => {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+};
+
+/** Pending reviews per day from today on; overdue ones are summed apart instead of piling on today. */
+export function buildReviewLoad(reviews: Array<Record<string, any>> = [], today: string, days = 30) {
+  const pending = reviews.filter(item => item.status !== 'Concluído' && item.date);
+  const counts = new Map<string, number>();
+  for (const item of pending) counts.set(item.date, (counts.get(item.date) || 0) + 1);
+  const series = Array.from({ length: days }, (_, index) => {
+    const date = shiftDate(today, index);
+    return { date, count: counts.get(date) || 0 };
+  });
+  return {
+    days: series,
+    overdue: pending.filter(item => item.date < today).length,
+    total: series.reduce((sum, day) => sum + day.count, 0),
+  };
+}
+
+export function renderReviewLoad(
+  load: ReturnType<typeof buildReviewLoad>,
+  { formatDate = (iso: string) => iso }: { formatDate?: (iso: string) => string } = {}
+) {
+  if (!load.total && !load.overdue) return '';
+  const peak = load.days.reduce((best, day) => (day.count > best.count ? day : best), load.days[0]);
+  const max = Math.max(1, peak.count, load.overdue);
+  const height = 48,
+    column = 8,
+    gap = 2,
+    // The overdue column sits apart on the left, separated by a wider gap.
+    offset = load.overdue ? column + 8 : 0;
+  const bar = (x: number, count: number, cls: string, title: string) => {
+    // A day with no review still gets a 1-unit stub, so the axis has no holes.
+    const h = count ? Math.max(3, Math.round((count / max) * (height - 2))) : 1;
+    return `<rect class="${cls}${count ? '' : ' is-zero'}" x="${x}" y="${height - h}" width="${column}" height="${h}"><title>${title}</title></rect>`;
+  };
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const bars = load.days
+    .map((day, index) =>
+      bar(offset + index * (column + gap), day.count, 'review-load__day', `${formatDate(day.date)}: ${plural(day.count, 'revisão', 'revisões')}`)
+    )
+    .join('');
+  const width = offset + load.days.length * (column + gap) - gap;
+  const summary = `${plural(load.total, 'revisão', 'revisões')} nos próximos ${load.days.length} dias${peak.count ? `, pico de ${peak.count} em ${formatDate(peak.date)}` : ''}`;
+  const overdueText = load.overdue ? `${plural(load.overdue, 'revisão atrasada', 'revisões atrasadas')}` : 'nenhuma atrasada';
+  return `<section class="review-load" aria-label="Carga de revisões"><p class="review-load__label"><strong class="${load.overdue ? 'is-overdue' : ''}">${overdueText}</strong> · ${summary}</p><svg class="review-load__svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Carga de revisões: ${overdueText}; ${summary}">${load.overdue ? bar(0, load.overdue, 'review-load__overdue', overdueText) : ''}${bars}</svg><div class="review-load__axis" aria-hidden="true"><span>${load.overdue ? 'Atrasadas · ' : ''}Hoje</span><span>+${load.days.length - 1} dias</span></div></section>`;
+}

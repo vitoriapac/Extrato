@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo } from './helpers.js';
+import { activateTab, openDemo, expectNoPageOverflow } from './helpers.js';
 test('destaca prontidão e ativa o cabeçalho compacto ao rolar', async ({ page }) => {
   await openDemo(page);
   await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');
@@ -543,7 +543,7 @@ test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostr
   expect(Number.isFinite(value)).toBe(true);
   await expect(ring).toHaveAttribute('aria-label', new RegExp(`^Índice de prontidão: ${value} de 100`));
   await expect(ring).toHaveClass(value < 70 ? /chart-ring--attention/ : /chart-ring--ok/);
-  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', new RegExp(`a ${value} pontos em 8 pontos$`));
+  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', new RegExp(`a ${value} pontos, com dados em \\d de 8 períodos$`));
 });
 test('primeira tela mostra a próxima ação sem rolar no celular e no desktop', async ({ page }) => {
   // Phone, first visit: the welcome card and its button sit above the bottom bar.
@@ -576,4 +576,41 @@ test('primeiro acesso no desktop: próxima ação acima de 400 px e sem convite 
   expect(action.y).toBeLessThan(400);
   const welcome = await page.locator('[data-welcome-hero]').boundingBox();
   expect(welcome.y + welcome.height).toBeLessThanOrEqual(900);
+});
+test('gráficos de acerto, carga de revisões e status das disciplinas têm texto além da cor', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+
+  await activateTab(page, 'disciplinas');
+  const overview = page.locator('.subject-block .subject-overview').first();
+  await expect(overview.getByRole('img', { name: /por status: Concluído \d+ \(\d+%\)/ })).toBeVisible();
+  await expect(overview.locator('.chart-stacked__legend')).toContainText('Não iniciado');
+  await expect(overview.getByRole('img', { name: /^Acerto semanal em questões/ })).toBeVisible();
+  expect(await page.locator('.subject-block .subject-overview').count()).toBe(
+    await page.locator('.subject-block').count()
+  );
+
+  await activateTab(page, 'agenda');
+  const load = page.locator('#reviewLoad');
+  await expect(load.getByRole('img', { name: /^Carga de revisões: / })).toBeVisible();
+  await expect(load.locator('.review-load__day')).toHaveCount(30);
+  await expect(load.locator('.review-load__label strong')).toHaveText(
+    /^(\d+ revis(ão|ões) atrasadas?|nenhuma atrasada)$/
+  );
+
+  await activateTab(page, 'metas');
+  const accuracy = page.locator('.subject-accuracy-summary');
+  await accuracy.evaluate(node => {
+    node.closest('.weekly-close-analysis')?.setAttribute('open', '');
+    node.setAttribute('open', '');
+  });
+  const below = accuracy.locator('.subject-accuracy-chart__row.is-below');
+  if (await below.count())
+    await expect(below.first().locator('.subject-accuracy-chart__state')).toHaveText(
+      /p\.p\. abaixo da meta/
+    );
+  await accuracy.locator('.subject-accuracy-data > summary').click();
+  await expect(accuracy.getByRole('table')).toBeVisible();
+  await expect(accuracy.getByRole('columnheader', { name: 'Simulados detalhados' })).toBeVisible();
+  await expectNoPageOverflow(page);
 });

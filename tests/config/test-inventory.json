@@ -1581,7 +1581,7 @@
         "./helpers.js",
         "@axe-core/playwright"
       ],
-      "staticTestDeclarations": 23,
+      "staticTestDeclarations": 24,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 17,
       "observedCaseSeconds": 125.4,
@@ -7208,6 +7208,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/review-load.test.js",
+      "layer": "node",
+      "area": "Revisões",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/renderers/reviews-renderer.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/review-service.test.js",
       "layer": "node",
       "area": "Revisões",
@@ -8580,9 +8610,11 @@
         "../../src/domain/analytics/subject-accuracy-target.js",
         "../../src/application/analytics/build-subject-accuracy.js",
         "../../src/application/exams/save-subject-config.js",
-        "../../src/state/strategic.js"
+        "../../src/state/strategic.js",
+        "../../src/ui/renderers/subject-accuracy-renderer.js",
+        "../../src/application/analytics/build-subject-accuracy.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

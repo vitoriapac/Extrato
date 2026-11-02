@@ -61,6 +61,12 @@ test('sparklinePaths — lacunas interrompem a linha e menos de 2 pontos não de
   assert.equal(sparklinePaths([10, null, 20], 96, 28).dots.length, 2);
   assert.equal(gap.last.value, 55);
   assert.equal(gap.first, 40);
+  // connectGaps: one run across the gap, points keep their place in time.
+  const joined = sparklinePaths([10, null, 20, null], 30, 20, 0, true);
+  assert.equal(joined.runs.length, 1);
+  assert.equal(joined.dots.length, 0);
+  assert.equal(joined.runs[0], 'M0 20 L20 0');
+  assert.equal(joined.count, 2);
   const rising = sparklinePaths([0, 100], 100, 20, 0);
   assert.equal(rising.runs[0], 'M0 20 L100 0');
 });
@@ -70,10 +76,10 @@ test('Sparkline — descrição textual com início, fim e unidade; vazio explic
   assert.match(html, /role="img"/);
   assert.match(html, /aria-label="Prontidão: histórico insuficiente"/);
   const isolated = renderSparkline({ values: [40, null, 46], label: 'Prontidão', unit: 'pontos' });
-  assert.match(isolated, /aria-label="Prontidão: de 40 pontos a 46 pontos em 3 pontos"/);
+  assert.match(isolated, /aria-label="Prontidão: de 40 pontos a 46 pontos, com dados em 2 de 3 períodos"/);
   assert.equal((isolated.match(/chart-sparkline__point/g) || []).length, 2);
   const ok = renderSparkline({ values: [40, 44, 46], label: 'Prontidão', unit: 'pontos' });
-  assert.match(ok, /aria-label="Prontidão: de 40 pontos a 46 pontos em 3 pontos"/);
+  assert.match(ok, /aria-label="Prontidão: de 40 pontos a 46 pontos, com dados em 3 de 3 períodos"/);
   assert.match(ok, /chart-sparkline__dot/);
 });
 

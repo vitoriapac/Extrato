@@ -181,17 +181,20 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### G4: Acerto por disciplina
 **Descrição:** BulletBar com a marca da meta; abaixo da meta em âmbar. Tabela recolhida em "Ver dados".
-**Aceite:** [ ] Tabela continua acessível em "Ver dados" · [ ] Disciplina abaixo da meta tem texto além da cor
+**Aceite:** [x] Tabela continua acessível em "Ver dados" · [x] Disciplina abaixo da meta tem texto além da cor
+**Resultado (01/11/2026):** o acerto por disciplina só aparece no fechamento semanal (Planejamento > análise da semana); a tabela de `renderSubjectPerformanceRows` em `simulations-renderer.ts` não tem chamador. Cada disciplina ganha uma `BulletBar` das questões pessoais da semana com o traço da meta; abaixo da meta, barra e veredito em âmbar ("10 p.p. abaixo da meta"). Com menos de dez questões não há traço nem âmbar ("amostra insuficiente"); sem questões, só "sem dados". Meta, questões e simulados completos numa tabela (`th scope`) em "Ver dados". Unit do renderer.
 **Dependências:** G1 · **Arquivos:** `subject-accuracy-renderer.ts` · **Tamanho:** S
 
 ### G5: Carga da Agenda de Revisões
 **Descrição:** Barras de carga diária dos próximos 30 dias, com as atrasadas em âmbar.
-**Aceite:** [ ] Dia sem revisão aparece como barra zero, não como buraco · [ ] Atrasadas somadas num rótulo de texto
+**Aceite:** [x] Dia sem revisão aparece como barra zero, não como buraco · [x] Atrasadas somadas num rótulo de texto
+**Resultado (01/11/2026):** `buildReviewLoad` + `renderReviewLoad` em `reviews-renderer.ts` (`review-health.ts` mede saúde de cada revisão, não carga, e ficou intacto). 30 colunas de hoje a +29 dias, com as atrasadas numa coluna âmbar separada à esquerda; dia vazio é um traço de 1 unidade em tom neutro. Rótulo: "7 revisões atrasadas · 25 revisões nos próximos 30 dias, pico de 1 em 02/11/2026", repetido no nome acessível. Respeita os filtros da agenda; some quando não há pendências. O "⟳" do botão "Gerar a partir dos concluídos", que escapou da I5, virou ícone.
 **Dependências:** G1 · **Arquivos:** `reviews-renderer.ts`, `review-health.ts` · **Tamanho:** S
 
 ### G6: Status nos blocos de disciplina
 **Descrição:** Barra empilhada (não iniciado, em andamento, revisão, concluído) + sparkline de acerto em cada bloco.
-**Aceite:** [ ] Contagens em texto ao lado da barra · [ ] Sem regressão de desempenho com as 17 disciplinas da demo
+**Aceite:** [x] Contagens em texto ao lado da barra · [x] Sem regressão de desempenho com as 17 disciplinas da demo
+**Resultado (01/11/2026):** faixa `.subject-overview` logo abaixo do cabeçalho de cada bloco (visível mesmo recolhido): `StackedBar` com legenda "Concluído 8 (40%) · Revisão 4 (20%) · Em andamento 5 (25%) · Não iniciado 3 (15%)", em gradação da mesma cor (100%, 60%, 25%, vazio) para não inverter no tema escuro; `Sparkline` do acerto semanal em questões (8 semanas, `buildSubjectWeeklyAccuracy`, uma passada nas questões para todas as disciplinas). Como as disciplinas têm semanas sem questões, a tendência usa `connectGaps` (a linha atravessa a lacuna, cada ponto fica na sua semana). Descrição das tendências passou a dizer "com dados em N de 8 períodos" e "%" sem espaço. Desempenho, troca de aba para Disciplinas com 17 blocos: mínimo 167 ms antes, 169–173 ms depois (mediana dentro do ruído).
 **Dependências:** G1 · **Arquivos:** `SubjectBlock.tsx`, `topic-metrics.ts` · **Tamanho:** M
 
 ### Checkpoint 3

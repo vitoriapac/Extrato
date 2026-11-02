@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=c7db3331b3c6">
-<link rel="stylesheet" href="styles/app.css?v=c7db3331b3c6">
+<link rel="stylesheet" href="styles/tailwind.css?v=17059a1cd5c3">
+<link rel="stylesheet" href="styles/app.css?v=17059a1cd5c3">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -454,13 +454,14 @@
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Agenda de revisões</h2>
       <div style="display:flex;gap:8px;">
-        <button class="btn ghost" id="autoGenBtn">⟳ Gerar a partir dos concluídos</button>
+        <button class="btn ghost" id="autoGenBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Gerar a partir dos concluídos</button>
         <button class="btn" id="addAgendaRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Novo item</button>
       </div>
     </div>
     <p class="helper-text">
       Toda vez que um tópico é marcado como <strong>Concluído</strong> na aba Disciplinas, ele fica disponível aqui para gerar revisões automáticas em 24h, 7 dias e 30 dias.
     </p>
+    <div id="reviewLoad"></div>
     <div id="errorNotebookDueAgenda"></div>
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
     <div class="cal-filters responsive-filters" id="agendaFilters">
@@ -927,7 +928,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=c7db3331b3c6"></script>
+  <script src="src/app.bundle.js?v=17059a1cd5c3"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

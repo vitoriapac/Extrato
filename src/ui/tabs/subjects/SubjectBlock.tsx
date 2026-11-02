@@ -1,11 +1,14 @@
 import { SubjectTopicRow } from './SubjectTopicRow.js';
 import { Icon } from '../../primitives/icon.js';
+import { Sparkline, StackedBar } from '../../primitives/charts/charts.js';
 
 export interface SubjectBlockProps {
   subject: any;
   index: number;
   totalSubjects: number;
   progressPercent: number;
+  /** Weekly question accuracy, oldest first; missing when the subject has no recent questions. */
+  accuracyTrend?: Array<number | null>;
   subjectTopics: any[];
   visibleTopics: any[];
   allVisibleTopicsCount: number;
@@ -29,6 +32,7 @@ export function SubjectBlock({
   index,
   totalSubjects,
   progressPercent,
+  accuracyTrend,
   subjectTopics,
   visibleTopics,
   allVisibleTopicsCount,
@@ -48,6 +52,8 @@ export function SubjectBlock({
 }: SubjectBlockProps) {
   const isFirst = index === 0;
   const isLast = index === totalSubjects - 1;
+  const statusCount = (status: string) =>
+    subjectTopics.filter((topic: any) => (topic.status || 'Não iniciado') === status).length;
 
   return (
     <div class="subject-block" data-subject-id={subject.id}>
@@ -133,6 +139,32 @@ export function SubjectBlock({
           </details>
         </div>
       </div>
+
+      {subjectTopics.length > 0 && (
+        <div class="subject-overview">
+          <StackedBar
+            className="subject-overview__status"
+            label={`Tópicos de ${subject.name} por status`}
+            parts={[
+              { label: 'Concluído', value: statusCount('Concluído'), tone: 'primary' },
+              { label: 'Revisão', value: statusCount('Revisão'), tone: 'primary-soft' },
+              { label: 'Em andamento', value: statusCount('Em andamento'), tone: 'primary-faint' },
+              { label: 'Não iniciado', value: statusCount('Não iniciado'), tone: 'empty' },
+            ]}
+          />
+          <span class="subject-overview__trend">
+            <Sparkline
+              values={accuracyTrend || []}
+              label={`Acerto semanal em questões de ${subject.name}`}
+              unit="%"
+              connectGaps
+              width={72}
+              height={22}
+            />
+            <small>Acerto · 8 semanas</small>
+          </span>
+        </div>
+      )}
 
       <div id={`subject-body-${subject.id}`} class={`subject-body ${collapsed ? 'collapsed' : ''}`}>
         <div class="subject-topic-filters">

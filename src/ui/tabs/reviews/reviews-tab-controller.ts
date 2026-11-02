@@ -2,7 +2,12 @@ import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { ReviewsTable, type ReviewItem } from './ReviewsTable.js';
 import { createReviewViewModel } from '../../view-models/review-view-model.js';
-import { renderReviewRead, renderReviewEdit } from '../../renderers/reviews-renderer.js';
+import {
+  renderReviewRead,
+  renderReviewEdit,
+  buildReviewLoad,
+  renderReviewLoad,
+} from '../../renderers/reviews-renderer.js';
 import { createReviewsController } from '../../controllers/reviews-controller.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
 import {
@@ -308,6 +313,11 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     const body = doc.getElementById('agendaBody');
     if (!body) return;
     body.innerHTML = renderHtml();
+    const load = doc.getElementById('reviewLoad');
+    if (load)
+      load.innerHTML = renderReviewLoad(buildReviewLoad(getFilteredAndSortedReviews(), todayISO()), {
+        formatDate: formatDatePt,
+      });
   }
 
   function renderAgendaFilters() {

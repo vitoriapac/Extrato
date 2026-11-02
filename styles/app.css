@@ -2600,3 +2600,25 @@ body:has(#panel-dashboard.active [data-welcome-hero]) #demoEmptyCta{display:none
   .statement:not(.statement--compact) .exam-progress{grid-template-columns:auto minmax(120px,1fr) auto auto}
   .statement:not(.statement--compact) .exam-progress-days{grid-column:auto;white-space:nowrap}
 }
+.subject-accuracy-chart__caption{margin:var(--space-3) 0 var(--space-2);font-size:var(--text-small);color:var(--text-secondary)}
+.subject-accuracy-chart{display:grid;gap:var(--space-2);margin:0;padding:0;list-style:none}
+.subject-accuracy-chart__row{display:grid;grid-template-columns:minmax(0,10rem) minmax(0,1fr) 11rem;align-items:center;gap:var(--space-3)}
+.subject-accuracy-chart__name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--text-small)}
+.subject-accuracy-chart__state{font-size:var(--text-small);color:var(--text-secondary)}.subject-accuracy-chart .chart-bullet__value{flex:0 0 4.5rem;text-align:right}
+.subject-accuracy-chart__row.is-below .subject-accuracy-chart__state{color:var(--amber);font-weight:600}
+.subject-accuracy-data{margin-top:var(--space-3)}.subject-accuracy-data__scroll{overflow-x:auto}.subject-accuracy-data td,.subject-accuracy-data th{font-size:var(--text-small)}
+@media(max-width:600px){.subject-accuracy-chart__row{grid-template-columns:minmax(0,1fr) auto}.subject-accuracy-chart__state{text-align:right}.subject-accuracy-chart__bar{grid-column:1/-1;grid-row:2}}
+.review-load{margin:var(--space-3) 0 var(--space-4)}
+.review-load__label{margin:0 0 var(--space-2);font-size:var(--text-small);color:var(--text-secondary)}
+.review-load__label strong{color:var(--text-primary);font-family:var(--font-data)}.review-load__label strong.is-overdue{color:var(--amber)}
+.review-load__svg{display:block;width:100%;height:48px}
+.review-load__day{fill:var(--chart-series-primary)}.review-load__day.is-zero{fill:var(--border-control)}
+.review-load__overdue{fill:var(--chart-series-secondary)}
+.review-load__axis{display:flex;justify-content:space-between;margin-top:var(--space-1);font:var(--text-micro) var(--font-body);color:var(--text-secondary)}
+.chart-stacked__part--primary-soft{fill:color-mix(in srgb,var(--chart-series-primary) 60%,var(--surface-card));background:color-mix(in srgb,var(--chart-series-primary) 60%,var(--surface-card))}
+.chart-stacked__part--primary-faint{fill:color-mix(in srgb,var(--chart-series-primary) 25%,var(--surface-card));background:color-mix(in srgb,var(--chart-series-primary) 25%,var(--surface-card))}
+.subject-overview{display:flex;align-items:center;gap:var(--space-4);padding:var(--space-2) var(--space-4) var(--space-3)}
+.subject-overview__status{flex:1 1 auto;min-width:0}.subject-overview__status .chart-stacked__legend{gap:2px 10px;font-size:var(--text-micro)}
+.subject-overview__trend{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:0 0 auto}.subject-overview__trend small{font:var(--text-micro) var(--font-body);color:var(--text-secondary)}
+@media(max-width:600px){.subject-overview{flex-wrap:wrap;gap:var(--space-2)}.subject-overview__trend{flex-direction:row;align-items:center;gap:var(--space-2)}}
+.chart-stacked__part--empty{fill:var(--surface-card-muted);background:var(--surface-card-muted);box-shadow:inset 0 0 0 1px var(--border-control)}

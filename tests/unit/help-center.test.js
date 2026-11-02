@@ -84,7 +84,8 @@ test('exemplo de progresso distingue minutos e atividades concluídas', () => {
   const html = renderHelpVisual(today.visual);
   assert.match(html, /35 min/);
   assert.match(html, /20 min/);
-  assert.match(html, /57% de progresso/);
+  assert.match(html, /<strong>20 min de 35 min<\/strong> do plano · 57%/);
+  assert.match(html, /aria-label="Exemplo de progresso do plano: 57 de 100"/);
   assert.match(html, /0 de 1 atividade concluída/);
 });
 

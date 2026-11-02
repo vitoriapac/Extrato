@@ -73,14 +73,26 @@ export interface SparklineProps {
   unit?: string;
   width?: number;
   height?: number;
+  /** Draw the line across missing periods instead of breaking it. */
+  connectGaps?: boolean;
   className?: string;
 }
 
-export function Sparkline({ values, label, unit = '', width = 96, height = 28, className = '' }: SparklineProps) {
-  const paths = sparklinePaths(values, width, height);
-  const suffix = unit ? ` ${unit}` : '';
+const unitSuffix = (unit: string) => (!unit ? '' : unit === '%' ? '%' : ` ${unit}`);
+
+export function Sparkline({
+  values,
+  label,
+  unit = '',
+  width = 96,
+  height = 28,
+  connectGaps = false,
+  className = '',
+}: SparklineProps) {
+  const paths = sparklinePaths(values, width, height, 2, connectGaps);
+  const suffix = unitSuffix(unit);
   const description = paths
-    ? `${label}: de ${formatNumber(paths.first)}${suffix} a ${formatNumber(paths.last.value)}${suffix} em ${values.length} pontos`
+    ? `${label}: de ${formatNumber(paths.first)}${suffix} a ${formatNumber(paths.last.value)}${suffix}, com dados em ${paths.count} de ${values.length} períodos`
     : `${label}: histórico insuficiente`;
   return (
     <svg
@@ -140,7 +152,7 @@ export function BulletBar({ value, target, max = 100, label, unit = '%', classNa
 export interface StackedBarPart {
   label: string;
   value: number | null | undefined;
-  tone?: 'primary' | 'secondary' | 'target' | 'muted';
+  tone?: 'primary' | 'primary-soft' | 'primary-faint' | 'secondary' | 'target' | 'muted' | 'empty';
 }
 
 export interface StackedBarProps {
@@ -152,7 +164,7 @@ export interface StackedBarProps {
 
 export function StackedBar({ parts, label, unit = '', className = '' }: StackedBarProps) {
   const segments = stackedSegments(parts);
-  const suffix = unit ? ` ${unit}` : '';
+  const suffix = unitSuffix(unit);
   const description = segments
     ? `${label}: ${parts.map((part, i) => `${part.label} ${formatNumber(Number(part.value) || 0)}${suffix} (${segments[i].share}%)`).join(', ')}`
     : `${label}: sem dados suficientes`;

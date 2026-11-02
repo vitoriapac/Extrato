@@ -53,3 +53,36 @@ export function buildSubjectAccuracy({
     };
   });
 }
+
+const dayNumber = (iso: string) => Date.parse(`${String(iso).slice(0, 10)}T00:00:00Z`) / 86_400_000;
+
+/**
+ * Accuracy per subject in consecutive 7-day windows ending today (oldest first);
+ * a window without questions is null. One pass over the questions for all subjects.
+ */
+export function buildSubjectWeeklyAccuracy(
+  questions: Array<Record<string, any>> = [],
+  today: string,
+  weeks = 8
+) {
+  const end = dayNumber(today);
+  const sums = new Map<string, Array<{ resolved: number; correct: number }>>();
+  for (const item of questions) {
+    const age = end - dayNumber(item.date);
+    if (!(age >= 0 && age < weeks * 7) || !item.subjectId) continue;
+    const resolved = Math.max(0, Number(item.resolved) || 0);
+    if (!resolved) continue;
+    let rows = sums.get(item.subjectId);
+    if (!rows) sums.set(item.subjectId, (rows = Array.from({ length: weeks }, () => ({ resolved: 0, correct: 0 }))));
+    const week = rows[weeks - 1 - Math.floor(age / 7)];
+    week.resolved += resolved;
+    week.correct += Math.min(resolved, Math.max(0, Number(item.correct) || 0));
+  }
+  const result = new Map<string, Array<number | null>>();
+  for (const [subjectId, rows] of sums)
+    result.set(
+      subjectId,
+      rows.map(row => (row.resolved ? Math.round((row.correct / row.resolved) * 100) : null))
+    );
+  return result;
+}

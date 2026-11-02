@@ -15,9 +15,16 @@ export function ringGeometry(value: unknown, max = 100, r = 26) {
 
 /**
  * Sparkline paths: one `M…L…` run per stretch of consecutive values, so a missing
- * week breaks the line instead of being drawn as zero.
+ * week breaks the line instead of being drawn as zero. With `connectGaps` the line
+ * runs across missing weeks (each point keeps its place in time), for sparse series.
  */
-export function sparklinePaths(values: unknown[], width: number, height: number, pad = 2) {
+export function sparklinePaths(
+  values: unknown[],
+  width: number,
+  height: number,
+  pad = 2,
+  connectGaps = false
+) {
   const points = values.map((value, index) => ({ value, index }));
   const valid = points.filter(point => isFiniteNumber(point.value)) as { value: number; index: number }[];
   if (valid.length < 2) return null;
@@ -37,12 +44,22 @@ export function sparklinePaths(values: unknown[], width: number, height: number,
     run = [];
   };
   for (const point of points) {
-    if (!isFiniteNumber(point.value)) close();
+    if (!isFiniteNumber(point.value)) {
+      if (!connectGaps) close();
+    }
     else run.push({ x: x(point.index), y: y(point.value) });
   }
   close();
   const last = valid[valid.length - 1];
-  return { runs, dots, last: { x: x(last.index), y: y(last.value), value: last.value }, first: valid[0].value, min, max };
+  return {
+    runs,
+    dots,
+    last: { x: x(last.index), y: y(last.value), value: last.value },
+    first: valid[0].value,
+    min,
+    max,
+    count: valid.length,
+  };
 }
 
 /** Bullet bar fill and target marker as percentages of the track. */
