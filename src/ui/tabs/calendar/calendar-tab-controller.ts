@@ -459,6 +459,13 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       .join('');
   }
 
+  // O total soma Agenda e Calendário; a Agenda só mostra a parte dela, então a origem fica à vista.
+  function overdueOrigin(items: any[]): string {
+    const agenda = items.filter((x: any) => x.origem === 'Agenda de Revisões').length,
+      calendar = items.length - agenda;
+    return agenda && calendar ? `${agenda} da Agenda + ${calendar} do Calendário · ` : '';
+  }
+
   function renderCalAtrasadas(elId = 'calAtrasadas') {
     const doc = getDoc();
     if (!doc) return;
@@ -488,7 +495,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     }
 
     ul.innerHTML =
-      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` +
+      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${overdueOrigin(items)}${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` +
       visible
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);

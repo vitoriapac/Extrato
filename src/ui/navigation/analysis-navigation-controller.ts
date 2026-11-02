@@ -97,7 +97,8 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
           })
         );
       if (destination === 'metas') calculateStudyPlanPreview();
-      activateTab(destination!);
+      // O diagnóstico (destino 'hoje', nome antigo) mora em Desempenho desde que Hoje ficou só com o plano.
+      activateTab(destination === 'hoje' ? 'desempenho' : destination!);
       requestAnimationFrame(() => {
         if (destination === 'hoje')
           document.querySelector('.today-analysis-details')?.setAttribute('open', '');

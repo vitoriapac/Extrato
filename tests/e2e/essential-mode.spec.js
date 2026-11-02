@@ -7,7 +7,7 @@ test('quem começa sem dados entra no modo Essencial: análises a um clique e di
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('data-essential', 'on');
   await expect(page.locator('#essentialToggleBtn')).toHaveAttribute('aria-pressed', 'true');
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await expect(page.locator('.today-analysis-details')).toBeHidden();
   await page.getByRole('button', { name: 'Mostrar Resumo, diagnóstico e replanejamento' }).click();
   await expect(page.locator('.today-analysis-details')).toBeVisible();

@@ -96,7 +96,7 @@ export function NextActionCard({
               </h3>
               <p className="text-sm text-secondary m-0 leading-relaxed">
                 {emptyState.onboardingDescription ||
-                  'Seu copiloto diário até a aprovação. Vamos montar sua rota de estudos personalizada em menos de 2 minutos?'}
+                  'Seu copiloto diário de estudos. Vamos montar sua rota personalizada em menos de 2 minutos?'}
               </p>
             </div>
 

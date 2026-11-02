@@ -309,7 +309,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
 
 test('diagnóstico separa interpretação do sinal, score e cobertura', async ({ page }) => {
   await openDemo(page);
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   const diagnosis = page.locator('#diagnosisCenter');
   await expect(diagnosis.locator('.diagnostic-row').first()).toBeVisible();
@@ -334,7 +334,7 @@ test('diagnóstico vazio orienta o cadastro sem inventar risco', async ({ page }
     api.setState(state);
     api.renderAll();
   });
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   const empty = page.locator('#diagnosisCenter .diagnosis-empty-state');
   await expect(empty).toContainText('O diagnóstico ainda não pode ser calculado');

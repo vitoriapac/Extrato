@@ -262,7 +262,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
       .locator('strong');
   for (const label of ['Simulados comparáveis', 'Faixa atual', 'Tendência em 30 dias'])
     await expect(metric(label)).toHaveText('—');
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
   // A fresh start has no subjects, so no study action can be justified yet.
@@ -345,7 +345,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
   await expect(action).toBeVisible();

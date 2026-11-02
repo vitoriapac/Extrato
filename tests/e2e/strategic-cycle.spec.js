@@ -213,6 +213,13 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   ).toBe(true);
   expect(after.studyPlans.find(item => item.id === confirmed.id)).toEqual(confirmed);
   assertHistoryPreserved(before, after);
+  // Aplicar termina com o selo e pode ser desfeito: os blocos ainda não estudados saem do plano.
+  await expect(page.locator('#weeklyAppliedStatus')).toContainText('Próxima semana');
+  await page.locator('#weeklyCloseDashboard [data-delegated-click="undoWeeklyCloseApply()"]').click();
+  const undone = await getState(page);
+  const linked = state =>
+    state.dailyPlans.flatMap(plan => plan.items).filter(item => item.weeklyCloseSnapshotId).length;
+  expect(linked(undone)).toBe(linked(beforeApply));
   await activateTab(page, 'questoes');
   const followup = page.locator('#recommendationOutcomeAudit .recommendation-followup-list');
   await expect(followup).toContainText('Juros');
@@ -239,7 +246,7 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
   await page
     .locator('[data-analysis-nav="hoje"][data-subject-id="cycle-s0"]:not([data-topic-id])')
     .click();
-  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await expect(page.locator('#panel-desempenho')).toBeVisible();
   await expect(page.locator('#diagnosisCenter .next-best-action')).toBeVisible();
   await expect(page.locator('#diagnosisCenter .consolidated-diagnosis-row').first()).toBeVisible();
   await page.locator('#diagnosisCenter [data-next-best-preview]').click();

@@ -105,6 +105,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   // Prévia do retrato aberta e retrato acabado de salvar (mensagem de confirmação).
   let recordPreviewOpen = false;
   let recordSavedNow = false;
+  let lastAppliedSnapshotId: string | null = null;
   let appliedSummary: { ids: string[]; names: string[]; minutes: number; days: number } | null =
     null;
   let strategicTimelineFilter = 'all';
@@ -158,7 +159,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         deps.captureReadinessBeforeStrategy('Antes de aplicar as prioridades do fechamento');
       }
     },
-    onApplied: ({ proposal }: Record<string, any>) => {
+    onApplied: (result: Record<string, any>) => {
+      const proposal = result?.proposal;
       // O ritual termina com o que foi agendado, no mesmo tom do selo do retrato.
       const allocations = proposal?.allocations || [];
       appliedSummary = {
@@ -169,6 +171,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         minutes: allocations.reduce((sum: number, item: any) => sum + (Number(item.minutes) || 0), 0),
         days: new Set(allocations.map((item: any) => item.date)).size,
       };
+      lastAppliedSnapshotId = result?.snapshot?.id || null;
+      recordSavedNow = true;
       scheduleSave();
       if (deps.renderApprovalDashboard) deps.renderApprovalDashboard();
       if (deps.renderPlanoHoje) deps.renderPlanoHoje();
@@ -230,10 +234,47 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       ? `<div class="weekly-action-preview"><strong>${allocated ? `${allocated} ${allocated === 1 ? 'bloco entra' : 'blocos entram'} na agenda dos próximos 7 dias` : 'Nada coube na capacidade livre dos próximos 7 dias'}${left ? ` · ${formatPlanMinutes(left)} não couberam` : ''}</strong>${allocated ? '<button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button>' : '<p class="analytics-note">Libere horas em Disponibilidade semanal ou escolha outra prioridade.</p>'}</div>`
       : '';
     const applied = appliedSummary
-      ? `<div class="weekly-applied" id="weeklyAppliedStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Agendado</span></span><p>Próxima semana: ${escapeHtml(appliedSummary.names.join(', ') || 'prioridades escolhidas')} · ${formatPlanMinutes(appliedSummary.minutes)} reservados em ${appliedSummary.days} ${appliedSummary.days === 1 ? 'dia' : 'dias'}. Os blocos já estão no plano diário.</p></div>`
+      ? `<div class="weekly-applied" id="weeklyAppliedStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Agendado</span></span><p>Próxima semana: ${escapeHtml(appliedSummary.names.join(', ') || 'prioridades escolhidas')} · ${formatPlanMinutes(appliedSummary.minutes)} reservados em ${appliedSummary.days} ${appliedSummary.days === 1 ? 'dia' : 'dias'}. Os blocos já estão no plano diário; o retrato e a prontidão desta semana foram registrados junto.</p>${lastAppliedSnapshotId ? '<button class="btn ghost small" type="button" data-delegated-click="undoWeeklyCloseApply()">Desfazer</button>' : ''}</div>`
       : '';
     if (!priorities.length) return `<section class="weekly-close-actions">${applied}</section>`;
-    return `<section class="weekly-close-actions">${applied}<h4>Decida as prioridades</h4><p>Selecione até três, confira a capacidade restante e confirme o próximo plano.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
+    return `<section class="weekly-close-actions">${applied}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; a próxima ação de hoje continua no plano. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
+  }
+
+  // Desfaz só o que ainda não foi estudado: blocos com tempo registrado ficam, e com eles a revisão.
+  function undoWeeklyCloseApply() {
+    const id = lastAppliedSnapshotId;
+    if (!id) return;
+    const state = deps.getState();
+    let kept = 0;
+    for (const plan of state.dailyPlans || []) {
+      const items = plan.items || [];
+      const next = items.filter((item: any) => {
+        if (item.weeklyCloseSnapshotId !== id) return true;
+        const executed = (Number(item.executedSeconds) || 0) > 0 || (item.sessionIds || []).length > 0;
+        if (executed) kept++;
+        return executed;
+      });
+      if (next.length === items.length) continue;
+      plan.items = next;
+      plan.plannedMinutes = next.reduce((sum: number, row: any) => sum + (Number(row.plannedMinutes) || 0), 0);
+      plan.flexMinutes = Math.max(0, (Number(plan.availableMinutes) || 0) - plan.plannedMinutes);
+      plan.updatedAt = nowISO();
+    }
+    const snapshots = state.weeklyCloseSnapshots || [];
+    const index = snapshots.findIndex((item: any) => item.id === id);
+    if (!kept && index >= 0) snapshots.splice(index, 1);
+    lastAppliedSnapshotId = null;
+    appliedSummary = null;
+    recordSavedNow = false;
+    scheduleSave();
+    if (deps.renderApprovalDashboard) deps.renderApprovalDashboard();
+    if (deps.renderPlanoHoje) deps.renderPlanoHoje();
+    renderStudyTrack32Insights();
+    showToast(
+      kept
+        ? 'Blocos ainda não estudados removidos. Os que já têm tempo registrado continuam no plano.'
+        : 'Prioridades desfeitas: os blocos saíram do plano e a revisão aplicada foi removida.'
+    );
   }
 
   function previewWeeklyCloseActions() {
@@ -436,6 +477,17 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
             ? planWeeklyCloseRevision(state.weeklyCloseSnapshots || [], candidate)
             : null,
           previewOpen: recordPreviewOpen,
+          // Um retrato que cruza outro período salvo distorce a comparação entre os dois.
+          overlap:
+            candidate &&
+            (state.weeklyCloseSnapshots || []).find(
+              (item: any) =>
+                item.period?.start &&
+                (item.period.start !== candidate.period?.start ||
+                  item.period.end !== candidate.period?.end) &&
+                item.period.start <= candidate.period?.end &&
+                item.period.end >= candidate.period?.start
+            )?.period,
           savedNow: recordSavedNow,
           formatMinutes: formatPlanMinutes,
           escapeHtml,
@@ -543,6 +595,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     previewWeeklyCloseActions,
     toggleWeeklyPriority,
     confirmWeeklyCloseActions,
+    undoWeeklyCloseApply,
     saveWeeklyCloseSnapshot,
     openWeeklyCloseRecord,
     closeWeeklyCloseRecord,

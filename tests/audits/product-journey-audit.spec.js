@@ -139,7 +139,7 @@ for (const profile of AUDIT_PROFILES)
     }
     await activateTab(page, 'desempenho');
     await capture('performance', '#performancePage');
-    await activateTab(page, 'hoje');
+    await activateTab(page, 'desempenho');
     await page.locator('.today-analysis-details > summary').click();
     await capture('diagnosis', '#diagnosisCenter');
     await capture('replanning', '#weeklyReplan');

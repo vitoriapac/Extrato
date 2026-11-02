@@ -194,7 +194,7 @@ test.describe('validação dos fluxos recentes', () => {
     page,
   }) => {
     await openDemo(page);
-    await activateTab(page, 'hoje');
+    await activateTab(page, 'desempenho');
     await page.locator('.today-analysis-details > summary').click();
     // Na demonstração, as ações de estudo vêm de conteúdos sem evidência, agrupados num bloco recolhido.
     const insufficient = page.locator('#diagnosisCenter .diagnosis-insufficient > summary');
@@ -239,7 +239,7 @@ test.describe('validação dos fluxos recentes', () => {
     expect(saved.difficulty).toBe('medium');
     expect(saved.completed).toBe(true);
     expect(saved.resultingSessionId).toBe(saved.sessionId);
-    await activateTab(page, 'hoje');
+    await activateTab(page, 'desempenho');
     const analysisDetails = page.locator('.today-analysis-details');
     if (!(await analysisDetails.evaluate(element => element.open)))
       await analysisDetails.locator('summary').click();

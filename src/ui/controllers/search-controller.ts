@@ -155,6 +155,16 @@ export function createSearchController(options: SearchControllerOptions) {
     });
     panel.classList.add('show');
     input.setAttribute('aria-expanded', 'true');
+    // O listbox não se anuncia sozinho: a contagem vai para a região viva.
+    const status = document.getElementById('globalSearchStatus');
+    if (status) {
+      const total = commands.length + results.length;
+      status.textContent = normalized
+        ? total
+          ? `${total} ${total === 1 ? 'resultado' : 'resultados'} para "${q.trim()}"`
+          : `Nada encontrado para "${q.trim()}"`
+        : '';
+    }
     // Options get stable ids so the input can point at the active one (aria-activedescendant).
     panel.querySelectorAll<HTMLElement>('.search-result-item').forEach((item, index) => {
       item.id = `globalSearchOption-${index}`;
@@ -213,8 +223,8 @@ export function createSearchController(options: SearchControllerOptions) {
         document.querySelector('[data-delegated-click="openWeeklyClose()"]') as HTMLElement | null
       )?.click();
     } else if (action === 'diagnosis') {
-      // A central fica num <details> fechado em Hoje: abrir, rolar e focar o título.
-      activateTab('hoje');
+      // A central fica num <details> fechado em Desempenho: abrir, rolar e focar o título.
+      activateTab('desempenho');
       const center = document.getElementById('diagnosisCenter');
       const details = center?.closest('details') as HTMLDetailsElement | null;
       if (details) details.open = true;

@@ -46,7 +46,7 @@ test('diagnóstico consolida o escopo atual sem modificar planos ou registros pe
     api.setState(state);
     api.renderAll();
   });
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   const model = await page.evaluate(() => window.__EXTRATO_TEST__.getConsolidatedDiagnosis());
   expect(model.topics.map(item => item.topicId)).toEqual(['only-bb']);
@@ -84,7 +84,7 @@ test('diagnóstico consolida o escopo atual sem modificar planos ou registros pe
     .locator('#examBlueprintConfig .active-exams input')
     .nth(0)
     .evaluate(input => input.click());
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   const changed = await page.evaluate(() => window.__EXTRATO_TEST__.getConsolidatedDiagnosis());
   expect(changed.activeExamTags).toEqual(['caixa-tbn']);
   expect(changed.topics.map(item => item.topicId)).toEqual(['only-caixa']);

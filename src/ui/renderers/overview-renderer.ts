@@ -36,7 +36,7 @@ export function renderExecutiveSummary({ summary, formatMinutes, escapeHtml }: a
   const primary = summary.primaryAction
     ? `<strong>${escapeHtml(summary.primaryAction.title)}</strong><p>${escapeHtml(summary.primaryAction.subject || '')} · ${escapeHtml(summary.primaryAction.topic || '')} · ${formatMinutes(summary.primaryAction.duration)}</p><small>${escapeHtml(summary.primaryAction.reason)}</small>`
     : '<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>';
-  return `<div class="executive-kpis">${cards}</div><div class="executive-decision-grid"><section><h4>Prioridade principal</h4>${primary}</section><section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? '' : 's'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
+  return `<div class="executive-kpis">${cards}</div><div class="executive-decision-grid"><section><h4>Maior ganho pelo diagnóstico</h4>${primary}<small class="analytics-note">Complementa a próxima ação de Hoje; não a substitui.</small></section><section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? '' : 's'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
 }
 
 export function renderWeeklyCloseSummary(

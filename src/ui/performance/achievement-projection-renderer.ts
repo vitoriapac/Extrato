@@ -155,7 +155,11 @@ export function renderAchievementProjection(
   }: any = {}
 ) {
   if (!model) return '';
-  const status = labels[model.status] || labels.insufficient_data;
+  // "Atenção" com confiança baixa costuma ser falta de evidência, não resultado abaixo da meta: o rótulo diz isso.
+  const status =
+    model.status === 'attention' && model.confidence.level === 'low'
+      ? 'Atenção · pouca evidência'
+      : labels[model.status] || labels.insufficient_data;
   const confidence = confidenceLabels[model.confidence.level] || confidenceLabels.insufficient;
   const band = model.projection.calibratedSimulationBand;
   const evidenceExplanation = buildProjectionEvidenceExplanation(model);
@@ -175,7 +179,7 @@ export function renderAchievementProjection(
     <p class="performance-method-note">Confiança da projeção: ${confidence.toLowerCase()}. Veja a base em “Entender esta projeção”.</p>
     ${model.status === 'insufficient_data' ? renderRequirements(model, escapeHtml) : renderTrajectory(model, escapeHtml)}
     ${renderAdherenceTarget(adherenceContext, { escapeHtml })}
-    <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0] || model.drivers[0] || model.confidence.reasons[0] || model.summary)}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0] || 'Continue registrando simulados comparáveis.')}</p></div></div>
+    <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0] || model.drivers[0] || model.confidence.reasons[0] || model.summary)}</p></div><div><strong>Para recuperar a trajetória</strong><p>${escapeHtml(model.recovery?.steps?.[0] || 'Continue registrando simulados comparáveis.')}</p></div></div>
     ${renderDecisionExplanation({ title: 'Entender esta projeção', factors: entries.map(item => item.text), evidence: (model.evidence.observationCount || 0) + ' simulados comparáveis · ' + (model.evidence.sampleSize || 0) + ' questões na amostra.', confidence: model.confidence.reasons.join(' '), helpTopic: 'projections', method: '<dl>' + evidenceExplanation.facts.map(fact => '<dt>' + escapeHtml(fact.label) + '</dt><dd>' + escapeHtml(fact.value) + '</dd>').join('') + '</dl><p>' + [evidenceExplanation.bandMeaning, evidenceExplanation.method, evidenceExplanation.confidenceMeaning, evidenceExplanation.trendMeaning].map(escapeHtml).join('</p><p>') + '</p><p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p>' }, { escapeHtml, escapeAttr })}
     ${model.recovery ? `<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state === 'collect_evidence' ? 'Primeiro, reúna uma base comparável.' : `Déficit central medido: ${formatDecimal(model.recovery.gap)} p.p. · ${pluralize(formatDecimal(model.recovery.weeksRemaining ?? '—'), 'semana', 'semanas')} até a prova.`}</p><ol>${model.recovery.steps.map((step: any) => `<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>` : ''}
     ${['attention', 'at_risk'].includes(model.status) ? renderRecoveryPlan(recoveryPlan, escapeHtml, escapeAttr) : ''}

@@ -5,6 +5,10 @@ export const RENDER_SCOPE_SECTIONS = {
     'progresso por disciplina',
     'conquistas',
     'radar',
+    // Análise saiu de Hoje: a aba do dia fica com o plano.
+    'resumo executivo',
+    'central de diagnóstico',
+    'replanejamento',
   ]),
   dashboard: new Set([
     'primeiro uso',
@@ -37,10 +41,7 @@ export const RENDER_SCOPE_SECTIONS = {
   ]),
   hoje: new Set([
     'controles do cronômetro',
-    'resumo executivo',
-    'central de diagnóstico',
     'recomendação de estudo',
-    'replanejamento',
     'tarefas da aba hoje',
     'atrasos da aba hoje',
     'simulados planejados',

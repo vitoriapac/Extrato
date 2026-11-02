@@ -40,7 +40,10 @@ for (const source of ['overview', 'today', 'diagnosis'])
     page,
   }) => {
     await prepareStudyCase(page);
-    await activateTab(page, source === 'overview' ? 'dashboard' : 'hoje');
+    await activateTab(
+      page,
+      source === 'overview' ? 'dashboard' : source === 'diagnosis' ? 'desempenho' : 'hoje'
+    );
     if (source === 'diagnosis') await page.locator('.today-analysis-details > summary').click();
     const action =
       source === 'overview'

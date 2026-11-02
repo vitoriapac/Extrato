@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=fc8679404a52">
-<link rel="stylesheet" href="styles/app.css?v=fc8679404a52">
+<link rel="stylesheet" href="styles/tailwind.css?v=44f4b60ce64e">
+<link rel="stylesheet" href="styles/app.css?v=44f4b60ce64e">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -89,6 +89,7 @@
       <label class="sr-only" for="globalSearchInput">Busca global</label>
       <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="O que você quer fazer? (Ctrl+K)">
       <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
+      <div class="sr-only" id="globalSearchStatus" role="status" aria-live="polite"></div>
     </div>
     <button class="theme-toggle-btn search-open-btn" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" aria-controls="globalSearchInput" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-search" aria-hidden="true"><path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M21 21l-6 -6"></path></svg></button>
     <button class="theme-toggle-btn" id="essentialToggleBtn" type="button" aria-pressed="false" aria-label="Modo essencial" title="Modo completo (ativo)"></button>
@@ -136,7 +137,7 @@
         <span class="overview-eyebrow">Precisa da sua atenção</span>
         <h2>Alertas prioritários</h2>
         <div id="overviewAttention"></div>
-        <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção e diagnóstico na aba Hoje</button>
+        <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção na aba Hoje</button>
       </article>
     </section>
     <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
@@ -282,6 +283,14 @@
         <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
       </div>
     </div>
+    <details class="chart-card today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
+      <summary>Ver resumo, diagnóstico e replanejamento</summary>
+      <div class="today-analysis-grid">
+        <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
+        <section class="chart-card"><h3>Central de diagnóstico</h3><div id="diagnosisCenter"></div></section>
+        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
+      </div>
+    </details>
   </div>
 
   <!-- HOJE -->
@@ -355,14 +364,6 @@
     <div id="errorNotebookDueToday"></div>
     <div id="todayConsistency"></div>
 
-    <details class="chart-card today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
-      <summary>Ver resumo, diagnóstico e replanejamento</summary>
-      <div class="today-analysis-grid">
-        <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
-        <section class="chart-card"><h3>Central de diagnóstico</h3><div id="diagnosisCenter"></div></section>
-        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
-      </div>
-    </details>
 
   </div>
 
@@ -958,7 +959,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=fc8679404a52"></script>
+  <script src="src/app.bundle.js?v=44f4b60ce64e"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

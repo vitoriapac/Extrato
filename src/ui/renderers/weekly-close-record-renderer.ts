@@ -35,6 +35,7 @@ export interface WeeklyCloseRecordView {
   plan: { previous: Row | null; unchanged: boolean; revision: number } | null;
   previewOpen: boolean;
   savedNow: boolean;
+  overlap?: { start: string; end: string } | null;
   formatMinutes: (minutes: number) => string;
   escapeHtml: (value: unknown) => string;
 }
@@ -48,6 +49,7 @@ export function renderWeeklyCloseRecord({
   plan,
   previewOpen,
   savedNow,
+  overlap = null,
   formatMinutes,
   escapeHtml,
 }: WeeklyCloseRecordView): string {
@@ -59,9 +61,16 @@ export function renderWeeklyCloseRecord({
 
   const period = formatPeriodBR(candidate.period?.start, candidate.period?.end);
   const previous = plan.previous;
-  if (plan.unchanged && previous) {
+  // Aplicar prioridades grava uma revisão; ela conta como salva, para a semana não parecer em aberto.
+  const applied = Boolean(previous?.appliedAt);
+  if ((plan.unchanged || applied) && previous) {
     const when = formatDateBR(previous.savedAt);
     const revision = Number(previous.revision) || 1;
+    if (applied && !savedNow) {
+      return section(
+        `<p class="weekly-record-status" id="weeklyRecordStatus" role="status" tabindex="-1">Retrato salvo em ${escapeHtml(when)} · revisão ${revision}, com as prioridades da semana aplicadas.${plan.unchanged ? '' : ' Há registros novos desde então.'}</p>${plan.unchanged ? '' : '<button class="btn ghost small" type="button" data-delegated-click="openWeeklyCloseRecord()">Revisar o retrato da semana</button>'}`
+      );
+    }
     if (savedNow) {
       // Salvar o retrato fecha a semana como um extrato carimbado: o que ficou guardado e o passo seguinte.
       const frozen = weeklyCloseFigures(previous.weeklyClose, formatMinutes)
@@ -71,7 +80,7 @@ export function renderWeeklyCloseRecord({
         .join('');
       const hasPriorities = Boolean((close.priorities || []).length);
       return section(
-        `<div class="weekly-record-receipt"><div class="weekly-record-stamp" aria-hidden="true"><span>Registrado</span><span>Rev. ${revision} · ${escapeHtml(when)}</span></div><p class="weekly-record-status" id="weeklyRecordStatus" role="status" tabindex="-1">Retrato de ${escapeHtml(period)} registrado · revisão ${revision}. Fica no Histórico e não será recalculado.</p><dl>${frozen}</dl><button class="btn ghost small" type="button" data-delegated-click="goToWeeklyDecision()">${hasPriorities ? 'Decidir as prioridades da semana' : 'Ver a decisão da semana'}</button></div>`
+        `<div class="weekly-record-receipt"><div class="weekly-record-stamp" aria-hidden="true"><span>Registrado</span><span>Rev. ${revision} · ${escapeHtml(when)}</span></div><p class="weekly-record-status" id="weeklyRecordStatus" role="status" tabindex="-1">Retrato de ${escapeHtml(period)} registrado · revisão ${revision}${applied ? ', com as prioridades da semana aplicadas' : ''}. Fica no Histórico e não será recalculado.</p><dl>${frozen}</dl><button class="btn ghost small" type="button" data-delegated-click="goToWeeklyDecision()">${hasPriorities ? 'Decidir as prioridades da semana' : 'Ver a decisão da semana'}</button></div>`
       );
     }
     return section(
@@ -123,6 +132,6 @@ export function renderWeeklyCloseRecord({
   }
 
   return section(
-    `<div class="weekly-record-preview" id="weeklyRecordPreview" tabindex="-1" aria-labelledby="weeklyRecordPreviewTitle"><strong id="weeklyRecordPreviewTitle">Será registrado assim${previous ? ` · revisão ${plan.revision}` : ''}</strong><dl>${list}</dl>${changes}<div class="weekly-record-actions"><button class="btn small" type="button" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button><button class="btn ghost small" type="button" data-delegated-click="closeWeeklyCloseRecord()">Voltar</button></div></div>`
+    `<div class="weekly-record-preview" id="weeklyRecordPreview" tabindex="-1" aria-labelledby="weeklyRecordPreviewTitle"><strong id="weeklyRecordPreviewTitle">Será registrado assim${previous ? ` · revisão ${plan.revision}` : ''}</strong><dl>${list}</dl>${overlap ? `<p class="context-note context-note--attention">Este período cruza o retrato de ${escapeHtml(formatPeriodBR(overlap.start, overlap.end))}. A variação entre os dois vai misturar os mesmos dias.</p>` : ''}${changes}<div class="weekly-record-actions"><button class="btn small" type="button" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button><button class="btn ghost small" type="button" data-delegated-click="closeWeeklyCloseRecord()">Voltar</button></div></div>`
   );
 }

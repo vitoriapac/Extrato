@@ -12,7 +12,7 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   if (!(await page.locator('#overview-summary').evaluate(node => node.open)))
     await page.locator('#overview-summary > summary').click();
   await expect(page.locator('.overview-close-link')).toBeVisible();
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   const analyses = page.locator('.today-analysis-details');
   if ((await analyses.count()) && !(await analyses.first().evaluate(element => element.open)))
     await analyses.first().locator(':scope > summary').click();

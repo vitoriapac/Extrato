@@ -57,7 +57,7 @@ test('platô e consolidação em risco explicam os dados sem modificar o plano',
     api.setState(result.normalized);
     api.renderAll();
   }, fixture);
-  await activateTab(page, 'hoje');
+  await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   const before = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));
   const signals = page.locator('#diagnosisCenter .preparation-signals');
