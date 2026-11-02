@@ -329,7 +329,11 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Dependências:** Checkpoint 1 · **Tamanho:** S
 
 ### Checkpoint 4
-- [ ] Suíte E2E completa e gate visual verdes; demo conferida aba por aba
+- [x] Suíte E2E completa e gate visual verdes; demo conferida aba por aba
+  - `npm run test:full` verde em 83abfbe; `npm run test:visual` 58/58.
+  - Demo nas 9 abas, em 1440 px claro e 375 px escuro: axe (WCAG 2 A/AA) sem violações, nenhuma rolagem horizontal, nenhum "undefined", "NaN" ou data inválida no texto.
+  - Corrigido: o botão "Experimentar demonstração" do primeiro acesso registrava `openDemoIntro()` bloqueado no console a cada clique (atributo delegado sem ação; o `onClick` já abria a demo).
+  - Altura em 375 px (demo): Visão geral 2750, Agenda 3219, Calendário 2874, Instruções 3862, Questões 4684, Hoje 5923, Desempenho 6285, Disciplinas 9822 e Planejamento 27.732 px (cerca de 31 telas, alvo da F1).
 - [ ] Decidir o padrão do modo Essencial (F10)
 
 ---

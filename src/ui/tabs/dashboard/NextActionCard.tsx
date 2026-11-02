@@ -115,7 +115,6 @@ export function NextActionCard({
                 type="button"
                 className="btn ghost text-secondary hover:text-primary inline-flex items-center gap-1.5"
                 id="enterDemoHeroBtn"
-                data-delegated-click="openDemoIntro()"
                 onClick={() => {
                   if (emptyState.onOpenDemo) {
                     emptyState.onOpenDemo();
