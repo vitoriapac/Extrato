@@ -74,6 +74,8 @@ test('acerto por disciplina usa barra com meta, texto além da cor e tabela em "
   assert.doesNotMatch(rows[2], /chart-bullet__target|is-below/);
   assert.match(html, /Pouca &lt;amostra&gt;/);
   assert.match(html, /<details class="subject-accuracy-data"><summary>Ver dados<\/summary>/);
+  // The table scrolls sideways on phones, so its region must be reachable by keyboard.
+  assert.match(html, /tabindex="0" role="region" aria-label="Tabela de acerto por disciplina"/);
   assert.match(html, /<th scope="row">Abaixo<\/th><td>80%<\/td><td>60% · 20 questões · 20 p\.p\. abaixo da meta<\/td>/);
   assert.match(html, /<td>70% · herdada da meta geral<\/td>/);
 });

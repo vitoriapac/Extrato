@@ -198,8 +198,33 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Dependências:** G1 · **Arquivos:** `SubjectBlock.tsx`, `topic-metrics.ts` · **Tamanho:** M
 
 ### Checkpoint 3
-- [ ] Suíte E2E completa, gate visual e axe verdes
+- [x] Suíte E2E completa, gate visual e axe verdes
 - [ ] Usar os 5 gráficos antes de planejar os 7 de prioridade média e os 4 de baixa
+
+**Verificação (01/11/2026):** em `08b5326`, 1196 unitários, 277 E2E e gate visual (58) verdes. Axe WCAG A/AA nas seis áreas com gráfico (topo, execução na Visão Geral, resumo de Hoje, blocos de disciplina, carga de revisões, acerto por disciplina) em 1440 claro e 375 escuro, com demo: uma violação, `scrollable-region-focusable` na tabela de "Ver dados" da G4 no celular; corrigida (região rolável com `tabindex="0"`, `role="region"` e nome), agora 0. Folha de revisão: `tasks/checkpoint-3/graficos-alta.png`.
+
+**O que o uso mostrou até aqui:**
+- Séries por disciplina e por semana são esparsas (na demo, 2 de 8 semanas com questões é comum). Gráfico que depende de série densa por disciplina tende a virar pontos soltos; foi preciso `connectGaps` na G6.
+- O acerto por disciplina mora no fechamento semanal, não na aba Questões como dizia a tabela original; quem procura na aba Questões não encontra.
+- A coluna diária da G5 é desenhada à mão no renderer. Se mais um gráfico de colunas entrar, vale virar primitivo.
+
+**Backlog para decidir (da tabela original):**
+
+| Prioridade | Tela | Gráfico | Peça nova |
+|---|---|---|---|
+| Média | Desempenho · Foco e energia | % de sessões com foco profundo por turno | nenhuma (`BulletBar`) |
+| Média | Planejamento · Matriz Edital × Domínio | dispersão 2×2, bolha pelo nº de tópicos | primitivo de dispersão |
+| Média | Planejamento · Estimativa de ritmos | burn-up: cobertura real × ritmo necessário | linha com duas séries |
+| Média | Planejamento · Disponibilidade semanal | barras por dia: capacidade × planejado × realizado | colunas agrupadas |
+| Média | Planejamento · Histórico de metas | colunas por semana com a linha da meta | colunas (extrair da G5) |
+| Média | Questões · Perfil de erros | Pareto: barras ordenadas + % acumulado | barras + linha |
+| Média | Simulados · Comparação | inclinação entre os dois últimos simulados | slope chart |
+| Baixa | Calendário · Mês | intensidade da carga em cada célula | nenhuma (CSS) |
+| Baixa | Planejamento · Evolução das prioridades | ranking (bump) das 5 maiores lacunas | primitivo novo |
+| Baixa | Questões & Simulados · Calibração | funil gerada → executada → concluída | barras |
+| Baixa | Planejamento · Retratos semanais | sparklines em cada retrato | nenhuma (`Sparkline`) |
+
+**Recomendação (para decisão):** entrar com burn-up, histórico de metas, disponibilidade semanal, foco por turno e Pareto (os que respondem "estou no ritmo?" e "onde perco pontos?", e reaproveitam peças). Adiar a dispersão da Matriz (primitivo novo; a lista por quadrante já informa) e a comparação de simulados (dois simulados por disciplina é amostra pequena). Dos de baixa, só a intensidade no calendário, que é barata; os outros três ficam fora.
 
 ---
 
