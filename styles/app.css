@@ -2775,3 +2775,7 @@ button.metas-subtab{appearance:none;background:transparent;border:0;border-botto
 .toast-action{appearance:none;min-height:32px;padding:4px 10px;background:transparent;border:1px solid currentColor;border-radius:var(--radius-control);color:inherit;font:inherit;cursor:pointer}
 .toast-action:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
 .toast-action:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+
+/* ===== LEMBRETE DE BACKUP EXPORTADO (F7) ===== */
+.backup-export-status{margin:var(--space-2) 0 0;color:var(--text-secondary);font:var(--text-sm) var(--font-body)}
+.backup-export-status.is-stale{color:var(--warn-text);font-weight:var(--font-weight-semibold)}

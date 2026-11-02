@@ -433,6 +433,8 @@ export interface AppState {
   metasPorDisciplina: SubjectGoal[];
   errorFlashcards?: ErrorFlashcard[];
   lastBackupAt: string | null;
+  /** When the user last downloaded a backup file (F7); lastBackupAt is the automatic in-browser copy. */
+  lastExportAt?: string | null;
   updatedAt: string | null;
 }
 

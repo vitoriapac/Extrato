@@ -1,6 +1,7 @@
 /**
  * Controller de Interação do Usuário com Backup, Recuperação e Zona de Perigo.
  */
+import { buildExportReminder } from '../../domain/backup/export-reminder.js';
 
 export interface BackupModalControllerContext {
   document: any;
@@ -37,6 +38,8 @@ export interface BackupModalControllerContext {
   isDemoMode: () => boolean;
   onApplyBackup: (normalizedState: any) => boolean | Promise<boolean>;
   onResetComplete: () => void;
+  /** Records that a backup file was downloaded (F7). */
+  onExported?: () => void;
   maxBytes?: number;
 }
 
@@ -147,12 +150,23 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
     ctx.window.URL.revokeObjectURL(url);
   };
 
+  // "Último backup exportado há N dias", in attention after a week (F7).
+  const renderExportStatus = () => {
+    const el = ctx.document.getElementById('backupExportStatus');
+    if (!el) return;
+    const reminder = buildExportReminder(ctx.getState()?.lastExportAt, ctx.getDate());
+    el.textContent = reminder.text;
+    el.classList.toggle('is-stale', reminder.stale);
+  };
+
   const exportState = (state: any, date: string): boolean => {
     if (ctx.isDemoMode()) {
       ctx.notify('Backups ficam indisponíveis durante a demonstração.');
       return false;
     }
     download(ctx.serialize(state), ctx.fileName(date));
+    ctx.onExported?.();
+    renderExportStatus();
     ctx.notify('Backup exportado.');
     return true;
   };
@@ -238,8 +252,10 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
     const openBtn = ctx.document.getElementById('openDataManagementBtn');
     const closeBtn = ctx.document.getElementById('closeDataManagementBtn');
 
+    renderExportStatus();
     const openModal = () => {
       if (!overlay) return;
+      renderExportStatus();
       overlay.classList.add('show');
       if (typeof (overlay as any).showModal === 'function' && overlay.tagName === 'DIALOG') {
         try {

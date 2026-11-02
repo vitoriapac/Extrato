@@ -4,6 +4,7 @@ const revision = (state: Record<string, any>) => {
   const value = pickPersistentState(state);
   delete value.updatedAt;
   delete value.lastBackupAt;
+  delete value.lastExportAt;
   return JSON.stringify(value);
 };
 
@@ -31,6 +32,7 @@ export function createRecoveryStateCommitter({
         );
       const next = structuredClone(after);
       next.lastBackupAt = getState().lastBackupAt;
+      next.lastExportAt = getState().lastExportAt ?? null;
       next.updatedAt = clock.nowISO();
       let saved = false;
       try {

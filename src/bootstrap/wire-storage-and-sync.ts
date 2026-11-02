@@ -144,6 +144,10 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     showPrompt: deps.showPrompt,
     isDemoMode: () => deps.isDemoMode,
     onApplyBackup: backupRestoreCoordinator.applyImportedBackup,
+    onExported: () => {
+      deps.getState().lastExportAt = deps.nowISO();
+      deps.persistAndRender();
+    },
     onResetComplete: () => {
       deps.setState(createDefaultState());
       deps.ensureStateDefaults();

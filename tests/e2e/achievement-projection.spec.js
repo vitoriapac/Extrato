@@ -82,7 +82,7 @@ test('novo snapshot passa na validação e migração do backup anterior preserv
     algorithmVersion: 2,
     projection: { examDayScore: null, approvalProbability: null },
   });
-  expect(result.migrated.schemaVersion).toBe(29);
+  expect(result.migrated.schemaVersion).toBe(30);
   expect(result.migrated.projectionSnapshots).toContainEqual(result.snapshot);
 });
 

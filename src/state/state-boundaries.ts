@@ -74,6 +74,7 @@ export function pickPersistentState(source: Record<string, any> = {}): Record<st
     'executionMode',
     'examDate',
     'lastBackupAt',
+    'lastExportAt',
     'updatedAt',
     ...PERSISTENT_COLLECTIONS,
     ...PERSISTENT_OBJECTS,

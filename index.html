@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=acfd882734ce">
-<link rel="stylesheet" href="styles/app.css?v=acfd882734ce">
+<link rel="stylesheet" href="styles/tailwind.css?v=7b312a434946">
+<link rel="stylesheet" href="styles/app.css?v=7b312a434946">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -708,6 +708,7 @@
       <div>
         <div class="backup-title">Backup dos dados</div>
         <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando para não perder nada e importe para restaurar em outro dispositivo.</div>
+        <p class="backup-export-status" id="backupExportStatus" role="status"></p>
       </div>
       <div class="backup-actions">
         <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
@@ -956,7 +957,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=acfd882734ce"></script>
+  <script src="src/app.bundle.js?v=7b312a434946"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

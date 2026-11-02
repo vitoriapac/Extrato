@@ -397,7 +397,12 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### F7: Lembrete de backup exportado — PR próprio
 **Descrição:** Campo novo `lastExportAt` (o `lastBackupAt` atual é o backup automático dentro do navegador). Indicador "último backup exportado há N dias", em âmbar depois de 7 dias.
-**Aceite:** [ ] Quem nunca exportou vê "nenhum backup exportado" · [ ] Migração e backup antigo cobertos
+**Aceite:** [x] Quem nunca exportou vê "nenhum backup exportado" · [x] Migração e backup antigo cobertos
+**Resultado (02/11/2026):**
+- Schema 30 com `lastExportAt`, gravado só ao baixar o backup.
+- No Gerenciamento de dados aparece "Último backup exportado hoje / ontem / há N dias", em âmbar depois de 7 dias. Quem nunca exportou vê "Nenhum backup exportado ainda", também em âmbar.
+- A migração v29 → v30 grava `null`. Um backup antigo importado mostra "nenhum".
+- Desfazer e recuperação não mexem no campo, assim como em `lastBackupAt`.
 **Verificação:** testes de migração; `npm run test:full`
 **Tamanho:** M
 

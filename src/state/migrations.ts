@@ -434,6 +434,12 @@ export function createStateMigrator({
     data.schemaVersion = 29;
     return data;
   }
+  // v30: date of the last exported backup file; older data has never recorded one.
+  function migrateV29toV30(data: Record<string, any>) {
+    data.lastExportAt = typeof data.lastExportAt === 'string' ? data.lastExportAt : null;
+    data.schemaVersion = 30;
+    return data;
+  }
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -466,6 +472,7 @@ export function createStateMigrator({
         26: migrateV26toV27,
         27: migrateV27toV28,
         28: migrateV28toV29,
+        29: migrateV29toV30,
       },
     });
   }

@@ -17,6 +17,7 @@ const SCALAR_PERSISTENT_KEYS = [
   'executionMode',
   'examDate',
   'lastBackupAt',
+  'lastExportAt',
   'updatedAt',
 ];
 

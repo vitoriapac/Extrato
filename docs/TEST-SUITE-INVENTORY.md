@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-274 arquivos Node e 67 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+275 arquivos Node e 68 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -42,6 +42,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/exam-json-import.spec.js | browser | Inteligência da prova | critical | 5.1 | journey, viewport | none |
 | tests/e2e/exam-matrix.spec.js | browser | Inteligência da prova | functional | 3.8 | journey, viewport | none |
 | tests/e2e/exam-scope.spec.js | browser | Inteligência da prova | critical | 2.1 | journey | none |
+| tests/e2e/export-reminder.spec.js | browser | Aplicação | functional | — | journey | none |
 | tests/e2e/final-visual-polish.spec.js | browser | Visual | visual | 330.2 | journey, demo, viewport | none |
 | tests/e2e/goals-groups.spec.js | browser | Metas | functional | 4.6 | journey, viewport | none |
 | tests/e2e/historical-capacity.spec.js | browser | Capacidade | critical | 1.6 | journey | none |
@@ -174,6 +175,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/exam-scope.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/execution-contract.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/executive-summary.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/export-reminder.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/filter-panel.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/final-stretch-policy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/first-activity-date.test.js | node | Datas | critical | — | contract | none |

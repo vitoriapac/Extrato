@@ -65,6 +65,7 @@ export function createDefaultState(): AppState {
     metasPorDisciplina: [],
     errorFlashcards: [],
     lastBackupAt: null,
+    lastExportAt: null,
     updatedAt: null,
   };
 }
