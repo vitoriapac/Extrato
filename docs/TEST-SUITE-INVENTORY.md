@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-263 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+267 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -110,6 +110,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/backup-restore-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-validator.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/calendar-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/calendar-load.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |
 | tests/unit/chart-primitives.test.js | node | Aplicação | functional | — | contract | none |
@@ -171,8 +172,10 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/final-stretch-policy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/first-activity-date.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/focus-energy-analytics.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/focus-shift.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-duration.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-number.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/goal-history-chart.test.js | node | Metas | critical | — | contract, viewport | none |
 | tests/unit/goal-service.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-components.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-renderer.test.js | node | Metas | functional | — | contract | none |
@@ -262,6 +265,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/reviews-calendar-components.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/reviews-tab-controller.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/reviews.test.js | node | Revisões | functional | — | contract | none |
+| tests/unit/rhythm-burnup.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/rhythm-estimator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/routine-sustainability.test.js | node | Sustentabilidade | functional | — | contract | none |

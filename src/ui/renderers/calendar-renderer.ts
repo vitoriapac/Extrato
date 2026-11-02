@@ -66,6 +66,12 @@ export function renderCalendarMonth({
     cursor = new Date(firstDay);
   cursor.setDate(cursor.getDate() - cursor.getDay());
   const title = month.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  // Day intensity: pending reviews per day, in three steps relative to the busiest day of the month.
+  const pending = new Map<string, number>();
+  for (const event of visibleEvents)
+    if (event.status !== 'Concluído' && event.date) pending.set(event.date, (pending.get(event.date) || 0) + 1);
+  const busiest = Math.max(0, ...pending.values());
+  const loadLevel = (count: number) => (count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0);
   let html =
     `<div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}"><div class="month-grid">` +
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -76,7 +82,8 @@ export function renderCalendarMonth({
     const dayEvents = visibleEvents.filter((event: any) => event.date === iso),
       isToday = iso === today,
       outside = cursor.getMonth() !== monthIndex;
-    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''}"><div class="day-number">${cursor.getDate()}</div>`;
+    const load = pending.get(iso) || 0;
+    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} load-${loadLevel(load)}"${load ? ` title="${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only">, ${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'}</span>` : ''}</div>`;
     dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
       const stage = calendarEventStage(event, daysUntil);
       const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${event.subject || '—'} · ${event.label} (${event.origem})`;
@@ -95,7 +102,7 @@ export function renderCalendarMonth({
       ([stage, label]) =>
         `<li><span class="cal-event event-${stage}" aria-hidden="true">Aa</span>${label}</li>`
     )
-    .join('')}</ul>`;
+    .join('')}<li><span class="cal-load-swatch" aria-hidden="true"><i class="load-1"></i><i class="load-2"></i><i class="load-3"></i></span>Fundo do dia: mais escuro, mais revisões pendentes</li></ul>`;
   return {
     title: title.charAt(0).toUpperCase() + title.slice(1),
     html: html + '</div></div>' + legend,

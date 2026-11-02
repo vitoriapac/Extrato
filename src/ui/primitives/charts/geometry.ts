@@ -85,3 +85,23 @@ export function stackedSegments(parts: { value: unknown }[]) {
     return segment;
   });
 }
+
+/**
+ * Column chart layout in viewBox units. A zero column keeps a 1-unit stub so the axis has
+ * no holes; `separated` columns get extra space before them (e.g. an "overdue" bucket).
+ */
+export function columnGeometry(
+  columns: { value: unknown; separated?: boolean }[],
+  { height = 48, width = 8, gap = 2, separation = 8, max }: { height?: number; width?: number; gap?: number; separation?: number; max?: number } = {}
+) {
+  const values = columns.map(column => (isFiniteNumber(column.value) && column.value > 0 ? column.value : 0));
+  const top = Math.max(1, isFiniteNumber(max) ? max : 0, ...values);
+  let x = 0;
+  const bars = values.map((value, index) => {
+    if (index) x += width + gap + (columns[index].separated ? separation : 0);
+    const h = value ? Math.max(3, Math.round((value / top) * (height - 2))) : 1;
+    return { x, y: height - h, width, height: h, value, zero: !value };
+  });
+  const yFor = (value: number) => +(height - Math.min(1, value / top) * (height - 2)).toFixed(2);
+  return { bars, width: x + width, height, top, yFor };
+}

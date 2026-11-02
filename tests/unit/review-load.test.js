@@ -26,8 +26,8 @@ test('carga de revisões soma atrasadas à parte e mantém dias vazios como zero
   assert.equal(load.total, 3);
   const html = renderReviewLoad(load);
   // Every day has a bar, including the empty ones.
-  assert.equal((html.match(/class="review-load__day/g) || []).length, 30);
-  assert.equal((html.match(/review-load__day is-zero/g) || []).length, 28);
+  assert.equal((html.match(/chart-columns__bar--primary/g) || []).length, 30);
+  assert.equal((html.match(/chart-columns__bar--primary is-zero/g) || []).length, 28);
   assert.match(html, /<strong class="is-overdue">2 revisões atrasadas<\/strong>/);
   assert.match(html, /3 revisões nos próximos 30 dias, pico de 2 em 2026-10-03/);
   assert.match(html, /role="img" aria-label="Carga de revisões: 2 revisões atrasadas;/);
@@ -36,6 +36,6 @@ test('carga de revisões soma atrasadas à parte e mantém dias vazios como zero
 test('carga de revisões some sem pendências e não mostra coluna de atraso sem atrasadas', () => {
   assert.equal(renderReviewLoad(buildReviewLoad([], '2026-10-01')), '');
   const html = renderReviewLoad(buildReviewLoad([{ date: '2026-10-02', status: 'Pendente' }], '2026-10-01'));
-  assert.doesNotMatch(html, /review-load__overdue/);
+  assert.doesNotMatch(html, /chart-columns__bar--attention/);
   assert.match(html, /nenhuma atrasada/);
 });

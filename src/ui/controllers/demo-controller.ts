@@ -55,7 +55,12 @@ export function createDemoController({
     if (badge) badge.hidden = !isDemo;
     if (enterButton) enterButton.hidden = isDemo;
     if (emptyCta)
-      emptyCta.hidden = isDemo || state.subjects.length > 0 || state.studySessions.length > 0;
+      emptyCta.hidden =
+        isDemo ||
+        (state.subjects?.length || 0) > 0 ||
+        (state.studySessions?.length || 0) > 0 ||
+        (state.studyPlans?.length || 0) > 0 ||
+        Boolean(state.dailyPlans?.some((p: any) => p.items?.length > 0));
     document.querySelectorAll('[data-demo-protected]').forEach((button: any) => {
       button.disabled = isDemo;
       button.title = isDemo ? 'Indisponível para proteger seus dados reais.' : '';

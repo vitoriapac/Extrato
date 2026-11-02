@@ -1,3 +1,4 @@
+import { renderColumnChart } from '../primitives/charts/charts.js';
 export function renderReviewRead({
   item,
   view,
@@ -62,25 +63,21 @@ export function renderReviewLoad(
 ) {
   if (!load.total && !load.overdue) return '';
   const peak = load.days.reduce((best, day) => (day.count > best.count ? day : best), load.days[0]);
-  const max = Math.max(1, peak.count, load.overdue);
-  const height = 48,
-    column = 8,
-    gap = 2,
-    // The overdue column sits apart on the left, separated by a wider gap.
-    offset = load.overdue ? column + 8 : 0;
-  const bar = (x: number, count: number, cls: string, title: string) => {
-    // A day with no review still gets a 1-unit stub, so the axis has no holes.
-    const h = count ? Math.max(3, Math.round((count / max) * (height - 2))) : 1;
-    return `<rect class="${cls}${count ? '' : ' is-zero'}" x="${x}" y="${height - h}" width="${column}" height="${h}"><title>${title}</title></rect>`;
-  };
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-  const bars = load.days
-    .map((day, index) =>
-      bar(offset + index * (column + gap), day.count, 'review-load__day', `${formatDate(day.date)}: ${plural(day.count, 'revisão', 'revisões')}`)
-    )
-    .join('');
-  const width = offset + load.days.length * (column + gap) - gap;
   const summary = `${plural(load.total, 'revisão', 'revisões')} nos próximos ${load.days.length} dias${peak.count ? `, pico de ${peak.count} em ${formatDate(peak.date)}` : ''}`;
-  const overdueText = load.overdue ? `${plural(load.overdue, 'revisão atrasada', 'revisões atrasadas')}` : 'nenhuma atrasada';
-  return `<section class="review-load" aria-label="Carga de revisões"><p class="review-load__label"><strong class="${load.overdue ? 'is-overdue' : ''}">${overdueText}</strong> · ${summary}</p><svg class="review-load__svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Carga de revisões: ${overdueText}; ${summary}">${load.overdue ? bar(0, load.overdue, 'review-load__overdue', overdueText) : ''}${bars}</svg><div class="review-load__axis" aria-hidden="true"><span>${load.overdue ? 'Atrasadas · ' : ''}Hoje</span><span>+${load.days.length - 1} dias</span></div></section>`;
+  const overdueText = load.overdue ? plural(load.overdue, 'revisão atrasada', 'revisões atrasadas') : 'nenhuma atrasada';
+  const chart = renderColumnChart({
+    label: `Carga de revisões: ${overdueText}; ${summary}`,
+    className: 'review-load__svg',
+    columns: [
+      // The overdue bucket sits apart on the left, in the attention tone.
+      ...(load.overdue ? [{ value: load.overdue, title: overdueText, tone: 'attention' as const }] : []),
+      ...load.days.map((day, index) => ({
+        value: day.count,
+        title: `${formatDate(day.date)}: ${plural(day.count, 'revisão', 'revisões')}`,
+        separated: Boolean(load.overdue) && index === 0,
+      })),
+    ],
+  });
+  return `<section class="review-load" aria-label="Carga de revisões"><p class="review-load__label"><strong class="${load.overdue ? 'is-overdue' : ''}">${overdueText}</strong> · ${summary}</p>${chart}<div class="review-load__axis" aria-hidden="true"><span>${load.overdue ? 'Atrasadas · ' : ''}Hoje</span><span>+${load.days.length - 1} dias</span></div></section>`;
 }

@@ -537,6 +537,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/calendar-load.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/calendar-tab-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba de calendário."
@@ -545,6 +550,11 @@
       "file": "tests/unit/capacity-review-preview.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/chart-primitives.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/clock-timezone.test.js",
@@ -837,6 +847,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/focus-shift.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/format-duration.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s)."
@@ -845,6 +860,11 @@
       "file": "tests/unit/format-number.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/goal-history-chart.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/goal-service.test.js",
@@ -1257,14 +1277,14 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/routine-sustainability.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; avaliação de sustentabilidade de carga e descanso no onboarding."
-    },
-    {
       "file": "tests/unit/review-health.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/review-load.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/review-service.test.js",
@@ -1292,6 +1312,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/rhythm-burnup.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/rhythm-estimator.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui estimativas de ritmo de cobertura do edital e revisões em atraso."
@@ -1300,6 +1325,11 @@
       "file": "tests/unit/risk-score.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/routine-sustainability.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; avaliação de sustentabilidade de carga e descanso no onboarding."
     },
     {
       "file": "tests/unit/scroll-behavior.test.js",
@@ -1312,14 +1342,14 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/session-history.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
       "file": "tests/unit/session-history-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s) para o controller do histórico de sessões."
+    },
+    {
+      "file": "tests/unit/session-history.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
       "file": "tests/unit/session-modal-controller.test.js",

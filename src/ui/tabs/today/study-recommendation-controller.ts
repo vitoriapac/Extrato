@@ -463,6 +463,10 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       const sameAsPlan =
         dailyPriority?.nextItem?.subjectId === item.subjectId &&
         dailyPriority?.nextItem?.topicId === item.topicId;
+      const effectiveMinutesLabel =
+        sameAsPlan && Number(dailyPriority?.nextItem?.plannedMinutes) > 0
+          ? `${formatPlanMinutes(dailyPriority!.nextItem!.plannedMinutes)} no plano de hoje`
+          : minutes;
       const inProgress = activeTimerMatchesRecommendation(item),
         blocked = hasStartedStudyTimer() && !inProgress,
         sessionLabel = state.activeTimer?.isRunning ? 'Cronômetro rodando' : 'Sessão pausada';
@@ -490,7 +494,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         : blocked
           ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
           : `<button class="btn ${planChoice || sameAsPlan ? 'ghost' : index > 0 ? 'tonal' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
-      return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · mesma prioridade da 2ª sugestão (${Math.round(Number(item.score))}); ${Number(item.score) !== Number(visible[1].score) ? 'esta tem a nota um pouco maior' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'esta é mais curta' : 'qualquer uma das duas serve'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIconHtml} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
+      return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : sameAsPlan ? 'Alinhada ao 1º item do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empate técnico com a 2ª sugestão (${Math.round(Number(item.score))})` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${effectiveMinutesLabel}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIconHtml} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
         .slice(0, 4)
         .map(reason => `<span>+ ${escapeHtml(reason)}</span>`)
         .join(

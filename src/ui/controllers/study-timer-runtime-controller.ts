@@ -487,13 +487,32 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
   }
 
   function finishStudyTimer() {
-    if (timerSeconds === 0) {
+    if (timerSeconds === 0 && !timerRunning && !hasStartedStudyTimer()) {
       showToast('O cronômetro ainda não começou.');
       return;
     }
     pauseTimer();
+    if (timerSeconds === 0) {
+      timerSeconds = 1;
+      getState().activeTimer.accumulatedSeconds = 1;
+    }
     announceTimerEvent('finish');
     showSessionModal();
+  }
+
+  function openManualSessionModal() {
+    if (timerRunning) pauseTimer();
+    if (timerSeconds === 0) {
+      timerSeconds = 30 * 60;
+      timerStartedAt = nowISO();
+    }
+    showSessionModal();
+    const durationMinutesInput = document.getElementById(
+      'sessionModalDurationMinutes'
+    ) as HTMLInputElement | null;
+    if (durationMinutesInput && !durationMinutesInput.value) {
+      durationMinutesInput.value = String(Math.max(1, Math.round(timerSeconds / 60)));
+    }
   }
 
   function showSessionResult(
@@ -576,8 +595,12 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       onSave: formValues => {
         const currentRecs = getCurrentStudyRecommendations();
         const previousPriority = currentRecs[0] ? { ...currentRecs[0] } : null;
+        const effectiveTimerSeconds =
+          formValues.durationMinutes && formValues.durationMinutes > 0
+            ? formValues.durationMinutes * 60
+            : timerSeconds;
         const session = buildCompletedSessionRecord({
-          timerSeconds,
+          timerSeconds: effectiveTimerSeconds,
           timerStartedAt,
           activeTimer: getState().activeTimer,
           formValues,
@@ -672,6 +695,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     resetTimer,
     restoreTimerFromState,
     finishStudyTimer,
+    openManualSessionModal,
     refreshTimerDisplay,
     bindEvents,
   };

@@ -219,6 +219,8 @@ export function buildDelegatedActionHandlers(
     // Timer UI
     focusStudyTimer: (...args: any[]) => c.timerUi?.focusStudyTimer?.(...args),
     openStudyTimerFocus: (...args: any[]) => c.timerUi?.openStudyTimerFocus?.(...args),
+    openManualSessionModal: (...args: any[]) =>
+      c.studyTimerRuntime?.openManualSessionModal?.(...args),
     toggleTimerFocus: (f: boolean | null = null) => c.timerUi?.toggleTimerFocus?.(f),
     advanceGuidedStrategy: (...args: any[]) =>
       (c.studyTimerRuntime?.advanceGuidedStrategy || c.timerUi?.advanceGuidedStrategy)?.(...args),

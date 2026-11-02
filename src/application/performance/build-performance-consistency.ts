@@ -1,4 +1,5 @@
 import { buildAdherenceTarget } from '../adherence/adherence-target.js';
+import { analyzeFocusAndEnergy } from '../../domain/analytics/focus-energy-analytics.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 import { plannedMinutesForPlan } from '../goals/build-plan-execution.js';
 import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
@@ -123,6 +124,7 @@ export function buildPerformanceConsistency({
   return {
     weekly,
     heatmap,
+    focusByShift: analyzeFocusAndEnergy(studied),
     adherenceAnalysis: adherence,
     studiedMinutes,
     plannedMinutes,

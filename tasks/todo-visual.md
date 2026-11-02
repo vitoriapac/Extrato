@@ -224,7 +224,54 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 | Baixa | Questões & Simulados · Calibração | funil gerada → executada → concluída | barras |
 | Baixa | Planejamento · Retratos semanais | sparklines em cada retrato | nenhuma (`Sparkline`) |
 
-**Recomendação (para decisão):** entrar com burn-up, histórico de metas, disponibilidade semanal, foco por turno e Pareto (os que respondem "estou no ritmo?" e "onde perco pontos?", e reaproveitam peças). Adiar a dispersão da Matriz (primitivo novo; a lista por quadrante já informa) e a comparação de simulados (dois simulados por disciplina é amostra pequena). Dos de baixa, só a intensidade no calendário, que é barata; os outros três ficam fora.
+**Decisão (01/11/2026):** seguir a recomendação abaixo. Entram G7–G12; ficam fora a dispersão da Matriz, a comparação de simulados, o ranking de lacunas, o funil de calibração e as sparklines dos retratos.
+
+**Recomendação aprovada:** entrar com burn-up, histórico de metas, disponibilidade semanal, foco por turno e Pareto (os que respondem "estou no ritmo?" e "onde perco pontos?", e reaproveitam peças). Adiar a dispersão da Matriz (primitivo novo; a lista por quadrante já informa) e a comparação de simulados (dois simulados por disciplina é amostra pequena). Dos de baixa, só a intensidade no calendário, que é barata; os outros três ficam fora.
+
+---
+
+## Fase 3B — Gráficos aprovados no Checkpoint 3
+
+### G7: Primitivo de colunas + histórico de metas
+**Descrição:** extrair as colunas da G5 para `ColumnChart` (barra zero como traço, coluna de destaque, linha de meta opcional) e usar no histórico de 8 semanas do Planejamento.
+**Aceite:** [x] Carga de revisões continua igual usando o primitivo · [x] Semana abaixo da meta tem texto além da cor · [x] Valores em texto acessível
+**Resultado (01/11/2026):** `ColumnChart` + `columnGeometry` (traço de 1 unidade no zero, `separated` para a coluna de atrasadas, linha de meta tracejada, tons primary/soft/attention/muted). O teste da geometria pegou um bug antes de chegar à tela: as colunas não avançavam pela própria largura. Histórico de metas (`goal-history-chart-renderer.ts`): três gráficos acima da tabela (tópicos, questões, simulados), da semana mais antiga à atual; semana encerrada abaixo da meta em âmbar, semana atual neutra, sem meta não há linha nem âmbar; legenda "N de 7 semanas encerradas na meta" e nome acessível com o valor de cada semana. A tabela continua.
+**Arquivos:** `charts.tsx`, `geometry.ts`, `reviews-renderer.ts`, `weekly-adherence-renderer.ts` · **Tamanho:** M
+
+### G8: Disponibilidade semanal
+**Descrição:** colunas por dia da semana com capacidade, planejado e realizado.
+**Aceite:** [x] Dia sem capacidade aparece como zero · [x] Números por dia em texto
+**Resultado (01/11/2026):** a "disponibilidade semanal" com dados de planejado e realizado é o quadro "Planejado × realizado nesta semana" do Planejamento (`plan-execution-renderer.ts`), não a grade de horas. `buildPlanExecution` passa a dar `capacityMinutes` por dia (pela chave `getDay()` de `horasPorDia`). Três colunas por dia: capacidade (neutra), planejado (sálvia clara; âmbar só se passar da capacidade) e estudado. Antes o planejado usava a série secundária, que é âmbar. A lista por dia ficou como registro em texto: "Capacidade 2h00 · Sem plano / 3h11".
+**Arquivos:** `WeeklyAvailabilityGrid.tsx`, `PlanExecutionCard.tsx` · **Tamanho:** S
+
+### G9: Ritmo até a prova (burn-up)
+**Descrição:** cobertura real acumulada × ritmo necessário até a data da prova.
+**Aceite:** [x] Sem data de prova, explica em vez de desenhar · [x] Diferença para o ritmo em texto
+**Resultado (01/11/2026):** `computeRitmo` devolve também total, concluídos, `daysToExam` (antes se perdia sem conclusões recentes) e a série de concluídos no fim de cada uma das últimas 8 semanas. `rhythm-burnup-renderer.ts`: concluídos (linha cheia), ritmo atual projetado (tracejado; âmbar quando abaixo do necessário) e ritmo necessário até a prova (pontilhado), com "Hoje" no eixo. Texto: "Ritmo atual: 2 tópicos por semana; necessário para terminar até a prova: 15,1 por semana. No ritmo atual, 137 de 305 tópicos na data da prova." Sem prova futura ou com tudo concluído, não desenha e o texto existente explica.
+**Arquivos:** `goals-renderer.ts`, `coverage.ts` · **Tamanho:** M
+
+### G10: Foco profundo por turno
+**Descrição:** `BulletBar` de % de sessões com foco profundo em manhã, tarde e noite.
+**Aceite:** [x] Turno sem sessões não vira 0% · [x] Percentual e nº de sessões em texto
+**Resultado (01/11/2026):** o foco por turno não aparecia em lugar nenhum (só o alerta de fadiga usava a análise). Novo bloco em Desempenho > Consistência. `ShiftPerformanceStats.focusRatedCount`: o percentual é sobre sessões com avaliação de foco, e `sessionsCount` também contava sessões só com questões, o que daria 0% falso. Turno sem avaliação mostra "sem dados" e "sem sessões avaliadas". A nota diz por que um turno é o melhor ("Maior acerto em questões" ou "Mais foco profundo"). A demo não registra foco, então lá aparece o estado vazio; coberto por unit.
+**Arquivos:** `focus-energy-analytics.ts` e seu renderer · **Tamanho:** S
+
+### G11: Pareto do perfil de erros
+**Descrição:** barras ordenadas por quantidade com % acumulado.
+**Aceite:** [x] Ordem decrescente · [x] Acumulado em texto
+**Resultado (01/11/2026):** o perfil de erros (Questões > Análise de desempenho por tópico e erros) já ordenava; cada barra ganha o traço do acumulado e o texto "acumulado N%", e a nota diz quantas categorias somam 80% quando são menos que todas.
+**Arquivos:** `error-analysis-renderer.ts`, `subject-error-metrics.ts` · **Tamanho:** S
+
+### G12: Intensidade de carga no calendário
+**Descrição:** cada dia do mês com fundo proporcional aos minutos planejados.
+**Aceite:** [x] Contraste do texto preservado nos dois temas · [x] Carga em texto no nome acessível do dia
+**Resultado (01/11/2026):** os eventos do calendário são revisões, sem minutos; a intensidade usa as revisões pendentes do dia (concluídas não contam), em três níveis relativos ao dia mais cheio do mês. Fundo em mistura da série primária (8%, 16%, 26%), texto "N revisões pendentes" no número do dia (`sr-only`) e no `title`, legenda nova. Axe sem violações nos dois temas.
+**Arquivos:** `calendar-renderer.ts` · **Tamanho:** S
+
+### Checkpoint 3B
+- [x] Suíte E2E completa, gate visual e axe verdes
+
+**Verificação (01/11/2026):** 1206 unitários; 277 de 278 E2E na suíte completa (o teste do WebDAV em `recent-flows.spec.js:370`, sem relação com gráficos, falhou uma vez sob carga e passou 4 de 4 isolado); gate visual 58/58; axe WCAG A/AA nos seis gráficos em 1440 claro e 375 escuro com demo, 0 violações, sem rolagem horizontal. `app.bundle.js` 1.343.479 → 1.352.379 bytes (+8,9 KB; +3 KB gzip).
 
 ---
 

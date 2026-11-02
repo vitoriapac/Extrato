@@ -45,8 +45,10 @@ export function buildPlanExecution({
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = addLocalDays(start, index),
       plan = plansByDate.get(date);
+    const hours = Number((hoursByDay as any)[String(parseLocalDate(date!)?.getDay())]) || 0;
     return {
       date,
+      capacityMinutes: minutes(Math.max(0, Math.min(24, hours)) * 60),
       plannedMinutes: plan ? plan.minutes : null,
       studiedMinutes: minutes(studyByDate.get(date)),
       future: date! > today,

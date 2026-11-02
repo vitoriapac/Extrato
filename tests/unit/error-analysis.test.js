@@ -36,3 +36,30 @@ test('view-model compara períodos e renderer apresenta diagnóstico e ação', 
   assert.match(html, /interpretação/);
   assert.match(html, /vs\. período anterior/);
 });
+test('perfil de erros em Pareto: ordem decrescente, acumulado em texto e resumo dos 80%', () => {
+  const html = renderErrorAnalysis(
+    {
+      state: 'diagnosed',
+      diagnosis: 'd',
+      action: 'a',
+      totalErrors: 20,
+      coverage: 100,
+      confidence: { label: 'Alta' },
+      periodLabel: 'p',
+      hasPrevious: false,
+      items: [
+        { label: 'Desatenção', value: 3 },
+        { label: 'Interpretação', value: 12 },
+        { label: 'Conteúdo', value: 5 },
+        { label: 'Vazio', value: 0 },
+      ],
+    },
+    { escapeHtml: String }
+  );
+  const labels = [...html.matchAll(/error-profile-label"> ([^<]+)</g)].map(m => m[1]);
+  assert.deepEqual(labels, ['Interpretação', 'Conteúdo', 'Desatenção']);
+  const cumulative = [...html.matchAll(/acumulado (\d+)%/g)].map(m => Number(m[1]));
+  assert.deepEqual(cumulative, [60, 85, 100]);
+  assert.match(html, /style="left:85%"/);
+  assert.match(html, /As 2 primeiras categorias somam 85% dos erros\./);
+});

@@ -7,9 +7,9 @@
 
 export interface SessionEnergyRecord {
   id?: string;
-  date: string;
+  date?: string;
   timestamp?: number | string | null;
-  startedAt?: string | null;
+  startedAt?: number | string | null;
   durationSeconds: number;
   focusLevel?: 'deep' | 'normal' | 'distracted' | (string & {});
   energyLevel?: 'high' | 'normal' | 'low' | (string & {});
@@ -28,6 +28,8 @@ export interface ShiftPerformanceStats {
   totalQuestions: number;
   deepFocusPercent: number;
   lowEnergyPercent: number;
+  /** Sessions with a focus or energy rating; the percentages above are over this count. */
+  focusRatedCount: number;
 }
 
 export interface FocusEnergyDiagnostic {
@@ -97,6 +99,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
       totalQuestions: 0,
       deepFocusPercent: 0,
       lowEnergyPercent: 0,
+      focusRatedCount: 0,
     },
     afternoon: {
       shift: 'afternoon',
@@ -107,6 +110,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
       totalQuestions: 0,
       deepFocusPercent: 0,
       lowEnergyPercent: 0,
+      focusRatedCount: 0,
     },
     night: {
       shift: 'night',
@@ -117,6 +121,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
       totalQuestions: 0,
       deepFocusPercent: 0,
       lowEnergyPercent: 0,
+      focusRatedCount: 0,
     },
   });
 
@@ -159,6 +164,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
       shifts[key].averageAccuracy = Math.round((q.correct / q.resolved) * 100);
     }
     const f = shiftFocusCounts[key];
+    shifts[key].focusRatedCount = f.total;
     if (f.total > 0) {
       shifts[key].deepFocusPercent = Math.round((f.deep / f.total) * 100);
       shifts[key].lowEnergyPercent = Math.round((f.lowEnergy / f.total) * 100);

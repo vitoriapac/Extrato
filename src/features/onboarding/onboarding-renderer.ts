@@ -64,7 +64,7 @@ export function renderOnboardingEntry(
     title = complete ? 'Continue sua configuração' : 'Monte seu plano de estudos';
   const description = complete
     ? `Falta concluir ${escapeHtml(next?.label || 'a configuração inicial')}. Suas escolhas já feitas serão preservadas.`
-    : `Comece por ${escapeHtml(next?.label || 'seu objetivo')} para montar um plano adequado à sua rotina.`;
+    : `Roteiro de 4 etapas: comece por ${escapeHtml(next?.label || 'seu objetivo')} para transformar o edital em metas diárias na sua rotina.`;
   const progress = total ? Math.round((complete / total) * 100) : 0;
   const stepItems = steps
     .map((step: any, index: any) => {

@@ -1,6 +1,13 @@
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
-import { bulletGeometry, isFiniteNumber, ringGeometry, sparklinePaths, stackedSegments } from './geometry.js';
+import {
+  bulletGeometry,
+  columnGeometry,
+  isFiniteNumber,
+  ringGeometry,
+  sparklinePaths,
+  stackedSegments,
+} from './geometry.js';
 
 // Colors come from tokens through CSS (`.chart-*` rules in app.css); the markup only names a tone.
 const formatNumber = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -193,8 +200,55 @@ export function StackedBar({ parts, label, unit = '', className = '' }: StackedB
   );
 }
 
+export interface ColumnChartColumn {
+  value: number | null | undefined;
+  /** Tooltip and per-column text, e.g. "02/11: 3 revisões". */
+  title: string;
+  tone?: 'primary' | 'soft' | 'attention' | 'muted';
+  separated?: boolean;
+}
+
+export interface ColumnChartProps {
+  columns: ColumnChartColumn[];
+  /** Full text alternative; the chart is one image for assistive technology. */
+  label: string;
+  /** Horizontal target line, in the same unit as the values. */
+  target?: number;
+  height?: number;
+  className?: string;
+}
+
+export function ColumnChart({ columns, label, target, height = 48, className = '' }: ColumnChartProps) {
+  const geometry = columnGeometry(columns, { height, max: isFiniteNumber(target) ? target : undefined });
+  return (
+    <svg
+      class={`chart-columns${className ? ` ${className}` : ''}`}
+      viewBox={`0 0 ${geometry.width} ${height}`}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label={label}
+    >
+      {geometry.bars.map((bar, i) => (
+        <rect
+          class={`chart-columns__bar chart-columns__bar--${columns[i].tone || 'primary'}${bar.zero ? ' is-zero' : ''}`}
+          x={bar.x}
+          y={bar.y}
+          width={bar.width}
+          height={bar.height}
+        >
+          <title>{columns[i].title}</title>
+        </rect>
+      ))}
+      {isFiniteNumber(target) && target > 0 && (
+        <line class="chart-columns__target" x1="0" x2={geometry.width} y1={geometry.yFor(target)} y2={geometry.yFor(target)} vector-effect="non-scaling-stroke" />
+      )}
+    </svg>
+  );
+}
+
 // String output for the renderers that still build HTML by hand.
 export const renderRingGauge = (props: RingGaugeProps) => render(h(RingGauge, props));
 export const renderSparkline = (props: SparklineProps) => render(h(Sparkline, props));
 export const renderBulletBar = (props: BulletBarProps) => render(h(BulletBar, props));
 export const renderStackedBar = (props: StackedBarProps) => render(h(StackedBar, props));
+export const renderColumnChart = (props: ColumnChartProps) => render(h(ColumnChart, props));

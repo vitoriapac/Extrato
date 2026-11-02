@@ -1,4 +1,5 @@
 import { renderStrategicExecution } from './strategic-execution-renderer.js';
+import { renderColumnChart } from '../primitives/charts/charts.js';
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import { renderEmptyState } from '../components/presentation.js';
 import { renderActionCard } from '../components/analytical-presentation.js';
@@ -26,12 +27,26 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
           className: 'plan-execution-next-step',
         })
       : '';
+  const dayText = (item: any) =>
+    `${formatDate(item.date).slice(0, 5)}: capacidade ${fmt(item.capacityMinutes || 0)}, ${item.plannedMinutes === null ? 'sem plano' : 'planejado ' + fmt(item.plannedMinutes)}, estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`;
   const days = model.days
     .map(
       (item: any) =>
-        `<li><span>${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</span><div class="plan-execution-pair"><span class="plan-execution-track is-planned" aria-hidden="true"><i style="width:${item.plannedMinutes === null ? 0 : Math.min(100, (item.plannedMinutes / Math.max(item.plannedMinutes, item.studiedMinutes, 1)) * 100)}%"></i></span><span class="plan-execution-track is-studied" aria-hidden="true"><i style="width:${Math.min(100, (item.studiedMinutes / Math.max(item.plannedMinutes || 0, item.studiedMinutes, 1)) * 100)}%"></i></span></div><strong>${item.plannedMinutes === null ? 'Sem plano' : fmt(item.plannedMinutes)} / ${fmt(item.studiedMinutes)}</strong></li>`
+        `<li><span>${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</span><small>Capacidade ${fmt(item.capacityMinutes || 0)}</small><strong>${item.plannedMinutes === null ? 'Sem plano' : fmt(item.plannedMinutes)} / ${item.future ? '—' : fmt(item.studiedMinutes)}</strong></li>`
     )
     .join('');
+  // Three columns per day: capacity, planned (amber only when it exceeds capacity) and studied.
+  const dayChart = renderColumnChart({
+    label: `Capacidade, planejado e estudado por dia: ${model.days.map(dayText).join('; ')}`,
+    className: 'plan-execution-columns',
+    height: 64,
+    columns: model.days.flatMap((item: any, index: number) => [
+      { value: item.capacityMinutes || 0, title: `${formatDate(item.date).slice(0, 5)} · capacidade ${fmt(item.capacityMinutes || 0)}`, tone: 'muted' as const, separated: index > 0 },
+      { value: item.plannedMinutes || 0, title: `${formatDate(item.date).slice(0, 5)} · ${item.plannedMinutes === null ? 'sem plano' : 'planejado ' + fmt(item.plannedMinutes)}`, tone: (item.plannedMinutes || 0) > (item.capacityMinutes || 0) ? ('attention' as const) : ('soft' as const) },
+      { value: item.future ? 0 : item.studiedMinutes, title: `${formatDate(item.date).slice(0, 5)} · estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`, tone: 'primary' as const },
+    ]),
+  });
+  const axis = `<div class="plan-execution-axis" aria-hidden="true">${model.days.map((item: any) => `<span>${formatDate(item.date).slice(0, 5)}</span>`).join('')}</div>`;
   const measured = model.history.filter((item: any) => item.adherence !== null);
   let trend = '';
   if (measured.length >= 2) {
@@ -78,10 +93,12 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         ? formatDate(model.days[0].date) + ' a ' + formatDate(model.days.at(-1).date)
         : '',
       legend: [
-        { label: 'Planejado', tone: 'secondary' },
+        { label: 'Capacidade', tone: 'muted' },
+        { label: 'Planejado', tone: 'soft' },
         { label: 'Estudado', tone: 'primary' },
       ],
-      chart: '<ol class="plan-execution-days">' + days + '</ol>',
+      chart: dayChart + axis,
+      records: '<ol class="plan-execution-days">' + days + '</ol>',
     }) +
     renderChartFrame({
       title: 'Cumprimento nas semanas concluídas',

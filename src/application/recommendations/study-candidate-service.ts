@@ -305,15 +305,32 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
     if (state.examDate) {
       daysToExam = diasParaRevisao(state.examDate);
     }
-    return calculateCoverageRhythm({
+    const today = todayISO();
+    // Completed topics at the end of each of the last 8 weeks, for the burn-up; the last point is today.
+    const history = Array.from({ length: 9 }, (_, index) => {
+      const daysAgo = (8 - index) * 7;
+      return {
+        daysAgo,
+        completed: daysAgo
+          ? Math.max(0, done - uniqueTopicsCompletedBetween(addDays(today, -daysAgo + 1), today))
+          : done,
+      };
+    });
+    return {
+      ...calculateCoverageRhythm({
+        totalTopics: total,
+        completedTopics: done,
+        recentCompletedTopicsCount: recentDone,
+        today,
+        examDate: state.examDate,
+        daysToExam,
+        addDays,
+      }),
       totalTopics: total,
       completedTopics: done,
-      recentCompletedTopicsCount: recentDone,
-      today: todayISO(),
-      examDate: state.examDate,
       daysToExam,
-      addDays,
-    });
+      history,
+    };
   }
 
   function revisoesAtrasadas() {

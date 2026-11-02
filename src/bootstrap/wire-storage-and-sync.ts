@@ -99,7 +99,10 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     ensureStateDefaults: deps.ensureStateDefaults,
     observePlanningCapacity: deps.observePlanningCapacity,
     restoreTimerFromState: deps.restoreTimerFromState,
-    render: () => deps.render(),
+    render: () => {
+      deps.render();
+      demoController?.sync();
+    },
     flashSaved: () => deps.flashSaved(),
     showToast: deps.showToast,
   });
@@ -168,7 +171,7 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     isDisabled: () => deps.isDemoMode,
   }).mount();
 
-  createDemoController({
+  const demoController = createDemoController({
     document: deps.document,
     storage: sessionStorage,
     demoKey: DEMO_STORAGE_KEY,
@@ -193,8 +196,12 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     validateBackupData,
     stateSyncCoordinator,
     backupRestoreCoordinator,
+    demoController,
     appStateStore: stateSyncCoordinator.appStateStore,
-    scheduleSave: stateSyncCoordinator.scheduleSave,
+    scheduleSave: () => {
+      demoController.sync();
+      stateSyncCoordinator.scheduleSave();
+    },
     enqueueStateTransaction: stateSyncCoordinator.enqueueStateTransaction,
     loadState: stateSyncCoordinator.loadState,
     canSaveBeforeUnload: () =>

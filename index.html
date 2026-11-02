@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=a69c78c0e178">
-<link rel="stylesheet" href="styles/app.css?v=a69c78c0e178">
+<link rel="stylesheet" href="styles/tailwind.css?v=a644db56ce9f">
+<link rel="stylesheet" href="styles/app.css?v=a644db56ce9f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -239,6 +239,7 @@
         <div class="empty-state-actions">
           <button class="btn ghost small" data-delegated-click="clearSessionHistoryFilters()">Limpar filtros</button>
           <button class="btn ghost small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button>
+          <button class="btn ghost small" data-delegated-click="openManualSessionModal()">Registrar sessão manual</button>
         </div>
       </div>
       <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap">
@@ -321,7 +322,7 @@
     </section>
 
     <section class="chart-card today-recommendation-card" aria-labelledby="todaySuggestionTitle">
-      <header class="module-heading module-heading--compact"><span class="module-heading__eyebrow">Estratégia</span><h3 class="module-heading__title" id="todaySuggestionTitle">Sugestão opcional</h3><p class="module-heading__description">Uma recomendação não altera seu planejamento.</p></header>
+      <header class="module-heading module-heading--compact"><span class="module-heading__eyebrow">Estratégia</span><h3 class="module-heading__title" id="todaySuggestionTitle">Sugestão opcional</h3><p class="module-heading__description">Explica o porquê da prioridade atual ou sugere alternativas sem alterar seu planejamento.</p></header>
       <div id="studyRecommendation"></div>
     </section>
 
@@ -333,7 +334,7 @@
     <div class="chart-card today-agenda-card">
       <h3>Agenda e metas do dia</h3>
       <div class="today-agenda-grid">
-        <section><h4>Tarefas</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
+        <section><h4>Eventos do calendário</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
         <section><h4>Revisões atrasadas</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
         <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
         <section><h4>Metas</h4><div id="hojeMetas"></div></section>
@@ -817,7 +818,12 @@
   <div class="modal-box">
     <h3 id="sessionModalTitle">Sessão concluída</h3>
     <p id="sessionModalActivityHint" class="session-modal-hint">Registre o que você estudou e atualize seus indicadores.</p>
-    <p class="session-modal-duration">Tempo registrado: <strong id="sessionModalDuration">00:00</strong></p>
+    <div class="session-modal-duration-row">
+      <p class="session-modal-duration">Tempo registrado: <strong id="sessionModalDuration">00:00</strong></p>
+      <label class="session-modal-duration-adjust">Ajustar (min)
+        <input class="session-detail-control" type="number" id="sessionModalDurationMinutes" aria-label="Duração em minutos" min="1" max="720" step="1" placeholder="Min">
+      </label>
+    </div>
     <div class="session-modal-fields">
       <label>Disciplina
         <select class="select-control select-control--wide" id="sessionModalSubject" aria-label="Disciplina da sessão"></select>
@@ -928,7 +934,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=a69c78c0e178"></script>
+  <script src="src/app.bundle.js?v=a644db56ce9f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

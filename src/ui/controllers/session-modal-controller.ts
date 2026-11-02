@@ -41,6 +41,7 @@ export interface SessionFormValues {
   focusLevel: string | null;
   energyLevel: string | null;
   notes: string;
+  durationMinutes?: number | null;
 }
 
 export interface SessionModalEventHandlers {
@@ -137,6 +138,13 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     const overlay = document.getElementById('sessionModalOverlay');
     const durationEl = document.getElementById('sessionModalDuration');
     if (durationEl) durationEl.textContent = formatTimer(timerSeconds);
+    const durationMinutesInput = document.getElementById(
+      'sessionModalDurationMinutes'
+    ) as HTMLInputElement | null;
+    if (durationMinutesInput) {
+      durationMinutesInput.value = '';
+      durationMinutesInput.placeholder = String(Math.max(1, Math.round(timerSeconds / 60)));
+    }
 
     const sel = document.getElementById('sessionModalSubject') as HTMLSelectElement | null;
     if (sel) {
@@ -221,6 +229,13 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     const notes = (
       (document.getElementById('sessionModalNotes') as HTMLTextAreaElement | null)?.value || ''
     ).trim();
+    const rawDurationMinutes = Number(
+      (document.getElementById('sessionModalDurationMinutes') as HTMLInputElement | null)?.value
+    );
+    const durationMinutes =
+      Number.isFinite(rawDurationMinutes) && rawDurationMinutes > 0
+        ? Math.min(720, Math.round(rawDurationMinutes))
+        : null;
 
     return {
       subjectId,
@@ -233,6 +248,7 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       focusLevel,
       energyLevel,
       notes,
+      durationMinutes,
     };
   }
 
@@ -277,6 +293,20 @@ export function createSessionModalController(opts: SessionModalControllerOptions
         'study';
       syncSessionModalActivityFields(val);
     });
+
+    document
+      .getElementById('sessionModalDurationMinutes')
+      ?.addEventListener('input', function (this: any) {
+        const val = Number(
+          this?.value ??
+            (document.getElementById('sessionModalDurationMinutes') as HTMLInputElement | null)
+              ?.value
+        );
+        const durationEl = document.getElementById('sessionModalDuration');
+        if (durationEl && Number.isFinite(val) && val > 0) {
+          durationEl.textContent = formatTimer(Math.min(720, Math.round(val)) * 60);
+        }
+      });
 
     document.getElementById('sessionModalSaveBtn')?.addEventListener('click', () => {
       handlers.onSave?.(readFormValues());

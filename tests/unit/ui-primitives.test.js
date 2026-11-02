@@ -182,14 +182,15 @@ test('UI Primitives — ícones da Fase 2 do plano visual existem nos dados do T
 });
 
 test('UI Primitives — Badge mostra ícone decorativo por estado, além da cor', () => {
-  const expected = {
-    success: 'circle-check',
-    warning: 'alert-triangle',
-    danger: 'alert-circle',
-    info: 'info-circle',
-    insufficient: 'circle-dashed',
-  };
-  for (const [variant, icon] of Object.entries(expected)) {
+  /** @type {Array<[import('../../src/ui/primitives/badge.js').BadgeVariant, string]>} */
+  const entries = [
+    ['success', 'circle-check'],
+    ['warning', 'alert-triangle'],
+    ['danger', 'alert-circle'],
+    ['info', 'info-circle'],
+    ['insufficient', 'circle-dashed'],
+  ];
+  for (const [variant, icon] of entries) {
     const html = render(h(Badge, { variant, children: 'Estado' }));
     assert.ok(html.includes(`icon-tabler-${icon}`), variant);
     assert.ok(html.includes('aria-hidden="true"'), variant);

@@ -448,7 +448,11 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       .sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
 
     if (!items.length) {
-      ul.innerHTML = '<li class="upcoming-empty">Nenhuma tarefa para hoje.</li>';
+      const emptyLabel =
+        elId === 'hojeTarefasHoje'
+          ? 'Nenhum evento avulso no calendário para hoje (siga o Plano de hoje acima).'
+          : 'Nenhuma tarefa para hoje.';
+      ul.innerHTML = `<li class="upcoming-empty">${emptyLabel}</li>`;
       return;
     }
     ul.innerHTML = items

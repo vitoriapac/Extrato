@@ -403,6 +403,17 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
     if (deps.recordProgressSnapshot) deps.recordProgressSnapshot(pct);
     renderExamCountdown();
+    const emptyCta = doc.getElementById('demoEmptyCta');
+    if (emptyCta) {
+      const demoBanner = doc.getElementById('demoBanner');
+      const inDemo = Boolean(demoBanner && !demoBanner.hidden);
+      emptyCta.hidden =
+        inDemo ||
+        (state.subjects?.length || 0) > 0 ||
+        (state.studySessions?.length || 0) > 0 ||
+        (state.studyPlans?.length || 0) > 0 ||
+        Boolean(state.dailyPlans?.some((p: any) => p.items?.length > 0));
+    }
   }
 
   function renderDashboard(): void {

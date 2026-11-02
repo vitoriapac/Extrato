@@ -1581,7 +1581,7 @@
         "./helpers.js",
         "@axe-core/playwright"
       ],
-      "staticTestDeclarations": 24,
+      "staticTestDeclarations": 25,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 17,
       "observedCaseSeconds": 125.4,
@@ -2607,6 +2607,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/calendar-load.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/renderers/calendar-renderer.js"
+      ],
+      "staticTestDeclarations": 1,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/calendar-tab-controller.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -3321,7 +3351,7 @@
         "node:assert/strict",
         "../../src/ui/controllers/demo-controller.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3616,7 +3646,7 @@
         "../../src/application/analytics/build-error-analysis-view-model.js",
         "../../src/ui/renderers/error-analysis-renderer.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4552,6 +4582,37 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/focus-shift.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/analytics/focus-energy-analytics.js",
+        "../../src/ui/performance/performance-consistency-renderer.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/format-duration.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -4596,6 +4657,38 @@
         "../../src/core/format-number.js"
       ],
       "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/goal-history-chart.test.js",
+      "layer": "node",
+      "area": "Metas",
+      "areaBasis": "filename_hint",
+      "criticality": "critical",
+      "roles": [
+        "contract",
+        "viewport"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/renderers/goal-history-chart-renderer.js",
+        "../../src/ui/primitives/charts/geometry.js"
+      ],
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -7394,6 +7487,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/rhythm-burnup.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/renderers/rhythm-burnup-renderer.js"
+      ],
+      "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/rhythm-estimator.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -9676,9 +9799,10 @@
         "../../src/application/adherence/build-adherence-model.js",
         "../../src/application/adherence/adherence-status.js",
         "../../src/application/goals/build-plan-execution.js",
-        "../../src/domain/planning/plan-execution-snapshot.js"
+        "../../src/domain/planning/plan-execution-snapshot.js",
+        "../../src/ui/renderers/plan-execution-renderer.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

@@ -593,7 +593,7 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   await activateTab(page, 'agenda');
   const load = page.locator('#reviewLoad');
   await expect(load.getByRole('img', { name: /^Carga de revisões: / })).toBeVisible();
-  await expect(load.locator('.review-load__day')).toHaveCount(30);
+  await expect(load.locator('.chart-columns__bar--primary')).toHaveCount(30);
   await expect(load.locator('.review-load__label strong')).toHaveText(
     /^(\d+ revis(ão|ões) atrasadas?|nenhuma atrasada)$/
   );
@@ -612,5 +612,33 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   await accuracy.locator('.subject-accuracy-data > summary').click();
   await expect(accuracy.getByRole('table')).toBeVisible();
   await expect(accuracy.getByRole('columnheader', { name: 'Simulados detalhados' })).toBeVisible();
+  await expectNoPageOverflow(page);
+});
+test('gráficos do Planejamento, Questões e Calendário descrevem os valores em texto', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+
+  await activateTab(page, 'metas');
+  const history = page.locator('#historicoMetasContainer .goal-history-chart');
+  await expect(history).toHaveCount(3);
+  await expect(history.first().getByRole('img', { name: /^Tópicos concluídos por semana/ })).toBeAttached();
+  await expect(history.first().locator('figcaption')).toContainText(/semanas? encerradas? na meta|sem meta definida/);
+  await page.locator('.metas-execution-history').evaluate(node => (node.open = true));
+  const week = page.getByRole('img', { name: /^Capacidade, planejado e estudado por dia: / });
+  await expect(week).toBeVisible();
+  expect(await week.locator('.chart-columns__bar').count()).toBe(21);
+  const burnup = page.locator('#ritmoContainer .rhythm-burnup');
+  await expect(burnup.getByRole('img', { name: /^Cobertura do edital até a prova: \d+ de \d+ tópicos/ })).toBeVisible();
+  await expect(burnup.locator('.rhythm-burnup__gap')).toContainText('necessário para terminar até a prova');
+
+  await activateTab(page, 'questoes');
+  await page.locator('#topicPerformanceCard').evaluate(node => (node.open = true));
+  const cumulative = await page.locator('#subjectErrorProfile .error-profile-cumulative-text').allInnerTexts();
+  const values = cumulative.map(text => Number(text.match(/\d+/)[0]));
+  expect(values.length).toBeGreaterThan(0);
+  expect(values).toEqual([...values].sort((a, b) => a - b));
+
+  await activateTab(page, 'calendario');
+  await expect(page.locator('.cal-legend')).toContainText('mais revisões pendentes');
   await expectNoPageOverflow(page);
 });

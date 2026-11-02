@@ -105,3 +105,34 @@ test('prévia da demo só carrega os dados após escolha explícita', () => {
   assert.deepEqual(calls, ['enter', 'reload']);
   assert.equal(nodes.demoHeaderBadge.hidden, true);
 });
+test('demoEmptyCta oculta imediatamente ao criar disciplinas, planos ou sessões', () => {
+  const nodes = {
+    demoEmptyCta: node(),
+  };
+  let state = { subjects: [], studySessions: [], studyPlans: [], dailyPlans: [] };
+  const document = {
+    getElementById: id => nodes[id],
+    querySelectorAll: () => [],
+  };
+  const controller = createDemoController({
+    document,
+    storage: {},
+    isDemo: false,
+    getState: () => state,
+  });
+  controller.mount();
+  assert.equal(nodes.demoEmptyCta.hidden, false);
+
+  state = { subjects: [{ id: 's1' }], studySessions: [], studyPlans: [], dailyPlans: [] };
+  controller.sync();
+  assert.equal(nodes.demoEmptyCta.hidden, true);
+
+  state = {
+    subjects: [],
+    studySessions: [],
+    studyPlans: [],
+    dailyPlans: [{ date: '2026-10-01', items: [{ id: 'i1' }] }],
+  };
+  controller.sync();
+  assert.equal(nodes.demoEmptyCta.hidden, true);
+});

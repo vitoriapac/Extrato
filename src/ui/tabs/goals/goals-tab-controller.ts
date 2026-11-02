@@ -19,6 +19,8 @@ import { buildPeriodComparisonViewModel as defaultBuildPeriodComparisonViewModel
 import { renderPeriodComparisonDetail as defaultRenderPeriodComparisonDetail } from '../../renderers/period-comparison-detail-renderer.js';
 import { countStudyDaysThisWeek } from '../../../application/performance/study-day-count.js';
 import { renderIconSvg } from '../../primitives/icon.js';
+import { renderGoalHistoryCharts } from '../../renderers/goal-history-chart-renderer.js';
+import { renderRhythmBurnup } from '../../renderers/rhythm-burnup-renderer.js';
 
 const DEFAULT_WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
 
@@ -328,7 +330,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
           }</p>`;
     weeks = lived;
 
-    container.innerHTML = `
+    container.innerHTML = `${renderGoalHistoryCharts(weeks, state.metas || {}, { formatDate })}
     <div class="weekly-history-table-wrap">
     <table class="weekly-history-table">
       <thead>
@@ -517,6 +519,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       container.innerHTML = `<div class="pace-block">
       <div class="pace-line">${r.remaining === 1 ? 'Falta' : 'Faltam'} <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} para concluir o plano.</div>
       <div class="pace-status neutral">Ainda sem tópicos concluídos nos últimos 14 dias — sem dados suficientes para estimar o ritmo.</div>
+      ${renderRhythmBurnup({ ...r, ratePerDay: 0 })}
     </div>`;
       return;
     }
@@ -542,6 +545,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       <div class="pace-line">Nos últimos 14 dias você concluiu em média <strong>${ritmoTxt}</strong>.</div>
       <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} — no ritmo atual, você termina em <strong>${r.daysNeeded} dia${r.daysNeeded === 1 ? '' : 's'}</strong> (${formatDatePt(r.finishDate!)}).</div>
       ${statusHtml}
+      ${renderRhythmBurnup(r)}
     </div>
   `;
   }

@@ -186,3 +186,28 @@ test('timestamp-only sessions use the local calendar without changing the week b
   assert.equal(result.current.summary.matchedMinutes, 60);
   assert.equal(result.current.assessment.status, 'aligned');
 });
+
+import { renderPlanExecution } from '../../src/ui/renderers/plan-execution-renderer.js';
+test('execução da semana: capacidade por dia e âmbar só quando o planejado passa da capacidade', () => {
+  // 2026-10-12 is a Monday; Monday has 1h of capacity, Tuesday 2h, Sunday none.
+  const model = buildPlanExecution({
+    today: '2026-10-13',
+    hoursByDay: { 1: 1, 2: 2 },
+    dailyPlans: [
+      { date: '2026-10-12', plannedMinutes: 90 },
+      { date: '2026-10-13', plannedMinutes: 60 },
+    ],
+    sessions: [{ date: '2026-10-12', durationSeconds: 3000 }],
+  });
+  assert.deepEqual(
+    model.days.map(day => day.capacityMinutes),
+    [60, 120, 0, 0, 0, 0, 0]
+  );
+  const html = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
+  const tones = [...html.matchAll(/chart-columns__bar--(\w+)/g)].map(m => m[1]);
+  assert.equal(tones.length, 21);
+  assert.deepEqual(tones.slice(0, 6), ['muted', 'attention', 'primary', 'muted', 'soft', 'primary']);
+  assert.match(html, /12\/10: capacidade 1h00, planejado 1h30, estudado 0h50/);
+  assert.match(html, /14\/10: capacidade 0h00, sem plano, estudado —/);
+  assert.match(html, /<small>Capacidade 1h00<\/small><strong>1h30 \/ 0h50<\/strong>/);
+});
