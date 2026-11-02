@@ -71,3 +71,69 @@ export function createDensityController({
     sync,
   });
 }
+
+/**
+ * Essential mode (F10): hides advanced analyses behind one-click reveals and shows short hints
+ * for technical terms. Stored per browser. Without a stored choice, the default is decided once,
+ * on the first load: on for someone starting without data, off for someone who already has records.
+ * The demo always shows the full app and never decides the default.
+ */
+export function createEssentialController({
+  document,
+  storage,
+  key = 'studytrack.essential',
+}: any = {}) {
+  if (!document) throw new TypeError('Controlador do modo Essencial requer documento.');
+  const read = () => {
+    try {
+      return storage?.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+  const write = (value: string) => {
+    try {
+      storage?.setItem(key, value);
+    } catch {
+      // Private mode: the mode still works for this visit.
+    }
+  };
+  const current = () => document.documentElement.getAttribute('data-essential') === 'on';
+  const apply = (on: boolean) => {
+    if (on) document.documentElement.setAttribute('data-essential', 'on');
+    else document.documentElement.removeAttribute('data-essential');
+    const button = document.getElementById('essentialToggleBtn');
+    if (button) {
+      button.innerHTML = renderIconSvg('sparkles', { size: 16 });
+      button.setAttribute('aria-pressed', String(on));
+      button.setAttribute('aria-label', 'Modo essencial');
+      button.setAttribute('title', on ? 'Modo essencial (ativo)' : 'Modo completo (ativo)');
+    }
+    return on;
+  };
+  return Object.freeze({
+    current,
+    decide({
+      hasData = false,
+      demo = false,
+      testMode = false,
+    }: { hasData?: boolean; demo?: boolean; testMode?: boolean } = {}) {
+      if (demo) return apply(false);
+      let stored = read();
+      // Automated tests start empty: they keep the full app unless they store a choice.
+      if (testMode) return apply(stored === 'on');
+      if (stored !== 'on' && stored !== 'off') {
+        stored = hasData ? 'off' : 'on';
+        write(stored);
+      }
+      return apply(stored === 'on');
+    },
+    set(on: boolean) {
+      write(on ? 'on' : 'off');
+      return apply(on);
+    },
+    toggle() {
+      return this.set(!current());
+    },
+  });
+}

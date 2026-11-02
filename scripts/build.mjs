@@ -11,6 +11,7 @@ const bundles = [
   { entry: 'src/domain/exams/exam-catalog-runtime.ts', output: 'src/exam-catalog.bundle.js' },
   { entry: 'src/reports/report-runtime.ts', output: 'src/report.bundle.js' },
   { entry: 'src/ui/help/help-runtime.ts', output: 'src/help.bundle.js' },
+  { entry: 'src/demo/demo-runtime.ts', output: 'src/demo.bundle.js' },
 ];
 const checkOnly = process.argv.includes('--check');
 const versionPlaceholder = '__BUILD_VERSION__';

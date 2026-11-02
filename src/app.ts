@@ -22,7 +22,12 @@ import {
 import { createAppSelectors } from './application/selectors/app-selectors.js';
 import { createExamCatalogLoader } from './application/exams/exam-catalog-loader.js';
 import { APP_MODES, readAppMode } from './application/demo/demo-mode.js';
-import { createDensityController, createPreferencesController } from './ui/controllers/preferences-controller.js';
+import {
+  createDensityController,
+  createEssentialController,
+  createPreferencesController,
+} from './ui/controllers/preferences-controller.js';
+import { decorateAdvancedReveals, decorateTermHints } from './ui/essential-mode.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
 import { configureUndo } from './ui/undoable.js';
@@ -69,6 +74,12 @@ document
   .getElementById('densityToggleBtn')
   ?.addEventListener('click', () => densityController.toggle());
 densityController.sync();
+const essentialController = createEssentialController({ document, storage: localStorage });
+document
+  .getElementById('essentialToggleBtn')
+  ?.addEventListener('click', () => essentialController.toggle());
+decorateAdvancedReveals(document);
+decorateTermHints(document);
 
 let state: AppState = createDefaultState();
 const uiState = createUiState();
@@ -307,7 +318,15 @@ setupApplicationLifecycle({
   onResponsiveChange: uiControllers.onResponsiveChange,
 });
 
-const activateInitialTab = () => uiControllers.tabRouter.activateInitialTab();
+const activateInitialTab = () => {
+  // The essential-mode default is decided once, from the data present at the first load (F10).
+  essentialController.decide({
+    hasData: Boolean(state.subjects?.length || state.studySessions?.length || state.questoes?.length),
+    demo: IS_DEMO_MODE,
+    testMode: TEST_MODE,
+  });
+  uiControllers.tabRouter.activateInitialTab();
+};
 const pristineTestState = TEST_MODE ? structuredCloneSafe(state) : null;
 
 bootstrapAppRuntime({

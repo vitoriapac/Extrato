@@ -4,6 +4,7 @@ export interface DemoStorageProviderOptions {
   storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
   stateKey?: string;
   demoKey?: string;
+  /** May be async: the demo generator is loaded on demand. */
   generate?: () => any;
 }
 
@@ -18,17 +19,17 @@ export function createDemoStorageProvider({
   if (typeof generate !== 'function')
     throw new TypeError('O provider demo requer um gerador de estado.');
   const keyFor = (key: string): string => (key === stateKey ? demoKey : `${demoKey}:${key}`);
-  const ensureState = (): string => {
+  const ensureState = async (): Promise<string> => {
     let value = storage.getItem(demoKey);
     if (!value) {
-      value = JSON.stringify(generate());
+      value = JSON.stringify(await generate());
       storage.setItem(demoKey, value);
     }
     return value;
   };
   return assertStorageProvider({
     async get(key: string) {
-      return key === stateKey ? ensureState() : storage.getItem(keyFor(key));
+      return key === stateKey ? await ensureState() : storage.getItem(keyFor(key));
     },
     async set(key: string, value: string) {
       storage.setItem(keyFor(key), value);
@@ -38,8 +39,9 @@ export function createDemoStorageProvider({
       storage.removeItem(keyFor(key));
       return true;
     },
+    // Synchronous reads see the state once get() has generated it; before that there is none.
     readLocal(key: string) {
-      return key === stateKey ? ensureState() : storage.getItem(keyFor(key));
+      return storage.getItem(keyFor(key));
     },
     writeLocal(key: string, value: string) {
       storage.setItem(keyFor(key), value);

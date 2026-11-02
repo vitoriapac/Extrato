@@ -103,6 +103,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/essential-mode.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/evidence-calibration.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -760,6 +765,11 @@
       "file": "tests/unit/error-notebook-view.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/essential-mode.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/evidence-quality.test.js",

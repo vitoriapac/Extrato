@@ -32,6 +32,7 @@
     "src/exam-catalog.bundle.js",
     "src/report.bundle.js",
     "src/help.bundle.js",
+    "src/demo.bundle.js",
     "src/theme-bootstrap.js",
     "src/pwa.js"
   ]

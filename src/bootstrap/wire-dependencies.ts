@@ -20,7 +20,7 @@ import { createGoalService } from '../application/goals/goal-service.js';
 import { createSubjectService } from '../application/subjects/subject-service.js';
 import { createTopicStrategyController } from '../features/topic-strategy/topic-strategy-controller.js';
 import { createTopicHistoryService } from '../application/history/topic-history-service.js';
-import { generateDemoData as defaultGenerateDemoData } from '../demo/demo-generator.js';
+import { loadDemoGenerator } from '../demo/demo-loader.js';
 import { applyAdaptiveReviewRating as defaultApplyAdaptiveReviewRating } from '../domain/reviews.js';
 import { buildStudyPlan as defaultBuildStudyPlan } from '../application/build-study-plan.js';
 import {
@@ -56,7 +56,9 @@ export interface WireAppDependenciesOptions {
   writeLocal?: (key: string, value: string) => boolean;
   removeLocal?: (key: string) => void;
   sessionStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
-  generateDemoData?: (options: { today: string }) => Record<string, any>;
+  generateDemoData?: (options: {
+    today: string;
+  }) => Record<string, any> | Promise<Record<string, any>>;
   getTopicById: (topicId: string) => { topic?: any; subject?: any } | null;
   evidenceScopeForTopic: (topicId: string) => any;
   applyAdaptiveReviewRating?: (current: any, rating: any, options: Record<string, any>) => any;
@@ -110,7 +112,8 @@ export function wireAppDependencies(options: WireAppDependenciesOptions) {
     sessionStorage: demoSessionStorage = typeof sessionStorage !== 'undefined'
       ? sessionStorage
       : undefined,
-    generateDemoData = defaultGenerateDemoData,
+    // The demo generator is a separate bundle, fetched only when the demonstration opens (F11).
+    generateDemoData = async (options: { today: string }) => (await loadDemoGenerator())(options),
     getTopicById,
     evidenceScopeForTopic,
     applyAdaptiveReviewRating = defaultApplyAdaptiveReviewRating,

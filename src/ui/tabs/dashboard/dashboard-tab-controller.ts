@@ -220,6 +220,23 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     });
   }
 
+  // Opens the place where the missing readiness factor gets its first evidence (F8).
+  function unlockReadinessFactor(factor: string): void {
+    const destinations: Record<string, [string, string | null]> = {
+      coverage: ['disciplinas', null],
+      mastery: ['questoes', 'addQuestaoRowBtn'],
+      retention: ['agenda', null],
+      consistency: ['hoje', 'timerSubjectSelect'],
+      simulations: ['questoes', 'addSimuladoRowBtn'],
+    };
+    const [tab, controlId] = destinations[factor] || [];
+    if (!tab) return;
+    if (deps.activateTab) deps.activateTab(tab);
+    const control = controlId ? (doc?.getElementById(controlId) as HTMLElement | null) : null;
+    if (control?.tagName === 'BUTTON') control.click();
+    else control?.focus();
+  }
+
   function heatmapTooltip(summary: Record<string, any>): string {
     const parts = [
       formatDatePt(summary.date),
@@ -521,6 +538,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     renderExamProgress,
     renderExamCountdown,
     navigateKpi,
+    unlockReadinessFactor,
     heatmapTooltip,
     renderHeatmap,
     setHeatmapFilter,

@@ -539,10 +539,18 @@ test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostr
   const ring = page.locator('#balanceRing svg[role="img"]');
   await expect(ring).toHaveAttribute('aria-label', 'Índice de prontidão: sem dados suficientes');
   await expect(ring).toHaveClass(/chart-ring--empty/);
-  await expect(page.locator('#balanceFigure')).toContainText('—');
+  // F8: no number yet; the figure says what is missing and each factor is an action.
+  await expect(page.locator('#balanceFigure')).toHaveText('faltam 5 de 5 fatores');
+  await expect(page.locator('.readiness-factor-action')).toHaveCount(5);
+  await page.locator('.readiness-factors > summary').click();
   await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', /histórico insuficiente/);
 
+  await page.getByRole('button', { name: 'Consistência: estudar hoje' }).click();
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await expect(page.locator('#timerSubjectSelect')).toBeFocused();
+
   await openDemo(page);
+  await expect(page.locator('.readiness-factor-action')).toHaveCount(0);
   const value = Number((await page.locator('#balanceFigure').innerText()).split('/')[0].trim());
   expect(Number.isFinite(value)).toBe(true);
   await expect(ring).toHaveAttribute('aria-label', new RegExp(`^Índice de prontidão: ${value} de 100`));

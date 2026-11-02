@@ -229,6 +229,7 @@ export function buildDelegatedActionHandlers(
 
     // Dashboard
     navigateKpi: (...args: any[]) => c.dashboard?.navigateKpi?.(...args),
+    unlockReadinessFactor: (...args: any[]) => c.dashboard?.unlockReadinessFactor?.(...args),
     selectHeatmapDay: (...args: any[]) => c.dashboard?.selectHeatmapDay?.(...args),
     setHeatmapFilter: (...args: any[]) => c.dashboard?.setHeatmapFilter?.(...args),
     viewSelectedHeatmapSessions: (...args: any[]) =>

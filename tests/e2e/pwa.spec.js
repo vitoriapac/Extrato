@@ -123,3 +123,35 @@ test('atalhos do app instalado abrem o cronômetro em Hoje e o registro de quest
     await expect(page.locator(panel)).toBeVisible();
   }
 });
+
+test('demonstração carregada sob demanda abre offline depois da primeira visita (F11)', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  // The first visit never requested the demo chunk: it must come from the precache.
+  await context.setOffline(true);
+  await page.getByRole('button', { name: /Explorar demonstração/i }).first().click();
+  await page.getByRole('button', { name: 'Carregar demonstração' }).click();
+  await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO', { exact: true })).toBeVisible({
+    timeout: 15_000,
+  });
+  await context.setOffline(false);
+});
+
+test('pedaço da demonstração usa a mesma versão do app e está no pré-cache (F11)', async ({ page }) => {
+  await page.goto('/');
+  const version = new URL(
+    await page.locator('script[src^="src/app.bundle.js"]').evaluate(element => element.src)
+  ).searchParams.get('v');
+  const worker = await (await page.request.get('/service-worker.js')).text();
+  expect(worker).toContain(`./src/demo.bundle.js?v=${version}`);
+  expect(worker).toContain(`studytrack-${version}`);
+  const chunk = page.waitForRequest(request => request.url().includes('/src/demo.bundle.js'));
+  await page.getByRole('button', { name: /Explorar demonstração/i }).first().click();
+  await page.getByRole('button', { name: 'Carregar demonstração' }).click();
+  expect(new URL((await chunk).url()).searchParams.get('v')).toBe(version);
+});

@@ -2779,3 +2779,25 @@ button.metas-subtab{appearance:none;background:transparent;border:0;border-botto
 /* ===== LEMBRETE DE BACKUP EXPORTADO (F7) ===== */
 .backup-export-status{margin:var(--space-2) 0 0;color:var(--text-secondary);font:var(--text-sm) var(--font-body)}
 .backup-export-status.is-stale{color:var(--warn-text);font-weight:var(--font-weight-semibold)}
+
+/* ===== FATORES DA PRONTIDÃO COMO AÇÕES (F8) ===== */
+.balance-figure .balance-missing{font:var(--font-weight-semibold) var(--text-lg)/1.25 var(--font-body);color:var(--on-brand)}
+.readiness-factor-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;padding:0;list-style:none}
+.readiness-factor-action{min-height:32px;padding:4px 10px;background:transparent;border:1px solid color-mix(in srgb,var(--on-brand) 40%,transparent);border-radius:var(--radius-control);color:var(--on-brand);font:12px var(--font-body);cursor:pointer}
+.readiness-factor-action:hover{background:color-mix(in srgb,var(--on-brand) 12%,transparent)}
+.readiness-factor-action:focus-visible{outline:2px solid var(--brand-on-header);outline-offset:2px}
+
+/* ===== MODO ESSENCIAL (F10) ===== */
+.advanced-reveal,.term-hint{display:none}
+[data-essential="on"] [data-advanced]:not(.is-advanced-open){display:none}
+[data-essential="on"] .advanced-reveal:not([hidden]){display:inline-flex;margin:var(--space-2) 0 var(--space-4)}
+[data-essential="on"] .term-hint{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;padding:0;vertical-align:middle;background:transparent;border:1px solid currentColor;border-radius:50%;color:inherit;font:600 11px/1 var(--font-body);cursor:pointer;opacity:.8}
+[data-essential="on"] .term-hint:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.term-hint-text{display:block;max-width:32ch;margin-top:4px;font:400 12px/1.4 var(--font-body);letter-spacing:0;text-transform:none}
+.term-hint-text[hidden]{display:none}
+/* Inline with the status text, so the folded list adds no height to the first screen. */
+.readiness-factors{display:inline;margin-left:6px}
+.readiness-factors>summary{display:inline}
+.readiness-factors>summary{cursor:pointer;color:var(--on-brand);font:12px var(--font-body);text-decoration:underline;text-underline-offset:2px}
+.readiness-factors>summary:focus-visible{outline:2px solid var(--brand-on-header);outline-offset:2px}
+[data-essential="on"] .term-hint::before{content:"?"}

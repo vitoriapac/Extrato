@@ -66,6 +66,7 @@ export function buildHeaderViewModel({
       confidence: flat.readinessConfidence,
       availableFactors,
       totalFactors,
+      missingFactors: [...(readiness.missingFactors || [])] as string[],
     },
     exam: { date: examDate, daysRemaining },
     plan: { number: planNumber },

@@ -45,7 +45,44 @@ test('hero e compacto apresentam a mesma prontidão e conteúdo separado', () =>
   assert.equal(document.nodes.compactReadiness.textContent, '45/100');
   assert.equal(document.nodes.statContent.textContent, '26%');
   assert.equal(document.nodes.statStreak.textContent, '7 dias');
-  assert.match(document.nodes.balanceSub.textContent, /Confiança do índice: alta/);
+  assert.match(document.nodes.balanceSub.innerHTML, /Confiança do índice: alta/);
+});
+
+test('fatores que faltam viram ações; com 5 de 5 volta o número (F8)', () => {
+  const ids = ['balanceFigure', 'balanceRing', 'balanceTrend', 'balanceSub', 'statSubjects', 'statContent', 'statAndamento', 'statConcluido', 'statRevisoes', 'statStreak'];
+  const base = {
+    stats: { subjects: 1, contentPercent: 0, inProgress: 0, completed: 0, upcomingReviews: 0 },
+    streak: { days: 0 },
+  };
+  const empty = fakeDocument(ids);
+  renderHeroHeader(
+    {
+      ...base,
+      readiness: {
+        value: null,
+        confidence: 'Baixa',
+        availableFactors: 1,
+        totalFactors: 5,
+        missingFactors: ['mastery', 'retention', 'consistency', 'simulations'],
+      },
+    },
+    { document: empty }
+  );
+  assert.match(empty.nodes.balanceFigure.innerHTML, /faltam 4 de 5 fatores/);
+  const sub = empty.nodes.balanceSub.innerHTML;
+  assert.equal(sub.split('data-delegated-click="unlockReadinessFactor').length - 1, 4);
+  assert.ok(sub.includes(`unlockReadinessFactor('mastery')">Domínio: registrar questões`));
+  const full = fakeDocument(ids);
+  renderHeroHeader(
+    {
+      ...base,
+      readiness: { value: 72, confidence: 'Alta', availableFactors: 5, totalFactors: 5, missingFactors: [] },
+    },
+    { document: full }
+  );
+  assert.equal(full.nodes.balanceFigure.innerHTML, '72<span>/100</span>');
+  assert.doesNotMatch(full.nodes.balanceSub.innerHTML, /unlockReadinessFactor/);
+  assert.match(full.nodes.balanceSub.innerHTML, /5 de 5 fatores disponíveis/);
 });
 
 test('cabeçalho compacto oculta integralmente prova ausente', () => {

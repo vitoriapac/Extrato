@@ -408,20 +408,44 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### F8: Fatores da prontidão como ações
 **Descrição:** Substituir "—/100" por "faltam N de 5 fatores", cada fator clicável. Junta-se à T6 do plano de onboarding.
-**Aceite:** [ ] Cada fator leva à ação que o libera · [ ] Com 5 de 5, volta o número
+**Aceite:** [x] Cada fator leva à ação que o libera · [x] Com 5 de 5, volta o número
+**Resultado:**
+- Sem índice, o topo diz "faltam N de 5 fatores".
+- Cada fator que falta vira um botão que abre a ação certa:
+  - Cobertura → Disciplinas;
+  - Domínio → novo registro de questões;
+  - Retenção → Agenda;
+  - Consistência → cronômetro em Hoje;
+  - Simulados → novo simulado.
+- A lista fica recolhida em "Como liberar os fatores", na mesma linha do status, para a próxima ação continuar na primeira tela.
+- Com o índice já visível, os fatores que faltam seguem listados; com 5 de 5 a lista some.
 **Tamanho:** S
 
 ### F9: Navegação lateral acima de 1280 px
 **Aceite:** [ ] Abaixo de 1280 px, nada muda · [ ] Tour e E2E de abas atualizados · [ ] Conteúdo em duas colunas sem rolagem horizontal em 1440 e 1920 px
+**Descartada (02/11/2026):** a barra lateral foi implementada e revertida a pedido. As abas continuam no topo em todas as larguras.
 **Tamanho:** M
 
 ### F10: Modo Essencial
-**Aceite:** [ ] Preferência ligada por padrão para quem começa sem dados e desligada para quem já tem registros (decidido no Checkpoint 4) · [ ] Cada termo técnico com dica curta · [ ] Análises avançadas a um clique
+**Aceite:** [x] Preferência ligada por padrão para quem começa sem dados e desligada para quem já tem registros (decidido no Checkpoint 4) · [x] Cada termo técnico com dica curta · [x] Análises avançadas a um clique
+**Resultado:**
+- Botão "Modo essencial" ao lado da densidade.
+- A preferência fica no navegador (`studytrack.essential`). O padrão é decidido uma vez, no primeiro carregamento, e a demonstração e os testes automatizados ficam no modo completo.
+- Sete análises avançadas ficam atrás de "Mostrar …": mapa de lacunas, replanejamento pós-simulado, resumo e diagnóstico de Hoje, análise por tópico, Inteligência da prova, matriz Edital × Domínio e histórico de decisões.
+- Os termos do topo (prontidão, conteúdo, revisões previstas, sequência) ganham um "?" com dica curta.
 **Dependências:** C1–C3 · **Tamanho:** M
 
 ### F11: Carregamento por aba
 **Descrição:** Dividir o `app.bundle.js` e gerar a lista de pedaços no pré-cache do `service-worker.template.js`.
-**Aceite:** [ ] App abre offline depois da primeira visita (teste Playwright offline) · [ ] Atualização de versão troca os pedaços sem misturar versões (`pwa.spec.js`) · [ ] Ganho de tamanho inicial medido
+**Aceite:** [x] App abre offline depois da primeira visita (teste Playwright offline) · [x] Atualização de versão troca os pedaços sem misturar versões (`pwa.spec.js`) · [x] Ganho de tamanho inicial medido
+**Resultado (prova de conceito):**
+- O cenário e os geradores da demonstração saíram para `src/demo.bundle.js`, carregado por `loadDemoGenerator()` só ao abrir a demo e pré-cacheado com a mesma versão do app.
+- `app.bundle.js`: 1.375.432 → 1.299.693 bytes (−75,7 KB; gzip 421.092 → 401.258, −19,8 KB).
+- `pwa.spec.js` abre a demo offline sem ter baixado o pedaço antes e confere que o pedaço e o pré-cache usam a versão do app.
+
+**Próximo passo, se valer a pena:** dividir por aba exige que os controladores ligados na inicialização (`wire-*`) virem módulos assíncronos.
+- Os maiores candidatos são `src/ui/tabs` (198 KB) e `src/ui/renderers` (192 KB).
+- É uma refatoração L que precisa de plano próprio.
 **Dependências:** I1 (medição) · **Tamanho:** L — quebrar depois de uma prova de conceito
 
 ### Checkpoint 5
