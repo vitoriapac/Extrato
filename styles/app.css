@@ -2818,3 +2818,9 @@ button.metas-subtab{appearance:none;background:transparent;border:0;border-botto
 
 .overview-readiness{margin:var(--space-4) 0 0}
 .overview-detail-links{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);margin:0 0 var(--space-4);color:var(--ink-soft);font-size:var(--text-small,14px)}
+
+.select-search{display:block;width:100%;margin-bottom:var(--space-2);padding:8px 10px;border:1px solid var(--paper-line);border-radius:6px;background:var(--paper);color:var(--ink);font:var(--text-micro) var(--font-body)}
+.select-search[hidden]{display:none}
+.statement-account{min-width:0;overflow-wrap:anywhere}
+@media(max-width:1100px){.demo-tour{display:none}.demo-banner{flex-wrap:wrap}.demo-banner>div:first-child{flex:1 1 280px;min-width:0}.demo-banner-actions{flex:1 1 auto;flex-wrap:wrap}}
+footer>span{display:block;font-size:13px;color:var(--ink)}

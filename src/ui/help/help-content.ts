@@ -954,6 +954,10 @@ export const HELP_GLOSSARY = [
     'Importância relativa para orientar o estudo, combinando relevância na prova e necessidade pessoal.',
   ],
   [
+    'Retrato',
+    'Registro congelado de uma semana no fechamento semanal. Fica no Histórico e não é recalculado depois.',
+  ],
+  [
     'Recovery',
     'Proposta de reorganização segura do planejamento, com capacidade preservada e aplicação confirmada.',
   ],

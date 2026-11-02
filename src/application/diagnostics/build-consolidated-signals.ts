@@ -187,7 +187,16 @@ export function buildConsolidatedSignals(input: any = {}) {
         'Sinais podem compartilhar observações. Suas confianças e volumes não são somados; ausência de alerta não confirma consolidação.',
     });
   }
-  rows.sort((a, b) => (b.priority ?? -Infinity) - (a.priority ?? -Infinity) || stable(a, b));
+  // Alerta com evidência vem antes de "dados insuficientes"; no empate de prioridade, a gravidade decide.
+  const SEVERITY_RANK: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+  const needsAttention = (row: Row) => (row.state === 'attention' ? 1 : 0);
+  rows.sort(
+    (a, b) =>
+      needsAttention(b) - needsAttention(a) ||
+      (b.priority ?? -Infinity) - (a.priority ?? -Infinity) ||
+      (SEVERITY_RANK[b.severity] ?? 0) - (SEVERITY_RANK[a.severity] ?? 0) ||
+      stable(a, b)
+  );
   const summarize = (items: Row[]) => ({
     total: items.length,
     attention: items.filter((item: any) => item.state === 'attention').length,
