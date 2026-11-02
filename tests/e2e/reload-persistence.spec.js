@@ -34,7 +34,7 @@ test('recarregar com hash de aba mantém sessões salvas', async ({ page }) => {
       localStorage.setItem('bb-premium-study-data', value);
   }, JSON.stringify(seed));
   await page.goto('/');
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   await page.locator('#timerSubjectSelect').selectOption({ index: 1 });
   await page.locator('#timerTopicSelect').selectOption({ index: 1 });
   await page.locator('#timerStartBtn').click();
@@ -45,10 +45,10 @@ test('recarregar com hash de aba mantém sessões salvas', async ({ page }) => {
   await page.clock.fastForward('00:00:02');
   const saved = await stored(page);
   expect(saved.sessions).toBe(1);
-  expect(new URL(page.url()).hash).toBe('#dashboard');
+  expect(new URL(page.url()).hash).toBe('#hoje');
 
   await page.reload();
-  await expect(page.locator('#panel-dashboard')).toBeVisible();
+  await expect(page.locator('#panel-hoje')).toBeVisible();
   await page.clock.fastForward('00:00:02');
   expect(await stored(page)).toEqual(saved);
 });

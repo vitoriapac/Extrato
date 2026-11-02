@@ -7,7 +7,7 @@ test('registra dificuldade percebida na sessão e respeita os campos por ativida
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   await page.locator('#timerTypeSelect').selectOption('questions');
   await page.locator('#timerStartBtn').click();
   await expect.poll(() => page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');
@@ -35,6 +35,7 @@ test('conclui uma sessão pelo cronômetro e registra o histórico uma única ve
   page,
 }) => {
   await page.goto('/');
+  await activateTab(page, 'hoje');
   await page.locator('#timerTypeSelect').selectOption('questions');
   await page.locator('#timerStartBtn').click();
   await expect.poll(() => page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');
@@ -46,6 +47,7 @@ test('conclui uma sessão pelo cronômetro e registra o histórico uma única ve
   await page.locator('#sessionModalCorrect').fill('7');
   await page.locator('#sessionModalNotes').fill('Sessão validada pelo fluxo completo');
   await page.locator('#sessionModalSaveBtn').click();
+  await activateTab(page, 'dashboard');
   await expect(page.locator('#studySessionsCount')).toHaveText('1 sessão');
   await expect(page.locator('#studySessionsBody tr[data-id]')).toHaveCount(1);
   await expect(page.locator('#studySessionsBody')).toContainText('10 questões');
@@ -58,7 +60,7 @@ test('conclusão de revisão registra retenção percebida sem mostrar campos de
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   await page.locator('#timerTypeSelect').selectOption('review');
   await page.locator('#timerStartBtn').click();
   await expect.poll(() => page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');
@@ -88,7 +90,7 @@ test('sessão de simulado encaminha ao cadastro próprio do simulado', async ({ 
     api.setState(state);
     api.renderAll();
   });
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   await page.locator('#timerTypeSelect').selectOption('simulation');
   await page.locator('#timerStartBtn').click();
   await expect.poll(() => page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');

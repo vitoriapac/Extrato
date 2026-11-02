@@ -25,6 +25,7 @@ import {
   renderActiveStudyTimerNoticeHtml,
 } from './timer-controller.js';
 import { scrollBehavior } from '../accessibility.js';
+import { TIMER_TAB } from './timer-ui-controller.js';
 
 export interface StudyTimerRuntimeControllerOptions {
   document: Document;
@@ -104,7 +105,6 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     guidedStudyService,
     sessionService,
     timerUiController,
-    activeTabName,
     activateTab,
     scheduleSave,
     persistAndRender,
@@ -438,13 +438,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     populateTimerContextControls();
     startTimer();
     renderPlanoHoje();
-    if (activeTabName() !== 'dashboard') timerUiController.openStudyTimerFocus();
-    else {
-      document
-        .querySelector('#panel-dashboard .timer-block')
-        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
-      requestAnimationFrame(() => document.getElementById('timerPauseBtn')?.focus());
-    }
+    timerUiController.openStudyTimerFocus();
   }
 
   const sessionModalController = createSessionModalController({
@@ -539,7 +533,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       timerUiController.toggleTimerFocus(false);
     }
     result.hidden = false;
-    activateTab('dashboard');
+    activateTab(TIMER_TAB);
     result.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     result.focus({ preventScroll: true });
   }

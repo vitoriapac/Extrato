@@ -43,7 +43,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
       try {
         for (const [id, selector, panel] of [
           ['timeline', '#strategicTimelineDashboard', 'metas'],
-          ['study', '.chart-card:has(.timer-block)', 'dashboard'],
+          ['study', '#study-timer', 'hoje'],
           ['sessions', '#studySessionsCard', 'dashboard'],
           ['close', '#weeklyCloseDashboard', 'metas'],
         ]) {
@@ -95,6 +95,8 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
     .getByRole('button', { name: 'Iniciar estudo', exact: true })
     .click();
   await expect(page.locator('#timerStartBtn')).toBeFocused();
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await activateTab(page, 'dashboard');
   await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState());

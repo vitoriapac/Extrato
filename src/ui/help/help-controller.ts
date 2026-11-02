@@ -51,7 +51,7 @@ const DESTINATIONS: Readonly<Record<string, { tab: string; selector?: string; se
     adherence: { tab: 'desempenho', section: 'consistency', selector: '.adherence-summary' },
     subjects: { tab: 'disciplinas', selector: '#addSubjectBtn' },
     overview: { tab: 'dashboard', selector: '#balanceFigure' },
-    timer: { tab: 'dashboard', selector: '#timerSubjectSelect' },
+    timer: { tab: 'hoje', selector: '#timerSubjectSelect' },
     questions: { tab: 'questoes', selector: '#addQuestaoRowBtn' },
     reviews: { tab: 'agenda', selector: '#addAgendaRowBtn' },
     today: { tab: 'hoje', selector: '#panel-hoje' },

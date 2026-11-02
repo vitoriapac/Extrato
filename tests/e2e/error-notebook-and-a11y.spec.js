@@ -118,7 +118,7 @@ test('Acessibilidade por teclado fecha modais com Escape sem keyboard traps', as
 
 test('Cronômetro anuncia alterações de estado em região aria-live', async ({ page }) => {
   await prepare(page);
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
 
   const timerLive = page.locator('#timerAriaLive');
   await expect(timerLive).toBeAttached();

@@ -278,7 +278,8 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ## Fase 4 — Conforto
 
 ### C1: Cronômetro fora da Visão Geral (4.5.1)
-**Aceite:** [ ] "Iniciar estudo" abre o timer (painel ou aba Hoje) · [ ] Tour e E2E que usam `#overview-timer` atualizados
+**Aceite:** [x] "Iniciar estudo" abre o timer (painel ou aba Hoje) · [x] Tour e E2E que usam `#overview-timer` atualizados
+**Resultado (02/11/2026):** o bloco do cronômetro saiu da Visão Geral e foi para Hoje, logo depois do resumo do dia, como `#study-timer` (IDs internos mantidos). `TIMER_TAB = 'hoje'` em `timer-ui-controller.ts`; modo foco, resultado da sessão, ajuda e atalho Esc apontam para lá. Iniciar uma atividade do plano abre sempre o modo foco, de qualquer aba; ao sair, volta à aba de origem e devolve o foco ao gatilho (antes, na Visão Geral, só rolava até o card). "Iniciar estudo" do histórico vazio leva a Hoje. Bug encontrado no caminho: os controles do cronômetro (disciplina, tópico, tipo) só eram preenchidos no render da Visão Geral; a seção passou para o escopo de Hoje. O tour já descrevia o cronômetro em Hoje. Visão Geral na demo: o card do cronômetro (com seletores e ações) deixa de ocupar a tela. 11 specs E2E ajustados (trocar para Hoje antes de usar o cronômetro; Esc depois de iniciar pela Visão Geral; hash `#hoje` após salvar a sessão).
 **Dependências:** Checkpoint 3 · **Tamanho:** M
 
 ### C2: Conquistas e progresso vão para Desempenho (4.5.2)

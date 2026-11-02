@@ -65,11 +65,16 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload', a
   await expect
     .poll(() => page.evaluate(() => window.__EXTRATO_TEST__.getState().activeTimer.planItemId))
     .toBe('daily-first');
+  // The timer lives in Hoje; starting from the overview opens it in focus mode, Esc comes back.
+  await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await page.keyboard.press('Escape');
   await expect(card.getByRole('button', { name: 'Retomar sessão' })).toBeVisible();
   await page.clock.fastForward('00:10:00');
+  await card.getByRole('button', { name: 'Retomar sessão' }).click();
   await page.locator('#timerFinishBtn').click();
   await expect(page.locator('#sessionModalOverlay')).toBeVisible();
   await page.locator('#sessionModalSaveBtn').click();
+  await activateTab(page, 'dashboard');
   await expect(card).toContainText('10min de 20min do plano · 50%');
   await expect(
     card.getByRole('img', { name: 'Progresso das atividades planejadas: 50 de 100' })
@@ -121,6 +126,8 @@ for (const [width, theme] of [
     await expect(card.locator('[data-daily-start]')).toHaveCount(1);
     await card.getByRole('button', { name: 'Iniciar estudo', exact: true }).focus();
     await page.keyboard.press('Enter');
+    await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+    await page.keyboard.press('Escape');
     await expect(card.getByRole('button', { name: 'Retomar sessão' })).toBeVisible();
   });
 
@@ -178,6 +185,7 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
   await expect(card).toContainText('do plano · 25%');
   await expect(card).toContainText('0 de 2 atividades concluídas');
   await card.getByRole('button', { name: 'Iniciar estudo', exact: true }).click();
+  await page.keyboard.press('Escape');
   await expect(card.getByRole('button', { name: 'Retomar sessão' })).toBeVisible();
   const blocked = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));
   blocked.studySessions[0].durationSeconds = 600;
@@ -300,6 +308,7 @@ test('iniciar pelo Plano de hoje abre o modo foco e Esc devolve ao Hoje', async 
 
 test('Esc no fim da sessão mantém o tempo e descartar pede confirmação', async ({ page }) => {
   await prepare(page);
+  await activateTab(page, 'hoje');
   await expect(page.locator('#timerFinishBtn')).toBeDisabled();
   await expect(page.locator('#timerResetBtn')).toBeDisabled();
   await page.locator('#timerStartBtn').click();
@@ -336,7 +345,7 @@ test('finalizar no modo foco mostra o registro da sessão por cima do cronômetr
   const layers = await page.evaluate(() => ({
     modal: Number(getComputedStyle(document.getElementById('sessionModalOverlay')).zIndex),
     focus: Number(
-      getComputedStyle(document.querySelector('#panel-dashboard .chart-card:has(.timer-block)'))
+      getComputedStyle(document.querySelector('#study-timer'))
         .zIndex
     ),
   }));

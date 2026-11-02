@@ -178,6 +178,7 @@ test('Recovery exige confirmação, revalida e registra plano e decisão sem ree
     'Plano de recuperação aplicado'
   );
   const decision = after.history.at(-1);
+  await activateTab(page, 'hoje');
   await page.locator('#timerSubjectSelect').selectOption(decision.targetSubjectId);
   await page.locator('#timerTopicSelect').selectOption(decision.targetTopicId);
   await page.locator('#timerTypeSelect').selectOption('study');

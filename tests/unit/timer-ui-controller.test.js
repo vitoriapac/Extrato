@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createTimerUiController } from '../../src/ui/controllers/timer-ui-controller.js';
 
 test('createTimerUiController — ativa e desativa modo foco restaurando a aba de origem', () => {
-  let activeTab = 'hoje';
+  let activeTab = 'dashboard';
   const activatedTabs = [];
   let contextRendered = false;
 
@@ -62,17 +62,17 @@ test('createTimerUiController — ativa e desativa modo foco restaurando a aba d
     getTopicById: () => null,
   });
 
-  // Abre modo foco a partir da aba 'hoje'
+  // Abre modo foco a partir da Visão Geral: o cronômetro mora em Hoje
   controller.openStudyTimerFocus();
-  assert.equal(activeTab, 'dashboard');
+  assert.equal(activeTab, 'hoje');
   assert.equal(mockBody.classList.contains('timer-focus-active'), true);
-  assert.equal(controller.getTimerFocusReturnTab(), 'hoje');
+  assert.equal(controller.getTimerFocusReturnTab(), 'dashboard');
   assert.equal(contextRendered, true);
   assert.match(elements.timerFocusToggle.innerHTML, /icon-tabler-x[^]*Sair do modo foco$/);
 
-  // Sai do modo foco: deve retornar à aba 'hoje'
+  // Sai do modo foco: deve retornar à Visão Geral
   controller.toggleTimerFocus(false);
-  assert.equal(activeTab, 'hoje');
+  assert.equal(activeTab, 'dashboard');
   assert.equal(mockBody.classList.contains('timer-focus-active'), false);
   assert.equal(controller.getTimerFocusReturnTab(), null);
   assert.match(elements.timerFocusToggle.innerHTML, /icon-tabler-focus-2[^]*Modo foco$/);

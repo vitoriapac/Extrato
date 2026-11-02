@@ -64,6 +64,7 @@ for (const width of [320, 375, 430, 768, 1440])
       await page.keyboard.press('Escape');
       await expect(page.locator('#guidedOnboardingOverlay')).toBeHidden();
 
+      await activateTab(page, 'hoje');
       await page.locator('#timerTypeSelect').selectOption('questions');
       await page.locator('#timerStartBtn').click();
       await expect.poll(() => page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');
@@ -82,7 +83,7 @@ for (const width of [320, 375, 430, 768, 1440])
 for (const width of [320, 375, 430, 768, 1440])
   test(`modo foco e cronômetro cabem em ${width}px em claro e escuro`, async ({ page }) => {
     await openDemo(page);
-    await activateTab(page, 'dashboard');
+    await activateTab(page, 'hoje');
     const focusToggle = page.locator('#timerFocusToggle');
     for (const theme of ['light', 'dark']) {
       await page.setViewportSize({ width, height: 900 });

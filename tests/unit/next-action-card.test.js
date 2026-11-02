@@ -9,13 +9,13 @@ test('NextActionCard — renderiza estado vazio quando não há atividade elegí
     model: null,
     emptyState: {
       message: 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.',
-      timerHref: '#overview-timer',
+      timerHref: '#study-timer',
     },
   };
 
   const html = render(h(NextActionCard, props));
   assert.ok(html.includes('Defina pelo menos 15 minutos para hoje'));
-  assert.ok(html.includes('href="#overview-timer"'));
+  assert.ok(html.includes('href="#study-timer"'));
   assert.ok(html.includes('Ver cronômetro e registrar estudo'));
 });
 
@@ -31,7 +31,7 @@ test('NextActionCard — neutraliza link do cronômetro quando timerHref é nulo
   const html = render(h(NextActionCard, props));
   assert.ok(html.includes('Ainda não há uma atividade elegível com os dados atuais.'));
   assert.ok(!html.includes('Ver cronômetro e registrar estudo'));
-  assert.ok(!html.includes('#overview-timer'));
+  assert.ok(!html.includes('#study-timer'));
 });
 
 test('NextActionCard — renderiza WelcomeHeroCard acolhedor quando isFirstRun é true', () => {

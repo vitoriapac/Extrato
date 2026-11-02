@@ -4,7 +4,6 @@ export const RENDER_SCOPE_SECTIONS = {
     'primeiro uso',
     'ação e atenção',
     'dashboard de aprovação',
-    'controles do cronômetro',
     'evolução do progresso',
     'conquistas',
     'radar',
@@ -34,6 +33,7 @@ export const RENDER_SCOPE_SECTIONS = {
     'ritmo',
   ]),
   hoje: new Set([
+    'controles do cronômetro',
     'resumo executivo',
     'central de diagnóstico',
     'recomendação de estudo',

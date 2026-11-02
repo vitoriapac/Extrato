@@ -147,7 +147,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
     api.renderAll();
   }, timer);
   // A subsequent real session triggers the existing outcome measurement service.
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   await page.locator('#timerSubjectSelect').selectOption(timer.subjectId);
   await page.locator('#timerTopicSelect').selectOption(timer.topicId);
   await page.locator('#timerStartBtn').click();

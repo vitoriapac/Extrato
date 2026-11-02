@@ -312,7 +312,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
             effectiveMinutes < 15
               ? 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.'
               : 'Ainda não há uma atividade elegível com os dados atuais.',
-          timerHref: hasActiveContent ? '#overview-timer' : null,
+          timerHref: hasActiveContent ? '#study-timer' : null,
         },
         activeTimerNoticeHtml: renderActiveStudyTimerNotice(null),
       });

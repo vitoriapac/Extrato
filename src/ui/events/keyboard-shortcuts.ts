@@ -33,7 +33,7 @@ export function createKeyboardShortcutsController(opts: KeyboardShortcutsOptions
     }
     if (event.key !== 'Tab') return;
     const focusSurface = document.querySelector?.(
-      'body.timer-focus-active #panel-dashboard .chart-card:has(.timer-block)'
+      'body.timer-focus-active #study-timer'
     );
     const focusable = [
       ...(focusSurface?.querySelectorAll?.(

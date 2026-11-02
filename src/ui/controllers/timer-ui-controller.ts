@@ -14,6 +14,9 @@ import { createKeyboardShortcutsController } from '../events/keyboard-shortcuts.
 import { scrollBehavior } from '../accessibility.js';
 import { renderIconSvg } from '../primitives/icon.js';
 
+/** The study timer lives in the Hoje tab; focus mode overlays it from any tab. */
+export const TIMER_TAB = 'hoje';
+
 export interface TimerUiControllerOptions {
   document: any;
   activeTabName: () => string;
@@ -45,14 +48,14 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
   let timerFocusReturnTab: string | null = null;
 
   function focusStudyTimer() {
-    activateTab('dashboard');
+    activateTab(TIMER_TAB);
     document.getElementById('timerStartBtn')?.focus?.();
   }
 
   function openStudyTimerFocus() {
     const origin = activeTabName();
-    timerFocusReturnTab = origin === 'dashboard' ? null : origin;
-    activateTab('dashboard');
+    timerFocusReturnTab = origin;
+    activateTab(TIMER_TAB);
     toggleTimerFocus(true);
   }
 
@@ -70,7 +73,7 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
 
     if (active) {
       document
-        .querySelector?.('#panel-dashboard .timer-block')
+        .querySelector?.('#study-timer .timer-block')
         ?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
       rAF(() =>
         document.getElementById(isTimerRunning() ? 'timerPauseBtn' : 'timerStartBtn')?.focus?.()

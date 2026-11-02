@@ -41,6 +41,7 @@ async function prepare(page) {
 }
 const card = page => page.locator('.overview-now-action .overview-action-card').first();
 async function runSession(page) {
+  await activateTab(page, 'dashboard');
   await card(page).locator('.overview-action-buttons .btn').first().click();
   await page.clock.fastForward('00:05:00');
   await page.locator('#timerFinishBtn').click();

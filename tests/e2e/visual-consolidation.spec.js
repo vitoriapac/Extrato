@@ -108,7 +108,7 @@ test('modo foco mostra o contexto da tarefa, prende o teclado e Escape devolve o
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   const subjectSelect = page.locator('#timerSubjectSelect'),
     subject = await subjectSelect.locator('option').evaluateAll(options => {
       const option = options.find(item => item.value);
@@ -135,7 +135,7 @@ test('modo foco mostra o contexto da tarefa, prende o teclado e Escape devolve o
   await expect(page.locator('#timerFocusSubtitle')).toContainText('Questões');
   await expect(page.locator('.timer-context')).toBeHidden();
   await expect(page.locator('#timerStartBtn')).toBeFocused();
-  const surface = page.locator('#panel-dashboard .chart-card:has(.timer-block)'),
+  const surface = page.locator('#study-timer'),
     focusable = surface.locator(
       'button:visible:not([disabled]),a[href]:visible,input:visible:not([disabled]),select:visible:not([disabled]),textarea:visible:not([disabled]),[tabindex]:visible:not([tabindex="-1"])'
     ),
@@ -239,7 +239,7 @@ test('meta do cronômetro mostra progresso acessível somente quando configurada
     api.setState(state);
     api.refreshTimerDisplay();
   });
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'hoje');
   const progress = page.locator('#studyTimerProgress');
   await expect(progress).toBeVisible();
   await expect(page.locator('#studyTimerTarget')).toBeVisible();
