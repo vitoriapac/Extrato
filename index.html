@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=cc943d89f99b">
-<link rel="stylesheet" href="styles/app.css?v=cc943d89f99b">
+<link rel="stylesheet" href="styles/tailwind.css?v=9f048e1605c4">
+<link rel="stylesheet" href="styles/app.css?v=9f048e1605c4">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -29,7 +29,8 @@
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
     <div><strong><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-flask icon-inline" aria-hidden="true"><path d="M9 3l6 0"></path><path d="M10 9l4 0"></path><path d="M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6"></path></svg>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
     <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Relatório</button></nav>
-    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-route icon-inline" aria-hidden="true"><path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path><path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4"></path><path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5"></path></svg>Tour guiado</button><button class="btn ghost small" id="resetDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-logout icon-inline" aria-hidden="true"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path><path d="M9 12h12l-3 -3"></path><path d="M18 15l3 -3"></path></svg>Sair da demonstração</button></div>
+    <button class="btn ghost small demo-menu-toggle" id="demoMenuToggle" type="button" aria-expanded="false" aria-controls="demoBannerActions"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline icon-tabler-dots tab-icon" aria-hidden="true"><path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path></svg>Opções</button>
+    <div class="demo-banner-actions" id="demoBannerActions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-route icon-inline" aria-hidden="true"><path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path><path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4"></path><path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5"></path></svg>Tour guiado</button><button class="btn ghost small" id="resetDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-logout icon-inline" aria-hidden="true"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path><path d="M9 12h12l-3 -3"></path><path d="M18 15l3 -3"></path></svg>Sair da demonstração</button></div>
   </aside>
 
   <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
@@ -96,12 +97,12 @@
     <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
     <div class="primary-nav-shell">
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
-        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-layout-dashboard tab-icon" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path></svg><span class="tab-label">Visão geral</span></button>
+        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-layout-dashboard tab-icon" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Início</span></span></button>
         <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chart-line tab-icon" aria-hidden="true"><path d="M4 19l16 0"></path><path d="M4 15l4 -6l4 2l4 -5l4 4"></path></svg><span class="tab-label">Desempenho</span></button>
         <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-sun tab-icon" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path></svg><span class="tab-label">Hoje</span></button>
-        <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-books tab-icon" aria-hidden="true"><path d="M5 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"></path><path d="M9 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"></path><path d="M5 8h4"></path><path d="M9 16h4"></path><path d="M13.803 4.56l2.184 -.53c.562 -.135 1.133 .19 1.282 .732l3.695 13.418a1.02 1.02 0 0 1 -.634 1.219l-.133 .041l-2.184 .53c-.562 .135 -1.133 -.19 -1.282 -.732l-3.695 -13.418a1.02 1.02 0 0 1 .634 -1.219l.133 -.041"></path><path d="M14 9l4 -1"></path><path d="M16 16l3.923 -.98"></path></svg><span class="tab-label">Disciplinas</span></button>
-        <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-month tab-icon" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"></path><path d="M16 3v4"></path><path d="M8 3v4"></path><path d="M4 11h16"></path><path d="M8 14v4"></path><path d="M12 14v4"></path><path d="M16 14v4"></path></svg><span class="tab-label">Calendário</span></button>
-        <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-repeat tab-icon" aria-hidden="true"><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"></path><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"></path></svg><span class="tab-label">Agenda de Revisões</span></button>
+        <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-books tab-icon" aria-hidden="true"><path d="M5 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"></path><path d="M9 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"></path><path d="M5 8h4"></path><path d="M9 16h4"></path><path d="M13.803 4.56l2.184 -.53c.562 -.135 1.133 .19 1.282 .732l3.695 13.418a1.02 1.02 0 0 1 -.634 1.219l-.133 .041l-2.184 .53c-.562 .135 -1.133 -.19 -1.282 -.732l-3.695 -13.418a1.02 1.02 0 0 1 .634 -1.219l.133 -.041"></path><path d="M14 9l4 -1"></path><path d="M16 16l3.923 -.98"></path></svg><span class="tab-label"><span class="tab-label-long">Disciplinas</span><span class="tab-label-short">Matérias</span></span></button>
+        <button class="tab-btn tab-secondary" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-month tab-icon" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"></path><path d="M16 3v4"></path><path d="M8 3v4"></path><path d="M4 11h16"></path><path d="M8 14v4"></path><path d="M12 14v4"></path><path d="M16 14v4"></path></svg><span class="tab-label">Calendário</span></button>
+        <button class="tab-btn" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-repeat tab-icon" aria-hidden="true"><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"></path><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"></path></svg><span class="tab-label"><span class="tab-label-long">Agenda de Revisões</span><span class="tab-label-short">Agenda</span></span></button>
         <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-list-check tab-icon" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"></path><path d="M11 6l9 0"></path><path d="M11 12l9 0"></path><path d="M11 18l9 0"></path></svg><span class="tab-label">Questões &amp; Simulados</span></button>
         <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-map-2 tab-icon" aria-hidden="true"><path d="M12 18.5l-3 -1.5l-6 3v-13l6 -3l6 3l6 -3v7.5"></path><path d="M9 4v13"></path><path d="M15 7v5.5"></path><path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879"></path><path d="M19 18v.01"></path></svg><span class="tab-label">Planejamento</span></button>
         <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-help-circle tab-icon" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path><path d="M12 16v.01"></path><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"></path></svg><span class="tab-label">Instruções</span></button>
@@ -109,7 +110,7 @@
       <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-dots tab-icon" aria-hidden="true"><path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path></svg><span class="tab-label">Mais</span></button>
       <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
         <button type="button" role="menuitem" data-more-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chart-line tab-icon" aria-hidden="true"><path d="M4 19l16 0"></path><path d="M4 15l4 -6l4 2l4 -5l4 4"></path></svg><span>Desempenho</span></button>
-        <button type="button" role="menuitem" data-more-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-repeat tab-icon" aria-hidden="true"><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"></path><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"></path></svg><span>Agenda de Revisões</span></button>
+        <button type="button" role="menuitem" data-more-tab="calendario"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-month tab-icon" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"></path><path d="M16 3v4"></path><path d="M8 3v4"></path><path d="M4 11h16"></path><path d="M8 14v4"></path><path d="M12 14v4"></path><path d="M16 14v4"></path></svg>Calendário</button>
         <button type="button" role="menuitem" data-more-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-list-check tab-icon" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"></path><path d="M11 6l9 0"></path><path d="M11 12l9 0"></path><path d="M11 18l9 0"></path></svg><span>Questões e Simulados</span></button>
         <button type="button" role="menuitem" data-more-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-map-2 tab-icon" aria-hidden="true"><path d="M12 18.5l-3 -1.5l-6 3v-13l6 -3l6 3l6 -3v7.5"></path><path d="M9 4v13"></path><path d="M15 7v5.5"></path><path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879"></path><path d="M19 18v.01"></path></svg><span>Planejamento</span></button>
         <button type="button" role="menuitem" data-more-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-help-circle tab-icon" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path><path d="M12 16v.01"></path><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"></path></svg><span>Instruções</span></button>
@@ -143,11 +144,12 @@
     <div class="stat-grid" id="quickStats"></div>
 
     <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
-      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Prontidão</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Conquistas</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a></div>
-      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Prontidão</option><option value="overview-study">Estudo</option><option value="overview-evolution">Conquistas</option><option value="overview-progress">Progresso</option><option value="overview-next-actions">Próximas ações</option></select></label>
+      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Prontidão</a><a href="#overview-study">Estudo</a><a href="#overview-next-actions">Próximas ações</a></div>
+      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Prontidão</option><option value="overview-study">Estudo</option><option value="overview-next-actions">Próximas ações</option></select></label>
     </nav>
 
-    <div class="overview-section-heading" id="overview-summary"><span>Aprovação e retenção</span></div>
+    <details class="overview-section" id="overview-summary" data-remember="overview-readiness" data-default-open="wide">
+      <summary class="overview-section-heading"><span>Aprovação e retenção</span></summary>
     <div class="overview-pair" id="overview-performance">
     <div class="chart-card intelligence-column">
       <h3>Índice de Prontidão</h3>
@@ -163,8 +165,10 @@
       <details class="performance-details"><summary>Como a retenção é calculada?</summary><p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
     </details>
     </div>
+    </details>
 
-    <div class="overview-section-heading" id="overview-study"><span>Estudo e sessões</span></div>
+    <details class="overview-section" id="overview-study" data-remember="overview-study" data-default-open="wide">
+      <summary class="overview-section-heading"><span>Estudo e sessões</span></summary>
     <div class="chart-card">
       <h3>Tempo de estudo</h3>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
@@ -221,13 +225,27 @@
         </table>
       </div>
     </div>
+    </details>
 
-    <div class="overview-section-heading" id="overview-evolution"><span>Conquistas</span></div>
+    <details class="overview-section" id="overview-next-actions" data-remember="overview-next" data-default-open="wide">
+      <summary class="overview-section-heading"><span>Próximas ações</span></summary>
+    <div class="chart-card">
+      <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
+      <ul class="upcoming-list" id="upcomingList"></ul>
+      <div id="upcomingFooter"></div>
+    </div>
+    </details>
+  </div>
+
+  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
+    <div id="performancePage"></div>
+    <p class="sr-only" id="performanceStatus" role="status"></p>
+    <section class="performance-progress" id="performance-progress" aria-labelledby="performanceProgressTitle">
+      <header class="module-heading"><span class="module-heading__eyebrow">Evolução</span><h2 class="module-heading__title" id="performanceProgressTitle">Progresso e conquistas</h2></header>
     <div class="chart-card">
       <h3>Conquistas</h3>
       <div class="badges-grid" id="badgesGrid"></div>
     </div>
-    <div class="overview-section-heading" id="overview-progress"><span>Progresso e conquistas</span></div>
     <details class="chart-card overview-fold">
       <summary>Evolução, progresso por disciplina e radar</summary>
     <div class="chart-card">
@@ -250,18 +268,7 @@
     </div>
     </div>
     </details>
-
-    <div class="overview-section-heading" id="overview-next-actions"><span>Próximas ações</span></div>
-    <div class="chart-card">
-      <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
-      <ul class="upcoming-list" id="upcomingList"></ul>
-      <div id="upcomingFooter"></div>
-    </div>
-  </div>
-
-  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
-    <div id="performancePage"></div>
-    <p class="sr-only" id="performanceStatus" role="status"></p>
+    </section>
     <div id="examIntelligenceParking" hidden>
       <div class="exam-intelligence-hub" id="examIntelligenceHub">
         <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Histórico, incidência e impacto no concurso ativo. Questões históricas não alteram seu desempenho pessoal.</p></header>
@@ -935,7 +942,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=cc943d89f99b"></script>
+  <script src="src/app.bundle.js?v=9f048e1605c4"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

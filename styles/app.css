@@ -2674,3 +2674,24 @@ body:has(#panel-dashboard.active [data-welcome-hero]) #demoEmptyCta{display:none
 .month-day.load-3,.cal-load-swatch .load-3{background:color-mix(in srgb,var(--chart-series-primary) 26%,var(--surface-card))}
 .month-day.outside.load-1,.month-day.outside.load-2,.month-day.outside.load-3{background:var(--month-outside-bg)}
 .cal-load-swatch{display:inline-flex;margin-right:6px;border:1px solid var(--border-subtle);vertical-align:middle}.cal-load-swatch i{display:block;width:10px;height:12px}
+.performance-progress{display:grid;gap:var(--space-4);margin-top:var(--space-8);padding-top:var(--space-6);border-top:1px solid var(--border-subtle)}
+.performance-progress>.chart-card,.performance-progress>details{margin:0}
+summary.overview-section-heading{min-height:var(--touch-target);cursor:pointer;list-style:none}
+summary.overview-section-heading::-webkit-details-marker{display:none}
+summary.overview-section-heading span::after{content:"";display:inline-block;width:.45em;height:.45em;margin-left:.6em;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-.15em) rotate(45deg);transition:transform 150ms ease}
+.overview-section:not([open])>summary.overview-section-heading span::after{transform:translateY(.05em) rotate(-45deg)}
+.overview-section:not([open])>summary.overview-section-heading{margin-bottom:0}
+summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){summary.overview-section-heading span::after{transition:none}}
+/* C4: phone navigation. Short tab labels in the bottom bar; floating controls sit above it. */
+.tab-label-short,.demo-menu-toggle{display:none}
+@media(max-width:760px){
+  .primary-nav-shell .tab-label-long{display:none}.primary-nav-shell .tab-label-short{display:inline}
+  .back-to-top{bottom:calc(var(--bottom-nav-height,64px) + 12px + env(safe-area-inset-bottom))}
+  .save-indicator{bottom:calc(var(--bottom-nav-height,64px) + 12px + env(safe-area-inset-bottom))}
+  .demo-banner{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px}
+  .demo-banner>div:first-child{flex:1 1 auto;min-width:0}.demo-banner>div:first-child span{display:none}
+  .demo-menu-toggle{display:inline-flex;align-items:center;min-height:var(--touch-target)}
+  .demo-banner:not(.is-menu-open) .demo-banner-actions{display:none}
+  .demo-banner.is-menu-open .demo-banner-actions{flex-basis:100%}
+}

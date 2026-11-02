@@ -1,12 +1,15 @@
 export const RENDER_SCOPE_SECTIONS = {
-  desempenho: new Set(['desempenho']),
+  desempenho: new Set([
+    'desempenho',
+    'evolução do progresso',
+    'progresso por disciplina',
+    'conquistas',
+    'radar',
+  ]),
   dashboard: new Set([
     'primeiro uso',
     'ação e atenção',
     'dashboard de aprovação',
-    'evolução do progresso',
-    'conquistas',
-    'radar',
     'visão geral',
     'histórico de sessões',
   ]),
@@ -59,6 +62,7 @@ export interface BuildRenderSectionsOptions {
   renderProgressChart: () => void;
   renderBadges: () => void;
   renderRadarDisciplinas: () => void;
+  renderSubjectProgressBars: () => void;
   renderDashboard: () => void;
   renderStudySessionsHistory: () => void;
   renderSubjects: () => void;
@@ -106,6 +110,7 @@ export function buildRenderSections(opts: BuildRenderSectionsOptions): Array<[st
     ['evolução do progresso', opts.renderProgressChart],
     ['conquistas', opts.renderBadges],
     ['radar', opts.renderRadarDisciplinas],
+    ['progresso por disciplina', opts.renderSubjectProgressBars],
     ['visão geral', opts.renderDashboard],
     ['histórico de sessões', opts.renderStudySessionsHistory],
     ['disciplinas', opts.renderSubjects],

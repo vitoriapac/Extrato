@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-267 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+268 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -251,6 +251,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/recovery-renderer.test.js | node | Recuperação | critical | — | contract | none |
 | tests/unit/recovery-transaction.test.js | node | Recuperação | critical | — | contract | none |
 | tests/unit/release-intelligence.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/remembered-sections.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/remote-sync-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/remote-sync-provider.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/replan-controller.test.js | node | Planejamento | critical | — | contract | none |

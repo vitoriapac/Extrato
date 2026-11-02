@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openDemo, expectNoPageOverflow } from './helpers.js';
+import { openDemo, expectNoPageOverflow, activateTab } from './helpers.js';
 
 test('prévia e selo da demonstração funcionam no mobile sem alterar a base antes de carregar', async ({
   page,
@@ -102,6 +102,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
   expect(restored.studySessions.some(session => String(session.id).startsWith('demo-'))).toBe(
     false
   );
+  await activateTab(page, 'desempenho');
   await page
     .locator('.overview-fold', { has: page.locator('#progressBars') })
     .locator('summary')

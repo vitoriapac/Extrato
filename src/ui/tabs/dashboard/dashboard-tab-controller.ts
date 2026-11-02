@@ -416,6 +416,22 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     }
   }
 
+  // Lives in Desempenho > Progresso e conquistas since C2; rendered with that tab, not the overview.
+  function renderSubjectProgressBars(): void {
+    if (!doc) return;
+    const bars = doc.getElementById('progressBars');
+    if (bars && deps.activeSubjects) {
+      mountProgressBars(
+        bars,
+        deps.activeSubjects().map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          percentage: deps.subjectProgress ? deps.subjectProgress(s) : 0,
+        }))
+      );
+    }
+  }
+
   function renderDashboard(): void {
     if (!doc) return;
     const state = deps.getState ? deps.getState() : {};
@@ -433,18 +449,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
     const qs = doc.getElementById('quickStats');
     if (qs) mountQuickStats(qs, { total, naoIniciado });
-
-    const bars = doc.getElementById('progressBars');
-    if (bars && deps.activeSubjects) {
-      mountProgressBars(
-        bars,
-        deps.activeSubjects().map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          percentage: deps.subjectProgress ? deps.subjectProgress(s) : 0,
-        }))
-      );
-    }
 
     const today = todayISO();
     const entitySubjectName = deps.entitySubjectName || ((item: any) => item?.subject || '—');
@@ -509,6 +513,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     renderQuickStatsHtml,
     mountQuickStats,
     renderProgressBarsHtml,
+    renderSubjectProgressBars,
     mountProgressBars,
     renderUpcomingListHtml,
     mountUpcomingList,

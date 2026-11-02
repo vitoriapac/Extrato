@@ -304,6 +304,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       renderProgressChart: () => analyticsUi.performanceTabController.renderProgressChart(),
       renderBadges: () => analyticsUi.achievementsController.render(),
       renderRadarDisciplinas: () => analyticsUi.performanceTabController.renderRadarDisciplinas(),
+      renderSubjectProgressBars: () => analyticsUi.dashboardTabController.renderSubjectProgressBars(),
       renderDashboard: () => analyticsUi.dashboardTabController.renderDashboard(),
       renderStudySessionsHistory: () =>
         executionUi.sessionHistoryController.renderStudySessionsHistory(),

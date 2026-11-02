@@ -46,7 +46,7 @@ export function createDialogFeedback(opts: DialogFeedbackOptions) {
     toastTimer = setTimeout(() => el.classList.remove('show'), durationMs);
   }
 
-  function flashSaved(durationMs = 1200): void {
+  function flashSaved(durationMs = 2000): void {
     const el = document.getElementById('saveIndicator');
     if (!el) return;
     el.classList.add('show');

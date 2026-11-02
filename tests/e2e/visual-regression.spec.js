@@ -91,6 +91,7 @@ test('regressão visual dos componentes críticos em desktop', async ({ page }) 
     'historico-sessoes-desktop.png',
     screenshotOptions
   );
+  await activateTab(page, 'desempenho');
   await expect(page.locator('#badgesGrid')).toHaveScreenshot(
     'conquistas-desktop.png',
     screenshotOptions

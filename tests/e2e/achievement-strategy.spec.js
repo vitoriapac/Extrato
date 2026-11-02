@@ -7,7 +7,7 @@ test('conquistas mostram estratégia e próximos passos em tela pequena', async 
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'desempenho');
   const upcoming = page.locator('#badgesGrid .achievement-upcoming');
   await upcoming.locator('summary').click();
   await expect(upcoming.locator('.achievement-category')).toContainText([

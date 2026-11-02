@@ -283,16 +283,19 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Dependências:** Checkpoint 3 · **Tamanho:** M
 
 ### C2: Conquistas e progresso vão para Desempenho (4.5.2)
-**Aceite:** [ ] Links e navegação de seções apontam para o lugar novo · [ ] Nenhum conteúdo some
+**Aceite:** [x] Links e navegação de seções apontam para o lugar novo · [x] Nenhum conteúdo some
+**Resultado (02/11/2026):** conquistas, evolução do progresso, progresso por disciplina e radar saem da Visão Geral para a seção "Progresso e conquistas" no fim de Desempenho (`#performance-progress`). As quatro seções de render passam ao escopo de Desempenho; o progresso por disciplina, que era desenhado dentro do render da Visão Geral, virou `renderSubjectProgressBars`. Atalhos da Visão Geral perdem "Conquistas" e "Progresso"; a ajuda de conquistas aponta para Desempenho. Na demo: 24 conquistas, progresso, evolução e radar renderizados lá.
 **Dependências:** C1 · **Tamanho:** S
 
 ### C3: Seções recolhíveis com estado lembrado (4.5.3)
-**Aceite:** [ ] Estado salvo por usuário (preferência de UI, não dado de estudo) · [ ] Visão Geral com 3 a 4 telas de rolagem em 375 px, medidas na demo e num usuário novo
+**Aceite:** [x] Estado salvo por usuário (preferência de UI, não dado de estudo) · [x] Visão Geral com 3 a 4 telas de rolagem em 375 px, medidas na demo e num usuário novo
+**Resultado (02/11/2026):** "Aprovação e retenção", "Estudo e sessões" e "Próximas ações" viraram `details[data-remember]` (`src/ui/remembered-sections.ts`): estado em `localStorage` (`studytrack.sectionsOpen`, com try/catch), padrão aberto a partir de 901 px e fechado no celular; atalhos e o seletor de seção abrem a seção de destino. Altura da página em 375 × 812: demo 6620 → 2775 px (3,4 telas), usuário novo 4948 → 2466 px (3,0 telas). O topo e a próxima ação continuam abertos.
 **Dependências:** C2 · **Tamanho:** M
 
 ### C4: Navegação no celular (4.6)
 **Descrição:** Barra inferior existente com Início, Hoje, Matérias, Agenda e Mais; aviso "Salvo" e voltar ao topo acima dela (o aviso some em 2 s); faixa da demo em uma linha com menu.
-**Aceite:** [ ] Nada fica coberto pela barra (conteúdo, toasts, tour) · [ ] Toques ≥ 44 px
+**Aceite:** [x] Nada fica coberto pela barra (conteúdo, toasts, tour) · [x] Toques ≥ 44 px
+**Resultado (02/11/2026):** barra inferior com Início, Hoje, Matérias, Agenda e Mais (Agenda vira primária, Calendário vai para o "Mais"); rótulos curtos só na barra do celular, que são o nome acessível. Voltar ao topo e aviso "Salvo" ficam acima da barra (`--bottom-nav-height` medido em `syncStickyMetrics`; antes o voltar ao topo ficava sob a barra); "Salvo" fica 2 s. Faixa da demo em uma linha (62 px) com botão "Opções" (44 px, `aria-expanded`) que mostra Tour, Reiniciar e Sair. Medido em 320 e 375: botões da barra 63–76 × 56 px, controles flutuantes terminam em 691 com a barra em 703, sem rolagem horizontal.
 **Dependências:** I3 · **Tamanho:** M
 
 ### C5: Cor por disciplina (4.7) — PR próprio

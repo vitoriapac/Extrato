@@ -1,4 +1,5 @@
 import { scrollBehavior } from '../accessibility.js';
+import { initRememberedSections, openSectionFor } from '../remembered-sections.js';
 /**
  * Shell UI Controller
  *
@@ -192,6 +193,13 @@ export function createShellUiController(options: ShellUiControllerOptions) {
         '--overview-nav-height',
         `${Math.ceil(overviewNav?.getBoundingClientRect().height || 0)}px`
       );
+      // Floating controls (back to top, saved notice) sit above the phone bottom bar.
+      const bottomNav = document.querySelector('.primary-nav-shell');
+      const bottomNavHeight =
+        bottomNav && getComputedStyle(bottomNav).position === 'fixed'
+          ? Math.ceil(bottomNav.getBoundingClientRect().height)
+          : 0;
+      document.documentElement.style.setProperty('--bottom-nav-height', `${bottomNavHeight}px`);
     };
 
     if (typeof IntersectionObserver !== 'undefined') {
@@ -212,10 +220,29 @@ export function createShellUiController(options: ShellUiControllerOptions) {
       }
     }
 
+    initRememberedSections();
+
+    const demoBanner = document.getElementById('demoBanner');
+    const demoMenu = document.getElementById('demoMenuToggle');
+    const setDemoMenu = (open: boolean) => {
+      demoBanner?.classList.toggle('is-menu-open', open);
+      demoMenu?.setAttribute('aria-expanded', String(open));
+    };
+    demoMenu?.addEventListener('click', () =>
+      setDemoMenu(!demoBanner?.classList.contains('is-menu-open'))
+    );
+    // Picking an action closes the menu so the strip goes back to one line.
+    document
+      .getElementById('demoBannerActions')
+      ?.addEventListener('click', event => {
+        if ((event.target as Element)?.closest?.('button')) setDemoMenu(false);
+      });
+
     document.querySelectorAll('.overview-nav-mobile select').forEach((select: Element) =>
       select.addEventListener('change', (event: any) => {
         const target = document.getElementById((event.target as HTMLInputElement).value);
         if (!target) return;
+        openSectionFor(target);
         target.scrollIntoView({
           block: 'start',
           behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches

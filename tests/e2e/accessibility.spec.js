@@ -32,6 +32,8 @@ test('mantém estrutura acessível no modo móvel e no modal', async ({ page }) 
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await expectAccessible(page, 'Modo móvel');
+  // On phones the demo actions sit behind the "Opções" button (C4).
+  await page.locator('#demoMenuToggle').click();
   await page.getByRole('button', { name: /Reiniciar demo/i }).click();
   await expect(page.locator('#modalOverlay')).toHaveClass(/show/);
   await expectAccessible(page, 'Modal');
