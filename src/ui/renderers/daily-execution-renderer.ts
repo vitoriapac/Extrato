@@ -1,3 +1,5 @@
+import { renderRingGauge } from '../primitives/charts/charts.js';
+
 const TYPE_LABELS: Record<string, any> = {
   study: 'Teoria',
   review: 'Revisão',
@@ -71,7 +73,7 @@ export function renderDailyExecution(
   );
   return `<section class="daily-execution-card" aria-labelledby="dailyExecutionTitle"><h3 id="dailyExecutionTitle">Execução de hoje</h3><div class="daily-execution-summary">
     <div class="daily-execution-metrics"><div><strong>${formatMinutes(progress.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(Math.round(progress.studiedMinutes))}</strong><span>Realizado hoje</span></div></div>
-    ${progress.progress == null ? '' : `<p class="daily-execution-progress"><strong>${progress.progress}%</strong> de progresso do plano</p><progress value="${progress.progress}" max="100" aria-label="Progresso das atividades planejadas"></progress>`}
+    ${progress.progress == null ? '' : `<div class="daily-execution-progress">${renderRingGauge({ value: progress.progress, label: 'Progresso das atividades planejadas', size: 44, stroke: 7, showValue: false })}<p><strong>${formatMinutes(Math.round(progress.plannedMinutes - progress.remainingMinutes))} de ${formatMinutes(progress.plannedMinutes)}</strong> do plano · ${progress.progress}%</p></div>`}
     <p class="daily-execution-completed">${progress.completedActivities} de ${model.items.length} atividade${model.items.length === 1 ? '' : 's'} concluída${model.items.length === 1 ? '' : 's'}</p>
     ${model.guidance ? `<p>${escapeHtml(model.guidance)}</p><button type="button" class="btn ghost small" data-delegated-click="navigateKpi('metas')">Abrir planejamento</button>` : ''}
     ${!next && model.items.length ? '<p role="status">Todas as atividades de hoje foram cumpridas.</p>' : ''}

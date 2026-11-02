@@ -173,7 +173,8 @@ test('renderer distingue progresso parcial de atividade concluída', () => {
   const input = fixture();
   input.sessions = [session()];
   const html = render(buildDailyExecutionModel(input));
-  assert.match(html, /50%<\/strong> de progresso do plano/);
+  assert.match(html, /<strong>\d+ min de \d+ min<\/strong> do plano · 50%/);
+  assert.match(html, /role="img" aria-label="Progresso das atividades planejadas: 50 de 100"/);
   assert.match(html, /0 de 1 atividade concluída/);
   const action = planned(buildDailyExecutionModel(input));
   assert.match(action, /Por que estudar isso agora/);

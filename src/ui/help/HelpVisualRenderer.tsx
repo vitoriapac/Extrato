@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { EbbinghausSimulator } from './EbbinghausSimulator.js';
 import { EvidenceConfidenceSimulator } from './EvidenceConfidenceSimulator.js';
+import { RingGauge } from '../primitives/charts/charts.js';
 
 export interface HelpVisualData {
   type: string;
@@ -111,9 +112,14 @@ export function HelpVisualRenderer({ visual }: HelpVisualProps): JSX.Element | n
               <span>Realizado</span>
             </div>
           </div>
-          <p>{num(visual.progress)}% de progresso do plano</p>
-          <div class="instruction-example-bar" aria-hidden="true">
-            <span style={{ width: `${Math.min(100, num(visual.progress))}%` }}></span>
+          <div class="daily-execution-progress">
+            <RingGauge value={num(visual.progress)} label="Exemplo de progresso do plano" size={44} stroke={7} showValue={false} />
+            <p>
+              <strong>
+                {num(visual.actual)} min de {num(visual.planned)} min
+              </strong>{' '}
+              do plano · {num(visual.progress)}%
+            </p>
           </div>
           <p class="instruction-legend">
             {num(visual.completed)} de {num(visual.total)} atividade concluída

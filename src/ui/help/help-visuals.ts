@@ -1,3 +1,5 @@
+import { renderRingGauge } from '../primitives/charts/charts.js';
+
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
@@ -34,7 +36,7 @@ export function renderHelpVisual(visual: Record<string, any> | null | undefined)
       content = `<div class="instruction-comparison">${metric('Planejado', visual.planned)}${metric('Realizado', visual.actual)}</div><p class="instruction-legend">O tempo registrado pode ser diferente do previsto.</p>`;
       break;
     case 'daily':
-      content = `<div class="instruction-comparison">${metric('Planejado', visual.planned)}${metric('Realizado', visual.actual)}</div><p>${minutes(visual.progress)}% de progresso do plano</p><div class="instruction-example-bar" aria-hidden="true"><span style="width:${Math.min(100, minutes(visual.progress))}%"></span></div><p class="instruction-legend">${minutes(visual.completed)} de ${minutes(visual.total)} atividade concluída</p>`;
+      content = `<div class="instruction-comparison">${metric('Planejado', visual.planned)}${metric('Realizado', visual.actual)}</div><div class="daily-execution-progress">${renderRingGauge({ value: minutes(visual.progress), label: 'Exemplo de progresso do plano', size: 44, stroke: 7, showValue: false })}<p><strong>${minutes(visual.actual)} min de ${minutes(visual.planned)} min</strong> do plano · ${minutes(visual.progress)}%</p></div><p class="instruction-legend">${minutes(visual.completed)} de ${minutes(visual.total)} atividade concluída</p>`;
       break;
     case 'action':
       content = `<strong>${escape(visual.subject)}</strong><p>${escape(visual.topic)}</p><p>${escape(visual.activity)} · ${minutes(visual.minutes)} min</p><span class="instruction-action">Iniciar estudo</span><p class="instruction-legend">Representação de uma atividade; não inicia uma sessão.</p>`;

@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { RingGauge } from '../../primitives/charts/charts.js';
 
 export interface TodayExecutionSummaryProps {
   availableMinutesFormatted: string;
@@ -15,11 +16,6 @@ export function TodayExecutionSummary({
   dateFormatted,
   progressPercent,
 }: TodayExecutionSummaryProps): JSX.Element {
-  const progressLabel =
-    progressPercent === null
-      ? 'Plano diário ainda não montado'
-      : `${progressPercent}% do plano executado`;
-
   return (
     <section
       class="study-plan-summary today-execution-summary"
@@ -38,18 +34,22 @@ export function TodayExecutionSummary({
         <span>Executado</span>
       </div>
       <div class="today-execution-progress">
-        <div>
-          <span>
-            {dateFormatted} · {progressLabel}
-          </span>
-          {progressPercent !== null && <strong>{progressPercent}%</strong>}
-        </div>
-        <progress
-          max={100}
-          value={progressPercent ?? 0}
-          aria-label={progressLabel}
-          hidden={progressPercent === null}
-        />
+        {/* Without a plan there is nothing to fill, so the ring is left out instead of drawn empty. */}
+        {progressPercent !== null && (
+          <RingGauge value={progressPercent} label="Progresso do plano de hoje" size={44} stroke={7} showValue={false} />
+        )}
+        <p>
+          {progressPercent === null ? (
+            <>{dateFormatted} · Plano diário ainda não montado</>
+          ) : (
+            <>
+              <strong>
+                {executedMinutesFormatted} de {plannedMinutesFormatted}
+              </strong>{' '}
+              · {progressPercent}% do plano executado · {dateFormatted}
+            </>
+          )}
+        </p>
       </div>
     </section>
   );

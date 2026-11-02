@@ -60,7 +60,7 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload', a
   const action = await card.locator('.overview-action-card').boundingBox(),
     progress = await card.locator('.daily-execution-summary').boundingBox();
   expect(progress.y).toBeGreaterThan(action.y + action.height - 1);
-  await expect(card).toContainText('0% de progresso do plano');
+  await expect(card).toContainText('do plano · 0%');
   await card.getByRole('button', { name: 'Iniciar estudo', exact: true }).click();
   await expect
     .poll(() => page.evaluate(() => window.__EXTRATO_TEST__.getState().activeTimer.planItemId))
@@ -70,7 +70,10 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload', a
   await page.locator('#timerFinishBtn').click();
   await expect(page.locator('#sessionModalOverlay')).toBeVisible();
   await page.locator('#sessionModalSaveBtn').click();
-  await expect(card).toContainText('50% de progresso do plano');
+  await expect(card).toContainText('10min de 20min do plano · 50%');
+  await expect(
+    card.getByRole('img', { name: 'Progresso das atividades planejadas: 50 de 100' })
+  ).toBeVisible();
   await expect(card).toContainText('Questões');
   await expect(card.locator('[data-daily-start]')).toHaveAttribute(
     'data-daily-start',
@@ -81,7 +84,7 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload', a
   await page.clock.fastForward('00:00:01');
   await page.evaluate(() => window.__EXTRATO_TEST__.settleSaves());
   await page.goto('/');
-  await expect(card).toContainText('50% de progresso do plano');
+  await expect(card).toContainText('do plano · 50%');
 });
 for (const [width, theme] of [
   [320, 'light'],
@@ -172,7 +175,7 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
     },
   ];
   await apply(partial);
-  await expect(card).toContainText('25% de progresso do plano');
+  await expect(card).toContainText('do plano · 25%');
   await expect(card).toContainText('0 de 2 atividades concluídas');
   await card.getByRole('button', { name: 'Iniciar estudo', exact: true }).click();
   await expect(card.getByRole('button', { name: 'Retomar sessão' })).toBeVisible();
@@ -207,7 +210,7 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
     },
   ];
   await apply(complete);
-  await expect(card).toContainText('100% de progresso do plano');
+  await expect(card).toContainText('do plano · 100%');
   await expect(card).toContainText('2 de 2 atividades concluídas');
   await expect(card).toContainText('Todas as atividades de hoje foram cumpridas');
   await expect(card.locator('[data-daily-start]')).toHaveCount(0);

@@ -377,7 +377,7 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis', async
       );
     await page.locator('[data-help-category="guide-areas"]').click();
     await expect(page.locator('#today-guide')).toBeVisible();
-    await expect(page.locator('#today-guide')).toContainText('57% de progresso do plano');
+    await expect(page.locator('#today-guide')).toContainText('do plano · 57%');
     expect(
       (
         await new AxeBuilder({ page })

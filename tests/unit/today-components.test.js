@@ -6,7 +6,7 @@ import { TodayExecutionSummary } from '../../src/ui/tabs/today/TodayExecutionSum
 import { TodayAgendaSections } from '../../src/ui/tabs/today/TodayAgendaSections.js';
 import { createTodayTabController } from '../../src/ui/tabs/today/today-tab-controller.js';
 
-test('TodayExecutionSummary Preact Component — renderiza métricas e barra de progresso', () => {
+test('TodayExecutionSummary Preact Component — renderiza métricas e anel de progresso', () => {
   const html = render(
     h(TodayExecutionSummary, {
       availableMinutesFormatted: '2h',
@@ -24,7 +24,9 @@ test('TodayExecutionSummary Preact Component — renderiza métricas e barra de 
   assert.match(html, /45m/);
   assert.match(html, /Executado/);
   assert.match(html, /50% do plano executado/);
-  assert.match(html, /<progress max="100" value="50"/);
+  assert.match(html, /<strong>45m de 1h 30m<\/strong>/);
+  assert.match(html, /class="chart-ring chart-ring--ok"[^>]*aria-label="Progresso do plano de hoje: 50 de 100"/);
+  assert.doesNotMatch(html, /<progress/);
 });
 
 test('TodayExecutionSummary Preact Component — exibe estado sem plano diário', () => {
@@ -39,10 +41,8 @@ test('TodayExecutionSummary Preact Component — exibe estado sem plano diário'
   );
 
   assert.match(html, /Plano diário ainda não montado/);
-  assert.match(
-    html,
-    /<progress max="100" value="0" aria-label="Plano diário ainda não montado" hidden/
-  );
+  // No plan means no ring at all, never an unexplained empty one.
+  assert.doesNotMatch(html, /chart-ring/);
 });
 
 test('TodayAgendaSections Preact Component — renderiza grade de tarefas e listas', () => {

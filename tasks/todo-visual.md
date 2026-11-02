@@ -175,7 +175,8 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### G3: Execução de hoje
 **Descrição:** Anel de planejado × realizado em minutos no lugar de "0%" e da linha fina.
-**Aceite:** [ ] Texto "N de M min" ao lado do anel · [ ] Sem plano, nenhum anel vazio sem explicação
+**Aceite:** [x] Texto "N de M min" ao lado do anel · [x] Sem plano, nenhum anel vazio sem explicação
+**Resultado (01/11/2026):** anel de 44 px (`RingGauge`, sem número dentro) no lugar da barra nos três lugares que mostravam o progresso do dia: resumo da aba Hoje, card "Execução de hoje" da Visão Geral e o exemplo ilustrativo da ajuda. Ao lado, "45min de 1h30 do plano · 50%" em mono; no card, N é o tempo do plano já cumprido (planejado − restante), coerente com o percentual. Sem plano, o anel não é desenhado e fica só o texto "Plano diário ainda não montado". Sem meta, o anel não usa âmbar. Unit e E2E atualizados (texto e nome acessível do anel); 5 capturas win32 conferidas e regeradas (`today-320/375/430`, `agora-desktop-light`, `agora-mobile-dark`). Bundle da ajuda +1,4 KB.
 **Dependências:** G1 · **Arquivos:** `TodayExecutionSummary.tsx`, `daily-execution-renderer.ts` · **Tamanho:** S
 
 ### G4: Acerto por disciplina
