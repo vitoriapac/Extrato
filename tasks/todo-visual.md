@@ -307,21 +307,25 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### C6: Motivação (4.8)
 **Descrição:** Heatmap de constância no topo de Hoje; sequência com ícone `flame` no cabeçalho fixo; animação discreta ao bater a meta do dia (respeitando `prefers-reduced-motion`).
-**Aceite:** [ ] Com `reduce`, nenhuma animação · [ ] Sem emoji
+**Aceite:** [x] Com `reduce`, nenhuma animação · [x] Sem emoji
+**Resultado (02/11/2026):** faixa de constância de 28 dias no topo de Hoje (`consistency-strip-renderer.ts`; mesmas faixas do heatmap de Desempenho, dia só com questões conta como nível 1), com "N de 28 dias com estudo" em texto e no nome acessível. Sequência no cabeçalho fixo com o ícone `flame` (Tabler, gerado), só a partir de 1 dia; no celular fica chama e número, e o texto completo vai para leitores de tela (a primeira versão empurrava o número do plano para fora da tela em 375 px). Ao cumprir o plano do dia, o resumo de Hoje mostra "Plano do dia cumprido" e o anel pulsa uma vez (600 ms), sem animação com `reduce`.
 **Dependências:** I2 · **Tamanho:** M
 
 ### C7: Redistribuir revisões atrasadas (4.9)
 **Descrição:** Botão na Agenda que reparte as atrasadas nos próximos dias, respeitando a disponibilidade e os dias sem estudo. Reaproveita a prévia, a aplicação e a reversão de `src/application/recovery/`.
-**Aceite:** [ ] Prévia calculada em memória; nada é salvo antes de "Confirmar" (AGENTS.md:25) · [ ] Desfazer disponível depois de aplicar · [ ] Nenhum dia passa da capacidade
+**Aceite:** [x] Prévia calculada em memória; nada é salvo antes de "Confirmar" (AGENTS.md:25) · [x] Desfazer disponível depois de aplicar · [x] Nenhum dia passa da capacidade
+**Resultado (02/11/2026):** `src/application/recovery/` redistribui minutos do plano semanal entre disciplinas, não datas de revisão; a C7 reaproveita o padrão (prévia pura, confirmação, reversão que ignora o que mudou depois) com um alocador próprio, `application/reviews/redistribute-overdue-reviews.ts`. Capacidade do dia = horas disponíveis ÷ 20 min por revisão, descontadas as revisões já marcadas; dias sem estudo ficam de fora; as atrasadas mais antigas vão primeiro; o que não cabe em 14 dias é informado. Agenda: botão "Redistribuir N atrasadas", prévia por dia ("+3 · 3 de 3 revisões"), "Confirmar redistribuição" e, depois, "Desfazer" (em memória até recarregar).
 **Verificação:** unit da alocação (dias sem estudo, capacidade cheia, nenhuma atrasada); E2E da prévia
 **Dependências:** nenhuma (pode correr em paralelo) · **Tamanho:** M
 
 ### C8: Atalhos do PWA (4.10.1)
-**Aceite:** [ ] "Iniciar estudo" e "Registrar questões" no manifest abrem a tela certa
+**Aceite:** [x] "Iniciar estudo" e "Registrar questões" no manifest abrem a tela certa
+**Resultado (02/11/2026):** `shortcuts` no manifest: "Iniciar estudo" → `./#hoje` (onde mora o cronômetro desde a C1) e "Registrar questões" → `./#questoes`; o roteador por hash abre a aba ao iniciar. E2E em `pwa.spec.js`.
 **Dependências:** nenhuma · **Tamanho:** XS
 
 ### C9: Transições e densidade (4.10.3–4)
-**Aceite:** [ ] Transições de 150 a 200 ms desligadas com `reduce` · [ ] Densidade compacta/confortável salva como preferência
+**Aceite:** [x] Transições de 150 a 200 ms desligadas com `reduce` · [x] Densidade compacta/confortável salva como preferência
+**Resultado (02/11/2026):** `--motion-duration: 160ms` em botões, abas, resumos e cards (cor, borda, sombra); com `prefers-reduced-motion: reduce`, uma regra global zera transições e animações. Densidade: botão ao lado do tema (`aria-pressed`, ícones `baseline-density-*`), `studytrack.density` no `localStorage`, aplicada antes da primeira pintura em `theme-bootstrap.js`; o modo compacto reduz a escala de espaçamento (`--space-3` a `--space-12`).
 **Dependências:** Checkpoint 1 · **Tamanho:** S
 
 ### Checkpoint 4

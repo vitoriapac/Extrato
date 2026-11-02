@@ -41,4 +41,14 @@ export function renderCompactHeader(model: Record<string, any>, { document, form
   exam.textContent = model.exam.date ? formatDate(model.exam.date) : '';
   exam.hidden = !model.exam.date;
   document.getElementById('compactPlanNumber').textContent = model.plan.number;
+  // The streak only shows once there is one; a 0-day flame reads as a reproach, not a nudge.
+  const streak = document.getElementById('compactStreak');
+  if (streak) {
+    const days = Number(model.streak?.days) || 0;
+    streak.hidden = days < 1;
+    document.getElementById('compactStreakDays').textContent = String(days);
+    document.getElementById('compactStreakUnit').textContent = days === 1 ? 'dia' : 'dias';
+    const label = document.getElementById('compactStreakLabel');
+    if (label) label.textContent = `${days === 1 ? 'dia' : 'dias'} de sequência`;
+  }
 }

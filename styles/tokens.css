@@ -62,3 +62,6 @@
 /* Subject palette (C5): 8 slots, no amber or red; ≥4.6:1 against the page in light, ≥6.9:1 in dark. */
 :root{--subject-1:#3E7A5E;--subject-2:#2F6690;--subject-3:#4B4FA3;--subject-4:#7350A0;--subject-5:#1F7570;--subject-6:#6B7330;--subject-7:#5A6878;--subject-8:#8A4570}
 [data-theme="dark"]{--subject-1:#7CC4A0;--subject-2:#7DB3E0;--subject-3:#9EA2F0;--subject-4:#C0A0E8;--subject-5:#6CCBC3;--subject-6:#C2C67A;--subject-7:#A9B6C6;--subject-8:#DE9CC4}
+/* C9: one short duration for interface transitions; compact density tightens the spacing scale. */
+:root{--motion-duration:160ms}
+html[data-density="compact"]{--space-3:.5rem;--space-4:.75rem;--space-5:1rem;--space-6:1.125rem;--space-8:1.5rem;--space-12:2.25rem}

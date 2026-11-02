@@ -112,6 +112,11 @@ const iconList = [
   'device-laptop',
   'language',
   'circle-dashed',
+  'flame',
+  'arrows-shuffle',
+  'arrow-back-up',
+  'baseline-density-medium',
+  'baseline-density-small',
 ];
 
 const rawData = await readFile(tablerNodesPath, 'utf8');

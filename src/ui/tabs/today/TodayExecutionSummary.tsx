@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { RingGauge } from '../../primitives/charts/charts.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface TodayExecutionSummaryProps {
   availableMinutesFormatted: string;
@@ -16,9 +17,10 @@ export function TodayExecutionSummary({
   dateFormatted,
   progressPercent,
 }: TodayExecutionSummaryProps): JSX.Element {
+  const goalMet = progressPercent !== null && progressPercent >= 100;
   return (
     <section
-      class="study-plan-summary today-execution-summary"
+      class={`study-plan-summary today-execution-summary${goalMet ? ' is-goal-met' : ''}`}
       aria-label="Resumo de execução de hoje"
     >
       <div>
@@ -50,6 +52,12 @@ export function TodayExecutionSummary({
             </>
           )}
         </p>
+        {goalMet && (
+          <p class="today-goal-met" role="status">
+            <Icon name="circle-check" size={14} class="icon-inline" />
+            Plano do dia cumprido
+          </p>
+        )}
       </div>
     </section>
   );

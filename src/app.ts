@@ -22,7 +22,7 @@ import {
 import { createAppSelectors } from './application/selectors/app-selectors.js';
 import { createExamCatalogLoader } from './application/exams/exam-catalog-loader.js';
 import { APP_MODES, readAppMode } from './application/demo/demo-mode.js';
-import { createPreferencesController } from './ui/controllers/preferences-controller.js';
+import { createDensityController, createPreferencesController } from './ui/controllers/preferences-controller.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
 import { createErrorBoundaryController } from './ui/controllers/error-boundary-controller.js';
@@ -63,6 +63,11 @@ document
   .getElementById('themeToggleBtn')!
   .addEventListener('click', () => preferencesController.toggle());
 preferencesController.sync();
+const densityController = createDensityController({ document, storage: localStorage });
+document
+  .getElementById('densityToggleBtn')
+  ?.addEventListener('click', () => densityController.toggle());
+densityController.sync();
 
 let state: AppState = createDefaultState();
 const uiState = createUiState();

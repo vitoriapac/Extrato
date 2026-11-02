@@ -2702,3 +2702,31 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 .subject-block[data-subject-color]{border-left:4px solid var(--subject-color)}
 .subject-color-field{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:6px 10px;font-size:var(--text-small);color:var(--text-secondary)}
 .subject-color-field select{min-height:36px;padding:4px 8px;border:1px solid var(--border-control);border-radius:var(--radius-control);background:var(--surface-card);color:var(--text-primary);font:inherit}
+/* C6: motivation. Streak in the fixed header, 4-week consistency strip, discreet goal cue. */
+.compact-streak{display:inline-flex;align-items:center;gap:2px;color:var(--brand-on-header)}.compact-streak[hidden]{display:none}
+.consistency-strip{margin:0 0 var(--space-4)}
+.consistency-strip p{margin:0 0 var(--space-2);font-size:var(--text-small);color:var(--text-secondary)}.consistency-strip strong{color:var(--text-primary);font-family:var(--font-data)}
+.consistency-strip__grid{display:grid;grid-template-columns:repeat(28,minmax(0,1fr));gap:3px;max-width:560px}
+.consistency-strip__day{aspect-ratio:1;border-radius:2px;background:var(--surface-card-muted);box-shadow:inset 0 0 0 1px var(--border-subtle)}
+.consistency-strip__day.level-1{background:color-mix(in srgb,var(--chart-series-primary) 30%,var(--surface-card))}
+.consistency-strip__day.level-2{background:color-mix(in srgb,var(--chart-series-primary) 60%,var(--surface-card))}
+.consistency-strip__day.level-3{background:var(--chart-series-primary)}
+@media(max-width:600px){.consistency-strip__grid{grid-template-columns:repeat(14,minmax(0,1fr))}}
+.today-goal-met{display:flex;align-items:center;margin:0;color:var(--green);font:600 var(--text-small) var(--font-body)}
+@keyframes goal-met-pulse{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.today-execution-summary.is-goal-met .chart-ring{animation:goal-met-pulse 600ms ease-out 1}
+@media(prefers-reduced-motion:reduce){.today-execution-summary.is-goal-met .chart-ring{animation:none}}
+/* C7: redistribution preview in the Agenda. */
+.review-redistribution-slot{margin:0 0 var(--space-4)}
+.review-redistribution{padding:var(--space-4);border:1px solid var(--border-subtle);border-radius:var(--radius-card);background:var(--surface-card)}
+.review-redistribution h3{margin:0 0 var(--space-2);font-size:var(--text-body)}.review-redistribution h3:focus{outline:none}
+.review-redistribution__days{display:grid;gap:4px;margin:var(--space-2) 0;padding:0;list-style:none;font-size:var(--text-small)}
+.review-redistribution__days strong{font-family:var(--font-data)}
+.review-redistribution__done{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);margin:0 0 var(--space-2);font-size:var(--text-small)}
+/* C9: transitions on interactive surfaces (150–200 ms); none at all when the user asks for reduced motion. */
+.btn,.tab-btn,.more-tab-btn,.theme-toggle-btn,summary,.select-control,.chart-card,.subject-block{transition:background-color var(--motion-duration) ease,border-color var(--motion-duration) ease,color var(--motion-duration) ease,box-shadow var(--motion-duration) ease}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+html[data-density="compact"] .chart-card{padding:var(--space-4)}
+html[data-density="compact"] .overview-section-heading{margin-top:var(--space-6)}
+.compact-streak__unit{margin-left:3px}
+@media(max-width:600px){.compact-streak__unit{display:none}}

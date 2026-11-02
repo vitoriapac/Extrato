@@ -14,6 +14,10 @@ import { buildTodayViewModel } from '../../../application/planning/build-today-v
 import { buildNextBestAction } from '../../../application/diagnostics/build-next-best-action.js';
 import { createDailyExecutionController } from '../../controllers/daily-execution-controller.js';
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
+import {
+  buildConsistencyStrip,
+  renderConsistencyStrip,
+} from '../../renderers/consistency-strip-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 
 const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: 'alert-circle', Média: 'alert-triangle', Baixa: 'circle-check' };
@@ -462,6 +466,16 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       }),
     });
     renderTodayExecutionSummary(todayModel);
+    const consistency = doc.getElementById('todayConsistency');
+    if (consistency)
+      consistency.innerHTML = renderConsistencyStrip(
+        buildConsistencyStrip({
+          sessions: state.studySessions || [],
+          questions: state.questoes || [],
+          today: todayISO(),
+        }),
+        { formatDate: formatDatePt }
+      );
     renderFirstStepsMissionCard();
 
     if (!plan && priorities.length === 0) {

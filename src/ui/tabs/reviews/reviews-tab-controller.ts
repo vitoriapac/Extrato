@@ -1,4 +1,12 @@
 import { h } from 'preact';
+import {
+  applyReviewMoves,
+  buildReviewRedistribution,
+  MINUTES_PER_REVIEW,
+  revertReviewMoves,
+  type ReviewMove,
+} from '../../../application/reviews/redistribute-overdue-reviews.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 import { render } from 'preact-render-to-string';
 import { ReviewsTable, type ReviewItem } from './ReviewsTable.js';
 import { createReviewViewModel } from '../../view-models/review-view-model.js';
@@ -318,6 +326,64 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       load.innerHTML = renderReviewLoad(buildReviewLoad(getFilteredAndSortedReviews(), todayISO()), {
         formatDate: formatDatePt,
       });
+    renderRedistribution();
+  }
+
+  // C7: redistributing overdue reviews. The plan lives in memory until "Confirmar"; the last
+  // applied moves stay available for "Desfazer" until the page is reloaded.
+  let redistributionPreview: ReturnType<typeof buildReviewRedistribution> | null = null;
+  let lastRedistribution: ReviewMove[] = [];
+
+  function renderRedistribution() {
+    const doc = getDoc();
+    const container = doc?.getElementById('reviewRedistribution');
+    if (!container) return;
+    const today = todayISO();
+    const overdue = (ctx.state.reviewAgenda || []).filter(
+      (item: any) => item.status !== 'Concluído' && item.date && item.date < today
+    ).length;
+    const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+    const undo = lastRedistribution.length
+      ? `<p class="review-redistribution__done" role="status">${plural(lastRedistribution.length, 'revisão redistribuída', 'revisões redistribuídas')}. <button type="button" class="btn ghost small" data-review-redistribute-undo>${renderIconSvg('arrow-back-up', { size: 14, className: 'icon-inline' })}Desfazer</button></p>`
+      : '';
+    if (!redistributionPreview) {
+      container.innerHTML =
+        undo +
+        (overdue
+          ? `<button type="button" class="btn tonal small" data-review-redistribute>${renderIconSvg('arrows-shuffle', { size: 14, className: 'icon-inline' })}Redistribuir ${plural(overdue, 'atrasada', 'atrasadas')}</button>`
+          : '');
+      return;
+    }
+    const plan = redistributionPreview;
+    const body = !plan.hasCapacity
+      ? '<p>Não há disponibilidade nos próximos 14 dias. Defina as horas por dia em Planejamento para redistribuir.</p>'
+      : `<p>${plural(plan.moves.length, 'revisão vai', 'revisões vão')} para ${plural(plan.days.length, 'dia', 'dias')}, sem passar da capacidade de cada um (${MINUTES_PER_REVIEW} min por revisão).${plan.unplaced.length ? ` ${plural(plan.unplaced.length, 'revisão continua atrasada', 'revisões continuam atrasadas')}: não há vaga nos próximos 14 dias.` : ''}</p><ul class="review-redistribution__days">${plan.days.map(day => `<li><strong>${escapeHtml(formatDatePt(day.date))}</strong> +${day.after - day.before} · ${day.after} de ${day.capacity} revisões</li>`).join('')}</ul>`;
+    container.innerHTML = `<section class="review-redistribution" aria-labelledby="reviewRedistributionTitle"><h3 id="reviewRedistributionTitle" tabindex="-1">Prévia da redistribuição</h3>${body}<p class="analytics-note">Nada foi alterado ainda. Dias sem estudo ficam de fora.</p><div class="action-group">${plan.moves.length ? '<button type="button" class="btn small" data-review-redistribute-confirm>Confirmar redistribuição</button>' : ''}<button type="button" class="btn ghost small" data-review-redistribute-cancel>Cancelar</button></div></section>`;
+  }
+
+  function previewRedistribution() {
+    redistributionPreview = buildReviewRedistribution({
+      reviews: ctx.state.reviewAgenda || [],
+      today: todayISO(),
+      hoursByDay: (ctx.state as any).metas?.horasPorDia || {},
+    });
+    renderRedistribution();
+    (getDoc()?.getElementById('reviewRedistributionTitle') as HTMLElement | null)?.focus?.();
+  }
+
+  function confirmRedistribution() {
+    if (!redistributionPreview) return;
+    lastRedistribution = applyReviewMoves(ctx.state.reviewAgenda || [], redistributionPreview.moves);
+    redistributionPreview = null;
+    persistAndRender();
+    showToast(`${lastRedistribution.length} ${lastRedistribution.length === 1 ? 'revisão redistribuída' : 'revisões redistribuídas'}.`);
+  }
+
+  function undoRedistribution() {
+    const reverted = revertReviewMoves(ctx.state.reviewAgenda || [], lastRedistribution);
+    lastRedistribution = [];
+    persistAndRender();
+    showToast(`${reverted.length} ${reverted.length === 1 ? 'revisão voltou' : 'revisões voltaram'} para a data anterior.`);
   }
 
   function renderAgendaFilters() {
@@ -640,6 +706,15 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         generateAutomatic: gerarAgendaAutomatica,
       },
     }).register();
+    d.addEventListener('click', (event: Event) => {
+      const target = event.target as Element | null;
+      if (target?.closest?.('[data-review-redistribute]')) previewRedistribution();
+      else if (target?.closest?.('[data-review-redistribute-confirm]')) confirmRedistribution();
+      else if (target?.closest?.('[data-review-redistribute-cancel]')) {
+        redistributionPreview = null;
+        renderRedistribution();
+      } else if (target?.closest?.('[data-review-redistribute-undo]')) undoRedistribution();
+    });
   }
 
   return {

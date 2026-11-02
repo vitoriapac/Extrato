@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-269 arquivos Node e 63 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+272 arquivos Node e 64 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -28,6 +28,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/adherence-target.spec.js | browser | Aderência | critical | 2.5 | journey, viewport | none |
 | tests/e2e/adherence.spec.js | browser | Aderência | critical | 128.4 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/backup-schema24-cycle.spec.js | browser | Backup | critical | 5.1 | journey | none |
+| tests/e2e/comfort.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/consolidated-signals.spec.js | browser | Datas | critical | 2.6 | journey | none |
 | tests/e2e/csp.spec.js | browser | Aplicação | functional | 2.3 | journey | none |
 | tests/e2e/daily-execution.spec.js | browser | Aplicação | critical | 106.6 | journey, visual-comparison, demo, viewport | windows-only |
@@ -139,6 +140,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/demo-mode.test.js | node | Demo | functional | — | contract, demo | none |
 | tests/unit/demo-scenario-v2.test.js | node | Demo | functional | — | contract, demo | none |
 | tests/unit/demo-sustainability.test.js | node | Sustentabilidade | functional | — | contract, demo | none |
+| tests/unit/density-preference.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnosis-center.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnostics-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/editable-collection-controller.test.js | node | Aplicação | functional | — | contract | none |
@@ -199,6 +201,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/load-persisted-state.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/master-renderer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/modal-dialogs.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/motivation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/multidimensional-radar.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/navigation-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/next-action-card.test.js | node | Aplicação | functional | — | contract | none |
@@ -262,6 +265,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/result-goals-and-period-comparison.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/review-health.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-load.test.js | node | Revisões | functional | — | contract | none |
+| tests/unit/review-redistribution.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-service.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-view-model.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/reviews-calendar-components.test.js | node | Revisões | functional | — | contract | none |

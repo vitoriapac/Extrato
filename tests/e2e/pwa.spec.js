@@ -106,3 +106,20 @@ test('troca CSS e bundle da versão A pela B sem perder dados locais', async ({ 
   expect(result.assets.every(asset => !asset.oldMarker)).toBe(true);
   expect(result.persisted).toBe('Dados preservados no upgrade PWA');
 });
+
+test('atalhos do app instalado abrem o cronômetro em Hoje e o registro de questões', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
+  const manifest = await page.evaluate(async href => (await fetch(href)).json(), manifestHref);
+  expect(manifest.shortcuts.map(item => item.name)).toEqual(['Iniciar estudo', 'Registrar questões']);
+  for (const [shortcut, panel] of [
+    [manifest.shortcuts[0], '#panel-hoje #study-timer'],
+    [manifest.shortcuts[1], '#panel-questoes'],
+  ]) {
+    await page.goto(new URL(shortcut.url, page.url()).href);
+    await page.reload();
+    await expect(page.locator(panel)).toBeVisible();
+  }
+});

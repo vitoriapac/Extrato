@@ -27,5 +27,33 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Iniciar estudo",
+      "short_name": "Estudar",
+      "description": "Abrir o plano de hoje e o cronômetro",
+      "url": "./#hoje",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Registrar questões",
+      "short_name": "Questões",
+      "description": "Abrir o registro de questões",
+      "url": "./#questoes",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

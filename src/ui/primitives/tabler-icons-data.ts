@@ -2113,6 +2113,92 @@ export const TABLER_ICONS_DATA: Record<string, TablerNode[]> = {
       }
     ]
   ],
+  "arrows-shuffle": [
+    [
+      "path",
+      {
+        "d": "M18 4l3 3l-3 3"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M18 20l3 -3l-3 -3"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M3 7h3a5 5 0 0 1 5 5a5 5 0 0 0 5 5h5"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M21 7h-5a4.978 4.978 0 0 0 -3 1m-4 8a4.984 4.984 0 0 1 -3 1h-3"
+      }
+    ]
+  ],
+  "arrow-back-up": [
+    [
+      "path",
+      {
+        "d": "M9 14l-4 -4l4 -4"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M5 10h11a4 4 0 1 1 0 8h-1"
+      }
+    ]
+  ],
+  "baseline-density-medium": [
+    [
+      "path",
+      {
+        "d": "M4 20h16"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M4 12h16"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M4 4h16"
+      }
+    ]
+  ],
+  "baseline-density-small": [
+    [
+      "path",
+      {
+        "d": "M4 3h16"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M4 9h16"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M4 15h16"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M4 21h16"
+      }
+    ]
+  ],
   "play": [
     [
       "path",

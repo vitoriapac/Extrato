@@ -345,6 +345,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/comfort.spec.js",
+      "tier": "FULL",
+      "rationale": "Conforto (C6–C9): prévia e desfazer da redistribuição, constância, densidade e movimento reduzido."
+    },
+    {
       "file": "tests/e2e/subject-color.spec.js",
       "tier": "FULL",
       "rationale": "Migração de schema (cor por disciplina) e importação de backup antigo; exigido pelo gate Full."
@@ -1525,6 +1530,21 @@
       "file": "tests/unit/subject-accuracy-target.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/motivation.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
+      "file": "tests/unit/review-redistribution.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
+      "file": "tests/unit/density-preference.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/subject-color.test.js",
