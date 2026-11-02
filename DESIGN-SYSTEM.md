@@ -43,12 +43,57 @@ As superfícies, textos, divisores e estados semânticos também têm aliases (`
 - `weekly-assessment` e `period-comparison`: interpretação semanal e deltas por unidade.
 - `Header`: um único modelo alimenta as apresentações hero e compacta.
 - `exam-subject-row`: nome e quatro campos estratégicos alinhados em uma linha no desktop e empilhados no mobile; valores ausentes comunicam herança da meta geral.
+- `consistency-strip`: últimos 28 dias em quatro níveis (as mesmas faixas do mapa de calor de Desempenho), no topo de Hoje, com contagem em texto.
+- `number-stepper` e `stepper-field`: campo numérico com botões de menos e mais (alvo de 44px), `inputmode="numeric"` e rótulo ligado ao campo; usado no registro de questões, onde acertos nunca passam de resolvidas.
+- `metas-subtab` e `metas-subpanel`: sub-abas do Planejamento (`src/ui/planning-subtabs.ts`).
+- `advanced-reveal` e `term-hint`: botões do modo Essencial (`src/ui/essential-mode.ts`).
+- `backup-export-status`: "Último backup exportado há N dias", em `--warn-text` depois de 7 dias ou quando nunca houve exportação.
 
 Cards representam agrupamentos. Dentro deles, use linhas, espaço e tipografia para estabelecer hierarquia em vez de criar novos cards.
 
 ## Temas e responsividade
 
 Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e funcionar a partir de 320 px sem rolagem horizontal global. Para listas, formulários e diagnósticos, permita quebra de nomes longos e empilhe conteúdo antes de reduzir a área de toque.
+
+## Navegação
+
+- Desktop: abas no topo em todas as larguras. A barra lateral acima de 1280 px foi descartada.
+- Celular (até 760 px): barra inferior com Início, Hoje, Matérias, Agenda e Mais. A altura medida fica em `--bottom-nav-height`; voltar ao topo, "Salvo" e o aviso usam esse valor.
+- Planejamento: uma sub-aba por vez, com a escolha em `#planejamento/<semana|prova|metas|fechamento|historico>`. `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida e a sub-aba que contém o alvo; todo salto programático para dentro do Planejamento ou da Visão Geral passa por ele antes de rolar.
+- Cronômetro: mora em Hoje (`#study-timer`); iniciar uma atividade do plano abre o modo foco, e sair dele volta à aba de origem.
+
+## Preferências do navegador
+
+Preferências de interface ficam no `localStorage`, nunca no estado nem no backup, e toda leitura ou escrita tem `try/catch`:
+
+| Chave | Valores | Padrão |
+|---|---|---|
+| `bb-premium-theme` | `light`, `dark` | tema do sistema |
+| `studytrack.density` | `comfortable`, `compact` | confortável |
+| `studytrack.sectionsOpen` | mapa seção → aberta | aberta a partir de 901 px |
+| `studytrack.essential` | `on`, `off` | decidido uma vez: `on` sem dados, `off` com registros; a demonstração e os testes automatizados ficam no modo completo |
+
+## Avisos, confirmação e desfazer
+
+- `showToast` mostra um aviso do tamanho do texto.
+- `showUndoToast` acrescenta "Desfazer" ao aviso: fica 10 s, pausa sob o ponteiro ou o foco e aceita Ctrl+Z fora de campos de texto.
+- `runUndoable(mensagem, ação)` (`src/ui/undoable.ts`) executa a exclusão, salva e oferece o desfazer.
+  - `captureUndo` (`src/application/undo/state-undo.ts`) restaura os dados persistentes exatamente como eram.
+  - `updatedAt`, `lastBackupAt`, `lastExportAt` e o cronômetro ativo ficam como estão.
+  - Se qualquer outro dado mudou depois da exclusão, o desfazer é recusado com aviso.
+- **Viram desfazer:** item do calendário, registro de questões, simulado, revisão, sessão com questões vinculadas e tópico arquivado sem vínculos.
+- **Mantêm "Tem certeza?":**
+  - exclusão de disciplina;
+  - limpeza de todos os dados;
+  - importação de backup;
+  - descarte ou zeramento do cronômetro;
+  - escolhas de recuperação de tempo;
+  - prévias de planejamento e fechamento (que nunca gravam sem confirmação);
+  - conflitos de sincronização.
+
+## Cor por disciplina
+
+Slot de 1 a 8 em `subject.color`, mapeado para `--subject-1…8` nos dois temas. `assignSubjectColors` (`src/domain/subjects/subject-color.ts`) dá a uma disciplina sem cor válida o slot menos usado, na migração v28 → v29 e em `ensureStateDefaults`.
 
 ## Listas progressivas
 
@@ -65,6 +110,17 @@ O adaptador mountProgressiveLists usa uma relação explícita de seletores e re
 Use renderChartFrame de `src/ui/chart-components.ts` para título (module-heading), descrição, período, legenda, evidência, visualização e registros textuais. renderChartEmptyState apresenta a evidência necessária; renderChartTooltip escapa os detalhes dos pontos SVG. Os seletores existentes mantêm os próprios eventos e usam chart-period-controls.
 
 Os tokens --chart-series-primary, --chart-series-secondary e --chart-series-target definem os papéis visuais nos dois temas. Questões, Simulados e Plano e execução usam esse contrato. A legenda deve corresponder às séries e a consulta textual precisa informar valores e unidades. A cor não pode ser a única forma de interpretar o gráfico.
+
+### Primitivos de gráfico (SVG puro)
+
+`src/ui/primitives/charts/`:
+- `RingGauge`: valor e meta.
+- `Sparkline`: tendência; `connectGaps` liga pontos através de períodos sem dado.
+- `BulletBar`: valor contra meta.
+- `StackedBar`: composição, com os tons `primary`, `primary-soft`, `primary-faint`, `secondary`, `target`, `muted` e `empty`.
+- `ColumnChart`: colunas simples, agrupadas ou com linha de meta.
+
+Cada um existe como componente Preact e como `render*` em string, para os renderizadores de HTML. A geometria fica em `geometry.ts`, com testes unitários. Todo gráfico expõe `role="img"` e uma descrição com valores e unidades (percentuais sem espaço antes do %). Dados tabulares ficam em "Ver dados", com região rolável focável e nomeada.
 
 ### Inventário de componentes primitivos (Preact)
 
@@ -135,6 +191,24 @@ renderRecommendationExplanation usa quatro perguntas: o que fazer, por que, evid
 ## Gerenciamento de Dados e Backups
 
 O bloco de backup e zona de perigo foi desacoplado da visualização padrão de todas as abas e isolado em um modal flutuante (`#dataManagementOverlay`), acionado pelo botão discreto `#openDataManagementBtn` no rodapé. O botão `[▶ Explorar demonstração]` permanece imediatamente acessível no rodapé para descoberta rápida e onboarding. O overlay vive fora da raiz `<main>`, prevenindo traps de foco e atributos `inert` indevidos.
+
+O bloco mostra o lembrete do último backup exportado (`lastExportAt`, schema 30, gravado só ao baixar o arquivo; `lastBackupAt` continua sendo a cópia automática no navegador): "hoje", "ontem" ou "há N dias", em atenção depois de 7 dias, e "Nenhum backup exportado ainda" para quem nunca exportou.
+
+## Carregamento sob demanda
+
+O `app.bundle.js` carrega o essencial. Catálogo de provas, relatório, ajuda e demonstração são bundles próprios:
+- `exam-catalog.bundle.js`;
+- `report.bundle.js`;
+- `help.bundle.js`;
+- `demo.bundle.js`, carregado por `loadDemoGenerator()` só quando a demonstração abre.
+
+Cada bundle é pedido com o mesmo `?v=` do app e entra no pré-cache do service worker. Assim tudo abre offline depois da primeira visita, e versões nunca se misturam.
+
+Um bundle novo precisa de quatro passos:
+1. Entrar em `scripts/build.mjs`.
+2. Entrar em `service-worker.template.js`.
+3. Sair do typecheck (`tsconfig*.json`) e do Prettier.
+4. Ganhar um teste em `pwa.spec.js`.
 
 ## Iconografia Vetorial (Tabler Icons) e Regra Zero Emojis
 

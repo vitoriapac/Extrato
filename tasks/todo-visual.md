@@ -449,5 +449,9 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Dependências:** I1 (medição) · **Tamanho:** L — quebrar depois de uma prova de conceito
 
 ### Checkpoint 5
-- [ ] Suíte E2E completa, gate visual, axe e `npm run test:full` verdes
-- [ ] DESIGN.md e DESIGN-SYSTEM.md atualizados com tudo o que mudou
+- [x] Suíte E2E completa, gate visual, axe e `npm run test:full` verdes
+  - `npm run test:full` verde em 7dafc53 (300 casos de navegador em UTC e 48 em São Paulo); `npm run test:visual` verde.
+  - Axe WCAG 2 A/AA sem violações e nenhuma rolagem horizontal nas 9 abas em quatro cenários (demo em 1440 px claro e 375 px escuro; primeiro acesso, no modo Essencial, em 1440 px claro e 375 px escuro).
+- [x] DESIGN.md e DESIGN-SYSTEM.md atualizados com tudo o que mudou
+  - DESIGN.md: cor por disciplina (paleta e regra), movimento, layout (seções lembradas, sub-abas, barra inferior, densidade), gráficos, avisos e desfazer, modo Essencial e prontidão sem índice.
+  - DESIGN-SYSTEM.md: navegação, preferências do navegador, desfazer e o que continua pedindo confirmação, primitivos de gráfico, cor por disciplina, lembrete de backup e carregamento sob demanda.
