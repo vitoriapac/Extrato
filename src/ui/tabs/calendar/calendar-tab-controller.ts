@@ -476,6 +476,15 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       .filter(r => r.date && r.date < today && r.status !== 'Concluído')
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
+    // A lista completa mora na Agenda; Hoje e Calendário mostram só a contagem com o caminho até ela.
+    if (elId !== 'calAtrasadas') {
+      ul.innerHTML = items.length
+        ? `<li class="overdue-summary"><strong>${items.length} ${items.length === 1 ? 'revisão atrasada' : 'revisões atrasadas'}</strong><span>${overdueOrigin(items)}</span><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></li>`
+        : '<li class="upcoming-empty">Nenhuma revisão atrasada.</li>';
+      return;
+    }
+    renderCalAtrasadas('calAtrasadasResumo');
+
     if (!items.length) {
       ul.innerHTML = '<li class="upcoming-empty">Nenhuma revisão atrasada.</li>';
       return;

@@ -29,8 +29,8 @@ const write = (storage: SectionStore, value: Record<string, boolean>) => {
 export function openSectionFor(target: Element | null | undefined) {
   const section = target?.closest?.('details[data-remember]') as HTMLDetailsElement | null;
   if (section && !section.open) section.open = true;
-  const subpanel = target?.closest?.('[data-metas-subpanel]') as HTMLElement | null;
-  if (subpanel?.hidden && isPlanningSubtab(subpanel.dataset.metasSubpanel))
+  const subpanel = target?.closest?.('[data-metas-subpanel]') as HTMLDetailsElement | null;
+  if (subpanel && !subpanel.open && isPlanningSubtab(subpanel.dataset.metasSubpanel))
     selectPlanningSubtab(subpanel.dataset.metasSubpanel);
 }
 

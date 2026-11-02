@@ -26,17 +26,14 @@ export function renderIntelligentAlerts({
   return { list, overview };
 }
 
-export function renderExecutiveSummary({ summary, formatMinutes, escapeHtml }: any) {
+export function renderExecutiveSummary({ summary, escapeHtml }: any) {
   const cards = summary.cards
     .map(
       (card: any) =>
         `<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`
     )
     .join('');
-  const primary = summary.primaryAction
-    ? `<strong>${escapeHtml(summary.primaryAction.title)}</strong><p>${escapeHtml(summary.primaryAction.subject || '')} · ${escapeHtml(summary.primaryAction.topic || '')} · ${formatMinutes(summary.primaryAction.duration)}</p><p class="analytics-note">${escapeHtml(summary.primaryAction.reason)}</p>`
-    : '<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>';
-  return `<div class="executive-kpis">${cards}</div><div class="executive-decision-grid"><section><h4>Maior ganho pelo diagnóstico</h4>${primary}<p class="analytics-note">Complementa a próxima ação de Hoje; não a substitui.</p></section><section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? '' : 's'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
+  return `<div class="executive-kpis">${cards}</div><div class="executive-decision-grid"><section><h4>Próxima ação</h4><p>A prioridade do dia e o motivo ficam em Hoje.</p><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Abrir Hoje</button></section><section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? '' : 's'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
 }
 
 export function renderWeeklyCloseSummary(

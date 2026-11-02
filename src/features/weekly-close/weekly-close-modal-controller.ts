@@ -106,6 +106,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   let recordPreviewOpen = false;
   let recordSavedNow = false;
   let lastAppliedSnapshotId: string | null = null;
+  // Depois do Desfazer fica um carimbo curto, para a semana não parecer intocada.
+  let undoneNote: { kept: number } | null = null;
   let appliedSummary: { ids: string[]; names: string[]; minutes: number; days: number } | null =
     null;
   let strategicTimelineFilter = 'all';
@@ -163,6 +165,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       const proposal = result?.proposal;
       // O ritual termina com o que foi agendado, no mesmo tom do selo do retrato.
       const allocations = proposal?.allocations || [];
+      undoneNote = null;
       appliedSummary = {
         ids: allocations.map((item: any) => item.priorityId).filter(Boolean),
         names: [
@@ -217,7 +220,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     // O que já foi agendado sai da decisão; resta o selo e o que ainda dá para escolher.
     const done = new Set(appliedSummary?.ids || []);
     const priorities = (close?.priorities || []).filter((item: any) => !done.has(item.priorityId));
-    if (!priorities.length && !appliedSummary) return '';
+    if (!priorities.length && !appliedSummary && !undoneNote) return '';
     const draft = weeklyCloseController.view();
     const checks = priorities
       .map((item: any, index: any) => {
@@ -236,8 +239,11 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     const applied = appliedSummary
       ? `<div class="weekly-applied" id="weeklyAppliedStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Agendado</span></span><p>Próxima semana: ${escapeHtml(appliedSummary.names.join(', ') || 'prioridades escolhidas')} · ${formatPlanMinutes(appliedSummary.minutes)} reservados em ${appliedSummary.days} ${appliedSummary.days === 1 ? 'dia' : 'dias'}. Os blocos já estão no plano diário; o retrato e a prontidão desta semana foram registrados junto.</p>${lastAppliedSnapshotId ? '<button class="btn ghost small" type="button" data-delegated-click="undoWeeklyCloseApply()">Desfazer</button>' : ''}</div>`
       : '';
-    if (!priorities.length) return `<section class="weekly-close-actions">${applied}</section>`;
-    return `<section class="weekly-close-actions">${applied}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; a próxima ação de hoje continua no plano. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
+    const undone = undoneNote
+      ? `<div class="weekly-applied weekly-applied--undone" id="weeklyUndoneStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Desfeito</span></span><p>${undoneNote.kept ? 'Blocos ainda não estudados foram removidos; os que já têm tempo registrado continuam no plano.' : 'As prioridades foram desfeitas: os blocos saíram do plano e a revisão aplicada foi removida.'} Você pode escolher de novo.</p></div>`
+      : '';
+    if (!priorities.length) return `<section class="weekly-close-actions">${applied}${undone}</section>`;
+    return `<section class="weekly-close-actions">${applied}${undone}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; a próxima ação de hoje continua no plano. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
   }
 
   // Desfaz só o que ainda não foi estudado: blocos com tempo registrado ficam, e com eles a revisão.
@@ -265,6 +271,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     if (!kept && index >= 0) snapshots.splice(index, 1);
     lastAppliedSnapshotId = null;
     appliedSummary = null;
+    undoneNote = { kept };
     recordSavedNow = false;
     scheduleSave();
     if (deps.renderApprovalDashboard) deps.renderApprovalDashboard();

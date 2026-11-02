@@ -28,7 +28,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
   },
   {
     label: 'Iniciar recomendação prioritária',
-    keywords: 'começar iniciar próxima ação estudar recomendação prioritária',
+    keywords: 'começar iniciar estudo primeiro item do plano próxima ação estudar recomendação prioritária',
     action: 'recommendation',
   },
   { label: 'Abrir cronômetro', keywords: 'iniciar sessao timer estudar foco', action: 'timer' },
@@ -241,8 +241,9 @@ export function createSearchController(options: SearchControllerOptions) {
         options.onExecuteRecommendation(recommendation.id);
       } else {
         activateTab('hoje');
+        document.getElementById('timerSubjectSelect')?.focus();
         showToast(
-          'Ainda não há uma recomendação elegível. Revise o planejamento e as evidências disponíveis.'
+          'Ainda não há uma recomendação elegível. Você pode iniciar uma sessão livre ou revisar o planejamento.'
         );
       }
     } else if (button.dataset.searchTab) {

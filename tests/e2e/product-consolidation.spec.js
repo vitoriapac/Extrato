@@ -62,6 +62,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
                 .forEach(node => node.classList.toggle('active', node.id === `panel-${name}`));
               // Planejamento shows one sub-tab at a time; the nav is detached here, so reveal directly.
               const owner = document.querySelector(target)?.closest('[data-metas-subpanel]');
+              if (owner) owner.open = true;
               if (owner)
                 document
                   .querySelectorAll('[data-metas-subpanel]')

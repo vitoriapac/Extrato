@@ -1,36 +1,42 @@
 import { test, expect } from '@playwright/test';
 import { openDemo, activateTab } from './helpers.js';
 
-test('Planejamento mostra uma sub-aba por vez e o link profundo abre a certa', async ({ page }) => {
+test('Planejamento agrupa as seções em blocos recolhíveis e o link profundo abre o certo', async ({
+  page,
+}) => {
   await openDemo(page);
   await activateTab(page, 'metas');
-  await expect(page.locator('#metasSub-semana')).toBeVisible();
-  await expect(page.locator('[data-metas-subpanel]:visible')).toHaveCount(1);
+  await expect(page.locator('#metasSub-semana')).toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-fechamento')).not.toHaveAttribute('open', '');
 
-  await page.getByRole('tab', { name: 'Fechamento semanal' }).click();
-  await expect(page.locator('#metasSub-fechamento')).toBeVisible();
-  await expect(page.locator('#metasSub-semana')).toBeHidden();
+  await page.getByRole('button', { name: 'Fechamento semanal', exact: true }).click();
+  await expect(page.locator('#metasSub-fechamento')).toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-semana')).toHaveAttribute('open', '');
   await expect(page).toHaveURL(/#planejamento\/fechamento$/);
 
-  await page.getByRole('tab', { name: 'Fechamento semanal' }).press('ArrowRight');
-  await expect(page.getByRole('tab', { name: 'Histórico' })).toBeFocused();
-  await expect(page.locator('#metasSub-historico')).toBeVisible();
+  await page.getByRole('button', { name: 'Fechamento semanal', exact: true }).press('ArrowRight');
+  await expect(page.getByRole('button', { name: 'Histórico', exact: true })).toBeFocused();
+  await expect(page.locator('#metasSub-historico')).toHaveAttribute('open', '');
 
   await page.reload();
-  await expect(page.locator('#metasSub-historico')).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'Histórico' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#metasSub-historico')).toHaveAttribute('open', '');
+  await expect(page.getByRole('button', { name: 'Histórico', exact: true })).toHaveAttribute(
+    'aria-current',
+    'true'
+  );
 });
 
-test('No celular, a lista de seções troca a sub-aba e saltos revelam a seção escondida', async ({ page }) => {
+test('No celular, a lista de seções abre o bloco e saltos revelam a seção recolhida', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await activateTab(page, 'metas');
   await page.locator('#metasSubtabSelect').selectOption('prova');
   await expect(page.locator('#examBlueprintConfig')).toBeVisible();
-  await expect(page.locator('#metasSub-semana')).toBeHidden();
   await page.locator('#metasSubtabSelect').selectOption('semana');
   await expect(page.locator('#metasPlanning')).toBeVisible();
-  // A link inside one sub-tab that points into another switches to it.
+  // Um link dentro de um bloco que aponta para outro abre o destino.
   await page.locator('a[href="#subjectAccuracyGoals"]').first().click();
   await expect(page.locator('#subjectAccuracyGoals')).toBeVisible();
   await expect(page.locator('#metasSubtabSelect')).toHaveValue('metas');

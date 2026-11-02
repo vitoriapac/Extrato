@@ -1,4 +1,4 @@
-// Planejamento shows one group of sections at a time; the choice lives in the URL as "#planejamento/<sub-aba>".
+// Planejamento agrupa as seções em blocos recolhíveis; o atalho aberto fica na URL como "#planejamento/<sub-aba>".
 export const PLANNING_SUBTABS = ['semana', 'prova', 'metas', 'fechamento', 'historico'] as const;
 export type PlanningSubtab = (typeof PLANNING_SUBTABS)[number];
 
@@ -19,12 +19,14 @@ export function selectPlanningSubtab(
   if (!tabs.length) return;
   tabs.forEach(tab => {
     const active = tab.dataset.metasSubtab === key;
-    tab.setAttribute('aria-selected', String(active));
+    if (active) tab.setAttribute('aria-current', 'true');
+    else tab.removeAttribute('aria-current');
     tab.tabIndex = active ? 0 : -1;
     if (active && focus) tab.focus();
   });
   doc.querySelectorAll<HTMLElement>('[data-metas-subpanel]').forEach(panel => {
-    panel.hidden = panel.dataset.metasSubpanel !== key;
+    // Abre a escolhida e deixa as demais como a pessoa as deixou.
+    if (panel.dataset.metasSubpanel === key) (panel as HTMLDetailsElement).open = true;
   });
   const select = doc.getElementById('metasSubtabSelect') as HTMLSelectElement | null;
   if (select) select.value = key;
@@ -32,7 +34,7 @@ export function selectPlanningSubtab(
 }
 
 export function initPlanningSubtabs(doc: Document = document) {
-  const list = doc.querySelector<HTMLElement>('.metas-nav [role="tablist"]');
+  const list = doc.querySelector<HTMLElement>('.metas-nav .overview-nav-links');
   if (!list) return;
   const choose = (key: string, focus = false) => {
     if (!isPlanningSubtab(key)) return;

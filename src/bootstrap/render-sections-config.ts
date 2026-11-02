@@ -30,7 +30,7 @@ export const RENDER_SCOPE_SECTIONS = {
     'calendário mensal',
     'visão geral',
   ]),
-  agenda: new Set(['filtros da agenda', 'agenda', 'avisos do caderno de erros']),
+  agenda: new Set(['filtros da agenda', 'agenda', 'avisos do caderno de erros', 'tarefas atrasadas']),
   questoes: new Set(['questões', 'análise de questões', 'simulados']),
   metas: new Set([
     'metas',

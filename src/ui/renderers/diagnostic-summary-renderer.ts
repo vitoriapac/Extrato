@@ -55,8 +55,8 @@ export function renderDiagnosticSummary(
       bodyClassName: 'diagnostic-detail__body',
       contentHTML: `
       ${primaryMeasurements.length ? renderMeasurements(primaryMeasurements, escapeHtml) : '<p class="analytics-note">Ainda não há medidas detalhadas para o sinal principal.</p>'}
-      ${supporting.length ? `<div class="diagnostic-supporting"><strong>Também observado</strong>${renderSupporting(supporting.slice(0, 5))}${supporting.length > 5 ? `<details class="diagnostic-detail__more"><summary>Mostrar mais sinais · +${supporting.length - 5}</summary>${renderSupporting(supporting.slice(5))}</details>` : ''}</div>` : ''}
-      <details class="diagnostic-detail__method"><summary>Ver metodologia</summary><p>${escapeHtml(item.limitation || 'O diagnóstico usa os registros disponíveis no concurso ativo.')}</p>${period ? `<p>Período observado: ${escapeHtml(period)}.</p>` : ''}</details>
+      ${supporting.length ? `<div class="diagnostic-supporting"><strong>Também observado</strong>${renderSupporting(supporting.slice(0, 5))}${supporting.length > 5 ? `<details class="diagnostic-detail__more"><summary>Mostrar mais sinais · +${supporting.length - 5}</summary><template data-lazy>${renderSupporting(supporting.slice(5))}</template></details>` : ''}</div>` : ''}
+      <details class="diagnostic-detail__method"><summary>Ver metodologia</summary><template data-lazy><p>${escapeHtml(item.limitation || 'O diagnóstico usa os registros disponíveis no concurso ativo.')}</p>${period ? `<p>Período observado: ${escapeHtml(period)}.</p>` : ''}</template></details>
     `,
     })}`;
 }
