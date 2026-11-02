@@ -277,7 +277,7 @@ O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, 
 
 Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 
-A Visão Geral tem seções recolhíveis (`details[data-remember]`), abertas no desktop e fechadas no celular, com a escolha lembrada pelo navegador. O Planejamento mostra uma sub-aba por vez (Plano da semana, Prova e ritmo, Metas por disciplina, Fechamento semanal, Histórico): abas no desktop, lista no celular, escolha na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e a sub-aba do destino.
+A Visão Geral tem seções recolhíveis (`details[data-remember]`), abertas no desktop e fechadas no celular, com a escolha lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
 
 A densidade compacta (`html[data-density="compact"]`) aperta a escala de espaço sem mudar tipografia nem alvos de toque.
 
@@ -342,7 +342,7 @@ Três níveis, um primário por card: o primário é a próxima ação; o tonal 
 - **Abas:** Sans 500 13px sem caixa-alta, fundo ardósia, texto tinta-suave; ativa em musgo com texto Sálvia Claro; hover em `tab-hover-bg`.
 - **Navegação de seções (Visão Geral):** barra fixa em papel com links Sans 12px; hover/foco ganham fundo ardósia e contorno sálvia de 1px.
 - **Mobile (<760px):** navegação inferior fixa com Início, Hoje, Matérias, Agenda e menu "Mais"; a busca vira uma lupa que abre a paleta de comandos.
-- **Sub-abas (Planejamento):** mesma barra de seções, com botões `role="tab"`, selecionado sublinhado em musgo; setas, Home e End navegam.
+- **Atalhos dos blocos (Planejamento):** mesma barra de seções, com botões; o último escolhido fica marcado com `aria-current` (fundo ardósia e sublinhado sálvia); setas, Home e End passam de um atalho ao outro.
 
 ### Cabeçalho do Extrato (signature)
 Bloco musgo com eyebrow Sálvia Claro (11px, 0.14em), título Fraunces 28px, número do plano em mono à direita, divisor papel a 18%, saldo em Fraunces âmbar com anel de prontidão e tendência de 8 semanas, e textura de linhas verticais. Um único modelo alimenta a versão hero e a compacta fixa. Sem índice, o saldo diz "faltam N de 5 fatores" e "Como liberar os fatores" abre um botão por fator, cada um levando à ação que produz a evidência.

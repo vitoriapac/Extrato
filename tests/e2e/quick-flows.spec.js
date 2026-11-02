@@ -18,6 +18,20 @@ test.describe('no celular', () => {
     expect(bar.y - (toast.y + toast.height)).toBeLessThan(16);
   });
 
+  test('botão Filtros abre e fecha os filtros da Agenda no celular', async ({ page }) => {
+    await openDemo(page);
+    await activateTab(page, 'agenda');
+    const toggle = page.locator('#panel-agenda .mobile-filter-toggle');
+    const panel = page.locator('#agendaFilters');
+    await expect(panel).toBeHidden();
+    await toggle.click();
+    await expect(panel).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.click();
+    await expect(panel).toBeHidden();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('a lupa abre a paleta de comandos (F3)', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#globalSearchInput')).toBeHidden();

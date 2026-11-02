@@ -45,7 +45,7 @@ As superfícies, textos, divisores e estados semânticos também têm aliases (`
 - `exam-subject-row`: nome e quatro campos estratégicos alinhados em uma linha no desktop e empilhados no mobile; valores ausentes comunicam herança da meta geral.
 - `consistency-strip`: últimos 28 dias em quatro níveis (as mesmas faixas do mapa de calor de Desempenho), no topo de Hoje, com contagem em texto.
 - `number-stepper` e `stepper-field`: campo numérico com botões de menos e mais (alvo de 44px), `inputmode="numeric"` e rótulo ligado ao campo; usado no registro de questões, onde acertos nunca passam de resolvidas.
-- `metas-subtab` e `metas-subpanel`: sub-abas do Planejamento (`src/ui/planning-subtabs.ts`).
+- `metas-subtab` e `metas-subpanel`: atalhos e blocos recolhíveis do Planejamento (`src/ui/planning-subtabs.ts`).
 - `advanced-reveal` e `term-hint`: botões do modo Essencial (`src/ui/essential-mode.ts`).
 - `backup-export-status`: "Último backup exportado há N dias", em `--warn-text` depois de 7 dias ou quando nunca houve exportação.
 
@@ -59,7 +59,7 @@ Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e
 
 - Desktop: abas no topo em todas as larguras. A barra lateral acima de 1280 px foi descartada.
 - Celular (até 760 px): barra inferior com Início, Hoje, Matérias, Agenda e Mais. A altura medida fica em `--bottom-nav-height`; voltar ao topo, "Salvo" e o aviso usam esse valor.
-- Planejamento: uma sub-aba por vez, com a escolha em `#planejamento/<semana|prova|metas|fechamento|historico>`. `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida e a sub-aba que contém o alvo; todo salto programático para dentro do Planejamento ou da Visão Geral passa por ele antes de rolar.
+- Planejamento: cinco blocos recolhíveis, com Plano da semana aberto por padrão. O atalho escolhido abre o bloco sem fechar os demais e fica em `#planejamento/<semana|prova|metas|fechamento|historico>`. `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida da Visão Geral ou o bloco do Planejamento que contém o alvo; todo salto programático para dentro deles passa por ele antes de rolar.
 - Cronômetro: mora em Hoje (`#study-timer`); iniciar uma atividade do plano abre o modo foco, e sair dele volta à aba de origem.
 
 ## Preferências do navegador

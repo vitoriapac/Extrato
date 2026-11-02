@@ -146,8 +146,8 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Dependências:** I2 · **Arquivos:** `filter-panel.ts`, `src/features/demo/*`, `consolidated-diagnosis-renderer.ts`, `diagnosis-renderer.ts`, `index.html` · **Tamanho:** M
 
 ### Checkpoint 2
-- [ ] Suíte E2E completa e gate visual verdes; snapshots inspecionados
-- [ ] Aumento do bundle da fase registrado
+- [x] Suíte E2E completa e gate visual verdes; snapshots inspecionados (I3–I5: E2E de dados, demo, diagnóstico, onboarding e ciclo estratégico 76/76; gate visual 58/58)
+- [x] Aumento do bundle da fase registrado (`app.bundle.js` +7.636 bytes sobre o início da Fase 2; gzip +2.071)
 
 ---
 
@@ -199,7 +199,7 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ### Checkpoint 3
 - [x] Suíte E2E completa, gate visual e axe verdes
-- [ ] Usar os 5 gráficos antes de planejar os 7 de prioridade média e os 4 de baixa
+- [x] Usar os 5 gráficos antes de planejar os 7 de prioridade média e os 4 de baixa (feito; decisão abaixo, G7–G12 entregues)
 
 **Verificação (01/11/2026):** em `08b5326`, 1196 unitários, 277 E2E e gate visual (58) verdes. Axe WCAG A/AA nas seis áreas com gráfico (topo, execução na Visão Geral, resumo de Hoje, blocos de disciplina, carga de revisões, acerto por disciplina) em 1440 claro e 375 escuro, com demo: uma violação, `scrollable-region-focusable` na tabela de "Ver dados" da G4 no celular; corrigida (região rolável com `tabindex="0"`, `role="region"` e nome), agora 0. Folha de revisão: `tasks/checkpoint-3/graficos-alta.png`.
 
@@ -349,6 +349,7 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 - A escolha fica na URL (`#planejamento/fechamento`).
 - Âncoras, ajuda, tour, navegação de análise e fechamento semanal revelam a sub-aba do destino (`openSectionFor`).
 - Altura do Planejamento em 375 px (demo): 27.732 px antes; depois, por sub-aba: Semana 8.303, Prova 6.901, Metas 6.707, Fechamento 2.127, Histórico 6.745.
+- **Mudança posterior (437c19f, 02/11/2026):** as sub-abas viraram cinco blocos recolhíveis (`details.metas-subpanel`), com Plano da semana aberto. Os atalhos abrem o bloco escolhido sem fechar os outros; o endereço `#planejamento/<bloco>` e o `openSectionFor` continuam valendo.
 
 ### F2: Aviso compacto
 **Aceite:** [x] "O cronômetro ainda não começou" ocupa uma linha acima da barra inferior · [x] Outros usos do mesmo componente conferidos
@@ -453,5 +454,5 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
   - `npm run test:full` verde em 7dafc53 (300 casos de navegador em UTC e 48 em São Paulo); `npm run test:visual` verde.
   - Axe WCAG 2 A/AA sem violações e nenhuma rolagem horizontal nas 9 abas em quatro cenários (demo em 1440 px claro e 375 px escuro; primeiro acesso, no modo Essencial, em 1440 px claro e 375 px escuro).
 - [x] DESIGN.md e DESIGN-SYSTEM.md atualizados com tudo o que mudou
-  - DESIGN.md: cor por disciplina (paleta e regra), movimento, layout (seções lembradas, sub-abas, barra inferior, densidade), gráficos, avisos e desfazer, modo Essencial e prontidão sem índice.
+  - DESIGN.md: cor por disciplina (paleta e regra), movimento, layout (seções lembradas, blocos recolhíveis do Planejamento, barra inferior, densidade), gráficos, avisos e desfazer, modo Essencial e prontidão sem índice.
   - DESIGN-SYSTEM.md: navegação, preferências do navegador, desfazer e o que continua pedindo confirmação, primitivos de gráfico, cor por disciplina, lembrete de backup e carregamento sob demanda.

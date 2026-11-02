@@ -77,57 +77,57 @@ Checkpoint 0 (decisões)
 ### Fase 1 — Fundação visual (1 PR, commits por tarefa)
 - [x] V1: Tokens Sálvia nos dois temas + cores fixas do app.css + `--chart-series-*`
 - [x] V2: Marca fora do CSS (theme-color, manifest, favicon, `icons/`)
-- [ ] V3: Raio e respiro (`--radius-card`, `--radius-control`, sem caixa dentro de caixa)
-- [ ] V4: Tipografia (mono só em dados; corpo 15–16 px no celular)
-- [ ] V5: Botões em três níveis (variante `tonal` + terciário)
-- [ ] V6: DESIGN.md/DESIGN-SYSTEM.md + snapshots regerados (win32 e linux)
+- [x] V3: Raio e respiro (`--radius-card`, `--radius-control`, sem caixa dentro de caixa)
+- [x] V4: Tipografia (mono só em dados; corpo 15–16 px no celular)
+- [x] V5: Botões em três níveis (variante `tonal` + terciário)
+- [x] V6: DESIGN.md/DESIGN-SYSTEM.md + snapshots regerados (win32 e linux)
 
 ### Checkpoint 1
 
 ### Fase 2 — Ícones
-- [ ] I1: Ícones novos no gerador + script de medição do bundle
-- [ ] I2: Props de ícone nos primitivos (Badge, EmptyState, MetricCard, Button)
-- [ ] I3: Abas e barra inferior com ícones
-- [ ] I4: Cronômetro, tipo de sessão, avaliação da revisão e botões de criar
-- [ ] I5: Importar/exportar, nuvem, filtros, demo e alertas
+- [x] I1: Ícones novos no gerador + script de medição do bundle
+- [x] I2: Props de ícone nos primitivos (Badge, EmptyState, MetricCard, Button)
+- [x] I3: Abas e barra inferior com ícones
+- [x] I4: Cronômetro, tipo de sessão, avaliação da revisão e botões de criar
+- [x] I5: Importar/exportar, nuvem, filtros, demo e alertas
 
 ### Checkpoint 2
 
 ### Fase 3A — Gráficos de prioridade alta
-- [ ] G1: Primitivos de gráfico em `.tsx` + anel e sparkline da prontidão
-- [ ] G2: Primeira tela orientada à ação (o 4.4 do plano)
-- [ ] G3: Anel planejado × realizado em Hoje
-- [ ] G4: Acerto por disciplina com marca de meta
-- [ ] G5: Carga diária da Agenda de Revisões (30 dias)
-- [ ] G6: Barra empilhada de status nos blocos de disciplina
+- [x] G1: Primitivos de gráfico em `.tsx` + anel e sparkline da prontidão
+- [x] G2: Primeira tela orientada à ação (o 4.4 do plano)
+- [x] G3: Anel planejado × realizado em Hoje
+- [x] G4: Acerto por disciplina com marca de meta
+- [x] G5: Carga diária da Agenda de Revisões (30 dias)
+- [x] G6: Barra empilhada de status nos blocos de disciplina
 
 ### Checkpoint 3 (decidir quais gráficos de média e baixa prioridade entram)
 
 ### Fase 4 — Conforto
-- [ ] C1: Cronômetro sai da Visão Geral (botão flutuante ou aba Hoje)
-- [ ] C2: Conquistas e progresso por disciplina vão para Desempenho
-- [ ] C3: Seções recolhíveis com estado lembrado
-- [ ] C4: Barra inferior com Início, Hoje, Matérias, Agenda e Mais; aviso "Salvo" acima dela; demo em uma linha
-- [ ] C5: Cor por disciplina (schema + migração + UI)
-- [ ] C6: Motivação (constância no topo de Hoje, sequência com ícone, animação da meta)
-- [ ] C7: Redistribuir revisões atrasadas (reaproveita o motor de recuperação)
-- [ ] C8: Atalhos do PWA no manifest
-- [ ] C9: Transições e preferência de densidade
+- [x] C1: Cronômetro sai da Visão Geral (botão flutuante ou aba Hoje)
+- [x] C2: Conquistas e progresso por disciplina vão para Desempenho
+- [x] C3: Seções recolhíveis com estado lembrado
+- [x] C4: Barra inferior com Início, Hoje, Matérias, Agenda e Mais; aviso "Salvo" acima dela; demo em uma linha
+- [x] C5: Cor por disciplina (schema + migração + UI)
+- [x] C6: Motivação (constância no topo de Hoje, sequência com ícone, animação da meta)
+- [x] C7: Redistribuir revisões atrasadas (reaproveita o motor de recuperação)
+- [x] C8: Atalhos do PWA no manifest
+- [x] C9: Transições e preferência de densidade
 
 ### Checkpoint 4
 
 ### Fase 5 — Fluxos, clareza e confiança
-- [ ] F1: Planejamento em sub-abas
-- [ ] F2: Componente de aviso compacto
-- [ ] F3: Busca no celular vira ícone com paleta de comandos
-- [ ] F4: Registrar questões em poucos toques
-- [ ] F5: Resultado da sessão ao salvar
-- [ ] F6: Desfazer no lugar de confirmar (ações reversíveis)
-- [ ] F7: Lembrete de backup exportado (`lastExportAt` + migração)
-- [ ] F8: Fatores da prontidão como ações (junta com a T6 do onboarding)
-- [ ] F9: Navegação lateral acima de 1280 px
-- [ ] F10: Modo Essencial (depois de decidir o padrão)
-- [ ] F11: Carregamento por aba com pré-cache gerado
+- [x] F1: Planejamento em sub-abas
+- [x] F2: Componente de aviso compacto
+- [x] F3: Busca no celular vira ícone com paleta de comandos
+- [x] F4: Registrar questões em poucos toques
+- [x] F5: Resultado da sessão ao salvar
+- [x] F6: Desfazer no lugar de confirmar (ações reversíveis)
+- [x] F7: Lembrete de backup exportado (`lastExportAt` + migração)
+- [x] F8: Fatores da prontidão como ações (junta com a T6 do onboarding)
+- [ ] F9: Navegação lateral acima de 1280 px (descartada a pedido em 02/11/2026; abas continuam no topo)
+- [x] F10: Modo Essencial (depois de decidir o padrão)
+- [x] F11: Carregamento por aba com pré-cache gerado
 
 ### Checkpoint 5
 

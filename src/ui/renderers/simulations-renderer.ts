@@ -153,40 +153,6 @@ export function renderSimulationTrendChart({
   });
 }
 
-export function renderSubjectPerformanceRows({
-  items = [],
-  escapeHtml,
-}: {
-  items?: Row[];
-  escapeHtml: Esc;
-}) {
-  const rows = items
-    .map(({ performance, trend }) => {
-      const color =
-        trend.key === 'up'
-          ? 'var(--green)'
-          : trend.key === 'down'
-            ? 'var(--red)'
-            : 'var(--ink-soft)';
-      const comparison =
-        trend.key === 'insufficient'
-          ? 'Amostra insuficiente'
-          : `${trend.previousAccuracy}% → ${trend.recentAccuracy}% (${trend.delta >= 0 ? '+' : ''}${trend.delta} p.p.)`;
-      return `<tr><td>${escapeHtml(performance.subject)}</td><td><div class="subject-accuracy-bar"><span class="subject-accuracy-track" aria-hidden="true"><span style="width:${performance.acerto}%"></span></span><strong>${performance.acerto}%</strong></div></td><td style="text-align:right;">${performance.total}</td><td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml(trend.label)}<small class="trend-comparison">${escapeHtml(comparison)}</small></td></tr>`;
-    })
-    .join('');
-  const weak = items
-    .map(item => item.performance)
-    .filter(item => item.acerto < 70 && item.total >= 5);
-  const alerts = weak
-    .map(
-      item =>
-        `<div class="desempenho-alerta">${renderIconSvg('alert-triangle', { size: 14, className: 'inline-block align-middle mr-1 text-red' })}${escapeHtml(item.subject)} precisa de atenção.</div>`
-    )
-    .join('');
-  return `<table class="weekly-history-table" style="margin-bottom:${weak.length ? '12px' : '0'};"><thead><tr><th>Disciplina</th><th style="text-align:right;">Acerto</th><th style="text-align:right;">Questões</th><th style="text-align:right;">Tendência · 4 semanas × 4 anteriores</th></tr></thead><tbody>${rows}</tbody></table>${alerts}`;
-}
-
 export function renderSimulationRows({
   items = [],
   visible = 5,

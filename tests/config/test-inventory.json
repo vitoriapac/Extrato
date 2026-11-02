@@ -108,7 +108,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 4,
       "observedCaseSeconds": 52.2,
@@ -1066,7 +1066,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 6,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4757,7 +4757,7 @@
         "node:assert/strict",
         "../../src/ui/filter-panel.js"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

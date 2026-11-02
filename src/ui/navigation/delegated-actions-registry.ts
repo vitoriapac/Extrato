@@ -5,6 +5,7 @@ import {
 } from '../events/delegated-actions.js';
 import { createDelegatedEventsController } from '../controllers/delegated-events-controller.js';
 import { scrollBehavior } from '../accessibility.js';
+import { toggleFilterPanel } from '../filter-panel.js';
 
 export interface DelegatedActionsRegistryDeps {
   document: Document | any;
@@ -115,7 +116,8 @@ export function buildDelegatedActionHandlers(
     resetOverdueGroupLimit: (...args: any[]) => c.calendar?.resetOverdueGroupLimit?.(...args),
     saveCalendarEdit: (...args: any[]) => c.calendar?.saveCalendarEdit?.(...args),
     showAllOverdueGroups: (...args: any[]) => c.calendar?.showAllOverdueGroups?.(...args),
-    toggleFilterPanel: (...args: any[]) => c.calendar?.toggleFilterPanel?.(...args),
+    // No controller ever implemented this; the panels are plain show/hide (filter-panel.ts).
+    toggleFilterPanel: (name: string) => toggleFilterPanel(deps.document, name),
     toggleOverdueDate: (...args: any[]) => c.calendar?.toggleOverdueDate?.(...args),
     updateCal: (...args: any[]) => c.calendar?.updateCal?.(...args),
     updateCalendarDraft: (...args: any[]) => c.calendar?.updateCalendarDraft?.(...args),
