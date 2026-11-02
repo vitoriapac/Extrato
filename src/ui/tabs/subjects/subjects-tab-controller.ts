@@ -6,6 +6,7 @@ import { createSubjectsController } from './subjects-controller.js';
 import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './topic-analytics-view.js';
 import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './topic-strategy-editor-view.js';
 import type { Subject, Topic, TopicStageChecklist, TopicStatus } from '../../../core/types.js';
+import { runUndoable } from '../../undoable.js';
 
 export interface SubjectsTabControllerContext {
   document: Document;
@@ -607,11 +608,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         `O tópico possui ${ctx.pluralize(total, 'registro')} ${total === 1 ? 'vinculado' : 'vinculados'} e não pode ser excluído.`
       );
     }
-    ctx.showConfirm(`Excluir definitivamente "${found.topic.name || 'este tópico'}"?`, () => {
-      ctx.subjectService.removeTopic(subjectId, topicId);
-      ctx.persistAndRender();
-      ctx.showToast('Tópico excluído definitivamente.');
-    });
+    runUndoable(`Tópico "${found.topic.name || 'sem nome'}" excluído.`, () =>
+      ctx.subjectService.removeTopic(subjectId, topicId)
+    );
   }
 
   function updateTopic(subjectId: string, topicId: string, field: string, value: any): void {

@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-272 arquivos Node e 64 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+274 arquivos Node e 67 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -48,6 +48,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/legacy-backup.spec.js | browser | Backup | critical | 2.9 | journey | none |
 | tests/e2e/navigation-hash.spec.js | browser | Aplicação | functional | — | journey | none |
 | tests/e2e/onboarding.spec.js | browser | Onboarding | functional | 60.1 | journey, viewport | none |
+| tests/e2e/planning-subtabs.spec.js | browser | Planejamento | critical | — | journey, demo, viewport | none |
 | tests/e2e/planning-sustainability.spec.js | browser | Sustentabilidade | critical | 168.8 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/planning.spec.js | browser | Planejamento | critical | 63.5 | journey, demo, viewport | none |
 | tests/e2e/preparation-signals.spec.js | browser | Aplicação | functional | 3.7 | journey, viewport | none |
@@ -55,6 +56,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/progressive-list.spec.js | browser | Aplicação | functional | 5.6 | journey, viewport | none |
 | tests/e2e/pt-br-format.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/pwa.spec.js | browser | Aplicação | functional | 9.5 | journey | none |
+| tests/e2e/quick-flows.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/recent-flows.spec.js | browser | Aplicação | functional | 144.4 | journey, demo, viewport | none |
 | tests/e2e/recommendation-outcome.spec.js | browser | Recomendações | functional | 19.5 | journey, demo | none |
 | tests/e2e/recovery-preview-ux.spec.js | browser | Recuperação | critical | 74.4 | journey, visual-comparison, demo, viewport | windows-only |
@@ -76,6 +78,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/subject-accuracy-target.spec.js | browser | Aplicação | functional | 6.4 | journey, viewport | none |
 | tests/e2e/subject-color.spec.js | browser | Aplicação | functional | — | journey, viewport | none |
 | tests/e2e/topic-strategy.spec.js | browser | Aplicação | functional | 18.1 | journey, demo | none |
+| tests/e2e/undo-delete.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/ux-baseline.spec.js | browser | Aplicação | visual | 70.6 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/verticalized-syllabus-and-cycle.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/visual-consolidation.spec.js | browser | Visual | visual | 125.4 | journey, visual-comparison, demo, viewport | windows-only |
@@ -221,6 +224,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/plan-execution-snapshot.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-repository.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-services.test.js | node | Planejamento | critical | — | contract | none |
+| tests/unit/planning-subtabs.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-sustainability.test.js | node | Sustentabilidade | critical | — | contract | none |
 | tests/unit/plateau-detector.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/post-simulation-replan.test.js | node | Planejamento | critical | — | contract | none |
@@ -290,6 +294,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/starter-packs.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/state-boundaries.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/state-migrations.test.js | node | Estado | critical | — | contract | none |
+| tests/unit/state-undo.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/storage-manager.test.js | node | Persistência | critical | — | contract | none |
 | tests/unit/storage-services.test.js | node | Persistência | critical | — | contract | none |
 | tests/unit/strategic-achievements.test.js | node | Aplicação | functional | — | contract | none |

@@ -25,6 +25,7 @@ import { APP_MODES, readAppMode } from './application/demo/demo-mode.js';
 import { createDensityController, createPreferencesController } from './ui/controllers/preferences-controller.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
+import { configureUndo } from './ui/undoable.js';
 import { createErrorBoundaryController } from './ui/controllers/error-boundary-controller.js';
 import { watchDailyExecutionDate } from './ui/controllers/daily-execution-controller.js';
 import { createApplicationRenderer } from './ui/renderers/application-renderer.js';
@@ -113,6 +114,12 @@ const dialogFeedback = createDialogFeedback({ document, modalController });
 const flashSaved = (durationMs?: number) => dialogFeedback.flashSaved(durationMs);
 const showToast = (message: string, durationMs?: number) =>
   dialogFeedback.showToast(message, durationMs);
+configureUndo({
+  getState: () => state,
+  persistAndRender: () => persistAndRender(),
+  showToast: message => dialogFeedback.showToast(message),
+  showUndoToast: (message, onUndo) => dialogFeedback.showUndoToast(message, onUndo),
+});
 const showConfirm = (
   message: string,
   onConfirm: (value?: any) => void,

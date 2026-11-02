@@ -7,6 +7,21 @@ function renderLedger(ledger: Record<string, any>) {
   const lines = line('Estudado hoje', ledger.studied) + line('Plano de hoje', ledger.plan);
   return `<div class="session-ledger" role="group" aria-label="Lançamento no extrato de hoje"><p class="session-ledger__credit"><span>Lançamento</span><strong>${ledger.credit}</strong></p>${ledger.detail ? `<p class="session-ledger__done">${ledger.detail}</p>` : ''}${lines ? `<dl>${lines}</dl>` : ''}${ledger.completed ? `<p class="session-ledger__done">Atividade do plano concluída · ${ledger.completed.done} de ${ledger.completed.total}</p>` : ''}</div>`;
 }
+function renderEffects(effects: Record<string, any> | null) {
+  if (!effects) return '';
+  const { readiness, reviews, goal } = effects;
+  const delta =
+    readiness?.delta == null
+      ? ''
+      : readiness.delta === 0
+        ? ' <span class="session-effects__delta">sem variação</span>'
+        : ` <span class="session-effects__delta">(${readiness.delta > 0 ? '+' : '−'}${Math.abs(readiness.delta)})</span>`;
+  const rows =
+    (readiness ? `<div><dt>Prontidão</dt><dd>${readiness.text}${delta}</dd></div>` : '') +
+    (goal ? `<div><dt>Meta do dia</dt><dd>${goal}</dd></div>` : '') +
+    (reviews ? `<div><dt>Revisões agendadas</dt><dd>${reviews.text}</dd></div>` : '');
+  return `<dl class="session-effects" aria-label="Efeitos desta sessão">${rows}</dl>`;
+}
 export function renderSessionResult(model: Record<string, any>, { escapeHtml }: any = {}) {
   const questionSummary = model.questions
     ? ` · ${model.questions.resolved} questões · ${model.questions.correct} acertos (${model.questions.accuracy}%)`
@@ -20,5 +35,5 @@ export function renderSessionResult(model: Record<string, any>, { escapeHtml }: 
       : model.simulation
         ? '<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>'
         : '<p>Consulte a próxima ação sugerida para continuar.</p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>';
-  return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}<small>Seus indicadores foram atualizados.</small>${next}`;
+  return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderEffects(model.effects)}<small>Seus indicadores foram atualizados.</small>${next}`;
 }

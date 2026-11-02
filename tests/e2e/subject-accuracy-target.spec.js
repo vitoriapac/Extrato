@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 import { buildStrategicCycleFixture } from '../fixtures/strategic-cycle.js';
 test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar domínio ou pesos', async ({
   page,
@@ -19,6 +19,7 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
   }, buildStrategicCycleFixture(base));
   const before = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const config = page.locator('#examBlueprintConfig details[data-subject-id="cycle-s0"]');
   await config.locator(':scope > summary').click();
   await config.locator('[name="accuracyTarget"]').fill('75');
@@ -40,6 +41,7 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
     window.__EXTRATO_TEST__.renderAll();
   }, saved.backup.normalized);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'metas');
   await expect(page.locator('#subjectTargetEditor [data-accuracy-value="cycle-s0"]')).toHaveValue(
     '75'
   );

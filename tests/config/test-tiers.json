@@ -182,6 +182,11 @@
       ]
     },
     {
+      "file": "tests/e2e/planning-subtabs.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/planning-sustainability.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -213,6 +218,11 @@
     },
     {
       "file": "tests/e2e/pwa.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
+      "file": "tests/e2e/quick-flows.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
@@ -356,6 +366,11 @@
     },
     {
       "file": "tests/e2e/topic-strategy.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
+      "file": "tests/e2e/undo-delete.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
@@ -1082,6 +1097,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/planning-subtabs.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/planning-sustainability.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1420,6 +1440,11 @@
       "file": "tests/unit/state-migrations.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/state-undo.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/storage-manager.test.js",

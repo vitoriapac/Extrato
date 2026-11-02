@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo } from '../helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from '../helpers.js';
 
 export async function assertCriticalResponsive(page, { width, theme }) {
   await page.setViewportSize({ width, height: 900 });
@@ -18,9 +18,11 @@ export async function assertCriticalResponsive(page, { width, theme }) {
     await analyses.first().locator(':scope > summary').click();
   await expectNoPageOverflow(page);
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
-  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   await expectNoPageOverflow(page);
   await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
+  await openPlanningSubtab(page, 'prova');
+  await expectNoPageOverflow(page);
   await expect(page.locator('#examBlueprintConfig')).toBeVisible();
   await activateTab(page, 'disciplinas');
   await expectNoPageOverflow(page);

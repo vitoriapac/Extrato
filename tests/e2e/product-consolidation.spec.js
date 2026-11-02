@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow } from './helpers.js';
+import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
@@ -49,11 +49,18 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
         ]) {
           // Navigation chrome is detached here, so show the owning panel directly for the capture.
           await page.evaluate(
-            name =>
+            ([name, target]) => {
               document
                 .querySelectorAll('.panel')
-                .forEach(node => node.classList.toggle('active', node.id === `panel-${name}`)),
-            panel
+                .forEach(node => node.classList.toggle('active', node.id === `panel-${name}`));
+              // Planejamento shows one sub-tab at a time; the nav is detached here, so reveal directly.
+              const owner = document.querySelector(target)?.closest('[data-metas-subpanel]');
+              if (owner)
+                document
+                  .querySelectorAll('[data-metas-subpanel]')
+                  .forEach(node => (node.hidden = node !== owner));
+            },
+            [panel, selector]
           );
           const path = testInfo.outputPath(`${name}-${id}-${width}-${theme}.png`);
           await page.locator(selector).screenshot({ path, animations: 'disabled' });
@@ -83,6 +90,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
   await expect(page.locator('#studySessionsCount')).toHaveText('0 sessões');
   await expect(page.locator('#studySessionsFilterSummary')).toBeHidden();
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'historico');
   await page.locator('#strategicTimelineDashboard select').first().selectOption('assessments');
   await expect(page.locator('#strategicTimelineDashboard')).toContainText(
     'Nenhum evento neste filtro'

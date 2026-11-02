@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 import { buildStrategicCycleFixture } from '../fixtures/strategic-cycle.js';
 import { ensureRecommendationRecord } from '../../src/application/recommendations/recommendation-history.js';
 
@@ -46,6 +46,7 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
     api.renderAll();
   }, fixture);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'historico');
   const timeline = page.locator('#strategicTimelineDashboard');
   await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(5);
   await timeline.getByRole('button', { name: /Mostrar mais/ }).click();
@@ -63,6 +64,7 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   await juros.getByRole('button', { name: /Mostrar mais/ }).click();
   await expect(juros.locator('ol > li:visible')).toHaveCount(9);
   await expect(juros).toContainText('Incidência: 100%');
+  await openPlanningSubtab(page, 'fechamento');
   const save = page.locator(
     '#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]'
   );

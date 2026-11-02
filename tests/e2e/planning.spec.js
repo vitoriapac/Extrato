@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo } from './helpers.js';
+import { activateTab, openDemo, openPlanningSubtab } from './helpers.js';
 
 test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ page }) => {
   await openDemo(page);
@@ -50,6 +50,7 @@ test('fase e redistribuição do plano se organizam em tela móvel', async ({ pa
   await expect(preview.locator('.exam-phase-steps')).toBeVisible();
   await expect(preview.locator('.exam-phase-step')).toHaveCount(4);
   expect(await preview.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await openPlanningSubtab(page, 'prova');
   const config = page.locator('#examBlueprintConfig .exam-subject-row').first();
   if (await config.count()) {
     await page
@@ -84,6 +85,7 @@ test('configuração por disciplina começa recolhida e mantém herança nula', 
     api.renderAll();
   });
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const disclosure = page.locator('#examBlueprintConfig .exam-subject-config').first();
   await expect(disclosure).not.toHaveAttribute('open', '');
   await expect(disclosure.locator('summary')).toContainText('Herdar domínio 80% (geral)');

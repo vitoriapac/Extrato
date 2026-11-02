@@ -4,6 +4,7 @@ import {
 } from '../../application/navigation/analysis-context.js';
 import { updatePerformanceViewState } from '../../application/performance/performance-view-state.js';
 import type { AppState } from '../../core/types.js';
+import { openSectionFor } from '../remembered-sections.js';
 
 export interface AnalysisNavigationControllerOptions {
   document: Document;
@@ -121,6 +122,7 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
             : destination === 'metas'
               ? document.getElementById('examStudyPlan')
               : document.getElementById('diagnosisCenter');
+        openSectionFor(selected || fallback);
         (selected || fallback)?.scrollIntoView({ block: 'start' });
         selected?.focus({ preventScroll: true });
       });

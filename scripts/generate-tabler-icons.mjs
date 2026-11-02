@@ -117,6 +117,7 @@ const iconList = [
   'arrow-back-up',
   'baseline-density-medium',
   'baseline-density-small',
+  'minus',
 ];
 
 const rawData = await readFile(tablerNodesPath, 'utf8');

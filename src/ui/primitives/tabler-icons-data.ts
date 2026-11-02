@@ -2199,6 +2199,14 @@ export const TABLER_ICONS_DATA: Record<string, TablerNode[]> = {
       }
     ]
   ],
+  "minus": [
+    [
+      "path",
+      {
+        "d": "M5 12l14 0"
+      }
+    ]
+  ],
   "play": [
     [
       "path",

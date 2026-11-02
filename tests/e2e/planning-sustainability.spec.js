@@ -3,7 +3,7 @@ import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { addLocalDays } from '../../src/core/date-utils.js';
 import { freezePlanExecution } from '../../src/domain/planning/plan-execution-snapshot.js';
 import { recordPlanningCapacity } from '../../src/domain/planning/capacity-history.js';
-import { activateTab, expectNoPageOverflow, openDemo } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from './helpers.js';
 import AxeBuilder from '@axe-core/playwright';
 import { withPixelAlignedCapture } from './helpers/visual-capture.js';
 
@@ -91,6 +91,7 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
     api.renderAll();
   }, state);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   const close = page.locator('#weeklyCloseDashboard'),
     section = close.locator('.planning-sustainability').first();
   await close.locator('.weekly-close-analysis > summary').click();
@@ -109,7 +110,9 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
   expect(await page.evaluate(() => JSON.stringify(window.__EXTRATO_TEST__.getState()))).toBe(
     before
   );
-  await activateTab(page, 'metas');
+  // "Abrir disponibilidade" lands on the capacity card in Plano da semana.
+  await expect(page.locator('#metasCapacity')).toBeVisible();
+  await openPlanningSubtab(page, 'fechamento');
   await close.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
   await close.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
   const snapshot = await page.evaluate(() =>
@@ -151,6 +154,7 @@ for (const [width, theme] of [
     await expect(page.locator('.adherence-change')).toContainText('O que mudou?');
     await expectNoPageOverflow(page);
     await activateTab(page, 'metas');
+    await openPlanningSubtab(page, 'fechamento');
     await page.locator('#weeklyCloseDashboard .weekly-close-analysis > summary').click();
     const section = page.locator('#weeklyCloseDashboard .planning-sustainability').first();
     await expect(section).toContainText('Carga acima da execução recente');
@@ -181,6 +185,7 @@ for (const [width, theme] of [
     await review.click();
     await page.getByRole('button', { name: 'Abrir disponibilidade', exact: true }).click();
     await expect(page.locator('#panel-metas')).toBeVisible();
+    await openPlanningSubtab(page, 'semana');
     await expect(page.locator('#metasCapacityTitle')).toBeFocused();
     await expectNoPageOverflow(page);
     expect(await page.evaluate(() => localStorage.getItem('bb-premium-study-data'))).toBe(

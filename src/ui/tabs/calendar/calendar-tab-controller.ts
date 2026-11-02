@@ -17,6 +17,7 @@ import { createCalendarState } from '../../calendar/calendar-state.js';
 import { createCalendarController } from '../../calendar/calendar-controller.js';
 import { STATUS_CLASS, STATUS_OPTIONS, REVIEW_OPTIONS } from '../../../state/schema.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { runUndoable } from '../../undoable.js';
 
 export interface CalendarTabControllerContext {
   state: {
@@ -117,7 +118,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   const subjectsForSelection = ctx.subjectsForSelection || (() => []);
   const isMobileHistoryLayout = ctx.isMobileHistoryLayout || (() => false);
   const showToast = ctx.showToast || (() => {});
-  const showConfirm = ctx.showConfirm || ((_msg, onConfirm) => onConfirm());
   const persistAndRender = ctx.persistAndRender || (() => {});
   const renderCollectionFooter = ctx.renderCollectionFooter || (() => '');
 
@@ -383,11 +383,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   }
 
   function deleteCalRow(id: string) {
-    showConfirm('Excluir este item do calendário?', () => {
-      calendarController?.remove(id);
-      persistAndRender();
-      showToast('Item excluído.');
-    });
+    runUndoable('Item excluído.', () => calendarController?.remove(id));
   }
 
   function updateCal(id: string, field: string, value: any) {

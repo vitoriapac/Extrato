@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { buildWeeklyCloseAdherence } from '../../src/application/adherence/build-weekly-close-adherence.js';
 import { createWeeklyCloseSnapshot } from '../../src/application/analytics/weekly-close-snapshot.js';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 
 test('fechamento preserva aderência e pendências, e a revisão só navega para o planejamento', async ({
   page,
@@ -102,7 +102,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
     api.setState(result.normalized);
     api.renderAll();
   }, state);
-  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   const close = page.locator('#weeklyCloseDashboard');
   await close.locator('.weekly-close-analysis > summary').click();
   await expect(close.getByRole('region', { name: 'Síntese para a próxima decisão' })).toContainText(
@@ -173,6 +173,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))
   );
   expect(preserved).toEqual(frozen);
+  await openPlanningSubtab(page, 'historico');
   const history = page.locator('#weeklyCloseHistoryDashboard .weekly-adherence-history');
   await expect(history).toContainText('Aderência nos fechamentos salvos');
   await history.locator('details > summary').first().click();

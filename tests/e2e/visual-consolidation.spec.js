@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow } from './helpers.js';
+import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 test('destaca prontidão e ativa o cabeçalho compacto ao rolar', async ({ page }) => {
   await openDemo(page);
   await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');
@@ -75,6 +75,7 @@ test('configuração estratégica comunica herança e conquista de cem horas', a
     api.renderAll();
   });
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   await expect(page.locator('#examBlueprintConfig')).toContainText('Configuração por disciplina');
   await expect(page.locator('#examBlueprintConfig .field-inheritance').first()).toHaveText(
     '80% (geral)'
@@ -289,16 +290,19 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await page.setViewportSize({ width: 1440, height: 1000 });
   await openDemo(page);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   await expect(page.locator('#weeklyCloseDashboard .weekly-kpis')).toBeVisible();
   await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText(
     'Diagnóstico'
   );
+  await openPlanningSubtab(page, 'semana');
   await expect(page.locator('#periodComparisonResults .comparison-head')).toContainText('Anterior');
   await activateTab(page, 'dashboard');
   const rows = page.locator('#gapMapDashboard .data-row');
   if (await rows.count())
     await expect(rows.first().locator('.data-score')).toContainText(/Gravidade \d+\/100/);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const strategicRow = page.locator('#examBlueprintConfig .exam-subject-row').first();
   expect(await strategicRow.evaluate(row => row.scrollWidth <= row.clientWidth + 1)).toBe(true);
 });
@@ -598,7 +602,8 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
     /^(\d+ revis(ão|ões) atrasadas?|nenhuma atrasada)$/
   );
 
-  await activateTab(page, 'metas');
+  // The accuracy summary lives inside the weekly close analysis.
+  await openPlanningSubtab(page, 'fechamento');
   const accuracy = page.locator('.subject-accuracy-summary');
   await accuracy.evaluate(node => {
     node.closest('.weekly-close-analysis')?.setAttribute('open', '');
@@ -619,14 +624,17 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   await openDemo(page);
 
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'metas');
   const history = page.locator('#historicoMetasContainer .goal-history-chart');
   await expect(history).toHaveCount(3);
   await expect(history.first().getByRole('img', { name: /^Tópicos concluídos por semana/ })).toBeAttached();
   await expect(history.first().locator('figcaption')).toContainText(/semanas? encerradas? na meta|sem meta definida/);
+  await openPlanningSubtab(page, 'semana');
   await page.locator('.metas-execution-history').evaluate(node => (node.open = true));
   const week = page.getByRole('img', { name: /^Capacidade, planejado e estudado por dia: / });
   await expect(week).toBeVisible();
   expect(await week.locator('.chart-columns__bar').count()).toBe(21);
+  await openPlanningSubtab(page, 'prova');
   const burnup = page.locator('#ritmoContainer .rhythm-burnup');
   await expect(burnup.getByRole('img', { name: /^Cobertura do edital até a prova: \d+ de \d+ tópicos/ })).toBeVisible();
   await expect(burnup.locator('.rhythm-burnup__gap')).toContainText('necessário para terminar até a prova');

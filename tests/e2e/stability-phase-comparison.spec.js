@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow } from './helpers.js';
+import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 
 test('Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso', async ({
   page,
@@ -20,6 +20,7 @@ test('Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso', 
   }
   await expectNoPageOverflow(page);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'historico');
   await expect(page.locator('#strategicTimelineDashboard .phase-comparison')).toBeVisible();
   await expect(page.locator('#strategicTimelineDashboard .phase-comparison table')).toContainText(
     'Prontidão'

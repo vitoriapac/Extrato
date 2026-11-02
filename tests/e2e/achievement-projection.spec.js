@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from './helpers.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { withPixelAlignedCapture } from './helpers/visual-capture.js';
 
@@ -502,6 +502,7 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
   await expect(page.locator('#projections')).toBeFocused();
   await expect(page.locator('#projections')).toContainText('não acrescenta horas');
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   const close = page.locator('#weeklyCloseDashboard');
   await close.locator('.weekly-close-analysis > summary').click();
   await expect(close.getByRole('region', { name: 'Síntese para a próxima decisão' })).toContainText(

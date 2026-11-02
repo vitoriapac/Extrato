@@ -45,6 +45,7 @@ import { renderProjectionCloseContext } from '../../ui/renderers/projection-clos
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../ui/accessibility.js';
 import { renderWeeklyCloseRecord } from '../../ui/renderers/weekly-close-record-renderer.js';
+import { openSectionFor } from '../../ui/remembered-sections.js';
 
 export interface WeeklyCloseModalControllerDeps {
   document?: any;
@@ -129,6 +130,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       if (deps.activateTab) deps.activateTab('metas');
       if (doc) {
         const target = doc.getElementById('metasCapacityTitle');
+        openSectionFor(target);
         target?.setAttribute('tabindex', '-1');
         target?.focus();
         target?.scrollIntoView({ block: 'start' });
@@ -481,7 +483,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   function openWeeklyClose() {
     if (deps.activateTab) deps.activateTab('metas');
     if (doc) {
-      doc.getElementById('metasCloseSection')?.scrollIntoView({
+      const section = doc.getElementById('metasCloseSection');
+      openSectionFor(section);
+      section?.scrollIntoView({
         block: 'start',
         behavior: scrollBehavior(),
       });

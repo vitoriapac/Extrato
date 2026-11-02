@@ -9,6 +9,7 @@ import {
 } from '../../domain/onboarding/guided-tour-steps.js';
 import { mountPreact, unmountPreact } from '../preact-mount.js';
 import { GuidedTourPopover } from '../components/GuidedTourPopover.js';
+import { openSectionFor } from '../remembered-sections.js';
 
 export interface GuidedTourControllerOptions {
   document?: Document;
@@ -100,6 +101,7 @@ export function createGuidedTourController({
       let targetRect: { left: number; top: number; width: number; height: number } | null = null;
       const target = document.querySelector<HTMLElement>(step.selector);
       if (target) {
+        openSectionFor(target);
         target.scrollIntoView({ block: 'center', behavior: 'instant' });
         // O cabeçalho fixo não pode cobrir o topo do alvo destacado.
         const stickyHeight =

@@ -48,3 +48,9 @@ export async function expectNoPageOverflow(page) {
     ).toBeLessThanOrEqual(dimensions.viewport);
   }
 }
+// Planejamento shows one sub-tab at a time (F1): semana, prova, metas, fechamento or historico.
+export async function openPlanningSubtab(page, key) {
+  await activateTab(page, 'metas');
+  await page.locator(`#metasTab-${key}`).evaluate(button => button.click());
+  await expect(page.locator(`#metasSub-${key}`)).toBeVisible();
+}

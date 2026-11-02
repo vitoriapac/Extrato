@@ -19,6 +19,7 @@ import { countActiveFilters, filterPanelLabel } from '../../filter-panel.js';
 import { formatDuration } from '../../../core/format-duration.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
 import { renderIconSvg } from '../../primitives/icon.js';
+import { runUndoable } from '../../undoable.js';
 
 export const SESSION_TYPES: Record<string, string> = Object.freeze({
   study: 'Estudo teórico',
@@ -105,7 +106,6 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   const subjectsForSelection = opts.subjectsForSelection || (() => []);
   const isMobileHistoryLayout = opts.isMobileHistoryLayout || (() => false);
   const showToast = opts.showToast || (() => {});
-  const showConfirm = opts.showConfirm || ((_msg, onConfirm) => onConfirm());
   const persistAndRender = opts.persistAndRender || (() => {});
   const renderHeatmap = opts.renderHeatmap || (() => {});
 
@@ -478,14 +478,12 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   }
 
   function deleteStudySession(id: string) {
-    showConfirm('Excluir esta sessão e as questões vinculadas a ela?', () => {
+    runUndoable('Sessão e questões vinculadas excluídas.', () => {
       if (opts.sessionService?.remove) {
         opts.sessionService.remove(id);
       } else {
         opts.state.studySessions = (opts.state.studySessions || []).filter(s => s.id !== id);
       }
-      persistAndRender();
-      showToast('Sessão excluída.');
     });
   }
 

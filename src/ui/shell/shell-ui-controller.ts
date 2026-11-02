@@ -1,5 +1,6 @@
 import { scrollBehavior } from '../accessibility.js';
 import { initRememberedSections, openSectionFor } from '../remembered-sections.js';
+import { initPlanningSubtabs } from '../planning-subtabs.js';
 /**
  * Shell UI Controller
  *
@@ -221,6 +222,7 @@ export function createShellUiController(options: ShellUiControllerOptions) {
     }
 
     initRememberedSections();
+    initPlanningSubtabs();
 
     const demoBanner = document.getElementById('demoBanner');
     const demoMenu = document.getElementById('demoMenuToggle');
@@ -238,7 +240,7 @@ export function createShellUiController(options: ShellUiControllerOptions) {
         if ((event.target as Element)?.closest?.('button')) setDemoMenu(false);
       });
 
-    document.querySelectorAll('.overview-nav-mobile select').forEach((select: Element) =>
+    document.querySelectorAll('.overview-nav-mobile select:not(#metasSubtabSelect)').forEach((select: Element) =>
       select.addEventListener('change', (event: any) => {
         const target = document.getElementById((event.target as HTMLInputElement).value);
         if (!target) return;

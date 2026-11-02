@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, openExamImport } from './helpers.js';
+import { activateTab, openDemo, openExamImport, openPlanningSubtab } from './helpers.js';
 
 const viewports = [
   { name: 'mobile-375', width: 375, height: 812 },
@@ -102,7 +102,7 @@ test('regressão visual dos componentes críticos em desktop', async ({ page }) 
     'erros-categorizados-desktop.png',
     screenshotOptions
   );
-  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   await expect(page.locator('#examBlueprintConfig')).toHaveScreenshot(
     'configuracao-estrategica-desktop.png',
     screenshotOptions

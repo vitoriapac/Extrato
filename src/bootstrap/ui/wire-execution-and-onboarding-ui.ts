@@ -119,6 +119,9 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     recommendationActionKind,
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
     getDailyExecutionItems: () => todayTabController.dailyExecutionController.build(),
+    getReadinessValue: () =>
+      approvalReadinessService.readinessResult(approvalReadinessService.computeApprovalMetrics())
+        .value ?? null,
     getCurrentStudyRecommendations: () =>
       studyRecommendationController?.getCurrentRecommendations() || [],
     guidedStudyService: services.guidedStudyService,

@@ -342,27 +342,56 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ## Fase 5 — Fluxos, clareza e confiança
 
 ### F1: Planejamento em sub-abas
-**Aceite:** [ ] Semana · Prova e ritmo · Metas · Fechamento · Histórico, uma de cada vez · [ ] Links profundos (`#metas`, navegação de análise) abrem a sub-aba certa · [ ] Altura em 375 px medida antes e depois
+**Aceite:** [x] Semana · Prova e ritmo · Metas · Fechamento · Histórico, uma de cada vez · [x] Links profundos (`#metas`, navegação de análise) abrem a sub-aba certa · [x] Altura em 375 px medida antes e depois
 **Tamanho:** M
+**Resultado (02/11/2026):**
+- Abas acessíveis (setas, Home e End) no desktop; lista de seções no celular.
+- A escolha fica na URL (`#planejamento/fechamento`).
+- Âncoras, ajuda, tour, navegação de análise e fechamento semanal revelam a sub-aba do destino (`openSectionFor`).
+- Altura do Planejamento em 375 px (demo): 27.732 px antes; depois, por sub-aba: Semana 8.303, Prova 6.901, Metas 6.707, Fechamento 2.127, Histórico 6.745.
 
 ### F2: Aviso compacto
-**Aceite:** [ ] "O cronômetro ainda não começou" ocupa uma linha acima da barra inferior · [ ] Outros usos do mesmo componente conferidos
+**Aceite:** [x] "O cronômetro ainda não começou" ocupa uma linha acima da barra inferior · [x] Outros usos do mesmo componente conferidos
 **Tamanho:** S
+**Resultado:** o aviso ocupa só a largura do texto (225 × 33 px; antes 300 × 43) e fica 8 px acima da barra, que agora é medida. As mensagens mais longas (até 89 caracteres) quebram em 2 linhas sem cobrir a barra.
 
 ### F3: Busca no celular
-**Aceite:** [ ] Ícone de lupa abre a paleta de comandos · [ ] Ctrl+K continua funcionando no desktop
+**Aceite:** [x] Ícone de lupa abre a paleta de comandos · [x] Ctrl+K continua funcionando no desktop (e abre o campo também em janela estreita)
 **Dependências:** I2 · **Tamanho:** S
 
 ### F4: Registrar questões em poucos toques
-**Aceite:** [ ] Botões de mais e menos, `inputmode="numeric"`, última disciplina lembrada · [ ] Painel inferior no celular · [ ] Acertos nunca maiores que resolvidas
+**Aceite:** [x] Botões de mais e menos, `inputmode="numeric"`, última disciplina lembrada · [x] Painel inferior no celular · [x] Acertos nunca maiores que resolvidas
+**Resultado:** a "última disciplina" vem do registro mais recente, sem novo campo salvo. Os acertos são cortados enquanto se digita e no salvamento.
 **Tamanho:** M
 
 ### F5: Resultado da sessão
-**Aceite:** [ ] Ao salvar, mostra variação da prontidão, revisões agendadas e meta do dia · [ ] Variação calculada sem gravar nada extra
+**Aceite:** [x] Ao salvar, mostra variação da prontidão, revisões agendadas e meta do dia · [x] Variação calculada sem gravar nada extra
+**Resultado:** prontidão e agenda são lidas em memória antes e depois do salvamento. As revisões aparecem só quando a sessão cria alguma.
 **Tamanho:** M
 
 ### F6: Desfazer no lugar de confirmar
-**Aceite:** [ ] Lista explícita de quais ações viram desfazer e quais mantêm "Tem certeza?" · [ ] Desfazer restaura o estado exato, inclusive depois do salvamento automático e da rotação de backup
+**Aceite:** [x] Lista explícita de quais ações viram desfazer e quais mantêm "Tem certeza?" · [x] Desfazer restaura o estado exato, inclusive depois do salvamento automático e da rotação de backup
+**Viram desfazer** (excluem na hora; o aviso traz "Desfazer" por 10 s, pausa sob o ponteiro e aceita Ctrl+Z):
+- item do calendário;
+- registro de questões;
+- simulado;
+- revisão da agenda;
+- sessão com as questões vinculadas;
+- tópico arquivado sem vínculos.
+
+**Mantêm "Tem certeza?":**
+- excluir disciplina: cascata grande, exige arquivar antes;
+- limpar todos os dados: exige digitar LIMPAR;
+- importar backup que substitui tudo;
+- descartar ou zerar o tempo do cronômetro: o tempo não está nos dados;
+- manter tempo recuperado ou intervalo em segundo plano: é uma escolha, não uma exclusão;
+- prévias do fechamento semanal e do replanejamento: regra de simulação sem gravação;
+- conflitos de sincronização.
+
+**Como funciona:**
+- `captureUndo` (`src/application/undo/state-undo.ts`) guarda uma cópia dos dados persistentes antes da ação.
+- Ao desfazer, devolve todos os dados e salva de novo. `updatedAt`, `lastBackupAt` e o cronômetro ativo ficam como estão.
+- Se qualquer outro dado mudou depois da exclusão, o desfazer é recusado com aviso, para não apagar trabalho novo.
 **Verificação:** unit de cada ação reversível
 **Tamanho:** M
 

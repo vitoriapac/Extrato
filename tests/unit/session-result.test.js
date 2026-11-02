@@ -130,3 +130,37 @@ test('resumo de sessão curta mostra segundos em vez de 0 min', () => {
   assert.ok(html.includes('· 21 s'));
   assert.ok(!html.includes('· 0 min'));
 });
+
+test('resultado mostra variação da prontidão e revisões agendadas pela sessão (F5)', () => {
+  const outcome = { readiness: { before: 46, after: 48 }, reviewDates: ['2026-11-03', '2026-11-09'] };
+  const model = buildSessionResultViewModel(session, null, false, {
+    ...options,
+    outcome,
+    formatDate: iso => iso.split('-').reverse().join('/'),
+  });
+  assert.deepEqual(model.effects, {
+    readiness: { text: '46 → 48/100', delta: 2 },
+    reviews: { count: 2, text: '2 revisões · próxima em 03/11/2026' },
+    goal: null,
+  });
+  const withGoal = buildSessionResultViewModel(session, null, false, {
+    ...options,
+    outcome,
+    day: { before: { studiedMinutes: 35 }, after: { studiedMinutes: 80, plannedMinutes: 80 }, total: 1 },
+  });
+  assert.equal(withGoal.effects.goal, '80 min de 80 min · cumprida');
+  const html = renderSessionResult(model, { escapeHtml: String });
+  assert.match(html, /Prontidão<\/dt><dd>46 → 48\/100 <span class="session-effects__delta">\(\+2\)/);
+  assert.match(html, /Revisões agendadas<\/dt><dd>2 revisões · próxima em 03\/11\/2026/);
+  const same = buildSessionResultViewModel(session, null, false, {
+    ...options,
+    outcome: { readiness: { before: 46, after: 46 }, reviewDates: [] },
+  });
+  assert.match(renderSessionResult(same, { escapeHtml: String }), /sem variação/);
+  assert.equal(same.effects.reviews, null);
+  const none = buildSessionResultViewModel(session, null, false, {
+    ...options,
+    outcome: { readiness: { before: null, after: null }, reviewDates: [] },
+  });
+  assert.equal(none.effects, null);
+});

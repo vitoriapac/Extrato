@@ -6,6 +6,7 @@ import { buildSimulatedRemediationDiagnostic } from '../../../domain/diagnostics
 import { SimulatedRemediationModal } from '../../components/SimulatedRemediationModal.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { createErrorFlashcard } from '../../../domain/notebook/error-notebook-engine.js';
+import { runUndoable } from '../../undoable.js';
 
 export interface SimulationsTabControllerContext {
   document: Document;
@@ -230,12 +231,10 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   }
 
   function deleteSimuladoRow(id: string): void {
-    ctx.showConfirm('Excluir este simulado?', () => {
+    runUndoable('Simulado excluído.', () => {
       ctx.simulationService.remove(id);
       openBreakdownIds.delete(id);
       simulationEditController.reset();
-      ctx.persistAndRender();
-      ctx.showToast('Simulado excluído.');
     });
   }
 

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import { createSimulationsTabController } from '../../src/ui/tabs/questions/simulations-tab-controller.js';
 
 function createMockDom() {
@@ -148,9 +149,20 @@ test('SimulationsTabController - add, edit and delete simulation', () => {
   assert.ok(toasts.some(t => t.includes('Simulado atualizado')));
 
   // Delete simulation
+  const undoToasts = [];
+  configureUndo({
+    getState: () => state,
+    persistAndRender: () => {},
+    showToast: () => {},
+    showUndoToast: (message, onUndo) => undoToasts.push({ message, onUndo }),
+  });
+  const simulationsBefore = structuredClone(state.simulados);
   controller.deleteSimuladoRow(sim.id);
-  assert.equal(confirms.length, 1);
-  confirms[0].onConfirm();
+  assert.equal(confirms.length, 0);
+  undoToasts[0].onUndo();
+  assert.deepEqual(state.simulados, simulationsBefore);
+  configureUndo(null);
+  controller.deleteSimuladoRow(sim.id);
   assert.equal(
     state.simulados.some(x => x.id === sim.id),
     false

@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=8a0c5f7016e9">
-<link rel="stylesheet" href="styles/app.css?v=8a0c5f7016e9">
+<link rel="stylesheet" href="styles/tailwind.css?v=acfd882734ce">
+<link rel="stylesheet" href="styles/app.css?v=acfd882734ce">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -90,6 +90,7 @@
       <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="O que você quer fazer? (Ctrl+K)">
       <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
     </div>
+    <button class="theme-toggle-btn search-open-btn" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" aria-controls="globalSearchInput" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-search" aria-hidden="true"><path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M21 21l-6 -6"></path></svg></button>
     <button class="theme-toggle-btn" id="densityToggleBtn" type="button" aria-pressed="false" aria-label="Densidade compacta" title="Densidade confortável (ativa)"></button>
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span></button>
   </div>
@@ -594,10 +595,11 @@
   <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
     <header class="metas-page-header ui-section-header"><h2>Planejamento</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p></header>
     <nav class="overview-nav metas-nav" aria-label="Seções do Planejamento">
-      <div class="overview-nav-links"><a href="#metasActiveGoals">Plano da semana</a><a href="#metasExamStrategy">Prova e ritmo</a><a href="#subjectAccuracyGoals">Metas por disciplina</a><a href="#metasCloseSection">Fechamento semanal</a><a href="#metasHistorySection">Histórico</a></div>
-      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção do Planejamento</span><select class="select-control" aria-label="Seção do Planejamento"><option value="metasActiveGoals">Plano da semana</option><option value="metasExamStrategy">Prova e ritmo</option><option value="subjectAccuracyGoals">Metas por disciplina</option><option value="metasCloseSection">Fechamento semanal</option><option value="metasHistorySection">Histórico</option></select></label>
+      <div class="overview-nav-links" role="tablist" aria-label="Seções do Planejamento"><button type="button" role="tab" class="metas-subtab" id="metasTab-semana" aria-controls="metasSub-semana" aria-selected="true" tabindex="0" data-metas-subtab="semana">Plano da semana</button><button type="button" role="tab" class="metas-subtab" id="metasTab-prova" aria-controls="metasSub-prova" aria-selected="false" tabindex="-1" data-metas-subtab="prova">Prova e ritmo</button><button type="button" role="tab" class="metas-subtab" id="metasTab-metas" aria-controls="metasSub-metas" aria-selected="false" tabindex="-1" data-metas-subtab="metas">Metas por disciplina</button><button type="button" role="tab" class="metas-subtab" id="metasTab-fechamento" aria-controls="metasSub-fechamento" aria-selected="false" tabindex="-1" data-metas-subtab="fechamento">Fechamento semanal</button><button type="button" role="tab" class="metas-subtab" id="metasTab-historico" aria-controls="metasSub-historico" aria-selected="false" tabindex="-1" data-metas-subtab="historico">Histórico</button></div>
+      <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e ritmo</option><option value="metas">Metas por disciplina</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
     </nav>
 
+    <div class="metas-subpanel" id="metasSub-semana" role="tabpanel" aria-labelledby="metasTab-semana" data-metas-subpanel="semana">
     <section class="chart-card card--default metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><span class="module-heading__eyebrow">01 · Objetivos</span><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Acompanhe os resultados desejados e ajuste os valores quando necessário.</p></header><div id="metasContainer"></div></section>
 
     <section class="chart-card card--default metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><span class="module-heading__eyebrow">02 · Capacidade</span><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo pode estudar em cada dia.</p></header><div id="weeklyHoursGoals"></div></section>
@@ -617,6 +619,8 @@
       <div id="periodComparisonResults" aria-live="polite"></div>
     </details>
 
+    </div>
+    <div class="metas-subpanel" id="metasSub-prova" role="tabpanel" aria-labelledby="metasTab-prova" data-metas-subpanel="prova" hidden>
     <div class="chart-card" id="metasExamStrategy" data-metas-section>
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
       <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
@@ -629,6 +633,8 @@
       <div id="ritmoContainer"></div>
     </div>
 
+    </div>
+    <div class="metas-subpanel" id="metasSub-metas" role="tabpanel" aria-labelledby="metasTab-metas" data-metas-subpanel="metas" hidden>
     <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
     <div class="section-head">
       <div class="section-title" style="font-size:16px;">Metas de questões por disciplina</div>
@@ -648,16 +654,21 @@
       <h3>Histórico de metas (últimas 8 semanas)</h3>
       <div id="historicoMetasContainer"></div>
     </div>
+    </div>
+    <div class="metas-subpanel" id="metasSub-fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento" data-metas-subpanel="fechamento" hidden>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasCloseTitle">Fechamento semanal</h3><p class="module-heading__description">Leia a semana, salve o retrato e decida a próxima.</p></header>
       <div id="weeklyCloseDashboard"></div>
     </section>
 
+    </div>
+    <div class="metas-subpanel" id="metasSub-historico" role="tabpanel" aria-labelledby="metasTab-historico" data-metas-subpanel="historico" hidden>
     <section class="chart-card metas-history-section" id="metasHistorySection" data-metas-section aria-labelledby="metasHistoryTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Histórico</h3><p class="module-heading__description">Retratos salvos, decisões e trajetória das prioridades. Nada aqui é recalculado.</p></header>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Retratos semanais</h3></header><div id="weeklyCloseHistoryDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Linha do Tempo Estratégica</h3><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Evolução das prioridades</h3><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
     </section>
+    </div>
   </div>
 
   <!-- INSTRUÇÕES -->
@@ -945,7 +956,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=8a0c5f7016e9"></script>
+  <script src="src/app.bundle.js?v=acfd882734ce"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

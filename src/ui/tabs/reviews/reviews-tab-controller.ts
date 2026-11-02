@@ -33,6 +33,7 @@ import {
   reviewBaseDaysFromType,
 } from '../../../domain/reviews.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
+import { runUndoable } from '../../undoable.js';
 
 export interface ReviewsTabControllerContext {
   state: {
@@ -142,7 +143,6 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     ctx.diasParaRevisaoPill || ((_date?: string | null, _status?: string) => '');
   const isMobileHistoryLayout = ctx.isMobileHistoryLayout || (() => false);
   const showToast = ctx.showToast || (() => {});
-  const showConfirm = ctx.showConfirm || ((_msg, onConfirm) => onConfirm());
   const persistAndRender = ctx.persistAndRender || (() => {});
   const renderGroupHeader = ctx.renderGroupHeader || (() => '');
   const renderCollectionFooter = ctx.renderCollectionFooter || (() => '');
@@ -537,7 +537,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   }
 
   function deleteAgendaRow(id: string) {
-    showConfirm('Excluir esta revisão?', () => {
+    runUndoable('Revisão excluída.', () => {
       if (ctx.reviewService?.removeReview) {
         ctx.reviewService.removeReview(id);
       } else {
@@ -546,8 +546,6 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       agendaUiState.editingId = null;
       agendaUiState.editingIsNew = false;
       agendaUiState.draft = null;
-      persistAndRender();
-      showToast('Revisão excluída.');
     });
   }
 

@@ -127,6 +127,7 @@ export function buildDelegatedActionHandlers(
     saveQuestionEdit: (...args: any[]) => c.questions?.saveQuestionEdit?.(...args),
     toggleQuestionErrors: (...args: any[]) => c.questions?.toggleQuestionErrors?.(...args),
     updateQuestionDraft: (...args: any[]) => c.questions?.updateQuestionDraft?.(...args),
+    stepQuestionDraft: (...args: any[]) => c.questions?.stepQuestionDraft?.(...args),
     updateQuestionError: (...args: any[]) => c.questions?.updateQuestionError?.(...args),
     setErrorAnalysisFilter: (f: string, v: any) => {
       if (c.questions?.setErrorAnalysisFilter) {

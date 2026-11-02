@@ -1,4 +1,6 @@
 // Collapsible page sections whose open/closed state is a per-browser UI preference, not study data.
+import { isPlanningSubtab, selectPlanningSubtab } from './planning-subtabs.js';
+
 const STORAGE_KEY = 'studytrack.sectionsOpen';
 
 type SectionStore = Pick<Storage, 'getItem' | 'setItem'> | null;
@@ -20,10 +22,16 @@ const write = (storage: SectionStore, value: Record<string, boolean>) => {
   }
 };
 
-/** Opens the remembered section that contains (or is) the target, so anchors never land in a closed one. */
+/**
+ * Opens the remembered section that contains (or is) the target, and selects the sub-tab
+ * that holds it, so anchors and jumps never land in a closed or hidden section.
+ */
 export function openSectionFor(target: Element | null | undefined) {
   const section = target?.closest?.('details[data-remember]') as HTMLDetailsElement | null;
   if (section && !section.open) section.open = true;
+  const subpanel = target?.closest?.('[data-metas-subpanel]') as HTMLElement | null;
+  if (subpanel?.hidden && isPlanningSubtab(subpanel.dataset.metasSubpanel))
+    selectPlanningSubtab(subpanel.dataset.metasSubpanel);
 }
 
 /**

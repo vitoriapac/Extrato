@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import { createSessionHistoryController } from '../../src/ui/tabs/today/session-history-controller.js';
 
 test('createSessionHistoryController — calcula tempos acumulados e filtra sessões', () => {
@@ -126,10 +127,21 @@ test('createSessionHistoryController — CRUD de sessões inline e exclusão', (
   assert.match(toasted, /Sessão atualizada/);
   assert.equal(controller.historyEditState.sessionId, null);
 
-  // Excluir
+  // Excluir: sem "Tem certeza?", com Desfazer que devolve o estado exato (F6)
+  const undoToasts = [];
+  configureUndo({
+    getState: () => state,
+    persistAndRender: () => {},
+    showToast: () => {},
+    showUndoToast: (message, onUndo) => undoToasts.push({ message, onUndo }),
+  });
+  const sessionsBefore = structuredClone(state.studySessions);
   controller.deleteStudySession('s1');
-  assert.equal(confirmed, true);
+  assert.equal(confirmed, false);
   assert.equal(state.studySessions.length, 0);
+  undoToasts[0].onUndo();
+  assert.deepEqual(state.studySessions, sessionsBefore);
+  configureUndo(null);
 });
 
 test('createSessionHistoryController — expansão de dias e filtros dinâmicos', () => {

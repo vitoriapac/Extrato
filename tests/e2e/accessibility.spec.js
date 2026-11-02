@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, openDemo } from './helpers.js';
+import { activateTab, openDemo, openPlanningSubtab } from './helpers.js';
 
 test.describe.configure({ timeout: 60_000 });
 
@@ -50,6 +50,7 @@ test('central de diagnóstico continua acessível quando expandida', async ({ pa
 test('configuração estratégica continua acessível quando expandida', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const disclosure = page.locator('#examBlueprintConfig .exam-subject-config').first();
   if (await disclosure.count()) {
     await disclosure.locator('summary').click();

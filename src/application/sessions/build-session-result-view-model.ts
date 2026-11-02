@@ -2,7 +2,15 @@ export function buildSessionResultViewModel(
   session: Record<string, any>,
   nextPriority: Record<string, any> | null | undefined,
   priorityChanged: boolean,
-  { subjectName, topicName, formatMinutes, day = null, planNext = null }: any = {}
+  {
+    subjectName,
+    topicName,
+    formatMinutes,
+    day = null,
+    planNext = null,
+    outcome = null,
+    formatDate = (iso: string) => iso,
+  }: any = {}
 ) {
   const typeLabels: Record<string, string> = {
     study: 'Estudo teórico',
@@ -58,6 +66,7 @@ export function buildSessionResultViewModel(
     topic,
     questions,
     ledger,
+    effects: sessionEffects(outcome, formatDate, day, formatMinutes),
     duration,
     // A pending plan item is the next step; the engine's pick is only a suggestion when it points elsewhere.
     plan: planNext
@@ -82,4 +91,33 @@ export function buildSessionResultViewModel(
         : null,
     simulation: session.type === 'simulation',
   };
+}
+
+/** What the save changed beyond today's statement: readiness and reviews it scheduled. */
+function sessionEffects(
+  outcome: any,
+  formatDate: (iso: string) => string,
+  day: any,
+  formatMinutes: (minutes: number) => string
+) {
+  if (!outcome) return null;
+  const planned = Number(day?.after?.plannedMinutes) || 0;
+  const goal = planned
+    ? `${formatMinutes(Math.round(day.after.studiedMinutes))} de ${formatMinutes(planned)}${day.after.studiedMinutes >= planned ? ' · cumprida' : ''}`
+    : null;
+  const { before, after } = outcome.readiness || {};
+  const readiness =
+    after == null
+      ? null
+      : before == null
+        ? { text: `${after}/100`, delta: null }
+        : { text: `${before} → ${after}/100`, delta: after - before };
+  const dates: string[] = outcome.reviewDates || [];
+  const reviews = dates.length
+    ? {
+        count: dates.length,
+        text: `${dates.length} ${dates.length === 1 ? 'revisão' : 'revisões'} · próxima em ${formatDate(dates[0])}`,
+      }
+    : null;
+  return readiness || reviews || goal ? { readiness, reviews, goal } : null;
 }

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import {
   createQuestionsTabController,
   calcAcertoPct,
@@ -152,9 +153,21 @@ test('QuestionsTabController - add, edit and delete question', () => {
   assert.ok(toasts.some(t => t.includes('Registro atualizado')));
 
   // Delete question
+  const undoToasts = [];
+  configureUndo({
+    getState: () => state,
+    persistAndRender: () => {},
+    showToast: () => {},
+    showUndoToast: (message, onUndo) => undoToasts.push({ message, onUndo }),
+  });
+  const questionsBefore = structuredClone(state.questoes);
   controller.deleteQuestaoRow(q.id);
-  assert.equal(confirms.length, 1);
-  confirms[0].onConfirm();
+  assert.equal(confirms.length, 0);
+  assert.equal(undoToasts[0].message, 'Registro excluído.');
+  undoToasts[0].onUndo();
+  assert.deepEqual(state.questoes, questionsBefore);
+  configureUndo(null);
+  controller.deleteQuestaoRow(q.id);
   assert.equal(
     state.questoes.some(x => x.id === q.id),
     false

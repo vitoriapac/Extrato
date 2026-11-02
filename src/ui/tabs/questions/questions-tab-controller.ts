@@ -2,6 +2,7 @@ import { createQuestionController } from '../../../application/questions/questio
 import { createEditableCollectionController } from '../../controllers/editable-collection-controller.js';
 import { buildQuestionViewModel } from '../../view-models/question-view-model.js';
 import { createQuestionsController } from './questions-controller.js';
+import { runUndoable } from '../../undoable.js';
 
 export function calcAcertoPct(correct: number, resolved: number): number {
   const r = Number(resolved) || 0;
@@ -184,7 +185,27 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     ) {
       draft.topicId = null;
     }
+    if (field === 'resolved' || field === 'correct') clampDraftCorrect();
     if (field === 'subjectId') renderQuestoes();
+  }
+
+  // Correct answers never exceed resolved ones; typing keeps focus, so only the other field is patched.
+  function clampDraftCorrect(): void {
+    const draft = questionEditController.state.draft;
+    if (!draft || draft.correct <= draft.resolved) return;
+    draft.correct = draft.resolved;
+    const input = ctx.document.getElementById('questionDraft-correct') as HTMLInputElement | null;
+    if (input) input.value = String(draft.correct);
+  }
+
+  function stepQuestionDraft(field: 'resolved' | 'correct', delta: number): void {
+    const draft = questionEditController.state.draft;
+    if (!draft) return;
+    const next = Math.max(0, (Number(draft[field]) || 0) + delta);
+    questionEditController.update(field, field === 'correct' ? Math.min(next, draft.resolved) : next);
+    clampDraftCorrect();
+    renderQuestoes();
+    (ctx.document.getElementById(`questionDraft-${field}`) as HTMLInputElement | null)?.focus();
   }
 
   function saveQuestionEdit(): void {
@@ -235,7 +256,12 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
 
   function addQuestaoRow(initial: any = {}) {
     ctx.listViewState.questionsVisible = ctx.LIST_VIEW_STEPS.questions;
-    const subjectId = initial.subjectId || ctx.activeSubjects()[0]?.id || null;
+    // The subject of the latest record comes first: most sessions log the same subject in a row.
+    const active = ctx.activeSubjects();
+    const lastSubjectId = [...(ctx.state.questoes || [])]
+      .filter((q: any) => q.subjectId && active.some((s: any) => s.id === q.subjectId))
+      .sort((x: any, y: any) => String(y.createdAt || y.date).localeCompare(String(x.createdAt || x.date)))[0]?.subjectId;
+    const subjectId = initial.subjectId || lastSubjectId || active[0]?.id || null;
     // Com um único tópico possível, já o seleciona para reduzir o atrito do primeiro registro.
     let topicId = initial.topicId || null;
     if (!topicId && subjectId && ctx.topicsForSelection) {
@@ -259,12 +285,10 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
   }
 
   function deleteQuestaoRow(id: string): void {
-    ctx.showConfirm('Excluir este registro de questões?', () => {
+    runUndoable('Registro excluído.', () => {
       questionCrudController.remove(id);
       openQuestionErrorIds.delete(id);
       questionEditController.reset();
-      ctx.persistAndRender();
-      ctx.showToast('Registro excluído.');
     });
   }
 
@@ -310,6 +334,7 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     editQuestion,
     cancelQuestionEdit,
     updateQuestionDraft,
+    stepQuestionDraft,
     saveQuestionEdit,
     renderQuestoes,
     addQuestaoRow,

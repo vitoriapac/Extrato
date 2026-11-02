@@ -10,6 +10,7 @@ import { formatDuration, formatPlanMinutes } from '../../core/format-duration.js
 import type { ActiveTimerState, AppState } from '../../core/types.js';
 import { announceTimerEvent } from '../primitives/a11y.js';
 import { renderSessionResult } from '../renderers/session-result-renderer.js';
+import { formatDateBR } from '../../core/format-date.js';
 import {
   buildTimerMiniView,
   createPipTimerController,
@@ -46,6 +47,8 @@ export interface StudyTimerRuntimeControllerOptions {
   recommendationActionKind: (rec: any) => string;
   intelligenceCandidates: () => any[];
   getDailyExecutionItems: () => any;
+  /** Current readiness score (0–100) or null; read before and after a save to show the change. */
+  getReadinessValue?: () => number | null;
   getCurrentStudyRecommendations: () => any[];
   guidedStudyService: {
     current: () => any;
@@ -101,6 +104,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     recommendationActionKind,
     intelligenceCandidates,
     getDailyExecutionItems,
+    getReadinessValue = () => null,
     getCurrentStudyRecommendations,
     guidedStudyService,
     sessionService,
@@ -514,7 +518,8 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     nextPriority: Record<string, any> | null,
     priorityChanged: boolean,
     day: any = null,
-    planNext: Record<string, any> | null = null
+    planNext: Record<string, any> | null = null,
+    outcome: Record<string, any> | null = null
   ) {
     const result = document.getElementById('sessionResult');
     if (!result) return;
@@ -525,6 +530,8 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         formatMinutes: formatPlanMinutes,
         day,
         planNext,
+        outcome,
+        formatDate: formatDateBR,
       }),
       { escapeHtml }
     );
@@ -604,10 +611,21 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         });
         saveSessionBookmark(formValues.topicId!, session.endedAt);
         const dayBefore = session.date === todayISO() ? getDailyExecutionItems() : null;
+        // The result compares in-memory values around the save; nothing extra is stored.
+        const readinessBefore = getReadinessValue();
+        const reviewIdsBefore = new Set((getState().reviewAgenda || []).map((item: any) => item.id));
         if (guidedStudyService.current()) guidedStudyService.complete(session);
         else sessionService.complete(session);
         persistAndRender();
         const dayAfter = dayBefore ? getDailyExecutionItems() : null;
+        const outcome = {
+          readiness: { before: readinessBefore, after: getReadinessValue() },
+          reviewDates: (getState().reviewAgenda || [])
+            .filter((item: any) => !reviewIdsBefore.has(item.id) && item.status !== 'Concluído')
+            .map((item: any) => item.date)
+            .filter(Boolean)
+            .sort(),
+        };
         renderStudyRecommendation();
         renderDiagnosisCenter();
         const nextPriority = getCurrentStudyRecommendations()[0] || null;
@@ -624,7 +642,8 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
           dayBefore?.progress && dayAfter?.progress
             ? { before: dayBefore.progress, after: dayAfter.progress, total: dayAfter.items.length }
             : null,
-          (dayAfter || getDailyExecutionItems()).priority?.nextItem || null
+          (dayAfter || getDailyExecutionItems()).priority?.nextItem || null,
+          outcome
         );
         if (openSimulationFlow) {
           activateTab('questoes');

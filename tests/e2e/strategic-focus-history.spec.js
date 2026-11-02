@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 
 test('histórico compara apenas retratos salvos no escopo ativo e registra o concurso no novo fechamento', async ({
   page,
@@ -68,12 +68,14 @@ test('histórico compara apenas retratos salvos no escopo ativo e registra o con
     api.renderAll();
   });
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'historico');
   const history = page.locator('#weeklyCloseHistoryDashboard .weekly-focus-history');
   await expect(history).toContainText('Foco estratégico ao longo do tempo');
   await expect(history.locator('.weekly-focus-history-row')).toHaveCount(2);
   await expect(history).toContainText('60%');
   await expect(history).toContainText('resultado posterior medido');
   await expectNoPageOverflow(page);
+  await openPlanningSubtab(page, 'fechamento');
   const accessibility = await new AxeBuilder({ page }).include('#weeklyCloseDashboard').analyze();
   expect(accessibility.violations).toEqual([]);
   await page

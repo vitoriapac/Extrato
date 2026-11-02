@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from './helpers.js';
 
 test('paleta abre sem consulta, agrupa comandos e navega por teclado', async ({ page }) => {
   await openDemo(page);
@@ -48,6 +48,7 @@ for (const width of [320, 430])
       await openDemo(page);
       if (theme === 'dark') await page.locator('#themeToggleBtn').click();
       await activateTab(page, 'metas');
+      await openPlanningSubtab(page, 'prova');
       const row = page.locator('#examBlueprintConfig .exam-subject-config').first();
       await row.locator('summary').click();
       await expect(row.locator('.exam-subject-row')).toBeVisible();

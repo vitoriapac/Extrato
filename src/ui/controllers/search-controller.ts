@@ -256,11 +256,21 @@ export function createSearchController(options: SearchControllerOptions) {
 
     input.addEventListener('input', renderResults);
     input.addEventListener('focus', renderResults);
+    // Phones show only a magnifier (F3); it unfolds the field, which opens the palette on focus.
+    const row = input.closest('.global-search-row');
+    const openButton = document.getElementById('globalSearchOpenBtn');
+    openButton?.addEventListener('click', () => {
+      row?.classList.add('is-search-open');
+      openButton.setAttribute('aria-expanded', 'true');
+      input.focus();
+    });
     input.addEventListener('blur', () => {
       setTimeout(() => {
         if (panel.contains(document.activeElement)) return;
         panel.classList.remove('show');
         input.setAttribute('aria-expanded', 'false');
+        row?.classList.remove('is-search-open');
+        openButton?.setAttribute('aria-expanded', 'false');
       }, 150);
     });
 

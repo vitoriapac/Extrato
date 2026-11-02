@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import { createCalendarTabController } from '../../src/ui/tabs/calendar/calendar-tab-controller.js';
 
 test('createCalendarTabController — unifica revisões e filtra por status/disciplina', () => {
@@ -171,8 +172,20 @@ test('createCalendarTabController — CRUD e conclusões integradas', () => {
   controller.completeUnifiedReview('r1', 'Agenda de Revisões');
   assert.equal(agendaCompletedId, 'r1');
 
-  // deleteCalRow
+  // deleteCalRow: apaga na hora e o Desfazer devolve o estado exato (F6)
+  const undoToasts = [];
+  configureUndo({
+    getState: () => state,
+    persistAndRender: () => {},
+    showToast: () => {},
+    showUndoToast: (message, onUndo) => undoToasts.push({ message, onUndo }),
+  });
+  const calendarBefore = structuredClone(state.calendar);
   controller.deleteCalRow('c1');
-  assert.equal(confirmed, true);
+  assert.equal(confirmed, false);
   assert.ok(!state.calendar.some(c => c.id === 'c1'));
+  assert.equal(undoToasts[0].message, 'Item excluído.');
+  undoToasts[0].onUndo();
+  assert.deepEqual(state.calendar, calendarBefore);
+  configureUndo(null);
 });

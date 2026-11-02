@@ -140,6 +140,8 @@ export function createNavigationController({
         event.preventDefault();
         const search = document.getElementById('globalSearchInput');
         if (active !== search) searchReturnFocus = active;
+        // On phones the field is folded behind the magnifier; unfold it before focusing.
+        search?.closest('.global-search-row')?.classList.add('is-search-open');
         search?.focus();
         return;
       }

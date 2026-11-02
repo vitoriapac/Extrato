@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { Icon } from '../../primitives/icon.js';
 
 export interface QuestionItem {
   id: string;
@@ -104,24 +105,65 @@ export function QuestionLogTable({
                       }}
                     />
                   </label>
-                  <label>
-                    Resolvidas
-                    <input
-                      type="number"
-                      min="0"
-                      value={Number(draft.resolved) || 0}
-                      data-delegated-input="updateQuestionDraft('resolved',this.value)"
-                    />
-                  </label>
-                  <label>
-                    Acertos
-                    <input
-                      type="number"
-                      min="0"
-                      value={Number(draft.correct) || 0}
-                      data-delegated-input="updateQuestionDraft('correct',this.value)"
-                    />
-                  </label>
+                  <div class="stepper-field">
+                    <label for="questionDraft-resolved">Resolvidas</label>
+                    <div class="number-stepper">
+                      <button
+                        type="button"
+                        class="btn ghost small"
+                        aria-label="Resolvidas: menos uma"
+                        data-delegated-click="stepQuestionDraft('resolved',-1)"
+                      >
+                        <Icon name="minus" size={16} />
+                      </button>
+                      <input
+                        id="questionDraft-resolved"
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        value={Number(draft.resolved) || 0}
+                        data-delegated-input="updateQuestionDraft('resolved',this.value)"
+                      />
+                      <button
+                        type="button"
+                        class="btn ghost small"
+                        aria-label="Resolvidas: mais uma"
+                        data-delegated-click="stepQuestionDraft('resolved',1)"
+                      >
+                        <Icon name="plus" size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div class="stepper-field">
+                    <label for="questionDraft-correct">Acertos</label>
+                    <div class="number-stepper">
+                      <button
+                        type="button"
+                        class="btn ghost small"
+                        aria-label="Acertos: menos uma"
+                        data-delegated-click="stepQuestionDraft('correct',-1)"
+                      >
+                        <Icon name="minus" size={16} />
+                      </button>
+                      <input
+                        id="questionDraft-correct"
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        max={Number(draft.resolved) || 0}
+                        value={Number(draft.correct) || 0}
+                        data-delegated-input="updateQuestionDraft('correct',this.value)"
+                      />
+                      <button
+                        type="button"
+                        class="btn ghost small"
+                        aria-label="Acertos: mais uma"
+                        data-delegated-click="stepQuestionDraft('correct',1)"
+                      >
+                        <Icon name="plus" size={16} />
+                      </button>
+                    </div>
+                  </div>
                   <div class="inline-edit-actions">
                     <button
                       type="button"

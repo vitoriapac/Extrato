@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { renderWeeklyStrategicFocus } from '../../src/ui/renderers/studytrack32-renderer.js';
-import { activateTab } from './helpers.js';
+import { activateTab, openPlanningSubtab } from './helpers.js';
 
 const cases = [
   {
@@ -90,7 +90,7 @@ for (const scenario of cases) {
     await page.goto('/?test=1');
     await expect(page.locator('#testReport')).toBeVisible();
     await page.locator('#testReport').evaluate(element => element.remove());
-    await activateTab(page, 'metas');
+    await openPlanningSubtab(page, 'fechamento');
     await page.evaluate(theme => {
       document.documentElement.dataset.theme = theme;
     }, scenario.theme);

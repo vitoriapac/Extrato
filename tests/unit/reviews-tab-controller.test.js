@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import { createReviewsTabController } from '../../src/ui/tabs/reviews/reviews-tab-controller.js';
 
 test('createReviewsTabController — agrupa, filtra e ordena revisões por data e dificuldade', () => {
@@ -119,10 +120,21 @@ test('createReviewsTabController — CRUD de revisões manuais e edição de ras
   assert.equal(state.reviewAgenda[0].tipo, 'D+1');
   assert.match(toasted, /Revisão atualizada/);
 
-  // Deletar
+  // Deletar: sem "Tem certeza?", com Desfazer que devolve o estado exato (F6)
+  const undoToasts = [];
+  configureUndo({
+    getState: () => state,
+    persistAndRender: () => {},
+    showToast: () => {},
+    showUndoToast: (message, onUndo) => undoToasts.push({ message, onUndo }),
+  });
+  const agendaBefore = structuredClone(state.reviewAgenda);
   controller.deleteAgendaRow('r1');
-  assert.equal(confirmed, true);
+  assert.equal(confirmed, false);
   assert.equal(state.reviewAgenda.length, 0);
+  undoToasts[0].onUndo();
+  assert.deepEqual(state.reviewAgenda, agendaBefore);
+  configureUndo(null);
 });
 
 test('createReviewsTabController — geração automática e avaliação adaptativa SM-2', () => {

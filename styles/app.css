@@ -20,8 +20,8 @@
   .panel{overflow-x:clip}
   .overview-pair{display:block}
   .overview-nav{position:sticky;top:0;z-index:15;display:flex;gap:4px;overflow-x:auto;margin:0 0 var(--space-4);padding:7px;background:var(--paper);border:1px solid var(--paper-line);scrollbar-width:thin}
-  .overview-nav a{flex:0 0 auto;padding:7px 10px;color:var(--ink-soft);font:var(--text-micro) var(--font-body);text-decoration:none}
-  .overview-nav a:hover,.overview-nav a:focus-visible{background:var(--slate-bg);color:var(--heading);outline:1px solid var(--accent)}
+  .overview-nav :is(a,.metas-subtab){flex:0 0 auto;padding:7px 10px;color:var(--ink-soft);font:var(--text-micro) var(--font-body);text-decoration:none}
+  .overview-nav :is(a,.metas-subtab):hover,.overview-nav :is(a,.metas-subtab):focus-visible{background:var(--slate-bg);color:var(--heading);outline:1px solid var(--accent)}
   [id^="overview-"]{scroll-margin-top:74px}
   .more-tab-btn,.mobile-more-menu{display:none}
   .print-report-meta{display:none}
@@ -1225,7 +1225,7 @@
 }
 
 /* ===== LEGIBILIDADE E CONTROLES ===== */
-.overview-nav a,
+.overview-nav :is(a,.metas-subtab),
 .mini-stat .l,
 .heatmap-summary,
 .session-day-toggle,
@@ -1348,11 +1348,11 @@ input,select,textarea{font-size:max(1em,var(--text-sm))}
 }
 .overview-nav-links{display:flex;align-items:center;gap:6px;min-width:0}
 .overview-nav-mobile{display:none}
-.overview-nav a{
+.overview-nav :is(a,.metas-subtab){
   min-height:36px;display:inline-flex;align-items:center;padding:8px 12px;
   border-bottom:2px solid transparent;scroll-snap-align:start
 }
-.overview-nav a:hover,.overview-nav a:focus-visible{
+.overview-nav :is(a,.metas-subtab):hover,.overview-nav :is(a,.metas-subtab):focus-visible{
   border-bottom-color:var(--accent);background:var(--slate-bg)
 }
 .overview-section-heading{
@@ -1476,7 +1476,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
     top:60px;z-index:80;margin:0 -2px 24px;padding:6px;
     box-shadow:0 1px 0 var(--paper-line)
   }
-  .overview-nav a{min-height:40px;padding:8px 10px}
+  .overview-nav :is(a,.metas-subtab){min-height:40px;padding:8px 10px}
   .overview-section-heading{margin-top:34px;font-size:var(--text-lg)}
 
   .subject-header{flex-direction:column;align-items:stretch}
@@ -1839,10 +1839,10 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
   body.timer-focus-active .timer-context{grid-template-columns:minmax(0,1fr)!important;width:min(100%,460px)}
   body.timer-focus-active .timer-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,460px)}
   body.timer-focus-active .timer-actions .btn{width:100%;white-space:normal}
-  .toast{top:auto;bottom:max(18px,env(safe-area-inset-bottom));width:min(calc(100vw - 24px),520px);text-align:center}
 }
 @media(max-width:760px){
-  .toast{top:auto;bottom:calc(72px + env(safe-area-inset-bottom));width:min(calc(100vw - 24px),520px);text-align:center}
+  /* Compact notice: as wide as its text, one line for short messages, right above the bottom bar. */
+  .toast{top:auto;bottom:calc(var(--bottom-nav-height,64px) + 8px + env(safe-area-inset-bottom));width:max-content;max-width:calc(100vw - 32px);padding:8px 14px;border-radius:var(--radius-card);line-height:1.35;text-align:center}
 }
 
 .diagnostic-understanding{min-width:0}
@@ -2730,3 +2730,48 @@ html[data-density="compact"] .chart-card{padding:var(--space-4)}
 html[data-density="compact"] .overview-section-heading{margin-top:var(--space-6)}
 .compact-streak__unit{margin-left:3px}
 @media(max-width:600px){.compact-streak__unit{display:none}}
+
+/* ===== PLANEJAMENTO EM SUB-ABAS (F1) ===== */
+button.metas-subtab{appearance:none;background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;cursor:pointer;white-space:nowrap}
+.metas-nav .metas-subtab[aria-selected="true"]{border-bottom-color:var(--heading);color:var(--heading);font-weight:var(--font-weight-semibold)}
+.metas-subpanel{scroll-margin-top:calc(var(--sticky-stack-height,52px) + var(--overview-nav-height,54px) + 16px)}
+.metas-subpanel[hidden]{display:none}
+
+/* ===== BUSCA NO CELULAR (F3) ===== */
+.search-open-btn{display:none}
+@media(max-width:600px){
+  .search-open-btn{display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+  .global-search-row:not(.is-search-open) .global-search{display:none}
+  .global-search-row.is-search-open .search-open-btn{display:none}
+}
+
+/* ===== REGISTRO DE QUESTÕES EM POUCOS TOQUES (F4) ===== */
+.stepper-field{display:flex;flex-direction:column;gap:5px}
+.stepper-field>label{font-family:var(--font-body);font-size:var(--text-micro);color:var(--ink-soft);text-transform:uppercase}
+.number-stepper{display:grid;grid-template-columns:auto minmax(48px,1fr) auto;gap:4px;align-items:stretch}
+.number-stepper .btn{min-width:var(--touch-target);min-height:var(--touch-target);padding:0;display:inline-flex;align-items:center;justify-content:center}
+#questoesBody .number-stepper input{appearance:textfield;-moz-appearance:textfield;text-align:center;font:var(--font-weight-semibold) var(--text-md) var(--font-data)}
+@media(max-width:600px){
+  /* On phones the question being logged opens as a bottom sheet over the list and the tab bar. */
+  #questoesBody tr.row-editing .inline-edit-form{
+    position:fixed;left:0;right:0;bottom:0;z-index:1050;max-height:85vh;overflow:auto;
+    padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+    background:var(--paper);border-top:2px solid var(--accent);border-radius:var(--radius-card) var(--radius-card) 0 0;
+    box-shadow:0 -8px 24px var(--shadow-color)
+  }
+}
+#questoesBody .number-stepper input::-webkit-inner-spin-button,#questoesBody .number-stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+@media(min-width:601px){#questoesBody .inline-edit-form{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}}
+
+/* ===== RESULTADO DA SESSÃO: EFEITOS (F5) ===== */
+.session-result .session-effects{display:grid;gap:var(--space-1);margin:0 0 var(--space-3);padding:var(--space-2) 0;border-top:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line)}
+.session-result .session-effects>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-1) var(--space-3);font:12px/1.5 var(--font-data)}
+.session-result .session-effects dt{color:var(--text-secondary)}
+.session-result .session-effects dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums}
+.session-result .session-effects__delta{color:var(--text-secondary)}
+
+/* ===== AVISO COM DESFAZER (F6) ===== */
+.toast.has-action{display:flex;align-items:center;gap:var(--space-3);pointer-events:auto}
+.toast-action{appearance:none;min-height:32px;padding:4px 10px;background:transparent;border:1px solid currentColor;border-radius:var(--radius-control);color:inherit;font:inherit;cursor:pointer}
+.toast-action:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
+.toast-action:focus-visible{outline:2px solid currentColor;outline-offset:2px}

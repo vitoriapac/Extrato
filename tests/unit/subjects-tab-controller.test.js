@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import { createSubjectsTabController } from '../../src/ui/tabs/subjects/subjects-tab-controller.js';
 
 function createMockDom() {
@@ -349,4 +350,32 @@ test('SubjectsTabController - limits, filters and syllabus toggle', () => {
   assert.ok(controller.openNotesIds.has('top-1'));
   controller.toggleNotes('top-1');
   assert.equal(controller.openNotesIds.has('top-1'), false);
+});
+
+test('SubjectsTabController - excluir tópico arquivado não pergunta e o Desfazer devolve o estado exato (F6)', () => {
+  const { doc, win } = createMockDom();
+  const { context, state, confirms } = createBaseContext(doc, win);
+  const controller = createSubjectsTabController(/** @type {any} */ (context));
+  const subject = state.subjects.find(s => (s.topics || []).length);
+  const topic = subject.topics[subject.topics.length - 1];
+  topic.archived = true;
+  state.reviewAgenda = [];
+  state.questoes = [];
+  state.studySessions = [];
+  state.calendar = [];
+  const undoToasts = [];
+  configureUndo({
+    getState: () => state,
+    persistAndRender: () => {},
+    showToast: () => {},
+    showUndoToast: (message, onUndo) => undoToasts.push({ message, onUndo }),
+  });
+  const subjectsBefore = structuredClone(state.subjects);
+  controller.requestPermanentTopicDelete(subject.id, topic.id);
+  assert.equal(confirms.length, 0);
+  assert.equal(undoToasts.length, 1, 'tópico sem vínculos é excluído na hora');
+  assert.ok(!subject.topics.some(t => t.id === topic.id));
+  undoToasts[0].onUndo();
+  assert.deepEqual(state.subjects, subjectsBefore);
+  configureUndo(null);
 });

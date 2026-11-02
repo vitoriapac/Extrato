@@ -3,6 +3,7 @@ import {
   matchesHelpSearch,
   rankHelpSearch,
 } from './help-search.js';
+import { openSectionFor } from '../remembered-sections.js';
 
 declare const __STUDYTRACK_BUILD_VERSION__: string;
 
@@ -313,6 +314,7 @@ export function createHelpController({
         document.querySelector(destination.selector) ||
         document.getElementById(`tab-${destination.tab}`);
       if (!target) return;
+      openSectionFor(target);
       for (
         let parent = target.closest('details');
         parent;

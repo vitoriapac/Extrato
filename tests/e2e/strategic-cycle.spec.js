@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 import { buildStrategicCycleFixture, STRATEGIC_CYCLE_TODAY } from '../fixtures/strategic-cycle.js';
 
 async function prepare(page) {
@@ -157,6 +157,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   await page.locator('#sessionModalSaveBtn').click();
   await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   await expect(page.locator('#weeklyCloseDashboard')).toContainText(
     'Da semana encerrada ao próximo plano'
   );
@@ -266,6 +267,7 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
   expect(executed.studySessions.at(-1).recommendationId).toBe(timer.recommendationId);
   await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
   await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'fechamento');
   await page
     .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
     .click();
@@ -313,6 +315,7 @@ test('reversão, cooldown, escopo e falta de dados preservam o histórico em mob
     confirmed.items.map(item => item.activityMix)
   );
   await expect(page.locator('#examStudyPlan')).toContainText('Aguarde 14 dias');
+  await openPlanningSubtab(page, 'prova');
   await page
     .locator('#examBlueprintConfig summary')
     .filter({ hasText: 'Opções gerais da prova' })

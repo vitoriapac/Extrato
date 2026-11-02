@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, openExamImport, overviewRecommendationId } from './helpers.js';
+import { activateTab, openDemo, openExamImport, overviewRecommendationId, openPlanningSubtab } from './helpers.js';
 
 test.describe('validação dos fluxos recentes', () => {
   test('matriz, cenários e fechamento aparecem no planejamento da demo', async ({ page }) => {
     await openDemo(page);
     await activateTab(page, 'metas');
+    await openPlanningSubtab(page, 'prova');
     await expect(page.locator('#examMasteryMatrix')).toBeAttached();
+    await openPlanningSubtab(page, 'fechamento');
     await expect(page.locator('#weeklyCloseDashboard')).toBeAttached();
     await expect(page.locator('#gapMapDashboard')).toBeAttached();
     await expect(page.locator('#postSimulationReplanDashboard')).toBeAttached();
@@ -19,6 +21,7 @@ test.describe('validação dos fluxos recentes', () => {
     await expect(page.locator('#periodComparisonResults')).toContainText(/comparado com/i);
     await expect(page.locator('#periodComparisonResults')).not.toContainText(/accuracy:|minutes:/);
     await expect(page.locator('#gapMapDashboard')).not.toContainText(/demo-topic-/);
+    await openPlanningSubtab(page, 'historico');
     await expect(page.locator('#decisionHistoryDashboard')).not.toContainText(
       /demo-recommendation-/
     );
@@ -27,6 +30,7 @@ test.describe('validação dos fluxos recentes', () => {
     await openDemo(page);
     await activateTab(page, 'metas');
     await expect(page.locator('#recommendationCalibration')).toBeAttached();
+    await openPlanningSubtab(page, 'historico');
     await expect(page.locator('#decisionHistoryDashboard')).toBeAttached();
     await expect(page.locator('#recommendationCalibration')).toContainText(
       /amostra|calibração|recomend/i
@@ -327,6 +331,7 @@ test.describe('validação dos fluxos recentes', () => {
       viewport: innerWidth,
     }));
     expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
+    await openPlanningSubtab(page, 'prova');
     await expect(page.locator('#examMasteryMatrix')).toBeVisible();
   });
   test('modal de importação de questões CSV exibe prévia, importa sessões e ignora duplicatas', async ({
