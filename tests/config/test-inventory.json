@@ -4876,7 +4876,7 @@
         "node:assert/strict",
         "../../src/application/analytics/build-header-view-model.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

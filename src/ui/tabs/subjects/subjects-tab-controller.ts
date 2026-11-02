@@ -544,6 +544,14 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   function addTopic(subjectId: string): void {
     ctx.subjectService.addTopic(subjectId);
     ctx.persistAndRender();
+    // Leva o usuário direto a nomear o tópico recém-criado.
+    const body = ctx.document.getElementById(`subject-body-${subjectId}`);
+    const inputs = body?.querySelectorAll?.<HTMLInputElement>('input[aria-label="Nome do tópico"]');
+    const last = inputs && inputs.length ? inputs[inputs.length - 1] : null;
+    if (last) {
+      last.focus();
+      last.select();
+    }
   }
 
   function archiveTopic(subjectId: string, topicId: string): void {
@@ -674,6 +682,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       addHistoryEvent('topic_started', subjectId, topicId);
     }
     ctx.persistAndRender();
+    if (newStatus === 'Concluído') {
+      ctx.showToast?.('Tópico concluído. Gere as revisões na aba Agenda de revisões.');
+    }
   }
 
   function bindEvents(): void {

@@ -52,6 +52,8 @@ export function SubjectBlock({
 }: SubjectBlockProps) {
   const isFirst = index === 0;
   const isLast = index === totalSubjects - 1;
+  const isEmptySubject =
+    subjectTopics.length === 0 && !topicFilter.status && !topicFilter.difficulty && !searchQuery;
   const statusCount = (status: string) =>
     subjectTopics.filter((topic: any) => (topic.status || 'Não iniciado') === status).length;
 
@@ -167,6 +169,12 @@ export function SubjectBlock({
       )}
 
       <div id={`subject-body-${subject.id}`} class={`subject-body ${collapsed ? 'collapsed' : ''}`}>
+        {isEmptySubject && (
+          <p class="helper-text" role="status">
+            Nenhum tópico ainda. Adicione o primeiro para começar a acompanhar esta disciplina.
+          </p>
+        )}
+        {!isEmptySubject && (
         <div class="subject-topic-filters">
           <select
             aria-label={`Filtrar tópicos de ${subject.name} por status`}
@@ -191,7 +199,9 @@ export function SubjectBlock({
             ))}
           </select>
         </div>
+        )}
 
+        {!isEmptySubject && (
         <div class="ledger-scroll">
           <table class="ledger">
             <thead>
@@ -229,6 +239,7 @@ export function SubjectBlock({
             </tbody>
           </table>
         </div>
+        )}
 
         {footerHtml && <div dangerouslySetInnerHTML={{ __html: footerHtml }} />}
 

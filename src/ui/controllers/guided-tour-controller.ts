@@ -101,6 +101,11 @@ export function createGuidedTourController({
       const target = document.querySelector<HTMLElement>(step.selector);
       if (target) {
         target.scrollIntoView({ block: 'center', behavior: 'instant' });
+        // O cabeçalho fixo não pode cobrir o topo do alvo destacado.
+        const stickyHeight =
+          document.querySelector<HTMLElement>('.sticky-shell')?.getBoundingClientRect().bottom ?? 0;
+        const overlap = stickyHeight + 12 - target.getBoundingClientRect().top;
+        if (overlap > 0) window.scrollBy(0, -overlap);
         target.classList.add('is-tour-highlighted');
         currentHighlightedElement = target;
         const b = target.getBoundingClientRect();

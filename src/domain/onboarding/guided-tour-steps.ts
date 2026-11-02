@@ -79,7 +79,7 @@ export const ESSENTIAL_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     selector: '.plano-hoje-card',
     title: 'Seu QG diário de estudo',
     message:
-      'Aqui ficam suas matérias planejadas para hoje e o cronômetro integrado. Basta seguir a lista sem perder tempo decidindo o que fazer.',
+      'Aqui ficam suas atividades planejadas para hoje. Ao clicar em Iniciar, o cronômetro abre em modo foco já vinculado à tarefa.',
     badgeLabel: '1 de 3 · Hoje',
   },
   {

@@ -190,6 +190,10 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
         onboardingModalController.openGuidedOnboarding();
       } else if (action === 'open-questions') {
         activateTab('questoes');
+        // Primeiro registro: abre direto a linha de entrada em vez de uma tabela vazia.
+        if (!(getState().questoes || []).length) {
+          (document.getElementById('addQuestaoRowBtn') as HTMLElement | null)?.click();
+        }
       } else if (action === 'start-first-session' || action === 'start-quick-warmup') {
         const plan = todayTabController.todayDailyStudyPlan();
         const first = plan?.items?.find(

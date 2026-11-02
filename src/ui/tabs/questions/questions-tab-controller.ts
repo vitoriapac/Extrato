@@ -235,11 +235,18 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
 
   function addQuestaoRow(initial: any = {}) {
     ctx.listViewState.questionsVisible = ctx.LIST_VIEW_STEPS.questions;
+    const subjectId = initial.subjectId || ctx.activeSubjects()[0]?.id || null;
+    // Com um único tópico possível, já o seleciona para reduzir o atrito do primeiro registro.
+    let topicId = initial.topicId || null;
+    if (!topicId && subjectId && ctx.topicsForSelection) {
+      const options = ctx.topicsForSelection(subjectId, null) || [];
+      if (options.length === 1) topicId = options[0].id;
+    }
     const question = {
       id: uid('question'),
       date: todayISO(),
-      subjectId: initial.subjectId || ctx.activeSubjects()[0]?.id || null,
-      topicId: initial.topicId || null,
+      subjectId,
+      topicId,
       resolved: 0,
       correct: 0,
       errorBreakdown: emptyErrorBreakdown(),

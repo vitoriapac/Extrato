@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { Icon } from '../../primitives/icon.js';
 
 export interface ReviewItem {
   id: string;
@@ -61,16 +62,19 @@ export function ReviewsTable({
         <td colSpan={8}>
           <div class="empty-state" style={{ border: 'none' }}>
             <p>Nenhuma revisão encontrada com esses filtros.</p>
-            <button
-              type="button"
-              class="btn ghost small"
-              data-delegated-click="gerarAgendaAutomatica()"
-            >
-              ⟳ Gerar a partir dos concluídos
-            </button>
-            <button type="button" class="btn ghost small" data-delegated-click="addAgendaRow()">
-              + Adicionar manualmente
-            </button>
+            <div class="empty-state-actions">
+              <button
+                type="button"
+                class="btn ghost small"
+                data-delegated-click="gerarAgendaAutomatica()"
+              >
+                <Icon name="refresh" size={14} class="icon-inline" />
+                Gerar a partir dos concluídos
+              </button>
+              <button type="button" class="btn ghost small" data-delegated-click="addAgendaRow()">
+                + Adicionar manualmente
+              </button>
+            </div>
           </div>
         </td>
       </tr>

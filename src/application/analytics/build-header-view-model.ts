@@ -2,8 +2,17 @@
 export const MIN_READINESS_FACTORS = 2;
 
 // Única regra de exibição da Prontidão: abaixo do mínimo de fatores, toda superfície mostra "—".
+// Cobertura (0% logo no início) e consistência (basta 1s de estudo) não medem aprendizado:
+// sozinhas produziriam uma nota falsamente precisa.
+const STRUCTURAL_READINESS_FACTORS = new Set(['coverage', 'consistency']);
+
+export function hasEnoughReadinessEvidence(factorKeys: readonly string[] = []): boolean {
+  if (factorKeys.length < MIN_READINESS_FACTORS) return false;
+  return factorKeys.some(key => !STRUCTURAL_READINESS_FACTORS.has(key));
+}
+
 export function displayReadinessValue(readiness: any): number | null {
-  return (readiness?.availableFactors?.length || 0) >= MIN_READINESS_FACTORS
+  return hasEnoughReadinessEvidence(readiness?.availableFactors || [])
     ? (readiness?.value ?? null)
     : null;
 }

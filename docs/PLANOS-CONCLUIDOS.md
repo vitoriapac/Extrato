@@ -74,6 +74,7 @@ flowchart TD
 | **7. Auditoria UX, UI & Acessibilidade** | Contraste WCAG AA, pilha sticky e tipografia | ✅ 100% Concluído | Token `--border-control` (> 3:1), raios 2px, `formatDelta()`, modal `#dataManagementOverlay`, ícones SVG e piso 12px. |
 | **8. Modularização Integral do `app.ts`** | Desacoplamento em 10 fases (Domínio, Aplicação, UI e Bootstrap) | ✅ 100% Concluído | Redução de 10.921 para **146 linhas (-98,7%)**, zero funções de negócio no `app.ts`, 1.154 testes unitários verdes e CI Full/Visual 100% aprovado. |
 | **9. Onboarding & Primeiro Uso para Iniciantes** | Acolhimento, Starter Packs, Calibração e Ativação Rápida (Fases 1 a 4) | ✅ 100% Concluído | Hero Welcome Card no Dashboard, Starter Packs em 1 clique (Admin, Policial, Fiscal), calibrador anti-sobrecarga com folga dominical, aquecimento de 15 min no Dia 1, tour de 3 paradas e pedagogia de estudo sem culpa. 1.172 testes unitários verdes e 19 testes E2E Playwright aprovados. |
+| **10. Refinamento de Usabilidade & Experiência do Iniciante** | Resolução dos 10 pontos de atrito identificados em teste de usuário principiante | ✅ 100% Concluído | Toast mobile posicionado no rodapé; ocultação dinâmica do CTA Demo com dados; remoção de moldura duplicada no Welcome Hero; alinhamento de sugestão opcional na aba Hoje; flexibilização e edição manual de minutos no modal de sessão; calibração do Índice de Prontidão (eliminação de falsa precisão inicial); filtro de concursos contextual; auto-foco na criação de tópicos; conformidade Tabler Icons (`Icon name="refresh"`) na Agenda e toast orientador; remoção de badge de alerta no tour guiado e scroll com compensação sticky; auto-seleção de tópicos e disparo direto na primeira bateria de questões. 1.208 testes unitários verdes em fuso duplo e E2Es direcionados aprovados. |
 
 ---
 
@@ -487,7 +488,53 @@ Com base no planejamento estratégico aprovado em [`plano-melhoria-onboarding-pr
 
 ---
 
-## 10. Rastreabilidade de Arquitetura e Governança
+## 10. Refinamento de Usabilidade & Experiência do Iniciante (10 Pontos de Atrito)
+
+Este ciclo foi disparado a partir de uma auditoria minuciosa simulando o primeiro contato de um estudante iniciante com o StudyTrack, mapeando 10 pontos críticos de fricção que foram corrigidos, documentados e validados:
+
+### 10.1. Bloco 1 (Itens #01 a #05) — Feedback, Ambientação e Registro de Sessões
+- **Item #01 — Posicionamento de Toasts em Telas Móveis:**
+  - Ajuste em `styles/app.css` (`@media (max-width: 600px)` e `@media (max-width: 760px)`) aplicando `top: auto; bottom: calc(64px + var(--space-action) + env(safe-area-inset-bottom));`, evitando que notificações cubram o cabeçalho compacto ou a navegação superior.
+- **Item #02 — Desaparecimento Dinâmico do CTA da Demo:**
+  - Atualização nos controladores `src/ui/controllers/demo-controller.ts`, `src/ui/tabs/dashboard/dashboard-tab-controller.ts` e `src/bootstrap/wire-storage-and-sync.ts`: o banner `#demoEmptyCta` agora é imediatamente ocultado assim que o usuário cria disciplinas, sessões ou planos, evitando incentivar carregamento de dados fictícios sobre uma conta já iniciada.
+- **Item #03 — Limpeza Visual do Welcome Hero Card:**
+  - Correção em `styles/app.css` e `src/features/onboarding/onboarding-renderer.ts`, removendo bordas internas duplicadas e molduras redundantes que causavam ruído visual no primeiro acesso.
+- **Item #04 — Clareza e Alinhamento da Sugestão Opcional na Aba Hoje:**
+  - Ajuste no controller `src/ui/tabs/today/study-recommendation-controller.ts` para quando a recomendação do algoritmo coincidir com a matéria já agendada no plano diário (`sameAsPlan = true`), exibindo copy encorajadora de reforço em vez de parecer um conflito de instruções.
+- **Item #05 — Modal de Finalização de Sessão & Lançamento Manual de Minutos:**
+  - Melhorias estruturais em `styles/app.css` e `src/ui/controllers/session-modal-controller.ts`:
+    - Adicionado campo editável de duração em minutos (`#sessionModalDurationMinutes`) permitindo ajuste retroativo e lançamento manual.
+    - Barra de botões `.modal-actions` tornada fixa com `position: sticky; bottom: 0;`, garantindo acessibilidade dos botões Salvar/Cancelar mesmo em telas móveis com formulários expandidos.
+    - Suporte a finalização de sessões rápidas com menos de 1 segundo sem travar o cronômetro.
+
+### 10.2. Bloco 2 (Itens #06 a #10) — Inteligência, Disciplinas, Revisões e Questões
+- **Item #06 — Calibração do Índice de Prontidão (Eliminação de Falsa Precisão Inicial):**
+  - Módulos `src/application/analytics/build-header-view-model.ts` e `src/ui/renderers/readiness-overview-renderer.ts` atualizados com a regra `hasEnoughReadinessEvidence(...)`: cobertura teórica bruta (0%) somada unicamente a consistência inicial (1s cronometrado) não formam base suficiente para computar uma nota precipitada (`43/100`). O cabeçalho exibe `—` até que haja evidências reais de domínio, questões ou retenção.
+- **Item #07 — UX na Aba Disciplinas & Escopo Contextual de Concursos:**
+  - Em `src/ui/tabs/subjects/SubjectsTab.tsx`, a barra de filtro `.exam-scope-filter` (`[Todos] [BB] [Caixa]...`) é renderizada de forma condicional, ficando oculta quando não existem tópicos vinculados a concursos e o filtro está em `all`.
+  - Em `src/ui/tabs/subjects/SubjectBlock.tsx`, os seletores de filtro e o cabeçalho vazio da tabela são ocultados quando a disciplina ainda não tem tópicos, substituídos por instrução amigável.
+  - Em `src/ui/tabs/subjects/subjects-tab-controller.ts`, ao clicar em `+ Adicionar tópico`, o campo `<input aria-label="Nome do tópico">` recebe foco e seleção imediata para digitação.
+- **Item #08 — Transição de Tópico Concluído & Polimento na Agenda de Revisões:**
+  - Em `src/ui/tabs/reviews/ReviewsTable.tsx`, substituição do caractere `⟳` pelo componente SVG Tabler `<Icon name="refresh" size={14} class="icon-inline" />` e envelopamento dos botões vazios em `<div class="empty-state-actions">`.
+  - Em `src/ui/tabs/subjects/subjects-tab-controller.ts`, ao concluir um tópico, um toast contextual orienta o estudante sobre o agendamento de revisões na aba correspondente.
+- **Item #09 — Polimento do Tour Guiado Interativo:**
+  - Em `src/ui/components/GuidedTourPopover.tsx`, o badge de passos recebe `icon={false}` (removendo triângulo de aviso indevido) e o botão de fechar passa a usar `<Icon name="x" size={16} />` com fundo transparente sem conflito com `.btn-icon`.
+  - Em `src/domain/onboarding/guided-tour-steps.ts`, a cópia da 1ª parada detalha a conexão com o modo foco.
+  - Em `src/ui/controllers/guided-tour-controller.ts`, a rolagem automática compensa a altura da barra fixa `.sticky-shell`.
+- **Item #10 — Redução de Fricção no Registro de Questões:**
+  - Em `src/ui/tabs/questions/questions-tab-controller.ts`, ao adicionar uma linha de questões em uma disciplina que possui apenas 1 tópico ativo, esse tópico é pré-selecionado automaticamente.
+  - Em `src/ui/tabs/today/today-tab-controller.ts` e `src/bootstrap/ui/wire-execution-and-onboarding-ui.ts`, clicar no CTA `open-questions` da missão de primeiro dia abre a aba de questões e ativa imediatamente a linha de inserção caso a tabela esteja zerada.
+
+### 10.3. Resultados de Validação
+- **Testes Unitários:** **1.208 testes passando** em **17.48s** (dual timezone UTC e America/Sao_Paulo).
+- **Fast Gate:** Totalmente aprovado em **68.59s** (dentro do teto de 120s).
+- **E2E Playwright:** 4 suítes direcionadas (`onboarding.spec.js`, `exam-scope.spec.js`, `product-consolidation.spec.js`) aprovadas em 16.6s.
+- **Inventário:** 329 arquivos sincronizados e validados.
+- **Tipagem:** 0 erros com `npm run check:types`.
+
+---
+
+## 11. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

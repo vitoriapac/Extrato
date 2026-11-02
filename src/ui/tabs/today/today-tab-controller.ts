@@ -663,6 +663,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           _openGuidedOnboarding();
         } else if (action === 'open-questions') {
           _activateTab('questoes');
+          if (!(getState().questoes || []).length) {
+            (doc.getElementById('addQuestaoRowBtn') as HTMLElement | null)?.click();
+          }
         } else if (action === 'start-first-session' || action === 'start-quick-warmup') {
           const currentPlan = todayDailyStudyPlan();
           const firstItem = currentPlan?.items?.find(
@@ -677,7 +680,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
             _renderOverviewDecisionArea();
           } else {
             _activateTab('hoje');
-            doc.getElementById('overview-timer')?.scrollIntoView({ behavior: 'smooth' });
+            doc.getElementById('study-timer')?.scrollIntoView({ behavior: 'smooth' });
           }
         }
       }

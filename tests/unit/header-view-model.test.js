@@ -60,3 +60,8 @@ test('ProntidÃ£o abaixo do mÃ­nimo de fatores aparece como ausente em qualquer s
   assert.equal(displayReadinessValue({ value: 45, availableFactors: ['coverage', 'mastery'] }), 45);
   assert.equal(displayReadinessValue(null), null);
 });
+
+test('Prontidão só com cobertura e consistência não mostra nota (1s de estudo não vira 43/100)', () => {
+  assert.equal(displayReadinessValue({ value: 43, availableFactors: ['coverage', 'consistency'] }), null);
+  assert.equal(displayReadinessValue({ value: 43, availableFactors: ['coverage', 'mastery'] }), 43);
+});

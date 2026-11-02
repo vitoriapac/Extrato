@@ -4,6 +4,7 @@ import type { GuidedTourStep } from '../../domain/onboarding/guided-tour-steps.j
 import { Card } from '../primitives/card.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface SpotlightRect {
   left: number;
@@ -148,17 +149,21 @@ export function GuidedTourPopover({
           <div className="flex flex-col gap-2.5">
             {/* Cabeçalho */}
             <div className="flex items-center justify-between gap-2">
-              <Badge variant="warning" className="text-xs font-semibold uppercase tracking-wide">
+              <Badge
+                variant="warning"
+                icon={false}
+                className="text-xs font-semibold uppercase tracking-wide"
+              >
                 {step.badgeLabel || `${currentIndex + 1} de ${totalSteps}`}
               </Badge>
               <button
                 type="button"
-                className="btn-icon p-1 text-on-brand/70 hover:text-on-brand cursor-pointer transition-colors"
+                className="inline-flex items-center justify-center p-1 bg-transparent border-0 text-on-brand/70 hover:text-on-brand cursor-pointer transition-colors"
                 onClick={onClose}
                 aria-label="Fechar tour interativo"
                 data-guided-tour-close="true"
               >
-                ✕
+                <Icon name="x" size={16} />
               </button>
             </div>
 

@@ -70,6 +70,13 @@ export function SubjectsTab({
     { value: 'common', label: 'Comuns' },
   ] as const;
 
+  // Filtros por concurso só fazem sentido quando há conteúdo marcado para algum concurso.
+  const showExamFilter =
+    subjectExamFilter !== 'all' ||
+    subjects.some((subject: any) =>
+      (subject.topics || []).some((topic: any) => (topic.examTags || []).length > 0)
+    );
+
   return (
     <>
       <div class="subject-search">
@@ -83,19 +90,20 @@ export function SubjectsTab({
         <p role="status">{subjects.length} disciplinas encontradas.</p>
       </div>
 
-      <div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">
-        {EXAM_FILTER_BUTTONS.map(item => (
-          <button
-            key={item.value}
-            type="button"
-            class={`btn ghost small ${subjectExamFilter === item.value ? 'active' : ''}`}
-            data-delegated-click={`setSubjectExamFilter('${item.value}')`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
+      {showExamFilter && (
+        <div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">
+          {EXAM_FILTER_BUTTONS.map(item => (
+            <button
+              key={item.value}
+              type="button"
+              class={`btn ghost small ${subjectExamFilter === item.value ? 'active' : ''}`}
+              data-delegated-click={`setSubjectExamFilter('${item.value}')`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
       {subjects.length === 0 ? (
         <div class="empty-state">
           <p>Nenhuma disciplina corresponde à busca e aos filtros atuais.</p>
