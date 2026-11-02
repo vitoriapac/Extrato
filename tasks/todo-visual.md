@@ -334,7 +334,8 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
   - Demo nas 9 abas, em 1440 px claro e 375 px escuro: axe (WCAG 2 A/AA) sem violações, nenhuma rolagem horizontal, nenhum "undefined", "NaN" ou data inválida no texto.
   - Corrigido: o botão "Experimentar demonstração" do primeiro acesso registrava `openDemoIntro()` bloqueado no console a cada clique (atributo delegado sem ação; o `onClick` já abria a demo).
   - Altura em 375 px (demo): Visão geral 2750, Agenda 3219, Calendário 2874, Instruções 3862, Questões 4684, Hoje 5923, Desempenho 6285, Disciplinas 9822 e Planejamento 27.732 px (cerca de 31 telas, alvo da F1).
-- [ ] Decidir o padrão do modo Essencial (F10)
+- [x] Decidir o padrão do modo Essencial (F10)
+  - Decidido em 02/11/2026: ligado por padrão só para quem começa sem dados; quem já tem registros continua na tela completa. A preferência pode ser trocada a qualquer momento.
 
 ---
 
@@ -381,7 +382,7 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Tamanho:** M
 
 ### F10: Modo Essencial
-**Aceite:** [ ] Preferência com o padrão decidido no Checkpoint 4 · [ ] Cada termo técnico com dica curta · [ ] Análises avançadas a um clique
+**Aceite:** [ ] Preferência ligada por padrão para quem começa sem dados e desligada para quem já tem registros (decidido no Checkpoint 4) · [ ] Cada termo técnico com dica curta · [ ] Análises avançadas a um clique
 **Dependências:** C1–C3 · **Tamanho:** M
 
 ### F11: Carregamento por aba
