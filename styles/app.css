@@ -1369,8 +1369,8 @@ input,select,textarea{font-size:max(1em,var(--text-sm))}
 .overview-section-heading+.chart-card{margin-top:0}
 
 /* Ação primeiro: entrada curta para a decisão, com alertas como contexto. */
-.overview-now:not(.cockpit-top-grid){display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3);margin:var(--space-4) 0 var(--space-5)}
-.overview-now:not(.cockpit-top-grid){grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:stretch;gap:var(--space-4)}
+.overview-now{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3);margin:var(--space-4) 0 var(--space-5)}
+.overview-now{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:stretch;gap:var(--space-4)}
 .overview-now>.chart-card{min-width:0;margin:0}
 .overview-now-action{display:flex;flex-direction:column}
 .overview-now-action #overviewNextAction{display:flex;flex:1;flex-direction:column;min-width:0}
