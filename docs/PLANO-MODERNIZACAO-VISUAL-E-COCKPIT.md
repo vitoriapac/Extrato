@@ -46,18 +46,21 @@ Contagem Regressiva da Prova (input date + dias restantes com barra de progresso
 -----------------------------------------------------------------------------------------------------
 [ MENU DE ABAS ] Visão geral | Desempenho | Hoje | Disciplinas | Calendário | Agenda | Questões | Metas | Ajuda
 =====================================================================================================
-[ BLOCO 1: AGORA & EXECUÇÃO DO DIA ]
-* Cartão Próxima Ação: Disciplina, Tópico prioritário, Tipo e Botão Primário Sólido "Iniciar Sessão".
-* Meta de Hoje: RingGauge de horas cumpridas (ex: 2h15 / 3h00) e contagem de questões diárias.
------------------------------------------------------------------------------------------------------
-[ BLOCO 2: SAÚDE DO EDITAL & RITMO SEMANAL ]
-* Coluna Esquerda: Barras empilhadas (StackedBar) por matéria + BulletBars de precisão vs. meta (80%).
-* Coluna Direita: Régua de Carga de Revisões (próximos 7 dias com alertas de pico) + Mini-Heatmap (28d).
+[ BLOCO 1 & 2 UNIFICADOS: COCKPIT PANORÂMICO EM 12 COLUNAS ]
+* Coluna Esquerda (8 cols):
+  1. Cartão Próxima Ação (Agora): Disciplina, Tópico prioritário, Tipo e Botão Primário Sólido "Iniciar Sessão".
+  2. Alertas de Atenção (compacto e contextual).
+  3. Saúde do Edital por Disciplina: Barras empilhadas (StackedBar) + BulletBars de precisão vs. meta (80%).
+* Coluna Direita (4 cols):
+  1. Meta de Hoje: RingGauge de horas cumpridas (ex: 2h15 / 3h00) e questões resolvidas.
+  2. Carga de Revisões: Régua de 7 dias com alertas de pico em âmbar e atrasos.
+  3. Consistência: Mini-Heatmap de 28 dias em tons de verde sálvia com indicação de data de hoje.
+==> Simetria e equilíbrio de altura: eliminação total de espaços vazios (~550px em ambas as colunas).
 -----------------------------------------------------------------------------------------------------
 [ BLOCO 3: GRIDS ANALÍTICOS DE ALTO IMPACTO (DECISÃO ESTRATÉGICA) ]
-* Grid 1 (Alocação): % Tempo Estudado vs. % Pontos na Prova (Balanço de Sub/Sobrealocação).
-* Grid 2 (Radar de Vulnerabilidades): Top 4 Tópicos de Maior Incidência na Banca com Menor Domínio.
-* Grid 3 (Diagnóstico de Memória): Domínio Volátil e Ilusão de Competência (Acerto imediato vs. 14 dias).
+* Grid 1 (Alocação): % Tempo Estudado vs. % Pontos na Prova (Regra de 5 itens visíveis + Mostrar mais).
+* Grid 2 (Radar de Vulnerabilidades): Top 4 Tópicos de Maior Incidência na Banca com Menor Domínio (h-full).
+* Grid 3 (Diagnóstico de Memória): Domínio Volátil e Ilusão de Competência (h-full alinhado ao Grid 2).
 =====================================================================================================
 ```
 

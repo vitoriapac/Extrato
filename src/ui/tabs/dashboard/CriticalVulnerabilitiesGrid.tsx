@@ -17,7 +17,7 @@ export function CriticalVulnerabilitiesGrid({
   const { vulnerabilities, summary } = model;
 
   return (
-    <article class="chart-card cockpit-analytics-card" aria-labelledby="vulnerabilitiesGridTitle">
+    <article class="chart-card cockpit-analytics-card flex flex-col justify-between h-full" aria-labelledby="vulnerabilitiesGridTitle">
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
           <div class="p-1.5 rounded bg-surface-subtle text-amber">

@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=9efecd690a04">
-<link rel="stylesheet" href="styles/app.css?v=9efecd690a04">
+<link rel="stylesheet" href="styles/tailwind.css?v=bb38c9a0cbae">
+<link rel="stylesheet" href="styles/app.css?v=bb38c9a0cbae">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -126,36 +126,37 @@
   <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
     <div class="print-report-meta" id="printReportMeta"></div>
     <div id="finalStretchBannerSlot"></div>
-    <section class="overview-now" aria-label="Ação prioritária e atenção">
-      <article class="chart-card overview-now-action">
-        <span class="overview-eyebrow">Agora</span>
-        <h2>Próxima ação</h2>
-        <div id="overviewNextAction"></div>
-        <div id="dailyExecutionDashboard"></div>
-      </article>
-      <article class="chart-card overview-now-attention">
-        <span class="overview-eyebrow">Precisa da sua atenção</span>
-        <h2>Atenção</h2>
-        <div id="overviewAttention"></div>
-        <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção na aba Hoje</button>
-      </article>
+    <!-- GRADE SUPERIOR DO COCKPIT (CENTRO DE AÇÃO + ROTINA DIÁRIA + SAÚDE DO EDITAL) -->
+    <section class="overview-now cockpit-top-grid grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4" aria-label="Ação prioritária e rotina diária">
+      <!-- COLUNA ESQUERDA (8 COLS): AÇÃO IMEDIATA + ATENÇÃO + SAÚDE DO EDITAL -->
+      <div class="lg:col-span-8 space-y-4" id="cockpitLeftColumn">
+        <article class="chart-card overview-now-action">
+          <span class="overview-eyebrow">Agora</span>
+          <h2>Próxima ação</h2>
+          <div id="overviewNextAction"></div>
+          <div id="dailyExecutionDashboard"></div>
+        </article>
+        <article class="chart-card overview-now-attention">
+          <span class="overview-eyebrow">Precisa da sua atenção</span>
+          <h2>Atenção</h2>
+          <div id="overviewAttention"></div>
+          <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção na aba Hoje</button>
+        </article>
+        <div id="cockpitSyllabusHealthMount"></div>
+      </div>
+      <!-- COLUNA DIREITA (4 COLS): META DE HOJE + REVISÕES + CONSISTÊNCIA -->
+      <div class="lg:col-span-4 space-y-4" id="cockpitRightColumnMount"></div>
     </section>
-    <p class="overview-detail-links">Análise detalhada: <button class="btn ghost small" type="button" data-performance-jump="overview">Desempenho</button> <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Hoje</button></p>
-    <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden style="display:none;" aria-labelledby="guidedOnboardingEntryTitle">
+    <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
       <div id="guidedOnboardingEntry"></div>
     </section>
     <div id="overviewExamPhase"></div>
-    <!-- GRADE SUPERIOR DO COCKPIT (SAÚDE DO EDITAL + ROTINA DIÁRIA) -->
-    <section class="cockpit-top-grid grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4" aria-label="Panorama e rotina diária">
-      <div class="lg:col-span-8 space-y-4" id="cockpitSyllabusHealthMount"></div>
-      <div class="lg:col-span-4 space-y-4" id="cockpitRightColumnMount"></div>
-    </section>
     <!-- COCKPIT ANALÍTICO DE DECISÃO PEDAGÓGICA -->
     <section class="cockpit-decision-grids mt-4 space-y-4" aria-label="Cockpit analítico de decisão pedagógica">
       <div id="cockpitAllocationMount"></div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div id="cockpitVulnerabilitiesMount"></div>
-        <div id="cockpitVolatileMount"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+        <div id="cockpitVulnerabilitiesMount" class="h-full"></div>
+        <div id="cockpitVolatileMount" class="h-full"></div>
       </div>
     </section>
   </div>
@@ -968,7 +969,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=9efecd690a04"></script>
+  <script src="src/app.bundle.js?v=bb38c9a0cbae"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

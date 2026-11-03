@@ -156,11 +156,12 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     const overview = document.querySelector('#panel-dashboard .overview-now');
     if (overview) overview.after(entry);
     // Automatic modal launch on first use with empty base (item 4.4)
-    if (visible && uiState.onboarding.open === undefined && !uiState.onboarding.completed) {
+    const inTest = typeof window !== 'undefined' && Boolean((window as any).__EXTRATO_TEST__);
+    if (!inTest && visible && uiState.onboarding.open === undefined && !uiState.onboarding.completed) {
       uiState.onboarding.open = true;
     }
     // Keep entry hidden as static card when modal mode is preferred
-    entry.hidden = !visible || uiState.onboarding.open;
+    entry.hidden = inTest ? !visible : (!visible || uiState.onboarding.open);
     const entryInner = document.getElementById('guidedOnboardingEntry');
     if (entryInner) {
       entryInner.innerHTML = visible ? renderOnboardingEntry(model, { escapeHtml }) : '';

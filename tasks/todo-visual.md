@@ -464,9 +464,10 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 Plano Diretor: [`docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 
 ### Grids Analíticos de Decisão na Visão Geral (Cockpit) & Modelos Visuais nas Demais Abas
-- [x] **Grade Superior do Cockpit: Panorama & Rotina Diária (Visão Geral)**
-  - Bloco Esquerda (8 cols): Saúde do Edital por Disciplina (`SyllabusHealthCard.tsx` + `build-syllabus-health-view-model.ts`) com barras empilhadas e bullet bars com meta aos 80%.
+- [x] **Grade Superior do Cockpit: Panorama & Rotina Diária (Visão Geral Unificada)**
+  - Bloco Esquerda (8 cols): Próxima Ação Prioritária (`overview-now-action` + `#overviewNextAction`), Alertas contextuais (`#overviewAttention`) e Saúde do Edital por Disciplina (`SyllabusHealthCard.tsx` + `build-syllabus-health-view-model.ts`) com barras empilhadas e bullet bars com meta aos 80%.
   - Bloco Direita (4 cols): Coluna de rotina diária (`CockpitSidebarCards.tsx` + `build-cockpit-sidebar-view-model.ts`) com Meta de Hoje (`RingGauge`), Carga de Revisões (7 colunas) e Consistência (mini-heatmap 28 dias).
+  - **Eliminação de Espaços Vazios:** As duas colunas atingem a mesma altura (~550px), sem o buraco de 300px abaixo da saúde do edital.
   - Testes: `tests/unit/syllabus-health-view-model.test.js`, `tests/unit/cockpit-sidebar-view-model.test.js`.
 - [x] **Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital (Visão Geral)**
   - View-model: `src/application/analytics/build-allocation-balance-view-model.ts`
