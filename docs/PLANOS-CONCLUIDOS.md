@@ -56,12 +56,18 @@ flowchart TD
         P7C --> P7D["Fase 4: Tour Essencial & Estudo Sem Culpa"]
     end
 
+    subgraph P8 ["8. Cockpit Panorâmico & Modo Demonstração"]
+        P8A["Cockpit em 3 Camadas"] --> P8B["Detector de Platô & Turnos"]
+        P8B --> P8C["Enriquecimento do Modo Demonstração"]
+    end
+
     P1 --> P3
     P2 --> P3
     P3 --> P4
     P5 --> P1
     P4 --> P6
     P6 --> P7
+    P7 --> P8
 ```
 
 | Plano | Foco Principal | Status | Entregáveis Centrais |
@@ -76,6 +82,8 @@ flowchart TD
 | **8. Modularização Integral do `app.ts`** | Desacoplamento em 10 fases (Domínio, Aplicação, UI e Bootstrap) | ✅ 100% Concluído | Redução de 10.921 para **146 linhas (-98,7%)**, zero funções de negócio no `app.ts`, 1.154 testes unitários verdes e CI Full/Visual 100% aprovado. |
 | **9. Onboarding & Primeiro Uso para Iniciantes** | Acolhimento, Starter Packs, Calibração e Ativação Rápida (Fases 1 a 4) | ✅ 100% Concluído | Hero Welcome Card no Dashboard, Starter Packs em 1 clique (Admin, Policial, Fiscal), calibrador anti-sobrecarga com folga dominical, aquecimento de 15 min no Dia 1, tour de 3 paradas e pedagogia de estudo sem culpa. 1.172 testes unitários verdes e 19 testes E2E Playwright aprovados. |
 | **10. Refinamento de Usabilidade & Experiência do Iniciante** | Resolução dos 10 pontos de atrito identificados em teste de usuário principiante | ✅ 100% Concluído | Toast mobile posicionado no rodapé; ocultação dinâmica do CTA Demo com dados; remoção de moldura duplicada no Welcome Hero; alinhamento de sugestão opcional na aba Hoje; flexibilização e edição manual de minutos no modal de sessão; calibração do Índice de Prontidão (eliminação de falsa precisão inicial); filtro de concursos contextual; auto-foco na criação de tópicos; conformidade Tabler Icons (`Icon name="refresh"`) na Agenda e toast orientador; remoção de badge de alerta no tour guiado e scroll com compensação sticky; auto-seleção de tópicos e disparo direto na primeira bateria de questões. 1.208 testes unitários verdes em fuso duplo e E2Es direcionados aprovados. |
+| **11. Modernização Visual e Cockpit Panorâmico** | Cockpit em 3 Camadas Temáticas, Gráfico de Tendência, Detector de Platô e Turnos | ✅ 100% Concluído | Visão Geral estruturada em 3 Camadas (Operação do Dia 8+4 cols, Rendimento & Edital 6+6 cols com simetria vertical de 476px e Decisão Pedagógica com Balanço de Alocação); Detector de Platô em Questões & Simulados; Análise Cronobiológica de Energia em Desempenho; realocação cirúrgica de grids de KPIs; modal de primeiro acesso (`FirstAccessModal.tsx`); ESLint 9 Flat Config. 1.256 testes unitários verdes. |
+| **12. Enriquecimento do Modo Demonstração** | Atualização dos Dados Fictícios com as Novas Capacidades Analíticas | ✅ 100% Concluído | Builder determinístico do Caderno de Erros (`error-notebook.ts`) com 17 flashcards SM-2 (11 pendentes hoje e 6 dominados) e pegadinhas de bancas (Cesgranrio/Cespe); Calibração de 2 tópicos em platô na janela móvel de 28 dias com prescrições ativas de *Recall Ativo* e *Revisão de Pré-requisitos*; Distribuição das 200 sessões em turnos (Manhã pico, Tarde, Noite com alerta de fadiga); Pesos explícitos no edital verticalizado para balanço de alocação; Navegação do tour expandida no banner (`Desempenho` e `Questões & Platô`) e compatibilidade total com Schema v30 (`lastExportAt`). 1.277 testes unitários verdes e 8/8 testes E2E aprovados. |
 
 ---
 
@@ -578,16 +586,46 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 12. Rastreabilidade de Arquitetura e Governança
+## 12. Plano de Enriquecimento do Modo Demonstração (Novembro 2026)
+
+### 12.1. Entregas Realizadas
+- **Caderno de Erros Determinístico ([`src/demo/demo-builders/error-notebook.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/error-notebook.ts)):**
+  - Geração pura e determinística de 17 flashcards SM-2 distribuídos em matérias centrais (Português, Bancários, Matemática Financeira, Atendimento, Informática e Atualidades).
+  - 11 cartões pendentes de revisão hoje (`intervalDays = 1, repetition = 0`) para experimentação imediata e 6 cartões maduros/dominados (`intervalDays = 14..30`).
+  - Metadados completos: organizadora (Cesgranrio, Cespe), armadilhas conceituais e regras mnemônicas de fixação.
+- **Calibração do Detector de Platô ([`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts)):**
+  - Calibração de precisão estagnada na janela móvel dos últimos 28 dias para *Concordância verbal* (~65% de acerto em 4 sessões) e *Operações compromissadas* (~55% de acerto em 4 sessões), com amostragem robusta (>= 40 questões).
+  - Prescrições pedagógicas ativas de *Recall Ativo* (`active_recall`) e *Revisão de Pré-requisitos* (`prerequisite_review`).
+- **Análise Cronobiológica de Energia e Turnos ([`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts), [`src/application/analytics/build-shift-energy-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-shift-energy-view-model.ts)):**
+  - Distribuição das 200 sessões em turnos: Manhã (7h–10h, foco profundo e pico de rendimento), Tarde (13h–16h, foco normal) e Noite (19h–21h, foco distraído, energia baixa e alerta de fadiga no fechamento).
+  - Suporte de contagem a `questionsCorrect` e fallback para `correctAnswers`.
+- **Balanço de Alocação de Edital e Backup ([`src/demo/demo-generator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-generator.ts)):**
+  - Pesos explícitos e questões estimadas em `examBlueprint.subjects` permitindo demonstrar o grid de alocação de tempo investido vs peso no edital na Camada 3 do Cockpit.
+  - Registro de backup exportado há 3 dias (`lastExportAt`), compatível com o Schema v30.
+- **Roteiro e Navegação da Demonstração ([`index.html`](file:///c:/Users/vitor/Documents/Extrato/index.html)):**
+  - Atalhos diretos no `#demoBanner` para `Desempenho` e `Questões & Platô`.
+  - Apresentação atualizada das novas funcionalidades no diálogo introdutório.
+
+### 12.2. Validação e Qualidade
+- **Testes Unitários:** **1.277 testes passando** (100% verde em fuso duplo UTC e America/Sao_Paulo).
+- **Fast Gate:** Totalmente aprovado em **48.43s** (`npm run test:fast`).
+- **Testes E2E do Modo Demonstração:** 8/8 testes Playwright aprovados em 1.4m (`npx playwright test tests/e2e/demo.spec.js`).
+- **Novo Teste Unitário:** [`tests/unit/demo-notebook.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/demo-notebook.test.js) validando contagem, campos, imutabilidade e determinismo do gerador.
+- **Auditoria de Integridade:** Classificação formal em [`tests/config/test-tiers.json`](file:///c:/Users/vitor/Documents/Extrato/tests/config/test-tiers.json) e inventário auditado em [`docs/TEST-SUITE-INVENTORY.md`](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md).
+
+---
+
+## 13. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
 - **Plano Diretor de Modernização Visual:** [docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
+- **Cenário da Demonstração:** [docs/DEMO-SCENARIO.md](file:///c:/Users/vitor/Documents/Extrato/docs/DEMO-SCENARIO.md)
 - **Plano Diretor de Modularização:** [docs/PLANO-MODULARIZACAO-APP.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODULARIZACAO-APP.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (350 arquivos auditados, 1.249 testes unitários verdes em ~46s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (358 arquivos auditados, 1.277 testes unitários verdes em ~48s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

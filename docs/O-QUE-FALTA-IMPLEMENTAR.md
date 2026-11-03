@@ -30,6 +30,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 | **Onboarding & Primeiro Uso para Iniciantes** | Acolhimento, Starter Packs e Ativação no Dia 1 (Fases 1–4) | Concluída | Welcome Hero State (`NextActionCard.tsx`) sem links vazios, Starter Packs em 1 clique (`src/domain/onboarding/starter-packs.ts`), Calibrador Anti-Sobrecarga com folga dominical (`src/domain/onboarding/routine-sustainability.ts`), Sessão de Aquecimento de 15 min no Dia 1 (`FirstStepsMission.tsx`), Tour Essencial em 3 Paradas e pedagogia de estudo sem culpa (`guided-tour-steps.ts`). Fast Gate com 1.172 testes passando em 36s e 19/19 testes E2E verdes. |
 | **Refinamento de Usabilidade do Iniciante** | Resolução de 10 Pontos de Fricção do Primeiro Acesso | Concluída | Toast mobile no rodapé; ocultação dinâmica do banner de demo; neutralização de bordas redundantes no Welcome Hero; alinhamento de recomendação opcional na aba Hoje; edição de minutos e sticky actions no modal de sessão; calibração do Índice de Prontidão (eliminação de falsa precisão inicial de 43/100); filtro de concursos contextual; auto-foco ao adicionar tópicos; Tabler Icons e toast orientador na Agenda de Revisões; polimento do tour guiado (sem triângulo de aviso e com compensação sticky); auto-seleção de tópico e foco imediato no registro de questões. Fast Gate com 1.208 testes passando em 17.48s. |
 | **Modernização Visual & Cockpit** | Cockpit Panorâmico de Decisão Pedagógica (3 Camadas) | Concluída | Cockpit da Visão Geral em 3 Camadas Temáticas (Camada 1: Operação do Dia 8+4 cols, Camada 2: Rendimento & Edital 6+6 cols com Saúde do Edital e Gráfico de Tendência de Acertos/Simulados com simetria vertical de 476px, Camada 3: Decisão Pedagógica com Balanço de Alocação e divulgação progressiva de 5 itens + Duo Grids analíticos); Detector de Platô em Questões e Energia Cronobiológica em Desempenho; realocação cirúrgica do Grid de Questões (`#kpiGrid`) para Questões & Simulados e Grid de Tópicos (`#quickStats`) para Disciplinas; modal acessível de primeiro acesso (`FirstAccessModal.tsx`). Fast Gate com 1.276 testes passando em ~51s. |
+| **Atualização do Modo Demonstração** | Enriquecimento com Novas Capacidades Analíticas | Concluída | Caderno de Erros determinístico com 17 flashcards SM-2 e pegadinhas de bancas (Cesgranrio/Cespe), Detector de Platô com 2 tópicos calibrados em 28 dias e prescrições metodológicas, análise cronobiológica de turnos (Manhã pico, Tarde, Noite com fadiga), pesos explícitos no edital verticalizado para balanço de alocação, navegação expandida no banner (`Desempenho` e `Questões & Platô`) e teste unitário dedicado. Fast Gate com 1.277 testes passando em ~48s e 8/8 testes E2E verdes. |
 
 ---
 
@@ -114,6 +115,14 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
   - Estimativa dinâmica de tempo de leitura (`⏱ X min`) e nível pedagógico (`Iniciante`, `Estratégico`, `Avançado`) via [`topic-metadata.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/topic-metadata.ts).
   - 3 novos guias: PiP Timer, Caderno de Erros e Simulador What-If.
   - Conformidade estrita com WCAG AA (ratios > 4.5:1) em modo claro e escuro.
+
+### 2.6. Enriquecimento do Modo Demonstração (Dados Fictícios de Alta Fidelidade)
+
+- **Caderno de Erros Determinístico:** Builder modular [`src/demo/demo-builders/error-notebook.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/error-notebook.ts) gerando 17 flashcards SM-2 com pegadinhas de bancas (Cesgranrio, Cespe) e conceitos corretos; 11 cartões pendentes hoje e 6 dominados.
+- **Calibração do Detector de Platô:** Builder de sessões [`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts) calibrando 2 tópicos com estagnação comprovada em 28 dias (*Concordância verbal* e *Operações compromissadas*), gerando prescrições ativas de *Recall Ativo* e *Revisão de Pré-requisitos*.
+- **Análise Cronobiológica e Fadiga:** Distribuição das 200 sessões em turnos com foco profundo na Manhã (pico) e esgotamento cognitivo na Noite (alerta de fadiga).
+- **Balanço de Alocação de Edital:** Injeção de pesos explícitos no edital verticalizado (`examBlueprint.subjects`) para Caixa e BB, permitindo cálculo exato de matérias sub/sobrealocadas.
+- **Navegação do Tour:** Banner da demo com novos atalhos para `Desempenho` e `Questões & Platô`, e atualização do diálogo explicativo de entrada.
 
 ---
 

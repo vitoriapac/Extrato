@@ -39,3 +39,38 @@ Os 200 registros de sessões, 1.750 questões, 17 disciplinas e 305 tópicos per
 Se uma demonstração anterior estiver aberta, use **Reiniciar demo** para carregar os novos períodos. Reiniciar afeta somente a base demonstrativa.
 
 Os 14 fechamentos da demo também geram `readinessSnapshots`, com evidências limitadas à data de cada período e com o mesmo cálculo ponderado do índice atual. Os oito valores em `readinessHistory` no blueprint continuam como referência narrativa e não são gravados diretamente. `progressHistory` permanece exclusivo da conclusão de conteúdo.
+
+## Caderno de Erros e Flashcards
+
+O builder determinístico [`src/demo/demo-builders/error-notebook.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/error-notebook.ts) gera 17 flashcards baseados no algoritmo SM-2 adaptado com pegadinhas de bancas examinadoras (Cesgranrio e Cespe/Cebraspe):
+
+- **Disciplinas cobertas:** Língua Portuguesa, Conhecimentos Bancários, Matemática Financeira, Atendimento e Vendas, Noções de Probabilidade e Estatística, Informática e Atualidades do Mercado Financeiro.
+- **Distribuição de maturidade:**
+  - **11 cartões pendentes de revisão hoje (`intervalDays = 1, repetition = 0`):** Prontos para execução imediata na aba Questões & Simulados ou pelo aviso de revisão na aba Hoje (`ErrorNotebookDueNotice.tsx`).
+  - **6 cartões consolidados/dominados (`intervalDays = 14..30, repetition >= 2`):** Demonstram a progressão de retenção e estabilidade de longo prazo no gráfico de status do deck.
+- **Metadados pedagógicos:** Cada cartão contém conceito correto, pegadinha típica da banca e regra mnemônica para recall ativo.
+
+## Detector de Platô e Prescrições de Quebra
+
+O builder de sessões [`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts) calibra 2 tópicos com estagnação de precisão na janela móvel dos últimos 28 dias com volume amostral robusto (>= 40 questões resolvidas):
+
+1. **Concordância verbal (Língua Portuguesa):** Taxa média de acerto calibrada em ~65% em 4 sessões consecutivas no último mês, ativando a prescrição pedagógica de **Recall Ativo (`active_recall`)** com foco em testes intercalados.
+2. **Operações compromissadas (Conhecimentos Bancários):** Taxa média de acerto calibrada em ~55% em 4 sessões consecutivas no último mês, ativando a prescrição pedagógica de **Revisão de Pré-requisitos (`prerequisite_review`)** para consolidar a base teórica de política monetária e títulos públicos.
+
+O card [`PlateauDetectorCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/PlateauDetectorCard.tsx) na aba Questões & Simulados exibe esses diagnósticos com comparativos de tendência e ações de quebra de platô em 1 clique.
+
+## Eficiência Cronobiológica e Análise de Fadiga
+
+As 200 sessões de estudo da demonstração são distribuídas realisticamente entre os três turnos do dia:
+
+- **Manhã (7h–10h):** Turno de pico cognitivo, com 80% das sessões em foco profundo (`focusLevel: 'deep'`), nível de energia alto (`energyLevel: 'high'`) e maior taxa média de acerto (~82%).
+- **Tarde (13h–16h):** Turno intermediário, com alternância de foco normal e sessões operacionais de exercícios.
+- **Noite (19h–21h):** Turno com sinais de exaustão, concentrando sessões com nível de energia baixo (`energyLevel: 'low'`), foco distraído e taxa de acerto reduzida (~68%), disparando o **Alerta de Fadiga e Desgaste Cognitivo** na análise semanal.
+
+A análise pode ser visualizada pelo card [`ShiftEnergyCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/performance/ShiftEnergyCard.tsx) na aba Desempenho.
+
+## Balanço de Alocação e Navegação do Tour
+
+- **Edital Verticalizado com Pesos Explícitos:** O gerador injeta pesos percentuais e questões estimadas em `examBlueprint.subjects` para Caixa e Banco do Brasil, permitindo ao componente [`AllocationBalanceGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/AllocationBalanceGrid.tsx) na Camada 3 do Cockpit calcular com precisão as matérias subalocadas e sobrealocadas em relação ao impacto real na prova.
+- **Roteiro do Banner da Demonstração:** O banner superior [`#demoBanner`](file:///c:/Users/vitor/Documents/Extrato/index.html) inclui atalhos diretos para as áreas centrais do roteiro: `Prioridades`, `Riscos e projeção`, `Desempenho`, `Questões & Platô`, `Revisões`, `Planejamento` e `Relatório`.
+- **Integridade de Estado:** A demonstração opera em `sessionStorage` isolado sob o Schema v30, preservando os registros reais do usuário e simulando backup recente via `lastExportAt`.

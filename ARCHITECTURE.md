@@ -100,7 +100,8 @@ flowchart TD
 - `src/storage/migration-service.ts`: execução ordenada e verificável das migrações de schema.
 - `src/storage/backup-service.ts`: serialização, leitura segura e nomes dos arquivos de backup.
 - `src/repositories/collection-repository.ts`: contrato uniforme de consulta e mutação das coleções do estado.
-- `src/demo/demo-generator.ts`: cenário determinístico móvel de 140 dias para exploração do produto.
+- `src/demo/demo-generator.ts`: cenário determinístico móvel de 140 dias para exploração do produto, coordenando builders modulares de disciplinas, histórico de estudo com turnos cronobiológicos, calibração de platôs e Caderno de Erros (`src/demo/demo-builders/`).
+- `src/demo/demo-builders/error-notebook.ts`: gerador determinístico de 17 flashcards SM-2 com pegadinhas de bancas examinadoras e conceitos de fixação.
 - `src/domain/reviews.ts`: regras puras de intervalos e revisões adaptativas.
 - `src/domain/topic-bookmark.ts`: normalização, progresso e microcopy do ponto de parada por tópico.
 - `src/ui/controllers/pip-timer-controller.ts`: controle do título da aba e da janela flutuante do cronômetro (Document Picture-in-Picture).
@@ -235,7 +236,7 @@ npm run check
 
 IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `updatedAt`; o mais recente é carregado. Backups automáticos rotativos possuem checksum SHA-256. Antes de adotar dados locais ou importados, a aplicação migra e valida toda a estrutura. Abas abertas trocam versões por `BroadcastChannel`.
 
-O schema 28 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões, snapshots do escopo de evidências históricas, histórico das decisões de redistribuição semanal, ciclo de vida das recomendações exibidas, coleções independentes de provas e questões históricas, `readinessSnapshots`, a meta configurável `metas.consistenciaSemanal` e snapshots de trajetória. Dados ausentes são mantidos em estado neutro (`null`) quando aplicável e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
+O schema 30 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo enriquecido, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões, snapshots do escopo de evidências históricas, histórico das decisões de redistribuição semanal, ciclo de vida das recomendações exibidas, coleções independentes de provas e questões históricas, `readinessSnapshots`, a meta configurável `metas.consistenciaSemanal`, snapshots de trajetória, slots de cores por disciplina (`assignSubjectColors`, v29) e data da última exportação de backup (`lastExportAt`, v30). Dados ausentes são mantidos em estado neutro (`null`) quando aplicável e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
 
 O schema 24 preserva por prova o total conhecido de questões, o total oficial opcional e as linhas ignoradas ainda sem classificação. A migração de provas antigas não inventa esses números: a cobertura permanece indisponível até nova importação. Provas declaradas completas mas com pendências ou total conhecido inferior ao declarado passam a parciais, evitando que lacunas de mapeamento pareçam ausência do tópico na prova.
 

@@ -38,7 +38,7 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Central de Ajuda & Instruções 2.0 modularizada em Preact 11 (`.tsx`) com carregamento sob demanda (*code-splitting* em `help.bundle.js`), busca instantânea, chips de atalho rápido e deep-linking com cópia de URL direta (`#instrucoes?topic=<id>`).
 - Micro-simuladores didáticos interativos integrados à documentação: Simulador da Curva de Ebbinghaus (retenção com e sem revisões programadas) e Simulador de Força da Evidência e Amostragem (Lei dos Grandes Números e intervalos de confiança de 95%).
 - Base preparatória para SaaS (sem consumidor na interface): conector de nuvem modular e controle puro de planos e entitlements (Free, Pro, Mentor).
-- Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
+- Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos, incluindo Caderno de Erros com flashcards SM-2 e pegadinhas de banca, Detector de Platô com prescrições de estudo, análise cronobiológica de turnos (Manhã pico, Tarde, Noite com fadiga) e balanço de alocação de edital.
 - Tema claro/escuro, layout responsivo, conformidade WCAG AA completa (token `--border-control` com contraste > 3:1 em inputs/selects), barra fixa contínua sem vazamento (zero gap), normalização de raios para `var(--radius)` (2px), focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
 
 ## Como o StudyTrack funciona
