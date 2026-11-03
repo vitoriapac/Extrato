@@ -8,6 +8,8 @@
     "build": "node scripts/build.mjs",
     "format": "prettier --write src scripts tests",
     "check:format": "prettier --check src scripts tests",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "check:syntax": "node scripts/check-syntax.mjs",
     "check:types": "tsc -p tsconfig.json --noEmit",
     "check:types:tests": "tsc -p tsconfig.tests.json --noEmit",
@@ -31,13 +33,20 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@babel/core": "^8.1.0",
+    "@babel/eslint-parser": "^8.0.7",
+    "@babel/preset-react": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.7",
     "@playwright/test": "^1.62.1",
     "@tabler/icons": "^3.50.0",
     "@tailwindcss/cli": "^4.3.3",
     "@types/node": "^22.20.5",
     "esbuild": "^0.25.9",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
     "prettier": "^3.9.10",
-    "typescript": "~7.0.2"
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=22"
