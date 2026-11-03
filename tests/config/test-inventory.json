@@ -3734,6 +3734,40 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/demo-notebook.test.js",
+      "layer": "node",
+      "area": "Demo",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract",
+        "demo"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/demo/demo-scenario.json",
+        "../../src/demo/demo-generator.js",
+        "../../src/demo/demo-builders/error-notebook.js",
+        "../../src/domain/notebook/error-notebook-engine.js"
+      ],
+      "staticTestDeclarations": 1,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/demo-scenario-v2.test.js",
       "layer": "node",
       "area": "Demo",

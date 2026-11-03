@@ -105,7 +105,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
   await activateTab(page, 'desempenho');
   await page
     .locator('.overview-fold', { has: page.locator('#progressBars') })
-    .locator('summary')
+    .locator('> summary')
     .click();
   await expect(page.getByTitle('Registro real preservado')).toBeVisible();
 });

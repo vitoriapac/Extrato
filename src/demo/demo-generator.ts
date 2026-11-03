@@ -24,6 +24,7 @@ import {
 import { reconcileDemoPlanExecution } from './demo-builders/plan-execution.js';
 import { buildDemoStrategyCandidates } from './demo-builders/strategy-evidence.js';
 import { buildDemoRecommendations, buildDemoWeeklyCloses } from './demo-builders/learning-cycle.js';
+import { buildDemoFlashcards } from './demo-builders/error-notebook.js';
 import {
   buildHistoricalReadinessMetrics,
   createReadinessSnapshot,
@@ -128,12 +129,19 @@ export function generateDemoData({
     targetScore: demoScenario.goals.targetScorePct,
     activeExamTags: [EXAM_TAGS.BB, EXAM_TAGS.CAIXA],
     configuredAt: timestamp(today),
-    subjects: state.subjects.map((subject: any, index: any) => ({
-      subjectId: subject.id,
-      expectedQuestions: index < 4 ? 18 : 14,
-      questionWeight: index === 2 ? 1.5 : 1,
-      priority: index < 2 ? 'high' : index === 5 ? 'low' : 'normal',
-    })),
+    subjects: state.subjects.map((subject: any, index: any) => {
+      const expectedQuestions = index < 4 ? 18 : 14;
+      const questionWeight = index === 2 ? 1.5 : 1;
+      const weight = expectedQuestions * questionWeight;
+      return {
+        subjectId: subject.id,
+        expectedQuestions,
+        questionWeight,
+        weight,
+        examWeightPercent: Math.round((weight / 250) * 100),
+        priority: index < 2 ? 'high' : index === 5 ? 'low' : 'normal',
+      };
+    }),
   };
   state.metasPorDisciplina = state.subjects.map((subject: any, index: any) => ({
     id: `demo-subject-goal-${index + 1}`,
@@ -254,11 +262,13 @@ export function generateDemoData({
       : []),
   ]);
   state.alertStates = [];
+  state.errorFlashcards = buildDemoFlashcards(demoScenario, { today, subjects: state.subjects });
   state.achievementsUnlocked = {
     primeira_sessao: timestamp(shiftDate(today, -oldestAge + 1)!),
     cem_questoes: timestamp(shiftDate(today, -oldestAge + 20)!),
   };
   state.lastBackupAt = timestamp(today);
+  state.lastExportAt = timestamp(shiftDate(today, -3)!);
   state.updatedAt = timestamp(today);
   return state;
 }

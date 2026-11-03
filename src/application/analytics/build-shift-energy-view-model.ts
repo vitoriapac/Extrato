@@ -60,7 +60,7 @@ export function buildShiftEnergyViewModel({
     focusLevel: s.focusLevel as any,
     energyLevel: s.energyLevel as any,
     questionsResolved: s.questionsResolved,
-    questionsCorrect: s.questionsCorrect,
+    questionsCorrect: (s as any).questionsCorrect ?? (s as any).correctAnswers,
   }));
 
   const diagnostic = analyzeFocusAndEnergy(energyRecords);

@@ -138,18 +138,58 @@ export function buildDemoStudyHistory(
     narrativeEntries = entries.filter((entry: any) => entry.source?.narrativeRole);
   const studySessions: any[] = [],
     questoes: any[] = [];
+  const plateauTopicA =
+    entries.find((e: any) => e.topic.name === 'Concordância verbal') || genericEntries[0];
+  const plateauTopicB =
+    entries.find((e: any) => e.topic.name === 'Operações compromissadas') || genericEntries[1];
+  const plateauSlotsA = new Set([128, 148, 168, 188]);
+  const plateauSlotsB = new Set([131, 151, 171, 191]);
+
   slots.forEach((day: any, index: any) => {
     const type = types[index % types.length],
-      assignment: any = questionAssignments.get(index),
-      entry =
-        assignment?.entry ||
-        (!assignment && index % 5 === 0 && narrativeEntries.length
-          ? narrativeEntries[Math.floor(index / 5) % narrativeEntries.length]
-          : genericEntries[(index * 37) % genericEntries.length]),
-      date = dateAt(today, day, historyDays);
+      assignment: any = questionAssignments.get(index);
+
+    let entry =
+      assignment?.entry ||
+      (!assignment && index % 5 === 0 && narrativeEntries.length
+        ? narrativeEntries[Math.floor(index / 5) % narrativeEntries.length]
+        : genericEntries[(index * 37) % genericEntries.length]);
+
+    let forcedPlateauRate: number | null = null;
+    if (type === 'questions' && !assignment?.entry && day >= historyDays - 28) {
+      if (plateauSlotsA.has(index)) {
+        entry = plateauTopicA;
+        forcedPlateauRate = 65;
+      } else if (plateauSlotsB.has(index)) {
+        entry = plateauTopicB;
+        forcedPlateauRate = 55;
+      }
+    }
+
+    const date = dateAt(today, day, historyDays);
     const durationMinutes =
-        durations[(index + Math.floor(random() * durations.length)) % durations.length],
-      startedAt = `${date}T${String(7 + (index % 12)).padStart(2, '0')}:00:00.000Z`;
+      durations[(index + Math.floor(random() * durations.length)) % durations.length];
+
+    const slot = index % 10;
+    let hour = 8;
+    let focusLevel: 'deep' | 'normal' | 'distracted' = 'normal';
+    let energyLevel: 'high' | 'normal' | 'low' = 'normal';
+
+    if (slot < 5) {
+      hour = 7 + (index % 4);
+      focusLevel = index % 4 === 0 ? 'normal' : 'deep';
+      energyLevel = index % 5 === 0 ? 'normal' : 'high';
+    } else if (slot < 8) {
+      hour = 13 + (index % 4);
+      focusLevel = index % 3 === 0 ? 'deep' : index % 3 === 1 ? 'normal' : 'distracted';
+      energyLevel = index % 2 === 0 ? 'normal' : index % 4 === 1 ? 'high' : 'low';
+    } else {
+      hour = 19 + (index % 3);
+      focusLevel = index % 3 === 0 ? 'normal' : 'distracted';
+      energyLevel = index % 3 === 0 ? 'normal' : 'low';
+    }
+
+    const startedAt = `${date}T${String(hour).padStart(2, '0')}:00:00.000Z`;
     const session = {
       id: `demo-session-${index + 1}`,
       date,
@@ -160,8 +200,11 @@ export function buildDemoStudyHistory(
       topicId: entry.topic.id,
       planItemId: null as any,
       type,
+      focusLevel,
+      energyLevel,
       questionsResolved: 0,
       correctAnswers: 0,
+      questionsCorrect: 0,
       notes: index % 13 === 0 ? 'Sessão demonstrativa com observação de progresso.' : '',
       createdAt: startedAt,
     };
@@ -176,13 +219,23 @@ export function buildDemoStudyHistory(
           Number(
             scenario.subjects.find((item: any) => item.id === entry.subject.id)?.targetAccuracyPct
           ) || 70;
-      const rate = entry.source?.narrativeRole
-          ? narrativeAccuracy(entry.source, day, historyDays)
-          : clamp(phaseRate + (subjectRate - 70) * 0.55 + (random() - 0.5) * 10, 30, 95),
-        correct = Math.round((resolved * rate) / 100),
+
+      let rate: number;
+      if (forcedPlateauRate !== null) {
+        rate = forcedPlateauRate;
+      } else if (entry.source?.narrativeRole) {
+        rate = narrativeAccuracy(entry.source, day, historyDays);
+      } else {
+        const baseRate = phaseRate + (subjectRate - 70) * 0.55 + (random() - 0.5) * 10;
+        const shiftModifier = hour < 12 ? 6 : hour >= 18 ? -18 : 0;
+        rate = clamp(baseRate + shiftModifier, 30, 95);
+      }
+
+      const correct = Math.round((resolved * rate) / 100),
         errors = resolved - correct;
       session.questionsResolved = resolved;
       session.correctAnswers = correct;
+      session.questionsCorrect = correct;
       questoes.push({
         id: `demo-question-${questoes.length + 1}`,
         date,

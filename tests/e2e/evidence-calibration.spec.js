@@ -15,7 +15,7 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
     api.setState(result.normalized);
     api.renderAll();
   }, buildStrategicCycleFixture(base));
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'desempenho');
   const initial = await page.evaluate(() =>
     structuredClone(window.__EXTRATO_TEST__.getState().projectionSnapshots)
   );
