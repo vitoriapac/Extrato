@@ -17,9 +17,19 @@ import {
   VolatileMasteryGrid,
   type VolatileMasteryGridProps,
 } from './VolatileMasteryGrid.js';
+import {
+  SyllabusHealthCard,
+  type SyllabusHealthCardProps,
+} from './SyllabusHealthCard.js';
+import {
+  CockpitSidebarCards,
+  type CockpitSidebarCardsProps,
+} from './CockpitSidebarCards.js';
 import { buildAllocationBalanceViewModel } from '../../../application/analytics/build-allocation-balance-view-model.js';
 import { buildCriticalVulnerabilitiesViewModel } from '../../../application/analytics/build-critical-vulnerabilities-view-model.js';
 import { buildVolatileMasteryViewModel } from '../../../application/analytics/build-volatile-mastery-view-model.js';
+import { buildSyllabusHealthViewModel } from '../../../application/analytics/build-syllabus-health-view-model.js';
+import { buildCockpitSidebarViewModel } from '../../../application/analytics/build-cockpit-sidebar-view-model.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
@@ -166,10 +176,37 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     mountPreact(h(VolatileMasteryGrid, props), container);
   }
 
+  function mountSyllabusHealth(container: Element, props: SyllabusHealthCardProps): void {
+    mountPreact(h(SyllabusHealthCard, props), container);
+  }
+
+  function mountCockpitSidebar(container: Element, props: CockpitSidebarCardsProps): void {
+    mountPreact(h(CockpitSidebarCards, props), container);
+  }
+
   function renderCockpitDecisionGrids(): void {
     if (!doc) return;
     const state = deps.getState ? deps.getState() : {};
     const today = todayISO();
+
+    // Grade Superior: Saúde do Edital por Disciplina
+    const healthMount = doc.getElementById('cockpitSyllabusHealthMount');
+    if (healthMount) {
+      const healthModel = buildSyllabusHealthViewModel(state);
+      mountSyllabusHealth(healthMount, {
+        model: healthModel,
+        onNavigateSubjects: () => navigateKpi('disciplinas'),
+      });
+    }
+
+    // Grade Superior: Coluna Direita (Meta de Hoje + Carga de Revisões + Consistência 28 dias)
+    const rightMount = doc.getElementById('cockpitRightColumnMount');
+    if (rightMount) {
+      const sidebarModel = buildCockpitSidebarViewModel(state, today);
+      mountCockpitSidebar(rightMount, {
+        model: sidebarModel,
+      });
+    }
 
     // 1. Balanço de Alocação de Tempo vs. Peso no Edital
     const allocMount = doc.getElementById('cockpitAllocationMount');
@@ -637,6 +674,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     mountCriticalVulnerabilities,
     renderVolatileMasteryHtml,
     mountVolatileMastery,
+    mountSyllabusHealth,
+    mountCockpitSidebar,
     renderCockpitDecisionGrids,
     renderKPIs,
     renderExamProgress,

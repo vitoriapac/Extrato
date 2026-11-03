@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=8dd4ee85d123">
-<link rel="stylesheet" href="styles/app.css?v=8dd4ee85d123">
+<link rel="stylesheet" href="styles/tailwind.css?v=2b461b5b0a7e">
+<link rel="stylesheet" href="styles/app.css?v=2b461b5b0a7e">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -146,6 +146,11 @@
     </section>
     <div id="overviewExamPhase"></div>
     <div class="kpi-grid" id="kpiGrid"></div>
+    <!-- GRADE SUPERIOR DO COCKPIT (SAÚDE DO EDITAL + ROTINA DIÁRIA) -->
+    <section class="cockpit-top-grid grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4" aria-label="Panorama e rotina diária">
+      <div class="lg:col-span-8 space-y-4" id="cockpitSyllabusHealthMount"></div>
+      <div class="lg:col-span-4 space-y-4" id="cockpitRightColumnMount"></div>
+    </section>
     <!-- COCKPIT ANALÍTICO DE DECISÃO PEDAGÓGICA -->
     <section class="cockpit-decision-grids mt-4 space-y-4" aria-label="Cockpit analítico de decisão pedagógica">
       <div id="cockpitAllocationMount"></div>
@@ -963,7 +968,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=8dd4ee85d123"></script>
+  <script src="src/app.bundle.js?v=2b461b5b0a7e"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

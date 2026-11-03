@@ -612,6 +612,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/cockpit-sidebar-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo da meta do dia, carga semanal de revisões e mini-heatmap de consistência."
+    },
+    {
       "file": "tests/unit/cognitive-profile.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1645,6 +1650,11 @@
       "file": "tests/unit/sustainability-insights.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/syllabus-health-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo de saúde do edital por disciplina com barras empilhadas e bullet bars."
     },
     {
       "file": "tests/unit/tab-router.test.js",

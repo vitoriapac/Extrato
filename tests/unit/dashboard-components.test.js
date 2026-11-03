@@ -8,9 +8,13 @@ import { UpcomingReviewsList } from '../../src/ui/tabs/dashboard/UpcomingReviews
 import { AllocationBalanceGrid } from '../../src/ui/tabs/dashboard/AllocationBalanceGrid.js';
 import { CriticalVulnerabilitiesGrid } from '../../src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.js';
 import { VolatileMasteryGrid } from '../../src/ui/tabs/dashboard/VolatileMasteryGrid.js';
+import { SyllabusHealthCard } from '../../src/ui/tabs/dashboard/SyllabusHealthCard.js';
+import { CockpitSidebarCards } from '../../src/ui/tabs/dashboard/CockpitSidebarCards.js';
 import { buildAllocationBalanceViewModel } from '../../src/application/analytics/build-allocation-balance-view-model.js';
 import { buildCriticalVulnerabilitiesViewModel } from '../../src/application/analytics/build-critical-vulnerabilities-view-model.js';
 import { buildVolatileMasteryViewModel } from '../../src/application/analytics/build-volatile-mastery-view-model.js';
+import { buildSyllabusHealthViewModel } from '../../src/application/analytics/build-syllabus-health-view-model.js';
+import { buildCockpitSidebarViewModel } from '../../src/application/analytics/build-cockpit-sidebar-view-model.js';
 import { createDashboardTabController } from '../../src/ui/tabs/dashboard/dashboard-tab-controller.js';
 
 test('QuickStatsGrid Preact Component — renderiza contadores de tópicos', () => {
@@ -304,4 +308,44 @@ test('VolatileMasteryGrid Preact Component — renderiza tópicos com falsa cons
   assert.match(html, /50%/);
   assert.match(html, /Agendar revisão ativa/);
 });
+
+test('SyllabusHealthCard Preact Component — renderiza barras empilhadas e bullet bars', () => {
+  const model = buildSyllabusHealthViewModel({
+    subjects: [
+      {
+        id: 's1',
+        name: 'Direito Administrativo',
+        topics: [
+          { id: 't1', status: 'Concluído' },
+          { id: 't2', status: 'Em andamento' },
+        ],
+      },
+    ],
+    questoes: [
+      { subjectId: 's1', resolved: 10, correct: 8 },
+    ],
+  });
+
+  const html = render(h(SyllabusHealthCard, { model }));
+  assert.match(html, /Saúde do Edital por Disciplina/);
+  assert.match(html, /Direito Administrativo/);
+  assert.match(html, /80% acerto/);
+});
+
+test('CockpitSidebarCards Preact Component — renderiza Meta de Hoje, Carga e Mini-Heatmap', () => {
+  const model = buildCockpitSidebarViewModel(
+    {
+      historico: [{ data: '2026-11-02', duracao: 90 }],
+      questoes: [{ data: '2026-11-02', resolvidas: 25 }],
+    },
+    '2026-11-02'
+  );
+
+  const html = render(h(CockpitSidebarCards, { model }));
+  assert.match(html, /Meta de Hoje/);
+  assert.match(html, /Carga de Revisões/);
+  assert.match(html, /Consistência \(4 Semanas\)/);
+  assert.match(html, /25/);
+});
+
 
