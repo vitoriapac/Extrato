@@ -274,6 +274,18 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     const container = ctx.document.getElementById('subjectsContainer');
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     const toggleBtn = ctx.document.getElementById('verticalizedSyllabusToggleBtn');
+    const quickStatsEl = ctx.document.getElementById('quickStats');
+    if (quickStatsEl && ctx.allTopics) {
+      const topics = ctx.allTopics();
+      const total = topics.length;
+      const naoIniciado = topics.filter((t: any) => t.status === 'Não iniciado').length;
+      const concluido = topics.filter((t: any) => t.status === 'Concluído').length;
+      quickStatsEl.innerHTML = `
+        <div class="stat-cell"><div class="n">${total}</div><div class="l">Tópicos totais</div></div>
+        <div class="stat-cell"><div class="n">${concluido}</div><div class="l">Concluídos</div></div>
+        <div class="stat-cell"><div class="n">${naoIniciado}</div><div class="l">Não iniciados</div></div>
+      `;
+    }
     if (!container) return;
 
     if (verticalizedSyllabusActive && mount) {
