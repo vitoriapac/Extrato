@@ -17,6 +17,7 @@ export interface FirstAccessModalControllerContext {
     getItem: (key: string) => string | null;
     setItem: (key: string, val: string) => void;
   } | null;
+  window?: any;
 }
 
 export function createFirstAccessModalController(context: FirstAccessModalControllerContext) {
@@ -66,9 +67,36 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
 
   function checkAndTrigger() {
     const state = context.getState();
+    const win = context.window || (typeof window !== 'undefined' ? window : null);
+    let forceFirstAccess = false;
+    let isAutomation = false;
+    let isTest = context.isTestMode();
+
+    try {
+      if (win?.location?.search) {
+        const params = new URLSearchParams(win.location.search);
+        if (params.get('firstAccess') === '1' || params.get('welcome') === '1') {
+          forceFirstAccess = true;
+        }
+        if (params.get('test') === '1') {
+          isTest = true;
+        }
+      }
+      if (win?.navigator?.webdriver) {
+        isAutomation = true;
+      }
+      if (Boolean(win?.__EXTRATO_TEST__)) {
+        isTest = true;
+      }
+    } catch {
+      // Falha silenciosa caso location ou navigator não estejam acessíveis
+    }
+
     const shouldOpen = isFirstAccessSession(state, {
       isDemoMode: context.isDemoMode(),
-      isTestMode: context.isTestMode(),
+      isTestMode: isTest,
+      isAutomation,
+      forceFirstAccess,
       storage: context.storage,
     });
     if (shouldOpen) {

@@ -16,11 +16,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=9ff6c2d61f3f">
-<link rel="stylesheet" href="styles/app.css?v=9ff6c2d61f3f">
+<link rel="stylesheet" href="styles/tailwind.css?v=d2aec55fd1f5">
+<link rel="stylesheet" href="styles/app.css?v=d2aec55fd1f5">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
+  <div id="firstAccessModalMount"></div>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
   <main class="wrap" id="mainContent" tabindex="-1">
   <h1 class="sr-only">StudyTrack — Extrato de estudos</h1>
@@ -126,9 +127,9 @@
   <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
     <div class="print-report-meta" id="printReportMeta"></div>
     <div id="finalStretchBannerSlot"></div>
-    <!-- GRADE SUPERIOR DO COCKPIT (CENTRO DE AÇÃO + ROTINA DIÁRIA + SAÚDE DO EDITAL) -->
+    <!-- CAMADA 1: GRADE SUPERIOR DO COCKPIT (AÇÃO PRIORITÁRIA + ROTINA DO DIA) -->
     <section class="overview-now cockpit-top-grid grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4" aria-label="Ação prioritária e rotina diária">
-      <!-- COLUNA ESQUERDA (8 COLS): AÇÃO IMEDIATA + ATENÇÃO + SAÚDE DO EDITAL -->
+      <!-- COLUNA ESQUERDA (8 COLS): AÇÃO IMEDIATA + ATENÇÃO -->
       <div class="lg:col-span-8 space-y-4" id="cockpitLeftColumn">
         <article class="chart-card overview-now-action">
           <span class="overview-eyebrow">Agora</span>
@@ -142,10 +143,14 @@
           <div id="overviewAttention"></div>
           <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção na aba Hoje</button>
         </article>
-        <div id="cockpitSyllabusHealthMount"></div>
       </div>
       <!-- COLUNA DIREITA (4 COLS): META DE HOJE + REVISÕES + CONSISTÊNCIA -->
       <div class="lg:col-span-4 space-y-4" id="cockpitRightColumnMount"></div>
+    </section>
+    <!-- CAMADA 2: RENDIMENTO & EDITAL (SAÚDE DO EDITAL + TENDÊNCIA DE DESEMPENHO) -->
+    <section class="cockpit-performance-grid grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4 items-stretch" aria-label="Saúde do edital e tendência de desempenho">
+      <div id="cockpitSyllabusHealthMount" class="h-full"></div>
+      <div id="cockpitPerformanceMount" class="h-full"></div>
     </section>
     <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
       <div id="guidedOnboardingEntry"></div>
@@ -965,9 +970,8 @@
   </div>
 </div>
 <div id="whatIfSimulatorMount"></div>
-<div id="firstAccessModalMount"></div>
 
-  <script src="src/app.bundle.js?v=9ff6c2d61f3f"></script>
+  <script src="src/app.bundle.js?v=d2aec55fd1f5"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

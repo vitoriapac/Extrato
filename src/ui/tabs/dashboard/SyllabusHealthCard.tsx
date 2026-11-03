@@ -17,7 +17,7 @@ export function SyllabusHealthCard({
   const { subjects } = model;
 
   return (
-    <article class="chart-card p-5" aria-labelledby="syllabusHealthTitle">
+    <article class="chart-card p-5 flex flex-col justify-between h-full" aria-labelledby="syllabusHealthTitle">
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
         <div>
           <h3 id="syllabusHealthTitle" class="font-semibold text-base text-content-primary m-0">

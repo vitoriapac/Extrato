@@ -229,6 +229,7 @@ uiControllers = wireUiControllers({
   getState: () => state,
   uiState,
   isDemoMode: IS_DEMO_MODE,
+  isTestMode: TEST_MODE,
   appClock,
   todayISO,
   nowISO,

@@ -350,6 +350,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     getState,
     isDemoMode: () => isDemoMode,
     isTestMode: () => deps.isTestMode ?? false,
+    window,
     onStartGuidedPlan: () => onboardingModalController.openGuidedOnboarding(),
     onStartDemo: () => {
       const enterBtn =

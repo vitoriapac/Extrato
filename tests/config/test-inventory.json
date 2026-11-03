@@ -806,7 +806,7 @@
         "./helpers.js",
         "]"
       ],
-      "staticTestDeclarations": 15,
+      "staticTestDeclarations": 16,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 13,
       "observedCaseSeconds": 60.1,
@@ -6322,6 +6322,36 @@
         "../../src/ui/tabs/performance/performance-tab-controller.js"
       ],
       "staticTestDeclarations": 4,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/performance-trend-view-model.test.js",
+      "layer": "node",
+      "area": "Desempenho",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/application/analytics/build-performance-trend-view-model.js"
+      ],
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

@@ -105,10 +105,10 @@ export function FirstAccessModal({
               variant="secondary"
               size="small"
               onClick={handleStartDemo}
-              aria-label="Carregar modo de demonstração com dados fictícios"
+              aria-label="Explorar demonstração com dados fictícios"
               className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-1.5"
             >
-              <span>Ver demonstração</span>
+              <span>Explorar demonstração</span>
             </Button>
           </article>
         </div>
@@ -119,7 +119,7 @@ export function FirstAccessModal({
             type="button"
             onClick={handleExploreManually}
             className="text-xs text-content-secondary hover:text-content-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs"
-            aria-label="Dispensar boas-vindas e configurar o aplicativo manualmente"
+            aria-label="Configurar manualmente ou explorar livremente"
           >
             Configurar manualmente ou explorar livremente
           </button>

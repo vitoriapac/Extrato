@@ -19,6 +19,8 @@
 export interface FirstAccessEvaluationOptions {
   isDemoMode?: boolean;
   isTestMode?: boolean;
+  isAutomation?: boolean;
+  forceFirstAccess?: boolean;
   storage?: {
     getItem: (key: string) => string | null;
     setItem?: (key: string, val: string) => void;
@@ -31,7 +33,15 @@ export function isFirstAccessSession(
   state: any,
   options: FirstAccessEvaluationOptions = {}
 ): boolean {
-  if (options.isDemoMode || options.isTestMode) {
+  if (options.isDemoMode) {
+    return false;
+  }
+
+  if (options.isTestMode && !options.forceFirstAccess) {
+    return false;
+  }
+
+  if (options.isAutomation && !options.forceFirstAccess) {
     return false;
   }
 
@@ -42,7 +52,7 @@ export function isFirstAccessSession(
   // Se o usuário já dispensou explicitamente o modal de primeiro acesso nesta máquina
   try {
     const storage = options.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
-    if (storage?.getItem(FIRST_ACCESS_STORAGE_KEY) === 'true') {
+    if (!options.forceFirstAccess && storage?.getItem(FIRST_ACCESS_STORAGE_KEY) === 'true') {
       return false;
     }
   } catch {

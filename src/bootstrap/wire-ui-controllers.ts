@@ -47,6 +47,7 @@ export interface WireUiControllersDeps {
     onConfirm: (value?: any) => void,
     onCancel?: () => void
   ) => void;
+  isTestMode?: boolean;
 }
 
 export function wireUiControllers(deps: WireUiControllersDeps) {

@@ -119,6 +119,27 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await context.close();
 });
 
+test('modal de boas-vindas do primeiro acesso abre com firstAccess=1 e bifurca para opções', async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('/?firstAccess=1');
+  await waitForAppReady(page);
+
+  const modal = page.locator('.first-access-welcome-modal');
+  await expect(modal).toBeVisible();
+  await expect(modal).toContainText('Boas-vindas ao StudyTrack');
+  await expect(modal).toContainText('Montar meu plano guiado');
+  await expect(modal).toContainText('Experimentar demonstração interativa');
+  await expect(modal).toContainText('Configurar manualmente ou explorar livremente');
+
+  // Opção: dispensar e configurar manualmente
+  await modal.getByRole('button', { name: /Configurar manualmente/i }).click();
+  await expect(modal).toBeHidden();
+  await context.close();
+});
+
 test('primeiro uso preserva escolhas e chega à prévia do plano', async ({ page }) => {
   const onboarding = page.locator('#guidedOnboarding');
   const overlay = page.locator('#guidedOnboardingOverlay');

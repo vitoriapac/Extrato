@@ -22,6 +22,10 @@ import {
   type SyllabusHealthCardProps,
 } from './SyllabusHealthCard.js';
 import {
+  PerformanceTrendCard,
+  type PerformanceTrendCardProps,
+} from './PerformanceTrendCard.js';
+import {
   CockpitSidebarCards,
   type CockpitSidebarCardsProps,
 } from './CockpitSidebarCards.js';
@@ -29,6 +33,7 @@ import { buildAllocationBalanceViewModel } from '../../../application/analytics/
 import { buildCriticalVulnerabilitiesViewModel } from '../../../application/analytics/build-critical-vulnerabilities-view-model.js';
 import { buildVolatileMasteryViewModel } from '../../../application/analytics/build-volatile-mastery-view-model.js';
 import { buildSyllabusHealthViewModel } from '../../../application/analytics/build-syllabus-health-view-model.js';
+import { buildPerformanceTrendViewModel } from '../../../application/analytics/build-performance-trend-view-model.js';
 import { buildCockpitSidebarViewModel } from '../../../application/analytics/build-cockpit-sidebar-view-model.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
@@ -182,6 +187,10 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     mountPreact(h(SyllabusHealthCard, props), container);
   }
 
+  function mountPerformanceTrend(container: Element, props: PerformanceTrendCardProps): void {
+    mountPreact(h(PerformanceTrendCard, props), container);
+  }
+
   function mountCockpitSidebar(container: Element, props: CockpitSidebarCardsProps): void {
     mountPreact(h(CockpitSidebarCards, props), container);
   }
@@ -204,12 +213,17 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       (decisionGrids as HTMLElement).hidden = !hasConfigured;
     }
 
+    const performanceGrid = doc.querySelector('.cockpit-performance-grid');
+    if (performanceGrid) {
+      (performanceGrid as HTMLElement).hidden = !hasConfigured;
+    }
+
     const attentionCard = doc.querySelector('.overview-now-attention');
     if (attentionCard) {
       (attentionCard as HTMLElement).hidden = !hasConfigured;
     }
 
-    // Grade Superior: Saúde do Edital por Disciplina
+    // Camada 2: Saúde do Edital por Disciplina
     const healthMount = doc.getElementById('cockpitSyllabusHealthMount');
     if (healthMount) {
       healthMount.hidden = !hasConfigured;
@@ -222,7 +236,20 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       }
     }
 
-    // Grade Superior: Coluna Direita (Meta de Hoje + Carga de Revisões + Consistência 28 dias)
+    // Camada 2: Tendência de Desempenho (Questões & Simulados)
+    const perfMount = doc.getElementById('cockpitPerformanceMount');
+    if (perfMount) {
+      perfMount.hidden = !hasConfigured;
+      if (hasConfigured) {
+        const perfModel = buildPerformanceTrendViewModel(state, today);
+        mountPerformanceTrend(perfMount, {
+          model: perfModel,
+          onNavigateQuestions: () => navigateKpi('questoes'),
+        });
+      }
+    }
+
+    // Camada 1: Coluna Direita (Meta de Hoje + Carga de Revisões + Consistência 28 dias)
     const rightMount = doc.getElementById('cockpitRightColumnMount');
     if (rightMount) {
       const sidebarModel = buildCockpitSidebarViewModel(state, today, {
