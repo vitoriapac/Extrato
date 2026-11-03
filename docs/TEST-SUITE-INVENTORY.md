@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-283 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+286 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -183,6 +183,9 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/export-reminder.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/filter-panel.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/final-stretch-policy.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/first-access-detector.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/first-access-modal-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/first-access-modal.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/first-activity-date.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/focus-energy-analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/focus-shift.test.js | node | Aplicação | functional | — | contract | none |

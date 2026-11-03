@@ -11,7 +11,24 @@ export interface CockpitSidebarCardsProps {
 }
 
 export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
-  const { percent, studiedFormatted, plannedFormatted, questionsDone, questionsTarget, dateLabel } = data;
+  const { hasConfiguredPlan, percent, studiedFormatted, plannedFormatted, questionsDone, questionsTarget, dateLabel } = data;
+
+  if (!hasConfiguredPlan) {
+    return (
+      <article class="chart-card p-5" aria-labelledby="todayGoalTitle">
+        <div class="flex items-center justify-between mb-2">
+          <h3 id="todayGoalTitle" class="font-semibold text-base text-content-primary m-0">
+            Meta de Hoje
+          </h3>
+          <span class="text-xs font-data text-content-secondary">{dateLabel}</span>
+        </div>
+        <p class="text-xs text-content-secondary m-0 leading-relaxed">
+          Nenhuma meta ativa hoje. Configure seu plano de estudos para definir sua disponibilidade diária e metas de questões.
+        </p>
+      </article>
+    );
+  }
+
   const circumference = 163.36; // 2 * Math.PI * 26
   const strokeDashoffset = circumference - (circumference * Math.min(100, Math.max(0, percent))) / 100;
 

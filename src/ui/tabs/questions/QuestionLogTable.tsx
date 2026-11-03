@@ -57,9 +57,13 @@ export function QuestionLogTable({
       <tr>
         <td colSpan={8}>
           <div class="empty-state" style={{ border: 'none' }}>
-            <p>Nenhuma sessão de questões registrada ainda.</p>
-            <button type="button" class="btn ghost small" data-delegated-click="addQuestaoRow()">
-              + Registrar sessão
+            <p class="font-medium text-content-primary m-0">Nenhuma sessão de questões registrada ainda.</p>
+            <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-3">
+              Cadastre os acertos e erros das baterias feitas nos seus bancos favoritos (QConcursos, Tec, Gran) para calibrar seu índice de prontidão e mapa de lacunas.
+            </p>
+            <button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-delegated-click="addQuestaoRow()">
+              <Icon name="plus" size={14} class="icon-inline" />
+              <span>Registrar sessão</span>
             </button>
           </div>
         </td>

@@ -326,6 +326,7 @@ const activateInitialTab = () => {
     testMode: TEST_MODE,
   });
   uiControllers.tabRouter.activateInitialTab();
+  uiControllers.firstAccessModalController?.checkAndTrigger();
 };
 const pristineTestState = TEST_MODE ? structuredCloneSafe(state) : null;
 

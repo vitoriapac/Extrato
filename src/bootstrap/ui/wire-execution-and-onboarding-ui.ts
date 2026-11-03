@@ -9,6 +9,7 @@ import { createWhatIfController } from '../../ui/controllers/what-if-controller.
 import { createTodayTabController } from '../../ui/tabs/today/today-tab-controller.js';
 import { createStudyRecommendationController } from '../../ui/tabs/today/study-recommendation-controller.js';
 import { createOnboardingModalController } from '../../features/onboarding/onboarding-modal-controller.js';
+import { createFirstAccessModalController } from '../../ui/controllers/first-access-modal-controller.js';
 import { createSessionHistoryController } from '../../ui/tabs/today/session-history-controller.js';
 
 export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
@@ -344,10 +345,26 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     document,
   });
 
+  const firstAccessModalController = createFirstAccessModalController({
+    getContainer: () => document.getElementById('firstAccessModalMount'),
+    getState,
+    isDemoMode: () => isDemoMode,
+    isTestMode: () => deps.isTestMode ?? false,
+    onStartGuidedPlan: () => onboardingModalController.openGuidedOnboarding(),
+    onStartDemo: () => {
+      const enterBtn =
+        (document.getElementById('enterDemoBtn') as HTMLElement | null) ||
+        (document.getElementById('enterDemoEmptyBtn') as HTMLElement | null) ||
+        (document.getElementById('enterDemoHeroBtn') as HTMLElement | null);
+      enterBtn?.click();
+    },
+  });
+
   return {
     timerUiController,
     studyTimerRuntime,
     whatIfController,
+    firstAccessModalController,
     todayTabController,
     studyRecommendationController,
     onboardingModalController,

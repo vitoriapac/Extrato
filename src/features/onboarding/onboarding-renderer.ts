@@ -119,7 +119,7 @@ export function renderOnboardingContent(
       })
       .join('');
     const shortcutsGroup = shortcuts
-      ? `<div class="guided-date-shortcuts" role="group" aria-label="Atalhos de data da prova"><span class="guided-shortcut-title">Estimativa rápida (pré-edital):</span><div class="guided-shortcut-chips">${shortcuts}</div></div>`
+      ? `<div class="guided-date-shortcuts" role="group" aria-label="Atalhos de data da prova"><span class="guided-shortcut-title">Sem edital publicado? Escolha um prazo estimado para começar:</span><div class="guided-shortcut-chips">${shortcuts}</div></div>`
       : '';
     const customExamField =
       model.presetId === 'custom'
@@ -148,7 +148,20 @@ export function renderOnboardingContent(
       : '';
     const starterPacksHtml =
       !model.subjects.length && model.starterPacks?.length
-        ? `<div class="guided-starter-packs" role="group" aria-label="Pacotes fundamentais em 1 clique"><span class="guided-shortcut-title">${model.packsFirst ? 'Comece em 1 clique com matérias fundamentais:' : 'Ou comece em 1 clique com matérias fundamentais:'}</span><div class="guided-starter-pack-list">${model.starterPacks.map((pack: any) => `<button type="button" class="guided-starter-pack-btn" data-guided-starter-pack="${escapeAttr(pack.id)}" aria-label="Carregar pacote de matérias ${escapeAttr(pack.name)}"><div class="guided-starter-pack-copy"><div class="guided-starter-pack-head"><strong>${escapeHtml(pack.name)}</strong><span class="status-badge status-badge--success">${escapeHtml(pack.badge)}</span></div><small>${escapeHtml(pack.description)}</small></div><span class="guided-starter-pack-cta">Usar pacote${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</span></button>`).join('')}</div></div>`
+        ? `<div class="guided-starter-packs" role="group" aria-label="Pacotes fundamentais em 1 clique"><span class="guided-shortcut-title">${model.packsFirst ? 'Comece em 1 clique com matérias fundamentais:' : 'Ou comece em 1 clique com matérias fundamentais:'}</span><div class="guided-starter-pack-list">${model.starterPacks
+            .map((pack: any) => {
+              const subjectsBadges = (pack.subjects || [])
+                .map(
+                  (s: any) =>
+                    `<span class="guided-pack-subject-tag text-[11px] px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(s.name)}</span>`
+                )
+                .join('');
+              const subjectsList = subjectsBadges
+                ? `<div class="guided-starter-pack-subjects mt-2 flex flex-wrap gap-1" aria-label="Disciplinas inclusas">${subjectsBadges}</div>`
+                : '';
+              return `<button type="button" class="guided-starter-pack-btn" data-guided-starter-pack="${escapeAttr(pack.id)}" aria-label="Carregar pacote de matérias ${escapeAttr(pack.name)}"><div class="guided-starter-pack-copy"><div class="guided-starter-pack-head"><strong>${escapeHtml(pack.name)}</strong><span class="status-badge status-badge--success">${escapeHtml(pack.badge)}</span></div><small>${escapeHtml(pack.description)}</small>${subjectsList}</div><span class="guided-starter-pack-cta">Usar pacote${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</span></button>`;
+            })
+            .join('')}</div></div>`
         : '';
     const pathsHtml = `<div class="study-plan-actions">${(model.contentPaths || []).map((path: any) => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>`;
     return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${model.packsFirst ? starterPacksHtml + pathsHtml : pathsHtml + starterPacksHtml}${model.subjects.length ? `${bulkLevels}<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Escolha um pacote acima, importe um edital ou cadastre disciplinas manualmente.</div>'}</div>`;
@@ -162,7 +175,8 @@ export function renderOnboardingContent(
   const feasibilityHtml = model.planFeasibility
     ? `<div class="guided-feasibility-card" data-feasibility="${escapeAttr(model.planFeasibility.status)}"><div class="guided-feasibility-header"><span class="status-badge ${model.planFeasibility.status === 'comfortable' || model.planFeasibility.status === 'balanced' ? 'status-badge--success' : 'status-badge--warning'}">${escapeHtml(model.planFeasibility.badgeText)}</span><p class="guided-feasibility-message">${escapeHtml(model.planFeasibility.verdictMessage)}</p></div></div>`
     : '';
-  return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${
+  const flexibilityNote = `<p class="guided-flexibility-note text-xs text-content-secondary mt-2.5 leading-relaxed">${renderIconSvg('info-circle', { size: 14, className: 'inline-block align-middle mr-1' })}<strong>Total flexibilidade:</strong> Você poderá adicionar novas matérias, editar tópicos ou ajustar sua rotina semanal a qualquer momento na aba Disciplinas.</p>`;
+  return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
     model.canCreatePlan
       ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>'
       : model.canConfigurePlan

@@ -54,9 +54,13 @@ export function SimulationLogTable({
       <tr>
         <td colSpan={7}>
           <div class="empty-state" style={{ border: 'none' }}>
-            <p>Nenhum simulado registrado ainda.</p>
-            <button type="button" class="btn ghost small" data-delegated-click="addSimuladoRow()">
-              + Registrar simulado
+            <p class="font-medium text-content-primary m-0">Nenhum simulado registrado ainda.</p>
+            <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-3">
+              Registre simulados completos ou parciais para alimentar a curva de tendência de pontuação de 30 dias e diagnósticos pós-simulado.
+            </p>
+            <button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-delegated-click="addSimuladoRow()">
+              <Icon name="plus" size={14} class="icon-inline" />
+              <span>Registrar simulado</span>
             </button>
           </div>
         </td>

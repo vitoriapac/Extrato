@@ -191,14 +191,35 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const state = deps.getState ? deps.getState() : {};
     const today = todayISO();
 
+    const hasConfigured = Boolean(
+      state.examDate ||
+        (Array.isArray(state.subjects) && state.subjects.length > 0) ||
+        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+        (Array.isArray(state.studySessions) && state.studySessions.length > 0)
+    );
+
+    // Gestão de visibilidade de seções secundárias no estado zero para evitar sobrecarga de alertas vazios
+    const decisionGrids = doc.querySelector('.cockpit-decision-grids');
+    if (decisionGrids) {
+      (decisionGrids as HTMLElement).hidden = !hasConfigured;
+    }
+
+    const attentionCard = doc.querySelector('.overview-now-attention');
+    if (attentionCard) {
+      (attentionCard as HTMLElement).hidden = !hasConfigured;
+    }
+
     // Grade Superior: Saúde do Edital por Disciplina
     const healthMount = doc.getElementById('cockpitSyllabusHealthMount');
     if (healthMount) {
-      const healthModel = buildSyllabusHealthViewModel(state);
-      mountSyllabusHealth(healthMount, {
-        model: healthModel,
-        onNavigateSubjects: () => navigateKpi('disciplinas'),
-      });
+      healthMount.hidden = !hasConfigured;
+      if (hasConfigured) {
+        const healthModel = buildSyllabusHealthViewModel(state);
+        mountSyllabusHealth(healthMount, {
+          model: healthModel,
+          onNavigateSubjects: () => navigateKpi('disciplinas'),
+        });
+      }
     }
 
     // Grade Superior: Coluna Direita (Meta de Hoje + Carga de Revisões + Consistência 28 dias)

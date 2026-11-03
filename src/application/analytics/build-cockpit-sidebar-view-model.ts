@@ -1,6 +1,7 @@
 import { parseLocalDate, formatLocalDate, addLocalDays } from '../../core/date-utils.js';
 
 export interface TodayGoalData {
+  hasConfiguredPlan: boolean;
   percent: number;
   studiedFormatted: string;
   plannedFormatted: string;
@@ -93,17 +94,30 @@ export function buildCockpitSidebarViewModel(
       .filter((q: any) => q.date === iso)
       .reduce((sum: number, q: any) => sum + (Number(q.resolved) || 0), 0);
 
+  const hasConfiguredPlan = Boolean(
+    safeState.examDate ||
+      (Array.isArray(safeState.subjects) && safeState.subjects.length > 0) ||
+      (Array.isArray(safeState.studyPlans) && safeState.studyPlans.length > 0) ||
+      (Array.isArray(safeState.studySessions) && safeState.studySessions.length > 0) ||
+      (Array.isArray(safeState.questoes) && safeState.questoes.length > 0)
+  );
+
   const studiedMinutesToday = minutesOn(todayISO);
-  const plannedMinutesToday = Math.max(0, Math.round(Number(sources.goalMinutes) || 0));
+  const plannedMinutesToday = hasConfiguredPlan
+    ? Math.max(0, Math.round(Number(sources.goalMinutes) || 0))
+    : 0;
 
   const percent =
     plannedMinutesToday > 0
       ? Math.min(100, Math.round((studiedMinutesToday / plannedMinutesToday) * 100))
       : 0;
 
-  const questionsTargetToday = Math.max(1, Math.round((safeState.metas?.questoesSemanal || 70) / 7));
+  const questionsTargetToday = hasConfiguredPlan
+    ? Math.max(1, Math.round((safeState.metas?.questoesSemanal || 70) / 7))
+    : 0;
 
   const todayGoal: TodayGoalData = {
+    hasConfiguredPlan,
     percent,
     studiedFormatted: formatMinutesDuration(studiedMinutesToday),
     plannedFormatted: formatMinutesDuration(plannedMinutesToday),

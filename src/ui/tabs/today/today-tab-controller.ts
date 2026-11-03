@@ -19,6 +19,7 @@ import {
   renderConsistencyStrip,
 } from '../../renderers/consistency-strip-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 
 const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: 'alert-circle', Média: 'alert-triangle', Baixa: 'circle-check' };
 
@@ -428,6 +429,19 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     if (!doc) return;
     const container = doc.getElementById('dailyExecutionDashboard');
     if (!container) return;
+    const state = getState();
+    const hasConfigured = Boolean(
+      state.examDate ||
+        (Array.isArray(state.subjects) && state.subjects.length > 0) ||
+        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+        (Array.isArray(state.studySessions) && state.studySessions.length > 0)
+    );
+    if (!hasConfigured) {
+      container.innerHTML = '';
+      container.hidden = true;
+      return;
+    }
+    container.hidden = false;
     refreshStudyRecommendationItems({ recordHistory: false });
     container.innerHTML = renderDailyExecution(dailyExecutionController.build(), {
       escapeHtml,
@@ -556,8 +570,16 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         ? Math.min(100, Math.round((executedSeconds / (plan.plannedMinutes * 60)) * 100))
         : 0;
 
+    const executionHint = `
+      <div class="today-plan-hint text-xs text-content-secondary mb-3 p-2.5 rounded bg-surface-subtle border border-border-subtle flex items-center gap-2">
+        <span class="text-brand shrink-0 inline-flex">${renderIconSvg('bulb', { size: 15 })}</span>
+        <span>Clique em <strong>Iniciar</strong> no bloco para estudar com o cronômetro integrado ou registre seu tempo após finalizar a sessão.</span>
+      </div>
+    `;
+
     container.innerHTML = `
       ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
+      ${executionHint}
       ${listaHtml}
       ${plan.flexMinutes! > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes!)} para pausas, correção ou continuidade</div></div>` : ''}
       <div class="plano-meta">
