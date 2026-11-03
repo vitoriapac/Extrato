@@ -125,6 +125,8 @@ export function ErrorNotebookView({
     setNewStatement('');
     setNewBancaTrap('');
     setNewCorrectConcept('');
+    setCurrentDeckIndex(0);
+    setIsRevealed(false);
     closeModal();
   }
 

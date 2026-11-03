@@ -322,5 +322,5 @@ export function addErrorFlashcard(
   const key = flashcardKey(candidate);
   const existing = cards.find(card => card.id === candidate.id || flashcardKey(card) === key);
   if (existing) return { cards, card: existing, created: false };
-  return { cards: [...cards, candidate], card: candidate, created: true };
+  return { cards: [candidate, ...cards], card: candidate, created: true };
 }

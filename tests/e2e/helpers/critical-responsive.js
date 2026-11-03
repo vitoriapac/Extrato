@@ -8,13 +8,14 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
   await activateTab(page, 'dashboard');
   await expectNoPageOverflow(page);
-  await expect(page.locator('.overview-readiness')).toBeVisible();
+  await expect(page.locator('.overview-now')).toBeVisible();
   await activateTab(page, 'desempenho');
   const analyses = page.locator('.today-analysis-details');
   if ((await analyses.count()) && !(await analyses.first().evaluate(element => element.open)))
     await analyses.first().locator(':scope > summary').click();
   await expectNoPageOverflow(page);
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
+  await expect(page.locator('.performance-readiness')).toBeVisible();
   await openPlanningSubtab(page, 'fechamento');
   await expectNoPageOverflow(page);
   await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
