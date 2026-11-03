@@ -615,7 +615,45 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 13. Rastreabilidade de Arquitetura e Governança
+## 13. Plano de Melhorias do Primeiro Acesso, Reorganização da Visão Geral e Estabilização do CI (Novembro 2026)
+
+### 13.1. Entregas Realizadas
+- **Diagnóstico com Perfil Iniciante:**
+  - Realização de testes de ponta a ponta simulando a perspectiva de um estudante sem histórico prévio, mapeando 10 pontos críticos de fricção, legibilidade e distribuição de informação.
+- **Modal Acessível de Primeiro Acesso e Configuração Inicial:**
+  - Componente Preact declarativo [`FirstAccessModal.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/FirstAccessModal.tsx) implementando diálogo nativo (`<dialog id="firstAccessDialog">`) com `aria-labelledby`, foco automático e suporte completo ao teclado (`Escape`).
+  - Detector puro em [`first-access-detector.ts`](file:///c:/Users/vitor/Documents/Extrato/src/features/onboarding/first-access-detector.ts) que identifica se o usuário está em estado virgem (`!state.subjects?.length && !state.studySessions?.length && !state.studyPlans?.length`), respeita a preferência persistida `firstAccessDismissed` e se auto-isola preventivamente em testes automatizados (`?test=1`) e modo demonstração (`?demo=1`).
+  - Três caminhos de boas-vindas transparentes: Planejamento Guiado (inicia wizard passo a passo), Configuração Manual direta ou Explorar Demonstração com 140 dias de dados fictícios.
+- **Reorganização Estrutural da Visão Geral (Cockpit Panorâmico):**
+  - **Camada 1 (Operação do Dia):** Criação da seção dedicada `<section class="overview-now">` separando Próxima Ação (`.overview-now-action`) e Atenção (`.overview-now-attention`) em grid equilibrado (lado a lado no desktop, empilhado no mobile), eliminando aninhamentos redundantes e restabelecendo os limites visuais de cada cartão.
+  - **Camada 2 (Rendimento & Edital):** Grid de 12 colunas (`.cockpit-top-grid`) integrando Saúde do Edital e Tendência de Desempenho com simetria vertical em 476px na esquerda (8 colunas), e Coluna de Suporte com Meta de Hoje (RingGauge SVG 64px), Carga de Revisões (7 dias) e Heatmap de Consistência (28 dias) na direita (4 colunas).
+  - **Camada 3 (Decisão Pedagógica):** `.cockpit-decision-grids` com Balanço de Alocação de Tempo vs. Peso com divulgação progressiva de 5 itens visíveis, e Duo Grids de Radar de Vulnerabilidades Críticas e Domínio Volátil / Falsa Consolidação.
+  - **Realocação Cirúrgica de Grids Secundários:**
+    - O card de Índice de Prontidão e Projeções (`#approvalDashboard` / `.performance-readiness`) foi movido da Visão Geral para a aba **Desempenho**, onde sua complexidade analítica é devidamente contextualizada.
+    - O Grid de Questões e Simulados (`#kpiGrid`) foi movido para o topo da aba **Questões & Simulados**.
+    - O Grid de Tópicos (`#quickStats`) foi movido para o topo da aba **Disciplinas**.
+- **Estabilização da Suíte de Testes e 100% Verde no CI:**
+  - **Recomendação Fora do Plano e Estratégia Guiada (`study-recommendation-controller.ts`):** Suporte unificado para busca de recomendações por ID de tópico ou `recommendationId`, com despacho direto de ações não planejadas para `startStudyRecommendation`, abrindo a estratégia guiada `#guidedStrategy` ao clicar em "Estudar como atividade adicional".
+  - **Caderno de Erros Ativo (`error-notebook-engine.ts`, `ErrorNotebookView.tsx`):** Inclusão de novos flashcards no topo da lista (`[candidate, ...cards]`) e reinicialização imediata do índice do deck para `0`, permitindo ao usuário revisar imediatamente seu novo card.
+  - **Sincronização de Seletores Responsivos (`critical-responsive.js`):** Ajuste dos seletores de teste para validar `.overview-now` na Visão Geral e `.performance-readiness` em Desempenho.
+  - **Sincronização de Baselines Visuais:** Regeneração e alinhamento dos snapshots visuais de Windows e Linux (`agora-desktop-light-win32.png`, `agora-mobile-dark-win32.png`, `hero-desktop-1366-linux.png`, etc.) após a padronização de line-height com ícones Tabler.
+
+### 13.2. Validação e Qualidade
+- **Fast Gate:** **43.88s** com **1.277 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+- **Testes de Experiência (`npm run test:experience`):** 39 testes de contrato unitários + 4 jornadas browser Playwright aprovadas em **72.82s**.
+- **GitHub Actions CI (`main`, Run 41684731717):** **100% de sucesso em todos os 7 jobs**:
+  - `changes`: 43s (aprovado)
+  - `experience`: 1m 37s (aprovado)
+  - `visual-windows`: 7m 47s (59 testes visuais aprovados)
+  - `validation (1/4)`: 14m 34s (aprovado)
+  - `validation (2/4)`: 10m 53s (74 testes aprovados)
+  - `validation (3/4)`: 13m 39s (69 testes responsivos aprovados)
+  - `validation (4/4)`: 5m 18s (73 testes aprovados)
+- **Tipagem Estática:** 0 erros no TypeScript (`npm run check:types` e `npm run check:types:tests`).
+
+---
+
+## 14. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

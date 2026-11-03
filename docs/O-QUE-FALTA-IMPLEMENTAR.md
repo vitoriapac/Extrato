@@ -31,6 +31,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 | **Refinamento de Usabilidade do Iniciante** | Resolução de 10 Pontos de Fricção do Primeiro Acesso | Concluída | Toast mobile no rodapé; ocultação dinâmica do banner de demo; neutralização de bordas redundantes no Welcome Hero; alinhamento de recomendação opcional na aba Hoje; edição de minutos e sticky actions no modal de sessão; calibração do Índice de Prontidão (eliminação de falsa precisão inicial de 43/100); filtro de concursos contextual; auto-foco ao adicionar tópicos; Tabler Icons e toast orientador na Agenda de Revisões; polimento do tour guiado (sem triângulo de aviso e com compensação sticky); auto-seleção de tópico e foco imediato no registro de questões. Fast Gate com 1.208 testes passando em 17.48s. |
 | **Modernização Visual & Cockpit** | Cockpit Panorâmico de Decisão Pedagógica (3 Camadas) | Concluída | Cockpit da Visão Geral em 3 Camadas Temáticas (Camada 1: Operação do Dia 8+4 cols, Camada 2: Rendimento & Edital 6+6 cols com Saúde do Edital e Gráfico de Tendência de Acertos/Simulados com simetria vertical de 476px, Camada 3: Decisão Pedagógica com Balanço de Alocação e divulgação progressiva de 5 itens + Duo Grids analíticos); Detector de Platô em Questões e Energia Cronobiológica em Desempenho; realocação cirúrgica do Grid de Questões (`#kpiGrid`) para Questões & Simulados e Grid de Tópicos (`#quickStats`) para Disciplinas; modal acessível de primeiro acesso (`FirstAccessModal.tsx`). Fast Gate com 1.276 testes passando em ~51s. |
 | **Atualização do Modo Demonstração** | Enriquecimento com Novas Capacidades Analíticas | Concluída | Caderno de Erros determinístico com 17 flashcards SM-2 e pegadinhas de bancas (Cesgranrio/Cespe), Detector de Platô com 2 tópicos calibrados em 28 dias e prescrições metodológicas, análise cronobiológica de turnos (Manhã pico, Tarde, Noite com fadiga), pesos explícitos no edital verticalizado para balanço de alocação, navegação expandida no banner (`Desempenho` e `Questões & Platô`) e teste unitário dedicado. Fast Gate com 1.277 testes passando em ~48s e 8/8 testes E2E verdes. |
+| **Primeiro Acesso, Reorganização do Cockpit & CI** | Modal de Boas-Vindas, Reorganização Estrutural da Visão Geral e Estabilização CI | Concluída | Modal acessível de primeiro acesso (`FirstAccessModal.tsx`), reorganização em 3 camadas temáticas, realocação da prontidão para Desempenho, KPIs movidos para abas dedicadas, resolução de pendências nos testes de recomendação/flashcards/responsividade e CI 100% verde no GitHub Actions (7/7 jobs). Fast Gate com 1.277 testes em ~43s. |
 
 ---
 
@@ -124,6 +125,16 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 - **Balanço de Alocação de Edital:** Injeção de pesos explícitos no edital verticalizado (`examBlueprint.subjects`) para Caixa e BB, permitindo cálculo exato de matérias sub/sobrealocadas.
 - **Navegação do Tour:** Banner da demo com novos atalhos para `Desempenho` e `Questões & Platô`, e atualização do diálogo explicativo de entrada.
 
+### 2.7. Primeiro Acesso, Reorganização da Visão Geral & Estabilização CI
+
+- **Modal de Boas-Vindas e Escolha de Caminho (`FirstAccessModal.tsx`):** Diálogo nativo `<dialog id="firstAccessDialog">` acessível via teclado (`Escape`), detectado de forma pura em `first-access-detector.ts` sem poluir sessões com histórico, oferecendo três trilhas claras: Planejamento Guiado, Configuração Manual ou Modo Demonstração.
+- **Reorganização do Cockpit Panorâmico em 3 Camadas:**
+  - *Camada 1 (Operação do Dia):* `.overview-now` em grid responsivo de 2 colunas com Próxima Ação e Atenção imediata, sem sobreposição de cards.
+  - *Camada 2 (Rendimento & Edital):* `.cockpit-top-grid` (8+4 colunas) com Saúde do Edital, Tendência de Desempenho e Coluna de Suporte com Meta (RingGauge), Carga e Consistência (Heatmap 28 dias).
+  - *Camada 3 (Decisão Pedagógica):* `.cockpit-decision-grids` com Balanço de Alocação de Tempo vs. Peso no Edital (divulgação progressiva de 5 itens) e Duo Grids de Vulnerabilidades Críticas e Domínio Volátil.
+- **Descongestionamento Cognitivo:** Realocação do card de Prontidão (`#approvalDashboard` / `.performance-readiness`) para a aba **Desempenho**, KPIs de Questões para **Questões & Simulados** e KPIs de Tópicos para **Disciplinas**.
+- **Estabilização de Contratos e CI 100% Verde:** Resolução das divergências entre `recommendationId` e ID de tópicos em `study-recommendation-controller.ts`, ativação prioritária de flashcards criados em `error-notebook-engine.ts`, atualização de seletores em `critical-responsive.js` e validação com 7/7 jobs verdes no GitHub Actions (Run `41684731717`).
+
 ---
 
 ## 3. Próximos Horizontes de Evolução (Backlog Ativo & Futuro)
@@ -206,4 +217,5 @@ Todas as alterações preservam os seguintes critérios inegociáveis:
 
 1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
 2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
-3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 1.276 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 51 segundos (meta < 120s).
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 1.277 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 43.88 segundos (meta < 120s).
+4. **CI Integrado:** GitHub Actions 100% verde em todos os jobs (`changes`, `experience`, `visual-windows`, `validation 1/4` a `4/4`).

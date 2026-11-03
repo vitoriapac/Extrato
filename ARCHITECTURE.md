@@ -55,14 +55,16 @@ flowchart TD
 - `styles/tailwind.input.css` e `styles/tailwind.css`: estilos utilitários gerados sob demanda via Tailwind CSS v4, conectados aos tokens sem Preflight global.
 - `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`, `Tabs`).
 - `src/ui/primitives/a11y.ts`: utilitários de acessibilidade e gerenciamento de anúncios `aria-live` para leitores de tela em tempo real (cronômetro e cards).
-- `src/ui/tabs/dashboard/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada, ponto de parada e estado acolhedor de boas-vindas no primeiro uso (`WelcomeHeroCard`).
+- `src/ui/tabs/dashboard/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada, ponto de parada e estado acolhedor de boas-vindas no primeiro uso (`WelcomeHeroCard`), compondo a seção `.overview-now` em grid responsivo ao lado do card de Atenção.
 - `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`: card de Saúde do Edital com radar multidimensional, faixas de cobertura, domínio e retenção, e simetria de altura total (Camada 2).
 - `src/ui/tabs/dashboard/PerformanceTrendCard.tsx`: gráfico declarativo Preact com SVG puro da tendência móvel semanal de acertos de questões, notas de simulados e benchmark meta (Camada 2).
-- `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: coluna de suporte da Camada 1 com Meta do Dia (`DailyGoalProgressCard`), Carga de Revisões (`ReviewsLoadCard`) e Mini-Heatmap (`MiniConsistencyCard`).
+- `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: coluna de suporte da Camada 2 com Meta do Dia (`DailyGoalProgressCard`), Carga de Revisões (`ReviewsLoadCard`) e Mini-Heatmap (`MiniConsistencyCard`).
 - `src/ui/tabs/dashboard/AllocationBalanceCard.tsx`: card do Balanço de Alocação de Tempo Investido vs Peso no Edital com divulgação progressiva (5 itens) e barra de progresso proporcional (Camada 3).
-- `src/ui/tabs/questions/PlateauDetectorCard.tsx`: card do Detector de Platô de Desempenho com diagnóstico de estagnação e prescrição metodológica na aba Questões & Simulados.
+- `src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx` e `src/ui/tabs/dashboard/VolatileMasteryGrid.tsx`: Duo Grids da Camada 3 destacando vulnerabilidades críticas de alto impacto e tópicos com ilusão de competência / domínio volátil.
+- Card de Prontidão e Projeções (`#approvalDashboard` / `.performance-readiness`): alocado na aba Desempenho para consulta detalhada contextual, mantendo a Visão Geral focada na operação e decisão.
+- `src/ui/tabs/questions/PlateauDetectorCard.tsx`: card do Detector de Platô de Desempenho com diagnóstico de estagnação e prescrição metodológica no topo da aba Questões & Simulados (junto aos KPIs `#kpiGrid`).
 - `src/ui/tabs/performance/ShiftEnergyCard.tsx`: card de análise cronobiológica de energia e eficiência por turno (Manhã, Tarde, Noite) na aba Desempenho.
-- `src/ui/components/FirstAccessModal.tsx` e `src/features/onboarding/first-access-detector.ts`: modal acessível de primeiro uso e detector puro com isolamento para automação/testes E2E.
+- `src/ui/components/FirstAccessModal.tsx` e `src/features/onboarding/first-access-detector.ts`: modal acessível de primeiro uso (`<dialog id="firstAccessDialog">`) e detector puro com isolamento para automação/testes E2E.
 - `src/ui/components/FirstStepsMission.tsx`: checklist de onboarding para o primeiro uso com disparo direto da 1ª atividade planejada e ação de aquecimento rápido de 15 minutos.
 - `src/ui/components/SubjectTopicRow.tsx`: linha de tópico com bookmark contextual e ações rápidas.
 - `src/ui/components/WhatIfSimulatorModal.tsx` e `src/ui/controllers/what-if-controller.ts`: modal e controlador de simulação de cenários em memória.

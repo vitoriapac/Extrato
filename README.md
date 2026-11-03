@@ -12,13 +12,13 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Gráfico de Tendência de Acertos e Simulados com taxa móvel semanal de acertos, dispersão de notas de simulados, meta benchmark e resumo textual explicável.
 - Detector de Platô de Desempenho na aba Questões & Simulados, alertando estagnação de precisão em alto volume com recomendações de quebra de platô.
 - Eficiência e Energia Cronobiológica por Turno na aba Desempenho, correlacionando foco e disposição em Manhã, Tarde e Noite com rendimento real.
-- Modal de primeiro acesso acolhedor e acessível para guiar a configuração inicial ou exploração imediata da demonstração, com isolamento automático em testes automatizados.
-- Card Hoje na Visão Geral com próxima atividade, progresso reconciliado e distinção entre estudo adicional e cumprimento do plano.
+- Modal de primeiro acesso acolhedor e acessível (`FirstAccessModal.tsx`) para guiar a configuração inicial (planejamento guiado, configuração manual ou exploração imediata da demonstração), com isolamento automático em testes automatizados.
+- Operação do Dia na Visão Geral com seção dedicada (`.overview-now`) unindo Próxima Ação e Atenção em grid responsivo (2 colunas no desktop, empilhado no mobile), com progresso reconciliado e distinção entre estudo adicional e cumprimento do plano.
 - Cronômetro, histórico de sessões, questões e simulados.
 - Revisões espaçadas, agenda, calendário e replanejamento.
-- Índice de prontidão, retenção, domínio, tendências e projeção por faixa.
+- Índice de prontidão, projeções por faixa e análise multidimensional alocados na aba Desempenho, garantindo profundidade analítica contextual sem sobrecarregar a Visão Geral.
 - Diagnóstico de erros e alertas com motivo e ação recomendada.
-- Aba Desempenho com comparação de períodos, disciplinas, questões, simulados e consistência; navegação contextual até o diagnóstico.
+- Aba Desempenho com comparação de períodos, disciplinas, questões, simulados, prontidão e consistência; navegação contextual até o diagnóstico.
 - Aderência separa volume, crédito ao plano e execução prioritária; fechamentos congelados preservam a interpretação histórica. Meta pessoal opcional de 50–100%, com contexto de execução na Trajetória.
 - Diagnóstico consolidado por tópico ou disciplina, próxima melhor ação, prévia do plano e confirmação antes de salvar.
 - Resultado mensurável das recomendações, comparando métricas antes e depois.
