@@ -266,6 +266,8 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     recentPerformance: approvalReadinessService.recentPerformance,
     projectPerformance: approvalReadinessService.projectPerformance,
     revisoesAtrasadas: studyCandidateService.revisoesAtrasadas,
+    getRevisoesUnificadas: studyMetricsSelectors.getRevisoesUnificadas,
+    metaHoursToday: analytics.goalsBlueprintService.metaHoursToday,
     diasParaRevisao,
     activateTab,
     renderAgenda,

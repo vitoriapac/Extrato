@@ -31,7 +31,7 @@ export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
               cx="32"
               cy="32"
               r="26"
-              stroke="var(--bg-subtle, #E6EDE6)"
+              stroke="var(--surface-subtle)"
               stroke-width="6"
               fill="none"
             />
@@ -100,11 +100,11 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
         {days.map(d => (
           <div key={d.dateISO} class="flex flex-col items-center gap-1 h-full justify-end">
             <span
-              class={`text-[10px] font-data ${
+              class={`text-xs font-data ${
                 d.isPeak
                   ? 'font-bold text-amber'
                   : d.isToday
-                    ? 'font-bold text-brand'
+                    ? 'font-bold text-content-primary'
                     : 'text-content-secondary'
               }`}
             >
@@ -124,8 +124,8 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
               title={`${d.dayName}: ${d.count} revisões`}
             />
             <span
-              class={`text-[10px] font-data ${
-                d.isToday ? 'font-bold text-brand' : 'text-content-secondary'
+              class={`text-xs font-data ${
+                d.isToday ? 'font-bold text-content-primary' : 'text-content-secondary'
               }`}
             >
               {d.dayName}
@@ -133,7 +133,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
           </div>
         ))}
       </div>
-      <p class="text-[11px] text-content-secondary mt-2 m-0 font-data">{tip}</p>
+      <p class="text-xs text-content-secondary mt-2 m-0 font-data">{tip}</p>
     </article>
   );
 }

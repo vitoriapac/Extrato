@@ -22,7 +22,7 @@ export function AllocationBalanceGrid({
     <article class="chart-card cockpit-analytics-card" aria-labelledby="allocationGridTitle">
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
-          <div class="p-1.5 rounded bg-surface-subtle text-brand">
+          <div class="p-1.5 rounded bg-surface-subtle text-accent">
             <Icon name="scale" size={20} />
           </div>
           <div>
@@ -57,11 +57,11 @@ export function AllocationBalanceGrid({
             <thead>
               <tr class="border-b border-border-subtle text-content-secondary uppercase tracking-wider font-semibold">
                 <th class="py-2 px-3">Disciplina</th>
-                <th class="py-2 px-3 text-right">Horas (30d)</th>
+                <th class="py-2 px-3 text-right hidden sm:table-cell">Horas (30d)</th>
                 <th class="py-2 px-3 text-right">% Tempo</th>
                 <th class="py-2 px-3 text-right">Peso Prova</th>
-                <th class="py-2 px-3 w-32">Comparativo</th>
-                <th class="py-2 px-3 text-center">Diagnóstico</th>
+                <th class="py-2 px-3 w-32 hidden sm:table-cell">Comparativo</th>
+                <th class="py-2 px-3 text-center hidden sm:table-cell">Diagnóstico</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-subtle">
@@ -75,8 +75,11 @@ export function AllocationBalanceGrid({
                   <tr key={row.subjectId} class="hover:bg-surface-hover transition-colors">
                     <td class="py-2.5 px-3 font-medium text-content-primary">
                       {row.subjectName}
+                      <div class="sm:hidden mt-1 font-normal">
+                        <Badge variant={row.statusVariant}>{row.statusLabel}</Badge>
+                      </div>
                     </td>
-                    <td class="py-2.5 px-3 text-right text-content-secondary font-mono">
+                    <td class="py-2.5 px-3 text-right text-content-secondary font-mono hidden sm:table-cell">
                       {row.hoursSpent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}h
                     </td>
                     <td class="py-2.5 px-3 text-right font-medium text-content-primary font-mono">
@@ -85,7 +88,7 @@ export function AllocationBalanceGrid({
                     <td class="py-2.5 px-3 text-right text-content-secondary font-mono">
                       {row.examWeightPercent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}%
                     </td>
-                    <td class="py-2.5 px-3">
+                    <td class="py-2.5 px-3 hidden sm:table-cell">
                       <div class="relative w-full h-3 bg-surface-subtle rounded overflow-hidden" title={`Tempo: ${row.timePercent}% | Peso: ${row.examWeightPercent}%`}>
                         <div
                           class={`h-full rounded ${
@@ -104,7 +107,7 @@ export function AllocationBalanceGrid({
                         />
                       </div>
                     </td>
-                    <td class="py-2.5 px-3 text-center">
+                    <td class="py-2.5 px-3 text-center hidden sm:table-cell">
                       <Badge variant={row.statusVariant}>
                         {row.statusLabel}
                       </Badge>
@@ -132,13 +135,13 @@ export function AllocationBalanceGrid({
         </div>
       )}
 
-      <footer class="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-content-secondary">
+      <footer class="mt-3 pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary">
         <span class="flex items-center gap-1.5">
           <Icon name="info-circle" size={14} />
           <span>{summary}</span>
         </span>
         {!hasBlueprint && (
-          <span class="text-amber italic text-[11px]">
+          <span class="text-amber italic text-xs">
             Distribuição uniforme (edital não configurado)
           </span>
         )}

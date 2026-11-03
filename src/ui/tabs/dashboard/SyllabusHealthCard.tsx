@@ -18,7 +18,7 @@ export function SyllabusHealthCard({
 
   return (
     <article class="chart-card p-5" aria-labelledby="syllabusHealthTitle">
-      <div class="flex items-center justify-between mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
         <div>
           <h3 id="syllabusHealthTitle" class="font-semibold text-base text-content-primary m-0">
             Saúde do Edital por Disciplina
@@ -30,7 +30,7 @@ export function SyllabusHealthCard({
         {onNavigateSubjects ? (
           <button
             type="button"
-            class="text-xs font-data text-brand hover:underline flex items-center gap-1 font-medium cursor-pointer bg-transparent border-0 p-0"
+            class="btn tertiary"
             onClick={onNavigateSubjects}
           >
             <span>Ver no menu Disciplinas</span>
@@ -39,7 +39,7 @@ export function SyllabusHealthCard({
         ) : (
           <a
             href="#disciplinas"
-            class="text-xs font-data text-brand hover:underline flex items-center gap-1 font-medium"
+            class="btn tertiary"
           >
             <span>Ver no menu Disciplinas</span>
             <Icon name="arrow-right" size={12} />
@@ -62,16 +62,16 @@ export function SyllabusHealthCard({
                 key={subject.id}
                 class="p-2.5 rounded bg-surface-subtle border border-border-default"
               >
-                <div class="flex justify-between items-center text-xs mb-1.5 font-medium">
+                <div class="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-xs mb-1.5 font-medium">
                   <span class="font-semibold text-content-primary flex items-center gap-1.5">
                     <span>{subject.name}</span>
                     {isAttention && (
-                      <span class="text-[10px] px-1.5 py-0.2 rounded font-data bg-amber-bg text-amber font-semibold">
-                        Atenção
+                      <span class="text-xs px-1.5 py-0.2 rounded font-data bg-amber-bg text-amber font-semibold">
+                        Abaixo da meta
                       </span>
                     )}
                   </span>
-                  <span class="font-data text-content-secondary">
+                  <span class="font-data text-content-secondary whitespace-nowrap">
                     {hasAccuracy ? (
                       <>
                         <span class={isAttention ? 'text-amber font-semibold' : 'text-content-primary font-medium'}>
@@ -119,7 +119,7 @@ export function SyllabusHealthCard({
                       />
                     </div>
                     <span
-                      class={`text-[11px] font-data font-semibold min-w-[28px] text-right ${
+                      class={`text-xs font-data font-semibold min-w-[28px] shrink-0 whitespace-nowrap text-right ${
                         !hasAccuracy
                           ? 'text-content-secondary'
                           : isAttention

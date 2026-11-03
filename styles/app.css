@@ -1391,7 +1391,7 @@ input,select,textarea{font-size:max(1em,var(--text-sm))}
 .overview-action-card .overview-action-reason{font-size:var(--text-caption)}
 .overview-action-card .overview-action-resume{font-size:var(--text-caption);color:var(--heading)}
 .overview-action-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.overview-action-buttons .btn{min-height:42px}
+.overview-action-buttons .btn{min-height:var(--touch-target)}
 .overview-action-card .overview-action-suggestion{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:0;padding-top:12px;border-top:1px solid var(--paper-line);font-size:var(--text-sm)}
 .overview-action-explanation{grid-column:1/-1;padding-top:8px;border-top:1px solid var(--paper-line)}
 .overview-action-explanation summary{cursor:pointer;color:var(--heading);font:600 var(--text-micro) var(--font-body)}

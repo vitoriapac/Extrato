@@ -57,9 +57,24 @@ const MONTH_NAMES = [
   'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
 ];
 
-export function buildCockpitSidebarViewModel(state: any, explicitToday?: string): CockpitSidebarViewModel {
+/**
+ * Same sources as the Hoje tab: `studySessions` (date, durationSeconds), `questoes` (date, resolved),
+ * the weekly question goal and the unified review list. `goalMinutes` and `overdueCount` come from the
+ * goals service and the review selector, so both tabs answer the same question with the same number.
+ */
+export interface CockpitSidebarSources {
+  goalMinutes?: number;
+  reviews?: Array<Record<string, any>>;
+  overdueCount?: number;
+}
+
+export function buildCockpitSidebarViewModel(
+  state: any,
+  explicitToday?: string,
+  sources: CockpitSidebarSources = {}
+): CockpitSidebarViewModel {
   const safeState = state || {};
-  const todayISO = explicitToday || safeState.currentDate || formatLocalDate(new Date()) || '2026-11-02';
+  const todayISO = explicitToday || safeState.currentDate || formatLocalDate(new Date());
   const parsedToday = parseLocalDate(todayISO) || new Date();
 
   // 1. TODAY'S GOAL DATA
@@ -67,39 +82,32 @@ export function buildCockpitSidebarViewModel(state: any, explicitToday?: string)
   const monthName = MONTH_NAMES[parsedToday.getMonth()] || '';
   const dateLabel = `${dayOfMonth} de ${monthName}`;
 
-  // Calculate studied minutes today from historico
-  const historico = Array.isArray(safeState.historico) ? safeState.historico : [];
-  const studiedMinutesToday = historico
-    .filter((s: any) => {
-      const d = s.data || (typeof s.timestamp === 'string' ? s.timestamp.slice(0, 10) : null);
-      return d === todayISO;
-    })
-    .reduce((sum: number, s: any) => sum + (Number(s.duracao) || 0), 0);
-
-  // Planned minutes today
-  // Check daily plan or default availability
-  const plannedMinutesToday = (safeState.planoEstudos?.dias?.[todayISO]?.itens || []).reduce(
-    (sum: number, item: any) => sum + (Number(item.minutos) || 0),
-    0
-  ) || 180; // default 3h if no plan set
-
-  const percent = plannedMinutesToday > 0
-    ? Math.min(100, Math.round((studiedMinutesToday / plannedMinutesToday) * 100))
-    : 0;
-
-  // Questions done today
+  const sessions = Array.isArray(safeState.studySessions) ? safeState.studySessions : [];
   const questoes = Array.isArray(safeState.questoes) ? safeState.questoes : [];
-  const questionsDoneToday = questoes
-    .filter((q: any) => q.data === todayISO)
-    .reduce((sum: number, q: any) => sum + (Number(q.resolvidas) || 0), 0);
+  const minutesOn = (iso: string) =>
+    sessions
+      .filter((s: any) => s.date === iso)
+      .reduce((sum: number, s: any) => sum + (Number(s.durationSeconds) || 0), 0) / 60;
+  const questionsOn = (iso: string) =>
+    questoes
+      .filter((q: any) => q.date === iso)
+      .reduce((sum: number, q: any) => sum + (Number(q.resolved) || 0), 0);
 
-  const questionsTargetToday = safeState.metas?.questoesDia || 40;
+  const studiedMinutesToday = minutesOn(todayISO);
+  const plannedMinutesToday = Math.max(0, Math.round(Number(sources.goalMinutes) || 0));
+
+  const percent =
+    plannedMinutesToday > 0
+      ? Math.min(100, Math.round((studiedMinutesToday / plannedMinutesToday) * 100))
+      : 0;
+
+  const questionsTargetToday = Math.max(1, Math.round((safeState.metas?.questoesSemanal || 70) / 7));
 
   const todayGoal: TodayGoalData = {
     percent,
     studiedFormatted: formatMinutesDuration(studiedMinutesToday),
     plannedFormatted: formatMinutesDuration(plannedMinutesToday),
-    questionsDone: questionsDoneToday,
+    questionsDone: questionsOn(todayISO),
     questionsTarget: questionsTargetToday,
     dateLabel,
   };
@@ -113,16 +121,16 @@ export function buildCockpitSidebarViewModel(state: any, explicitToday?: string)
     'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom',
   ];
 
-  const revisoes = Array.isArray(safeState.revisoes) ? safeState.revisoes : [];
+  const revisoes = (Array.isArray(sources.reviews) ? sources.reviews : []).filter(
+    (r: any) => r.date && r.status !== 'Concluído'
+  );
   const days: ReviewLoadDay[] = [];
   let maxCount = 0;
   let peakDayName = '';
 
   for (let i = 0; i < 7; i++) {
     const dayDateISO = addLocalDays(mondayISO, i) || todayISO;
-    const count = revisoes.filter(
-      (r: any) => r.dataAgendada === dayDateISO && r.status !== 'concluida'
-    ).length;
+    const count = revisoes.filter((r: any) => r.date === dayDateISO).length;
 
     if (count > maxCount) {
       maxCount = count;
@@ -146,11 +154,11 @@ export function buildCockpitSidebarViewModel(state: any, explicitToday?: string)
     }
   });
 
-  const overdueCount = revisoes.filter(
-    (r: any) => r.dataAgendada && r.dataAgendada < todayISO && r.status !== 'concluida'
-  ).length;
+  const overdueCount =
+    sources.overdueCount ?? revisoes.filter((r: any) => r.date < todayISO).length;
 
   let tip = 'Carga de revisões bem distribuída para a semana.';
+  if (maxCount === 0 && overdueCount === 0) tip = 'Nenhuma revisão agendada para esta semana.';
   if (peakDayName && maxCount >= 3) {
     const fullDayName =
       peakDayName === 'Seg' ? 'Segunda-feira' :
@@ -159,9 +167,9 @@ export function buildCockpitSidebarViewModel(state: any, explicitToday?: string)
       peakDayName === 'Qui' ? 'Quinta-feira' :
       peakDayName === 'Sex' ? 'Sexta-feira' :
       peakDayName === 'Sáb' ? 'Sábado' : 'Domingo';
-    tip = `Dica: ${fullDayName} tem pico de ${maxCount} revisões agendadas.`;
+    tip = `${fullDayName} tem pico de ${maxCount} revisões agendadas.`;
   } else if (overdueCount > 0) {
-    tip = `Dica: você tem ${overdueCount} revisões acumuladas para revisar.`;
+    tip = `${overdueCount} ${overdueCount === 1 ? 'revisão atrasada' : 'revisões atrasadas'}.`;
   }
 
   const reviewLoad: WeeklyReviewLoadData = {
@@ -176,16 +184,8 @@ export function buildCockpitSidebarViewModel(state: any, explicitToday?: string)
 
   for (let i = 27; i >= 0; i--) {
     const dISO = addLocalDays(todayISO, -i) || todayISO;
-    const studiedMinutes = historico
-      .filter((s: any) => {
-        const d = s.data || (typeof s.timestamp === 'string' ? s.timestamp.slice(0, 10) : null);
-        return d === dISO;
-      })
-      .reduce((sum: number, s: any) => sum + (Number(s.duracao) || 0), 0);
-
-    const questionsDone = questoes
-      .filter((q: any) => q.data === dISO)
-      .reduce((sum: number, q: any) => sum + (Number(q.resolvidas) || 0), 0);
+    const studiedMinutes = Math.round(minutesOn(dISO));
+    const questionsDone = questionsOn(dISO);
 
     let level: 0 | 1 | 2 | 3 | 4 = 0;
     if (studiedMinutes >= 180) level = 4;

@@ -126,7 +126,7 @@ export function buildVolatileMasteryViewModel({
         daysBetweenAssessments: diagnostic.daysBetweenAssessments ?? 14,
         sampleQuestionsCount: diagnostic.sampleQuestionsCount,
         status: 'volatile',
-        statusLabel: isSevere ? 'Falsa Consolidação Severa' : 'Domínio Volátil',
+        statusLabel: isSevere ? 'Queda severa' : 'Queda de retenção',
         statusVariant: isSevere ? 'danger' : 'warning',
         recommendation:
           diagnostic.recommendedAction ||
@@ -142,9 +142,9 @@ export function buildVolatileMasteryViewModel({
   const topItems = volatileCandidates.slice(0, limit);
   const totalVolatileCount = volatileCandidates.length;
 
-  let summary = 'Nenhum sinal de falsa consolidação detectado nas revisões espaçadas.';
+  let summary = 'Nenhuma queda de retenção detectada entre as avaliações.';
   if (topItems.length > 0) {
-    summary = `${totalVolatileCount} ${totalVolatileCount === 1 ? 'tópico apresenta' : 'tópicos apresentam'} ilusão de competência (alto acerto inicial, mas queda após intervalo).`;
+    summary = `${totalVolatileCount} ${totalVolatileCount === 1 ? 'tópico apresenta' : 'tópicos apresentam'} queda de retenção (acerto alto no início e queda após o intervalo).`;
   }
 
   return {

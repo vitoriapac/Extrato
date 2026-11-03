@@ -327,7 +327,7 @@ test('VolatileMasteryGrid Preact Component — renderiza tópicos com falsa cons
       onScheduleReview: () => {},
     })
   );
-  assert.match(html, /Domínio Volátil/);
+  assert.match(html, /Queda de retenção/);
   assert.match(html, /Atos Administrativos/);
   assert.match(html, /-50 p\.p\./);
   assert.match(html, /100%/);

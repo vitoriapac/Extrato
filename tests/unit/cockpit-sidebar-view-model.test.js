@@ -1,78 +1,80 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildCockpitSidebarViewModel } from '../../src/application/analytics/build-cockpit-sidebar-view-model.js';
+import { buildConsistencyStrip } from '../../src/ui/renderers/consistency-strip-renderer.js';
+import { buildReviewLoad } from '../../src/ui/renderers/reviews-renderer.js';
 
-test('buildCockpitSidebarViewModel: gera estrutura consistente com estado vazio', () => {
-  const result = buildCockpitSidebarViewModel(null, '2026-11-02');
-  assert.ok(result.todayGoal);
+const todayISO = '2026-11-02'; // A Monday
+
+const state = {
+  studySessions: [
+    { id: 's1', date: todayISO, durationSeconds: 135 * 60 },
+    { id: 's2', date: '2026-11-01', durationSeconds: 90 * 60 },
+    { id: 's3', date: '2026-10-31', durationSeconds: 60 * 60 },
+  ],
+  questoes: [{ id: 'q1', date: todayISO, resolved: 38 }],
+  metas: { questoesSemanal: 280 },
+};
+
+const reviews = [
+  { id: 'r1', date: todayISO, status: 'Pendente' },
+  { id: 'r2', date: todayISO, status: 'Pendente' },
+  { id: 'r3', date: '2026-11-05', status: 'Pendente' }, // Qui
+  { id: 'r4', date: '2026-11-05', status: 'Pendente' },
+  { id: 'r5', date: '2026-11-05', status: 'Pendente' },
+  { id: 'r6', date: '2026-11-05', status: 'Pendente' },
+  { id: 'r7', date: '2026-10-30', status: 'Pendente' }, // overdue
+  { id: 'r8', date: '2026-11-03', status: 'Concluído' },
+];
+
+test('buildCockpitSidebarViewModel: estado vazio não inventa meta nem revisões', () => {
+  const result = buildCockpitSidebarViewModel(null, todayISO);
   assert.equal(result.todayGoal.percent, 0);
+  assert.equal(result.todayGoal.plannedFormatted, '0 min');
   assert.equal(result.todayGoal.questionsDone, 0);
-
-  assert.ok(result.reviewLoad);
   assert.equal(result.reviewLoad.days.length, 7);
   assert.equal(result.reviewLoad.overdueCount, 0);
-
-  assert.ok(result.consistency);
+  assert.match(result.reviewLoad.tip, /Nenhuma revisão agendada/);
   assert.equal(result.consistency.days.length, 28);
   assert.equal(result.consistency.activeDaysCount, 0);
 });
 
 test('buildCockpitSidebarViewModel: calcula meta do dia, revisões da semana e mini-heatmap', () => {
-  const todayISO = '2026-11-02'; // A Monday
-  const state = {
-    historico: [
-      { id: 's1', data: todayISO, duracao: 135 }, // 2h15
-      { id: 's2', data: '2026-11-01', duracao: 90 },
-      { id: 's3', data: '2026-10-31', duracao: 60 },
-    ],
-    questoes: [
-      { id: 'q1', data: todayISO, resolvidas: 38 },
-    ],
-    planoEstudos: {
-      dias: {
-        [todayISO]: {
-          itens: [
-            { minutos: 180 }, // 3h00
-          ],
-        },
-      },
-    },
-    metas: {
-      questoesDia: 40,
-    },
-    revisoes: [
-      { id: 'r1', dataAgendada: todayISO, status: 'pendente' },
-      { id: 'r2', dataAgendada: todayISO, status: 'pendente' },
-      { id: 'r3', dataAgendada: '2026-11-05', status: 'pendente' }, // Qui
-      { id: 'r4', dataAgendada: '2026-11-05', status: 'pendente' },
-      { id: 'r5', dataAgendada: '2026-11-05', status: 'pendente' },
-      { id: 'r6', dataAgendada: '2026-11-05', status: 'pendente' },
-      { id: 'r7', dataAgendada: '2026-10-30', status: 'pendente' }, // overdue
-    ],
-  };
+  const result = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 180, reviews });
 
-  const result = buildCockpitSidebarViewModel(state, todayISO);
-
-  // Today's Goal
-  assert.equal(result.todayGoal.percent, 75); // 135 / 180 = 75%
+  assert.equal(result.todayGoal.percent, 75); // 135 / 180
   assert.equal(result.todayGoal.studiedFormatted, '2h15');
   assert.equal(result.todayGoal.plannedFormatted, '3h00');
   assert.equal(result.todayGoal.questionsDone, 38);
-  assert.equal(result.todayGoal.questionsTarget, 40);
+  assert.equal(result.todayGoal.questionsTarget, 40); // 280 / 7
 
-  // Weekly Review Load
-  assert.equal(result.reviewLoad.days.length, 7);
   assert.equal(result.reviewLoad.overdueCount, 1);
   const qui = result.reviewLoad.days.find(d => d.dayName === 'Qui');
-  assert.ok(qui);
   assert.equal(qui.count, 4);
   assert.equal(qui.isPeak, true);
   assert.match(result.reviewLoad.tip, /Quinta-feira tem pico de 4 revisões/);
 
-  // Consistency Mini-Heatmap
-  assert.equal(result.consistency.days.length, 28);
   assert.equal(result.consistency.activeDaysCount, 3);
-  const todayHeatmap = result.consistency.days.find(d => d.isToday);
-  assert.ok(todayHeatmap);
-  assert.equal(todayHeatmap.level, 3); // 135 min >= 120 min
+  assert.equal(result.consistency.days.find(d => d.isToday).level, 3); // 135 min >= 120 min
+});
+
+test('paridade com Hoje: mesmos dias ativos, atrasadas e meta que a aba Hoje', () => {
+  const sidebar = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 120, reviews });
+
+  const strip = buildConsistencyStrip({
+    sessions: state.studySessions,
+    questions: state.questoes,
+    today: todayISO,
+  });
+  assert.equal(sidebar.consistency.activeDaysCount, strip.activeDays);
+
+  const load = buildReviewLoad(reviews, todayISO, 7);
+  assert.equal(sidebar.reviewLoad.overdueCount, load.overdue);
+
+  assert.equal(sidebar.todayGoal.plannedFormatted, '2h00');
+});
+
+test('overdueCount informado pelo seletor prevalece sobre o cálculo local', () => {
+  const result = buildCockpitSidebarViewModel(state, todayISO, { reviews, overdueCount: 9 });
+  assert.equal(result.reviewLoad.overdueCount, 9);
 });

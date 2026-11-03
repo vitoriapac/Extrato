@@ -69,7 +69,7 @@ export function PlateauDetectorCard({
             >
               <div>
                 <div class="flex items-start justify-between gap-2 mb-1.5">
-                  <span class="text-[11px] font-medium text-brand truncate max-w-[65%]">
+                  <span class="text-xs font-medium text-content-primary truncate max-w-[65%]">
                     {item.subjectName}
                   </span>
                   <Badge variant={item.strategyVariant}>
@@ -82,11 +82,11 @@ export function PlateauDetectorCard({
 
                 <div class="grid grid-cols-2 gap-2 p-2 rounded bg-surface-subtle text-xs mb-2.5">
                   <div>
-                    <span class="text-[10px] text-content-secondary block uppercase">Precisão Estagnada</span>
+                    <span class="text-xs text-content-secondary block uppercase">Precisão Estagnada</span>
                     <span class="font-bold font-mono text-amber text-sm">{item.averageAccuracy}%</span>
                   </div>
                   <div class="border-l border-border-subtle pl-2">
-                    <span class="text-[10px] text-content-secondary block uppercase">Volume / Janelas</span>
+                    <span class="text-xs text-content-secondary block uppercase">Volume / Janelas</span>
                     <span class="font-bold font-mono text-content-primary text-sm">
                       {item.questionCount} q · {item.weeksStagnant} sem
                     </span>
@@ -95,12 +95,12 @@ export function PlateauDetectorCard({
 
                 <div class="p-2 rounded bg-surface-card-muted border border-border-subtle mb-3 text-xs">
                   <div class="font-semibold text-content-primary mb-0.5">{item.headline}</div>
-                  <div class="text-[11px] text-content-secondary leading-relaxed">{item.rationale}</div>
+                  <div class="text-xs text-content-secondary leading-relaxed">{item.rationale}</div>
                 </div>
               </div>
 
               <div class="flex items-center justify-between pt-2 border-t border-border-subtle">
-                <span class="text-[10px] text-content-tertiary">
+                <span class="text-xs text-content-tertiary">
                   {item.confidenceLabel}
                 </span>
                 {onScheduleReview && (

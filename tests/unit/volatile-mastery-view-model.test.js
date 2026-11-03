@@ -59,5 +59,5 @@ test('buildVolatileMasteryViewModel retorna vazio quando não há quedas severas
   });
 
   assert.equal(model.volatileTopics.length, 0);
-  assert.match(model.summary, /Nenhum sinal de falsa consolidação/);
+  assert.match(model.summary, /Nenhuma queda de retenção detectada/);
 });

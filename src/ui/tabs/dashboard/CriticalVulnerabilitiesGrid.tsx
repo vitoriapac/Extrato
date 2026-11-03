@@ -28,10 +28,10 @@ export function CriticalVulnerabilitiesGrid({
               <h3 id="vulnerabilitiesGridTitle" class="text-base font-semibold text-content-primary m-0">
                 Radar de Vulnerabilidades Críticas
               </h3>
-              <Badge variant="warning">Top 4 Riscos</Badge>
+              <Badge variant="warning">4 maiores riscos</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Assuntos mais cobrados no concurso com rendimento abaixo da meta de corte
+              Tópicos mais cobrados no concurso com domínio abaixo da meta
             </p>
           </div>
         </div>
@@ -50,12 +50,12 @@ export function CriticalVulnerabilitiesGrid({
 
       {vulnerabilities.length === 0 ? (
         <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md">
-          <div class="inline-flex p-2 rounded-full bg-green-bg text-green mb-2">
-            <Icon name="circle-check" size={24} />
+          <div class="inline-flex p-2 rounded-full bg-surface-card text-content-secondary mb-2">
+            <Icon name="info-circle" size={24} />
           </div>
-          <p class="m-0 font-medium text-content-primary">Nenhuma vulnerabilidade crítica!</p>
+          <p class="m-0 font-medium text-content-primary">Nenhuma vulnerabilidade crítica no escopo</p>
           <p class="m-0 mt-1 text-xs">
-            Seus tópicos de alta incidência estão acima da meta de corte de aprovação.
+            Nenhum tópico de alta incidência abaixo da meta. Sem pesos do edital e questões registradas, o radar não tem o que medir.
           </p>
         </div>
       ) : (
@@ -67,7 +67,7 @@ export function CriticalVulnerabilitiesGrid({
             >
               <div>
                 <div class="flex items-start justify-between gap-2 mb-1.5">
-                  <span class="text-[11px] font-medium text-brand truncate max-w-[65%]">
+                  <span class="text-xs font-medium text-content-primary truncate max-w-[65%]">
                     {item.subjectName}
                   </span>
                   <Badge variant={item.urgencyVariant}>
@@ -97,8 +97,8 @@ export function CriticalVulnerabilitiesGrid({
               </div>
 
               <div class="flex items-center justify-between pt-2 border-t border-border-subtle">
-                <span class="text-[11px] text-red font-medium">
-                  Gap: -{item.gap} p.p.
+                <span class="text-xs text-red font-medium">
+                  Faltam {item.gap} p.p. para a meta
                 </span>
                 {onTrainTopic && (
                   <button
@@ -117,12 +117,14 @@ export function CriticalVulnerabilitiesGrid({
         </div>
       )}
 
-      <footer class="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-content-secondary">
-        <span class="flex items-center gap-1.5">
-          <Icon name="info-circle" size={14} />
-          <span>{summary}</span>
-        </span>
-      </footer>
+      {vulnerabilities.length > 0 && (
+        <footer class="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-content-secondary">
+          <span class="flex items-center gap-1.5">
+            <Icon name="info-circle" size={14} />
+            <span>{summary}</span>
+          </span>
+        </footer>
+      )}
     </article>
   );
 }

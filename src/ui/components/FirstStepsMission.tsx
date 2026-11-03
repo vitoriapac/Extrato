@@ -34,7 +34,7 @@ export function FirstStepsMission({
           data-first-steps-restore="true"
           onClick={onRestore}
           aria-label="Reexibir checklist de primeiros passos"
-          className="text-xs font-medium text-brand hover:text-primary"
+          className="text-xs font-medium text-content-primary hover:underline"
         >
           ↺ Reexibir guia de ativação
         </Button>

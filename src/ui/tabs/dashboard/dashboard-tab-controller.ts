@@ -61,6 +61,8 @@ export interface DashboardTabControllerDeps {
   recentPerformance?: () => { current?: { accuracy: number | null } | null } | any;
   projectPerformance?: () => { central?: number | null } | any;
   revisoesAtrasadas?: () => number;
+  getRevisoesUnificadas?: () => any[];
+  metaHoursToday?: () => number;
   diasParaRevisao?: (dateStr: string) => number | null;
   activateTab?: (tab: string) => void;
   renderAgenda?: () => void;
@@ -202,7 +204,11 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     // Grade Superior: Coluna Direita (Meta de Hoje + Carga de Revisões + Consistência 28 dias)
     const rightMount = doc.getElementById('cockpitRightColumnMount');
     if (rightMount) {
-      const sidebarModel = buildCockpitSidebarViewModel(state, today);
+      const sidebarModel = buildCockpitSidebarViewModel(state, today, {
+        goalMinutes: (deps.metaHoursToday?.() ?? 0) * 60,
+        reviews: deps.getRevisoesUnificadas?.() ?? [],
+        overdueCount: deps.revisoesAtrasadas?.(),
+      });
       mountCockpitSidebar(rightMount, {
         model: sidebarModel,
       });

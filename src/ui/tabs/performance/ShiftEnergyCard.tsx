@@ -20,7 +20,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
     <article class="chart-card shift-energy-card" aria-labelledby="shiftEnergyTitle">
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
-          <div class="p-1.5 rounded bg-surface-subtle text-brand">
+          <div class="p-1.5 rounded bg-surface-subtle text-accent">
             <Icon name="sun" size={20} />
           </div>
           <div>
@@ -53,7 +53,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
             >
               <div class="flex items-center justify-between gap-1 mb-2">
                 <div class="flex items-center gap-1.5">
-                  <div class={`p-1 rounded ${shift.isPeak ? 'text-brand bg-brand/10' : 'text-content-secondary bg-surface-subtle'}`}>
+                  <div class={`p-1 rounded ${shift.isPeak ? 'text-accent bg-accent/10' : 'text-content-secondary bg-surface-subtle'}`}>
                     <Icon name={iconName} size={16} />
                   </div>
                   <span class="text-xs font-semibold text-content-primary">
@@ -110,7 +110,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
         <div class="p-2.5 rounded-md bg-surface-subtle text-xs text-content-secondary space-y-1">
           {recommendations.map((rec, i) => (
             <div key={i} class="flex items-start gap-1.5">
-              <Icon name="check" size={14} className="shrink-0 text-brand mt-0.5" />
+              <Icon name="check" size={14} className="shrink-0 text-accent mt-0.5" />
               <span>{rec}</span>
             </div>
           ))}
