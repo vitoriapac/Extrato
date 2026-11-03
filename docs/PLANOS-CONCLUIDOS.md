@@ -535,15 +535,53 @@ Este ciclo foi disparado a partir de uma auditoria minuciosa simulando o primeir
 
 ---
 
-## 11. Rastreabilidade de Arquitetura e Governança
+## 11. Plano de Modernização Visual e Cockpit Panorâmico (Novembro 2026)
+
+Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md) cobrindo as 5 fases planejadas:
+
+### 11.1. Entregas Realizadas
+- **Fase 1 (Fundação Visual & Cores Oficiais):**
+  - Paleta Sálvia Suíça utilizando estritamente os design tokens do projeto (`--brand`, `--brand-secondary`, `--attention`, `--paper`, `--ink`, etc.), com contraste mínimo AA garantido.
+  - Raios ergonômicos padronizados: `--radius-card: 8px` e `--radius-control: 6px`.
+  - Botões organizados em 3 níveis no componente Preact [`Button`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/button.tsx), incluindo a nova variante `tonal`.
+- **Fase 2 (Iconografia Tabler & Primitivos):**
+  - Integração vetorial nativa do Tabler Icons através de `<Icon name="..." />` e `renderIconSvg(...)` em `Badge`, `EmptyState`, `MetricCard` e `Button`.
+  - Remoção de glifos soltos e emojis Unicode conforme a regra inegociável de zero emojis do `AGENTS.md`.
+- **Fase 3 (Cockpit Panorâmico & Gráficos SVG):**
+  - Primitivos gráficos em SVG puro em `src/ui/primitives/charts/` (`RingGauge`, `Sparkline`, `BulletBar`, `StackedBar`).
+  - Gráficos analíticos distribuídos sem sobrecarregar a Visão Geral.
+- **Fase 4 (Grids Analíticos de Decisão Pedagógica & Modelos Visuais):**
+  - **Grid 1 (Balanço de Alocação de Tempo vs. Peso no Edital):** [`AllocationBalanceGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/AllocationBalanceGrid.tsx) + [`build-allocation-balance-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-allocation-balance-view-model.ts).
+  - **Grid 2 (Radar de Vulnerabilidades Críticas):** [`CriticalVulnerabilitiesGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx) + [`build-critical-vulnerabilities-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-critical-vulnerabilities-view-model.ts).
+  - **Grid 3 (Diagnóstico de Domínio Volátil / Falsa Consolidação):** [`VolatileMasteryGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/VolatileMasteryGrid.tsx) + [`build-volatile-mastery-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-volatile-mastery-view-model.ts).
+  - **Grid 4 (Detector de Platô & Retorno Decrescente):** [`PlateauDetectorCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/PlateauDetectorCard.tsx) + [`build-plateau-detector-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-plateau-detector-view-model.ts) na aba Questões & Simulados.
+  - **Grid 5 (Eficiência & Energia Cronobiológica por Turno):** [`ShiftEnergyCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/performance/ShiftEnergyCard.tsx) + [`build-shift-energy-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-shift-energy-view-model.ts) na aba Desempenho.
+  - Redistribuição pura em memória de revisões atrasadas (`redistribute-overdue-reviews.ts`).
+- **Fase 5 (Fluxos, Confiança & PWA):**
+  - Mecanismo de Desfazer (`state-undo.ts`) preservando o histórico e reduzindo atrito de confirmações.
+  - Sub-abas no Planejamento para navegação focada.
+  - Atalhos no `manifest.webmanifest` e auditoria de build/offline.
+- **Governança & Linting:**
+  - Instalação e configuração do ESLint 9 via Flat Config (`eslint.config.js`) com `@babel/eslint-parser`, presets de TypeScript e Preact, e integração Prettier (0 erros em 979 arquivos).
+
+### 11.2. Validação e Qualidade
+- **Testes Unitários:** **1.249 testes passando** (100% verde em UTC e America/Sao_Paulo).
+- **Fast Gate:** Totalmente aprovado em **45.93s** (dentro da meta de 120s).
+- **Typecheck:** 0 erros com `npm run check:types` e `npm run check:types:tests`.
+- **Lint:** 0 erros e 0 warnings com `npm run lint`.
+
+---
+
+## 12. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
+- **Plano Diretor de Modernização Visual:** [docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 - **Plano Diretor de Modularização:** [docs/PLANO-MODULARIZACAO-APP.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODULARIZACAO-APP.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (321 arquivos auditados, 1.172 testes unitários verdes em ~36s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (350 arquivos auditados, 1.249 testes unitários verdes em ~46s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

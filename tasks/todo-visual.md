@@ -463,25 +463,35 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 Plano Diretor: [`docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 
-### Grids Analíticos de Decisão na Visão Geral (Cockpit)
-- [x] **Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital**
+### Grids Analíticos de Decisão na Visão Geral (Cockpit) & Modelos Visuais nas Demais Abas
+- [x] **Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital (Visão Geral)**
   - View-model: `src/application/analytics/build-allocation-balance-view-model.ts`
   - Componente: `src/ui/tabs/dashboard/AllocationBalanceGrid.tsx`
   - Testes: `tests/unit/allocation-balance-view-model.test.js`
-- [x] **Grid 2: Radar de Vulnerabilidades Críticas**
+- [x] **Grid 2: Radar de Vulnerabilidades Críticas (Visão Geral)**
   - View-model: `src/application/analytics/build-critical-vulnerabilities-view-model.ts`
   - Componente: `src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx`
   - Testes: `tests/unit/critical-vulnerabilities-view-model.test.js`
-- [x] **Grid 3: Diagnóstico de Domínio Volátil / Falsa Consolidação**
+- [x] **Grid 3: Diagnóstico de Domínio Volátil / Falsa Consolidação (Visão Geral)**
   - View-model: `src/application/analytics/build-volatile-mastery-view-model.ts`
   - Componente: `src/ui/tabs/dashboard/VolatileMasteryGrid.tsx`
   - Testes: `tests/unit/volatile-mastery-view-model.test.js`
+- [x] **Grid 4: Detector de Platô & Retorno Decrescente (Aba Questões & Simulados)**
+  - View-model: `src/application/analytics/build-plateau-detector-view-model.ts`
+  - Componente: `src/ui/tabs/questions/PlateauDetectorCard.tsx`
+  - Testes: `tests/unit/plateau-detector-view-model.test.js`
+- [x] **Grid 5: Eficiência & Energia Cronobiológica por Turno (Aba Desempenho)**
+  - View-model: `src/application/analytics/build-shift-energy-view-model.ts`
+  - Componente: `src/ui/tabs/performance/ShiftEnergyCard.tsx`
+  - Testes: `tests/unit/shift-energy-view-model.test.js`
 - [x] **Orquestração e Montagem Declarativa Preact**
-  - Integração em `src/ui/tabs/dashboard/dashboard-tab-controller.ts` via `mountPreact`
-  - Slots semânticos adicionados em `index.html` sob `#panel-dashboard`
-  - Testes Preact em `tests/unit/dashboard-components.test.js` e `tests/unit/preact-mount.test.js`
-- [x] **Governança e Verificação**
+  - Integração em `dashboard-tab-controller.ts`, `questions-tab-controller.ts` e `performance-tab-controller.ts` via `mountPreact`
+  - Slots semânticos adicionados em `index.html`: `#cockpitAllocationMount`, `#cockpitVulnerabilitiesMount`, `#cockpitVolatileMount`, `#plateauDetectorMount`, `#shiftEnergyMount`
+  - Resiliência para execução Node em `preact-mount.ts`
+- [x] **Governança, Linting e Verificação**
+  - ESLint 9 integrado via Flat Config (`eslint.config.js`) cobrindo TypeScript, Preact e Prettier
   - `npm run check:types` e `npm run check:types:tests`: 0 erros
-  - `npm run test:fast`: 1.243 testes unitários no Node passaram 100% (47.22 s)
+  - `npm run lint`: 0 erros e 0 warnings em 979 arquivos
+  - `npm run test:fast`: 1.249 testes unitários no Node passaram 100% (45.93 s)
   - `test-tiers.json` e `test-inventory.json` sincronizados e auditados
 

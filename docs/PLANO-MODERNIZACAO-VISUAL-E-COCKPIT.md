@@ -176,22 +176,30 @@ Contagem Regressiva da Prova (input date + dias restantes com barra de progresso
 
 ---
 
-## 4. Matriz de Entregas e Esforço Estimado
+## 4. Matriz de Entregas e Status de Execução
 
-| Fase | Escopo Principal | Arquivos Afetados | Esforço Estimado |
+| Fase | Escopo Principal | Arquivos Afetados | Status |
 |---|---|---|---|
-| **Fase 1** | Preservação das Cores Existentes + Tipografia, Bordas, Botões e Topo Compacto | `styles/tokens.css`, `styles/app.css`, `index.html`, `src/ui/primitives/button.tsx` | 2 a 3 dias |
-| **Fase 2** | Tabler Icons em Primitivos (`Badge`, `EmptyState`, `MetricCard`) e Navegação | `src/ui/primitives/*`, `scripts/generate-tabler-icons.mjs`, `index.html` | 2 a 3 dias |
-| **Fase 3** | Gráficos SVG no Cockpit (Anéis, Barras Empilhadas, Carga Semanal, Micro-KPIs) | `src/ui/primitives/charts/*`, `src/ui/tabs/dashboard/*` | 5 a 7 dias |
-| **Fase 4** | Grids Analíticos (1, 2, 3), Realocação para Abas, Modal de Onboarding e Revisões | `src/features/onboarding/*`, `src/ui/tabs/*`, `src/domain/analytics/*` | 5 a 7 dias |
-| **Fase 5** | Desfazer, Sub-abas, Atalhos PWA e Otimizações de Build | `src/ui/tabs/goals/*`, `manifest.webmanifest`, `scripts/build.mjs` | 4 a 6 dias |
+| **Fase 1** | Preservação das Cores Existentes + Tipografia, Bordas, Botões e Topo Compacto | `styles/tokens.css`, `styles/app.css`, `index.html`, `src/ui/primitives/button.tsx` | **Concluído** |
+| **Fase 2** | Tabler Icons em Primitivos (`Badge`, `EmptyState`, `MetricCard`, `Button`) e Navegação | `src/ui/primitives/*`, `scripts/generate-tabler-icons.mjs`, `index.html` | **Concluído** |
+| **Fase 3** | Gráficos SVG no Cockpit (Anéis, Barras Empilhadas, Carga Semanal, Micro-KPIs) | `src/ui/primitives/charts/*`, `src/ui/tabs/dashboard/*` | **Concluído** |
+| **Fase 4** | Grids Analíticos (1, 2, 3 na Visão Geral; 4 em Questões; 5 em Desempenho), Modal Onboarding e Revisões | `src/application/analytics/*`, `src/ui/tabs/*`, `index.html` | **Concluído** |
+| **Fase 5** | Desfazer (Undo), Sub-abas no Planejamento, Atalhos PWA e Otimizações de Build | `src/application/undo/*`, `src/ui/planning-subtabs.ts`, `manifest.webmanifest`, `scripts/build.mjs` | **Concluído** |
 
 ---
 
-## 5. Próximo Passo
+## 5. Histórico e Conclusão das Fases
 
-Iniciar a execução da **Fase 1**:
-1. Atualizar as variáveis de `:root` e `[data-theme="dark"]` em `styles/tokens.css` para a paleta Sálvia Suíça;
-2. Limpar instâncias de cores soltas em `styles/app.css`;
-3. Atualizar variantes e raios em `src/ui/primitives/button.tsx`;
-4. Validar tipos e sintaxe com `npm run check:types` e `npm run check:syntax`.
+Todas as 5 fases foram implementadas com 100% de conformidade com os contratos do projeto:
+1. **Fase 1:** Paleta Sálvia Suíça baseada estritamente nos tokens do repositório (`--brand`, `--brand-secondary`, `--attention`, etc.), bordas com `--radius-card: 8px` e `--radius-control: 6px`, botões em 3 níveis (com variante `tonal`) e cabeçalho compacto no mobile.
+2. **Fase 2:** Tabler Icons vetoriais integrados em todos os componentes primitivos, eliminando emojis e glifos ASCII soltos.
+3. **Fase 3:** Cockpit com gráficos SVG responsivos sem bibliotecas externas (RingGauge, Sparkline, BulletBar, StackedBar).
+4. **Fase 4:** Adição dos Grids Analíticos de Decisão:
+   - Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital (Visão Geral)
+   - Grid 2: Radar de Vulnerabilidades Críticas (Visão Geral)
+   - Grid 3: Diagnóstico de Domínio Volátil / Falsa Consolidação (Visão Geral)
+   - Grid 4: Detector de Platô & Retorno Decrescente (Aba Questões & Simulados)
+   - Grid 5: Eficiência & Energia Cronobiológica por Turno (Aba Desempenho)
+   - Redistribuição em memória de revisões atrasadas (`redistribute-overdue-reviews.ts`)
+5. **Fase 5:** Mecanismo de Desfazer (`state-undo.ts`), modo Essencial configurável (`studytrack.essential`), sub-abas no Planejamento, atalhos no `manifest.webmanifest` e auditoria de build e cache offline.
+6. **Governança & Qualidade:** ESLint 9 configurado via Flat Config para TypeScript/Preact/Prettier, `npm run check:types` limpo (0 erros) e `npm run test:fast` 100% aprovado com 1.249 testes unitários.
