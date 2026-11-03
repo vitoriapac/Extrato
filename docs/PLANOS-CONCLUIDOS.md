@@ -594,7 +594,7 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
   - 11 cartões pendentes de revisão hoje (`intervalDays = 1, repetition = 0`) para experimentação imediata e 6 cartões maduros/dominados (`intervalDays = 14..30`).
   - Metadados completos: organizadora (Cesgranrio, Cespe), armadilhas conceituais e regras mnemônicas de fixação.
 - **Calibração do Detector de Platô ([`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts)):**
-  - Calibração de precisão estagnada na janela móvel dos últimos 28 dias para *Concordância verbal* (~65% de acerto em 4 sessões) e *Operações compromissadas* (~55% de acerto em 4 sessões), com amostragem robusta (>= 40 questões).
+  - Calibração de precisão estagnada na janela móvel dos últimos 28 dias para *Concordância verbal* (~65% de acerto em 4 sessões) e *Determinantes* (~55% de acerto em 4 sessões), com amostragem robusta (>= 40 questões).
   - Prescrições pedagógicas ativas de *Recall Ativo* (`active_recall`) e *Revisão de Pré-requisitos* (`prerequisite_review`).
 - **Análise Cronobiológica de Energia e Turnos ([`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts), [`src/application/analytics/build-shift-energy-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-shift-energy-view-model.ts)):**
   - Distribuição das 200 sessões em turnos: Manhã (7h–10h, foco profundo e pico de rendimento), Tarde (13h–16h, foco normal) e Noite (19h–21h, foco distraído, energia baixa e alerta de fadiga no fechamento).

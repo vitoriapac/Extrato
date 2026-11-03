@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=97b562074ed4">
-<link rel="stylesheet" href="styles/app.css?v=97b562074ed4">
+<link rel="stylesheet" href="styles/tailwind.css?v=5e6eb7a7c21c">
+<link rel="stylesheet" href="styles/app.css?v=5e6eb7a7c21c">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -174,36 +174,39 @@
   <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
     <div id="performancePage"></div>
     <p class="sr-only" id="performanceStatus" role="status"></p>
-    <details class="chart-card overview-fold" id="performanceReadinessCard">
-      <summary>Diagnóstico aprofundado de prontidão e auditoria de projeções</summary>
+    <section class="chart-card intelligence-column performance-readiness" id="performanceReadinessCard" aria-labelledby="performanceReadinessTitle">
       <header class="module-heading"><span class="module-heading__eyebrow">Diagnóstico</span><h2 class="module-heading__title" id="performanceReadinessTitle">Índice de Prontidão e Projeções</h2></header>
       <div id="approvalDashboard"></div>
-    </details>
-    <details class="chart-card overview-fold" id="performance-progress">
-      <summary>Conquistas e progresso histórico</summary>
+    </section>
+    <section class="performance-progress" id="performance-progress" aria-labelledby="performanceProgressTitle">
       <header class="module-heading"><span class="module-heading__eyebrow">Evolução</span><h2 class="module-heading__title" id="performanceProgressTitle">Progresso e conquistas</h2></header>
       <div class="chart-card">
         <h3>Conquistas</h3>
         <div class="badges-grid" id="badgesGrid"></div>
       </div>
-      <div class="chart-card">
-        <h3>Evolução do progresso</h3>
-        <div id="progressChart"></div>
-      </div>
-      <div class="overview-pair">
+      <details class="chart-card overview-fold">
+        <summary>Evolução, progresso por disciplina e radar</summary>
         <div class="chart-card">
-          <h3>Progresso por disciplina</h3>
-          <div id="progressBars"></div>
+          <h3>Evolução do progresso</h3>
+          <div id="progressChart"></div>
         </div>
-        <div class="chart-card">
-          <h3>Radar de disciplinas</h3>
-          <p class="helper-text helper-text--compact">
-            Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
-          </p>
-          <div id="radarChart"></div>
+
+        <div class="overview-pair">
+          <div class="chart-card">
+            <h3>Progresso por disciplina</h3>
+            <div id="progressBars"></div>
+          </div>
+
+          <div class="chart-card">
+            <h3>Radar de disciplinas</h3>
+            <p class="helper-text helper-text--compact">
+              Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
+            </p>
+            <div id="radarChart"></div>
+          </div>
         </div>
-      </div>
-    </details>
+      </details>
+    </section>
     <div id="examIntelligenceParking" hidden>
       <div class="exam-intelligence-hub" id="examIntelligenceHub" data-advanced="Inteligência da prova">
         <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Histórico, incidência e impacto no concurso ativo. Questões históricas não alteram seu desempenho pessoal.</p></header>
@@ -975,7 +978,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=97b562074ed4"></script>
+  <script src="src/app.bundle.js?v=5e6eb7a7c21c"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

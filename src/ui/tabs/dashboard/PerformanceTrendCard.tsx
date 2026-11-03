@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
+import { formatDecimal } from '../../../core/format-number.js';
 import type {
   PerformanceTrendViewModel,
   PerformanceTrendPoint,
@@ -103,7 +104,7 @@ export function PerformanceTrendCard({
               Acertos (Questões)
             </span>
             <span class="text-sm font-semibold font-data text-content-primary">
-              {model.questionAccuracy != null ? `${model.questionAccuracy}%` : '—'}
+              {model.questionAccuracy != null ? `${formatDecimal(model.questionAccuracy)}%` : '—'}
             </span>
             <span class="text-[10px] text-content-secondary block truncate">
               {model.totalResolved > 0 ? `${model.totalResolved} resolvidas` : 'Sem registros'}
@@ -115,7 +116,7 @@ export function PerformanceTrendCard({
               Média dos Simulados
             </span>
             <span class="text-sm font-semibold font-data text-content-primary">
-              {model.simulationMean != null ? `${model.simulationMean}%` : '—'}
+              {model.simulationMean != null ? `${formatDecimal(model.simulationMean)}%` : '—'}
             </span>
             <span class="text-[10px] text-content-secondary block truncate">
               {model.simulationCount > 0
@@ -129,7 +130,7 @@ export function PerformanceTrendCard({
               Meta de Aprovação
             </span>
             <span class="text-sm font-semibold font-data text-content-primary">
-              {model.targetScore}%
+              {formatDecimal(model.targetScore)}%
             </span>
             <span class="text-[10px] text-content-secondary block">Alvo configurado</span>
           </div>
@@ -141,12 +142,12 @@ export function PerformanceTrendCard({
             <div>
               {model.status === 'ok' && (
                 <span class="text-xs px-1.5 py-0.5 rounded font-data bg-green-subtle text-green font-semibold inline-block">
-                  Na meta {model.gap != null && model.gap > 0 ? `(+${model.gap}%)` : ''}
+                  Na meta {model.gap != null && model.gap > 0 ? `(+${formatDecimal(model.gap)}%)` : ''}
                 </span>
               )}
               {model.status === 'attention' && (
                 <span class="text-xs px-1.5 py-0.5 rounded font-data bg-amber-subtle text-amber font-semibold inline-block">
-                  Abaixo {model.gap != null ? `(${model.gap}%)` : ''}
+                  Abaixo {model.gap != null ? `(${formatDecimal(model.gap)}%)` : ''}
                 </span>
               )}
               {model.status === 'insufficient' && (
@@ -213,7 +214,7 @@ export function PerformanceTrendCard({
                 text-anchor="end"
                 class="fill-amber text-[9px] font-data font-semibold"
               >
-                Meta {targetScore}%
+                Meta {formatDecimal(targetScore)}%
               </text>
 
               {/* Segmentos de Conexão das Questões */}
@@ -233,7 +234,7 @@ export function PerformanceTrendCard({
                     class="fill-surface-card stroke-green"
                     stroke-width="2"
                   >
-                    <title>{`${p.label}: ${p.questionAccuracy}% (${p.questionResolved} questões)`}</title>
+                    <title>{`${p.label}: ${formatDecimal(p.questionAccuracy)}% (${p.questionResolved} questões)`}</title>
                   </circle>
                 );
               })}
@@ -252,7 +253,7 @@ export function PerformanceTrendCard({
                       class="fill-brand stroke-surface-card"
                       stroke-width="2"
                     >
-                      <title>{`${p.simulationName || 'Simulado'} (${p.label}): ${p.simulationScore}%`}</title>
+                      <title>{`${p.simulationName || 'Simulado'} (${p.label}): ${formatDecimal(p.simulationScore)}%`}</title>
                     </circle>
                   </g>
                 );
@@ -289,7 +290,7 @@ export function PerformanceTrendCard({
             </span>
             <span class="inline-flex items-center gap-1.5">
               <span class="w-3 border-b border-dashed border-amber inline-block" />
-              <span>Meta ({targetScore}%)</span>
+              <span>Meta ({formatDecimal(targetScore)}%)</span>
             </span>
           </div>
           <span class="text-content-secondary text-[10px]">

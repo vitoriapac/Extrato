@@ -1,4 +1,5 @@
 import { addLocalDays } from '../../core/date-utils.js';
+import { formatDecimal } from '../../core/format-number.js';
 
 export interface PerformanceTrendPoint {
   date: string;
@@ -124,9 +125,9 @@ export function buildPerformanceTrendViewModel(
   let summaryText = 'Sem registros suficientes para calcular a tendência.';
   if (benchmarkScore != null) {
     if (gap != null && gap >= 0) {
-      summaryText = `Rendimento recente de ${benchmarkScore}% alinhado à meta de ${targetScore}%.`;
+      summaryText = `Rendimento recente de ${formatDecimal(benchmarkScore)}% alinhado à meta de ${formatDecimal(targetScore)}%.`;
     } else {
-      summaryText = `Rendimento recente de ${benchmarkScore}% está ${Math.abs(gap!)} p.p. abaixo da meta de ${targetScore}%.`;
+      summaryText = `Rendimento recente de ${formatDecimal(benchmarkScore)}% está ${formatDecimal(Math.abs(gap!))} p.p. abaixo da meta de ${formatDecimal(targetScore)}%.`;
     }
   }
 

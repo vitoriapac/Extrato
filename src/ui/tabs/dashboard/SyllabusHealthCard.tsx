@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
+import { formatDecimal } from '../../../core/format-number.js';
 import type {
   SyllabusHealthViewModel,
   SyllabusHealthSubject,
@@ -75,9 +76,9 @@ export function SyllabusHealthCard({
                     {hasAccuracy ? (
                       <>
                         <span class={isAttention ? 'text-amber font-semibold' : 'text-content-primary font-medium'}>
-                          {subject.accuracy}% acerto
+                          {formatDecimal(subject.accuracy)}% acerto
                         </span>{' '}
-                        <span class="text-content-secondary font-normal">(meta {subject.target}%)</span>
+                        <span class="text-content-secondary font-normal">(meta {formatDecimal(subject.target)}%)</span>
                       </>
                     ) : (
                       <span class="text-content-secondary">Sem questões registradas</span>
@@ -130,7 +131,7 @@ export function SyllabusHealthCard({
                       {!hasAccuracy
                         ? '—'
                         : isAttention
-                          ? `${subject.gap}%`
+                          ? `${formatDecimal(subject.gap)}%`
                           : 'OK'}
                     </span>
                   </div>

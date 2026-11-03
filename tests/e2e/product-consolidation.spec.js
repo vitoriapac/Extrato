@@ -175,7 +175,7 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'desempenho');
   const inspect = async stateName => {
     for (const [width, theme] of [
       [390, 'light'],
@@ -241,7 +241,7 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
   await page.getByRole('button', { name: 'Voltar à análise de origem' }).click();
   await expect(help).toBeFocused();
   await openDemo(page);
-  await activateTab(page, 'dashboard');
+  await activateTab(page, 'desempenho');
   await inspect('dense-demo');
 });
 

@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
 import { Badge } from '../../primitives/badge.js';
+import { formatDecimal } from '../../../core/format-number.js';
 import type { PlateauDetectorViewModel } from '../../../application/analytics/build-plateau-detector-view-model.js';
 
 export interface PlateauDetectorCardProps {
@@ -83,7 +84,7 @@ export function PlateauDetectorCard({
                 <div class="grid grid-cols-2 gap-2 p-2 rounded bg-surface-subtle text-xs mb-2.5">
                   <div>
                     <span class="text-xs text-content-secondary block uppercase">Precisão Estagnada</span>
-                    <span class="font-bold font-mono text-amber text-sm">{item.averageAccuracy}%</span>
+                    <span class="font-bold font-mono text-amber text-sm">{formatDecimal(item.averageAccuracy)}%</span>
                   </div>
                   <div class="border-l border-border-subtle pl-2">
                     <span class="text-xs text-content-secondary block uppercase">Volume / Janelas</span>

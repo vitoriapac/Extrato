@@ -1,4 +1,5 @@
 import { isHighImpact } from '../strategy/config.js';
+import { formatDecimal } from '../../core/format-number.js';
 // Same reading as the plan (1h20), so a weekly gap does not show up as thousands of minutes.
 type Row = Record<string, any>;
 const hoursAndMinutes = (minutes: number) => {
@@ -91,7 +92,7 @@ export function buildIntelligentAlerts({
           reason:
             subject.name +
             ' caiu ' +
-            Math.abs(subject.trend.delta || 0) +
+            formatDecimal(Math.abs(subject.trend.delta || 0)) +
             ' pontos no período analisado.',
           recommendedAction: 'Revise os erros recentes e reduza conteúdo novo nesta disciplina.',
         })

@@ -55,7 +55,7 @@ O builder determinístico [`src/demo/demo-builders/error-notebook.ts`](file:///c
 O builder de sessões [`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts) calibra 2 tópicos com estagnação de precisão na janela móvel dos últimos 28 dias com volume amostral robusto (>= 40 questões resolvidas):
 
 1. **Concordância verbal (Língua Portuguesa):** Taxa média de acerto calibrada em ~65% em 4 sessões consecutivas no último mês, ativando a prescrição pedagógica de **Recall Ativo (`active_recall`)** com foco em testes intercalados.
-2. **Operações compromissadas (Conhecimentos Bancários):** Taxa média de acerto calibrada em ~55% em 4 sessões consecutivas no último mês, ativando a prescrição pedagógica de **Revisão de Pré-requisitos (`prerequisite_review`)** para consolidar a base teórica de política monetária e títulos públicos.
+2. **Probabilidade condicional (Probabilidade e Estatística):** Taxa média de acerto calibrada em ~55% em 4 sessões consecutivas no último mês, ativando a prescrição pedagógica de **Revisão de Pré-requisitos (`prerequisite_review`)** para consolidar a base teórica de teoria dos conjuntos e probabilidade básica.
 
 O card [`PlateauDetectorCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/PlateauDetectorCard.tsx) na aba Questões & Simulados exibe esses diagnósticos com comparativos de tendência e ações de quebra de platô em 1 clique.
 

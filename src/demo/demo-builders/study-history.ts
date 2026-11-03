@@ -141,9 +141,9 @@ export function buildDemoStudyHistory(
   const plateauTopicA =
     entries.find((e: any) => e.topic.name === 'Concordância verbal') || genericEntries[0];
   const plateauTopicB =
-    entries.find((e: any) => e.topic.name === 'Operações compromissadas') || genericEntries[1];
-  const plateauSlotsA = new Set([128, 148, 168, 188]);
-  const plateauSlotsB = new Set([131, 151, 171, 191]);
+    entries.find((e: any) => e.topic.name === 'Determinantes') || genericEntries[1];
+  const plateauSlotsA = new Set([153, 163, 173, 188]);
+  const plateauSlotsB = new Set([156, 166, 176, 191]);
 
   slots.forEach((day: any, index: any) => {
     const type = types[index % types.length],
@@ -225,6 +225,10 @@ export function buildDemoStudyHistory(
         rate = forcedPlateauRate;
       } else if (entry.source?.narrativeRole) {
         rate = narrativeAccuracy(entry.source, day, historyDays);
+      } else if (entry.subject.id === 'demo-subject-6') {
+        rate = clamp(subjectRate + (random() - 0.5) * 6, 80, 95);
+      } else if (entry.topic.name === 'Probabilidade condicional') {
+        rate = 58;
       } else {
         const baseRate = phaseRate + (subjectRate - 70) * 0.55 + (random() - 0.5) * 10;
         const shiftModifier = hour < 12 ? 6 : hour >= 18 ? -18 : 0;

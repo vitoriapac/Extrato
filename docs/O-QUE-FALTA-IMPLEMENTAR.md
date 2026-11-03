@@ -119,7 +119,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 ### 2.6. Enriquecimento do Modo Demonstração (Dados Fictícios de Alta Fidelidade)
 
 - **Caderno de Erros Determinístico:** Builder modular [`src/demo/demo-builders/error-notebook.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/error-notebook.ts) gerando 17 flashcards SM-2 com pegadinhas de bancas (Cesgranrio, Cespe) e conceitos corretos; 11 cartões pendentes hoje e 6 dominados.
-- **Calibração do Detector de Platô:** Builder de sessões [`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts) calibrando 2 tópicos com estagnação comprovada em 28 dias (*Concordância verbal* e *Operações compromissadas*), gerando prescrições ativas de *Recall Ativo* e *Revisão de Pré-requisitos*.
+- **Calibração do Detector de Platô:** Builder de sessões [`src/demo/demo-builders/study-history.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/study-history.ts) calibrando 2 tópicos com estagnação comprovada em 28 dias (*Concordância verbal* e *Determinantes*), gerando prescrições ativas de *Recall Ativo* e *Revisão de Pré-requisitos*.
 - **Análise Cronobiológica e Fadiga:** Distribuição das 200 sessões em turnos com foco profundo na Manhã (pico) e esgotamento cognitivo na Noite (alerta de fadiga).
 - **Balanço de Alocação de Edital:** Injeção de pesos explícitos no edital verticalizado (`examBlueprint.subjects`) para Caixa e BB, permitindo cálculo exato de matérias sub/sobrealocadas.
 - **Navegação do Tour:** Banner da demo com novos atalhos para `Desempenho` e `Questões & Platô`, e atualização do diálogo explicativo de entrada.
