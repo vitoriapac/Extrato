@@ -277,6 +277,11 @@ O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, 
 
 Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 
+O Cockpit da Visão Geral é organizado em três camadas temáticas contínuas:
+- **Camada 1: Operação do Dia (8 + 4 colunas):** Próxima Ação Prioritária (8 cols) ladeada pela coluna de suporte com Meta Diária, Carga de Revisões e Mini-Heatmap de 28 dias (4 cols).
+- **Camada 2: Rendimento & Edital (6 + 6 colunas):** Saúde do Edital e Gráfico de Tendência de Acertos/Simulados espelhados em altura simétrica estrita (476px no desktop).
+- **Camada 3: Decisão Pedagógica (12 + 6 + 6 colunas):** Balanço de Alocação de Tempo vs Peso no Edital (12 cols com divulgação progressiva de 5 itens) e Duo Grids de Disciplinas Críticas e Tópicos para Revisar (6+6 cols).
+
 A Visão Geral tem seções recolhíveis (`details[data-remember]`), abertas no desktop e fechadas no celular, com a escolha lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
 
 A densidade compacta (`html[data-density="compact"]`) aperta a escala de espaço sem mudar tipografia nem alvos de toque.

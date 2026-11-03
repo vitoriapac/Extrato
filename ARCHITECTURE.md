@@ -56,6 +56,13 @@ flowchart TD
 - `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`, `Tabs`).
 - `src/ui/primitives/a11y.ts`: utilitários de acessibilidade e gerenciamento de anúncios `aria-live` para leitores de tela em tempo real (cronômetro e cards).
 - `src/ui/tabs/dashboard/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada, ponto de parada e estado acolhedor de boas-vindas no primeiro uso (`WelcomeHeroCard`).
+- `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`: card de Saúde do Edital com radar multidimensional, faixas de cobertura, domínio e retenção, e simetria de altura total (Camada 2).
+- `src/ui/tabs/dashboard/PerformanceTrendCard.tsx`: gráfico declarativo Preact com SVG puro da tendência móvel semanal de acertos de questões, notas de simulados e benchmark meta (Camada 2).
+- `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: coluna de suporte da Camada 1 com Meta do Dia (`DailyGoalProgressCard`), Carga de Revisões (`ReviewsLoadCard`) e Mini-Heatmap (`MiniConsistencyCard`).
+- `src/ui/tabs/dashboard/AllocationBalanceCard.tsx`: card do Balanço de Alocação de Tempo Investido vs Peso no Edital com divulgação progressiva (5 itens) e barra de progresso proporcional (Camada 3).
+- `src/ui/tabs/questions/PlateauDetectorCard.tsx`: card do Detector de Platô de Desempenho com diagnóstico de estagnação e prescrição metodológica na aba Questões & Simulados.
+- `src/ui/tabs/performance/ShiftEnergyCard.tsx`: card de análise cronobiológica de energia e eficiência por turno (Manhã, Tarde, Noite) na aba Desempenho.
+- `src/ui/components/FirstAccessModal.tsx` e `src/features/onboarding/first-access-detector.ts`: modal acessível de primeiro uso e detector puro com isolamento para automação/testes E2E.
 - `src/ui/components/FirstStepsMission.tsx`: checklist de onboarding para o primeiro uso com disparo direto da 1ª atividade planejada e ação de aquecimento rápido de 15 minutos.
 - `src/ui/components/SubjectTopicRow.tsx`: linha de tópico com bookmark contextual e ações rápidas.
 - `src/ui/components/WhatIfSimulatorModal.tsx` e `src/ui/controllers/what-if-controller.ts`: modal e controlador de simulação de cenários em memória.
@@ -115,6 +122,11 @@ flowchart TD
 - `src/domain/forecasts/what-if-simulator.ts`: simulação puramente em memória (`structuredCloneSafe`) para projetar variações de minutos/dia, foco e antecipação de prova.
 - `src/domain/planning/final-stretch-policy.ts`: política do Modo Reta Final com rebalanceamento 85/15 entre questões/revisão e teoria.
 - `src/domain/analytics/volatile-mastery.ts`: diagnóstico de ilusão de competência para tópicos com queda de retenção após 14 dias sem revisão.
+- `src/domain/analytics/plateau-detector.ts`: detecção pura de platô e estagnação de precisão em alto volume com prescrição metodológica.
+- `src/application/analytics/build-performance-trend-view-model.ts`: modelo de apresentação da tendência de acertos (8 baldes semanais), simulados, gap em relação à meta benchmark e resumo textual explicável.
+- `src/application/analytics/build-cockpit-sidebar-view-model.ts`: modelo de apresentação da coluna lateral de suporte do Cockpit (meta do dia com progresso reconciliado, carga de revisões pendentes/atrasadas e mini-heatmap de consistência dos últimos 28 dias).
+- `src/application/analytics/build-syllabus-health-view-model.ts`: modelo de apresentação da Saúde do Edital com distribuição de cobertura, domínio e retenção ponderados pelo peso das matérias.
+- `src/application/analytics/build-allocation-balance-view-model.ts`: modelo de apresentação do balanço de esforço investido vs peso no edital com percentual proporcional e cálculo de sobre/sub-alocação.
 - `src/application/subjects/raw-syllabus-parser.ts`: parser de edital bruto e texto de PDF (Cebraspe, FCC, FGV) com árvore estruturada e prévia.
 - `src/domain/planning/study-cycle-engine.ts`: motor do ciclo de estudos com fila rotativa circular intercalada e avanço sem acúmulo de falsos atrasos.
 - `src/domain/notebook/error-notebook-engine.ts`: motor puro de repetição espaçada (SM-2 adaptado) para flashcards de erro com pegadinha da banca e conceito correto (especificação e contratos em `docs/CADERNO-ERROS-SM2-CONTRATO.md`).
@@ -183,6 +195,23 @@ flowchart TD
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
 - `service-worker.template.js`: fonte do service worker; `service-worker.js` é gerado com a versão do cache.
 - `styles/print.css`: apresentação A4 do relatório exportado pela impressão do navegador.
+
+## Cockpit Panorâmico (Visão Geral)
+
+A aba Visão Geral foi arquitetada como um **Cockpit Panorâmico em 3 Camadas Temáticas**, garantindo leitura fluida de cima para baixo, da operação diária imediata até a decisão pedagógica estratégica:
+
+1. **Camada 1: Operação do Dia (`.cockpit-top-grid`, 8 + 4 colunas em desktop):**
+   - **Coluna Esquerda (8 cols):** Próxima Ação Prioritária (`NextActionCard.tsx`) com resposta às 6 perguntas contratuais, tempo sugerido, ponto de parada (bookmark) e estado acolhedor no primeiro uso (`WelcomeHeroCard`).
+   - **Coluna Direita (4 cols, `CockpitSidebarCards.tsx`):** Três cards de contexto operacional com altura compacta — Meta Diária (`DailyGoalProgressCard` com horas feitas vs meta), Carga de Revisões (`ReviewsLoadCard` com contagem de pendentes e atrasadas e link para a Agenda) e Consistência Recente (`MiniConsistencyCard` com mini-heatmap SVG dos últimos 28 dias).
+2. **Camada 2: Rendimento & Edital (`.cockpit-performance-grid`, 6 + 6 colunas em desktop):**
+   - **Coluna Esquerda (6 cols, `SyllabusHealthCard.tsx`):** Painel de Saúde do Edital com radar multidimensional e barras de distribuição de cobertura teórica, domínio de questões e retenção mnemônica.
+   - **Coluna Direita (6 cols, `PerformanceTrendCard.tsx`):** Gráfico de linha vetorial SVG puro exibindo a taxa móvel semanal de acertos em 8 semanas, dispersão de notas de simulados e linha guia de meta benchmark (`75%` ou configurada), com resumo textual explicável.
+   - **Simetria Vertical Estrita:** Ambos os blocos utilizam `flex flex-col justify-between h-full` para travar em 476px no desktop, eliminando lacunas assimétricas.
+3. **Camada 3: Decisão Pedagógica (`.cockpit-decision-grids`, 12 + 6 + 6 colunas):**
+   - **Balanço de Alocação (`AllocationBalanceCard.tsx`, 12 cols):** Comparativo visual de Tempo Investido vs Peso no Edital por matéria, com barra de distribuição e regra de divulgação progressiva (5 visíveis + "+N matérias" com `aria-expanded`).
+   - **Duo Grids Analíticos (6 + 6 cols):** Matérias Críticas que Demandam Atenção (`#dashboardAttentionSubjects`) e Tópicos Prioritários para Revisar (`#dashboardPriorityTopics`).
+
+As métricas detalhadas de questões (`#kpiGrid`) foram movidas cirurgicamente para a aba **Questões & Simulados** (ao lado do `PlateauDetectorCard.tsx`), e o grid de tópicos (`#quickStats`) para a aba **Disciplinas**.
 
 ## Fluxo de dependências
 

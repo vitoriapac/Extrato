@@ -8,6 +8,11 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 
 - Disciplinas e tópicos com dificuldade, importância para a prova, esforço e pré-requisitos.
 - Planejamento semanal e diário baseado na disponibilidade, necessidade e saldo de capacidade.
+- Cockpit Panorâmico na Visão Geral estruturado em 3 Camadas Temáticas: Operação do Dia (8+4 colunas com Próxima Ação e Coluna de Suporte com Meta, Revisões e Consistência), Rendimento & Edital (6+6 colunas com Saúde do Edital e Gráfico de Tendência de Acertos & Simulados) e Decisão Pedagógica (Balanço de Alocação de Tempo vs Peso com expansão progressiva e Duo Grids de Disciplinas e Tópicos Críticos).
+- Gráfico de Tendência de Acertos e Simulados com taxa móvel semanal de acertos, dispersão de notas de simulados, meta benchmark e resumo textual explicável.
+- Detector de Platô de Desempenho na aba Questões & Simulados, alertando estagnação de precisão em alto volume com recomendações de quebra de platô.
+- Eficiência e Energia Cronobiológica por Turno na aba Desempenho, correlacionando foco e disposição em Manhã, Tarde e Noite com rendimento real.
+- Modal de primeiro acesso acolhedor e acessível para guiar a configuração inicial ou exploração imediata da demonstração, com isolamento automático em testes automatizados.
 - Card Hoje na Visão Geral com próxima atividade, progresso reconciliado e distinção entre estudo adicional e cumprimento do plano.
 - Cronômetro, histórico de sessões, questões e simulados.
 - Revisões espaçadas, agenda, calendário e replanejamento.
@@ -301,6 +306,11 @@ O histórico de evolução e entregas do StudyTrack foi consolidado em [Planos C
    - **Pure Composition Root:** Redução do `src/app.ts` de **10.921 linhas** (473 funções) para **146 linhas (-98,7%)**, cumprindo integralmente a diretriz de zero regras de negócio no ponto de entrada ([PLANO-MODULARIZACAO-APP.md](docs/PLANO-MODULARIZACAO-APP.md)).
    - **Arquitetura em Camadas Estritas:** Extração completa de motores de domínio (`src/domain/`), serviços e fachadas de aplicação (`src/application/`), controladores de abas/modais (`src/ui/tabs/`, `src/features/`) e composição de bootstrap (`src/bootstrap/`).
    - **Homologação Completa:** 1.154 testes unitários no Node rodando em ~43s (UTC e `America/Sao_Paulo`) e 100% de aprovação na suíte Full + Visual Windows do GitHub Actions.
+8. **Modernização Visual, Cockpit Panorâmico & Experiência de Dados (Concluída):**
+   - **Cockpit Panorâmico em 3 Camadas Temáticas:** Visão Geral reorganizada em Camada 1: Operação do Dia (8+4 colunas com Próxima Ação e Coluna de Suporte com Meta Diária, Carga de Revisões e Mini-Heatmap de Consistência 28d), Camada 2: Rendimento & Edital (6+6 colunas com Saúde do Edital e Gráfico de Tendência de Acertos & Simulados com simetria vertical estrita de 476px), e Camada 3: Decisão Pedagógica (Balanço de Alocação de Tempo vs Peso com divulgação progressiva de 5 itens e Duo Grids de Disciplinas e Tópicos Críticos).
+   - **Novos Motores e Componentes Analíticos:** Gráfico SVG responsivo de tendência móvel de 8 semanas (`PerformanceTrendCard.tsx` + `build-performance-trend-view-model.ts`), Detector de Platô de Desempenho (`PlateauDetectorCard.tsx` + `plateau-detector.ts`) na aba Questões & Simulados, e Eficiência Cronobiológica por Turno (`ShiftEnergyCard.tsx`) na aba Desempenho.
+   - **Realocação Funcional de Grids e Modal de Primeiro Acesso:** Grid de Questões (`#kpiGrid`) realocado cirurgicamente para Questões & Simulados, Grid de Tópicos (`#quickStats`) para Disciplinas, e onboarding inicial transformado em modal acessível (`FirstAccessModal.tsx`) com detecção automática de automação e isolamento em testes E2E.
+   - **Qualidade e Governança:** ESLint 9 Flat Config (`eslint.config.js`), 1.276 testes unitários no Node rodando em ~51s e validação estrita de tipos com zero erros.
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 

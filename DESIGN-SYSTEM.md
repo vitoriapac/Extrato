@@ -146,12 +146,20 @@ A migração incremental da interface introduziu componentes funcionais Preact p
 | --------------- | ---------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
 | **Disciplinas** | `<SubjectTopicManager />`                | `src/ui/tabs/disciplinas/SubjectTopicManager.tsx` | Gerenciamento de disciplinas, tópicos, importância, esforço e bookmarks |
 | **Questões**    | `<QuestionsTable />`                     | `src/ui/tabs/questoes/QuestionsTable.tsx`         | Histórico progressivo de questões, acertos, erros e filtros contextuais |
+| **Questões**    | `<PlateauDetectorCard />`                | `src/ui/tabs/questions/PlateauDetectorCard.tsx`   | Diagnóstico de platô de desempenho e prescrição de quebra de estagnação |
 | **Simulados**   | `<SimulationsTable />`                   | `src/ui/tabs/questoes/SimulationsTable.tsx`       | Lista e cadastro de simulados completos com notas e metas               |
+| **Desempenho**  | `<ShiftEnergyCard />`                    | `src/ui/tabs/performance/ShiftEnergyCard.tsx`     | Análise cronobiológica de energia e eficiência por turno                |
 | **Revisões**    | `<ReviewsSchedule />`                    | `src/ui/tabs/revisoes/ReviewsSchedule.tsx`        | Fila de revisões adaptativas, cartões de urgência e ações rápidas       |
 | **Calendário**  | `<CalendarView />` / `<CalendarTable />` | `src/ui/tabs/calendar/`                           | Visão mensal interativa e grade operacional de estudo                   |
 | **Metas**       | `<WeeklyGoals />`                        | `src/ui/tabs/metas/WeeklyGoals.tsx`               | Distribuição de capacidade, horas planejadas e metas semanais           |
 | **Hoje**        | `<TodaySchedule />`                      | `src/ui/tabs/hoje/TodaySchedule.tsx`              | Próxima melhor ação, cronograma do dia e execução em tempo real         |
+| **Visão Geral** | `<NextActionCard />`                     | `src/ui/tabs/dashboard/NextActionCard.tsx`        | Próxima ação com 6 respostas e acolhimento de boas-vindas               |
+| **Visão Geral** | `<CockpitSidebarCards />`                | `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`   | Coluna de suporte: Meta diária, Carga de revisões e Mini-heatmap 28d   |
+| **Visão Geral** | `<SyllabusHealthCard />`                 | `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`    | Saúde do edital com radar multidimensional e faixas de domínio         |
+| **Visão Geral** | `<PerformanceTrendCard />`               | `src/ui/tabs/dashboard/PerformanceTrendCard.tsx`  | Gráfico SVG puro de evolução de acertos de questões e simulados         |
+| **Visão Geral** | `<AllocationBalanceCard />`              | `src/ui/tabs/dashboard/AllocationBalanceCard.tsx` | Balanço de esforço vs peso no edital com divulgação progressiva (5 itens) |
 | **Visão Geral** | `<DashboardOverview />`                  | `src/ui/tabs/visao-geral/DashboardOverview.tsx`   | Painel executivo, índices de prontidão e KPIs resumidos                 |
+| **Onboarding**  | `<FirstAccessModal />`                   | `src/ui/components/FirstAccessModal.tsx`          | Modal acessível de primeiro acesso para início guiado ou demo          |
 
 Componentes novos devem reutilizar esses contratos antes de criar variantes. Matrizes e comparações mantêm a visualização simultânea dos dados.
 
@@ -169,6 +177,32 @@ Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes
 - **Textos:** `text-primary`, `text-secondary`, `text-muted`, `text-on-brand`, `text-green`, `text-amber`, `text-red`.
 - **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default` (raio de card), `rounded` (raio de controle).
 - **Tipografia:** `font-body` (IBM Plex Sans), `font-display` (Fraunces), `font-data` (IBM Plex Mono).
+
+## Padrão de Cockpit Panorâmico em 3 Camadas Temáticas
+
+O Cockpit da Visão Geral adota uma grade CSS Grid de 12 colunas (`lg:grid-cols-12`) organizada em três camadas semânticas estritas, guiando a leitura do operacional imediato até a decisão pedagógica estratégica:
+
+```mermaid
+flowchart TD
+    subgraph C1 ["Camada 1: Operação do Dia (8 + 4 cols)"]
+        NA["Próxima Ação (NextActionCard, 8 cols)"]
+        SIDE["Meta + Revisões + Consistência 28d (CockpitSidebarCards, 4 cols)"]
+    end
+    subgraph C2 ["Camada 2: Rendimento & Edital (6 + 6 cols, Altura Simétrica 476px)"]
+        SH["Saúde do Edital (SyllabusHealthCard, 6 cols)"]
+        PT["Evolução de Acertos & Simulados (PerformanceTrendCard, 6 cols)"]
+    end
+    subgraph C3 ["Camada 3: Decisão Pedagógica"]
+        AB["Balanço de Alocação Tempo vs Peso (AllocationBalanceCard, 12 cols, máx 5 visíveis)"]
+        DG1["Disciplinas que Demandam Atenção (6 cols)"]
+        DG2["Tópicos Prioritários para Revisar (6 cols)"]
+    end
+    C1 --> C2 --> C3
+```
+
+- **Camada 1 (Operação do Dia):** O card de Próxima Ação domina 8 colunas, apoiado pela coluna lateral de 4 colunas com a Meta Diária (barra de progresso e saldo), Carga de Revisões (urgência) e Mini-Heatmap de Consistência (últimos 28 dias).
+- **Camada 2 (Rendimento & Edital):** Paridade horizontal de 6 + 6 colunas entre a Saúde do Edital (cobertura/domínio/retenção) e o Gráfico de Evolução de Acertos e Simulados (8 semanas móveis com dispersão e benchmark). Ambos possuem `flex flex-col justify-between h-full` para travar em 476px no desktop, eliminando lacunas de espaço em branco.
+- **Camada 3 (Decisão Pedagógica):** O Balanço de Alocação de Tempo Investido vs Peso no Edital ocupa 12 colunas com divulgação progressiva (padrão de 5 itens visíveis e botão `+N matérias` com `aria-expanded`), seguido pelos Duo Grids analíticos de 6 + 6 colunas.
 
 ## Histórico explicável de prontidão
 

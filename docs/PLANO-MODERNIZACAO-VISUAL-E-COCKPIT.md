@@ -217,4 +217,4 @@ Todas as 5 fases foram implementadas com 100% de conformidade com os contratos d
    - **Realocação de Grids:** `#kpiGrid` (Questões e Simulados) movido para a aba Questões e `#quickStats` (Tópicos) movido para a aba Disciplinas.
    - Modal Dialog de Onboarding automático no primeiro uso e redistribuição em memória de revisões atrasadas (`redistribute-overdue-reviews.ts`).
 5. **Fase 5:** Mecanismo de Desfazer (`state-undo.ts`), modo Essencial configurável (`studytrack.essential`), sub-abas no Planejamento, atalhos no `manifest.webmanifest` e auditoria de build e cache offline.
-6. **Governança & Qualidade:** ESLint 9 configurado via Flat Config para TypeScript/Preact/Prettier, `npm run check:types` limpo (0 erros) e `npm run test:fast` 100% aprovado com 1.256 testes unitários.
+6. **Governança & Qualidade:** ESLint 9 configurado via Flat Config para TypeScript/Preact/Prettier, `npm run check:types` limpo (0 erros) e `npm run test:fast` 100% aprovado com 1.276 testes unitários no Node rodando em ~51s.
