@@ -4,6 +4,7 @@ Este documento consolida, unifica e preserva o histórico técnico e arquitetura
 
 > [!NOTE]
 > Para o planejamento ativo e os horizontes futuros do projeto, consulte:
+> - **Plano Diretor de Modernização Visual e Cockpit Panorâmico:** [docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 > - **Plano Ativo (Próximas Evoluções em Inteligência, UX e Engenharia):** [docs/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-PROXIMAS-EVOLUCOES.md)
 > - **Plano Futuro de Infraestrutura e SaaS:** [docs/PLANO-TRANSFORMACAO-SAAS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-TRANSFORMACAO-SAAS.md)
 > - **Painel Geral de Pendências e Status:** [docs/O-QUE-FALTA-IMPLEMENTAR.md](file:///c:/Users/vitor/Documents/Extrato/docs/O-QUE-FALTA-IMPLEMENTAR.md)

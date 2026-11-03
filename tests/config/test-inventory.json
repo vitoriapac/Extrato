@@ -2368,6 +2368,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/allocation-balance-view-model.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/application/analytics/build-allocation-balance-view-model.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/analytics-view-model.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -3111,6 +3141,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/critical-vulnerabilities-view-model.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/application/analytics/build-critical-vulnerabilities-view-model.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/crypto-utils.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -3255,9 +3315,15 @@
         "../../src/ui/tabs/dashboard/QuickStatsGrid.js",
         "../../src/ui/tabs/dashboard/SubjectProgressList.js",
         "../../src/ui/tabs/dashboard/UpcomingReviewsList.js",
+        "../../src/ui/tabs/dashboard/AllocationBalanceGrid.js",
+        "../../src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.js",
+        "../../src/ui/tabs/dashboard/VolatileMasteryGrid.js",
+        "../../src/application/analytics/build-allocation-balance-view-model.js",
+        "../../src/application/analytics/build-critical-vulnerabilities-view-model.js",
+        "../../src/application/analytics/build-volatile-mastery-view-model.js",
         "../../src/ui/tabs/dashboard/dashboard-tab-controller.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 10,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -10209,6 +10275,36 @@
         "../../src/ui/evidence-state.js"
       ],
       "staticTestDeclarations": 10,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/volatile-mastery-view-model.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/application/analytics/build-volatile-mastery-view-model.js"
+      ],
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

@@ -5,6 +5,21 @@ import { QuickStatsGrid, type QuickStatsData } from './QuickStatsGrid.js';
 import { SubjectProgressList, type SubjectProgressItem } from './SubjectProgressList.js';
 import { UpcomingReviewsList, type UpcomingReviewItem } from './UpcomingReviewsList.js';
 import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
+import {
+  AllocationBalanceGrid,
+  type AllocationBalanceGridProps,
+} from './AllocationBalanceGrid.js';
+import {
+  CriticalVulnerabilitiesGrid,
+  type CriticalVulnerabilitiesGridProps,
+} from './CriticalVulnerabilitiesGrid.js';
+import {
+  VolatileMasteryGrid,
+  type VolatileMasteryGridProps,
+} from './VolatileMasteryGrid.js';
+import { buildAllocationBalanceViewModel } from '../../../application/analytics/build-allocation-balance-view-model.js';
+import { buildCriticalVulnerabilitiesViewModel } from '../../../application/analytics/build-critical-vulnerabilities-view-model.js';
+import { buildVolatileMasteryViewModel } from '../../../application/analytics/build-volatile-mastery-view-model.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
@@ -122,6 +137,87 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
   function mountUpcomingList(container: Element, items: UpcomingReviewItem[]): void {
     mountPreact(h(UpcomingReviewsList, { items }), container);
+  }
+
+  function renderAllocationBalanceHtml(props: AllocationBalanceGridProps): string {
+    return render(h(AllocationBalanceGrid, props));
+  }
+
+  function mountAllocationBalance(container: Element, props: AllocationBalanceGridProps): void {
+    mountPreact(h(AllocationBalanceGrid, props), container);
+  }
+
+  function renderCriticalVulnerabilitiesHtml(props: CriticalVulnerabilitiesGridProps): string {
+    return render(h(CriticalVulnerabilitiesGrid, props));
+  }
+
+  function mountCriticalVulnerabilities(
+    container: Element,
+    props: CriticalVulnerabilitiesGridProps
+  ): void {
+    mountPreact(h(CriticalVulnerabilitiesGrid, props), container);
+  }
+
+  function renderVolatileMasteryHtml(props: VolatileMasteryGridProps): string {
+    return render(h(VolatileMasteryGrid, props));
+  }
+
+  function mountVolatileMastery(container: Element, props: VolatileMasteryGridProps): void {
+    mountPreact(h(VolatileMasteryGrid, props), container);
+  }
+
+  function renderCockpitDecisionGrids(): void {
+    if (!doc) return;
+    const state = deps.getState ? deps.getState() : {};
+    const today = todayISO();
+
+    // 1. Balanço de Alocação de Tempo vs. Peso no Edital
+    const allocMount = doc.getElementById('cockpitAllocationMount');
+    if (allocMount) {
+      const allocModel = buildAllocationBalanceViewModel({
+        subjects: state.subjects || [],
+        sessions: state.studySessions || [],
+        blueprint: state.examBlueprint || {},
+        today,
+        addDays,
+      });
+      mountAllocationBalance(allocMount, {
+        model: allocModel,
+        onNavigatePlanning: () => navigateKpi('metas'),
+      });
+    }
+
+    // 2. Radar de Vulnerabilidades Críticas
+    const vulMount = doc.getElementById('cockpitVulnerabilitiesMount');
+    if (vulMount) {
+      const vulModel = buildCriticalVulnerabilitiesViewModel({
+        subjects: state.subjects || [],
+        blueprint: state.examBlueprint || {},
+        metricsByTopic: state.metricsByTopic || {},
+        activeExamTags: state.examBlueprint?.activeExamTags || [],
+        limit: 4,
+      });
+      mountCriticalVulnerabilities(vulMount, {
+        model: vulModel,
+        onTrainTopic: (_topicId, _subjectId) => navigateKpi('questoes'),
+        onViewIntelligence: () => navigateKpi('desempenho'),
+      });
+    }
+
+    // 3. Diagnóstico de Domínio Volátil / Falsa Consolidação
+    const volMount = doc.getElementById('cockpitVolatileMount');
+    if (volMount) {
+      const volModel = buildVolatileMasteryViewModel({
+        subjects: state.subjects || [],
+        questoes: state.questoes || [],
+        limit: 4,
+      });
+      mountVolatileMastery(volMount, {
+        model: volModel,
+        onScheduleReview: (_topicId, _subjectId) => navigateKpi('agenda'),
+        onViewRetentionAnalysis: () => navigateKpi('desempenho'),
+      });
+    }
   }
 
   function renderKPIs(): void {
@@ -521,6 +617,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
           `<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
       }
     }
+
+    renderCockpitDecisionGrids();
   }
 
   return {
@@ -533,6 +631,13 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     mountProgressBars,
     renderUpcomingListHtml,
     mountUpcomingList,
+    renderAllocationBalanceHtml,
+    mountAllocationBalance,
+    renderCriticalVulnerabilitiesHtml,
+    mountCriticalVulnerabilities,
+    renderVolatileMasteryHtml,
+    mountVolatileMastery,
+    renderCockpitDecisionGrids,
     renderKPIs,
     renderExamProgress,
     renderExamCountdown,

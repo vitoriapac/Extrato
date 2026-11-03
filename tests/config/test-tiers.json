@@ -502,6 +502,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/allocation-balance-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo analítico do Balanço de Alocação de Tempo vs. Peso no Edital."
+    },
+    {
       "file": "tests/unit/analytics-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -625,6 +630,11 @@
       "file": "tests/unit/crypto-utils.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/critical-vulnerabilities-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo analítico do Radar de Vulnerabilidades Críticas (alta incidência × domínio frágil)."
     },
     {
       "file": "tests/unit/daily-execution.test.js",
@@ -1760,6 +1770,11 @@
       "file": "tests/unit/volatile-mastery.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/volatile-mastery-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo analítico do Diagnóstico de Domínio Volátil / Falsa Consolidação."
     },
     {
       "file": "tests/unit/weekly-adherence.test.js",

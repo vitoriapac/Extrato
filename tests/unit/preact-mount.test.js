@@ -57,9 +57,15 @@ test('dashboard-tab-controller — expõe métodos mount além de renderHtml', (
   assert.equal(typeof controller.mountQuickStats, 'function');
   assert.equal(typeof controller.mountProgressBars, 'function');
   assert.equal(typeof controller.mountUpcomingList, 'function');
+  assert.equal(typeof controller.mountAllocationBalance, 'function');
+  assert.equal(typeof controller.mountCriticalVulnerabilities, 'function');
+  assert.equal(typeof controller.mountVolatileMastery, 'function');
   assert.equal(typeof controller.renderQuickStatsHtml, 'function');
   assert.equal(typeof controller.renderProgressBarsHtml, 'function');
   assert.equal(typeof controller.renderUpcomingListHtml, 'function');
+  assert.equal(typeof controller.renderAllocationBalanceHtml, 'function');
+  assert.equal(typeof controller.renderCriticalVulnerabilitiesHtml, 'function');
+  assert.equal(typeof controller.renderVolatileMasteryHtml, 'function');
 });
 
 test('today-tab-controller — expõe mountExecutionSummary e mountAgendaSections', () => {

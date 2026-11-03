@@ -456,3 +456,32 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 - [x] DESIGN.md e DESIGN-SYSTEM.md atualizados com tudo o que mudou
   - DESIGN.md: cor por disciplina (paleta e regra), movimento, layout (seções lembradas, blocos recolhíveis do Planejamento, barra inferior, densidade), gráficos, avisos e desfazer, modo Essencial e prontidão sem índice.
   - DESIGN-SYSTEM.md: navegação, preferências do navegador, desfazer e o que continua pedindo confirmação, primitivos de gráfico, cor por disciplina, lembrete de backup e carregamento sob demanda.
+
+---
+
+## Modernização Visual e Cockpit Panorâmico (Novembro 2026)
+
+Plano Diretor: [`docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
+
+### Grids Analíticos de Decisão na Visão Geral (Cockpit)
+- [x] **Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital**
+  - View-model: `src/application/analytics/build-allocation-balance-view-model.ts`
+  - Componente: `src/ui/tabs/dashboard/AllocationBalanceGrid.tsx`
+  - Testes: `tests/unit/allocation-balance-view-model.test.js`
+- [x] **Grid 2: Radar de Vulnerabilidades Críticas**
+  - View-model: `src/application/analytics/build-critical-vulnerabilities-view-model.ts`
+  - Componente: `src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx`
+  - Testes: `tests/unit/critical-vulnerabilities-view-model.test.js`
+- [x] **Grid 3: Diagnóstico de Domínio Volátil / Falsa Consolidação**
+  - View-model: `src/application/analytics/build-volatile-mastery-view-model.ts`
+  - Componente: `src/ui/tabs/dashboard/VolatileMasteryGrid.tsx`
+  - Testes: `tests/unit/volatile-mastery-view-model.test.js`
+- [x] **Orquestração e Montagem Declarativa Preact**
+  - Integração em `src/ui/tabs/dashboard/dashboard-tab-controller.ts` via `mountPreact`
+  - Slots semânticos adicionados em `index.html` sob `#panel-dashboard`
+  - Testes Preact em `tests/unit/dashboard-components.test.js` e `tests/unit/preact-mount.test.js`
+- [x] **Governança e Verificação**
+  - `npm run check:types` e `npm run check:types:tests`: 0 erros
+  - `npm run test:fast`: 1.243 testes unitários no Node passaram 100% (47.22 s)
+  - `test-tiers.json` e `test-inventory.json` sincronizados e auditados
+

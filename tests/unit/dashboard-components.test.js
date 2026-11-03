@@ -5,6 +5,12 @@ import { render } from 'preact-render-to-string';
 import { QuickStatsGrid } from '../../src/ui/tabs/dashboard/QuickStatsGrid.js';
 import { SubjectProgressList } from '../../src/ui/tabs/dashboard/SubjectProgressList.js';
 import { UpcomingReviewsList } from '../../src/ui/tabs/dashboard/UpcomingReviewsList.js';
+import { AllocationBalanceGrid } from '../../src/ui/tabs/dashboard/AllocationBalanceGrid.js';
+import { CriticalVulnerabilitiesGrid } from '../../src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.js';
+import { VolatileMasteryGrid } from '../../src/ui/tabs/dashboard/VolatileMasteryGrid.js';
+import { buildAllocationBalanceViewModel } from '../../src/application/analytics/build-allocation-balance-view-model.js';
+import { buildCriticalVulnerabilitiesViewModel } from '../../src/application/analytics/build-critical-vulnerabilities-view-model.js';
+import { buildVolatileMasteryViewModel } from '../../src/application/analytics/build-volatile-mastery-view-model.js';
 import { createDashboardTabController } from '../../src/ui/tabs/dashboard/dashboard-tab-controller.js';
 
 test('QuickStatsGrid Preact Component — renderiza contadores de tópicos', () => {
@@ -221,3 +227,81 @@ test('createDashboardTabController — renderHeatmap e filtros', () => {
   controller.selectHeatmapDay('2026-10-28');
   assert.equal(controller.getStreakView().selectedDate, '2026-10-28');
 });
+
+test('AllocationBalanceGrid Preact Component — renderiza linhas de alocação e diagnóstico', () => {
+  const model = buildAllocationBalanceViewModel({
+    subjects: [
+      { id: 's1', name: 'Direito Constitucional', examWeightPercent: 30 },
+    ],
+    sessions: [
+      { subjectId: 's1', durationSeconds: 3600, date: '2026-10-20' },
+    ],
+    today: '2026-10-20',
+  });
+
+  const html = render(h(AllocationBalanceGrid, { model }));
+  assert.match(html, /Balanço: Tempo Investido vs\. Peso no Edital/);
+  assert.match(html, /Direito Constitucional/);
+  assert.match(html, /1,0h|1h/);
+  assert.match(html, /100/);
+});
+
+test('CriticalVulnerabilitiesGrid Preact Component — renderiza tópicos de alta incidência', () => {
+  const model = buildCriticalVulnerabilitiesViewModel({
+    subjects: [
+      {
+        id: 's1',
+        name: 'Direito Constitucional',
+        topics: [
+          { id: 't1', name: 'Controle de Constitucionalidade', incidence: 'Alta' },
+        ],
+      },
+    ],
+    metricsByTopic: {
+      t1: { mastery: { score: 45 }, coverage: 100 },
+    },
+    blueprint: { masteryTarget: 80 },
+  });
+
+  const html = render(
+    h(CriticalVulnerabilitiesGrid, {
+      model,
+      onTrainTopic: () => {},
+    })
+  );
+  assert.match(html, /Radar de Vulnerabilidades Críticas/);
+  assert.match(html, /Controle de Constitucionalidade/);
+  assert.match(html, /Alta Incidência/);
+  assert.match(html, /45%/);
+  assert.match(html, /Treinar questões/);
+});
+
+test('VolatileMasteryGrid Preact Component — renderiza tópicos com falsa consolidação', () => {
+  const model = buildVolatileMasteryViewModel({
+    subjects: [
+      {
+        id: 's1',
+        name: 'Direito Administrativo',
+        topics: [{ id: 't1', name: 'Atos Administrativos' }],
+      },
+    ],
+    questoes: [
+      { topicId: 't1', date: '2026-09-01', total: 10, correct: 10 },
+      { topicId: 't1', date: '2026-09-20', total: 10, correct: 5 },
+    ],
+  });
+
+  const html = render(
+    h(VolatileMasteryGrid, {
+      model,
+      onScheduleReview: () => {},
+    })
+  );
+  assert.match(html, /Domínio Volátil/);
+  assert.match(html, /Atos Administrativos/);
+  assert.match(html, /-50 p\.p\./);
+  assert.match(html, /100%/);
+  assert.match(html, /50%/);
+  assert.match(html, /Agendar revisão ativa/);
+});
+
