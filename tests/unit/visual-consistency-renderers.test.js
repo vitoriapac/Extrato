@@ -178,7 +178,7 @@ test('calendário explica origens do total de atrasos sem modificar registros', 
     ],
     before = JSON.stringify(items);
   const html = renderCalendarIndicators({ items, today: '2026-10-04', daysUntil: () => null });
-  assert.match(html, /Calendário: 1 · Agenda: 1/);
+  assert.match(html, /Tarefas: 1 · Revisões: 1/);
   assert.equal(JSON.stringify(items), before);
 });
 

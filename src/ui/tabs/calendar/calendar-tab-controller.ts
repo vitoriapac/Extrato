@@ -326,7 +326,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     const doc = getDoc();
     const normalized = view === 'agenda' ? 'agenda' : 'month';
     calendarUiState.view = normalized;
-    doc?.getElementById('panel-calendario')?.setAttribute('data-calendar-view', normalized);
+    doc?.getElementById('panel-agenda')?.setAttribute('data-calendar-view', normalized);
     doc?.querySelectorAll('.calendar-view-btn').forEach((button: any) => {
       const active = button.dataset.calendarView === normalized;
       button.classList?.toggle('active', active);
@@ -463,7 +463,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   function overdueOrigin(items: any[]): string {
     const agenda = items.filter((x: any) => x.origem === 'Agenda de Revisões').length,
       calendar = items.length - agenda;
-    return agenda && calendar ? `${agenda} da Agenda + ${calendar} do Calendário · ` : '';
+    return agenda && calendar ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} + ${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · ` : '';
   }
 
   function renderCalAtrasadas(elId = 'calAtrasadas') {
@@ -571,6 +571,24 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       renderCalendar();
       renderMonthCalendar();
     });
+
+    // Disciplina, status e mês são filtros da Agenda inteira: os selects visíveis são os das revisões
+    // e a ponte copia o valor para os espelhos que este controlador lê.
+    for (const [sharedId, mirrorId] of [
+      ['agendaFilterSubject', 'calFilterSubject'],
+      ['agendaFilterStatus', 'calFilterStatus'],
+      ['agendaFilterMes', 'calFilterMes'],
+    ]) {
+      d.getElementById(sharedId)?.addEventListener('change', (event: any) => {
+        const mirror = d.getElementById(mirrorId) as HTMLSelectElement | null;
+        if (!mirror) return;
+        const wanted = event.target.value;
+        mirror.value = Array.from(mirror.options || []).some(option => option.value === wanted)
+          ? wanted
+          : '';
+        mirror.dispatchEvent?.(new Event('change', { bubbles: true }));
+      });
+    }
 
     d.getElementById('addCalRowBtn')?.addEventListener('click', addCalRow);
   }

@@ -60,3 +60,43 @@ test('buildCriticalVulnerabilitiesViewModel retorna vazio quando todo domínio e
   assert.equal(model.vulnerabilities.length, 0);
   assert.match(model.summary, /Nenhuma vulnerabilidade crítica/);
 });
+
+test('buildCriticalVulnerabilitiesViewModel ignora tópico sem domínio medido', () => {
+  const model = buildCriticalVulnerabilitiesViewModel({
+    subjects: [
+      {
+        id: 's1',
+        name: 'Português',
+        topics: [{ id: 't1', name: 'Crase', incidence: 'Alta' }],
+      },
+    ],
+    // estudado (cobertura), mas sem nenhuma questão: não há domínio para comparar com a meta
+    metricsByTopic: { t1: { coverage: 100 } },
+    blueprint: { masteryTarget: 80 },
+  });
+
+  assert.equal(model.vulnerabilities.length, 0);
+});
+
+test('buildCriticalVulnerabilitiesViewModel conta só tópicos com domínio medido', () => {
+  const subjects = [
+    {
+      id: 's1',
+      name: 'Português',
+      topics: [
+        { id: 't1', name: 'Crase', incidence: 'Alta' },
+        { id: 't2', name: 'Regência', incidence: 'Alta' },
+      ],
+    },
+  ];
+  const medido = buildCriticalVulnerabilitiesViewModel({
+    subjects,
+    metricsByTopic: { t1: { mastery: { score: 90 }, coverage: 100 }, t2: { coverage: 100 } },
+    blueprint: { masteryTarget: 80 },
+  });
+  assert.equal(medido.measuredTopicsCount, 1);
+  assert.equal(medido.vulnerabilities.length, 0);
+
+  const semNada = buildCriticalVulnerabilitiesViewModel({ subjects, metricsByTopic: {} });
+  assert.equal(semNada.measuredTopicsCount, 0);
+});

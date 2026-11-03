@@ -63,7 +63,7 @@ export function FirstAccessModal({
                   <h4 className="text-base font-semibold text-content-primary m-0">
                     Montar meu plano guiado
                   </h4>
-                  <span className="text-[11px] font-bold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full">
                     Recomendado
                   </span>
                 </div>

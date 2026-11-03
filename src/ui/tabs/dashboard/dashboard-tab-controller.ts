@@ -68,6 +68,7 @@ export interface DashboardTabControllerDeps {
   revisoesAtrasadas?: () => number;
   getRevisoesUnificadas?: () => any[];
   metaHoursToday?: () => number;
+  getTodayPlannedMinutes?: () => number;
   diasParaRevisao?: (dateStr: string) => number | null;
   activateTab?: (tab: string) => void;
   renderAgenda?: () => void;
@@ -254,12 +255,20 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (rightMount) {
       const sidebarModel = buildCockpitSidebarViewModel(state, today, {
         goalMinutes: (deps.metaHoursToday?.() ?? 0) * 60,
+        planMinutes: deps.getTodayPlannedMinutes?.() ?? 0,
         reviews: deps.getRevisoesUnificadas?.() ?? [],
         overdueCount: deps.revisoesAtrasadas?.(),
       });
       mountCockpitSidebar(rightMount, {
         model: sidebarModel,
       });
+      const note = doc.getElementById('overviewClosingNote');
+      if (note) {
+        const { activeDaysCount, totalDays } = sidebarModel.consistency;
+        note.textContent =
+          activeDaysCount > 0 ? `Você estudou em ${activeDaysCount} de ${totalDays} dias nas últimas 4 semanas.` : '';
+        note.hidden = activeDaysCount === 0;
+      }
     }
 
     // 1. Balanço de Alocação de Tempo vs. Peso no Edital
@@ -291,7 +300,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       mountCriticalVulnerabilities(vulMount, {
         model: vulModel,
         onTrainTopic: (_topicId, _subjectId) => navigateKpi('questoes'),
-        onViewIntelligence: () => navigateKpi('desempenho'),
+        onViewIntelligence: () => goToPerformance('examIntelligenceHub'),
       });
     }
 
@@ -306,9 +315,18 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       mountVolatileMastery(volMount, {
         model: volModel,
         onScheduleReview: (_topicId, _subjectId) => navigateKpi('agenda'),
-        onViewRetentionAnalysis: () => navigateKpi('desempenho'),
+        onViewRetentionAnalysis: () => goToPerformance('topicRetentionDashboard'),
       });
     }
+  }
+
+  // Os cards de decisão moram em Desempenho: o link leva à seção, não só à aba.
+  function goToPerformance(sectionId: string): void {
+    navigateKpi('desempenho');
+    setTimeout(
+      () => doc?.getElementById(sectionId)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' }),
+      150
+    );
   }
 
   function renderKPIs(): void {

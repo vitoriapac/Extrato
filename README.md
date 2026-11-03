@@ -15,7 +15,7 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Modal de primeiro acesso acolhedor e acessível (`FirstAccessModal.tsx`) para guiar a configuração inicial (planejamento guiado, configuração manual ou exploração imediata da demonstração), com isolamento automático em testes automatizados.
 - Operação do Dia na Visão Geral com seção dedicada (`.overview-now`) unindo Próxima Ação e Atenção em grid responsivo (2 colunas no desktop, empilhado no mobile), com progresso reconciliado e distinção entre estudo adicional e cumprimento do plano.
 - Cronômetro, histórico de sessões, questões e simulados.
-- Revisões espaçadas, agenda, calendário e replanejamento.
+- Agenda única com revisões espaçadas e tarefas de estudo (visões Mês e Lista), atrasadas somadas e replanejamento.
 - Índice de prontidão, projeções por faixa e análise multidimensional alocados na aba Desempenho, garantindo profundidade analítica contextual sem sobrecarregar a Visão Geral.
 - Diagnóstico de erros e alertas com motivo e ação recomendada.
 - Aba Desempenho com comparação de períodos, disciplinas, questões, simulados, prontidão e consistência; navegação contextual até o diagnóstico.

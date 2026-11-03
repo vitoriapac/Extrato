@@ -78,3 +78,12 @@ test('overdueCount informado pelo seletor prevalece sobre o cálculo local', () 
   const result = buildCockpitSidebarViewModel(state, todayISO, { reviews, overdueCount: 9 });
   assert.equal(result.reviewLoad.overdueCount, 9);
 });
+
+test('Plano de hoje vem de planMinutes e some sem plano', () => {
+  const comPlano = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 120, planMinutes: 80 });
+  assert.equal(comPlano.todayGoal.planFormatted, '1h20');
+  assert.equal(comPlano.todayGoal.plannedFormatted, '2h00');
+
+  const semPlano = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 120 });
+  assert.equal(semPlano.todayGoal.planFormatted, null);
+});

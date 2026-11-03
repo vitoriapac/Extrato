@@ -39,7 +39,7 @@ export function renderCalendarIndicators({ items = [], today, daysUntil }: any) 
     return days !== null && days > 0 && days <= 7;
   }).length;
   return `<div class="kpi-cell"><div class="n">${total}</div><div class="l">Itens no total</div></div>
-    <div class="kpi-cell ${overdue > 0 ? 'warn' : ''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div><small>Calendário: ${calendarOverdue} · Agenda: ${agendaOverdue}${otherOverdue ? ' · Outras: ' + otherOverdue : ''}</small></div>
+    <div class="kpi-cell ${overdue > 0 ? 'warn' : ''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div><small>Tarefas: ${calendarOverdue} · Revisões: ${agendaOverdue}${otherOverdue ? ' · Outras: ' + otherOverdue : ''}</small></div>
     <div class="kpi-cell ${todayCount > 0 ? 'ok' : ''}"><div class="n">${todayCount}</div><div class="l">Hoje</div></div>
     <div class="kpi-cell"><div class="n">${upcoming}</div><div class="l">Próximos 7 dias</div></div>`;
 }

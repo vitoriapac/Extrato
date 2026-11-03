@@ -16,6 +16,7 @@ export function SyllabusHealthCard({
   onNavigateSubjects,
 }: SyllabusHealthCardProps): JSX.Element {
   const { subjects } = model;
+  const attentionCount = subjects.filter(subject => subject.status === 'attention').length;
 
   return (
     <article class="chart-card p-5 flex flex-col justify-between h-full" aria-labelledby="syllabusHealthTitle">
@@ -26,6 +27,12 @@ export function SyllabusHealthCard({
           </h3>
           <p class="text-xs text-content-secondary m-0 mt-0.5">
             Progresso de cobertura e taxa de acerto nas últimas 4 semanas
+            {attentionCount > 0 && (
+              <>
+                {' · '}
+                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>
+              </>
+            )}
           </p>
         </div>
         {onNavigateSubjects ? (
@@ -66,11 +73,6 @@ export function SyllabusHealthCard({
                 <div class="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-xs mb-1.5 font-medium">
                   <span class="font-semibold text-content-primary flex items-center gap-1.5">
                     <span>{subject.name}</span>
-                    {isAttention && (
-                      <span class="text-xs px-1.5 py-0.2 rounded font-data bg-amber-bg text-amber font-semibold">
-                        Abaixo da meta
-                      </span>
-                    )}
                   </span>
                   <span class="font-data text-content-secondary whitespace-nowrap">
                     {hasAccuracy ? (

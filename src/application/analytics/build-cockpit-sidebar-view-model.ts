@@ -5,6 +5,8 @@ export interface TodayGoalData {
   percent: number;
   studiedFormatted: string;
   plannedFormatted: string;
+  /** Minutos das atividades do plano de hoje, o mesmo número da Execução de hoje; null sem plano. */
+  planFormatted: string | null;
   questionsDone: number;
   questionsTarget: number;
   dateLabel: string;
@@ -65,6 +67,7 @@ const MONTH_NAMES = [
  */
 export interface CockpitSidebarSources {
   goalMinutes?: number;
+  planMinutes?: number;
   reviews?: Array<Record<string, any>>;
   overdueCount?: number;
 }
@@ -121,6 +124,10 @@ export function buildCockpitSidebarViewModel(
     percent,
     studiedFormatted: formatMinutesDuration(studiedMinutesToday),
     plannedFormatted: formatMinutesDuration(plannedMinutesToday),
+    planFormatted:
+      hasConfiguredPlan && Number(sources.planMinutes) > 0
+        ? formatMinutesDuration(Math.round(Number(sources.planMinutes)))
+        : null,
     questionsDone: questionsOn(todayISO),
     questionsTarget: questionsTargetToday,
     dateLabel,

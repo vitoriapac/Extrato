@@ -10,9 +10,9 @@ export interface AllocationBalanceRow {
   timePercent: number; // % do tempo total
   examWeightPercent: number; // % do edital
   difference: number; // timePercent - examWeightPercent
-  status: 'suballocated' | 'balanced' | 'overallocated';
+  status: 'suballocated' | 'balanced' | 'overallocated' | 'insufficient';
   statusLabel: string;
-  statusVariant: 'warning' | 'success' | 'info';
+  statusVariant: 'warning' | 'success' | 'info' | 'insufficient';
   recommendation: string;
 }
 
@@ -140,12 +140,21 @@ export function buildAllocationBalanceViewModel({
     let statusVariant: AllocationBalanceRow['statusVariant'] = 'success';
     let recommendation = 'Dedicação compatível com a proporção no concurso.';
 
-    if (hasExplicitWeights && difference <= -5) {
+    // Comparar com pesos inventados ou sem nenhuma hora estudada não diz se a dedicação está equilibrada.
+    if (!hasExplicitWeights || totalSeconds === 0) {
+      status = 'insufficient';
+      statusLabel = 'Sem evidência';
+      statusVariant = 'insufficient';
+      recommendation =
+        totalSeconds === 0
+          ? 'Sem horas registradas nos últimos 30 dias.'
+          : 'Configure os pesos do edital para comparar.';
+    } else if (difference <= -5) {
       status = 'suballocated';
       statusLabel = 'Subalocada';
       statusVariant = 'warning';
       recommendation = `Dedicação (${timePercent}%) abaixo do peso no edital (${examWeightPercent}%). Recomenda-se aumentar horas.`;
-    } else if (hasExplicitWeights && difference >= 10) {
+    } else if (difference >= 10) {
       status = 'overallocated';
       statusLabel = 'Superalocada';
       statusVariant = 'info';
@@ -171,6 +180,7 @@ export function buildAllocationBalanceViewModel({
     suballocated: 1,
     overallocated: 2,
     balanced: 3,
+    insufficient: 4,
   };
 
   rows.sort((a, b) => {
@@ -186,8 +196,10 @@ export function buildAllocationBalanceViewModel({
   let summary = 'Distribuição de estudo em conformidade com o edital.';
   if (suballocatedCount > 0) {
     summary = `${suballocatedCount} ${suballocatedCount === 1 ? 'disciplina importante subalocada' : 'disciplinas importantes subalocadas'} em relação ao peso da prova.`;
+  } else if (totalSeconds === 0) {
+    summary = 'Sem horas de estudo registradas nos últimos 30 dias.';
   } else if (!hasExplicitWeights) {
-    summary = 'Pesos do edital não configurados explicitamente (distribuição uniforme considerada).';
+    summary = 'Pesos do edital não configurados: sem base para dizer se a dedicação está equilibrada.';
   }
 
   return {

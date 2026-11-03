@@ -17,6 +17,8 @@ export function AllocationBalanceGrid({
   const [expanded, setExpanded] = useState(false);
 
   const visibleRows = expanded ? rows : rows.slice(0, 5);
+  // Sem pesos ou sem horas toda linha seria "Sem evidência": uma linha diz isso uma vez só.
+  const noEvidence = rows.length > 0 && rows.every(row => row.status === 'insufficient');
 
   return (
     <article class="chart-card cockpit-analytics-card" aria-labelledby="allocationGridTitle">
@@ -41,7 +43,7 @@ export function AllocationBalanceGrid({
             onClick={onNavigatePlanning}
             title="Ajustar pesos e metas no planejamento"
           >
-            <span>Ajustar pesos</span>
+            <span>{hasBlueprint ? 'Ajustar pesos' : 'Configurar pesos'}</span>
             <Icon name="arrow-right" size={14} />
           </button>
         )}
@@ -50,6 +52,14 @@ export function AllocationBalanceGrid({
       {rows.length === 0 ? (
         <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md">
           <p class="m-0">Cadastre disciplinas e registre suas horas de estudo para ver o balanço.</p>
+        </div>
+      ) : noEvidence ? (
+        <div class="p-4 text-sm text-content-secondary bg-surface-subtle rounded-md">
+          <p class="m-0">
+            {hasBlueprint
+              ? 'Sem horas de estudo registradas nos últimos 30 dias.'
+              : 'Sem pesos do edital configurados: não há base para comparar o seu tempo com a prova.'}
+          </p>
         </div>
       ) : (
         <div class="overflow-x-auto">
@@ -135,17 +145,14 @@ export function AllocationBalanceGrid({
         </div>
       )}
 
-      <footer class="mt-3 pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary">
-        <span class="flex items-center gap-1.5">
-          <Icon name="info-circle" size={14} />
-          <span>{summary}</span>
-        </span>
-        {!hasBlueprint && (
-          <span class="text-amber italic text-xs">
-            Distribuição uniforme (edital não configurado)
+      {rows.length > 0 && !noEvidence && (
+        <footer class="mt-3 pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary">
+          <span class="flex items-center gap-1.5">
+            <Icon name="info-circle" size={14} />
+            <span>{summary}</span>
           </span>
-        )}
-      </footer>
+        </footer>
+      )}
     </article>
   );
 }

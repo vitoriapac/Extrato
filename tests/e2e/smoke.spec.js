@@ -9,7 +9,6 @@ test('inicializa e navega pelas áreas principais', async ({ page }) => {
   for (const name of [
     'hoje',
     'disciplinas',
-    'calendario',
     'agenda',
     'questoes',
     'metas',

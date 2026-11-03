@@ -100,25 +100,25 @@ export function PerformanceTrendCard({
         {/* Linha de KPIs Resumidos */}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           <div class="p-2 rounded bg-surface-subtle border border-border-default">
-            <span class="text-[11px] text-content-secondary block font-medium">
+            <span class="text-xs text-content-secondary block font-medium">
               Acertos (Questões)
             </span>
             <span class="text-sm font-semibold font-data text-content-primary">
               {model.questionAccuracy != null ? `${formatDecimal(model.questionAccuracy)}%` : '—'}
             </span>
-            <span class="text-[10px] text-content-secondary block truncate">
+            <span class="text-xs text-content-secondary block truncate">
               {model.totalResolved > 0 ? `${model.totalResolved} resolvidas` : 'Sem registros'}
             </span>
           </div>
 
           <div class="p-2 rounded bg-surface-subtle border border-border-default">
-            <span class="text-[11px] text-content-secondary block font-medium">
+            <span class="text-xs text-content-secondary block font-medium">
               Média dos Simulados
             </span>
             <span class="text-sm font-semibold font-data text-content-primary">
               {model.simulationMean != null ? `${formatDecimal(model.simulationMean)}%` : '—'}
             </span>
-            <span class="text-[10px] text-content-secondary block truncate">
+            <span class="text-xs text-content-secondary block truncate">
               {model.simulationCount > 0
                 ? `${model.simulationCount} realizados`
                 : 'Nenhum simulado'}
@@ -126,17 +126,17 @@ export function PerformanceTrendCard({
           </div>
 
           <div class="p-2 rounded bg-surface-subtle border border-border-default">
-            <span class="text-[11px] text-content-secondary block font-medium">
+            <span class="text-xs text-content-secondary block font-medium">
               Meta de Aprovação
             </span>
             <span class="text-sm font-semibold font-data text-content-primary">
               {formatDecimal(model.targetScore)}%
             </span>
-            <span class="text-[10px] text-content-secondary block">Alvo configurado</span>
+            <span class="text-xs text-content-secondary block">Alvo configurado</span>
           </div>
 
           <div class="p-2 rounded bg-surface-subtle border border-border-default flex flex-col justify-between">
-            <span class="text-[11px] text-content-secondary block font-medium">
+            <span class="text-xs text-content-secondary block font-medium">
               Situação Atual
             </span>
             <div>
@@ -190,7 +190,7 @@ export function PerformanceTrendCard({
                     x={padLeft - 6}
                     y={yFor(val) + 3}
                     text-anchor="end"
-                    class="fill-content-secondary text-[9px] font-data"
+                    class="fill-content-secondary text-xs font-data"
                   >
                     {val}%
                   </text>
@@ -212,7 +212,7 @@ export function PerformanceTrendCard({
                 x={width - padRight - 2}
                 y={yTarget - 4}
                 text-anchor="end"
-                class="fill-amber text-[9px] font-data font-semibold"
+                class="fill-amber text-xs font-data font-semibold"
               >
                 Meta {formatDecimal(targetScore)}%
               </text>
@@ -266,7 +266,7 @@ export function PerformanceTrendCard({
                   x={xFor(i)}
                   y={height - 8}
                   text-anchor="middle"
-                  class="fill-content-secondary text-[10px] font-data"
+                  class="fill-content-secondary text-xs font-data"
                 >
                   {p.label}
                 </text>
@@ -278,7 +278,7 @@ export function PerformanceTrendCard({
 
       {/* Legenda Informativa */}
       {hasData && (
-        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-2.5 mt-2 border-t border-border-subtle text-[11px] text-content-secondary font-medium">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-2.5 mt-2 border-t border-border-subtle text-xs text-content-secondary font-medium">
           <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1.5">
               <span class="w-2.5 h-0.5 bg-green rounded-full inline-block" />
@@ -293,7 +293,7 @@ export function PerformanceTrendCard({
               <span>Meta ({formatDecimal(targetScore)}%)</span>
             </span>
           </div>
-          <span class="text-content-secondary text-[10px]">
+          <span class="text-content-secondary text-xs">
             {model.summaryText}
           </span>
         </div>

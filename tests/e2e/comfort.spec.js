@@ -37,7 +37,7 @@ test('redistribuir atrasadas mostra prévia sem salvar, confirma e permite desfa
   });
   await activateTab(page, 'agenda');
   const before = await agendaDates(page);
-  await page.getByRole('button', { name: 'Redistribuir 4 atrasadas' }).click();
+  await page.getByRole('button', { name: 'Redistribuir 4 revisões atrasadas' }).click();
   const preview = page.locator('.review-redistribution');
   await expect(preview).toContainText('Nada foi alterado ainda');
   await expect(preview).toContainText('4 revisões vão para 2 dias');

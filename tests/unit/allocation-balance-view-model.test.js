@@ -59,3 +59,23 @@ test('buildAllocationBalanceViewModel retorna modelo limpo quando não há sess�
   assert.equal(model.rows.length, 2);
   assert.equal(model.rows[0].hoursSpent, 0);
 });
+
+test('buildAllocationBalanceViewModel não chama de equilibrada quando falta evidência', () => {
+  const subjects = [
+    { id: 's1', name: 'Constitucional', examWeightPercent: 50 },
+    { id: 's2', name: 'Administrativo', examWeightPercent: 50 },
+  ];
+
+  const semHoras = buildAllocationBalanceViewModel({ subjects, sessions: [], today: '2026-10-20' });
+  assert.ok(semHoras.rows.every(row => row.status === 'insufficient'));
+  assert.equal(semHoras.rows[0].statusLabel, 'Sem evidência');
+  assert.match(semHoras.summary, /Sem horas de estudo/);
+
+  const semPesos = buildAllocationBalanceViewModel({
+    subjects: [{ id: 's1', name: 'Constitucional' }, { id: 's2', name: 'Administrativo' }],
+    sessions: [{ date: '2026-10-19', durationSeconds: 3600, subjectId: 's1' }],
+    today: '2026-10-20',
+  });
+  assert.ok(semPesos.rows.every(row => row.status === 'insufficient'));
+  assert.match(semPesos.summary, /Pesos do edital não configurados/);
+});

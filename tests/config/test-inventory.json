@@ -2381,7 +2381,7 @@
         "node:assert/strict",
         "../../src/application/analytics/build-allocation-balance-view-model.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3060,7 +3060,7 @@
         "../../src/ui/renderers/consistency-strip-renderer.js",
         "../../src/ui/renderers/reviews-renderer.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3186,7 +3186,7 @@
         "node:assert/strict",
         "../../src/application/analytics/build-critical-vulnerabilities-view-model.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -5981,7 +5981,7 @@
         "node:assert/strict",
         "../../src/ui/controllers/navigation-controller.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

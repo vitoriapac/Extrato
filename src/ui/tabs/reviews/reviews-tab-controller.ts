@@ -350,7 +350,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       container.innerHTML =
         undo +
         (overdue
-          ? `<button type="button" class="btn tonal small" data-review-redistribute>${renderIconSvg('arrows-shuffle', { size: 14, className: 'icon-inline' })}Redistribuir ${plural(overdue, 'atrasada', 'atrasadas')}</button>`
+          ? `<button type="button" class="btn tonal small" data-review-redistribute>${renderIconSvg('arrows-shuffle', { size: 14, className: 'icon-inline' })}Redistribuir ${plural(overdue, 'revisão atrasada', 'revisões atrasadas')}</button>`
           : '');
       return;
     }

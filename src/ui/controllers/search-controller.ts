@@ -43,7 +43,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     keywords: 'importar arquivo conteudo disciplinas',
     action: 'structured-import',
   },
-  { label: 'Abrir Calendário', keywords: 'calendario sessoes datas', tab: 'calendario' },
+  { label: 'Abrir Calendário (visão Mês da Agenda)', keywords: 'calendario sessoes datas mes', tab: 'agenda' },
   { label: 'Abrir Agenda de Revisões', keywords: 'agenda revisao atrasadas', tab: 'agenda' },
   { label: 'Adicionar revisão', keywords: 'criar nova revisão agenda', action: 'add-review' },
   {

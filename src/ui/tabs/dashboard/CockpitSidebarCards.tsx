@@ -11,7 +11,7 @@ export interface CockpitSidebarCardsProps {
 }
 
 export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
-  const { hasConfiguredPlan, percent, studiedFormatted, plannedFormatted, questionsDone, questionsTarget, dateLabel } = data;
+  const { hasConfiguredPlan, percent, studiedFormatted, plannedFormatted, planFormatted, questionsDone, questionsTarget, dateLabel } = data;
 
   if (!hasConfiguredPlan) {
     return (
@@ -76,9 +76,18 @@ export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
             <span class="text-content-secondary">Estudo realizado:</span>
             <div class="font-semibold text-sm text-content-primary">
               {studiedFormatted}{' '}
-              <span class="text-content-secondary text-xs font-normal">/ {plannedFormatted}</span>
+              <span class="text-content-secondary text-xs font-normal">/ {plannedFormatted} de meta diária</span>
             </div>
           </div>
+          {planFormatted && (
+            <div>
+              <span class="text-content-secondary">Plano de hoje:</span>
+              <div class="font-semibold text-sm text-content-primary">
+                {planFormatted}{' '}
+                <span class="text-content-secondary text-xs font-normal">em atividades</span>
+              </div>
+            </div>
+          )}
           <div>
             <span class="text-content-secondary">Questões resolvidas:</span>
             <div class="font-semibold text-sm text-content-primary">

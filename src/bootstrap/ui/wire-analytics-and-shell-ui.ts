@@ -268,6 +268,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     revisoesAtrasadas: studyCandidateService.revisoesAtrasadas,
     getRevisoesUnificadas: studyMetricsSelectors.getRevisoesUnificadas,
     metaHoursToday: analytics.goalsBlueprintService.metaHoursToday,
+    getTodayPlannedMinutes: deps.getTodayPlannedMinutes,
     diasParaRevisao,
     activateTab,
     renderAgenda,

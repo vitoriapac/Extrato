@@ -23,6 +23,8 @@ export interface CriticalVulnerabilityItem {
 export interface CriticalVulnerabilitiesViewModel {
   vulnerabilities: CriticalVulnerabilityItem[];
   totalVulnerabilitiesCount: number;
+  /** Tópicos com domínio medido; zero quer dizer "sem evidência", não "tudo certo". */
+  measuredTopicsCount: number;
   summary: string;
 }
 
@@ -56,11 +58,13 @@ export function buildCriticalVulnerabilitiesViewModel({
     item: CriticalVulnerabilityItem;
     severityScore: number;
   }> = [];
+  let measuredTopicsCount = 0;
 
   for (const sub of matrix) {
     for (const t of sub.topics || []) {
-      // Ignora tópicos sem evidência de questões ou não iniciados
-      if (t.mastery == null && !t.coverage) continue;
+      // Sem domínio medido (nenhuma questão) não é vulnerabilidade: é falta de evidência.
+      if (t.mastery == null) continue;
+      measuredTopicsCount += 1;
 
       const masteryVal = Number(t.mastery ?? 0);
       const targetVal = Number(t.target ?? 80);
@@ -117,6 +121,7 @@ export function buildCriticalVulnerabilitiesViewModel({
   return {
     vulnerabilities: topItems,
     totalVulnerabilitiesCount: totalCount,
+    measuredTopicsCount,
     summary,
   };
 }

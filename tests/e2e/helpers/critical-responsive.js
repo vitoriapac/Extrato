@@ -26,8 +26,6 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   await expectNoPageOverflow(page);
   await activateTab(page, 'agenda');
   await expectNoPageOverflow(page);
-  await activateTab(page, 'calendario');
-  await expectNoPageOverflow(page);
   await activateTab(page, 'questoes');
   await expectNoPageOverflow(page);
   await page.keyboard.press('Control+k');

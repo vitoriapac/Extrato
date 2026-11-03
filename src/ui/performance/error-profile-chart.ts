@@ -24,10 +24,11 @@ export function renderErrorProfileChart({
   const allParts: Array<{ label: string; count: number; tone: string; color: string }> = [
     ...validCategories.map((c, i) => {
       const tones = [
-        { tone: 'attention', color: 'var(--color-attention, #f59e0b)' },
-        { tone: 'secondary', color: 'var(--color-secondary, #3b82f6)' },
-        { tone: 'primary', color: 'var(--color-primary, #6366f1)' },
-        { tone: 'muted', color: 'var(--color-text-secondary, #8b5cf6)' },
+        // Categorias são identidade, não estado: cores de disciplina (sem âmbar nem vermelho) e todas distintas.
+        { tone: 'attention', color: 'var(--subject-2)' },
+        { tone: 'secondary', color: 'var(--subject-1)' },
+        { tone: 'primary', color: 'var(--subject-3)' },
+        { tone: 'muted', color: 'var(--subject-4)' },
       ];
       const selected = tones[i % tones.length];
       return { label: c.label, count: c.count, tone: selected.tone, color: selected.color };

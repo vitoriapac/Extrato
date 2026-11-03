@@ -14,7 +14,7 @@ export function CriticalVulnerabilitiesGrid({
   onTrainTopic,
   onViewIntelligence,
 }: CriticalVulnerabilitiesGridProps): JSX.Element {
-  const { vulnerabilities, summary } = model;
+  const { vulnerabilities, summary, measuredTopicsCount } = model;
 
   return (
     <article class="chart-card cockpit-analytics-card flex flex-col justify-between h-full" aria-labelledby="vulnerabilitiesGridTitle">
@@ -28,7 +28,11 @@ export function CriticalVulnerabilitiesGrid({
               <h3 id="vulnerabilitiesGridTitle" class="text-base font-semibold text-content-primary m-0">
                 Radar de Vulnerabilidades Críticas
               </h3>
-              <Badge variant="warning">4 maiores riscos</Badge>
+              {vulnerabilities.length > 0 && (
+                <Badge variant="warning">
+                  {vulnerabilities.length} {vulnerabilities.length === 1 ? 'maior risco' : 'maiores riscos'}
+                </Badge>
+              )}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
               Tópicos mais cobrados no concurso com domínio abaixo da meta
@@ -53,9 +57,15 @@ export function CriticalVulnerabilitiesGrid({
           <div class="inline-flex p-2 rounded-full bg-surface-card text-content-secondary mb-2">
             <Icon name="info-circle" size={24} />
           </div>
-          <p class="m-0 font-medium text-content-primary">Nenhuma vulnerabilidade crítica no escopo</p>
+          <p class="m-0 font-medium text-content-primary">
+            {measuredTopicsCount > 0
+              ? 'Nenhuma vulnerabilidade crítica no escopo'
+              : 'Sem tópicos com domínio medido'}
+          </p>
           <p class="m-0 mt-1 text-xs">
-            Nenhum tópico de alta incidência abaixo da meta. Sem pesos do edital e questões registradas, o radar não tem o que medir.
+            {measuredTopicsCount > 0
+              ? `Os ${measuredTopicsCount} ${measuredTopicsCount === 1 ? 'tópico medido está' : 'tópicos medidos estão'} acima da meta.`
+              : 'O radar compara com a meta só os tópicos que têm questões registradas.'}
           </p>
         </div>
       ) : (

@@ -16,7 +16,6 @@ for (const [tab, label] of [
   ['disciplinas', 'Disciplinas'],
   ['metas', 'Planejamento'],
   ['agenda', 'Agenda'],
-  ['calendario', 'Calendário'],
   ['questoes', 'Questões e simulados'],
 ]) {
   test(`não possui violações estruturais em ${label}`, async ({ page }) => {

@@ -11,7 +11,6 @@ for (const width of [375, 768, 1366, 1440, 1920])
       'dashboard',
       'hoje',
       'disciplinas',
-      'calendario',
       'agenda',
       'questoes',
       'metas',

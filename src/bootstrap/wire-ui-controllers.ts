@@ -161,6 +161,9 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     activateTab,
     renderAgenda: () => practiceUi.reviewsTabController.renderAgenda(),
     renderPlanoHoje: () => executionUi.todayTabController.renderPlanoHoje(),
+    // Mesmo modelo da "Execução de hoje": os dois cards citam o mesmo total do plano.
+    getTodayPlannedMinutes: () =>
+      executionUi.todayTabController.dailyExecutionController.build()?.progress?.plannedMinutes ?? 0,
     dismissFirstSteps: () => executionUi.todayTabController.dismissFirstSteps(),
     restoreFirstSteps: () => executionUi.todayTabController.restoreFirstSteps(),
     renderFirstStepsMissionCard: () => executionUi.todayTabController.renderFirstStepsMissionCard(),

@@ -666,8 +666,8 @@
     .cal-filters.responsive-filters{display:none;flex-direction:column;align-items:stretch}
     .cal-filters.responsive-filters.show{display:flex}
     .responsive-filters select{width:100%;min-height:44px}
-    #panel-calendario .cal-table-wrap,#panel-agenda .cal-table-wrap{overflow:visible;border:0;background:transparent}
-    #panel-calendario table.cal,#panel-agenda table.cal{min-width:0}
+    #panel-agenda .cal-table-wrap{overflow:visible;border:0;background:transparent}
+    #panel-agenda table.cal{min-width:0}
   }
 
   .upcoming-list{list-style:none;margin:0;padding:0;}
@@ -879,7 +879,7 @@
   @media(max-width:430px){.demo-intro-features{grid-template-columns:1fr}.demo-intro-actions{flex-direction:column-reverse}.demo-intro-actions .btn{width:100%}}
   [data-demo-protected]:disabled{cursor:not-allowed;opacity:1;filter:saturate(.72)}
   .save-indicator{
-    position:fixed;bottom:18px;right:18px;
+    position:fixed;bottom:18px;right:18px;z-index:130;
     font-family:var(--font-body);font-size:var(--text-micro);
     background:var(--brand);color:var(--brand-on-header);padding:8px 14px;border-radius:var(--radius-control);
     opacity:0;visibility:hidden;transform:translateY(8px);transition:transform .3s ease;pointer-events:none;
@@ -1196,9 +1196,9 @@
   .calendar-view-switch{display:flex}
   .calendar-month-toolbar{flex-wrap:wrap;gap:8px}
   .calendar-month-toolbar h3{order:-1;flex:1 0 100%;min-width:0}
-  #panel-calendario[data-calendar-view="month"] .calendar-agenda-view{display:none}
-  #panel-calendario[data-calendar-view="agenda"] .calendar-month-card{display:none}
-  #panel-calendario:not([data-calendar-view]) .calendar-agenda-view{display:none}
+  #panel-agenda[data-calendar-view="month"] .calendar-agenda-view{display:none}
+  #panel-agenda[data-calendar-view="agenda"] .calendar-month-card{display:none}
+  #panel-agenda:not([data-calendar-view]) .calendar-agenda-view{display:none}
   .calendar-view-btn{flex:1}
 
   .ledger-scroll{overflow:visible}
@@ -2119,7 +2119,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 /* Desempenho: navegação e filtros compartilhados pelas análises. */
 .performance-page{display:grid;gap:var(--space-4);min-width:0}
 .performance-section-nav{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-2);scrollbar-width:thin}
-.performance-section-button{flex:none;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink);padding:9px 13px;font:inherit;cursor:pointer}
+.performance-section-button{flex:none;min-height:var(--touch-target);border:1px solid var(--paper-line);background:var(--paper);color:var(--ink);padding:9px 13px;font:inherit;cursor:pointer}
 .performance-section-button.active{background:var(--action-primary-bg);border-color:var(--action-primary-bg);color:var(--action-primary-text)}
 .performance-section-button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .performance-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-3);background:var(--paper);border:1px solid var(--paper-line)}
@@ -2827,3 +2827,13 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .metas-subpanel__summary{cursor:pointer;padding:12px 14px;border:1px solid var(--paper-line);border-radius:var(--radius-card);background:var(--paper);color:var(--heading);font:600 var(--text-md) var(--font-display)}
 .metas-subpanel[open]>.metas-subpanel__summary{margin-bottom:var(--space-3)}
 .metas-subtab[aria-current="true"]{background:var(--slate-bg);color:var(--heading);box-shadow:inset 0 -2px 0 var(--accent)}
+
+/* Fechamento da Visão geral: resume e leva a Desempenho, onde mora a análise detalhada. */
+.overview-more{display:grid;gap:var(--space-2);justify-items:start}
+.overview-more h2{margin:0;font:600 var(--text-md) var(--font-display)}
+.overview-more p{margin:0;color:var(--ink-soft);max-width:60ch}
+
+/* Bloco de decisão em Desempenho: mesmo visual dos recolhíveis de análise, classe própria para não colidir com os seletores deles. */
+.decision-fold{margin:0}
+.decision-fold>summary{cursor:pointer;color:var(--heading);font:600 var(--text-md) var(--font-display)}
+.decision-fold[open]>summary{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--paper-line)}

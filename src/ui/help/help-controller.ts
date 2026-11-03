@@ -56,7 +56,7 @@ const DESTINATIONS: Readonly<Record<string, { tab: string; selector?: string; se
     questions: { tab: 'questoes', selector: '#addQuestaoRowBtn' },
     reviews: { tab: 'agenda', selector: '#addAgendaRowBtn' },
     today: { tab: 'hoje', selector: '#panel-hoje' },
-    calendar: { tab: 'calendario', selector: '#panel-calendario' },
+    calendar: { tab: 'agenda', selector: '#calendarMonthCard' },
     planning: { tab: 'metas', selector: '#examStudyPlan' },
     weekly: { tab: 'dashboard', selector: '#weeklyCloseDashboard' },
     diagnosis: { tab: 'desempenho', selector: '#diagnosisCenter' },

@@ -259,6 +259,22 @@ export function createShellUiController(options: ShellUiControllerOptions) {
       .getElementById('overviewAttentionViewAll')
       ?.addEventListener('click', () => activateTab('hoje'));
 
+    document.getElementById('overviewOpenPerformance')?.addEventListener('click', () => {
+      activateTab('desempenho');
+      const details = document.getElementById('performanceDecisionDetails') as HTMLDetailsElement | null;
+      if (!details) return;
+      details.open = true;
+      // activateTab rola ao topo e o roteador reaplica a aba em seguida: o scroll espera isso passar.
+      window.setTimeout(
+        () =>
+          details.scrollIntoView({
+            behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            block: 'start',
+          }),
+        150
+      );
+    });
+
     if ('ResizeObserver' in window) {
       const stickyMetricsObserver = new ResizeObserver(syncStickyMetrics);
       if (stickyShell) stickyMetricsObserver.observe(stickyShell);

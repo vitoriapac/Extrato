@@ -21,16 +21,19 @@ export const RENDER_SCOPE_SECTIONS = {
     'histórico de sessões',
   ]),
   disciplinas: new Set(['disciplinas', 'primeiro uso']),
-  calendario: new Set([
+  // Agenda e Calendário são uma aba só: a renderização de uma cobre as seções da outra.
+  agenda: new Set([
+    'filtros da agenda',
+    'agenda',
+    'avisos do caderno de erros',
+    'tarefas atrasadas',
     'indicadores do calendário',
     'tarefas de hoje',
-    'tarefas atrasadas',
     'filtros do calendário',
     'calendário',
     'calendário mensal',
     'visão geral',
   ]),
-  agenda: new Set(['filtros da agenda', 'agenda', 'avisos do caderno de erros', 'tarefas atrasadas']),
   questoes: new Set(['questões', 'análise de questões', 'simulados']),
   metas: new Set([
     'metas',

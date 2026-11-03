@@ -654,7 +654,7 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   expect(values.length).toBeGreaterThan(0);
   expect(values).toEqual([...values].sort((a, b) => a - b));
 
-  await activateTab(page, 'calendario');
+  await activateTab(page, 'agenda');
   await expect(page.locator('.cal-legend')).toContainText('mais revisões pendentes');
   await expectNoPageOverflow(page);
 });

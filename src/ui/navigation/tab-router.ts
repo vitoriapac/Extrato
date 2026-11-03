@@ -1,4 +1,8 @@
-import { TAB_HASHES, createNavigationController } from '../controllers/navigation-controller.js';
+import {
+  TAB_ALIASES,
+  TAB_HASHES,
+  createNavigationController,
+} from '../controllers/navigation-controller.js';
 
 export interface TabRouterOptions {
   document: Document;
@@ -46,9 +50,10 @@ export function createTabRouter(options: TabRouterOptions) {
   // "#instrucoes/topico?x" aponta para a aba "instrucoes"; âncoras internas não são abas.
   function tabFromHash(hash: string): string | null {
     const base = hash.replace('#', '').split(/[/?]/)[0];
-    const tab =
+    const named =
       Object.keys(TAB_HASHES).find(name => (TAB_HASHES as Record<string, string>)[name] === base) ||
       base;
+    const tab = TAB_ALIASES[named] || named;
     return tab && document.querySelector(`.tab-btn[data-tab="${tab}"]`) ? tab : null;
   }
 

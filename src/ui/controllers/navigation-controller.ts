@@ -3,12 +3,15 @@ import { scrollBehavior } from '../accessibility.js';
 export const TAB_HASHES: Readonly<Record<string, string>> = Object.freeze({
   metas: 'planejamento',
 });
+// O Calendário virou a visão Mês da Agenda: o hash e os atalhos antigos continuam abrindo a Agenda.
+export const TAB_ALIASES: Readonly<Record<string, string>> = Object.freeze({
+  calendario: 'agenda',
+});
 export const MAIN_TABS = Object.freeze([
   'dashboard',
   'desempenho',
   'hoje',
   'disciplinas',
-  'calendario',
   'agenda',
   'questoes',
   'metas',
@@ -55,7 +58,8 @@ export function createNavigationController({
     moreButton?.setAttribute('aria-expanded', 'false');
     if (restoreFocus) moreButton?.focus();
   };
-  const activate = (tabName: string, updateHash = true) => {
+  const activate = (requestedTab: string, updateHash = true) => {
+    const tabName = TAB_ALIASES[requestedTab] || requestedTab;
     const button = document.querySelector(`.tab-btn[data-tab="${tabName}"]`),
       panel = document.getElementById(`panel-${tabName}`);
     if (!button || !panel) return false;

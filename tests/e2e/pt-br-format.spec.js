@@ -18,7 +18,6 @@ test('textos da demo usam números, datas e horários no formato brasileiro', as
     'hoje',
     'desempenho',
     'disciplinas',
-    'calendario',
     'agenda',
     'questoes',
     'metas',

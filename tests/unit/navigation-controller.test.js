@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   MAIN_TABS,
+  TAB_ALIASES,
   nextNavigationIndex,
   shortcutTabIndex,
   createNavigationController,
@@ -12,7 +13,6 @@ test('ordem dos atalhos permanece estável', () => {
     'desempenho',
     'hoje',
     'disciplinas',
-    'calendario',
     'agenda',
     'questoes',
     'metas',
@@ -69,4 +69,8 @@ test('trocar de área abre no topo; reativar a mesma área não rola', () => {
   assert.deepEqual(scrolls, [{ top: 0, left: 0 }]);
   navigation.activate('hoje', false);
   assert.equal(scrolls.length, 1);
+});
+test('o Calendário virou a visão Mês da Agenda e o nome antigo continua abrindo a Agenda', () => {
+  assert.equal(TAB_ALIASES.calendario, 'agenda');
+  assert.ok(!MAIN_TABS.includes('calendario'));
 });
