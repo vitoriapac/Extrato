@@ -7,6 +7,7 @@ import { render as preactRender, type ComponentChild } from 'preact';
  * @param container The DOM container element.
  */
 export function mountPreact(vnode: ComponentChild, container: Element): void {
+  if (typeof document === 'undefined' || !container) return;
   preactRender(vnode, container);
 }
 
@@ -16,5 +17,6 @@ export function mountPreact(vnode: ComponentChild, container: Element): void {
  * @param container The DOM container element to unmount.
  */
 export function unmountPreact(container: Element): void {
+  if (typeof document === 'undefined' || !container) return;
   preactRender(null, container);
 }

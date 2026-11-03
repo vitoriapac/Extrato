@@ -1,7 +1,11 @@
+import { h } from 'preact';
+import { mountPreact } from '../../preact-mount.js';
 import { createQuestionController } from '../../../application/questions/question-controller.js';
 import { createEditableCollectionController } from '../../controllers/editable-collection-controller.js';
 import { buildQuestionViewModel } from '../../view-models/question-view-model.js';
 import { createQuestionsController } from './questions-controller.js';
+import { PlateauDetectorCard } from './PlateauDetectorCard.js';
+import { buildPlateauDetectorViewModel } from '../../../application/analytics/build-plateau-detector-view-model.js';
 import { runUndoable } from '../../undoable.js';
 
 export function calcAcertoPct(correct: number, resolved: number): number {
@@ -58,6 +62,7 @@ export interface QuestionsTabControllerContext {
   uid?: (prefix: string) => string;
   todayISO?: () => string;
   nowISO?: () => string;
+  activateTab?: (tab: string) => void;
   escapeHtml?: (s: string) => string;
   escapeAttr?: (s: string) => string;
 }
@@ -252,6 +257,27 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     });
 
     body.innerHTML = controller.renderQuestionsHtml();
+
+    const plateauMount = ctx.document.getElementById('plateauDetectorMount');
+    if (plateauMount) {
+      const plateauModel = buildPlateauDetectorViewModel({
+        subjects: ctx.state.subjects || [],
+        questoes: ctx.state.questoes || [],
+      });
+      mountPreact(
+        h(PlateauDetectorCard, {
+          model: plateauModel,
+          onOpenErrorNotebook: () => {
+            const toggle = ctx.document.getElementById('errorNotebookToggleBtn');
+            toggle?.click();
+          },
+          onScheduleReview: () => {
+            if (ctx.activateTab) ctx.activateTab('agenda');
+          },
+        }),
+        plateauMount
+      );
+    }
   }
 
   function addQuestaoRow(initial: any = {}) {

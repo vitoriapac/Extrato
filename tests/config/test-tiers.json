@@ -1142,6 +1142,11 @@
       "rationale": "Detecção algorítmica pura de platô de desempenho, estabilidade de acerto e prescrição pedagógica."
     },
     {
+      "file": "tests/unit/plateau-detector-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo analítico do Detector de Platô e Estagnação de Desempenho."
+    },
+    {
       "file": "tests/unit/post-simulation-replan.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1435,6 +1440,11 @@
       "file": "tests/unit/shell-ui-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/shift-energy-view-model.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo analítico de eficiência e foco cognitivo por turno (manhã, tarde, noite)."
     },
     {
       "file": "tests/unit/simulated-remediation-modal.test.js",

@@ -4,6 +4,8 @@ import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { QuestionLogTable } from '../../src/ui/tabs/questions/QuestionLogTable.js';
 import { SimulationLogTable } from '../../src/ui/tabs/questions/SimulationLogTable.js';
+import { PlateauDetectorCard } from '../../src/ui/tabs/questions/PlateauDetectorCard.js';
+import { buildPlateauDetectorViewModel } from '../../src/application/analytics/build-plateau-detector-view-model.js';
 import { createQuestionsController } from '../../src/ui/tabs/questions/questions-controller.js';
 
 test('QuestionLogTable Preact Component — exibe estado vazio quando sem questões', () => {
@@ -137,4 +139,31 @@ test('createQuestionsController — coordena a renderização de questões e sim
   assert.match(questionsHtml, /90%/);
   assert.match(simulationsHtml, /Simulado Alpha/);
   assert.match(simulationsHtml, />80%</);
+});
+
+test('PlateauDetectorCard Preact Component — renderiza tópicos com estagnação', () => {
+  const model = buildPlateauDetectorViewModel({
+    subjects: [{ id: 's1', name: 'Constitucional', topics: [{ id: 't1', name: 'Controle' }] }],
+    questoes: [
+      { topicId: 't1', date: '2026-09-01', resolved: 15, correct: 10 },
+      { topicId: 't1', date: '2026-09-08', resolved: 15, correct: 10 },
+      { topicId: 't1', date: '2026-09-15', resolved: 15, correct: 10 },
+      { topicId: 't1', date: '2026-09-22', resolved: 15, correct: 10 },
+    ],
+    minQuestions: 40,
+  });
+
+  const html = render(
+    h(PlateauDetectorCard, {
+      model,
+      onOpenErrorNotebook: () => {},
+      onScheduleReview: () => {},
+    })
+  );
+
+  assert.match(html, /Detector de Platô/);
+  assert.match(html, /Controle/);
+  assert.match(html, /66\.7%|66,7%/);
+  assert.match(html, /60 q/);
+  assert.match(html, /Caderno de Erros/);
 });

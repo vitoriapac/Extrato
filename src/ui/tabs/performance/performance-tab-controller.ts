@@ -1,3 +1,5 @@
+import { h } from 'preact';
+import { mountPreact } from '../../preact-mount.js';
 import {
   createPerformanceViewState,
   resolvePerformanceRange,
@@ -9,6 +11,8 @@ import { renderPerformanceSection } from '../../performance/render-performance-s
 import { createPerformanceController } from '../../controllers/performance-controller.js';
 import { createPerformanceAnalyticsController } from '../../controllers/performance-analytics-controller.js';
 import { renderProgressChart as renderProgressChartView } from '../../renderers/study-charts-renderer.js';
+import { ShiftEnergyCard } from './ShiftEnergyCard.js';
+import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 
 export interface PerformanceTabControllerDeps {
   document?: any;
@@ -273,6 +277,14 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         { once: true }
       );
       dialog.showModal();
+    }
+
+    const shiftEnergyMount = doc.getElementById('shiftEnergyMount');
+    if (shiftEnergyMount) {
+      const shiftModel = buildShiftEnergyViewModel({
+        sessions: state.studySessions || [],
+      });
+      mountPreact(h(ShiftEnergyCard, { model: shiftModel }), shiftEnergyMount);
     }
   }
 

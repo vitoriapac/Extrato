@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-279 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+281 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -232,6 +232,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/planning-services.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-subtabs.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-sustainability.test.js | node | Sustentabilidade | critical | — | contract | none |
+| tests/unit/plateau-detector-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/plateau-detector.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/post-simulation-replan.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/preact-mount.test.js | node | Aplicação | functional | — | contract | none |
@@ -293,6 +294,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/session-result.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/session-service.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/shell-ui-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/shift-energy-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation-modal.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulations-tab-controller.test.js | node | Aplicação | functional | — | contract | none |

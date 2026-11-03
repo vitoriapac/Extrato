@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+import { ShiftEnergyCard } from '../../src/ui/tabs/performance/ShiftEnergyCard.js';
+import { buildShiftEnergyViewModel } from '../../src/application/analytics/build-shift-energy-view-model.js';
 import { createPerformanceTabController } from '../../src/ui/tabs/performance/performance-tab-controller.js';
 
 function createMockDeps() {
@@ -90,4 +94,38 @@ test('PerformanceTabController — renderPerformance renderiza container princip
   controller.renderPerformance();
   assert.ok(elements['performancePage'].innerHTML.length > 0);
   assert.match(elements['performancePage'].innerHTML, /Visão geral|Disciplinas/);
+});
+
+test('ShiftEnergyCard Preact Component — renderiza turnos e pico cognitivo', () => {
+  const model = buildShiftEnergyViewModel({
+    sessions: [
+      {
+        startedAt: '2026-10-15T08:00:00Z',
+        durationSeconds: 3600,
+        focusLevel: 'deep',
+        energyLevel: 'high',
+        questionsResolved: 10,
+        questionsCorrect: 9,
+      },
+      {
+        startedAt: '2026-10-15T14:00:00Z',
+        durationSeconds: 3600,
+        focusLevel: 'normal',
+        energyLevel: 'normal',
+      },
+      {
+        startedAt: '2026-10-15T20:00:00Z',
+        durationSeconds: 3600,
+        focusLevel: 'distracted',
+        energyLevel: 'low',
+      },
+    ],
+  });
+
+  const html = render(h(ShiftEnergyCard, { model }));
+  assert.match(html, /Eficiência &amp; Energia por Turno/);
+  assert.match(html, /Manhã/);
+  assert.match(html, /Tarde/);
+  assert.match(html, /Noite/);
+  assert.match(html, /3,0h|3h/);
 });
