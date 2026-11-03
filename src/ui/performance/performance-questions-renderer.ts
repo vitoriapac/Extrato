@@ -1,6 +1,7 @@
 import { formatDateBR } from '../../core/format-date.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
+import { renderErrorProfileChart } from './error-profile-chart.js';
 import {
   renderPerformanceStory,
   renderPerformanceSummary,
@@ -40,7 +41,13 @@ export function renderPerformanceQuestions({
     .join('');
   const volume = `<section class="performance-block"><h3>Volume × precisão</h3>${buckets ? `<div class="performance-table-scroll"><table><caption>Acertos, erros e precisão por período; a média móvel exige amostra mínima.</caption><thead><tr><th>Período</th><th>Questões</th><th>Acertos</th><th>Erros</th><th>Precisão</th></tr></thead><tbody>${buckets}</tbody></table></div>` : '<p class="empty-state empty-state--compact">Sem questões neste período.</p>'}</section>`;
   const categories = analysis.errorCategories.filter((item: any) => item.count > 0);
-  const errors = `<section class="performance-block"><h3>Perfil de erros</h3>${categories.length ? `<ul class="performance-changes">${categories.map((row: any) => `<li><strong>${escapeHtml(row.label)}</strong><span>${row.count}</span></li>`).join('')}${analysis.uncategorizedErrors ? `<li><strong>Sem categoria</strong><span>${analysis.uncategorizedErrors}</span></li>` : ''}</ul>` : '<p class="empty-state empty-state--compact">Nenhum erro categorizado neste período.</p>'}</section>`;
+  const errorChart = renderErrorProfileChart({
+    categories,
+    uncategorizedCount: analysis.uncategorizedErrors,
+    totalErrors: analysis.errors || 0,
+    escapeHtml,
+  });
+  const errors = `<section class="performance-block"><h3>Perfil de erros</h3>${errorChart || '<p class="empty-state empty-state--compact">Nenhum erro categorizado neste período.</p>'}</section>`;
   const comparable = analysis.topics.filter((item: any) => item.delta != null);
   const grouped = (title: string, rows: Array<Record<string, any>>) =>
     `<div><h4>${title}</h4>${rows.length ? `<ul class="performance-changes">${rows.map((row: any) => `<li><strong>${escapeHtml(row.name)}</strong><span>${delta(row.delta)} · ${row.beforeTotal} → ${row.afterTotal} questões</span></li>`).join('')}</ul>` : '<p class="analytics-note">Nenhum tópico com 30 questões em cada metade do período.</p>'}</div>`;
