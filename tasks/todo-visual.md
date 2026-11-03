@@ -464,10 +464,15 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 Plano Diretor: [`docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 
 ### Grids Analíticos de Decisão na Visão Geral (Cockpit) & Modelos Visuais nas Demais Abas
+- [x] **Grade Superior do Cockpit: Panorama & Rotina Diária (Visão Geral)**
+  - Bloco Esquerda (8 cols): Saúde do Edital por Disciplina (`SyllabusHealthCard.tsx` + `build-syllabus-health-view-model.ts`) com barras empilhadas e bullet bars com meta aos 80%.
+  - Bloco Direita (4 cols): Coluna de rotina diária (`CockpitSidebarCards.tsx` + `build-cockpit-sidebar-view-model.ts`) com Meta de Hoje (`RingGauge`), Carga de Revisões (7 colunas) e Consistência (mini-heatmap 28 dias).
+  - Testes: `tests/unit/syllabus-health-view-model.test.js`, `tests/unit/cockpit-sidebar-view-model.test.js`.
 - [x] **Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital (Visão Geral)**
   - View-model: `src/application/analytics/build-allocation-balance-view-model.ts`
   - Componente: `src/ui/tabs/dashboard/AllocationBalanceGrid.tsx`
-  - Testes: `tests/unit/allocation-balance-view-model.test.js`
+  - **Divulgação Progressiva:** Regra de 5 itens visíveis por padrão com botão interativo e acessível `[Mostrar mais (+N disciplinas)]` / `[Mostrar menos]`.
+  - Testes: `tests/unit/allocation-balance-view-model.test.js`, `tests/unit/dashboard-components.test.js`.
 - [x] **Grid 2: Radar de Vulnerabilidades Críticas (Visão Geral)**
   - View-model: `src/application/analytics/build-critical-vulnerabilities-view-model.ts`
   - Componente: `src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx`
@@ -484,14 +489,18 @@ Plano Diretor: [`docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/PLANO-MOD
   - View-model: `src/application/analytics/build-shift-energy-view-model.ts`
   - Componente: `src/ui/tabs/performance/ShiftEnergyCard.tsx`
   - Testes: `tests/unit/shift-energy-view-model.test.js`
+- [x] **Realocação Cirúrgica de Grids e Desobstrução da Visão Geral**
+  - Mover `#kpiGrid` (Questões resolvidas, Precisão 30d, Simulados, Atrasadas, Meta) para o topo de `#panel-questoes`.
+  - Mover `#quickStats` (Tópicos totais, Concluídos, Não iniciados) para o topo de `#panel-disciplinas`.
+  - Onboarding inline transformado em modal dialog acessível.
 - [x] **Orquestração e Montagem Declarativa Preact**
   - Integração em `dashboard-tab-controller.ts`, `questions-tab-controller.ts` e `performance-tab-controller.ts` via `mountPreact`
-  - Slots semânticos adicionados em `index.html`: `#cockpitAllocationMount`, `#cockpitVulnerabilitiesMount`, `#cockpitVolatileMount`, `#plateauDetectorMount`, `#shiftEnergyMount`
+  - Slots semânticos adicionados em `index.html`: `#cockpitSyllabusHealthMount`, `#cockpitRightColumnMount`, `#cockpitAllocationMount`, `#cockpitVulnerabilitiesMount`, `#cockpitVolatileMount`, `#plateauDetectorMount`, `#shiftEnergyMount`
   - Resiliência para execução Node em `preact-mount.ts`
 - [x] **Governança, Linting e Verificação**
   - ESLint 9 integrado via Flat Config (`eslint.config.js`) cobrindo TypeScript, Preact e Prettier
   - `npm run check:types` e `npm run check:types:tests`: 0 erros
   - `npm run lint`: 0 erros e 0 warnings em 979 arquivos
-  - `npm run test:fast`: 1.249 testes unitários no Node passaram 100% (45.93 s)
+  - `npm run test:fast`: 1.256 testes unitários no Node passaram 100% (~48 s)
   - `test-tiers.json` e `test-inventory.json` sincronizados e auditados
 

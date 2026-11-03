@@ -3357,7 +3357,7 @@
         "../../src/application/analytics/build-cockpit-sidebar-view-model.js",
         "../../src/ui/tabs/dashboard/dashboard-tab-controller.js"
       ],
-      "staticTestDeclarations": 12,
+      "staticTestDeclarations": 13,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

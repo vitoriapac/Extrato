@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
 import { Badge } from '../../primitives/badge.js';
@@ -13,6 +14,9 @@ export function AllocationBalanceGrid({
   onNavigatePlanning,
 }: AllocationBalanceGridProps): JSX.Element {
   const { rows, totalHours, hasBlueprint, summary } = model;
+  const [expanded, setExpanded] = useState(false);
+
+  const visibleRows = expanded ? rows : rows.slice(0, 5);
 
   return (
     <article class="chart-card cockpit-analytics-card" aria-labelledby="allocationGridTitle">
@@ -61,7 +65,7 @@ export function AllocationBalanceGrid({
               </tr>
             </thead>
             <tbody class="divide-y divide-border-subtle">
-              {rows.map(row => {
+              {visibleRows.map(row => {
                 // Cálculo da largura visual da barra (proporção tempo vs peso)
                 const maxVal = Math.max(row.timePercent, row.examWeightPercent, 10);
                 const timeWidth = Math.min(100, Math.round((row.timePercent / maxVal) * 100));
@@ -110,6 +114,21 @@ export function AllocationBalanceGrid({
               })}
             </tbody>
           </table>
+          {rows.length > 5 && (
+            <div class="mt-2.5 flex justify-center">
+              <button
+                type="button"
+                class="btn ghost small flex items-center gap-1.5 text-xs text-content-secondary hover:text-content-primary"
+                onClick={() => setExpanded(!expanded)}
+                aria-expanded={expanded}
+              >
+                <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={14} />
+                <span>
+                  {expanded ? 'Mostrar menos' : `Mostrar mais (+${rows.length - 5} disciplinas)`}
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 

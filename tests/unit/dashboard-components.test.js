@@ -248,6 +248,32 @@ test('AllocationBalanceGrid Preact Component — renderiza linhas de alocação 
   assert.match(html, /Direito Constitucional/);
   assert.match(html, /1,0h|1h/);
   assert.match(html, /100/);
+  assert.doesNotMatch(html, /Mostrar mais/);
+});
+
+test('AllocationBalanceGrid Preact Component — limita a 5 itens visíveis e exibe botão Mostrar mais quando > 5', () => {
+  const subjects = Array.from({ length: 8 }, (_, i) => ({
+    id: `s${i + 1}`,
+    name: `Disciplina ${i + 1}`,
+    examWeightPercent: 12.5,
+  }));
+  const sessions = subjects.map(s => ({
+    subjectId: s.id,
+    durationSeconds: 3600,
+    date: '2026-10-20',
+  }));
+  const model = buildAllocationBalanceViewModel({
+    subjects,
+    sessions,
+    today: '2026-10-20',
+  });
+
+  const html = render(h(AllocationBalanceGrid, { model }));
+  assert.match(html, /Disciplina 1/);
+  assert.match(html, /Disciplina 5/);
+  assert.doesNotMatch(html, /Disciplina 6/);
+  assert.doesNotMatch(html, /Disciplina 8/);
+  assert.match(html, /Mostrar mais \(\+3 disciplinas\)/);
 });
 
 test('CriticalVulnerabilitiesGrid Preact Component — renderiza tópicos de alta incidência', () => {

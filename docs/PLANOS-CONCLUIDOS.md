@@ -549,13 +549,19 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
   - Remoção de glifos soltos e emojis Unicode conforme a regra inegociável de zero emojis do `AGENTS.md`.
 - **Fase 3 (Cockpit Panorâmico & Gráficos SVG):**
   - Primitivos gráficos em SVG puro em `src/ui/primitives/charts/` (`RingGauge`, `Sparkline`, `BulletBar`, `StackedBar`).
-  - Gráficos analíticos distribuídos sem sobrecarregar a Visão Geral.
-- **Fase 4 (Grids Analíticos de Decisão Pedagógica & Modelos Visuais):**
-  - **Grid 1 (Balanço de Alocação de Tempo vs. Peso no Edital):** [`AllocationBalanceGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/AllocationBalanceGrid.tsx) + [`build-allocation-balance-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-allocation-balance-view-model.ts).
+  - **Saúde do Edital por Disciplina:** [`SyllabusHealthCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/SyllabusHealthCard.tsx) + [`build-syllabus-health-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-syllabus-health-view-model.ts) com barras empilhadas e bullet bars com meta aos 80%.
+  - **Coluna Lateral do Cockpit:** [`CockpitSidebarCards.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/CockpitSidebarCards.tsx) + [`build-cockpit-sidebar-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-cockpit-sidebar-view-model.ts):
+    - Meta de Hoje com RingGauge 64px (tempo e questões);
+    - Carga de Revisões com régua de 7 colunas, pico em âmbar e atrasos;
+    - Consistência de 28 dias com mini-heatmap 7×4 em tons de verde sálvia.
+- **Fase 4 (Grids Analíticos de Decisão Pedagógica, Divulgação Progressiva & Realocação):**
+  - **Grid 1 (Balanço de Alocação de Tempo vs. Peso no Edital):** [`AllocationBalanceGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/AllocationBalanceGrid.tsx) com **divulgação progressiva de 5 itens visíveis** e botão interativo `[Mostrar mais (+N disciplinas)]` / `[Mostrar menos]`.
   - **Grid 2 (Radar de Vulnerabilidades Críticas):** [`CriticalVulnerabilitiesGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx) + [`build-critical-vulnerabilities-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-critical-vulnerabilities-view-model.ts).
   - **Grid 3 (Diagnóstico de Domínio Volátil / Falsa Consolidação):** [`VolatileMasteryGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/VolatileMasteryGrid.tsx) + [`build-volatile-mastery-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-volatile-mastery-view-model.ts).
   - **Grid 4 (Detector de Platô & Retorno Decrescente):** [`PlateauDetectorCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/PlateauDetectorCard.tsx) + [`build-plateau-detector-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-plateau-detector-view-model.ts) na aba Questões & Simulados.
   - **Grid 5 (Eficiência & Energia Cronobiológica por Turno):** [`ShiftEnergyCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/performance/ShiftEnergyCard.tsx) + [`build-shift-energy-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/build-shift-energy-view-model.ts) na aba Desempenho.
+  - **Realocação Cirúrgica de Grids:** `#kpiGrid` (Questões e Simulados) movido para o topo da aba Questões & Simulados, e `#quickStats` (Tópicos) movido para o topo da aba Disciplinas.
+  - **Onboarding Modal:** Transformação da caixa de primeiro uso estática em modal dialog acessível.
   - Redistribuição pura em memória de revisões atrasadas (`redistribute-overdue-reviews.ts`).
 - **Fase 5 (Fluxos, Confiança & PWA):**
   - Mecanismo de Desfazer (`state-undo.ts`) preservando o histórico e reduzindo atrito de confirmações.
@@ -565,8 +571,8 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
   - Instalação e configuração do ESLint 9 via Flat Config (`eslint.config.js`) com `@babel/eslint-parser`, presets de TypeScript e Preact, e integração Prettier (0 erros em 979 arquivos).
 
 ### 11.2. Validação e Qualidade
-- **Testes Unitários:** **1.249 testes passando** (100% verde em UTC e America/Sao_Paulo).
-- **Fast Gate:** Totalmente aprovado em **45.93s** (dentro da meta de 120s).
+- **Testes Unitários:** **1.256 testes passando** (100% verde em UTC e America/Sao_Paulo).
+- **Fast Gate:** Totalmente aprovado em **48.28s** (dentro da meta de 120s).
 - **Typecheck:** 0 erros com `npm run check:types` e `npm run check:types:tests`.
 - **Lint:** 0 erros e 0 warnings com `npm run lint`.
 

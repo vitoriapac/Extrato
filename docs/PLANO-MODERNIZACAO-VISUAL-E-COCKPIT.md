@@ -142,12 +142,12 @@ Contagem Regressiva da Prova (input date + dias restantes com barra de progresso
 *Objetivo:* Desafogar a Visão Geral, realocar tabelas pesadas e integrar inteligência preditiva.
 
 * **4.1 Inclusão dos 3 Grids Analíticos na Visão Geral:**
-  - **Grid 1 (Alocação de Tempo vs. Peso na Prova):** Tabela comparativa (% tempo vs % pontos edital) gerando alerta de subalocação.
+  - **Grid 1 (Alocação de Tempo vs. Peso na Prova):** Tabela comparativa (% tempo vs % pontos edital) gerando alerta de subalocação. Possui **divulgação progressiva (regra de 5 itens visíveis)** com botão acessível `[Mostrar mais (+N disciplinas)]` / `[Mostrar menos]`.
   - **Grid 2 (Radar de Vulnerabilidades):** Top 4 tópicos com maior probabilidade na banca e menor domínio pessoal.
   - **Grid 3 (Diagnóstico de Domínio Volátil):** Tópicos com queda acentuada entre o estudo imediato e revisões espaçadas (>14 dias), baseado em `src/domain/analytics/volatile-mastery.ts`.
-* **4.2 Realocação de Grids Analíticos para Abas Dedicadas:**
-  - Mover o **Grid de Questões** detalhado para a aba **Questões & Simulados**.
-  - Mover o **Grid de Tópicos** do edital verticalizado para a aba **Disciplinas**.
+* **4.2 Realocação Cirúrgica de Grids para Abas Dedicadas:**
+  - Mover o **Grid de KPIs de Questões** (`#kpiGrid`: resolvidas, precisão 30d, simulados, atrasadas, meta) da Visão Geral para o topo da aba **Questões & Simulados** (`#panel-questoes`), liberando a Visão Geral para focar 100% no Cockpit panorâmico de decisão.
+  - Mover o **Grid de Tópicos** (`#quickStats`: total de tópicos, concluídos e não iniciados) da Visão Geral para o topo da aba **Disciplinas** (`#panel-disciplinas`).
 * **4.3 Modelos Visuais de Diagnóstico em Outras Abas:**
   - **Aba Desempenho:** Adicionar o gráfico em 3 colunas de *Rendimento por Turno & Energia* (`focus-energy-analytics.ts`) e o card do *Detector de Platô* (`plateau-detector.ts`).
 * **4.4 Modal Dialog de Configuração Inicial (Onboarding):**
@@ -193,13 +193,18 @@ Contagem Regressiva da Prova (input date + dias restantes com barra de progresso
 Todas as 5 fases foram implementadas com 100% de conformidade com os contratos do projeto:
 1. **Fase 1:** Paleta Sálvia Suíça baseada estritamente nos tokens do repositório (`--brand`, `--brand-secondary`, `--attention`, etc.), bordas com `--radius-card: 8px` e `--radius-control: 6px`, botões em 3 níveis (com variante `tonal`) e cabeçalho compacto no mobile.
 2. **Fase 2:** Tabler Icons vetoriais integrados em todos os componentes primitivos, eliminando emojis e glifos ASCII soltos.
-3. **Fase 3:** Cockpit com gráficos SVG responsivos sem bibliotecas externas (RingGauge, Sparkline, BulletBar, StackedBar).
-4. **Fase 4:** Adição dos Grids Analíticos de Decisão:
-   - Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital (Visão Geral)
-   - Grid 2: Radar de Vulnerabilidades Críticas (Visão Geral)
-   - Grid 3: Diagnóstico de Domínio Volátil / Falsa Consolidação (Visão Geral)
-   - Grid 4: Detector de Platô & Retorno Decrescente (Aba Questões & Simulados)
-   - Grid 5: Eficiência & Energia Cronobiológica por Turno (Aba Desempenho)
-   - Redistribuição em memória de revisões atrasadas (`redistribute-overdue-reviews.ts`)
+3. **Fase 3:** Cockpit com gráficos SVG responsivos sem bibliotecas externas:
+   - **Saúde do Edital por Disciplina (`SyllabusHealthCard.tsx`):** Barras empilhadas de progresso (concluído/em andamento) e bullet bars de precisão vs. meta de 80%.
+   - **Meta de Hoje (`TodayGoalCard`):** Anel de progresso circular (`RingGauge`), tempo de estudo vs. meta e questões resolvidas vs. previstas.
+   - **Carga de Revisões (`WeeklyReviewLoadCard`):** Régua vertical de 7 colunas (Seg a Dom) destacando dia de pico em tom âmbar e atrasos.
+   - **Consistência 28 dias (`ConsistencyMiniHeatmapCard`):** Mini-heatmap 7×4 em tons de verde sálvia com indicador de data de hoje.
+4. **Fase 4:** Adição dos Grids Analíticos de Decisão e Realocação Estrutural:
+   - Grid 1: Balanço de Alocação de Tempo vs. Peso no Edital com **regra de 5 itens visíveis e botão Mostrar Mais/Menos**.
+   - Grid 2: Radar de Vulnerabilidades Críticas (Visão Geral).
+   - Grid 3: Diagnóstico de Domínio Volátil / Falsa Consolidação (Visão Geral).
+   - Grid 4: Detector de Platô & Retorno Decrescente (Aba Questões & Simulados).
+   - Grid 5: Eficiência & Energia Cronobiológica por Turno (Aba Desempenho).
+   - **Realocação de Grids:** `#kpiGrid` (Questões e Simulados) movido para a aba Questões e `#quickStats` (Tópicos) movido para a aba Disciplinas.
+   - Modal Dialog de Onboarding automático no primeiro uso e redistribuição em memória de revisões atrasadas (`redistribute-overdue-reviews.ts`).
 5. **Fase 5:** Mecanismo de Desfazer (`state-undo.ts`), modo Essencial configurável (`studytrack.essential`), sub-abas no Planejamento, atalhos no `manifest.webmanifest` e auditoria de build e cache offline.
-6. **Governança & Qualidade:** ESLint 9 configurado via Flat Config para TypeScript/Preact/Prettier, `npm run check:types` limpo (0 erros) e `npm run test:fast` 100% aprovado com 1.249 testes unitários.
+6. **Governança & Qualidade:** ESLint 9 configurado via Flat Config para TypeScript/Preact/Prettier, `npm run check:types` limpo (0 erros) e `npm run test:fast` 100% aprovado com 1.256 testes unitários.

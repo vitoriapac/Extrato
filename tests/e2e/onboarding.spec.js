@@ -26,7 +26,7 @@ test('Visão Geral mantém ação antes da configuração em todos os estados de
   page,
 }) => {
   const inOrder = await page.evaluate(() => {
-    const ids = ['overviewNextAction', 'guidedOnboarding', 'kpiGrid', 'quickStats'];
+    const ids = ['overviewNextAction', 'guidedOnboarding', 'quickStats', 'kpiGrid'];
     const nodes = ids.map(id => document.getElementById(id));
     return (
       nodes.every(Boolean) &&
