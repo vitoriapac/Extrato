@@ -22,18 +22,28 @@ function renderEffects(effects: Record<string, any> | null) {
     (reviews ? `<div><dt>Revisões agendadas</dt><dd>${reviews.text}</dd></div>` : '');
   return `<dl class="session-effects" aria-label="Efeitos desta sessão">${rows}</dl>`;
 }
-export function renderSessionResult(model: Record<string, any>, { escapeHtml }: any = {}) {
+export function renderSessionResult(
+  model: Record<string, any>,
+  { escapeHtml = String, escapeAttr = escapeHtml }: any = {}
+) {
   const questionSummary = model.questions
     ? ` · ${model.questions.resolved} questões · ${model.questions.correct} acertos (${model.questions.accuracy}%)`
     : '';
   const button =
     '<button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>';
+  const chainQuestionsBtn =
+    model.subjectId && model.rawType !== 'questions'
+      ? `<button class="btn tonal small chain-questions-btn" type="button" data-delegated-click="chainQuestionsForTopic('${escapeAttr(model.subjectId)}', '${escapeAttr(model.topicId || '')}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-list-check icon-inline" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"></path><path d="M11 6l9 0"></path><path d="M11 12l9 0"></path><path d="M11 18l9 0"></path></svg>Registrar questões deste tópico →</button>`
+      : '';
+  const actionCluster = chainQuestionsBtn
+    ? `<div class="session-result-actions">${chainQuestionsBtn}${button}</div>`
+    : button;
   const next = model.plan
-    ? `<p>Próxima atividade do plano: <strong>${escapeHtml(model.plan.label)}</strong></p>${model.plan.suggestion ? `<p>Sugestão fora do plano: ${escapeHtml(model.plan.suggestion)}</p>` : ''}${button}`
+    ? `<p>Próxima atividade do plano: <strong>${escapeHtml(model.plan.label)}</strong></p>${model.plan.suggestion ? `<p>Sugestão fora do plano: ${escapeHtml(model.plan.suggestion)}</p>` : ''}${actionCluster}`
     : model.next
-      ? `<p>${model.next.changed ? 'Nova prioridade' : 'Sua prioridade principal continua sendo'}: <strong>${escapeHtml(model.next.label)}</strong></p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>`
+      ? `<p>${model.next.changed ? 'Nova prioridade' : 'Sua prioridade principal continua sendo'}: <strong>${escapeHtml(model.next.label)}</strong></p>${actionCluster}`
       : model.simulation
         ? '<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>'
-        : '<p>Consulte a próxima ação sugerida para continuar.</p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>';
+        : `<p>Consulte a próxima ação sugerida para continuar.</p>${actionCluster}`;
   return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderEffects(model.effects)}<small>Seus indicadores foram atualizados.</small>${next}`;
 }

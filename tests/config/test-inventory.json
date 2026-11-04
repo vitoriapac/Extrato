@@ -1066,7 +1066,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -8537,7 +8537,7 @@
         "../../src/application/sessions/build-session-result-view-model.js",
         "../../src/ui/renderers/session-result-renderer.js"
       ],
-      "staticTestDeclarations": 6,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

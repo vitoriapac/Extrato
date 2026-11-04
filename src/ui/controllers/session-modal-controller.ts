@@ -311,6 +311,13 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     document.getElementById('sessionModalSaveBtn')?.addEventListener('click', () => {
       handlers.onSave?.(readFormValues());
     });
+
+    document.getElementById('sessionModalOverlay')?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !['TEXTAREA', 'BUTTON'].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        handlers.onSave?.(readFormValues());
+      }
+    });
   }
 
   return {

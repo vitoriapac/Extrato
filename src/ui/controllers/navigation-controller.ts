@@ -185,6 +185,28 @@ export function createNavigationController({
       if (!typing && shortcut >= 0) {
         event.preventDefault();
         activate(MAIN_TABS[shortcut]);
+        return;
+      }
+      if (!typing && event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        if (event.key.toLowerCase() === 's') {
+          event.preventDefault();
+          activate('hoje');
+          const startBtn = document.getElementById('timerStartBtn');
+          const pauseBtn = document.getElementById('timerPauseBtn');
+          if (startBtn && window.getComputedStyle(startBtn).display !== 'none') {
+            startBtn.click();
+          } else if (pauseBtn && window.getComputedStyle(pauseBtn).display !== 'none') {
+            pauseBtn.click();
+          }
+          return;
+        }
+        if (event.key.toLowerCase() === 'q') {
+          event.preventDefault();
+          activate('questoes');
+          const addBtn = document.getElementById('addQuestaoRowBtn');
+          addBtn?.click();
+          return;
+        }
       }
     });
   return Object.freeze({ activate, closeMore, registerShortcuts });

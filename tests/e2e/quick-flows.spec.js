@@ -94,3 +94,25 @@ test('resultado da sessão mostra prontidão e meta do dia e meta do dia (F5)', 
   await expect(effects).toContainText('Prontidão');
   await expect(effects).toContainText('Meta do dia');
 });
+
+test('Alex (Power User) — encadeamento pós-sessão de estudo para questões do mesmo tópico', async ({
+  page,
+}) => {
+  await openDemo(page);
+  await activateTab(page, 'hoje');
+  await page.locator('#timerSubjectSelect').selectOption({ index: 1 });
+  await page.locator('#timerTopicSelect').selectOption({ index: 1 });
+  await page.locator('#timerStartBtn').click();
+  await page.locator('#timerFinishBtn').click();
+  await page.locator('#sessionModalSaveBtn').click();
+
+  const chainBtn = page.locator('#sessionResult .chain-questions-btn');
+  await expect(chainBtn).toBeVisible();
+  await expect(chainBtn).toContainText('Registrar questões deste tópico');
+  await chainBtn.click();
+
+  await expect(page.locator('#panel-questoes')).toBeVisible();
+  await expect(page.locator('#questionDraft-resolved')).toBeVisible();
+  await expect(page.locator('#questionDraft-resolved')).toBeFocused();
+});
+

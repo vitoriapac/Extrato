@@ -164,3 +164,28 @@ test('resultado mostra variação da prontidão e revisões agendadas pela sess�
   });
   assert.equal(none.effects, null);
 });
+
+test('resultado de sessão teórica ou revisão expõe ação de encadeamento para questões (Fase 1 Alex)', () => {
+  const model = buildSessionResultViewModel(
+    { ...session, subjectId: 'subj-1', topicId: 'top-2', type: 'study' },
+    null,
+    false,
+    options
+  );
+  assert.equal(model.subjectId, 'subj-1');
+  assert.equal(model.topicId, 'top-2');
+  assert.equal(model.rawType, 'study');
+  const html = renderSessionResult(model, { escapeHtml: String });
+  assert.match(html, /data-delegated-click="chainQuestionsForTopic\('subj-1', 'top-2'\)"/);
+  assert.match(html, /Registrar questões deste tópico →/);
+
+  const questionsModel = buildSessionResultViewModel(
+    { ...session, subjectId: 'subj-1', topicId: 'top-2', type: 'questions' },
+    null,
+    false,
+    options
+  );
+  const questionsHtml = renderSessionResult(questionsModel, { escapeHtml: String });
+  assert.doesNotMatch(questionsHtml, /chainQuestionsForTopic/);
+});
+

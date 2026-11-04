@@ -248,6 +248,18 @@ export function buildDelegatedActionHandlers(
         ?.getElementById('overviewNextAction')
         ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     },
+    chainQuestionsForTopic: (subjectId?: string, topicId?: string) => {
+      deps.activateTab('questoes');
+      c.questions?.addQuestaoRow?.({
+        subjectId: subjectId || null,
+        topicId: topicId || null,
+      });
+      deps.document
+        ?.getElementById('questoesBody')
+        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+      const input = deps.document?.getElementById('questionDraft-resolved') as HTMLInputElement | null;
+      input?.focus?.();
+    },
 
     // Diagnostics & Approval
     dismissIntelligentAlert: (...args: any[]) => c.diagnostics?.dismissIntelligentAlert?.(...args),
