@@ -13,29 +13,29 @@ const pending: Record<string, Record<string, string>> = {
   questions: {
     title: 'Questões',
     description:
-      'Evolução da precisão, volume e erros. Até a migração, a análise completa está em Questões e Simulados.',
+      'Acompanhe a evolução da precisão, volume e perfil de erros nos períodos da sua preparação.',
     tab: 'questoes',
-    action: 'Abrir Questões e Simulados',
+    action: 'Registrar questões',
   },
   simulations: {
     title: 'Simulados',
     description:
-      'Resultados, comparação por disciplina e calibração. Os registros e gráficos atuais estão em Questões e Simulados.',
+      'Resultados de simulados, evolução das notas, comparação por disciplina e calibração da prova.',
     tab: 'questoes',
-    action: 'Abrir Questões e Simulados',
+    action: 'Registrar simulado',
   },
   subjects: {
     title: 'Disciplinas',
     description:
-      'A evolução por disciplina e tópico será reunida aqui. Consulte os registros atuais por disciplina.',
+      'Acompanhe a evolução detalhada por disciplina e tópicos do concurso.',
     tab: 'disciplinas',
-    action: 'Abrir Disciplinas',
+    action: 'Ver disciplinas',
   },
   consistency: {
     title: 'Consistência',
-    description: 'Histórico de estudo e execução do plano. Consulte o plano atual em Planejamento.',
+    description: 'Histórico de estudo, ritmo diário e execução do plano de estudos.',
     tab: 'metas',
-    action: 'Abrir Planejamento',
+    action: 'Ver planejamento',
   },
 };
 

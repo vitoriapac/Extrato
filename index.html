@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=4e5327d8d848">
-<link rel="stylesheet" href="styles/app.css?v=4e5327d8d848">
+<link rel="stylesheet" href="styles/tailwind.css?v=21b359755aed">
+<link rel="stylesheet" href="styles/app.css?v=21b359755aed">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -182,7 +182,7 @@
   </div>
 
 
-  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
+  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho" data-performance-view="overview">
     <div id="performancePage"></div>
     <p class="sr-only" id="performanceStatus" role="status"></p>
     <section class="chart-card intelligence-column performance-readiness" id="performanceReadinessCard" aria-labelledby="performanceReadinessTitle">
@@ -275,13 +275,16 @@
       </div>
       <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-filter icon-inline" aria-hidden="true"><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227"></path></svg>Filtros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></button>
       <div class="cal-filters responsive-filters" id="studySessionsFilters" style="margin-top:14px;">
+        <label for="studySessionsPeriod" class="sr-only">Período do histórico de sessões</label>
         <select class="select-control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
           <option value="30" selected>Últimos 30 dias</option>
           <option value="90">Últimos 90 dias</option>
           <option value="all">Todo o período</option>
         </select>
+        <label for="studySessionsSubjectFilter" class="sr-only">Disciplina do histórico de sessões</label>
         <select class="select-control" id="studySessionsSubjectFilter" aria-label="Disciplina do histórico" data-delegated-change="updateSessionHistoryFilter('subjectId',this.value)"></select>
+        <label for="studySessionsTypeFilter" class="sr-only">Tipo de sessão do histórico</label>
         <select class="select-control" id="studySessionsTypeFilter" aria-label="Tipo de sessão do histórico" data-delegated-change="updateSessionHistoryFilter('type',this.value)">
           <option value="">Todos os tipos</option>
           <option value="study">Estudo teórico</option>
@@ -304,6 +307,7 @@
       </div>
       <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap">
         <table class="log responsive-history-table study-sessions-table">
+          <caption class="sr-only">Histórico de sessões de estudo realizadas</caption>
           <thead>
             <tr>
               <th>Data</th>
@@ -323,75 +327,92 @@
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
     <h2 class="section-title today-title">Hoje</h2>
-    <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
-      <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
-      <div id="planoHojeContent"></div>
-    </section>
 
+    <div id="firstStepsMissionSlot"></div>
     <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
-    <div class="chart-card study-timer-card" id="study-timer">
-      <h3 id="studyTimerTitle">Cronômetro de estudo</h3>
-      <div class="timer-block" role="region" aria-label="Cronômetro de estudo">
-        <section class="timer-focus-context" id="timerFocusContext" hidden aria-live="polite" aria-label="Contexto do modo foco">
-          <span>STUDYTRACK · MODO FOCO</span>
-          <h3 id="timerFocusTitle">Sessão de estudo</h3>
-          <p id="timerFocusSubtitle">Estudo teórico · Sem meta de tempo</p>
-          <p id="timerFocusResume" class="timer-focus-resume" hidden></p>
-          <small class="timer-focus-hint">Esc · sair do modo foco</small>
+    <div class="today-layout-grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
+      <!-- COLUNA PRINCIPAL DE EXECUÇÃO (8 cols) -->
+      <div class="lg:col-span-8 space-y-4">
+        <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
+          <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
+          <div id="planoHojeContent"></div>
         </section>
-        <div class="timer-context" aria-label="Contexto da sessão">
-          <select class="select-control" data-searchable id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
-          <select class="select-control" id="timerTopicSelect" aria-label="Tópico da sessão"></select>
-          <select class="select-control" id="timerTypeSelect" aria-label="Tipo da sessão">
-            <option value="study">Estudo teórico</option>
-            <option value="review">Revisão</option>
-            <option value="questions">Questões</option>
-            <option value="simulation">Simulado</option>
-          </select>
+
+        <div class="chart-card study-timer-card" id="study-timer">
+          <h3 id="studyTimerTitle">Cronômetro de estudo</h3>
+          <div class="timer-block" role="region" aria-label="Cronômetro de estudo">
+            <section class="timer-focus-context" id="timerFocusContext" hidden aria-live="polite" aria-label="Contexto do modo foco">
+              <span>STUDYTRACK · MODO FOCO</span>
+              <h3 id="timerFocusTitle">Sessão de estudo</h3>
+              <p id="timerFocusSubtitle">Estudo teórico · Sem meta de tempo</p>
+              <p id="timerFocusResume" class="timer-focus-resume" hidden></p>
+              <small class="timer-focus-hint">Esc · sair do modo foco</small>
+            </section>
+            <div class="timer-context" aria-label="Contexto da sessão">
+              <select class="select-control" data-searchable id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
+              <select class="select-control" id="timerTopicSelect" aria-label="Tópico da sessão"></select>
+              <select class="select-control" id="timerTypeSelect" aria-label="Tipo da sessão">
+                <option value="study">Estudo teórico</option>
+                <option value="review">Revisão</option>
+                <option value="questions">Questões</option>
+                <option value="simulation">Simulado</option>
+              </select>
+            </div>
+            <div class="timer-display" id="studyTimerDisplay">00:00</div>
+            <progress class="timer-goal-progress" id="studyTimerProgress" max="100" value="0" hidden aria-label="Progresso da meta da sessão"></progress>
+            <div class="timer-target" id="studyTimerTarget" hidden></div>
+            <div id="guidedStrategy" class="guided-strategy" hidden></div>
+            <div class="timer-actions action-group" role="group" aria-label="Ações do cronômetro">
+              <button class="btn" id="timerStartBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-player-play icon-inline" aria-hidden="true"><path d="M7 4v16l13 -8l-13 -8"></path></svg>Iniciar</button>
+              <button class="btn" id="timerPauseBtn" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-player-pause icon-inline" aria-hidden="true"><path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"></path><path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"></path></svg>Pausar</button>
+              <button class="btn ghost" id="timerResetBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Zerar</button>
+              <button class="btn ghost" id="timerFinishBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-square-check icon-inline" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"></path><path d="M9 12l2 2l4 -4"></path></svg>Finalizar sessão</button>
+              <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-focus-2 icon-inline" aria-hidden="true"><path d="M11.5 12a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"></path><path d="M5 12a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M12 3l0 2"></path><path d="M3 12l2 0"></path><path d="M12 19l0 2"></path><path d="M19 12l2 0"></path></svg>Modo foco</button>
+              <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-picture-in-picture icon-inline" aria-hidden="true"><path d="M11 19h-6a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4"></path><path d="M14 15a1 1 0 0 1 1 -1h5a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-5a1 1 0 0 1 -1 -1l0 -3"></path></svg>Janela flutuante</button>
+            </div>
+            <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+          </div>
+          <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
         </div>
-      <div class="timer-display" id="studyTimerDisplay">00:00</div>
-      <progress class="timer-goal-progress" id="studyTimerProgress" max="100" value="0" hidden aria-label="Progresso da meta da sessão"></progress>
-      <div class="timer-target" id="studyTimerTarget" hidden></div>
-      <div id="guidedStrategy" class="guided-strategy" hidden></div>
-        <div class="timer-actions action-group" role="group" aria-label="Ações do cronômetro">
-          <button class="btn" id="timerStartBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-player-play icon-inline" aria-hidden="true"><path d="M7 4v16l13 -8l-13 -8"></path></svg>Iniciar</button>
-          <button class="btn" id="timerPauseBtn" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-player-pause icon-inline" aria-hidden="true"><path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"></path><path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"></path></svg>Pausar</button>
-          <button class="btn ghost" id="timerResetBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Zerar</button>
-          <button class="btn ghost" id="timerFinishBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-square-check icon-inline" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"></path><path d="M9 12l2 2l4 -4"></path></svg>Finalizar sessão</button>
-          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-focus-2 icon-inline" aria-hidden="true"><path d="M11.5 12a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"></path><path d="M5 12a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M12 3l0 2"></path><path d="M3 12l2 0"></path><path d="M12 19l0 2"></path><path d="M19 12l2 0"></path></svg>Modo foco</button>
-          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-picture-in-picture icon-inline" aria-hidden="true"><path d="M11 19h-6a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4"></path><path d="M14 15a1 1 0 0 1 1 -1h5a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-5a1 1 0 0 1 -1 -1l0 -3"></path></svg>Janela flutuante</button>
+
+        <section class="chart-card today-recommendation-card" aria-labelledby="todaySuggestionTitle">
+          <header class="module-heading module-heading--compact"><span class="module-heading__eyebrow">Estratégia</span><h3 class="module-heading__title" id="todaySuggestionTitle">Sugestão opcional</h3><p class="module-heading__description">Explica o porquê da prioridade atual ou sugere alternativas sem alterar seu planejamento.</p></header>
+          <div id="studyRecommendation"></div>
+        </section>
+
+        <div class="chart-card" id="todayAlertsCard">
+          <h3>Atenção</h3>
+          <div id="alertasInteligentesList"></div>
         </div>
-        <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
       </div>
-      <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
-    </div>
 
+      <!-- COLUNA LATERAL DE RITMO, METAS E AGENDA (4 cols) -->
+      <div class="lg:col-span-4 space-y-4">
+        <section class="chart-card today-metas-section" aria-labelledby="todayMetasHeading">
+          <header class="module-heading module-heading--compact mb-3">
+            <span class="module-heading__eyebrow">Progresso diário</span>
+            <h3 class="module-heading__title" id="todayMetasHeading">Metas de hoje</h3>
+          </header>
+          <div id="hojeMetas"></div>
+        </section>
 
-    <section class="chart-card today-recommendation-card" aria-labelledby="todaySuggestionTitle">
-      <header class="module-heading module-heading--compact"><span class="module-heading__eyebrow">Estratégia</span><h3 class="module-heading__title" id="todaySuggestionTitle">Sugestão opcional</h3><p class="module-heading__description">Explica o porquê da prioridade atual ou sugere alternativas sem alterar seu planejamento.</p></header>
-      <div id="studyRecommendation"></div>
-    </section>
+        <div class="chart-card today-agenda-card" aria-labelledby="todayAgendaHeading">
+          <header class="module-heading module-heading--compact mb-3">
+            <span class="module-heading__eyebrow">Compromissos</span>
+            <h3 class="module-heading__title" id="todayAgendaHeading">Agenda e revisões</h3>
+          </header>
+          <div class="today-agenda-sidebar-list space-y-4">
+            <section><h4>Eventos do calendário</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
+            <section><h4>Revisões atrasadas</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
+            <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
+          </div>
+        </div>
 
-    <div class="chart-card">
-      <h3>Atenção</h3>
-      <div id="alertasInteligentesList"></div>
-    </div>
-
-    <div class="chart-card today-agenda-card">
-      <h3>Agenda e metas do dia</h3>
-      <div class="today-agenda-grid">
-        <section><h4>Eventos do calendário</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
-        <section><h4>Revisões atrasadas</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
-        <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
-        <section><h4>Metas</h4><div id="hojeMetas"></div></section>
+        <div id="errorNotebookDueToday"></div>
+        <div id="todayConsistency"></div>
       </div>
     </div>
-
-    <div id="errorNotebookDueToday"></div>
-    <div id="todayConsistency"></div>
-
-
   </div>
 
   <!-- DISCIPLINAS -->
@@ -555,14 +576,16 @@
         <button type="button" id="importQuestionsBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar CSV (QConcursos / Tec / Padrão)</button>
         <button type="button" id="downloadQuestionsCsvBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-download icon-inline" aria-hidden="true"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path><path d="M7 11l5 5l5 -5"></path><path d="M12 4l0 12"></path></svg>Baixar modelo CSV</button>
       </div></details>
+      <label for="questionsImportFile" class="sr-only">Importar arquivo CSV de questões</label>
       <input type="file" id="questionsImportFile" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
-      <button class="btn ghost small" type="button" data-performance-jump="questions">Ver análise completa<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
+      <button class="btn ghost small" type="button" data-performance-jump="questions">Ver evolução de precisão e erros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
     </div>
     <div class="kpi-grid mb-4" id="kpiGrid"></div>
     <div id="errorNotebookMount" hidden></div>
     <div id="questionsMainContainer">
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
+        <caption class="sr-only">Histórico de questões resolvidas</caption>
         <thead>
           <tr>
             <th style="width:120px;">Data</th>
@@ -586,14 +609,15 @@
         <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
       </div>
       <div class="analytics-toolbar">
+        <label for="performanceSubjectSelect" class="sr-only">Disciplina analisada</label>
         <select class="select-control" id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
       </div>
       <div class="question-analysis-summary" id="questionAnalyticsSummary"></div>
       <h3>Desempenho dos tópicos</h3>
       <div id="topicPerformanceBars"></div>
-      <h3 style="margin-top:22px;">Tendência semanal — últimas 8 semanas</h3>
+      <h3 class="mt-6">Tendência semanal — últimas 8 semanas</h3>
       <div id="subjectWeeklyTrend"></div>
-      <h3 style="margin-top:22px;">Perfil de erros categorizados</h3>
+      <h3 class="mt-6">Perfil de erros categorizados</h3>
       <div id="subjectErrorProfile"></div>
       <div id="plateauDetectorMount"></div>
     </details>
@@ -601,10 +625,11 @@
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Simulados</h2>
       <button class="btn" id="addSimuladoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Registrar simulado</button>
-      <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver análise completa<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
+      <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver evolução de notas e calibração<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
     </div>
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
+        <caption class="sr-only">Histórico de simulados realizados</caption>
         <thead>
           <tr>
             <th style="width:110px;">Data</th>
@@ -612,8 +637,8 @@
             <th style="width:90px;">Acertos</th>
             <th style="width:90px;">Total</th>
             <th style="width:80px;">Nota</th>
-            <th style="width:90px;"><span class="sr-only">Ações</span></th>
-            <th style="width:36px;"><span class="sr-only">Ações</span></th>
+            <th style="width:90px;"><span class="sr-only">Detalhar</span></th>
+            <th style="width:36px;"><span class="sr-only">Excluir</span></th>
           </tr>
         </thead>
         <tbody id="simuladosBody"></tbody>
@@ -675,17 +700,19 @@
     <details class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas"><summary class="metas-subpanel__summary">Metas por disciplina</summary>
     <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
     <div class="section-head">
-      <div class="section-title" style="font-size:16px;">Metas de questões por disciplina</div>
+      <h3 class="section-title">Metas de questões por disciplina</h3>
     </div>
     <p class="helper-text">
       Meta de questões resolvidas por semana, específica por disciplina.
     </p>
-    <div class="meta-disciplina-add">
-                <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
-                <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" style="width:80px;">
+    <form class="meta-disciplina-add" id="metaDisciplinaForm" onsubmit="event.preventDefault(); document.getElementById('addMetaDisciplinaBtn')?.click();">
+      <label for="novaMetaDisciplinaSelect" class="sr-only">Disciplina da nova meta</label>
+      <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
+      <label for="novaMetaDisciplinaValor" class="sr-only">Quantidade de questões da nova meta</label>
+      <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" style="width:80px;">
       <span class="metadata-text">questões/semana</span>
-      <button class="btn small" id="addMetaDisciplinaBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Adicionar meta</button>
-    </div>
+      <button class="btn small" type="submit" id="addMetaDisciplinaBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Adicionar meta</button>
+    </form>
     <div id="metasPorDisciplinaContainer"></div>
 
     <div class="chart-card">
@@ -700,9 +727,9 @@
     </section>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico"><summary class="metas-subpanel__summary">Histórico</summary>
+    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico"><summary class="metas-subpanel__summary">Histórico de retratos e decisões</summary>
     <section class="chart-card metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões" data-metas-section aria-labelledby="metasHistoryTitle">
-      <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Histórico</h3><p class="module-heading__description">Retratos salvos, decisões e trajetória das prioridades. Nada aqui é recalculado.</p></header>
+      <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Retratos e Histórico de Decisões</h3><p class="module-heading__description">Retratos semanais salvos, decisões e trajetória das prioridades. Registros congelados e imutáveis.</p></header>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Retratos semanais</h3></header><div id="weeklyCloseHistoryDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Linha do Tempo Estratégica</h3><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Evolução das prioridades</h3><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
     </section>
@@ -998,7 +1025,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=4e5327d8d848"></script>
+  <script src="src/app.bundle.js?v=21b359755aed"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

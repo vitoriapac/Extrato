@@ -324,6 +324,7 @@
   .meta-hoje-time-goal{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
   .meta-hoje-time-goal span{font-family:var(--font-body);font-size:var(--text-micro);font-weight:400;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
   .meta-hoje-time-goal input{width:60px;font-family:var(--font-data);font-size:12px;text-align:center;padding:5px 6px;border:1px solid var(--border-control);border-radius:var(--radius-control);background:var(--white);color:var(--ink);}
+  .meta-hoje-chart{width:100%;margin-top:8px;}
 
   /* ===== CRONÔMETRO ===== */
   .timer-block{display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px 0;}
@@ -1056,6 +1057,7 @@
 .today-execution-summary>.today-execution-progress{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--paper)}
 .today-execution-progress>p{margin:0;color:var(--ink-soft);font:var(--text-small)/1.4 var(--font-body)}
 .today-execution-progress>p>strong{color:var(--ink);font:600 var(--text-body) var(--font-data)}
+.today-execution-budget-track{grid-column:1/-1;padding:10px 12px;background:var(--paper);border-top:1px solid var(--paper-line)}
 .replan-allocations{margin:12px 0}.replan-allocations>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--paper-line)}.replan-allocations span{color:var(--ink-soft);font:var(--text-micro) var(--font-body)}
 .alerta-item .alert-dismiss{margin-left:auto;white-space:nowrap}.error-analysis-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.error-analysis-toolbar select{min-height:38px;padding:7px 9px;border:1px solid var(--border-control);background:var(--white);color:var(--ink);font:var(--text-micro) var(--font-body)}.error-profile-item small{display:block;margin-top:3px;color:var(--ink-soft);font:var(--text-micro)/1.4 var(--font-body)}
 .heatmap-grid{max-width:100%;overflow-x:auto;padding:3px 0}
@@ -2864,9 +2866,9 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .btn:hover .kbd-shortcut{color:var(--heading);border-color:var(--border-default)}
 
 /* Histórico é uma subaba: conquistas, tempo de estudo e sessões só aparecem nela; a análise de risco fica nas outras. */
+#panel-desempenho:not([data-performance-view="overview"]) #performanceReadinessCard,
+#panel-desempenho:not([data-performance-view="overview"]) #performanceDecisionDetails,
+#panel-desempenho:not([data-performance-view="overview"]) .today-analysis-details,
+#panel-desempenho:not([data-performance-view="overview"]) #desempenho-gaps,
 #panel-desempenho:not([data-performance-view="history"]) #performance-progress,
-#panel-desempenho:not([data-performance-view="history"]) #desempenho-study,
-#panel-desempenho[data-performance-view="history"] #performanceReadinessCard,
-#panel-desempenho[data-performance-view="history"] #performanceDecisionDetails,
-#panel-desempenho[data-performance-view="history"] .today-analysis-details,
-#panel-desempenho[data-performance-view="history"] #desempenho-gaps{display:none}
+#panel-desempenho:not([data-performance-view="history"]) #desempenho-study{display:none}

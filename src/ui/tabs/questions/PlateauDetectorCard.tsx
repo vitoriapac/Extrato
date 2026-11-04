@@ -27,14 +27,14 @@ export function PlateauDetectorCard({
           <div>
             <div class="flex items-center gap-2">
               <h3 id="plateauDetectorTitle" class="text-base font-semibold text-content-primary m-0">
-                Detector de Platô &amp; Retorno Decrescente
+                Detector de Platô &amp; Inflexão Metodológica
               </h3>
               {hasPlateauDetected && (
                 <Badge variant="warning">{stagnantTopics.length} em estagnação</Badge>
               )}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Assuntos com alto volume de questões mas sem ganho de precisão (faixa intermediária &lt; 75%)
+              Assuntos com alto volume de questões sem ganho recente de precisão — momento de isolar dificuldades conceituais no Caderno de Erros.
             </p>
           </div>
         </div>
@@ -56,9 +56,9 @@ export function PlateauDetectorCard({
           <div class="inline-flex p-2 rounded-full bg-green-bg text-green mb-2">
             <Icon name="circle-check" size={24} />
           </div>
-          <p class="m-0 font-medium text-content-primary">Rendimento responsivo ao volume!</p>
+          <p class="m-0 font-medium text-content-primary">Rendimento em evolução constante!</p>
           <p class="m-0 mt-1 text-xs">
-            Nenhum tópico em platô. As horas e questões investidas estão gerando avanço perceptível na precisão.
+            Nenhum tópico em platô. As questões investidas estão se convertendo em ganho perceptível na precisão.
           </p>
         </div>
       ) : (

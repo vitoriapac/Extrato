@@ -41,7 +41,7 @@ export function initPlanningSubtabs(doc: Document = document) {
     selectPlanningSubtab(key, { doc, focus, updateHash: true });
     // Below the sticky bar, a new sub-tab starts at its top instead of mid-page.
     const panel = doc.getElementById(`metasSub-${key}`);
-    if (panel && panel.getBoundingClientRect().top < 0) panel.scrollIntoView({ block: 'start' });
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   list.addEventListener('click', event => {
     const tab = (event.target as Element).closest<HTMLElement>('[data-metas-subtab]');
