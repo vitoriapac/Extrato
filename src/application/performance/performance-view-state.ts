@@ -7,6 +7,7 @@ export const PERFORMANCE_SECTIONS = Object.freeze([
   'simulations',
   'exam',
   'consistency',
+  'history',
 ]);
 export const PERFORMANCE_PERIODS = Object.freeze(['7', '30', '90', 'all']);
 

@@ -1,56 +1,228 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-01T00:00:00Z",
+  "generatedAt": "2026-11-03T21:18:07.412Z",
   "title": "Design System: StudyTrack — Extrato de Estudos",
   "extensions": {
     "colorMeta": {
-      "brand": { "role": "primary", "displayName": "Musgo de Extrato", "canonical": "#1E3F35", "tonalRamp": ["oklch(15% 0.03 165)", "oklch(26% 0.04 165)", "oklch(35% 0.05 165)", "oklch(48% 0.06 165)", "oklch(60% 0.06 165)", "oklch(72% 0.05 165)", "oklch(84% 0.04 160)", "oklch(95% 0.01 160)"] },
-      "brand-secondary": { "role": "primary", "displayName": "Sálvia Tinta", "canonical": "#2F5D4E", "tonalRamp": ["oklch(15% 0.03 165)", "oklch(26% 0.04 165)", "oklch(37% 0.05 165)", "oklch(45% 0.06 165)", "oklch(60% 0.06 165)", "oklch(72% 0.05 165)", "oklch(84% 0.04 160)", "oklch(95% 0.01 160)"] },
-      "accent": { "role": "secondary", "displayName": "Sálvia Escuro", "canonical": "#2F5D4E" },
-      "brand-on-header": { "role": "secondary", "displayName": "Sálvia Claro", "canonical": "#A8D3B8" },
-      "attention": { "role": "secondary", "displayName": "Âmbar Saldo", "canonical": "#E9953F" },
-      "paper": { "role": "neutral", "displayName": "Papel", "canonical": "#F4F6F4", "tonalRamp": ["oklch(15% 0.006 150)", "oklch(26% 0.006 150)", "oklch(37% 0.006 150)", "oklch(48% 0.006 150)", "oklch(60% 0.006 150)", "oklch(72% 0.006 150)", "oklch(84% 0.008 150)", "oklch(97% 0.004 150)"] },
-      "paper-line": { "role": "neutral", "displayName": "Linha de Papel", "canonical": "#D5DDD6" },
-      "white": { "role": "neutral", "displayName": "Papel Branco", "canonical": "#FBFCFA" },
-      "slate-bg": { "role": "neutral", "displayName": "Ardósia Sálvia", "canonical": "#E6EDE6" },
-      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "#17302A" },
-      "ink-soft": { "role": "neutral", "displayName": "Tinta Suave", "canonical": "#4F6158" },
-      "green": { "role": "tertiary", "displayName": "Verde Conta", "canonical": "#2F6B4F" },
-      "amber": { "role": "tertiary", "displayName": "Âmbar Aviso", "canonical": "#9A4F0E" },
-      "red": { "role": "tertiary", "displayName": "Vermelho Débito", "canonical": "#A23B2A" },
-      "info-bg": { "role": "tertiary", "displayName": "Informe", "canonical": "#E3ECE7" },
-      "highlight-bg": { "role": "neutral", "displayName": "Destaque", "canonical": "#FBF1E4" }
+      "brand": {
+        "role": "primary",
+        "displayName": "Musgo de Extrato",
+        "canonical": "#1E3F35",
+        "tonalRamp": [
+          "oklch(15% 0.03 165)",
+          "oklch(26% 0.04 165)",
+          "oklch(35% 0.05 165)",
+          "oklch(48% 0.06 165)",
+          "oklch(60% 0.06 165)",
+          "oklch(72% 0.05 165)",
+          "oklch(84% 0.04 160)",
+          "oklch(95% 0.01 160)"
+        ]
+      },
+      "brand-secondary": {
+        "role": "primary",
+        "displayName": "Sálvia Tinta",
+        "canonical": "#2F5D4E",
+        "tonalRamp": [
+          "oklch(15% 0.03 165)",
+          "oklch(26% 0.04 165)",
+          "oklch(37% 0.05 165)",
+          "oklch(45% 0.06 165)",
+          "oklch(60% 0.06 165)",
+          "oklch(72% 0.05 165)",
+          "oklch(84% 0.04 160)",
+          "oklch(95% 0.01 160)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Sálvia Escuro",
+        "canonical": "#2F5D4E"
+      },
+      "brand-on-header": {
+        "role": "secondary",
+        "displayName": "Sálvia Claro",
+        "canonical": "#A8D3B8"
+      },
+      "attention": {
+        "role": "secondary",
+        "displayName": "Âmbar Saldo",
+        "canonical": "#E9953F"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "#F4F6F4",
+        "tonalRamp": [
+          "oklch(15% 0.006 150)",
+          "oklch(26% 0.006 150)",
+          "oklch(37% 0.006 150)",
+          "oklch(48% 0.006 150)",
+          "oklch(60% 0.006 150)",
+          "oklch(72% 0.006 150)",
+          "oklch(84% 0.008 150)",
+          "oklch(97% 0.004 150)"
+        ]
+      },
+      "paper-line": {
+        "role": "neutral",
+        "displayName": "Linha de Papel",
+        "canonical": "#D5DDD6"
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "Papel Branco",
+        "canonical": "#FBFCFA"
+      },
+      "slate-bg": {
+        "role": "neutral",
+        "displayName": "Ardósia Sálvia",
+        "canonical": "#E6EDE6"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#17302A"
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Tinta Suave",
+        "canonical": "#4F6158"
+      },
+      "green": {
+        "role": "tertiary",
+        "displayName": "Verde Conta",
+        "canonical": "#2F6B4F"
+      },
+      "amber": {
+        "role": "tertiary",
+        "displayName": "Âmbar Aviso",
+        "canonical": "#9A4F0E"
+      },
+      "red": {
+        "role": "tertiary",
+        "displayName": "Vermelho Débito",
+        "canonical": "#A23B2A"
+      },
+      "info-bg": {
+        "role": "tertiary",
+        "displayName": "Informe",
+        "canonical": "#E3ECE7"
+      },
+      "highlight-bg": {
+        "role": "neutral",
+        "displayName": "Destaque",
+        "canonical": "#FBF1E4"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Título do extrato no cabeçalho." },
-      "headline": { "displayName": "Headline", "purpose": "Título de página e diálogos de entrada." },
-      "value": { "displayName": "Value", "purpose": "Números principais em KPIs, saldos e cronômetro." },
-      "title": { "displayName": "Title", "purpose": "Títulos de blocos de decisão." },
-      "body": { "displayName": "Body", "purpose": "Explicações e formulários; até 80ch; 15px até 600px de largura." },
-      "action": { "displayName": "Action", "purpose": "Botões e abas, Sans 500 sem caixa-alta." },
-      "label": { "displayName": "Label", "purpose": "Rótulos de seção, eyebrows e cabeçalhos de tabela, em maiúsculas." },
-      "data": { "displayName": "Data", "purpose": "Datas, durações, contagens, percentuais e códigos, em mono." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título do extrato no cabeçalho."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de página e diálogos de entrada."
+      },
+      "value": {
+        "displayName": "Value",
+        "purpose": "Números principais em KPIs, saldos e cronômetro."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de blocos de decisão."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explicações e formulários; até 80ch; 15px até 600px de largura."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Botões e abas, Sans 500 sem caixa-alta."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rótulos de seção, eyebrows e cabeçalhos de tabela, em maiúsculas."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Datas, durações, contagens, percentuais e códigos, em mono."
+      }
     },
     "shadows": [
-      { "name": "sage-rule", "value": "0 1px 0 var(--accent)", "purpose": "Base do cabeçalho do extrato." },
-      { "name": "sticky-bar", "value": "0 4px 12px color-mix(in srgb,var(--shadow-color) 25%,transparent)", "purpose": "Busca e cabeçalho compacto fixos." },
-      { "name": "floating-menu", "value": "0 10px 24px var(--shadow-color)", "purpose": "Menus e popovers." },
-      { "name": "dialog", "value": "0 24px 70px var(--shadow-color)", "purpose": "Modais e assistente inicial, sobre var(--backdrop)." }
+      {
+        "name": "sage-rule",
+        "value": "0 1px 0 var(--accent)",
+        "purpose": "Base do cabeçalho do extrato."
+      },
+      {
+        "name": "sticky-bar",
+        "value": "0 4px 12px color-mix(in srgb,var(--shadow-color) 25%,transparent)",
+        "purpose": "Busca e cabeçalho compacto fixos."
+      },
+      {
+        "name": "floating-menu",
+        "value": "0 10px 24px var(--shadow-color)",
+        "purpose": "Menus e popovers."
+      },
+      {
+        "name": "dialog",
+        "value": "0 24px 70px var(--shadow-color)",
+        "purpose": "Modais e assistente inicial, sobre var(--backdrop)."
+      }
     ],
     "motion": [
-      { "name": "state-change", "value": "150ms ease", "purpose": "Hover e foco de botões, abas e campos." },
-      { "name": "press", "value": "transform 100ms ease, translateY(1px)", "purpose": "Active de botões." },
-      { "name": "theme", "value": "200ms ease", "purpose": "Troca de tema no body." },
-      { "name": "panel-fade", "value": "250ms ease", "purpose": "Entrada de painel ao trocar de aba." },
-      { "name": "bar-fill", "value": "width 400ms ease", "purpose": "Preenchimento de barras de progresso." }
+      {
+        "name": "state-change",
+        "value": "150ms ease",
+        "purpose": "Hover e foco de botões, abas e campos."
+      },
+      {
+        "name": "press",
+        "value": "transform 100ms ease, translateY(1px)",
+        "purpose": "Active de botões."
+      },
+      {
+        "name": "theme",
+        "value": "200ms ease",
+        "purpose": "Troca de tema no body."
+      },
+      {
+        "name": "panel-fade",
+        "value": "250ms ease",
+        "purpose": "Entrada de painel ao trocar de aba."
+      },
+      {
+        "name": "bar-fill",
+        "value": "width 400ms ease",
+        "purpose": "Preenchimento de barras de progresso."
+      }
     ],
     "breakpoints": [
-      { "name": "xs", "value": "375px" },
-      { "name": "sm", "value": "430px" },
-      { "name": "mobile", "value": "760px" },
-      { "name": "tablet", "value": "900px" },
-      { "name": "wide", "value": "1100px" },
-      { "name": "container", "value": "1280px" }
+      {
+        "name": "xs",
+        "value": "375px"
+      },
+      {
+        "name": "sm",
+        "value": "430px"
+      },
+      {
+        "name": "mobile",
+        "value": "760px"
+      },
+      {
+        "name": "tablet",
+        "value": "900px"
+      },
+      {
+        "name": "wide",
+        "value": "1100px"
+      },
+      {
+        "name": "container",
+        "value": "1280px"
+      }
     ]
   },
   "components": [
@@ -141,6 +313,13 @@
       "description": "Cabeçalho do extrato com textura de linhas, fio sálvia e saldo em âmbar.",
       "html": "<header class=\"ds-statement\"><div class=\"ds-statement__eyebrow\">Extrato de estudos</div><h1 class=\"ds-statement__title\">StudyTrack</h1><div class=\"ds-statement__balance\">46<span>/100</span></div></header>",
       "css": ".ds-statement { position: relative; overflow: hidden; background: var(--brand, #1E3F35); color: var(--on-brand, #F4F6F4); border-radius: var(--radius-card, 8px); padding: 32px 30px 26px; box-shadow: 0 1px 0 var(--accent, #2F5D4E); } .ds-statement::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--brand-on-header, #A8D3B8) 5%, transparent) 0 1px, transparent 1px 40px); pointer-events: none; } .ds-statement__eyebrow { font: 11px 'IBM Plex Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--brand-on-header, #A8D3B8); } .ds-statement__title { margin: 4px 0 0; font: 600 28px 'Fraunces', serif; letter-spacing: -.01em; } .ds-statement__balance { margin-top: 16px; font: 600 48px/1 'Fraunces', serif; color: var(--attention, #E9953F); } .ds-statement__balance span { font: 22px 'IBM Plex Mono', monospace; color: color-mix(in srgb, var(--on-brand, #F4F6F4) 70%, transparent); }"
+    },
+    {
+      "name": "Decision Fold",
+      "kind": "custom",
+      "description": "Disclosure de página para uma camada de análise inteira; lembrada pelo navegador.",
+      "html": "<details class=\"ds-decision-fold\" open><summary>Decisão pedagógica: balanço, radar e retenção</summary><p>Conteúdo da camada.</p></details>",
+      "css": ".ds-decision-fold{margin:0}.ds-decision-fold>summary{cursor:pointer;color:var(--heading);font:600 var(--text-md) var(--font-display)}.ds-decision-fold[open]>summary{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--paper-line)}.ds-decision-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}"
     }
   ],
   "narrative": {
@@ -154,12 +333,36 @@
       "Estado sempre textual; cor nunca é o único indicador."
     ],
     "rules": [
-      { "name": "A Regra do Sálvia sobre Musgo", "body": "`brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.", "section": "colors" },
-      { "name": "A Regra do Âmbar", "body": "O âmbar (`attention`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.", "section": "colors" },
-      { "name": "A Regra do Significado", "body": "Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.", "section": "colors" },
-      { "name": "A Regra da Coluna de Extrato", "body": "Se é um número, uma data, uma duração ou um código, é Plex Mono. Se é um valor que importa (saldo, KPI, cronômetro), é Fraunces. Todo o resto — rótulos, estados, ações, explicações — é Plex Sans.", "section": "typography" },
-      { "name": "A Regra do Card como Agrupamento", "body": "Um card agrupa um assunto. Dentro dele, use linhas, espaço e tipo; nunca aninhe cards para criar hierarquia.", "section": "layout" },
-      { "name": "A Regra do Papel Plano", "body": "Um card em repouso não tem sombra. Se algo precisa de sombra, é porque está acima da página — modal, menu, barra fixa.", "section": "elevation" }
+      {
+        "name": "A Regra do Sálvia sobre Musgo",
+        "body": "`brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Âmbar",
+        "body": "O âmbar (`attention`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Significado",
+        "body": "Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Coluna de Extrato",
+        "body": "Se é um número, uma data, uma duração ou um código, é Plex Mono. Se é um valor que importa (saldo, KPI, cronômetro), é Fraunces. Todo o resto — rótulos, estados, ações, explicações — é Plex Sans.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Card como Agrupamento",
+        "body": "Um card agrupa um assunto. Dentro dele, use linhas, espaço e tipo; nunca aninhe cards para criar hierarquia.",
+        "section": "layout"
+      },
+      {
+        "name": "A Regra do Papel Plano",
+        "body": "Um card em repouso não tem sombra. Se algo precisa de sombra, é porque está acima da página — modal, menu, barra fixa.",
+        "section": "elevation"
+      }
     ],
     "dos": [
       "Do usar apenas tokens de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`) em componentes novos, para que funcionem nos dois temas.",
@@ -176,6 +379,7 @@
       "Don't usar `brand-on-header` sobre papel, âmbar como marca ou navegação, nem cor literal fora de `styles/tokens.css`.",
       "Don't usar verde, âmbar ou vermelho como decoração.",
       "Don't usar raios acima de 8px, pílulas em contêineres ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é discreto e plano.",
+      "Don't carregar fontes, scripts ou estilos de hosts externos; o app roda local e offline.",
       "Don't usar peso 700 como voz padrão; a hierarquia vai até 600."
     ]
   }

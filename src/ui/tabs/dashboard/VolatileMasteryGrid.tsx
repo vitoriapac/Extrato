@@ -103,6 +103,7 @@ export function VolatileMasteryGrid({
                     type="button"
                     class="btn small ghost flex items-center gap-1 text-xs py-1 px-2.5"
                     onClick={() => onScheduleReview(item.topicId, item.subjectId)}
+                    aria-label={`${item.actionText}: ${item.topicName}`}
                     title={`Agendar revisão de ${item.topicName} na Agenda`}
                   >
                     <Icon name="calendar-plus" size={14} />

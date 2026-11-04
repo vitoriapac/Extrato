@@ -1,11 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
+import {
+  activateTab,
+  openDemo,
+  expectNoPageOverflow,
+  openPerformanceHistory,
+  openPlanningSubtab,
+} from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
 
 async function showSessions(page) {
-  await activateTab(page, 'desempenho');
+  await openPerformanceHistory(page);
   await page.evaluate(() => {
     document.getElementById('desempenho-study').open = true;
   });
@@ -61,6 +67,11 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
                 .querySelectorAll('.panel')
                 .forEach(node => node.classList.toggle('active', node.id === `panel-${name}`));
               // Planejamento shows one sub-tab at a time; the nav is detached here, so reveal directly.
+              // Desempenho shows the history blocks only in its Histórico sub-tab.
+              if (name === 'desempenho')
+                document
+                  .getElementById('panel-desempenho')
+                  .setAttribute('data-performance-view', 'history');
               const owner = document.querySelector(target)?.closest('[data-metas-subpanel]');
               if (owner) owner.open = true;
               if (owner)

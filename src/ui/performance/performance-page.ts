@@ -7,6 +7,7 @@ const sections = [
   ['simulations', 'Simulados'],
   ['exam', 'Inteligência da prova'],
   ['consistency', 'Consistência'],
+  ['history', 'Histórico'],
 ];
 const pending: Record<string, Record<string, string>> = {
   questions: {
@@ -63,11 +64,11 @@ export function renderPerformancePage({
   return `<div class="performance-page"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h2 class="module-heading__title">Desempenho</h2><p class="module-heading__description">Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></header>
     <nav class="performance-section-nav" aria-label="Análises de desempenho">${nav}</nav>
     ${
-      viewState.section === 'exam'
+      viewState.section === 'exam' || viewState.section === 'history'
         ? ''
         : `<div class="performance-toolbar ui-filter-bar"><label>Período<select class="select-control" id="performancePeriod" data-performance-period><option value="7" ${viewState.period === '7' ? 'selected' : ''}>7 dias</option><option value="30" ${viewState.period === '30' ? 'selected' : ''}>30 dias</option><option value="90" ${viewState.period === '90' ? 'selected' : ''}>90 dias</option><option value="all" ${viewState.period === 'all' ? 'selected' : ''}>Tudo</option></select></label>
     <label class="performance-compare"><input type="checkbox" id="performanceCompare" data-performance-compare ${viewState.comparePrevious ? 'checked' : ''} ${viewState.period === 'all' ? 'disabled' : ''}> Comparar período anterior</label><div class="performance-scope-control"><span>${activeExamCount ? `Concurso ativo · ${pluralize(activeExamCount, 'escopo', 'escopos')}` : 'Todos os concursos'}</span><button type="button" class="btn ghost small" data-performance-open="metas">Alterar concurso</button></div></div>`
     }
-    <p class="performance-scope-note">${viewState.section === 'exam' ? 'Histórico de provas · ' : escapeHtml(range.label) + ' · '}${activeExamCount ? 'Concurso ativo · ' + pluralize(activeExamCount, 'escopo') : 'Todos os concursos'}${viewState.section === 'exam' ? '' : range.previous ? ' · comparação: ' + escapeHtml(formatPeriodBR(range.previous.start, range.previous.end)) : ''}</p>
+    <p class="performance-scope-note">${viewState.section === 'exam' ? 'Histórico de provas · ' : viewState.section === 'history' ? '' : escapeHtml(range.label) + ' · '}${activeExamCount ? 'Concurso ativo · ' + pluralize(activeExamCount, 'escopo') : 'Todos os concursos'}${viewState.section === 'exam' ? '' : range.previous ? ' · comparação: ' + escapeHtml(formatPeriodBR(range.previous.start, range.previous.end)) : ''}</p>
     <div id="performanceSectionContent">${body}</div></div>`;
 }

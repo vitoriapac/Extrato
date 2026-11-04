@@ -258,10 +258,11 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       if (deps.renderExamIntelligenceSection) deps.renderExamIntelligenceSection();
     }
 
+    doc.getElementById('panel-desempenho')?.setAttribute?.('data-performance-view', performanceViewState.section);
     const status = doc.getElementById('performanceStatus');
     const section = target.querySelector('.performance-section-button.active')?.textContent?.trim();
     const statusText = section
-      ? `Mostrando ${section}${examSection ? '' : ` · ${range.label}`}.`
+      ? `Mostrando ${section}${examSection || performanceViewState.section === 'history' ? '' : ` · ${range.label}`}.`
       : '';
     if (status && status.textContent !== statusText) status.textContent = statusText;
 

@@ -60,7 +60,7 @@ const DESTINATIONS: Readonly<Record<string, { tab: string; selector?: string; se
     planning: { tab: 'metas', selector: '#examStudyPlan' },
     weekly: { tab: 'dashboard', selector: '#weeklyCloseDashboard' },
     diagnosis: { tab: 'desempenho', selector: '#diagnosisCenter' },
-    achievements: { tab: 'desempenho', selector: '#badgesGrid' },
+    achievements: { tab: 'desempenho', section: 'history', selector: '#badgesGrid' },
     history: { tab: 'dashboard', selector: '#decisionHistoryDashboard' },
     report: { tab: 'instrucoes', selector: '#exportReportBtn' },
     exam: { tab: 'desempenho', section: 'exam', selector: '#examIntelligenceOverview' },

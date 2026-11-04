@@ -254,6 +254,8 @@ O contraste contra a página vai de 4,7:1 a 6,6:1 no claro e de 6,9:1 a 9,8:1 no
 
 **Character:** Uma serifa editorial para o "saldo", os valores e a marca; uma mono só para o que é número de registro — datas, durações, contagens, percentuais, códigos e eixos de gráfico; e uma sans neutra para explicar, rotular e agir. A mono nos números é o que faz a interface parecer um extrato.
 
+As três famílias são servidas do próprio projeto (`fonts/`, licença OFL, declaradas em `styles/fonts.css` com `font-display: swap`), pré-carregadas e guardadas pelo Service Worker. Nenhuma requisição sai para hosts de fonte, o que mantém a promessa de app local e offline.
+
 ### Hierarchy
 - **Display** (600, 28px, -0.01em): título do extrato no cabeçalho.
 - **Headline** (600, clamp(1.75rem, 3vw, 2.25rem)): título de página e de diálogos de entrada.
@@ -273,16 +275,16 @@ Pesos permitidos: 400, 500, 600. O 700 existe como token mas não é a voz do si
 
 Coluna única centralizada de até 1280px, com gutter fluido `clamp(16px, 2.5vw, 32px)` e respiro inferior de 80px. Escala de espaço em 4px: 4, 8, 12, 16, 20, 24, 32, 48, 64 (`--space-1` a `--space-16`), com aliases semânticos: ação 12px, conteúdo→ação 24px, bloco 32px, seção 48px.
 
-O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, com a sequência de dias (chama) quando ela existe. Abas no topo em todas as larguras do desktop (uma barra lateral acima de 1280px foi testada e descartada). Abaixo de 760px viram navegação inferior com Início, Hoje, Matérias, Agenda e Mais; voltar ao topo e o aviso de salvamento ficam acima dela, medidos por `--bottom-nav-height`. Controles têm 36px de altura e alvo de toque mínimo de 44px. Breakpoints principais: 760px (mobile/desktop), 900px e 1100px (densidade de grades), 430px e 375px (ajustes finos). Tudo funciona a partir de 320px sem rolagem horizontal global; listas, diagnósticos e formulários empilham antes de encolher a área de toque.
+O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, com a sequência de dias (chama) quando ela existe. Abas no topo em todas as larguras do desktop (uma barra lateral acima de 1280px foi testada e descartada). Abaixo de 760px viram navegação inferior com Início, Hoje, Matérias, Agenda e Mais; voltar ao topo e o aviso de salvamento ficam acima dela, medidos por `--bottom-nav-height`. Controles têm 36px de altura com ponteiro fino e 44px em toque (`pointer: coarse` ou abaixo de 760px); as subabas de Desempenho e os resumos de disclosure ficam sempre em 44px. Breakpoints principais: 760px (mobile/desktop), 900px e 1100px (densidade de grades), 430px e 375px (ajustes finos). Tudo funciona a partir de 320px sem rolagem horizontal global; listas, diagnósticos e formulários empilham antes de encolher a área de toque.
 
 Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 
-O Cockpit da Visão Geral é organizado em três camadas temáticas contínuas:
-- **Camada 1: Operação do Dia (8 + 4 colunas):** Próxima Ação Prioritária (8 cols) ladeada pela coluna de suporte com Meta Diária, Carga de Revisões e Mini-Heatmap de 28 dias (4 cols).
-- **Camada 2: Rendimento & Edital (6 + 6 colunas):** Saúde do Edital e Gráfico de Tendência de Acertos/Simulados espelhados em altura simétrica estrita (476px no desktop).
-- **Camada 3: Decisão Pedagógica (12 + 6 + 6 colunas):** Balanço de Alocação de Tempo vs Peso no Edital (12 cols com divulgação progressiva de 5 itens) e Duo Grids de Disciplinas Críticas e Tópicos para Revisar (6+6 cols).
+As oito abas têm papéis separados (Início, Hoje, Disciplinas, Agenda, Questões, Planejamento, Desempenho e Instruções):
+- **Visão geral** é o resumo visual: Próxima ação com Atenção, Saúde do Edital ao lado da tendência e da coluna de apoio (meta e plano de hoje, revisões, 28 dias), e um fecho que leva a Desempenho. A análise detalhada não mora aqui.
+- **Desempenho** abre no veredito (Índice de Prontidão e projeção). Subabas: Visão geral, Disciplinas, Questões, Simulados, Inteligência da prova, Consistência e Histórico. A camada de decisão (balanço, radar, retenção) fica numa dobra (`details.decision-fold`) lembrada pelo navegador; conquistas, tempo de estudo e sessões só aparecem em Histórico.
+- **Agenda** é uma aba só, com duas seções: "Tarefas de estudo" (visões Mês e Lista) e "Revisões espaçadas", com filtros de disciplina, status e mês compartilhados e uma lista única de atrasadas. `#calendario` continua como alias.
 
-A Visão Geral tem seções recolhíveis (`details[data-remember]`), abertas no desktop e fechadas no celular, com a escolha lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
+Seções recolhíveis (`details[data-remember]`) ficam abertas no desktop e fechadas no celular quando têm `data-default-open="wide"`, e fechadas sempre quando não têm; a escolha é lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
 
 A densidade compacta (`html[data-density="compact"]`) aperta a escala de espaço sem mudar tipografia nem alvos de toque.
 
@@ -361,6 +363,9 @@ O aviso (`#toast`) é do tamanho do texto; no celular fica 8px acima da barra in
 ### Modo Essencial
 Preferência por navegador, ligada por padrão para quem começa sem dados. Análises avançadas (`[data-advanced]`) ficam atrás de um botão "Mostrar …" que abre só aquela análise; termos técnicos do topo (`[data-term]`) ganham um "?" de 24px que revela uma dica curta abaixo do rótulo.
 
+### Dobra de decisão (`.decision-fold`)
+Disclosure de nível de página para uma camada de análise inteira (por exemplo, balanço, radar e retenção em Desempenho). Sem moldura própria: o resumo é Fraunces 600 (14px, cor de título) e, aberta, uma linha de 1px em `paper-line` o separa do conteúdo, que traz seus próprios cards; nunca aninha card dentro de card. A escolha de abrir ou fechar é lembrada.
+
 ### Célula de KPI (signature)
 Bloco musgo, valor Fraunces 24px em Sálvia Claro (aviso em `--warn-on-dark` `#F2B07A`, positivo em `--ok-on-dark` `#A8D3B8`), rótulo Sans 11px maiúsculo a 72% de opacidade. Versões clicáveis clareiam no hover e ganham contorno sálvia interno no foco.
 
@@ -389,4 +394,5 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Don't** usar raios acima de 8px, pílulas em contêineres ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é discreto e plano.
 - **Don't** usar peso 700 como voz padrão; a hierarquia vai até 600.
 - **Don't** usar âmbar ou vermelho como cor de disciplina, nem animação contínua; movimento só para eventos e respeitando `prefers-reduced-motion`.
+- **Don't** carregar fontes, scripts ou estilos de hosts externos; o app roda local e offline.
 - **Don't** usar emojis Unicode na interface (`\p{Extended_Pictographic}`); use estritamente ícones vetoriais Tabler via `src/ui/primitives/icon.tsx`.

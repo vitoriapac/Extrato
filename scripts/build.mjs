@@ -44,6 +44,7 @@ const sourceFiles = [
     path => path.endsWith('.css') && path !== 'styles/tailwind.css'
   ),
   ...(await filesUnder('icons')),
+  ...(await filesUnder('fonts')),
   'index.html',
   'manifest.webmanifest',
   'package.json',

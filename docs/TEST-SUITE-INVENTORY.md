@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-289 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+290 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -293,6 +293,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/rhythm-estimator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/routine-sustainability.test.js | node | Sustentabilidade | functional | — | contract | none |
+| tests/unit/row-action-names.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/scroll-behavior.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/session-history-controller.test.js | node | Sessões | critical | — | contract | none |

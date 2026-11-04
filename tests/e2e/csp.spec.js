@@ -10,7 +10,8 @@ test('aplica CSP e mantém os fluxos básicos', async ({ page }) => {
     .locator('meta[http-equiv="Content-Security-Policy"]')
     .getAttribute('content');
   expect(policy).toContain("script-src 'self'");
-  expect(policy).toContain("style-src 'self' https://fonts.googleapis.com");
+  expect(policy).toContain("style-src 'self';");
+  expect(policy).not.toMatch(/fonts.(googleapis|gstatic).com/);
   expect(policy).toContain("style-src-attr 'unsafe-inline'");
   expect(policy).toContain("object-src 'none'");
   await activateTab(page, 'disciplinas');

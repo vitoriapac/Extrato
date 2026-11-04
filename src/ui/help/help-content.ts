@@ -86,12 +86,12 @@ const BASE_HELP_CATEGORIES: any[] = [
       },
       {
         id: 'calendar-guide',
-        title: 'Calendário',
+        title: 'Agenda: visão Mês',
         summary: 'Enxergue a carga de estudo por data.',
         paragraphs: [
-          'O calendário reúne sessões, revisões e atividades planejadas. Use seus filtros para investigar períodos e disciplinas antes de redistribuir a semana.',
+          'A Agenda reúne tarefas de estudo e revisões espaçadas. Na visão Mês, veja a carga por data; use os filtros de disciplina, status e mês para investigar períodos antes de redistribuir a semana.',
         ],
-        action: { label: 'Abrir Calendário', target: 'calendar' },
+        action: { label: 'Abrir Agenda no Mês', target: 'calendar' },
       },
       {
         id: 'sessions',
@@ -286,7 +286,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Conquistas',
         summary: 'Consistência, aprendizagem e decisões estratégicas.',
         paragraphs: [
-          'As conquistas reconhecem progresso, mas não alteram prioridades nem o Índice de Prontidão. Estrategista exige estudo em dez tópicos distintos de alto impacto; Cobertura crítica exige domínio com evidência suficiente nos tópicos críticos de uma disciplina; Prova mapeada exige quatro provas completas no concurso ativo. As conquistas bloqueadas mostram o que falta.',
+          'As conquistas ficam em Desempenho, na subaba Histórico. Elas reconhecem progresso, mas não alteram prioridades nem o Índice de Prontidão. Estrategista exige estudo em dez tópicos distintos de alto impacto; Cobertura crítica exige domínio com evidência suficiente nos tópicos críticos de uma disciplina; Prova mapeada exige quatro provas completas no concurso ativo. As conquistas bloqueadas mostram o que falta.',
         ],
         action: { label: 'Ver conquistas', target: 'achievements' },
       },

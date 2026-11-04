@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, openExamImport, openPlanningSubtab } from './helpers.js';
+import {
+  activateTab,
+  openDemo,
+  openExamImport,
+  openPerformanceHistory,
+  openPlanningSubtab,
+} from './helpers.js';
 
 const viewports = [
   { name: 'mobile-375', width: 375, height: 812 },
@@ -73,7 +79,7 @@ test('regressão visual dos componentes críticos em desktop', async ({ page }) 
     screenshotOptions
   );
   await page.evaluate(() => scrollTo(0, 0));
-  await activateTab(page, 'desempenho');
+  await openPerformanceHistory(page);
   await page.locator('#desempenho-study > summary').click();
   await page.evaluate(() => {
     for (const [id, height] of [

@@ -12,6 +12,15 @@ export async function activateTab(page, name) {
   await page.locator(`[data-tab="${name}"]`).evaluate(button => button.click());
   await expect(page.locator(`#panel-${name}`)).toBeVisible();
 }
+// Conquistas, tempo de estudo e sessões moram na subaba Histórico de Desempenho.
+export async function openPerformanceHistory(page) {
+  await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="history"]').evaluate(button => button.click());
+  await expect(page.locator('#panel-desempenho')).toHaveAttribute(
+    'data-performance-view',
+    'history'
+  );
+}
 // The overview card is either the recommendation itself or a pending plan item carrying it as a suggestion line.
 export async function overviewRecommendationId(page) {
   return page

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openDemo, expectNoPageOverflow, activateTab } from './helpers.js';
+import { openDemo, expectNoPageOverflow, activateTab, openPerformanceHistory } from './helpers.js';
 
 test('prévia e selo da demonstração funcionam no mobile sem alterar a base antes de carregar', async ({
   page,
@@ -102,7 +102,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
   expect(restored.studySessions.some(session => String(session.id).startsWith('demo-'))).toBe(
     false
   );
-  await activateTab(page, 'desempenho');
+  await openPerformanceHistory(page);
   await page
     .locator('.overview-fold', { has: page.locator('#progressBars') })
     .locator('> summary')
@@ -180,7 +180,7 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar', asy
     const ids = await locator.evaluateAll(rows => rows.map(row => row.dataset.id).filter(Boolean));
     expect(new Set(ids).size).toBe(ids.length);
   };
-  await page.locator('[data-tab="desempenho"]').evaluate(button => button.click());
+  await openPerformanceHistory(page);
   await page.locator('#desempenho-study > summary').click();
   const sessionDays = page.locator('#studySessionsBody .session-day-row');
   const initialDays = await sessionDays.count();

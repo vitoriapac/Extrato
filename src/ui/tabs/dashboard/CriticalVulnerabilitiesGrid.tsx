@@ -115,6 +115,7 @@ export function CriticalVulnerabilitiesGrid({
                     type="button"
                     class="btn small primary flex items-center gap-1 text-xs py-1 px-2.5"
                     onClick={() => onTrainTopic(item.topicId, item.subjectId)}
+                    aria-label={`${item.actionText}: ${item.topicName}`}
                     title={`Registrar treino de questões em ${item.topicName}`}
                   >
                     <Icon name="target" size={14} />

@@ -13,6 +13,21 @@ Feito neste ciclo, sem commit ainda:
 
 Regra de execução: editar HTML e CSS só com a suíte e2e parada; depois de cada lote, `npm run build`, `npm run check:types`, `npm run lint`, `npm run test:unit` e os specs afetados. Antes de reutilizar uma classe de componente, procurar nos specs (`grep tests/e2e`): o bloco novo de Desempenho usava `today-analysis-details` e quebrou 11 testes que selecionam essa classe. Baselines visuais só depois de inspecionar a diferença. Um commit por lote, só com arquivos tocados, direto no `main`.
 
+## Atualização do segundo ciclo (2026-11-03)
+
+Feito depois da auditoria técnica (15/20):
+
+- **4.1 Fontes locais**: Fraunces, IBM Plex Sans e Mono em `fonts/` (OFL), `styles/fonts.css`, pré-carga, cache no Service Worker e CSP sem hosts de fonte. Verificado: zero requisições externas.
+- **1.1 e 1.2 Nomes acessíveis**: "Concluir" e "Editar" (revisões e tarefas) e "Treinar questões"/"Agendar revisão" nomeiam o tópico; teste unitário novo.
+- **1.3 Limites**: alvo de 44px e nome próprio em cada "Limites".
+- **1.5 Modal**: já existia (`#mainContent` fica `inert` com qualquer modal aberto); não mexido.
+- **3.1 (parcial) Histórico**: Conquistas, tempo de estudo e sessões saíram da análise e viraram a subaba **Histórico** de Desempenho. Desempenho (Visão geral) caiu de 5.133px para 4.155px no desktop. A meta de 3.000px não foi atingida: o bloco de projeção (1.409px) e o gráfico de evolução do índice (850px) seguem abertos.
+- **0.6 e 0.7**: DESIGN.md e sidecar atualizados; textos de ajuda falam em Agenda no Mês e em Histórico.
+
+Verificado como falso positivo: o aviso `text-occlusion` de "Salvo" (o indicador fica por cima; o detector ignora o `position: fixed`).
+
+Não feito (continua nos lotes): 1.4 legenda do calendário (mantida visível porque é a leitura textual das cores), 2.x comportamento, 3.2 a 3.5, 4.2 escala da serifa, 4.3 a 4.5, central de diagnóstico com 5 itens e "Mostrar mais" (decidida em shape, ainda não implementada) e marcadores do gráfico a 13px.
+
 ## Análise por persona
 
 Cada linha é uma falha observada no app rodando em demo, e aponta o lote que a resolve.

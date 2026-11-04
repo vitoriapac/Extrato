@@ -46,6 +46,8 @@ export function renderPerformanceSection(
       });
     case 'consistency':
       return renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml });
+    case 'history':
+      return '<p class="analytics-note">Conquistas, tempo de estudo e o histórico de sessões. Não entram no cálculo de risco.</p>';
     default:
       return '';
   }

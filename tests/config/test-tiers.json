@@ -1392,6 +1392,11 @@
       "rationale": "Contrato unitário rápido no Node."
     },
     {
+      "file": "tests/unit/row-action-names.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/review-service.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
