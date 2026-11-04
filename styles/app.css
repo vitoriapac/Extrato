@@ -2481,7 +2481,14 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .limits-disclosure>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .limits-disclosure[open]>summary{color:var(--heading)}
 .limits-disclosure>.analytics-note{margin:0 0 var(--space-2)}
-@media (max-width:420px){.compact-header .compact-plan{display:none}}@media (max-width:600px){.statement .mini-stats{display:none}}
+@media (max-width:420px){.compact-header .compact-plan{display:none}}
+@media (max-width:360px){
+  .compact-header{padding:6px 8px;gap:6px;max-width:100%;overflow:hidden}
+  .compact-header .compact-brand{font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1}
+  .compact-header .compact-meta{gap:6px;flex-shrink:0}
+  .compact-streak__unit{display:none}
+}
+@media (max-width:600px){.statement .mini-stats{display:none}}
 /* Fechamento semanal em três atos: a semana, o retrato, a próxima semana. */
 .weekly-close-act{display:grid;gap:var(--space-4);padding-block:var(--space-6);border-top:1px solid var(--paper-line)}
 .weekly-close-act:first-child{padding-top:0;border-top:0}
