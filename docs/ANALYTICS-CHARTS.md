@@ -77,3 +77,38 @@ Domínio, prontidão e impacto explicam lacunas, mas não são convertidos diret
 A área de planejamento oferece uma proposta de divisão de atividades no plano semanal confirmado. Reaproveita as fases existentes: construção (>90 dias), consolidação (31–90), reta final (8–30), revisão final (0–7). O motor de prioridade continua definindo tópicos/minutos; a proposta altera somente teoria/questões/revisões e preserva exatamente a carga e todos os tópicos.
 Exige evidência pessoal suficiente em dois tópicos; tópicos sem evidência preservam a divisão anterior. Conteúdo coberto recebe manutenção, retenção baixa amplia revisão e lacunas de alto impacto preservam teoria de base. A disponibilidade atual é revalidada, com cooldown de 14 dias após estratégia ou ajuste aplicado/revertido. Não agenda simulados nem muda planos diários automaticamente.
 Revisar e confirmar cria nova versão com mudanças, evidências e prontidão congeladas. A confirmação recalcula a proposta e exige nova revisão se a base mudou. Reverter cria outra versão a partir da origem, respeitando a disponibilidade atual; versões, planos diários e sessões anteriores são preservados. A data passada impede nova proposta de fase.
+
+## Gráficos Visuais com Cores das Disciplinas (Modernização Visual)
+
+### 1. Linha do Tempo Diária (Colunas Empilhadas)
+- **Localização:** Aba Desempenho → Seção **Consistência**.
+- **Propósito:** Visualizar as horas diárias de estudo no período selecionado (7 dias, 30 dias, 90 dias ou todo o histórico), com cada dia decomposto em segmentos coloridos correspondentes às disciplinas estudadas.
+- **Cores Semânticas:** Cada segmento e item da legenda consome o slot de cor atribuído à matéria (`--subject-1` até `--subject-8` em `styles/tokens.css`), garantindo contraste WCAG AA e fidelidade cromática entre os temas Claro e Escuro.
+- **Painel Lateral:** Exibe o total consolidado de horas no período e o ranking decrescente das matérias com dot de cor, horas líquidas estudadas e percentual da carga.
+
+### 2. Tempo de Estudo por Disciplina (Donut Chart)
+- **Localização:** Aba Desempenho → Seção **Consistência**.
+- **Propósito:** Apresentar a distribuição percentual da carga horária dedicada a cada matéria no período.
+- **Visual:** Gráfico em SVG circular (estilo Donut) com espessura controlada, transição suave no hover e texto central com o tempo total de estudo.
+- **Legenda:** Lista lateral estruturada com swatch colorido, nome da matéria, tempo formatado em horas decimais e participação percentual.
+
+### 3. Desempenho por Disciplina (Evolução Multilinear de Precisão)
+- **Localização:** Aba Desempenho → Seção **Questões**.
+- **Propósito:** Exibir a trajetória temporal da taxa de acerto (%) de cada matéria estudada.
+- **Estrutura:** Curvas vetorizadas contínuas onde cada matéria recebe sua cor oficial (`subject-stroke-X`), com pontos de medição em cada período contendo tooltips semânticos (ex: `Língua Portuguesa (04/11): 85,1%`).
+- **Resumo Lateral:** Card de destaque com a média global de desempenho (`X%`), total de questões resolvidas e acertos, seguido da listagem das disciplinas com proporção de acertos/resoluções e taxa percentual.
+
+### 4. Matriz Pedagógica: Domínio × Retenção (Dispersão em 4 Quadrantes)
+- **Localização:** Aba Desempenho → Seção **Disciplinas**.
+- **Propósito:** Cruzar pedagogicamente o aproveitamento em questões (Domínio, 0–100%) com a integridade da memória pelo algoritmo Ebbinghaus (Retenção, 0–100%).
+- **Quadrantes:**
+  1. *Consolidada:* Alto Domínio (≥ 70%) e Alta Retenção (≥ 60%).
+  2. *Risco de Esquecimento:* Alto Domínio (≥ 70%) e Baixa Retenção (< 60%).
+  3. *Em Construção:* Baixo Domínio (< 70%) e Alta Retenção (≥ 60%).
+  4. *Vulnerabilidade Crítica:* Baixo Domínio (< 70%) e Baixa Retenção (< 60%).
+- **Esferas:** Cada disciplina é representada por uma bolha posicionada nas coordenadas (Retenção, Domínio), colorida com sua cor oficial (`subject-fill-X`) e raio proporcional ao tempo de estudo dedicado.
+
+### 5. Cores Oficiais nos Componentes Pré-Existentes
+- **Radar Multidimensional de Disciplinas:** Suporte nativo aos slots de cor (`radar-shape[data-subject-color]`, `radar-dot[data-subject-color]`, `radar-key[data-subject-color]`), substituindo as cores neutras legadas pela cor escolhida pelo usuário.
+- **Barras de Progresso por Disciplina:** Exibição da bolinha colorida (`subject-color-swatch`) ao lado do nome da disciplina e preenchimento da barra com a classe semântica correspondente (`subject-bg-X`).
+

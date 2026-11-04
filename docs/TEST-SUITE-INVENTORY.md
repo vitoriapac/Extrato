@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-290 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+291 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -366,6 +366,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/utils.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/validated-exam-impact.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/verticalized-syllabus-view.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/visual-charts-analytics.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/visual-consistency-renderers.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/volatile-mastery-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/volatile-mastery.test.js | node | Aplicação | functional | — | contract | none |

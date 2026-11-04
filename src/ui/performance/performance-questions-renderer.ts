@@ -2,6 +2,7 @@ import { formatDateBR } from '../../core/format-date.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
 import { renderErrorProfileChart } from './error-profile-chart.js';
+import { renderMultiLineChart } from '../primitives/charts/charts.js';
 import {
   renderPerformanceStory,
   renderPerformanceSummary,
@@ -17,6 +18,7 @@ export function renderPerformanceQuestions({
   evolution,
   analysis,
   previousAccuracy = null,
+  multiSubjectPerformance = null,
   range,
   formatDate,
   escapeHtml,
@@ -68,5 +70,45 @@ export function renderPerformanceQuestions({
     analysis.accuracy == null
       ? 'Ainda não há precisão calculável.'
       : `Precisão de ${formatDecimal(analysis.accuracy)}% em ${analysis.questionCount} questões respondidas.`;
-  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}<section class="performance-block"><h3>Precisão ao longo do tempo</h3>${renderQuestionEvolution(evolution, { formatDate })}</section>${renderPerformanceDetails('Volume, erros e tópicos', volume + errors + topics)}`;
+
+  const msp = multiSubjectPerformance;
+  let multiLineSection = '';
+  if (msp && msp.series.length > 0 && msp.periods.length > 0) {
+    const multiChart = renderMultiLineChart({
+      series: msp.series,
+      periodLabels: msp.periodLabels,
+    });
+    const subRows = msp.series
+      .map(
+        (s: any) =>
+          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${s.totalCorrect}/${s.totalResolved} <strong class="text-content-primary">(${s.overallAccuracy ?? '—'}%)</strong></div></li>`
+      )
+      .join('');
+
+    multiLineSection = `<section class="performance-block" aria-label="Evolução da precisão por disciplina">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+        <div>
+          <h3 class="m-0">Desempenho por disciplina</h3>
+          <p class="analytics-note m-0">Evolução da taxa de acerto nas questões por período, traçada nas cores oficiais de cada matéria.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-3">
+        <div class="lg:col-span-2 overflow-x-auto">
+          ${multiChart}
+        </div>
+        <div class="bg-surface-card p-4 rounded-default border border-border-default">
+          <div class="mb-3">
+            <span class="text-3xl font-bold font-data text-content-primary">${msp.overallAccuracy ?? '—'}%</span>
+            <p class="text-xs text-content-secondary m-0">${msp.totalResolved} questões · ${msp.totalCorrect} acertos</p>
+            <span class="text-micro font-medium uppercase tracking-wider text-content-secondary mt-1 inline-block">Média de desempenho</span>
+          </div>
+          <ul class="m-0 p-0 list-none space-y-1">
+            ${subRows}
+          </ul>
+        </div>
+      </div>
+    </section>`;
+  }
+
+  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}${multiLineSection}<section class="performance-block"><h3>Precisão ao longo do tempo</h3>${renderQuestionEvolution(evolution, { formatDate })}</section>${renderPerformanceDetails('Volume, erros e tópicos', volume + errors + topics)}`;
 }

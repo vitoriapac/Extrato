@@ -10605,6 +10605,41 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/visual-charts-analytics.test.js",
+      "layer": "node",
+      "area": "Visual",
+      "areaBasis": "filename_hint",
+      "criticality": "visual",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/analytics/study-timeline.js",
+        "../../src/domain/analytics/study-distribution.js",
+        "../../src/domain/analytics/subject-performance-timeline.js",
+        "../../src/domain/analytics/pedagogical-matrix.js",
+        "../../src/ui/primitives/charts/geometry.js",
+        "../../src/ui/primitives/charts/charts.js"
+      ],
+      "staticTestDeclarations": 7,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/visual-consistency-renderers.test.js",
       "layer": "node",
       "area": "Visual",

@@ -9,6 +9,8 @@ import { buildPerformanceTopicDetail } from './build-performance-topic-detail.js
 import { buildPerformanceConsistency } from './build-performance-consistency.js';
 import { buildReadinessChangeExplanation } from '../readiness/build-readiness-change-explanation.js';
 import { buildStabilityMap } from './build-stability-map.js';
+import { buildMultiSubjectPerformanceModel } from '../../domain/analytics/subject-performance-timeline.js';
+import { buildPedagogicalMatrixModel } from '../../domain/analytics/pedagogical-matrix.js';
 
 // The composition root supplies scoped records and stateful metric lookups; this builder owns section assembly.
 export function buildPerformancePageModel({
@@ -87,7 +89,13 @@ export function buildPerformancePageModel({
       ? buildQuestionEvolution({ questions, today: range.previous.end, period: viewState.period })
           .accuracy
       : null;
-    return { section, evolution, analysis, previousAccuracy };
+    const multiSubjectPerformance = buildMultiSubjectPerformanceModel({
+      questions,
+      subjects,
+      today,
+      period: viewState.period,
+    });
+    return { section, evolution, analysis, previousAccuracy, multiSubjectPerformance };
   }
   if (section === 'simulations') {
     const normalized = simulations.map((item: any) => ({
@@ -179,7 +187,48 @@ export function buildPerformancePageModel({
           subjectId: selected.id,
         }
       : null;
-    return { section, model, comparison, stabilityMap: buildStabilityMap(comparison), detail };
+    const pedagogicalMatrix = buildPedagogicalMatrixModel({
+      subjects: eligibleSubjects.map((sub: any) => {
+        const topicMetrics = (sub.topics || []).map((t: any) => topicMetricsFor(sub.id, t.id));
+        const validMastery = topicMetrics
+          .map((m: any) => m?.mastery)
+          .filter((val: any) => Number.isFinite(val));
+        const avgMastery = validMastery.length
+          ? Math.round(validMastery.reduce((a: number, b: number) => a + b, 0) / validMastery.length)
+          : 50;
+        const validRetention = topicMetrics
+          .map((m: any) => m?.retention)
+          .filter((val: any) => Number.isFinite(val));
+        const avgRetention = validRetention.length
+          ? Math.round(validRetention.reduce((a: number, b: number) => a + b, 0) / validRetention.length)
+          : 50;
+
+        const subSessions = scope.sessions.included.filter((sess: any) => subjectIdFor(sess) === sub.id);
+        const studyMinutes = Math.round(
+          subSessions.reduce(
+            (sum: number, sess: any) => sum + (Number(sess.durationSeconds) || 0) / 60,
+            0
+          )
+        );
+
+        return {
+          id: sub.id,
+          name: sub.name,
+          color: sub.color,
+          mastery: avgMastery,
+          retention: avgRetention,
+          studyMinutes,
+        };
+      }),
+    });
+    return {
+      section,
+      model,
+      comparison,
+      stabilityMap: buildStabilityMap(comparison),
+      detail,
+      pedagogicalMatrix,
+    };
   }
   const sessions = scope.sessions.included.map((item: any) => ({
     ...item,

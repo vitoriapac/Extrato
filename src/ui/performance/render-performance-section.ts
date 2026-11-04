@@ -43,6 +43,7 @@ export function renderPerformanceSection(
         topicDetail: pageModel.detail,
         comparison: pageModel.comparison,
         stabilityMap: pageModel.stabilityMap,
+        pedagogicalMatrix: pageModel.pedagogicalMatrix,
       });
     case 'consistency':
       return renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml });

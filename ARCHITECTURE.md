@@ -118,6 +118,10 @@ flowchart TD
 - `src/domain/analytics/readiness-score.ts`: composição ponderada do índice e de sua confiança.
 - `src/domain/analytics/coverage.ts`: cobertura de tópicos ativos.
 - `src/domain/analytics/consistency.ts`: sequência de atividade e cumprimento das metas diárias.
+- `src/domain/analytics/study-timeline.ts`: agrupamento temporal diário de sessões por disciplina com cálculo de frações e totais para colunas empilhadas.
+- `src/domain/analytics/study-distribution.ts`: agregação de horas estudadas por disciplina para distribuição em gráfico Donut/Pizza.
+- `src/domain/analytics/subject-performance-timeline.ts`: agregação histórica temporal de acertos e questões por disciplina para curvas multilineares de desempenho.
+- `src/domain/analytics/pedagogical-matrix.ts`: modelo determinístico e classificação em 4 quadrantes para a Matriz Domínio × Retenção.
 - `src/domain/analytics/trends.ts`: comparação de janelas equivalentes de desempenho.
 - `src/domain/analytics/study-metrics.ts`: consolidação pura de sessões, questões e simulados.
 - `src/domain/analytics/heatmap.ts`: intensidade e níveis do mapa de atividade por indicador.
@@ -448,6 +452,10 @@ A interface do StudyTrack adota uma abordagem de migração progressiva e coexis
   - `<EmptyState />`: mensagens de ausência de dados explicativas e orientadas à próxima ação.
   - `<MetricCard />`: visualização destacada de KPIs com rótulo, valor principal e tendência semântica.
   - `<Tabs />`: barra de alternância de abas acessível com `role="tablist"` e navegação por teclado.
+  - `<StackedColumnChart />`: gráfico de colunas verticais empilhadas por dia com segmentos nas cores semânticas oficiais das disciplinas (`--subject-1` a `--subject-8`).
+  - `<DonutChart />`: gráfico circular (estilo Donut) com fatias coloridas por disciplina, centro informativo e legenda de carga horária.
+  - `<MultiLineChart />`: gráfico multilinear vetorial em SVG para trajetória de precisão por matéria com marcadores e tooltips.
+  - `<PedagogicalMatrixChart />`: gráfico de dispersão em 4 quadrantes cruzando Retenção (Eixo X) e Domínio (Eixo Y) com bolhas dimensionadas pelas horas estudadas.
 
 - **Componentes de Abas Funcionais (`src/ui/tabs/**/*.tsx`):**
   - **Onda 1:** Disciplinas e Tópicos (`SubjectTopicManager.tsx`), Histórico de Questões (`QuestionsTable.tsx`) e Registro de Simulados (`SimulationsTable.tsx`).

@@ -252,3 +252,18 @@ export const renderSparkline = (props: SparklineProps) => render(h(Sparkline, pr
 export const renderBulletBar = (props: BulletBarProps) => render(h(BulletBar, props));
 export const renderStackedBar = (props: StackedBarProps) => render(h(StackedBar, props));
 export const renderColumnChart = (props: ColumnChartProps) => render(h(ColumnChart, props));
+
+export { StackedColumnChart } from './StackedColumnChart.js';
+export { DonutChart } from './DonutChart.js';
+export { MultiLineChart } from './MultiLineChart.js';
+export { PedagogicalMatrixChart } from './PedagogicalMatrixChart.js';
+
+import { StackedColumnChart, StackedColumnChartProps } from './StackedColumnChart.js';
+import { DonutChart, DonutChartProps } from './DonutChart.js';
+import { MultiLineChart, MultiLineChartProps } from './MultiLineChart.js';
+import { PedagogicalMatrixChart, PedagogicalMatrixChartProps } from './PedagogicalMatrixChart.js';
+
+export const renderStackedColumnChart = (props: StackedColumnChartProps) => render(h(StackedColumnChart, props));
+export const renderDonutChart = (props: DonutChartProps) => render(h(DonutChart, props));
+export const renderMultiLineChart = (props: MultiLineChartProps) => render(h(MultiLineChart, props));
+export const renderPedagogicalMatrixChart = (props: PedagogicalMatrixChartProps) => render(h(PedagogicalMatrixChart, props));

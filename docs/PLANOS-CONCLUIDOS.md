@@ -681,7 +681,39 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 15. Rastreabilidade de Arquitetura e Governança
+## 16. Plano Concluído: Novos Gráficos e Cores das Disciplinas na Aba Desempenho
+
+### 16.1. Escopo e Entregas
+
+- **Novas Primitivas e Geometrias SVG (`src/ui/primitives/charts/`):**
+  - `StackedColumnChart.tsx`: gráfico vetorial de colunas verticais diárias empilhadas com segmentos coloridos por disciplina.
+  - `DonutChart.tsx`: gráfico circular (estilo Donut) com fatias proporcionais coloridas por disciplina, centro com total de horas e legenda de carga horária.
+  - `MultiLineChart.tsx`: gráfico multilinear vetorial com curvas de precisão por matéria, marcadores interativos e tooltips semânticos.
+  - `PedagogicalMatrixChart.tsx`: gráfico de dispersão em 4 quadrantes relacionando Retenção (Eixo X) e Domínio (Eixo Y), com esferas nas cores oficiais e raios proporcionais às horas estudadas.
+  - Expansão de `src/ui/primitives/charts/geometry.ts` com funções puras de geometria (`donutGeometry`, `stackedColumnsGeometry`, `multiLineGeometry`, `pedagogicalMatrixGeometry`).
+- **Funções Matemáticas Puras de Agregação (`src/domain/analytics/`):**
+  - `study-timeline.ts`: agrupamento temporal diário de sessões por disciplina com cálculo de frações, total geral e resumo ordenado.
+  - `study-distribution.ts`: consolidação da distribuição de carga horária por disciplina para o gráfico Donut.
+  - `subject-performance-timeline.ts`: agregação temporal da precisão (%) e volume por disciplina para curvas multilineares.
+  - `pedagogical-matrix.ts`: mapeamento e classificação determinística nos 4 quadrantes pedagógicos (*Consolidada*, *Risco de Esquecimento*, *Em Construção*, *Vulnerabilidade Crítica*).
+- **Integração das Cores Semânticas (`--subject-1` a `--subject-8`):**
+  - Novas classes utilitárias no CSS (`.subject-fill-X`, `.subject-stroke-X`, `.subject-bg-X`) conectadas aos tokens semânticos de `styles/tokens.css`.
+  - Atualização do Radar Multidimensional (`performance-analytics-controller.ts`) para renderizar polígonos, pontos e marcadores com as cores oficiais das disciplinas.
+  - Atualização do `SubjectProgressList.tsx` para exibir a bolinha colorida e o preenchimento da barra na cor da matéria.
+- **Enriquecimento da Aba Desempenho:**
+  - Seção *Consistência*: inserção da **Linha do Tempo Diária** e da **Distribuição do Tempo de Estudo (Donut)** com resumos laterais ricos.
+  - Seção *Questões*: inserção da **Evolução da Precisão por Disciplina (Multilinear)** com métrica macro e detalhamento lateral.
+  - Seção *Disciplinas*: inserção da **Matriz Pedagógica: Domínio × Retenção** com contador de quadrantes.
+
+### 16.2. Validação e Qualidade
+- **Fast Gate (`npm run test:fast`):** **53.75s** com **1.299 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+- **Tipagem Estática:** 0 erros no TypeScript (`npm run check:types`).
+- **Auditoria de Tiers:** 360 arquivos classificados e auditados em `tests/config/test-tiers.json` via `node scripts/check-test-tiers.mjs`.
+- **Inventário:** 360 arquivos de teste sincronizados em `tests/config/test-inventory.json`.
+
+---
+
+## 17. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

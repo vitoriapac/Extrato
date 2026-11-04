@@ -105,3 +105,267 @@ export function columnGeometry(
   const yFor = (value: number) => +(height - Math.min(1, value / top) * (height - 2)).toFixed(2);
   return { bars, width: x + width, height, top, yFor };
 }
+
+/** Donut geometry using stroke-dasharray on circle with radius `r`. */
+export function donutGeometry(
+  slices: Array<{ ratio: number; startRatio: number }>,
+  r = 50
+) {
+  const circumference = +(2 * Math.PI * r).toFixed(2);
+  const items = slices.map(s => {
+    const len = +(Math.max(0, s.ratio) * circumference).toFixed(2);
+    const offset = +(-s.startRatio * circumference).toFixed(2);
+    return {
+      dasharray: `${len} ${circumference}`,
+      dashoffset: offset,
+      length: len,
+    };
+  });
+  return { r, circumference, items };
+}
+
+export interface StackedColumnSegmentInput {
+  seconds: number;
+  colorSlot: number;
+  subjectName?: string;
+}
+
+export interface StackedColumnDayInput {
+  date: string;
+  totalSeconds: number;
+  segments: StackedColumnSegmentInput[];
+}
+
+/** Layout for stacked columns (e.g. daily hours broken down by subject). */
+export function stackedColumnsGeometry(
+  days: StackedColumnDayInput[],
+  {
+    width = 600,
+    height = 200,
+    padLeft = 45,
+    padRight = 15,
+    padTop = 20,
+    padBottom = 30,
+    minYMax = 3600, // no mínimo 1 hora de escala
+  }: {
+    width?: number;
+    height?: number;
+    padLeft?: number;
+    padRight?: number;
+    padTop?: number;
+    padBottom?: number;
+    minYMax?: number;
+  } = {}
+) {
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+  const maxSecs = Math.max(minYMax, ...days.map(d => d.totalSeconds || 0));
+
+  const n = days.length;
+  const colWidth = n > 0 ? Math.max(4, Math.min(32, Math.floor((plotW / n) * 0.65))) : 12;
+  const step = n > 1 ? plotW / (n - 1) : 0;
+
+  const yFor = (secs: number) => +(padTop + plotH - (Math.min(maxSecs, Math.max(0, secs)) / maxSecs) * plotH).toFixed(1);
+
+  const columns = days.map((day, index) => {
+    const cx = n === 1 ? padLeft + plotW / 2 : padLeft + index * step;
+    const x = +(cx - colWidth / 2).toFixed(1);
+    const dayTotal = day.totalSeconds || 0;
+
+    let currentBottomY = padTop + plotH;
+    const segments = day.segments.map(seg => {
+      const segSecs = Math.max(0, seg.seconds || 0);
+      const segH = maxSecs > 0 ? +((segSecs / maxSecs) * plotH).toFixed(1) : 0;
+      const y = +(currentBottomY - segH).toFixed(1);
+      currentBottomY = y;
+      return {
+        x,
+        y,
+        width: colWidth,
+        height: Math.max(segSecs > 0 ? 1 : 0, segH),
+        colorSlot: seg.colorSlot,
+        seconds: segSecs,
+        subjectName: seg.subjectName || '',
+      };
+    });
+
+    return {
+      date: day.date,
+      x,
+      cx,
+      width: colWidth,
+      totalSeconds: dayTotal,
+      zero: dayTotal <= 0,
+      segments,
+    };
+  });
+
+  return {
+    width,
+    height,
+    padLeft,
+    padRight,
+    padTop,
+    padBottom,
+    plotW,
+    plotH,
+    maxSeconds: maxSecs,
+    columns,
+    yFor,
+  };
+}
+
+export interface MultiLineSeriesInput {
+  id: string;
+  name: string;
+  colorSlot: number;
+  points: Array<{ periodKey: string; accuracy: number | null }>;
+}
+
+/** Layout for multi-line chart (e.g. accuracy percentage per subject over periods). */
+export function multiLineGeometry(
+  seriesList: MultiLineSeriesInput[],
+  periodsCount: number,
+  {
+    width = 600,
+    height = 220,
+    padLeft = 35,
+    padRight = 20,
+    padTop = 15,
+    padBottom = 30,
+  }: {
+    width?: number;
+    height?: number;
+    padLeft?: number;
+    padRight?: number;
+    padTop?: number;
+    padBottom?: number;
+  } = {}
+) {
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+  const step = periodsCount > 1 ? plotW / (periodsCount - 1) : 0;
+
+  const xFor = (index: number) => +(padLeft + (periodsCount === 1 ? plotW / 2 : index * step)).toFixed(1);
+  const yFor = (pct: number) => +(padTop + plotH - (Math.max(0, Math.min(100, pct)) / 100) * plotH).toFixed(1);
+
+  const series = seriesList.map(s => {
+    const dots: Array<{ x: number; y: number; accuracy: number; periodIndex: number }> = [];
+    const runs: string[] = [];
+    let currentRun: Array<{ x: number; y: number }> = [];
+
+    s.points.forEach((pt, pIdx) => {
+      if (pt.accuracy === null) {
+        if (currentRun.length > 1) {
+          runs.push(currentRun.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join(' '));
+        }
+        currentRun = [];
+      } else {
+        const x = xFor(pIdx);
+        const y = yFor(pt.accuracy);
+        currentRun.push({ x, y });
+        dots.push({ x, y, accuracy: pt.accuracy, periodIndex: pIdx });
+      }
+    });
+
+    if (currentRun.length > 1) {
+      runs.push(currentRun.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join(' '));
+    }
+
+    return {
+      id: s.id,
+      name: s.name,
+      colorSlot: s.colorSlot,
+      runs,
+      dots,
+    };
+  });
+
+  return {
+    width,
+    height,
+    padLeft,
+    padRight,
+    padTop,
+    padBottom,
+    plotW,
+    plotH,
+    xFor,
+    yFor,
+    series,
+  };
+}
+
+export interface PedagogicalMatrixItemInput {
+  id: string;
+  name: string;
+  colorSlot: number;
+  mastery: number;
+  retention: number;
+  studyMinutes: number;
+}
+
+/** Layout for Pedagogical Matrix (Domain × Retention 4-quadrant bubble plot). */
+export function pedagogicalMatrixGeometry(
+  items: PedagogicalMatrixItemInput[],
+  {
+    width = 540,
+    height = 360,
+    padLeft = 40,
+    padRight = 25,
+    padTop = 25,
+    padBottom = 40,
+    thresholdMastery = 70,
+    thresholdRetention = 60,
+  }: {
+    width?: number;
+    height?: number;
+    padLeft?: number;
+    padRight?: number;
+    padTop?: number;
+    padBottom?: number;
+    thresholdMastery?: number;
+    thresholdRetention?: number;
+  } = {}
+) {
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+
+  const xFor = (ret: number) => +(padLeft + (Math.max(0, Math.min(100, ret)) / 100) * plotW).toFixed(1);
+  const yFor = (dom: number) => +(padTop + plotH - (Math.max(0, Math.min(100, dom)) / 100) * plotH).toFixed(1);
+
+  const maxMinutes = Math.max(60, ...items.map(it => it.studyMinutes || 0));
+
+  const bubbles = items.map(it => {
+    const cx = xFor(it.retention);
+    const cy = yFor(it.mastery);
+    const frac = Math.max(0, it.studyMinutes || 0) / maxMinutes;
+    // Raio entre 8px e 24px
+    const r = +(8 + frac * 16).toFixed(1);
+    return {
+      id: it.id,
+      name: it.name,
+      colorSlot: it.colorSlot,
+      cx,
+      cy,
+      r,
+      mastery: it.mastery,
+      retention: it.retention,
+      studyMinutes: it.studyMinutes,
+    };
+  });
+
+  return {
+    width,
+    height,
+    padLeft,
+    padRight,
+    padTop,
+    padBottom,
+    plotW,
+    plotH,
+    thresholdX: xFor(thresholdRetention),
+    thresholdY: yFor(thresholdMastery),
+    bubbles,
+  };
+}

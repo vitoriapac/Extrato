@@ -29,6 +29,7 @@ import {
   CockpitSidebarCards,
   type CockpitSidebarCardsProps,
 } from './CockpitSidebarCards.js';
+import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 import { buildAllocationBalanceViewModel } from '../../../application/analytics/build-allocation-balance-view-model.js';
 import { buildCriticalVulnerabilitiesViewModel } from '../../../application/analytics/build-critical-vulnerabilities-view-model.js';
 import { buildVolatileMasteryViewModel } from '../../../application/analytics/build-volatile-mastery-view-model.js';
@@ -647,11 +648,13 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (!doc) return;
     const bars = doc.getElementById('progressBars');
     if (bars && deps.activeSubjects) {
+      const allSubjects = deps.activeSubjects();
       mountProgressBars(
         bars,
-        deps.activeSubjects().map((s: any) => ({
+        allSubjects.map((s: any) => ({
           id: s.id,
           name: s.name,
+          colorSlot: subjectColorOf(s, allSubjects),
           percentage: deps.subjectProgress ? deps.subjectProgress(s) : 0,
         }))
       );

@@ -18,6 +18,10 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 | Comparação por período | Metas `#periodComparisonResults` | `buildPeriodComparisonViewModel` | 7/30 dias, mês ou intervalo escolhido; hoje usa registros sem filtro de concurso | Desempenho recebe comparação no escopo ativo; Metas mantém objetivos e progresso atuais. |
 | Diagnóstico e sinais | Hoje `#diagnosisCenter` | sinais consolidados, recomendações e explicações | Concurso ativo; tópico e disciplina | Hoje continua proprietário dos problemas e ações. |
 | Inteligência da prova | Desempenho → Inteligência da prova `.exam-intelligence-hub` | provas históricas, incidência e configuração | Concurso ativo; filtros próprios de prova | Desempenho apresenta a evidência e a matriz; Metas mantém a configuração estratégica. |
+| Linha do Tempo Diária | Desempenho → Consistência | `buildStudyTimelineModel`, `StackedColumnChart` | Sessões do período e concurso ativo | Consistência: colunas empilhadas diárias coloridas por disciplina e resumo lateral de horas. |
+| Tempo de Estudo por Disciplina | Desempenho → Consistência | `buildStudyDistributionModel`, `DonutChart` | Sessões do período e concurso ativo | Consistência: gráfico Donut em SVG com arcos coloridos e legenda percentual de carga horária. |
+| Desempenho por Disciplina | Desempenho → Questões | `buildMultiSubjectPerformanceModel`, `MultiLineChart` | Questões pessoais no período | Questões: curvas multilineares de taxa de acerto por matéria, média geral e proporções. |
+| Matriz Domínio × Retenção | Desempenho → Disciplinas | `buildPedagogicalMatrixModel`, `PedagogicalMatrixChart` | Métricas de tópicos e sessões | Disciplinas: dispersão em 4 quadrantes pedagógicos com esferas coloridas nas cores das matérias. |
 
 ## Definições para os primeiros três pacotes
 

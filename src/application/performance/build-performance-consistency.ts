@@ -6,6 +6,8 @@ import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
 import { countStudyDaysInRange } from './study-day-count.js';
 import { buildAdherenceModel } from '../adherence/build-adherence-model.js';
 import { buildWeeklyAdherence } from '../adherence/build-weekly-adherence.js';
+import { buildStudyTimelineModel } from '../../domain/analytics/study-timeline.js';
+import { buildStudyDistributionModel } from '../../domain/analytics/study-distribution.js';
 
 type Range = { start: string; end: string };
 const inRange = (date: string, range: Range) =>
@@ -121,9 +123,23 @@ export function buildPerformanceConsistency({
     weekly: buildWeeklyAdherence({ ...source, today, activeExamTags, historyWeeks }),
   };
   adherence.goal = buildAdherenceTarget(adherence.weekly.current, source.adherenceTarget);
+  const studyTimeline = buildStudyTimelineModel({
+    sessions: studied,
+    subjects,
+    startDate: range?.start || today,
+    endDate: range?.end || today,
+  });
+  const studyDistribution = buildStudyDistributionModel({
+    sessions: studied,
+    subjects,
+    startDate: range?.start || null,
+    endDate: range?.end || null,
+  });
   return {
     weekly,
     heatmap,
+    studyTimeline,
+    studyDistribution,
     focusByShift: analyzeFocusAndEnergy(studied),
     adherenceAnalysis: adherence,
     studiedMinutes,

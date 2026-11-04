@@ -1,4 +1,5 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { subjectColorOf } from '../../domain/subjects/subject-color.js';
 /**
  * Controller e renderizador do Radar Multidimensional de Disciplinas e Análise de Desempenho.
  */
@@ -14,6 +15,7 @@ export const RADAR_AXIS_META: ReadonlyArray<[string, string]> = [
 export interface SubjectRadarDataModel {
   id: string;
   name: string;
+  colorSlot?: number;
   axes: Record<string, number | null>;
   interpretation: string;
   availableAxes: number;
@@ -87,21 +89,21 @@ export function renderRadarSvg({
           return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
         })
         .filter(Boolean);
+      const colorAttr = model.colorSlot
+        ? `data-subject-color="${model.colorSlot}" class="radar-shape radar-series-${seriesIndex + 1} subject-color-${model.colorSlot}"`
+        : `class="radar-shape radar-series-${seriesIndex + 1}"`;
       const shape = complete
-        ? `<polygon class="radar-shape radar-series-${seriesIndex + 1}" points="${points.join(
-            ' '
-          )}"></polygon>`
+        ? `<polygon ${colorAttr} points="${points.join(' ')}"></polygon>`
         : '';
       const dots = values
         .map((value, index) => {
           if (value === null) return '';
           const a = angleFor(index);
           const r = maxR * (value / 100);
-          return `<circle class="radar-dot radar-series-${seriesIndex + 1}" cx="${
-            cx + r * Math.cos(a)
-          }" cy="${cy + r * Math.sin(a)}" r="4"><title>${escapeHtml(model.name)} · ${
-            axisMeta[index][1]
-          }: ${value}/100</title></circle>`;
+          const dotColorAttr = model.colorSlot
+            ? `data-subject-color="${model.colorSlot}" class="radar-dot radar-series-${seriesIndex + 1} subject-color-${model.colorSlot}"`
+            : `class="radar-dot radar-series-${seriesIndex + 1}"`;
+          return `<circle ${dotColorAttr} cx="${cx + r * Math.cos(a)}" cy="${cy + r * Math.sin(a)}" r="4"><title>${escapeHtml(model.name)} · ${axisMeta[index][1]}: ${value}/100</title></circle>`;
         })
         .join('');
       return shape + dots;
@@ -147,8 +149,14 @@ export function renderRadarAnalysisHtml(
 ): string {
   return `<div class="radar-analysis">${selected
     .map(
-      (model, index) =>
-        `<section><h4><span class="radar-key radar-key-${index + 1}"></span>${escapeHtml(
+      (model, index) => {
+        const keyColorClass = model.colorSlot
+          ? `subject-color-${model.colorSlot}`
+          : `radar-key-${index + 1}`;
+        const keyDataAttr = model.colorSlot
+          ? `data-subject-color="${model.colorSlot}"`
+          : '';
+        return `<section><h4><span class="radar-key ${keyColorClass}" ${keyDataAttr}></span>${escapeHtml(
           model.name
         )}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta
           .map(
@@ -157,7 +165,8 @@ export function renderRadarAnalysisHtml(
                 model.axes[key] === null ? 'Aguardando dados' : model.axes[key] + '/100'
               }</dd></div>`
           )
-          .join('')}</dl></section>`
+          .join('')}</dl></section>`;
+      }
     )
     .join('')}</div>`;
 }
@@ -232,8 +241,14 @@ export function createPerformanceAnalyticsController(ctx: PerformanceAnalyticsCo
 
     const selectedModels = radarView.subjectIds
       .map(id => subjects.find(subject => subject.id === id))
-      .filter(Boolean)
-      .map(ctx.getSubjectRadarModel);
+      .filter((sub): sub is NonNullable<typeof sub> => Boolean(sub))
+      .map(sub => {
+        const model = ctx.getSubjectRadarModel(sub);
+        return {
+          ...model,
+          colorSlot: subjectColorOf(sub, subjects),
+        };
+      });
 
     return renderRadarDisciplinasHtml({
       subjects,
