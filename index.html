@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=21b359755aed">
-<link rel="stylesheet" href="styles/app.css?v=21b359755aed">
+<link rel="stylesheet" href="styles/tailwind.css?v=ace1d53a145b">
+<link rel="stylesheet" href="styles/app.css?v=ace1d53a145b">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -350,8 +350,11 @@
               <small class="timer-focus-hint">Esc · sair do modo foco</small>
             </section>
             <div class="timer-context" aria-label="Contexto da sessão">
+              <label for="timerSubjectSelect" class="sr-only">Disciplina da sessão</label>
               <select class="select-control" data-searchable id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
+              <label for="timerTopicSelect" class="sr-only">Tópico da sessão</label>
               <select class="select-control" id="timerTopicSelect" aria-label="Tópico da sessão"></select>
+              <label for="timerTypeSelect" class="sr-only">Tipo da sessão</label>
               <select class="select-control" id="timerTypeSelect" aria-label="Tipo da sessão">
                 <option value="study">Estudo teórico</option>
                 <option value="review">Revisão</option>
@@ -396,6 +399,8 @@
           </header>
           <div id="hojeMetas"></div>
         </section>
+
+        <div id="todayWeeklyRhythmSlot"></div>
 
         <div class="chart-card today-agenda-card" aria-labelledby="todayAgendaHeading">
           <header class="module-heading module-heading--compact mb-3">
@@ -471,8 +476,10 @@
 
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
     <div class="cal-filters responsive-filters" id="agendaFilters">
-                <select class="select-control" data-searchable id="agendaFilterSubject" aria-label="Filtrar por disciplina"><option value="">Todas as disciplinas</option></select>
-                <select class="select-control" id="agendaFilterStatus" aria-label="Filtrar por status">
+      <label for="agendaFilterSubject" class="sr-only">Filtrar por disciplina</label>
+      <select class="select-control" data-searchable id="agendaFilterSubject" aria-label="Filtrar por disciplina"><option value="">Todas as disciplinas</option></select>
+      <label for="agendaFilterStatus" class="sr-only">Filtrar por status</label>
+      <select class="select-control" id="agendaFilterStatus" aria-label="Filtrar por status">
         <option value="">Todos os status</option>
         <option>Não iniciado</option>
         <option>Em andamento</option>
@@ -480,8 +487,10 @@
         <option>Concluído</option>
         <option value="Atrasadas">Atrasadas</option>
       </select>
-                <select class="select-control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
-                <select class="select-control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
+      <label for="agendaFilterMes" class="sr-only">Filtrar por mês</label>
+      <select class="select-control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
+      <label for="agendaFilterTipo" class="sr-only">Filtrar revisões por tipo</label>
+      <select class="select-control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
     </div>
     <!-- Espelho dos filtros acima: o controlador das tarefas lê estes selects; a ponte copia o valor. -->
     <div id="calendarFilters" hidden>
@@ -520,9 +529,11 @@
 
       <div class="cal-table-wrap calendar-agenda-view" id="calendarAgendaView">
         <div class="cal-filters responsive-filters">
+          <label for="calFilterTipo" class="sr-only">Filtrar tarefas por tipo</label>
           <select class="select-control" id="calFilterTipo" aria-label="Filtrar tarefas por tipo"><option value="">Todos os tipos de tarefa</option></select>
         </div>
         <table class="cal responsive-history-table">
+          <caption class="sr-only">Calendário de tarefas e estudos</caption>
           <thead>
             <tr>
               <th style="width:110px;">Data</th>
@@ -548,6 +559,7 @@
       <div id="errorNotebookDueAgenda"></div>
       <div class="cal-table-wrap">
         <table class="cal responsive-history-table">
+          <caption class="sr-only">Fila de revisões espaçadas programadas</caption>
           <thead>
             <tr>
               <th style="width:105px;">Data</th>
@@ -1025,7 +1037,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=21b359755aed"></script>
+  <script src="src/app.bundle.js?v=ace1d53a145b"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

@@ -9994,9 +9994,11 @@
         "preact-render-to-string",
         "../../src/ui/tabs/today/TodayExecutionSummary.js",
         "../../src/ui/tabs/today/TodayAgendaSections.js",
+        "../../src/ui/tabs/today/TodayGoalsCard.js",
+        "../../src/ui/tabs/today/TodayWeeklyRhythmCard.js",
         "../../src/ui/tabs/today/today-tab-controller.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

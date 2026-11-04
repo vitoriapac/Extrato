@@ -3,6 +3,9 @@ import { render } from 'preact-render-to-string';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { TodayExecutionSummary } from './TodayExecutionSummary.js';
 import { TodayAgendaSections, type TodayAgendaSectionsProps } from './TodayAgendaSections.js';
+import { TodayGoalsCard, type TodayGoalsCardProps } from './TodayGoalsCard.js';
+import { TodayWeeklyRhythmCard, type WeeklyRhythmDay } from './TodayWeeklyRhythmCard.js';
+import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 import { FirstStepsMission } from '../../components/FirstStepsMission.js';
 import {
   buildFirstStepsMission,
@@ -20,6 +23,7 @@ import {
 } from '../../renderers/consistency-strip-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 import { renderIconSvg } from '../../primitives/icon.js';
+import { parseLocalDate } from '../../../core/date-utils.js';
 
 const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: 'alert-circle', Média: 'alert-triangle', Baixa: 'circle-check' };
 
@@ -129,6 +133,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       executedMinutesFormatted,
       dateFormatted,
       progressPercent: model.progress,
+      availableMinutes: model.availableMinutes,
+      plannedMinutes: model.plannedMinutes,
+      executedMinutes: model.executedMinutes,
     });
   }
 
@@ -161,6 +168,68 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
   function mountAgendaSections(container: Element, props: TodayAgendaSectionsProps): void {
     mountPreact(h(TodayAgendaSections, props), container);
+  }
+
+  function renderTodayGoalsHtml(props: TodayGoalsCardProps): string {
+    return render(h(TodayGoalsCard, props));
+  }
+
+  function mountTodayGoals(container: Element, props: TodayGoalsCardProps): void {
+    mountPreact(h(TodayGoalsCard, props), container);
+  }
+
+  function renderWeeklyRhythmCard(): void {
+    if (!doc) return;
+    const slot = doc.getElementById('todayWeeklyRhythmSlot');
+    if (!slot) return;
+    const state = getState();
+    const today = todayISO();
+    const mondayISO = startOfWeek(today);
+    const sessions = state.studySessions || [];
+    const dayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+    let totalWeekMinutes = 0;
+    let activeDaysCount = 0;
+
+    const days: WeeklyRhythmDay[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(`${mondayISO}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + i);
+      const dateISO = d.toISOString().slice(0, 10);
+
+      const dayStudiedSeconds = sessions
+        .filter((s: any) => s.date === dateISO)
+        .reduce((sum: number, s: any) => sum + (Number(s.durationSeconds) || 0), 0);
+      const studiedMinutes = Math.round(dayStudiedSeconds / 60);
+
+      if (studiedMinutes > 0) activeDaysCount++;
+      totalWeekMinutes += studiedMinutes;
+
+      days.push({
+        dayName: dayLabels[i],
+        dateISO,
+        studiedMinutes,
+        studiedFormatted: formatPlanMinutes(studiedMinutes),
+        isToday: dateISO === today,
+        isPast: dateISO < today,
+      });
+    }
+
+    const dailyTargetMinutes = Math.round(metaHoursToday() * 60);
+    const dailyTargetFormatted = formatHoras(metaHoursToday());
+    const totalWeekFormatted = formatPlanMinutes(totalWeekMinutes);
+
+    mountPreact(
+      h(TodayWeeklyRhythmCard, {
+        days,
+        dailyTargetMinutes,
+        dailyTargetFormatted,
+        totalWeekMinutes,
+        totalWeekFormatted,
+        activeDaysCount,
+      }),
+      slot
+    );
   }
 
   function renderFirstStepsMissionHtml(model: FirstStepsMissionModel): string {
@@ -480,6 +549,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       }),
     });
     renderTodayExecutionSummary(todayModel);
+    renderWeeklyRhythmCard();
     const consistency = doc.getElementById('todayConsistency');
     if (consistency)
       consistency.innerHTML = renderConsistencyStrip(
@@ -526,6 +596,43 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
             (a: any, b: any) => (Number(b.score) || 0) - (Number(a.score) || 0)
           )
         : eligibleItems;
+
+    const subjectMap = new Map<string, { id: string; name: string; minutes: number }>();
+    for (const it of plan.items) {
+      if (['skipped', 'replaced', 'deferred', 'discarded'].includes(it.status)) continue;
+      const sId = it.subjectId || 'unassigned';
+      const sName = it.subjectName || getSubjectName(it.subjectId) || 'Disciplina';
+      const cur = subjectMap.get(sId) || { id: sId, name: sName, minutes: 0 };
+      cur.minutes += Number(it.plannedMinutes) || 0;
+      subjectMap.set(sId, cur);
+    }
+    const subjectList = [...subjectMap.values()].filter(s => s.minutes > 0);
+    const subjectsDistributionHtml =
+      subjectList.length > 0
+        ? `
+      <div class="today-plan-distribution mb-3 p-2.5 rounded bg-surface-subtle border border-border-subtle">
+        <div class="flex items-center justify-between text-xs text-content-secondary mb-1.5 font-medium">
+          <span>Disciplinas planejadas hoje</span>
+          <span class="font-data">${subjectList.length} ${subjectList.length === 1 ? 'matéria' : 'matérias'}</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          ${subjectList
+            .map(s => {
+              const slot = subjectColorOf(s, state.subjects || []);
+              return `
+              <span class="inline-flex items-center gap-1.5 text-xs bg-surface-card px-2 py-1 rounded border border-border-subtle">
+                <span class="subject-color-swatch subject-color-${slot}" aria-hidden="true"></span>
+                <strong class="font-medium text-content-primary">${escapeHtml(s.name)}</strong>
+                <span class="text-content-secondary font-data">${formatPlanMinutes(s.minutes)}</span>
+              </span>
+            `;
+            })
+            .join('')}
+        </div>
+      </div>
+    `
+        : '';
+
     const listaHtml = items
       .map((item: any) => {
         const progress =
@@ -538,17 +645,36 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         const canStart =
             !['completed', 'deferred', 'replaced', 'skipped'].includes(item.status) && !active,
           blocked = hasTimer && !active;
+        const colorSlot = subjectColorOf(item, state.subjects || []);
+        const statusIconName =
+          item.status === 'completed'
+            ? 'circle-check'
+            : active
+              ? 'player-play'
+              : PRIORITY_TIER_EMOJI[item.tier] || 'clock';
+        const statusIconClass =
+          item.status === 'completed'
+            ? 'text-green'
+            : active
+              ? 'text-brand'
+              : 'text-content-secondary';
         const actionButton = active
-          ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>'
+          ? `<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">${renderIconSvg('focus-2', { size: 13, className: 'icon-inline' })}Retomar sessão</button>`
           : canStart && !blocked
-            ? `<button type="button" class="btn small tonal" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? 'Continuar' : 'Iniciar'}</button>`
+            ? `<button type="button" class="btn small tonal" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${renderIconSvg('player-play', { size: 13, className: 'icon-inline' })}${item.executedSeconds > 0 ? 'Continuar' : 'Iniciar'}</button>`
             : canStart && blocked
               ? '<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
               : '';
         return `
       <div class="plano-item ${active ? 'is-active' : ''} ${item.status === 'completed' ? 'is-completed' : ''}">
-        <div class="plano-item-head">${escapeHtml(item.statusLabel || planItemStatusLabel(item.status))}${Number.isFinite(Number(item.score)) ? ' · ' + Math.round(Number(item.score)) + '/100' : ''}</div>
-        <div class="plano-item-title">${escapeHtml(item.subjectName || getSubjectName(item.subjectId) || 'Disciplina')} — ${escapeHtml(item.topicName || getTopicName(item.topicId) || 'Tópico')}</div>
+        <div class="plano-item-head flex items-center gap-1.5">
+          <span class="inline-flex shrink-0 ${statusIconClass}">${renderIconSvg(statusIconName, { size: 13 })}</span>
+          <span>${escapeHtml(item.statusLabel || planItemStatusLabel(item.status))}${Number.isFinite(Number(item.score)) ? ' · ' + Math.round(Number(item.score)) + '/100' : ''}</span>
+        </div>
+        <div class="plano-item-title flex items-center gap-1.5 flex-wrap">
+          <span class="subject-color-swatch subject-color-${colorSlot} shrink-0" aria-hidden="true"></span>
+          <span>${escapeHtml(item.subjectName || getSubjectName(item.subjectId) || 'Disciplina')} — ${escapeHtml(item.topicName || getTopicName(item.topicId) || 'Tópico')}</span>
+        </div>
         <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
         <div class="plano-item-reason">${[formatPlanMinutes(item.plannedMinutes), item.action && escapeHtml(item.action), item.recommendedQuestions && item.recommendedQuestions + ' questões'].filter(Boolean).join(' · ')}</div>
         <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
@@ -579,6 +705,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
     container.innerHTML = `
       ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
+      ${subjectsDistributionHtml}
       ${executionHint}
       ${listaHtml}
       ${plan.flexMinutes! > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes!)} para pausas, correção ou continuidade</div></div>` : ''}
@@ -609,37 +736,22 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     const tempoHoje = segundosEstudadosHoje();
     const metaTempo = metaHoursToday() * 3600;
     const pctTempo = metaTempo > 0 ? Math.round((tempoHoje / metaTempo) * 100) : 0;
+    const todayDayOfWeek = parseLocalDate(today)?.getDay?.() ?? new Date().getDay();
 
-    container.innerHTML = `
-      <div class="metas-hoje-grid">
-        <div class="meta-hoje-card">
-          <div class="meta-hoje-label">Tópicos concluídos hoje</div>
-          <div class="meta-hoje-value">${topicosHoje} <span>/ ${metaTopicosHoje}</span></div>
-        </div>
-        <div class="meta-hoje-card">
-          <div class="meta-hoje-label">Questões resolvidas hoje</div>
-          <div class="meta-hoje-value">${questoesHoje} <span>/ ${metaQuestoesHoje}</span></div>
-        </div>
-        <div class="meta-hoje-card">
-          <div class="meta-hoje-label">Revisões de hoje concluídas</div>
-          <div class="meta-hoje-value">${revisoesConcluidasHoje} <span>/ ${revisoesHoje.length}</span></div>
-        </div>
-        <div class="meta-hoje-card">
-          <div class="meta-hoje-label">Tempo estudado hoje</div>
-          <div class="meta-hoje-time">
-            <div class="meta-hoje-time-main">
-              <div class="meta-hoje-time-value">${formatDuration(tempoHoje)}</div>
-              <div class="meta-hoje-time-target">de ${formatHoras(metaHoursToday())} · ${pctTempo}%</div>
-            </div>
-            <label class="meta-hoje-time-goal">
-              <span>Meta diária</span>
-              <input type="number" min="0" step="0.25" value="${metaHoursToday()}"
-                data-delegated-blur="updateMetaHoursDay(parseLocalDate(todayISO()).getDay(),this.value)" title="Editar a meta de hoje" aria-label="Meta de horas de hoje">
-            </label>
-          </div>
-        </div>
-      </div>
-    `;
+    mountTodayGoals(container, {
+      topicosHoje,
+      metaTopicosHoje,
+      questoesHoje,
+      metaQuestoesHoje,
+      revisoesConcluidasHoje,
+      totalRevisoesHoje: revisoesHoje.length,
+      tempoHojeSegundos: tempoHoje,
+      tempoHojeFormatado: formatDuration(tempoHoje),
+      metaHorasHoje: metaHoursToday(),
+      metaHorasFormatado: formatHoras(metaHoursToday()),
+      pctTempo,
+      todayDayOfWeek,
+    });
   }
 
   function renderSimuladosPlanejados() {
@@ -728,6 +840,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     mountExecutionSummary,
     renderAgendaSectionsHtml,
     mountAgendaSections,
+    renderTodayGoalsHtml,
+    mountTodayGoals,
     renderFirstStepsMissionHtml,
     mountFirstStepsMission,
     buildDailyStudyPlan,
@@ -745,6 +859,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderDailyExecutionCard,
     renderPlanoHoje,
     renderMetasHoje,
+    renderWeeklyRhythmCard,
     renderSimuladosPlanejados,
     bindEvents,
   };

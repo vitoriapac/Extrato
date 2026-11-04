@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { RingGauge } from '../../primitives/charts/charts.js';
+import { RingGauge, StackedBar, type StackedBarPart } from '../../primitives/charts/charts.js';
 import { Icon } from '../../primitives/icon.js';
 
 export interface TodayExecutionSummaryProps {
@@ -8,6 +8,9 @@ export interface TodayExecutionSummaryProps {
   executedMinutesFormatted: string;
   dateFormatted: string;
   progressPercent: number | null;
+  availableMinutes?: number;
+  plannedMinutes?: number;
+  executedMinutes?: number;
 }
 
 export function TodayExecutionSummary({
@@ -16,8 +19,43 @@ export function TodayExecutionSummary({
   executedMinutesFormatted,
   dateFormatted,
   progressPercent,
+  availableMinutes,
+  plannedMinutes,
+  executedMinutes,
 }: TodayExecutionSummaryProps): JSX.Element {
   const goalMet = progressPercent !== null && progressPercent >= 100;
+
+  const validAvailable = Math.max(0, Number(availableMinutes) || 0);
+  const validPlanned = Math.max(0, Number(plannedMinutes) || 0);
+  const validExecuted = Math.max(0, Number(executedMinutes) || 0);
+
+  const stackedParts: StackedBarPart[] = [];
+  if (validExecuted > 0) {
+    stackedParts.push({
+      label: 'Executado',
+      value: validExecuted,
+      tone: 'primary',
+    });
+  }
+  const remainingPlanned = Math.max(0, validPlanned - validExecuted);
+  if (remainingPlanned > 0) {
+    stackedParts.push({
+      label: 'A realizar',
+      value: remainingPlanned,
+      tone: 'secondary',
+    });
+  }
+  const flexMinutes = Math.max(0, validAvailable - Math.max(validPlanned, validExecuted));
+  if (flexMinutes > 0) {
+    stackedParts.push({
+      label: 'Flexível',
+      value: flexMinutes,
+      tone: 'empty',
+    });
+  }
+
+  const hasStackedData = stackedParts.length > 0 && (validPlanned > 0 || validExecuted > 0);
+
   return (
     <section
       class={`study-plan-summary today-execution-summary${goalMet ? ' is-goal-met' : ''}`}
@@ -59,6 +97,11 @@ export function TodayExecutionSummary({
           </p>
         )}
       </div>
+      {hasStackedData && (
+        <div class="today-execution-budget-track" aria-label="Distribuição do orçamento de tempo">
+          <StackedBar parts={stackedParts} label="Distribuição do tempo de hoje" unit="min" />
+        </div>
+      )}
     </section>
   );
 }
