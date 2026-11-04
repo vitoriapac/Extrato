@@ -29,7 +29,7 @@ export const EXAM_SOURCES = Object.freeze({
     institution: 'caixa',
     role: 'TBN TI',
     official: false,
-    label: 'Catálogo curado StudyTrack',
+    label: 'Catálogo curado Extrato de Estudos',
   }),
 });
 export function institutionForExamTag(tag: string) {

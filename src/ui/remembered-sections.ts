@@ -1,13 +1,15 @@
 // Collapsible page sections whose open/closed state is a per-browser UI preference, not study data.
 import { isPlanningSubtab, selectPlanningSubtab } from './planning-subtabs.js';
 
-const STORAGE_KEY = 'studytrack.sectionsOpen';
+const STORAGE_KEY = 'extrato.sectionsOpen';
+const LEGACY_STORAGE_KEY = 'studytrack.sectionsOpen';
 
 type SectionStore = Pick<Storage, 'getItem' | 'setItem'> | null;
 
 const read = (storage: SectionStore): Record<string, boolean> => {
   try {
-    const parsed = JSON.parse(storage?.getItem(STORAGE_KEY) || '{}');
+    const raw = storage?.getItem(STORAGE_KEY) ?? storage?.getItem(LEGACY_STORAGE_KEY);
+    const parsed = JSON.parse(raw || '{}');
     return parsed && typeof parsed === 'object' ? parsed : {};
   } catch {
     return {};

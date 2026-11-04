@@ -26,7 +26,7 @@ const stepCopy: Record<string, any> = {
   content: {
     title: 'Quais conteúdos entram no plano?',
     help: 'Importe um edital ou cadastre matérias próprias e indique o nível inicial.',
-    why: 'O StudyTrack usa o conteúdo selecionado para comparar domínio, importância e esforço restante.',
+    why: 'O Extrato de Estudos usa o conteúdo selecionado para comparar domínio, importância e esforço restante.',
     benefits: [
       'gerar prioridades por tópico',
       'evitar duplicidades no edital',

@@ -1,6 +1,6 @@
-# Design System do StudyTrack
+# Design System do Extrato de Estudos
 
-O StudyTrack usa a linguagem visual de um extrato: verde-musgo para estrutura, sálvia para destaque, âmbar só para atenção, papel para superfícies e linhas finas para separar informação (paleta Sálvia; valores em `styles/tokens.css` e no DESIGN.md).
+O Extrato de Estudos usa a linguagem visual de um extrato: verde-musgo para estrutura, sálvia para destaque, âmbar só para atenção, papel para superfícies e linhas finas para separar informação (paleta Sálvia; valores em `styles/tokens.css` e no DESIGN.md).
 
 ## Tipografia
 

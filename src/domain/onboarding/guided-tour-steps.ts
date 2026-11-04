@@ -26,7 +26,7 @@ export const GUIDED_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     selector: '#overviewNextAction',
     title: 'Sua única prioridade de agora',
     message:
-      'O StudyTrack cruza peso do edital, lacunas e revisões para destacar uma única próxima ação. Sem paralisia por excesso de escolha.',
+      'O Extrato de Estudos cruza peso do edital, lacunas e revisões para destacar uma única próxima ação. Sem paralisia por excesso de escolha.',
     badgeLabel: '1 de 5 · Visão Geral',
   },
   {
@@ -99,7 +99,7 @@ export const ESSENTIAL_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     selector: '#panel-questoes .section-head',
     title: 'Onde o diagnóstico acontece',
     message:
-      'Registre suas baterias ou importe relatórios do QConcursos/Tec Concursos. É aqui que o StudyTrack aprende onde você erra para calibrar suas revisões.',
+      'Registre suas baterias ou importe relatórios do QConcursos/Tec Concursos. É aqui que o Extrato de Estudos aprende onde você erra para calibrar suas revisões.',
     badgeLabel: '3 de 3 · Questões',
   },
 ]);

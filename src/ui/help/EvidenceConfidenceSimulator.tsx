@@ -152,7 +152,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
           <span>
             <strong>Princípio da Amostragem:</strong> Uma taxa de 100% com apenas 2 questões não
             prova maestria; assim como 0% em 1 questão não significa que você deve desistir do tópico.
-            O StudyTrack exige massa crítica para consolidar a Prontidão.
+            O Extrato de Estudos exige massa crítica para consolidar a Prontidão.
           </span>
         </p>
       </div>

@@ -18,7 +18,7 @@ export function formatTimerTitle({
 }: FormatTimerTitleParams): string {
   if (!started) return baseTitle;
   const prefix = running ? '' : '[Pausado] ';
-  return `${prefix}${time}${subjectName ? ` · ${subjectName}` : ''} — StudyTrack`;
+  return `${prefix}${time}${subjectName ? ` · ${subjectName}` : ''} — Extrato de Estudos`;
 }
 
 // A visible floating window is proof the person is still studying, so the "tab left hidden" check must not fire.
@@ -77,7 +77,7 @@ export function buildTimerMiniView({
   });
 }
 
-export const PIP_FINISH_NOTICE = 'Volte à aba do StudyTrack para registrar a sessão.';
+export const PIP_FINISH_NOTICE = 'Volte à aba do Extrato de Estudos para registrar a sessão.';
 
 export interface PipTimerControllerOptions {
   pictureInPicture?: DocumentPictureInPicture;

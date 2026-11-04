@@ -14,7 +14,7 @@ Candidatos a concursos públicos brasileiros que estudam por conta própria, com
 
 ## Product Purpose
 
-StudyTrack (Extrato de Estudos) planeja estudos semanais e diários a partir da disponibilidade, registra sessões, questões, simulados e revisões, e transforma esse histórico em diagnósticos e recomendações explicáveis. Sucesso é o estudante abrir o app, saber a próxima ação sem esforço, cumprir o plano e entender por que o plano é esse.
+Extrato de Estudos planeja estudos semanais e diários a partir da disponibilidade, registra sessões, questões, simulados e revisões, e transforma esse histórico em diagnósticos e recomendações explicáveis. Sucesso é o estudante abrir o app, saber a próxima ação sem esforço, cumprir o plano e entender por que o plano é esse.
 
 ## Positioning
 
@@ -42,7 +42,7 @@ A combinação de três coisas, juntas:
 
 ## Brand Commitments
 
-- Nome: StudyTrack — Extrato de Estudos. Metáfora do extrato (de conta) é a identidade existente, registrada em [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
+- Nome: Extrato de Estudos — Cada estudo soma. Metáfora do extrato (de conta) é a identidade existente, registrada em [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
 - Voz: sóbria, precisa, honesta sobre limites da evidência; pt-BR.
 - Ícones do app em `icons/` (192, 512, maskable, Apple Touch).
 

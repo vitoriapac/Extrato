@@ -7,24 +7,24 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0c1411">
   <meta name="description" content="Painel local para planejar estudos, revisões, questões e simulados.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <title>StudyTrack — Extrato de Estudos</title>
+  <title>Extrato de Estudos — Cada estudo soma</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231e3f35%22/><path d=%22M18 16h28v32H18z%22 fill=%22%23a8d3b8%22/><path d=%22M24 23h16M24 31h16M24 39h10%22 stroke=%22%231e3f35%22 stroke-width=%224%22 stroke-linecap=%22round%22/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%231e3f35%22/><g transform=%22translate(8, 8) scale(0.48)%22><path d=%22M14 28 C24 24 36 23 48 26 C60 23 72 24 82 28%22 stroke=%22%23f4f6f4%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/><path d=%22M14 70 C24 66 36 65 48 68 C60 65 72 66 75 67%22 stroke=%22%23f4f6f4%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22/><path d=%22M14 28 V70%22 stroke=%22%23f4f6f4%22 stroke-width=%225%22 stroke-linecap=%22round%22/><line x1=%2248%22 y1=%2226%22 x2=%2248%22 y2=%2268%22 stroke=%22%23f4f6f4%22 stroke-width=%225%22 stroke-linecap=%22round%22/><path d=%22M22 39 C28 37 36 36.5 42 38.5%22 stroke=%22%23a8d3b8%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/><path d=%22M22 49 C28 47 36 46.5 42 48.5%22 stroke=%22%23a8d3b8%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/><path d=%22M22 59 C28 57 34 56.5 38 58.5%22 stroke=%22%23a8d3b8%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/><path d=%22M54 36 H74%22 stroke=%22%23ffffff%22 stroke-width=%225%22 stroke-linecap=%22round%22/><path d=%22M54 48.5 H68%22 stroke=%22%23a8d3b8%22 stroke-width=%225%22 stroke-linecap=%22round%22/><path d=%22M54 61 H64%22 stroke=%22%23ffffff%22 stroke-width=%225%22 stroke-linecap=%22round%22/><circle cx=%2278%22 cy=%2269%22 r=%229%22 stroke=%22%23e9953f%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/><circle cx=%2278%22 cy=%2269%22 r=%223%22 fill=%22%23e9953f%22/></g></svg>">
 <script src="src/theme-bootstrap.js"></script>
 <link rel="preload" href="fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=7cc98f9f4d66">
-<link rel="stylesheet" href="styles/app.css?v=7cc98f9f4d66">
+<link rel="stylesheet" href="styles/tailwind.css?v=5173af99f856">
+<link rel="stylesheet" href="styles/app.css?v=5173af99f856">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
   <div id="firstAccessModalMount"></div>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
   <main class="wrap" id="mainContent" tabindex="-1">
-  <h1 class="sr-only">StudyTrack — Extrato de estudos</h1>
+  <h1 class="sr-only">Extrato de Estudos — Cada estudo soma</h1>
   <h2 class="sr-only">Painel de acompanhamento e planejamento</h2>
 
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
@@ -49,14 +49,14 @@
     </div>
   </dialog>
 
-  <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o StudyTrack funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">Explorar demonstração</button></aside>
+  <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o Extrato de Estudos funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">Explorar demonstração</button></aside>
 
   <div class="statement">
     <div class="statement-top">
       <div>
-        <div class="statement-eyebrow">Extrato de estudos</div>
+        <div class="statement-eyebrow">Cada estudo soma</div>
         <span class="demo-header-badge" id="demoHeaderBadge" hidden>DEMONSTRAÇÃO <small>Dados fictícios</small></span>
-        <button class="statement-title brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button>
+        <button class="statement-title brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">Extrato de Estudos</button>
       </div>
       <div class="statement-account">
         Nº do plano<strong id="planNumber">2026-001</strong>
@@ -102,7 +102,7 @@
   </div>
 
   <div class="sticky-shell">
-    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-flame icon-inline" aria-hidden="true"><path d="M12 10.941c2.333 -3.308 .167 -7.823 -1 -8.941c0 3.395 -2.235 5.299 -3.667 6.706c-1.43 1.408 -2.333 3.294 -2.333 5.588c0 3.704 3.134 6.706 7 6.706c3.866 0 7 -3.002 7 -6.706c0 -1.712 -1.232 -4.403 -2.333 -5.588c-2.084 3.353 -3.257 3.353 -4.667 2.235"/></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
+    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-flame icon-inline" aria-hidden="true"><path d="M12 10.941c2.333 -3.308 .167 -7.823 -1 -8.941c0 3.395 -2.235 5.299 -3.667 6.706c-1.43 1.408 -2.333 3.294 -2.333 5.588c0 3.704 3.134 6.706 7 6.706c3.866 0 7 -3.002 7 -6.706c0 -1.712 -1.232 -4.403 -2.333 -5.588c-2.084 3.353 -3.257 3.353 -4.667 2.235"/></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
     <div class="primary-nav-shell">
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
         <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-layout-dashboard tab-icon" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Início</span></span></button>
@@ -343,7 +343,7 @@
           <h3 id="studyTimerTitle">Cronômetro de estudo</h3>
           <div class="timer-block" role="region" aria-label="Cronômetro de estudo">
             <section class="timer-focus-context" id="timerFocusContext" hidden aria-live="polite" aria-label="Contexto do modo foco">
-              <span>STUDYTRACK · MODO FOCO</span>
+              <span>EXTRATO DE ESTUDOS · MODO FOCO</span>
               <h3 id="timerFocusTitle">Sessão de estudo</h3>
               <p id="timerFocusSubtitle">Estudo teórico · Sem meta de tempo</p>
               <p id="timerFocusResume" class="timer-focus-resume" hidden></p>
@@ -881,7 +881,7 @@
 <div id="guidedOnboardingOverlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guidedOnboardingTitle" aria-describedby="guidedOnboardingSubtitle">
   <div class="onboarding-modal" role="document">
     <header class="onboarding-modal-header">
-      <div><span class="onboarding-kicker">PRIMEIRA CONFIGURAÇÃO</span><h2 id="guidedOnboardingTitle">Vamos montar o seu plano</h2><p id="guidedOnboardingSubtitle">Em apenas quatro passos, o StudyTrack transforma sua rotina e seu edital em um plano possível de executar.</p></div>
+      <div><span class="onboarding-kicker">PRIMEIRA CONFIGURAÇÃO</span><h2 id="guidedOnboardingTitle">Vamos montar o seu plano</h2><p id="guidedOnboardingSubtitle">Em apenas quatro passos, o Extrato de Estudos transforma sua rotina e seu edital em um plano possível de executar.</p></div>
       <button class="onboarding-close" id="guidedOnboardingClose" type="button" aria-label="Fechar configuração">×</button>
     </header>
     <div class="guided-onboarding-steps" id="guidedOnboardingProgress" aria-label="Progresso da configuração"></div>
@@ -1042,7 +1042,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=7cc98f9f4d66"></script>
+  <script src="src/app.bundle.js?v=5173af99f856"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

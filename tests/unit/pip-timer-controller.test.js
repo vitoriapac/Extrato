@@ -8,7 +8,7 @@ import {
   PIP_FINISH_NOTICE,
 } from '../../src/ui/controllers/pip-timer-controller.js';
 
-const baseTitle = 'StudyTrack — Extrato de Estudos';
+const baseTitle = 'Extrato de Estudos — Cada estudo soma';
 
 test('título da aba mostra o cronômetro enquanto há sessão', () => {
   assert.equal(
@@ -19,7 +19,7 @@ test('título da aba mostra o cronômetro enquanto há sessão', () => {
       subjectName: 'Português',
       baseTitle,
     }),
-    '24:15 · Português — StudyTrack'
+    '24:15 · Português — Extrato de Estudos'
   );
   assert.equal(
     formatTimerTitle({
@@ -29,11 +29,11 @@ test('título da aba mostra o cronômetro enquanto há sessão', () => {
       subjectName: 'Português',
       baseTitle,
     }),
-    '[Pausado] 24:15 · Português — StudyTrack'
+    '[Pausado] 24:15 · Português — Extrato de Estudos'
   );
   assert.equal(
     formatTimerTitle({ started: true, running: true, time: '01:02:03', baseTitle }),
-    '01:02:03 — StudyTrack'
+    '01:02:03 — Extrato de Estudos'
   );
 });
 

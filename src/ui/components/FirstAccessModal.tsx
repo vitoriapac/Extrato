@@ -38,7 +38,7 @@ export function FirstAccessModal({
     <Dialog
       open={open}
       onClose={handleExploreManually}
-      title="Boas-vindas ao StudyTrack"
+      title="Boas-vindas ao Extrato de Estudos"
       maxWidth="md"
       className="first-access-welcome-modal"
     >

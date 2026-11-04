@@ -109,7 +109,7 @@ export function wireImportControllers(deps: WireImportControllersDeps) {
       url = URL.createObjectURL(blob),
       link = deps.document.createElement('a');
     link.href = url;
-    link.download = 'modelo-studytrack.csv';
+    link.download = 'modelo-extrato-de-estudos.csv';
     link.click();
     URL.revokeObjectURL(url);
   });

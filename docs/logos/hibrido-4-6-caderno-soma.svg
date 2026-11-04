@@ -1,0 +1,23 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Junção 4 + 6: O Livro de Blocos & Cruz Positiva -->
+  <!-- Silhueta das páginas do livro com corte suave -->
+  <path d="M46 30 C34 30 22 34 22 34 V74 C22 74 34 70 46 70 Z" stroke="#1E3F35" stroke-width="4" stroke-linejoin="round" />
+  <path d="M54 30 C66 30 78 34 78 34 V74 C78 74 66 70 54 70 Z" stroke="#1E3F35" stroke-width="4" stroke-linejoin="round" />
+  
+  <!-- Blocos de consistência dentro da página esquerda (heatmap sutil) -->
+  <rect x="27" y="42" width="7" height="8" rx="2" fill="#1E3F35" opacity="0.3" />
+  <rect x="36" y="40" width="7" height="10" rx="2" fill="#1E3F35" />
+  <rect x="27" y="54" width="7" height="10" rx="2" fill="#2F5D4E" />
+  <rect x="36" y="54" width="7" height="10" rx="2" fill="#1E3F35" />
+
+  <!-- Blocos de consistência dentro da página direita -->
+  <rect x="57" y="40" width="7" height="10" rx="2" fill="#1E3F35" />
+  <rect x="66" y="42" width="7" height="8" rx="2" fill="#1E3F35" opacity="0.3" />
+  <rect x="57" y="54" width="7" height="10" rx="2" fill="#1E3F35" />
+  <!-- Bloco dourado de soma dentro da página direita -->
+  <rect x="66" y="54" width="7" height="10" rx="2" fill="#E9953F" />
+
+  <!-- Cruz de soma (+) central que coroa a abertura do livro -->
+  <circle cx="50" cy="22" r="11" fill="#E9953F" />
+  <path d="M50 16 V28 M44 22 H56" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" />
+</svg>

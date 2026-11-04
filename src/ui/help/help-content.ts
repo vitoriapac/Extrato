@@ -40,7 +40,7 @@ const BASE_HELP_CATEGORIES: any[] = [
           },
         ],
         paragraphs: [
-          'Você não precisa configurar tudo de uma vez. Comece pela prova, pelo conteúdo e pela disponibilidade. Conforme registra sessões, questões e revisões, o StudyTrack personaliza as análises.',
+          'Você não precisa configurar tudo de uma vez. Comece pela prova, pelo conteúdo e pela disponibilidade. Conforme registra sessões, questões e revisões, o Extrato de Estudos personaliza as análises.',
         ],
         action: { label: 'Abrir Disciplinas', target: 'subjects' },
       },
@@ -116,7 +116,7 @@ const BASE_HELP_CATEGORIES: any[] = [
           'mini timer',
         ],
         paragraphs: [
-          'Com a API Document Picture-in-Picture, o StudyTrack permite destacar o cronômetro para uma pequena janela flutuante no canto da tela enquanto você lê PDFs, assiste a videoaulas ou resolve listas de questões em outros programas.',
+          'Com a API Document Picture-in-Picture, o Extrato de Estudos permite destacar o cronômetro para uma pequena janela flutuante no canto da tela enquanto você lê PDFs, assiste a videoaulas ou resolve listas de questões em outros programas.',
           'A janela flutuante mantém os controles de pausar, retomar, avançar blocos de Pomodoro e registrar pausas sem que você precise alternar de aba no navegador.',
         ],
         bullets: [
@@ -183,7 +183,7 @@ const BASE_HELP_CATEGORIES: any[] = [
           'Ação: estudar, revisar ou resolver questões',
         ],
         paragraphs: [
-          'A prioridade considera impacto na prova, domínio, retenção, tendência, revisões, desempenho, evidência disponível e pré-requisitos. Sempre que há dados suficientes, o StudyTrack mostra os fatores que levaram à sugestão. Uma recomendação pode iniciar uma sessão vinculada à decisão.',
+          'A prioridade considera impacto na prova, domínio, retenção, tendência, revisões, desempenho, evidência disponível e pré-requisitos. Sempre que há dados suficientes, o Extrato de Estudos mostra os fatores que levaram à sugestão. Uma recomendação pode iniciar uma sessão vinculada à decisão.',
         ],
         action: { label: 'Ver próxima ação', target: 'today' },
       },
@@ -209,7 +209,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         summary: 'Redistribuir tempo sem criar horas adicionais.',
         flow: ['Impacto na prova', 'Necessidade do estudante', 'Possível redistribuição'],
         paragraphs: [
-          'Quando uma disciplina está consolidada e outra apresenta necessidade estratégica maior, o StudyTrack pode propor uma transferência limitada de minutos. A capacidade semanal é preservada. A prévia explica o motivo e exige confirmação; um intervalo de proteção evita ajustes repetidos em pouco tempo.',
+          'Quando uma disciplina está consolidada e outra apresenta necessidade estratégica maior, o Extrato de Estudos pode propor uma transferência limitada de minutos. A capacidade semanal é preservada. A prévia explica o motivo e exige confirmação; um intervalo de proteção evita ajustes repetidos em pouco tempo.',
         ],
         action: { label: 'Ver planejamento adaptativo', target: 'planning' },
       },
@@ -345,7 +345,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Qualidade do histórico',
         summary: 'A força da amostra vem antes do impacto.',
         paragraphs: [
-          'O StudyTrack observa provas completas e parciais, cobertura conhecida, questões classificadas, pendências e confiança. Provas parciais não são tratadas como ausência do tópico. Uma base pequena não significa desempenho ruim: quando o histórico é insuficiente, sua influência no impacto é limitada.',
+          'O Extrato de Estudos observa provas completas e parciais, cobertura conhecida, questões classificadas, pendências e confiança. Provas parciais não são tratadas como ausência do tópico. Uma base pequena não significa desempenho ruim: quando o histórico é insuficiente, sua influência no impacto é limitada.',
         ],
         action: { label: 'Revisar qualidade da base', target: 'exam' },
       },
@@ -389,7 +389,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Seus dados e backup',
         summary: 'Os dados ficam neste navegador.',
         paragraphs: [
-          'O StudyTrack funciona com dados locais, sem conta obrigatória. Exporte backups JSON regularmente, sobretudo antes de limpar dados, trocar de navegador ou fazer mudanças importantes. A restauração valida o arquivo antes de substituir a base; o PDF não é restaurável. Depois do primeiro carregamento completo por HTTP, o PWA instalado pode abrir offline.',
+          'O Extrato de Estudos funciona com dados locais, sem conta obrigatória. Exporte backups JSON regularmente, sobretudo antes de limpar dados, trocar de navegador ou fazer mudanças importantes. A restauração valida o arquivo antes de substituir a base; o PDF não é restaurável. Depois do primeiro carregamento completo por HTTP, o PWA instalado pode abrir offline.',
         ],
         action: { label: 'Ir ao backup', target: 'backup' },
       },
@@ -420,11 +420,11 @@ start.entries.unshift({
   id: 'how-it-works',
   kind: 'feature',
   wide: true,
-  title: 'Como o StudyTrack funciona',
+  title: 'Como o Extrato de Estudos funciona',
   summary: 'Da configuração às decisões, cada registro dá contexto ao próximo passo.',
   visual: {
     type: 'flow',
-    title: 'Mapa do StudyTrack',
+    title: 'Mapa do Extrato de Estudos',
     steps: [
       { title: 'Configurar', detail: 'Objetivo, prova e edital' },
       { title: 'Planejar', detail: 'Prioridades e disponibilidade' },
@@ -626,7 +626,7 @@ analysisGuide.entries.push({
     title: 'Simulador de Força da Evidência e Amostragem',
   },
   paragraphs: [
-    'A confiança nas análises do StudyTrack obedece ao princípio estatístico da amostragem (Lei dos Grandes Números): volumes muito pequenos de questões geram margens de erro excessivamente amplas, tornando qualquer conclusão precoce sobre maestria ou deficiência altamente volátil.',
+    'A confiança nas análises do Extrato de Estudos obedece ao princípio estatístico da amostragem (Lei dos Grandes Números): volumes muito pequenos de questões geram margens de erro excessivamente amplas, tornando qualquer conclusão precoce sobre maestria ou deficiência altamente volátil.',
     'O algoritmo adota uma postura prudente: com menos de 10 questões, ele evita rotular tópicos como dominados ou condenados e prioriza a coleta de evidências. A partir de 30 questões, a tendência se estabiliza, e acima de 80 questões atinge robustez estatística com margem de erro reduzida.',
   ],
 });

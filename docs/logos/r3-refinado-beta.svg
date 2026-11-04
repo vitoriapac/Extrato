@@ -1,0 +1,16 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- R3-Beta: The Negative Space Embrace (Corte de Respiro & Anel Fino) -->
+  <path d="M22 23 C16.5 23 14 27.5 14 33.5 V66.5 C14 72.5 16.5 77 22 77 H27.5 V23 H22 Z" fill="#1E3F35" />
+  
+  <rect x="33" y="23" width="5.5" height="54" rx="2.75" fill="#1E3F35" />
+  
+  <rect x="43.5" y="23" width="37.5" height="5.5" rx="2.75" fill="#1E3F35" />
+  <rect x="43.5" y="47.25" width="27" height="5.5" rx="2.75" fill="#2F5D4E" />
+  
+  <!-- Terceira pauta com terminação curva côncava de respiro -->
+  <path d="M43.5 71.5 H60 C61.8 71.5 63.4 72.4 64.3 73.8 C64.7 74.4 65 75.2 65 76 C65 76.5 64.9 77 64.8 77 H46.25 C44.73 77 43.5 75.77 43.5 74.25 V71.5 Z" fill="#1E3F35" />
+  
+  <!-- Anel de alta joalharia: stroke 2.8px, ponto central puro -->
+  <circle cx="74" cy="74.25" r="10" stroke="#E9953F" stroke-width="2.8" />
+  <circle cx="74" cy="74.25" r="2.2" fill="#E9953F" />
+</svg>

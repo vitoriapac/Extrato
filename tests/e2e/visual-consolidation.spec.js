@@ -215,7 +215,7 @@ test('cronômetro não reserva espaço vazio e instruções explicam dados e rot
   await expect(page.locator('#studyTimerTarget')).toBeHidden();
   await expect(page.locator('#guidedStrategy')).toBeHidden();
   await activateTab(page, 'instrucoes');
-  await expect(page.getByRole('heading', { name: 'Como usar o StudyTrack' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Como usar o Extrato de Estudos' })).toBeVisible();
   await expect(page.locator('#guide-start')).toContainText('Monte o edital');
   await expect(page.locator('#guide-data')).toContainText('Prontidão');
   await expect(page.locator('#guide-safety')).toContainText('Os dados ficam neste navegador');

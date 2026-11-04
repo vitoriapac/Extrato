@@ -137,7 +137,7 @@ export function EbbinghausSimulator(): JSX.Element {
           <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
           <span>
             <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará
-            reaprender a matéria do zero perto da prova. O StudyTrack calcula automaticamente esses
+            reaprender a matéria do zero perto da prova. O Extrato de Estudos calcula automaticamente esses
             ciclos para você na aba <em>Agenda</em>.
           </span>
         </p>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extrato de Estudos — Refinamento de Alto Padrão (Livro + E + Anel)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;400;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background: #F4F6F4;
+            color: #1E3F35;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        body.dark-mode {
+            background: #0C1411;
+            color: #E2ECE5;
+        }
+        .font-serif { font-family: 'Fraunces', serif; }
+        .font-mono { font-family: 'IBM Plex Mono', monospace; }
+        
+        .logo-card {
+            background: #FFFFFF;
+            border: 1px solid rgba(30, 63, 53, 0.08);
+            border-radius: 14px;
+            padding: 32px 26px;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dark-mode .logo-card {
+            background: #141F1A;
+            border-color: rgba(168, 211, 184, 0.12);
+        }
+        .logo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(30, 63, 53, 0.08);
+            border-color: #2F5D4E;
+        }
+        .dark-mode .logo-card:hover {
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+            border-color: #A8D3B8;
+        }
+        .logo-canvas svg {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .logo-card:hover .logo-canvas svg {
+            transform: scale(1.06);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- Opção Luxo 1: Monoline Book & 'E' (Atelier Refined) ---
+        const LogoLuxo1 = () => (
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Asa esquerda: contorno nobre de página aberta com traço esbelto uniforme (3.5px) */}
+                <path d="M46 25 C34 22 22 24 14 27 V71 C22 68 34 66 46 69 Z" stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round" />
+                
+                {/* Linhas de leitura curvas na página esquerda */}
+                <path d="M22 37 C28 35 36 35 41 37" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M22 47 C28 45 36 45 41 47" stroke="#2F5D4E" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M22 57 C28 55 34 55 38 57" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+
+                {/* Lombada/Vinco central esbelto */}
+                <line x1="49" y1="21" x2="49" y2="75" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+
+                {/* Coluna central do 'E' */}
+                <rect x="54" y="24" width="4.5" height="51" rx="2.25" fill="currentColor" />
+                
+                {/* Três pautas de estudo do 'E' (proporção áurea 23.5px, 17px, 13px) */}
+                <rect x="62.5" y="24" width="23.5" height="4.5" rx="2.25" fill="currentColor" />
+                <rect x="62.5" y="47.25" width="17" height="4.5" rx="2.25" fill="#2F5D4E" />
+                <rect x="62.5" y="70.5" width="13" height="4.5" rx="2.25" fill="currentColor" />
+
+                {/* Anel de Prontidão esbelto aberto no topo + ponto âmbar */}
+                <circle cx="83.5" cy="72.75" r="8.5" stroke="#E9953F" strokeWidth="2.6" strokeLinecap="round" strokeDasharray="42 10" transform="rotate(-90 83.5 72.75)" />
+                <circle cx="83.5" cy="72.75" r="2" fill="#E9953F" />
+            </svg>
+        );
+
+        // --- Opção Luxo 2: Editorial Balance (Tomo em Massa Equilibrada) ---
+        const LogoLuxo2 = () => (
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Página esquerda com curvatura esculpida e respiro interno */}
+                <path d="M43 25 C33 22 23 23 15 26.5 C14.5 26.7 14 27.2 14 27.8 V69.2 C14 69.8 14.5 70.3 15 70.5 C23 67 33 66 43 69 Z" fill="currentColor" />
+                <path d="M40 31 C32 29 25 30 19 32.5 V63.5 C25 61 32 60 40 62.5 Z" fill="#F4F6F4" className="dark:fill-[#141F1A]" />
+                <path d="M24 47 C29 45.5 33 45.5 37 46.5" stroke="#2F5D4E" strokeWidth="2.5" strokeLinecap="round" />
+
+                {/* Vinco central */}
+                <line x1="46" y1="22" x2="46" y2="74" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+
+                {/* Coluna mestra do 'E' */}
+                <rect x="50.5" y="24" width="4.8" height="50" rx="2.4" fill="currentColor" />
+                
+                {/* Três pautas de extrato */}
+                <rect x="59.5" y="24" width="26.5" height="4.8" rx="2.4" fill="currentColor" />
+                <rect x="59.5" y="46.6" width="19" height="4.8" rx="2.4" fill="#2F5D4E" />
+                <rect x="59.5" y="69.2" width="15" height="4.8" rx="2.4" fill="currentColor" />
+
+                {/* Anel de Prontidão */}
+                <circle cx="83.5" cy="71.6" r="8.5" stroke="#E9953F" strokeWidth="2.6" strokeLinecap="round" strokeDasharray="42 10" transform="rotate(-90 83.5 71.6)" />
+                <circle cx="83.5" cy="71.6" r="2" fill="#E9953F" />
+            </svg>
+        );
+
+        // --- Opção Luxo 3: The Golden Folio (Livro Aberto Fluido & 'E') ---
+        const LogoLuxo3 = () => (
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Curva superior contínua do livro aberto */}
+                <path d="M14 28 C24 24 36 23 48 26 C60 23 72 24 82 28" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+                
+                {/* Curva inferior contínua do livro aberto */}
+                <path d="M14 70 C24 66 36 65 48 68 C60 65 72 66 75 67" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+                
+                {/* Borda externa esquerda */}
+                <path d="M14 28 V70" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+
+                {/* Lombada central */}
+                <line x1="48" y1="26" x2="48" y2="68" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+
+                {/* Linhas na página esquerda */}
+                <path d="M22 39 C28 37 36 36.5 42 38.5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+                <path d="M22 49 C28 47 36 46.5 42 48.5" stroke="#2F5D4E" strokeWidth="2.6" strokeLinecap="round" />
+                <path d="M22 59 C28 57 34 56.5 38 58.5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+
+                {/* Monograma 'E' na página direita */}
+                <path d="M54 36 H74" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" />
+                <path d="M54 48.5 H68" stroke="#2F5D4E" strokeWidth="3.6" strokeLinecap="round" />
+                <path d="M54 61 H64" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" />
+
+                {/* Selo de Prontidão */}
+                <circle cx="78" cy="69" r="8" stroke="#E9953F" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="39 10" transform="rotate(-90 78 69)" />
+                <circle cx="78" cy="69" r="1.8" fill="#E9953F" />
+            </svg>
+        );
+
+        const App = () => {
+            const [darkMode, setDarkMode] = useState(false);
+
+            const toggleTheme = () => {
+                setDarkMode(!darkMode);
+                document.body.classList.toggle('dark-mode');
+            };
+
+            const luxuryOptions = [
+                {
+                    id: "L1",
+                    tag: "PROPOSTA RECOMENDADA · 01",
+                    title: "Atelier Refined · Traço Contínuo",
+                    subtitle: "THE MONOLINE CODEX 'E'",
+                    Component: LogoLuxo1,
+                    concept: "Harmonia absoluta de peso. Em vez de preenchimento maciço, o livro inteiro é desenhado em traço esbelto uniforme (3.5px). A página esquerda traz curvas fluidas de folha aberta com relevos internos delicados; a página direita projeta as pautas do 'E'; e o anel âmbar sela o conjunto.",
+                    file: "refinado-luxo-1-monoline.svg",
+                    qualities: [
+                        "Peso visual idêntico entre a página esquerda e direita",
+                        "Aspecto nítido de livro clássico aberto com máxima elegância",
+                        "Linhas esbeltas que respiram com nobreza editorial"
+                    ]
+                },
+                {
+                    id: "L2",
+                    tag: "PROPOSTA RECOMENDADA · 02",
+                    title: "Editorial Balance · Tomo Esculpido",
+                    subtitle: "THE BALANCED VOLUME 'E'",
+                    Component: LogoLuxo2,
+                    concept: "Evolução do Tomo Aberto. A massa sólida da página esquerda recebe um corte de respiro interno em papel, eliminando qualquer sensação pesada. A coluna mestra do 'E' dialoga com a lombada como uma peça de joalharia arquitetônica.",
+                    file: "refinado-luxo-2-volume.svg",
+                    qualities: [
+                        "Equilíbrio perfeito de massa através do recorte de respiro",
+                        "Presença marcante e firme para ícone de PWA e Favicon",
+                        "Curvatura superior e inferior de folha folheada em alta resolução"
+                    ]
+                },
+                {
+                    id: "L3",
+                    tag: "PROPOSTA RECOMENDADA · 03",
+                    title: "The Golden Folio · Livro Aberto Fluido",
+                    subtitle: "THE GOLDEN FOLIO 'E'",
+                    Component: LogoLuxo3,
+                    concept: "Evolução da Opção 02. O contorno superior e inferior do livro aberto é traçado em uma onda contínua que une as duas folhas sobre a mesa. As linhas internas da página esquerda acompanham o arqueamento do papel, e o monograma 'E' se integra à página direita.",
+                    file: "refinado-luxo-3-duplo-arco.svg",
+                    qualities: [
+                        "O contorno mais clássico e puro de livro aberto na mesa",
+                        "Linhas contábeis fluidas que seguem a perspectiva da folha",
+                        "Selo de prontidão em escala micrométrica no canto inferior"
+                    ]
+                }
+            ];
+
+            return (
+                <div className="min-h-screen py-16 px-6 max-w-6xl mx-auto">
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-12 pb-6 border-b border-black/10 dark:border-white/10">
+                        <div>
+                            <span className="font-mono text-xs uppercase tracking-widest opacity-60">Design Exploration · Logo Generator</span>
+                            <h1 className="text-3xl font-serif mt-1 font-semibold">Extrato de Estudos</h1>
+                            <p className="text-sm opacity-70 mt-0.5">Refinamento de Alta Joalharia & Padrão Editorial (Livro + E + Prontidão)</p>
+                        </div>
+                        <button 
+                            onClick={toggleTheme}
+                            className="text-xs font-mono uppercase tracking-wider px-4 py-2 rounded-md border border-current hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        >
+                            {darkMode ? "Modo Claro (Papel)" : "Modo Escuro (Noite Musgo)"}
+                        </button>
+                    </div>
+
+                    {/* Grid com os 3 Refinamentos de Luxo */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                        {luxuryOptions.map((item) => (
+                            <div key={item.id} className="logo-card flex flex-col justify-between">
+                                <div>
+                                    <div className="w-full h-56 flex items-center justify-center mb-6 bg-black/[0.02] dark:bg-white/[0.02] rounded-lg">
+                                        <div className="w-28 h-28 logo-canvas">
+                                            <item.Component />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-[11px] font-mono tracking-wider text-[#E9953F] font-semibold">{item.tag}</span>
+                                        <span className="text-[10px] font-mono opacity-50">{item.subtitle}</span>
+                                    </div>
+                                    <h3 className="text-xl font-serif font-semibold mb-2">{item.title}</h3>
+                                    <p className="text-xs leading-relaxed opacity-75 mb-4">{item.concept}</p>
+                                    
+                                    <ul className="space-y-1.5 mb-2">
+                                        {item.qualities.map((q, idx) => (
+                                            <li key={idx} className="text-[11px] font-mono opacity-70 flex items-start gap-1.5 leading-snug">
+                                                <span className="text-[#E9953F] mt-0.5">✓</span> <span>{q}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div className="pt-4 mt-6 border-t border-black/5 dark:border-white/5 flex justify-between items-center text-[11px] font-mono opacity-60">
+                                    <span>Arquivo: <code>{item.file}</code></span>
+                                    <span className="text-[#E9953F]">SVG de Luxo</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Explicação da Calibração */}
+                    <div className="p-6 rounded-xl border border-black/10 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.01]">
+                        <div className="text-xs leading-relaxed">
+                            <span className="font-mono text-[#E9953F] font-semibold uppercase text-[10px]">O que mudou nesta rodada?</span>
+                            <h4 className="font-serif font-semibold text-sm mt-0.5 mb-1">Equilíbrio milimétrico de peso e curvatura orgânica</h4>
+                            <p className="opacity-70">
+                                Na rodada anterior, a página esquerda tinha peso sólido excessivo e as linhas usavam opacidade.
+                                Aqui, unificamos a espessura para o padrão esbelto de 3.2px a 3.5px, aplicamos curvatura contínua de livro aberto na mesa e alinhamos a proporção das pautas do 'E' com o anel de prontidão âmbar.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Rodapé */}
+                    <footer className="text-center py-10 mt-12 border-t border-black/10 dark:border-white/10 opacity-70 font-mono text-xs">
+                        Extrato de Estudos · Cada estudo soma · Padrão Internacional de Identidade Visual
+                    </footer>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

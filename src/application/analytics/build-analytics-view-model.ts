@@ -123,7 +123,7 @@ export function buildDiagnosisViewModel(
       title: 'O diagnóstico ainda não pode ser calculado',
       message: hasTopics
         ? 'Há tópicos cadastrados, mas ainda faltam registros de estudo ou questões para formar uma leitura confiável.'
-        : 'Cadastre disciplinas e tópicos para o StudyTrack identificar prioridades e revisões.',
+        : 'Cadastre disciplinas e tópicos para o Extrato de Estudos identificar prioridades e revisões.',
       action,
       sections: [] as Row[],
     };

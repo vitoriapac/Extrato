@@ -221,7 +221,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         document.documentElement.getAttribute('data-theme') || 'light'
       );
       doc.body.classList.add('pip-timer-window');
-      doc.title = 'StudyTrack';
+      doc.title = 'Extrato de Estudos';
     },
   });
 

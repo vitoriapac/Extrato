@@ -17,7 +17,7 @@ const section = (remember, defaultOpen) => {
   return node;
 };
 const memoryStorage = (initial = {}) => {
-  const data = { 'studytrack.sectionsOpen': JSON.stringify(initial) };
+  const data = { 'extrato.sectionsOpen': JSON.stringify(initial) };
   return { getItem: key => data[key] ?? null, setItem: (key, value) => (data[key] = value), data };
 };
 // Minimal stand-ins for the DOM pieces the module touches.
@@ -32,13 +32,23 @@ test('seções lembradas: padrão por largura, escolha salva e restaurada', () =
   assert.equal(a.open, false, 'celular sem escolha salva: fechada');
   assert.equal(b.open, true, 'escolha salva vence o padrão');
   a.toggle(true);
-  assert.deepEqual(JSON.parse(storage.data['studytrack.sectionsOpen']), { b: true, a: true });
+  assert.deepEqual(JSON.parse(storage.data['extrato.sectionsOpen']), { b: true, a: true });
   const again = section('a', 'wide');
   initRememberedSections({ root: root([again]), storage, wide: false });
   assert.equal(again.open, true);
   const desktop = section('c', 'wide');
   initRememberedSections({ root: root([desktop]), storage: memoryStorage(), wide: true });
   assert.equal(desktop.open, true, 'desktop sem escolha: aberta');
+});
+
+test('seções lembradas: restaura chave legada studytrack.sectionsOpen quando a nova ainda não existe', () => {
+  const a = section('a', 'wide');
+  const legacyStorage = {
+    getItem: key => (key === 'studytrack.sectionsOpen' ? JSON.stringify({ a: true }) : null),
+    setItem: (key, val) => {},
+  };
+  initRememberedSections({ root: root([a]), storage: legacyStorage, wide: false });
+  assert.equal(a.open, true, 'chave legada recuperada com sucesso');
 });
 
 test('seções lembradas: armazenamento indisponível não quebra e âncora abre a seção', () => {

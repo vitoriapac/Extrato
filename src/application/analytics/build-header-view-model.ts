@@ -26,7 +26,7 @@ export function buildHeaderViewModel({
   examDate = null,
   planNumber = '',
   today = null,
-  brand = 'StudyTrack',
+  brand = 'Extrato de Estudos',
 }: any = {}) {
   const activeTopics = topics.filter((item: any) => !item.archived),
     completed = activeTopics.filter((item: any) => item.status === 'Concluído').length,
@@ -60,7 +60,7 @@ export function buildHeaderViewModel({
     };
   return {
     ...flat,
-    brand: { name: brand, kicker: 'Extrato de estudos' },
+    brand: { name: brand, kicker: 'Cada estudo soma' },
     readiness: {
       value: flat.readinessValue,
       confidence: flat.readinessConfidence,

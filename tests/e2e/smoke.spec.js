@@ -5,7 +5,7 @@ test('inicializa e navega pelas áreas principais', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
-  await expect(page).toHaveTitle(/StudyTrack/);
+  await expect(page).toHaveTitle(/Extrato de Estudos/);
   for (const name of [
     'hoje',
     'disciplinas',

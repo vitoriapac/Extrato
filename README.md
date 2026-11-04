@@ -1,8 +1,8 @@
-# StudyTrack — Extrato de Estudos
+# Extrato de Estudos — Cada estudo soma
 
-[Experimentar o StudyTrack](https://vitoriapac.github.io/Extrato/)
+[Experimentar o Extrato de Estudos](https://vitoriapac.github.io/Extrato/)
 
-StudyTrack é uma aplicação web para planejar estudos, registrar sessões, organizar revisões e transformar o histórico em recomendações explicáveis. Funciona integralmente no navegador e pode ser instalada como PWA.
+Extrato de Estudos é uma aplicação web para planejar estudos, registrar sessões, organizar revisões e transformar o histórico em recomendações explicáveis. Funciona integralmente no navegador e pode ser instalada como PWA.
 
 ## Funcionalidades
 

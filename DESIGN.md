@@ -1,5 +1,5 @@
 ---
-name: StudyTrack — Extrato de Estudos
+name: Extrato de Estudos — Cada estudo soma
 description: O estudo lido como um extrato de conta — musgo, sálvia, papel e linhas finas.
 colors:
   brand: "#1E3F35"
@@ -177,13 +177,13 @@ components:
     padding: "4px 8px"
 ---
 
-# Design System: StudyTrack — Extrato de Estudos
+# Design System: Extrato de Estudos — Cada estudo soma
 
 ## Overview
 
 **Creative North Star: "O Extrato Bancário"**
 
-O StudyTrack apresenta o estudo como um extrato de conta: um cabeçalho verde-musgo com o saldo em serifa âmbar, lançamentos em papel separados por linhas finas, números e datas em mono como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.
+O Extrato de Estudos apresenta o estudo como um extrato de conta: um cabeçalho verde-musgo com o saldo em serifa âmbar, lançamentos em papel separados por linhas finas, números e datas em mono como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.
 
 A densidade é de ferramenta de uso diário e prolongado. Cards agrupam; dentro deles, hierarquia vem de linha, espaço e tipografia, não de mais caixas. Componentes são precisos e contidos: cantos discretos (8px nos cards, 6px nos controles), mono só para números, datas e códigos, cor reservada para significado. A interface é plana por padrão; sombra existe apenas onde algo realmente flutua sobre a página.
 

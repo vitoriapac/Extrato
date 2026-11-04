@@ -1,0 +1,16 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Refinamento 2+3+4 (A) - Variante 1: Selo Âmbar Sólido Minimalista (sem o +) -->
+  <!-- Lombada curva do caderno à esquerda -->
+  <path d="M22 22 C16 22 14 26 14 32 V68 C14 74 16 78 22 78 H28 V22 H22 Z" fill="#1E3F35" />
+  
+  <!-- Coluna central do 'E' -->
+  <rect x="33" y="22" width="7" height="56" rx="3.5" fill="#1E3F35" />
+  
+  <!-- Três pautas de extrato formando o 'E' -->
+  <rect x="44" y="22" width="34" height="6.5" rx="3.25" fill="#1E3F35" />
+  <rect x="44" y="46.75" width="26" height="6.5" rx="3.25" fill="#2F5D4E" />
+  <rect x="44" y="71.5" width="24" height="6.5" rx="3.25" fill="#1E3F35" />
+  
+  <!-- Selo circular âmbar de saldo e auditoria puro (sem o +) -->
+  <circle cx="73" cy="74.75" r="11" fill="#E9953F" />
+</svg>

@@ -86,13 +86,13 @@ export function NextActionCard({
           >
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold tracking-wider uppercase text-secondary">
-                PRIMEIRO ACESSO AO STUDYTRACK
+                PRIMEIRO ACESSO AO EXTRATO DE ESTUDOS
               </span>
               <h3
                 id="welcomeHeroTitle"
                 className="text-lg font-semibold text-primary m-0 flex items-center gap-2"
               >
-                {emptyState.onboardingTitle || 'Bem-vindo ao StudyTrack'}
+                {emptyState.onboardingTitle || 'Bem-vindo ao Extrato de Estudos'}
               </h3>
               <p className="text-sm text-secondary m-0 leading-relaxed">
                 {emptyState.onboardingDescription ||

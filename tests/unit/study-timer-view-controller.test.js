@@ -31,7 +31,7 @@ function createMockDocument() {
   }
 
   return {
-    title: 'StudyTrack',
+    title: 'Extrato de Estudos',
     body: {
       classList: {
         contains: name => name === 'timer-focus-active',

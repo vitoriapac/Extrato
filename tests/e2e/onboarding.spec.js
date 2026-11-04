@@ -129,7 +129,7 @@ test('modal de boas-vindas do primeiro acesso abre com firstAccess=1 e bifurca p
 
   const modal = page.locator('.first-access-welcome-modal');
   await expect(modal).toBeVisible();
-  await expect(modal).toContainText('Boas-vindas ao StudyTrack');
+  await expect(modal).toContainText('Boas-vindas ao Extrato de Estudos');
   await expect(modal).toContainText('Montar meu plano guiado');
   await expect(modal).toContainText('Experimentar demonstração interativa');
   await expect(modal).toContainText('Configurar manualmente ou explorar livremente');

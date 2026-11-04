@@ -1,0 +1,17 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Junção 2 + 3 + 4: O Monograma "E" no Extrato Aberto com Carimbo -->
+  <!-- Lombada/Página esquerda curva do caderno (Opção 4) -->
+  <path d="M22 22 C16 22 14 26 14 32 V68 C14 74 16 78 22 78 H28 V22 H22 Z" fill="#1E3F35" />
+  
+  <!-- Coluna central do 'E' (Opção 3) -->
+  <rect x="33" y="22" width="7" height="56" rx="3.5" fill="#1E3F35" />
+  
+  <!-- Três pautas de extrato formando o 'E' (Opção 3) -->
+  <rect x="44" y="22" width="34" height="6.5" rx="3.25" fill="#1E3F35" />
+  <rect x="44" y="46.75" width="24" height="6.5" rx="3.25" fill="#2F5D4E" />
+  <rect x="44" y="71.5" width="22" height="6.5" rx="3.25" fill="#1E3F35" />
+  
+  <!-- Carimbo circular de auditoria com a cruz de soma (Opção 2) -->
+  <circle cx="72" cy="68" r="14" fill="#E9953F" />
+  <path d="M72 61 V75 M65 68 H79" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+</svg>

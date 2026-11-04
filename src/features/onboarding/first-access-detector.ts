@@ -2,7 +2,7 @@
  * First Access Detector
  *
  * Avalia de forma pura e determinística se a sessão atual corresponde
- * ao primeiro acesso de um usuário ao StudyTrack (cold start limpo sem dados).
+ * ao primeiro acesso de um usuário ao Extrato de Estudos (cold start limpo sem dados).
  *
  * Regras:
  * - Sem disciplinas cadastradas
@@ -27,7 +27,8 @@ export interface FirstAccessEvaluationOptions {
   } | null;
 }
 
-export const FIRST_ACCESS_STORAGE_KEY = 'studytrack:first-access-dismissed';
+export const FIRST_ACCESS_STORAGE_KEY = 'extrato:first-access-dismissed';
+export const LEGACY_FIRST_ACCESS_STORAGE_KEY = 'studytrack:first-access-dismissed';
 
 export function isFirstAccessSession(
   state: any,
@@ -52,7 +53,11 @@ export function isFirstAccessSession(
   // Se o usuário já dispensou explicitamente o modal de primeiro acesso nesta máquina
   try {
     const storage = options.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
-    if (!options.forceFirstAccess && storage?.getItem(FIRST_ACCESS_STORAGE_KEY) === 'true') {
+    if (
+      !options.forceFirstAccess &&
+      (storage?.getItem(FIRST_ACCESS_STORAGE_KEY) === 'true' ||
+        storage?.getItem(LEGACY_FIRST_ACCESS_STORAGE_KEY) === 'true')
+    ) {
       return false;
     }
   } catch {

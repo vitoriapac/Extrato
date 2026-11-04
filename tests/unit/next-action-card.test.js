@@ -39,7 +39,7 @@ test('NextActionCard — renderiza WelcomeHeroCard acolhedor quando isFirstRun �
     model: null,
     emptyState: {
       isFirstRun: true,
-      onboardingTitle: 'Bem-vindo ao StudyTrack',
+      onboardingTitle: 'Bem-vindo ao Extrato de Estudos',
       onboardingDescription: 'Seu copiloto diário até a aprovação.',
       timerHref: null,
     },
@@ -47,8 +47,8 @@ test('NextActionCard — renderiza WelcomeHeroCard acolhedor quando isFirstRun �
 
   const html = render(h(NextActionCard, props));
   assert.ok(html.includes('welcome-hero-card'));
-  assert.ok(html.includes('PRIMEIRO ACESSO AO STUDYTRACK'));
-  assert.ok(html.includes('Bem-vindo ao StudyTrack'));
+  assert.ok(html.includes('PRIMEIRO ACESSO AO EXTRATO DE ESTUDOS'));
+  assert.ok(html.includes('Bem-vindo ao Extrato de Estudos'));
   assert.ok(html.includes('Seu copiloto diário até a aprovação.'));
   assert.ok(html.includes('data-guided-action="open"'));
   assert.ok(html.includes('Montar meu plano de estudos'));

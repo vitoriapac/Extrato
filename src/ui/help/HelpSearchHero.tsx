@@ -22,7 +22,7 @@ export function HelpSearchHero({ chips = DEFAULT_CHIPS }: HelpSearchHeroProps = 
         <div class="help-hero-head">
           <div>
             <span class="module-heading__eyebrow">Instruções · Central de Ajuda</span>
-            <h2 class="module-heading__title">Como usar o StudyTrack</h2>
+            <h2 class="module-heading__title">Como usar o Extrato de Estudos</h2>
           </div>
           <button
             class="btn ghost small help-tour-btn inline-flex items-center gap-1.5"
@@ -35,7 +35,7 @@ export function HelpSearchHero({ chips = DEFAULT_CHIPS }: HelpSearchHeroProps = 
           </button>
         </div>
         <p class="module-heading__description">
-          O StudyTrack transforma seu histórico de estudos, desempenho e informações da prova em
+          O Extrato de Estudos transforma seu histórico de estudos, desempenho e informações da prova em
           prioridades e próximas ações. Use este guia para conhecer os recursos e entender como
           trabalham juntos.
         </p>

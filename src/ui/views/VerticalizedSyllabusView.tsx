@@ -268,7 +268,7 @@ export function VerticalizedSyllabusView({
         <div class="space-y-4 text-sm">
           <p class="text-secondary leading-relaxed text-xs">
             Copie o texto das matérias e tópicos diretamente do PDF do edital e cole abaixo. O
-            StudyTrack identificará automaticamente as disciplinas e dividirá os tópicos numerados.
+            Extrato de Estudos identificará automaticamente as disciplinas e dividirá os tópicos numerados.
           </p>
 
           <div>

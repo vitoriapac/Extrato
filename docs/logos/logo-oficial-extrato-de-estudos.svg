@@ -1,0 +1,28 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- LOGOTIPO OFICIAL: EXTRATO DE ESTUDOS — The Golden Folio 'E' -->
+  <!-- Curva superior contínua do livro aberto (da asa esquerda à direita) -->
+  <path d="M14 28 C24 24 36 23 48 26 C60 23 72 24 82 28" stroke="#1E3F35" stroke-width="3.2" stroke-linecap="round" />
+  
+  <!-- Curva inferior contínua do livro aberto (espelho rítmico da base) -->
+  <path d="M14 70 C24 66 36 65 48 68 C60 65 72 66 75 67" stroke="#1E3F35" stroke-width="3.2" stroke-linecap="round" />
+  
+  <!-- Borda externa esquerda da folha -->
+  <path d="M14 28 V70" stroke="#1E3F35" stroke-width="3.2" stroke-linecap="round" />
+
+  <!-- Vinco/Lombada central que conecta a base ao topo -->
+  <line x1="48" y1="26" x2="48" y2="68" stroke="#1E3F35" stroke-width="3.2" stroke-linecap="round" />
+
+  <!-- Linhas contábeis fluidas na página esquerda que seguem a curvatura da folha -->
+  <path d="M22 39 C28 37 36 36.5 42 38.5" stroke="#1E3F35" stroke-width="2.6" stroke-linecap="round" />
+  <path d="M22 49 C28 47 36 46.5 42 48.5" stroke="#2F5D4E" stroke-width="2.6" stroke-linecap="round" />
+  <path d="M22 59 C28 57 34 56.5 38 58.5" stroke="#1E3F35" stroke-width="2.6" stroke-linecap="round" />
+
+  <!-- Monograma 'E' na página direita (perfeitamente integrado à geometria do livro) -->
+  <path d="M54 36 H74" stroke="#1E3F35" stroke-width="3.6" stroke-linecap="round" />
+  <path d="M54 48.5 H68" stroke="#2F5D4E" stroke-width="3.6" stroke-linecap="round" />
+  <path d="M54 61 H64" stroke="#1E3F35" stroke-width="3.6" stroke-linecap="round" />
+
+  <!-- Selo de Prontidão âmbar fechando o quadrante inferior direito -->
+  <circle cx="78" cy="69" r="8" stroke="#E9953F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="39 10" transform="rotate(-90 78 69)" />
+  <circle cx="78" cy="69" r="1.8" fill="#E9953F" />
+</svg>

@@ -1,6 +1,6 @@
 {
-  "name": "StudyTrack — Extrato de Estudos",
-  "short_name": "StudyTrack",
+  "name": "Extrato de Estudos — Cada estudo soma",
+  "short_name": "Extrato de Estudos",
   "description": "Planejamento, revisões e acompanhamento de estudos no navegador.",
   "lang": "pt-BR",
   "start_url": "./",

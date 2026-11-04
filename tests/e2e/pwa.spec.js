@@ -23,7 +23,7 @@ test('abre a aplicação offline depois de instalar o service worker', async ({ 
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await context.setOffline(true);
   await page.reload();
-  await expect(page).toHaveTitle(/StudyTrack/);
+  await expect(page).toHaveTitle(/Extrato de Estudos/);
   await expect(page.locator('#mainContent')).toBeVisible();
   await context.setOffline(false);
 });

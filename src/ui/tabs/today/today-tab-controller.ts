@@ -380,7 +380,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     try {
       return (
         typeof localStorage !== 'undefined' &&
-        Boolean(localStorage.getItem('studytrack_first_steps_dismissed'))
+        Boolean(
+          localStorage.getItem('extrato_first_steps_dismissed') ??
+            localStorage.getItem('studytrack_first_steps_dismissed')
+        )
       );
     } catch {
       return false;
@@ -393,7 +396,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     } else {
       try {
         if (typeof localStorage !== 'undefined')
-          localStorage.setItem('studytrack_first_steps_dismissed', '1');
+          localStorage.setItem('extrato_first_steps_dismissed', '1');
       } catch {}
     }
   }
@@ -403,8 +406,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       demoFirstStepsDismissed = false;
     } else {
       try {
-        if (typeof localStorage !== 'undefined')
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('extrato_first_steps_dismissed');
           localStorage.removeItem('studytrack_first_steps_dismissed');
+        }
       } catch {}
     }
   }

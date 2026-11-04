@@ -130,7 +130,7 @@ export function calculatePlanFeasibility({
     totalNeededHours,
     coverageRatio: Math.round(coverageRatio * 100) / 100,
     badgeText: 'Priorização Crítica',
-    verdictMessage: `Déficit de prazo. Com sua disponibilidade, cerca de ${coveredPercent}% do edital será coberto. O StudyTrack concentrará suas horas nos assuntos de maior peso para maximizar sua nota.`,
+    verdictMessage: `Déficit de prazo. Com sua disponibilidade, cerca de ${coveredPercent}% do edital será coberto. O Extrato de Estudos concentrará suas horas nos assuntos de maior peso para maximizar sua nota.`,
   };
 }
 
