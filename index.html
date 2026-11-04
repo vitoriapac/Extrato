@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=f664b328e66b">
-<link rel="stylesheet" href="styles/app.css?v=f664b328e66b">
+<link rel="stylesheet" href="styles/tailwind.css?v=7cc98f9f4d66">
+<link rel="stylesheet" href="styles/app.css?v=7cc98f9f4d66">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -679,7 +679,7 @@
       <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e ritmo</option><option value="metas">Metas por disciplina</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
     </nav>
 
-    <details class="metas-subpanel" id="metasSub-semana" data-metas-subpanel="semana" role="tabpanel" aria-labelledby="metasTab-semana" open><summary class="metas-subpanel__summary">Plano da semana</summary>
+    <details class="metas-subpanel" id="metasSub-semana" data-metas-subpanel="semana" aria-labelledby="metasTab-semana" open><summary class="metas-subpanel__summary">Plano da semana</summary>
     <section class="chart-card card--default metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Metas de rendimento e volume semanal desejado. Ajuste os valores conforme a sua fase de estudo.</p></header><div id="metasContainer"></div></section>
 
     <section class="chart-card card--default metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo você tem disponível em cada dia. Esse total é a base que abastece o cálculo de horas de cada disciplina.</p></header><div id="weeklyHoursGoals"></div></section>
@@ -700,7 +700,7 @@
     </details>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-prova" data-metas-subpanel="prova" role="tabpanel" aria-labelledby="metasTab-prova"><summary class="metas-subpanel__summary">Prova e ritmo</summary>
+    <details class="metas-subpanel" id="metasSub-prova" data-metas-subpanel="prova" aria-labelledby="metasTab-prova"><summary class="metas-subpanel__summary">Prova e ritmo</summary>
     <div class="chart-card" id="metasExamStrategy" data-metas-section>
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
       <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
@@ -714,7 +714,7 @@
     </div>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas" role="tabpanel" aria-labelledby="metasTab-metas"><summary class="metas-subpanel__summary">Metas por disciplina</summary>
+    <details class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas" aria-labelledby="metasTab-metas"><summary class="metas-subpanel__summary">Metas por disciplina</summary>
     <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
     <div class="section-head">
       <h3 class="section-title">Metas de questões por disciplina</h3>
@@ -737,14 +737,14 @@
       <div id="historicoMetasContainer"></div>
     </div>
     </details>
-    <details class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento"><summary class="metas-subpanel__summary">Fechamento semanal</summary>
+    <details class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" aria-labelledby="metasTab-fechamento"><summary class="metas-subpanel__summary">Fechamento semanal</summary>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasCloseTitle">Fechamento semanal</h3><p class="module-heading__description">Leia a semana, salve o retrato e decida a próxima.</p></header>
       <div id="weeklyCloseDashboard"></div>
     </section>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico" role="tabpanel" aria-labelledby="metasTab-historico"><summary class="metas-subpanel__summary">Histórico de retratos e decisões</summary>
+    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico" aria-labelledby="metasTab-historico"><summary class="metas-subpanel__summary">Histórico de retratos e decisões</summary>
     <section class="chart-card metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões" data-metas-section aria-labelledby="metasHistoryTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Retratos e Histórico de Decisões</h3><p class="module-heading__description">Retratos semanais salvos, decisões e trajetória das prioridades. Registros congelados e imutáveis.</p></header>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Retratos semanais</h3></header><div id="weeklyCloseHistoryDashboard"></div></section>
@@ -1042,7 +1042,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=f664b328e66b"></script>
+  <script src="src/app.bundle.js?v=7cc98f9f4d66"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
