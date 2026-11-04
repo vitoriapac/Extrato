@@ -90,10 +90,46 @@ export function createKeyboardShortcutsController(opts: KeyboardShortcutsOptions
     });
   }
 
+  function handlePrimaryActionKeydown(event: KeyboardEvent | any): void {
+    const isAltEnter = event.altKey && event.key === 'Enter';
+    const isAltS = event.altKey && (event.key === 's' || event.key === 'S');
+    if (!isAltEnter && !isAltS) return;
+
+    // Do not trigger if any modal, overlay or dialog is active
+    if (
+      document.querySelector?.(
+        '.modal-overlay.show, dialog[open], #guidedOnboardingOverlay.show, .overlay.show, #sessionModalOverlay.show'
+      )
+    ) {
+      return;
+    }
+
+    // Do not trigger if user is typing in an input, textarea or select
+    const active = document.activeElement;
+    const typing =
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) ||
+      active?.isContentEditable;
+    if (typing) return;
+
+    // Check if on dashboard panel
+    const dashboardPanel = document.querySelector?.('#panel-dashboard.active');
+    if (!dashboardPanel) return;
+
+    const actionBtn = dashboardPanel.querySelector?.(
+      '.overview-now-action .overview-action-card button:not([disabled]), .overview-now-action button[data-daily-start]:not([disabled]), .overview-now-action button[data-daily-resume]:not([disabled])'
+    );
+
+    if (actionBtn && typeof actionBtn.click === 'function') {
+      event.preventDefault();
+      actionBtn.click();
+    }
+  }
+
   function register(): () => void {
     const onKeydown = (event: KeyboardEvent) => {
       handleTimerFocusKeydown(event);
       handleActionMenuKeydown(event);
+      handlePrimaryActionKeydown(event);
     };
     const onClick = (event: MouseEvent) => {
       handleActionMenuClick(event);
@@ -112,6 +148,7 @@ export function createKeyboardShortcutsController(opts: KeyboardShortcutsOptions
     handleTimerFocusKeydown,
     handleActionMenuKeydown,
     handleActionMenuClick,
+    handlePrimaryActionKeydown,
     register,
   };
 }

@@ -173,6 +173,8 @@ export function NextActionCard({
           type="button"
           data-delegated-click="openStudyTimerFocus()"
           onClick={onExecuteAction}
+          title="Retomar sessão (Alt+Enter)"
+          aria-keyshortcuts="Alt+Enter"
         >
           {buttonText || 'Retomar sessão'}
         </button>
@@ -181,7 +183,14 @@ export function NextActionCard({
 
     if (buttonAction.type === 'daily-resume') {
       return (
-        <button className="btn" type="button" data-daily-resume onClick={onExecuteAction}>
+        <button
+          className="btn"
+          type="button"
+          data-daily-resume
+          onClick={onExecuteAction}
+          title="Retomar sessão (Alt+Enter)"
+          aria-keyshortcuts="Alt+Enter"
+        >
           {buttonText || 'Retomar sessão'}
         </button>
       );
@@ -194,6 +203,8 @@ export function NextActionCard({
           type="button"
           data-daily-start={buttonAction.planItemId}
           onClick={onExecuteAction}
+          title="Iniciar estudo (Alt+Enter)"
+          aria-keyshortcuts="Alt+Enter"
         >
           {buttonText || 'Iniciar estudo'}
         </button>
@@ -207,6 +218,8 @@ export function NextActionCard({
           type="button"
           data-delegated-click={`executeStudyRecommendation('${buttonAction.actionId}','${buttonAction.source}')`}
           onClick={onExecuteAction}
+          title="Iniciar recomendação (Alt+Enter)"
+          aria-keyshortcuts="Alt+Enter"
         >
           {buttonText || 'Iniciar'}
         </button>

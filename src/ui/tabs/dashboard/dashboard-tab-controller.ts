@@ -224,6 +224,11 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       (attentionCard as HTMLElement).hidden = !hasConfigured;
     }
 
+    const analyticsDisclosure = doc.getElementById('cockpitAnalyticsDisclosure');
+    if (analyticsDisclosure) {
+      analyticsDisclosure.hidden = !hasConfigured;
+    }
+
     // Camada 2: Saúde do Edital por Disciplina
     const healthMount = doc.getElementById('cockpitSyllabusHealthMount');
     if (healthMount) {

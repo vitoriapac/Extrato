@@ -153,7 +153,7 @@ export function renderOnboardingContent(
               const subjectsBadges = (pack.subjects || [])
                 .map(
                   (s: any) =>
-                    `<span class="guided-pack-subject-tag text-[11px] px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(s.name)}</span>`
+                    `<span class="guided-pack-subject-tag text-xs px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(s.name)}</span>`
                 )
                 .join('');
               const subjectsList = subjectsBadges
