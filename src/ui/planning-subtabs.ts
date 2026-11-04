@@ -66,6 +66,15 @@ export function initPlanningSubtabs(doc: Document = document) {
   doc
     .getElementById('metasSubtabSelect')
     ?.addEventListener('change', event => choose((event.target as HTMLSelectElement).value));
+  doc.getElementById('metasCollapseOthersBtn')?.addEventListener('click', () => {
+    const currentTab = doc.querySelector<HTMLElement>('[data-metas-subtab][aria-current="true"]');
+    const activeKey = currentTab?.dataset.metasSubtab || 'semana';
+    doc.querySelectorAll<HTMLElement>('[data-metas-subpanel]').forEach(panel => {
+      (panel as HTMLDetailsElement).open = panel.dataset.metasSubpanel === activeKey;
+    });
+    const activePanel = doc.getElementById(`metasSub-${activeKey}`);
+    if (activePanel) activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   const fromHash = () => {
     const key = subtabFromHash(doc.defaultView?.location.hash || '');
     if (key) selectPlanningSubtab(key, { doc });

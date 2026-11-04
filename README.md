@@ -9,6 +9,8 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Disciplinas e tópicos com dificuldade, importância para a prova, esforço e pré-requisitos.
 - Planejamento semanal e diário baseado na disponibilidade, necessidade e saldo de capacidade.
 - Cockpit Panorâmico na Visão Geral estruturado em 3 Camadas Temáticas: Operação do Dia (8+4 colunas com Próxima Ação e Coluna de Suporte com Meta, Revisões e Consistência), Rendimento & Edital (6+6 colunas com Saúde do Edital e Gráfico de Tendência de Acertos & Simulados) e Decisão Pedagógica (Balanço de Alocação de Tempo vs Peso com expansão progressiva e Duo Grids de Disciplinas e Tópicos Críticos).
+- Cockpit da aba Hoje com componentes declarativos Preact e primitivas de gráficos SVG: card de metas proporcionais (`TodayGoalsCard` com `BulletBar` e edição inline acessível), ritmo semanal em 7 colunas com linha de meta (`TodayWeeklyRhythmCard` com `ColumnChart`) e partição do orçamento de tempo (`TodayExecutionSummary` com `StackedBar`).
+- Atalhos rápidos de teclado (`Alt+Enter` e `Alt+S` para ação prioritária com `aria-keyshortcuts`), navegação contextual para diagnósticos e modo foco do cronômetro calibrado.
 - Gráfico de Tendência de Acertos e Simulados com taxa móvel semanal de acertos, dispersão de notas de simulados, meta benchmark e resumo textual explicável.
 - Detector de Platô de Desempenho na aba Questões & Simulados, alertando estagnação de precisão em alto volume com recomendações de quebra de platô.
 - Eficiência e Energia Cronobiológica por Turno na aba Desempenho, correlacionando foco e disposição em Manhã, Tarde e Noite com rendimento real.

@@ -641,19 +641,47 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 ### 13.2. Validação e Qualidade
 - **Fast Gate:** **43.88s** com **1.277 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
 - **Testes de Experiência (`npm run test:experience`):** 39 testes de contrato unitários + 4 jornadas browser Playwright aprovadas em **72.82s**.
-- **GitHub Actions CI (`main`, Run 41684731717):** **100% de sucesso em todos os 7 jobs**:
-  - `changes`: 43s (aprovado)
-  - `experience`: 1m 37s (aprovado)
-  - `visual-windows`: 7m 47s (59 testes visuais aprovados)
-  - `validation (1/4)`: 14m 34s (aprovado)
-  - `validation (2/4)`: 10m 53s (74 testes aprovados)
-  - `validation (3/4)`: 13m 39s (69 testes responsivos aprovados)
-  - `validation (4/4)`: 5m 18s (73 testes aprovados)
+- **GitHub Actions CI (`main`, Run 41684731717):** **100% de sucesso em todos os 7 jobs**.
 - **Tipagem Estática:** 0 erros no TypeScript (`npm run check:types` e `npm run check:types:tests`).
 
 ---
 
-## 14. Rastreabilidade de Arquitetura e Governança
+## 14. Modernização do Cockpit Hoje, Acessibilidade Estrita e Consolidação do CI (Fases Impeccable)
+
+### 14.1. Entregas Realizadas
+- **Componentes Declarativos Preact no Cockpit Hoje:**
+  - [`TodayGoalsCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/TodayGoalsCard.tsx): Integração da primitiva [`BulletBar`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/charts/charts.tsx) para monitoramento proporcional dos quatro pilares do dia (tópicos, questões, revisões e horas de estudo), com input inline acessível de meta de horas (`aria-label="Meta de horas de hoje"`).
+  - [`TodayWeeklyRhythmCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/TodayWeeklyRhythmCard.tsx): Montagem em `#todayWeeklyRhythmSlot` com a primitiva [`ColumnChart`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/charts/charts.tsx) para visualização de ritmo em 7 colunas (Segunda a Domingo), destaque do dia ativo e linha de referência da meta diária.
+  - [`TodayExecutionSummary.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/TodayExecutionSummary.tsx): Integração da primitiva [`StackedBar`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/charts/charts.tsx) para partição visual do orçamento de tempo do estudante (*Executado*, *A realizar*, *Flexível*).
+- **Calibração do Modo Foco do Cronômetro:**
+  - Ajuste em [`styles/app.css`](file:///c:/Users/vitor/Documents/Extrato/styles/app.css) do seletor `body.timer-focus-active` com `:not(:has(#study-timer))`, prevenindo que a grid responsiva oculte indevidamente o botão de finalizar sessão (`#timerFinishBtn`).
+- **Acessibilidade e Descongestionamento nas Abas Operacionais (WCAG AA):**
+  - **Eliminação do Loop Circular:** A subaba `Desempenho > Questões` passou a renderizar orientações de ação direta sem nota de rascunho de redirecionamento, preservando a aba `Questões & Simulados` como diário de lançamentos e treino rápido.
+  - **Escopo Estrito de Desempenho:** Cards legados e card de prontidão foram escopados para `overview`, desobstruindo as subabas filhas (*Disciplinas*, *Questões*, *Simulados*, *Inteligência da prova*, *Consistência*).
+  - **Navegação Suave em Planejamento:** Transição de subpainéis recolhíveis em [`planning-subtabs.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/planning-subtabs.ts) com rolagem suave (`scrollIntoView`) posicionando o cabeçalho no topo da viewport.
+  - **Humanização de Microcopy Pedagógica:** Substituição do jargão punitivo "Retorno decrescente" no [`PlateauDetectorCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/PlateauDetectorCard.tsx) por *"Inflexão Metodológica: momento de isolar dificuldades conceituais no Caderno de Erros"*.
+  - **Tabelas e Formulários Semânticos:** Adicionadas `<caption class="sr-only">` para as tabelas de questões (`#questoesBody`), simulados (`#simuladosBody`), sessões (`#studySessionsTableWrap`), tarefas (`#calBody`) e revisões (`#agendaBody`). Encapsulamento de criação de metas em `<form id="metaDisciplinaForm">` com suporte nativo a submissão por `Enter`.
+- **Integridade da Jornada e Resolução de CI:**
+  - Preservação da visibilidade de anotações opcionais da sessão (`#sessionModalNotes`) diretamente no modal de conclusão, sem aninhamento obstrutivo.
+  - Correção da navegação contextual de diagnóstico (`[data-analysis-nav="hoje"]`) em [`analysis-navigation-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/navigation/analysis-navigation-controller.ts), comutando `performanceViewState` para `overview` e abrindo `.today-analysis-details:not([open])`.
+  - Sincronização dos snapshots visuais Windows (`agora-desktop-light-win32.png` e `agora-mobile-dark-win32.png`) após inclusão dos atalhos `Alt+Enter` e `Alt+S`.
+
+### 14.2. Validação e Qualidade
+- **Fast Gate (`npm run test:fast`):** **51.98s** com **1.290 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+- **Auditoria de Test Tiers:** 359 arquivos classificados e sincronizados em `tests/config/test-tiers.json`.
+- **GitHub Actions CI (`main`, Run 41872889365):** **100% de sucesso em todos os 7 jobs**:
+  - `changes`: 16s (aprovado)
+  - `experience`: 1m 45s (aprovado)
+  - `visual-windows`: 7m 53s (59 testes visuais aprovados)
+  - `validation (1/4)`: 14m 01s (95 testes aprovados)
+  - `validation (2/4)`: 9m 36s (86 testes aprovados)
+  - `validation (3/4)`: 13m 48s (84 testes aprovados)
+  - `validation (4/4)`: 5m 24s (82 testes aprovados)
+- **Tipagem Estática:** 0 erros no TypeScript (`npm run check:types`).
+
+---
+
+## 15. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

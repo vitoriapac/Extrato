@@ -1408,7 +1408,7 @@ input,select,textarea{font-size:max(1em,var(--text-sm))}
 .overview-now-attention>#overviewAttentionViewAll{margin-top:10px}
 .today-agenda-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px}
 .today-agenda-grid>section{min-width:0}
-.today-agenda-grid h4{margin:0 0 6px;color:var(--ink-soft);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em;text-transform:uppercase}
+.today-agenda-grid h4,.today-agenda-sidebar-list h4{margin:0 0 6px;color:var(--ink-soft);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em;text-transform:uppercase}
 .today-analysis-details,.desempenho-extra-details{margin:0}
 .today-analysis-details>summary,.desempenho-extra-details>summary{cursor:pointer;color:var(--heading);font:600 var(--text-md) var(--font-display)}
 .today-analysis-details[open]>summary,.desempenho-extra-details[open]>summary{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--paper-line)}
@@ -2872,3 +2872,82 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 #panel-desempenho:not([data-performance-view="overview"]) #desempenho-gaps,
 #panel-desempenho:not([data-performance-view="history"]) #performance-progress,
 #panel-desempenho:not([data-performance-view="history"]) #desempenho-study{display:none}
+
+/* Estudo avulso e cronômetro recolhível */
+.timer-manual-selectors-fold {
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-2);
+}
+.timer-manual-selectors-summary {
+  font: var(--font-weight-medium) var(--text-micro) var(--font-body);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-1);
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  border-radius: var(--radius-control);
+}
+.timer-manual-selectors-summary:hover {
+  color: var(--heading);
+}
+.timer-manual-selectors-summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.timer-manual-selectors-summary::-webkit-details-marker {
+  display: none;
+}
+.timer-manual-selectors-summary .disclosure-chevron {
+  margin-left: auto;
+  transition: transform var(--motion-duration) ease;
+}
+.timer-manual-selectors-fold[open] > .timer-manual-selectors-summary .disclosure-chevron {
+  transform: rotate(180deg);
+}
+.timer-manual-selectors-fold[open] > .timer-manual-selectors-summary {
+  margin-bottom: var(--space-2);
+}
+
+/* Meta diária refinada e discreta */
+.meta-hoje-time-goal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--font-weight-medium) var(--text-micro) var(--font-body);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.meta-hoje-time-goal input {
+  width: 52px;
+  height: 24px;
+  padding: 1px 4px;
+  font: 600 var(--text-micro) var(--font-mono);
+  text-align: center;
+  color: var(--heading);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+}
+.meta-hoje-time-goal input:focus {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+.meta-hoje-time-goal input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Botão de recolher outros blocos em Planejamento */
+.metas-collapse-others-btn {
+  margin-left: auto;
+  font-size: var(--text-micro);
+  align-self: center;
+}
+

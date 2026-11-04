@@ -61,6 +61,9 @@ flowchart TD
 - `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: coluna de suporte da Camada 2 com Meta do Dia (`DailyGoalProgressCard`), Carga de Revisões (`ReviewsLoadCard`) e Mini-Heatmap (`MiniConsistencyCard`).
 - `src/ui/tabs/dashboard/AllocationBalanceCard.tsx`: card do Balanço de Alocação de Tempo Investido vs Peso no Edital com divulgação progressiva (5 itens) e barra de progresso proporcional (Camada 3).
 - `src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx` e `src/ui/tabs/dashboard/VolatileMasteryGrid.tsx`: Duo Grids da Camada 3 destacando vulnerabilidades críticas de alto impacto e tópicos com ilusão de competência / domínio volátil.
+- `src/ui/tabs/today/TodayGoalsCard.tsx`: card declarativo de metas diárias com a primitiva `BulletBar` proporcional para tópicos, questões, revisões e horas de estudo, com input inline acessível de meta de horas.
+- `src/ui/tabs/today/TodayWeeklyRhythmCard.tsx`: card declarativo de ritmo semanal montado em `#todayWeeklyRhythmSlot`, com a primitiva `ColumnChart` em 7 colunas (Segunda a Domingo), destaque do dia ativo e linha de referência da meta diária.
+- `src/ui/tabs/today/TodayExecutionSummary.tsx`: card de partição visual do orçamento de tempo do estudante com a primitiva `StackedBar` (*Executado*, *A realizar*, *Flexível*).
 - Card de Prontidão e Projeções (`#approvalDashboard` / `.performance-readiness`): alocado na aba Desempenho para consulta detalhada contextual, mantendo a Visão Geral focada na operação e decisão.
 - `src/ui/tabs/questions/PlateauDetectorCard.tsx`: card do Detector de Platô de Desempenho com diagnóstico de estagnação e prescrição metodológica no topo da aba Questões & Simulados (junto aos KPIs `#kpiGrid`).
 - `src/ui/tabs/performance/ShiftEnergyCard.tsx`: card de análise cronobiológica de energia e eficiência por turno (Manhã, Tarde, Noite) na aba Desempenho.

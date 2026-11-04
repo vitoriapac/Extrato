@@ -93,14 +93,14 @@ export function TodayGoalsCard({
             </div>
           </div>
           <label class="meta-hoje-time-goal">
-            <span>Meta diária</span>
+            <span>Meta</span>
             <input
               type="number"
               min="0"
               step="0.25"
               value={metaHorasHoje}
               data-delegated-blur={`updateMetaHoursDay(${todayDayOfWeek},this.value)`}
-              title="Editar a meta de hoje"
+              title="Ajuste rápido da meta de hoje"
               aria-label="Meta de horas de hoje"
             />
           </label>
@@ -113,6 +113,15 @@ export function TodayGoalsCard({
             unit="m"
             label="Tempo estudado hoje"
           />
+        </div>
+        <div class="mt-1.5 text-right">
+          <a
+            href="#planejamento/semana"
+            class="text-[11px] text-ink-soft hover:text-brand hover:underline inline-block focus-visible:outline-2 focus-visible:outline-accent rounded px-1"
+            title="Ajustar disponibilidade e capacidade no Planejamento"
+          >
+            Ajustar na semana &rarr;
+          </a>
         </div>
       </div>
     </div>
