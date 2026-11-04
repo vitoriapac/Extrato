@@ -1,7 +1,9 @@
   *{box-sizing:border-box;}
   body{
     margin:0;
-    background:var(--paper);
+    background-color:var(--paper);
+    background-image:radial-gradient(var(--paper-line) 1px,transparent 1px);
+    background-size:16px 16px;
     color:var(--ink);
     font-family:var(--font-body);
     font-size:var(--text-body);line-height:1.5;
