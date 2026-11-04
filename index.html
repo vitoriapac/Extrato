@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=5173af99f856">
-<link rel="stylesheet" href="styles/app.css?v=5173af99f856">
+<link rel="stylesheet" href="styles/tailwind.css?v=63ffa5a2e8a5">
+<link rel="stylesheet" href="styles/app.css?v=63ffa5a2e8a5">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -150,8 +150,8 @@
       <summary class="cockpit-analytics-summary">
         <div class="cockpit-analytics-summary__header">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chart-bar icon-inline" aria-hidden="true"><path d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path><path d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path><path d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path><path d="M4 20l14 0"></path></svg>
-          <span class="cockpit-analytics-summary__title">Panorama analítico e rotina</span>
-          <span class="cockpit-analytics-summary__hint">3 diagnósticos estratégicos: saúde do edital, desempenho e consistência</span>
+          <span class="cockpit-analytics-summary__title">Balanço analítico do edital</span>
+          <span class="cockpit-analytics-summary__hint">3 balanços estratégicos: cobertura do edital, desempenho e consistência</span>
         </div>
         <span class="cockpit-analytics-summary__action">
           <span class="cockpit-analytics-label-open">Expandir (3 análises)</span>
@@ -242,8 +242,8 @@
       <summary>Ver resumo, diagnóstico e replanejamento</summary>
       <div class="today-analysis-grid">
         <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
-        <section class="chart-card"><h3>Central de diagnóstico</h3><div id="diagnosisCenter"></div></section>
-        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
+        <section class="chart-card"><h3>Extrato Diagnóstico do Edital</h3><div id="diagnosisCenter"></div></section>
+        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde redistribuir o saldo de horas pendente. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
       </div>
     </details>
     <details class="chart-card desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
@@ -270,7 +270,7 @@
 
     <div class="chart-card" id="studySessionsCard">
       <div class="section-head">
-        <h3 style="margin:0;">Histórico de sessões</h3>
+        <h3 style="margin:0;">Extrato de Lançamentos</h3>
         <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
       </div>
       <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-filter icon-inline" aria-hidden="true"><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227"></path></svg>Filtros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></button>
@@ -307,7 +307,7 @@
       </div>
       <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap">
         <table class="log responsive-history-table study-sessions-table">
-          <caption class="sr-only">Histórico de sessões de estudo realizadas</caption>
+          <caption class="sr-only">Extrato de lançamentos de estudo realizados</caption>
           <thead>
             <tr>
               <th>Data</th>
@@ -326,7 +326,7 @@
 
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
-    <h2 class="section-title today-title">Hoje</h2>
+    <h2 class="section-title today-title">Hoje · Execução Diária</h2>
 
     <div id="firstStepsMissionSlot"></div>
     <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
@@ -412,7 +412,7 @@
           </header>
           <div class="today-agenda-sidebar-list space-y-4">
             <section><h4>Eventos do calendário</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
-            <section><h4>Revisões atrasadas</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
+            <section><h4>Revisões para regularizar</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
             <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
           </div>
         </div>
@@ -463,7 +463,7 @@
 
     <div class="agenda-summary-grid">
       <div class="chart-card" id="agendaAtrasadasCard">
-        <h3>Atrasadas</h3>
+        <h3>Revisões e tarefas pendentes</h3>
         <ul class="upcoming-list" id="calAtrasadas"></ul>
       </div>
 
@@ -921,8 +921,8 @@
 
 <div class="modal-overlay" id="sessionModalOverlay" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
   <div class="modal-box">
-    <h3 id="sessionModalTitle">Sessão concluída</h3>
-    <p id="sessionModalActivityHint" class="session-modal-hint">Registre o que você estudou e atualize seus indicadores.</p>
+    <h3 id="sessionModalTitle">Confirmar depósito de estudo</h3>
+    <p id="sessionModalActivityHint" class="session-modal-hint">Confira a disciplina, o tópico e a duração calculada para salvar o lançamento.</p>
     <div class="session-modal-duration-row">
       <p class="session-modal-duration">Tempo registrado: <strong id="sessionModalDuration">00:00</strong></p>
       <label class="session-modal-duration-adjust">Ajustar (min)
@@ -1042,7 +1042,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=5173af99f856"></script>
+  <script src="src/app.bundle.js?v=63ffa5a2e8a5"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

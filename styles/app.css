@@ -72,7 +72,7 @@
   }
   .statement-account strong{color:var(--on-brand);display:block;font-size:13px;}
   .statement-body{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-end;}
-  .balance-block{flex:1;min-width:220px;}
+  .balance-block{flex:1;min-width:220px;padding-right:var(--space-4);}
   .balance-label{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:color-mix(in srgb,var(--on-brand) 80%,transparent);margin-bottom:6px;}
   .balance-figure{
     font-family:'Fraunces',serif;font-weight:600;
@@ -876,7 +876,7 @@
   .demo-banner{position:static;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:0;padding:12px 14px;border:1px solid var(--accent);background:var(--highlight-bg);color:var(--ink)}
   .demo-banner[hidden]{display:none}.demo-banner>div:first-child{display:flex;flex-direction:column;gap:2px}.demo-banner strong{color:var(--heading);font:600 var(--text-micro) var(--font-body);letter-spacing:.08em}.demo-banner span{font-size:12px;color:var(--ink-soft)}.demo-banner-actions{display:flex;gap:8px;flex-shrink:0}
   .demo-tour{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.demo-tour button{border:0;background:transparent;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:2px}.demo-empty-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border-subtle);background:var(--paper)}.demo-empty-cta[hidden]{display:none}.demo-empty-cta div{display:grid;gap:4px}.demo-empty-cta span{color:var(--ink-soft);font-size:12px}
-  .demo-header-badge{display:flex;width:max-content;max-width:100%;align-items:center;gap:8px;margin-top:6px;padding:4px 8px;border:1px solid var(--brand-on-header);color:var(--brand-on-header);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em}.demo-header-badge[hidden]{display:none}.demo-header-badge small{font:400 var(--text-micro) var(--font-body);letter-spacing:0;color:var(--on-brand)}
+  .demo-header-badge{display:flex;width:max-content;max-width:100%;align-items:center;gap:8px;margin-top:6px;padding:4px 8px;border:1px solid var(--brand-on-header);color:var(--brand-on-header);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em;text-transform:uppercase}.demo-header-badge[hidden]{display:none}.demo-header-badge small{font:400 var(--text-micro) var(--font-body);letter-spacing:0;color:var(--on-brand);text-transform:none}
   .demo-intro-dialog{width:min(560px,calc(100vw - 32px));max-height:min(85vh,760px);padding:0;border:1px solid var(--accent);background:var(--paper);color:var(--ink);box-shadow:0 24px 70px var(--shadow-color);overflow-y:auto}.demo-intro-dialog::backdrop{background:var(--backdrop)}.demo-intro-content{display:grid;gap:16px;padding:clamp(20px,5vw,36px)}.demo-intro-kicker{color:var(--ink-soft);font:600 var(--text-micro) var(--font-body);letter-spacing:.1em;text-transform:uppercase}.demo-intro-content h2{margin:0;color:var(--heading);font:600 clamp(24px,4vw,34px) var(--font-display)}.demo-intro-content p{margin:0;line-height:1.5}.demo-intro-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin:0;padding:0;list-style:none}.demo-intro-features li{padding-left:18px;position:relative;font-size:13px}.demo-intro-features li::before{content:'✓';position:absolute;left:0;color:var(--green)}.demo-intro-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
   @media(max-width:430px){.demo-intro-features{grid-template-columns:1fr}.demo-intro-actions{flex-direction:column-reverse}.demo-intro-actions .btn{width:100%}}
   [data-demo-protected]:disabled{cursor:not-allowed;opacity:1;filter:saturate(.72)}
@@ -1798,9 +1798,13 @@ body.timer-focus-active .timer-context{display:none!important}
 #sessionModalOverlay .session-bookmark-fields>button{justify-self:start}
 /* .btn sets display, so [hidden] needs its own rule on these buttons. */
 #sessionModalOverlay .session-bookmark-fields>button[hidden],#timerPipBtn[hidden]{display:none}
-#sessionModalOverlay .session-optional-fields{margin-top:12px;border-top:1px solid var(--paper-line);padding-top:10px}
-#sessionModalOverlay .session-optional-fields>summary{min-height:var(--touch-target);display:flex;align-items:center;cursor:pointer;color:var(--heading);font:600 12px var(--font-body)}
+#sessionModalOverlay .session-optional-fields{margin-top:14px;border:1px dashed var(--border-control);border-radius:var(--radius-control);padding:10px 14px;background:var(--surface-card-muted)}
+#sessionModalOverlay .session-optional-fields>summary{min-height:var(--touch-target);display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;color:var(--heading);font:600 12px var(--font-body);user-select:none}
+#sessionModalOverlay .session-optional-fields[open]>summary{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--paper-line)}
 #sessionModalOverlay .session-optional-fields>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#examDateInput{background:transparent;color:var(--on-brand);border:1px solid color-mix(in srgb,var(--on-brand) 30%,transparent);border-radius:var(--radius-control);padding:3px 8px;font-family:var(--font-data);font-size:12px;cursor:pointer;transition:border-color .15s ease}
+#examDateInput:hover{border-color:var(--brand-on-header)}
+#examDateInput:focus-visible{outline:2px solid var(--brand-on-header);outline-offset:1px}
 body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-family:var(--font-body)}
 .pip-timer{display:grid;gap:6px;padding:12px 14px}
 .pip-timer p{margin:0}
@@ -2084,7 +2088,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .close-comparison dd{margin:0;overflow-wrap:anywhere}
 .close-comparison dd small{display:block;color:var(--text-secondary);margin-top:4px}
 .strategic-timeline{list-style:none;padding:0;margin:0}
-.strategic-timeline-controls{display:flex;gap:var(--space-3);flex-wrap:wrap}.strategic-timeline-group{margin-top:var(--space-4)}.strategic-timeline-group h4{margin:0;padding-bottom:var(--space-2);border-bottom:2px solid var(--paper-line)}.strategic-timeline-category{display:block;font-size:var(--text-micro);font-weight:600;letter-spacing:.06em;color:var(--text-secondary)}.priority-history-path{display:block;overflow-wrap:anywhere;font-size:var(--text-micro)}
+.strategic-timeline-controls{display:flex;gap:var(--space-3);flex-wrap:wrap}.strategic-timeline-group{margin-top:var(--space-4)}.strategic-timeline-group h4{margin:0;padding-bottom:var(--space-2);border-bottom:2px solid var(--paper-line)}.strategic-timeline-category{display:block;font-size:var(--text-micro);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)}.priority-history-path{display:block;overflow-wrap:anywhere;font-size:var(--text-micro)}
 .strategic-timeline-group-label{grid-column:1/-1;margin:0;font-size:12px;padding-bottom:var(--space-2);border-bottom:2px solid var(--paper-line)}
 .strategic-timeline>li{display:grid;grid-template-columns:100px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid var(--border-subtle)}
 .strategic-timeline p{margin:8px 0;overflow-wrap:anywhere}
@@ -2504,7 +2508,7 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .weekly-record-receipt dt{font:var(--text-label) var(--font-body);letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
 .weekly-record-receipt dd{margin:var(--space-1) 0 0;color:var(--text-primary);font-variant-numeric:tabular-nums}
 .weekly-record-stamp{display:inline-grid;gap:2px;padding:6px 12px;border:3px double var(--accent);color:var(--heading);font:var(--font-weight-semibold) var(--text-label)/1.3 var(--font-data);letter-spacing:.12em;text-transform:uppercase;animation:weekly-stamp-in 280ms cubic-bezier(.2,.8,.2,1) both}
-.weekly-record-stamp span+span{font-weight:400;letter-spacing:.06em;color:var(--text-secondary)}
+.weekly-record-stamp span+span{font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)}
 @keyframes weekly-stamp-in{from{opacity:0;transform:scale(1.08)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.weekly-record-stamp{animation:none}}
 
