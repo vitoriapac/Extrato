@@ -11,7 +11,7 @@ test('Planejamento agrupa as seções em blocos recolhíveis e o link profundo a
 
   await page.getByRole('button', { name: 'Fechamento semanal', exact: true }).click();
   await expect(page.locator('#metasSub-fechamento')).toHaveAttribute('open', '');
-  await expect(page.locator('#metasSub-semana')).toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-semana')).not.toHaveAttribute('open', '');
   await expect(page).toHaveURL(/#planejamento\/fechamento$/);
 
   await page.getByRole('button', { name: 'Fechamento semanal', exact: true }).press('ArrowRight');

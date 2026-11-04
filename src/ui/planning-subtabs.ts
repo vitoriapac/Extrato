@@ -19,14 +19,30 @@ export function selectPlanningSubtab(
   if (!tabs.length) return;
   tabs.forEach(tab => {
     const active = tab.dataset.metasSubtab === key;
-    if (active) tab.setAttribute('aria-current', 'true');
-    else tab.removeAttribute('aria-current');
+    if (active) {
+      tab.setAttribute('aria-current', 'true');
+      tab.setAttribute('aria-selected', 'true');
+      tab.classList.add('active');
+    } else {
+      tab.removeAttribute('aria-current');
+      tab.setAttribute('aria-selected', 'false');
+      tab.classList.remove('active');
+    }
     tab.tabIndex = active ? 0 : -1;
     if (active && focus) tab.focus();
   });
   doc.querySelectorAll<HTMLElement>('[data-metas-subpanel]').forEach(panel => {
-    // Abre a escolhida e deixa as demais como a pessoa as deixou.
-    if (panel.dataset.metasSubpanel === key) (panel as HTMLDetailsElement).open = true;
+    // Sub-abas exclusivas: apenas o bloco ativo fica aberto/visível, eliminando a sobrecarga do Tabcordion.
+    const active = panel.dataset.metasSubpanel === key;
+    if ('open' in panel) {
+      (panel as HTMLDetailsElement).open = active;
+    }
+    if (active) {
+      panel.removeAttribute('hidden');
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
   });
   const select = doc.getElementById('metasSubtabSelect') as HTMLSelectElement | null;
   if (select) select.value = key;

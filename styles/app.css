@@ -2831,9 +2831,14 @@ button.metas-subtab{appearance:none;background:transparent;border:0;border-botto
 footer>span{display:block;font-size:13px;color:var(--ink)}
 
 .metas-subpanel{margin:0 0 var(--space-4)}
+.metas-subpanel:not([open]){display:none}
 .metas-subpanel__summary{cursor:pointer;padding:12px 14px;border:1px solid var(--paper-line);border-radius:var(--radius-card);background:var(--paper);color:var(--heading);font:600 var(--text-md) var(--font-display)}
 .metas-subpanel[open]>.metas-subpanel__summary{margin-bottom:var(--space-3)}
-.metas-subtab[aria-current="true"]{background:var(--slate-bg);color:var(--heading);box-shadow:inset 0 -2px 0 var(--accent)}
+.metas-subtab[aria-current="true"],.metas-subtab.active{background:var(--slate-bg);color:var(--heading);box-shadow:inset 0 -2px 0 var(--accent)}
+
+/* Agenda: cockpit operacional compacto com cards em grid responsivo */
+.agenda-summary-grid{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin-bottom:var(--space-4)}
+@media(min-width:768px){.agenda-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 /* Fechamento da Visão geral: resume e leva a Desempenho, onde mora a análise detalhada. */
 .overview-more{display:grid;gap:var(--space-2);justify-items:start}

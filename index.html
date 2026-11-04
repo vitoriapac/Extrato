@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=dd7ea6dabc64">
-<link rel="stylesheet" href="styles/app.css?v=dd7ea6dabc64">
+<link rel="stylesheet" href="styles/tailwind.css?v=84cd07de219f">
+<link rel="stylesheet" href="styles/app.css?v=84cd07de219f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -449,32 +449,34 @@
   <div class="panel" id="panel-agenda" role="tabpanel" aria-labelledby="tab-agenda" data-calendar-view="month">
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Agenda</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div class="flex gap-2 flex-wrap">
         <button class="btn ghost" id="autoGenBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Gerar revisões dos concluídos</button>
         <button class="btn ghost" id="addAgendaRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Nova revisão</button>
         <button class="btn" id="addCalRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Nova tarefa</button>
       </div>
     </div>
     <p class="helper-text helper-text--compact">
-      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas.
+      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas. <a href="#instrucoes" class="text-brand hover:underline inline-flex items-center gap-0.5 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a>
     </p>
 
     <div class="kpi-grid" id="calIndicadores"></div>
 
-    <div class="chart-card" id="agendaAtrasadasCard">
-      <h3>Atrasadas</h3>
-      <ul class="upcoming-list" id="calAtrasadas"></ul>
-    </div>
+    <div class="agenda-summary-grid">
+      <div class="chart-card" id="agendaAtrasadasCard">
+        <h3>Atrasadas</h3>
+        <ul class="upcoming-list" id="calAtrasadas"></ul>
+      </div>
 
-    <div class="chart-card">
-      <h3>Tarefas do dia</h3>
-      <ul class="upcoming-list" id="calTarefasHoje"></ul>
-    </div>
+      <div class="chart-card">
+        <h3>Tarefas do dia</h3>
+        <ul class="upcoming-list" id="calTarefasHoje"></ul>
+      </div>
 
-    <div class="chart-card">
-      <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
-      <ul class="upcoming-list" id="upcomingList"></ul>
-      <div id="upcomingFooter"></div>
+      <div class="chart-card">
+        <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
+        <ul class="upcoming-list" id="upcomingList"></ul>
+        <div id="upcomingFooter"></div>
+      </div>
     </div>
 
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
@@ -673,16 +675,16 @@
   <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
     <header class="metas-page-header ui-section-header"><h2>Planejamento</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p></header>
     <nav class="overview-nav metas-nav" aria-label="Seções do Planejamento">
-      <div class="overview-nav-links" aria-label="Ir para a seção"><button type="button" class="metas-subtab" id="metasTab-semana" tabindex="0" data-metas-subtab="semana">Plano da semana</button><button type="button" class="metas-subtab" id="metasTab-prova" tabindex="-1" data-metas-subtab="prova">Prova e ritmo</button><button type="button" class="metas-subtab" id="metasTab-metas" tabindex="-1" data-metas-subtab="metas">Metas por disciplina</button><button type="button" class="metas-subtab" id="metasTab-fechamento" tabindex="-1" data-metas-subtab="fechamento">Fechamento semanal</button><button type="button" class="metas-subtab" id="metasTab-historico" tabindex="-1" data-metas-subtab="historico">Histórico</button><button type="button" class="btn ghost small metas-collapse-others-btn" id="metasCollapseOthersBtn" title="Recolher outros blocos para focar no selecionado">Recolher outros</button></div>
+      <div class="overview-nav-links" aria-label="Ir para a seção"><button type="button" class="metas-subtab active" id="metasTab-semana" aria-controls="metasSub-semana" tabindex="0" data-metas-subtab="semana">Plano da semana</button><button type="button" class="metas-subtab" id="metasTab-prova" aria-controls="metasSub-prova" tabindex="-1" data-metas-subtab="prova">Prova e ritmo</button><button type="button" class="metas-subtab" id="metasTab-metas" aria-controls="metasSub-metas" tabindex="-1" data-metas-subtab="metas">Metas por disciplina</button><button type="button" class="metas-subtab" id="metasTab-fechamento" aria-controls="metasSub-fechamento" tabindex="-1" data-metas-subtab="fechamento">Fechamento semanal</button><button type="button" class="metas-subtab" id="metasTab-historico" aria-controls="metasSub-historico" tabindex="-1" data-metas-subtab="historico">Histórico</button><button type="button" class="btn ghost small metas-collapse-others-btn" id="metasCollapseOthersBtn" hidden aria-hidden="true">Recolher outros</button></div>
       <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e ritmo</option><option value="metas">Metas por disciplina</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
     </nav>
 
-    <details class="metas-subpanel" id="metasSub-semana" data-metas-subpanel="semana" open><summary class="metas-subpanel__summary">Plano da semana</summary>
+    <details class="metas-subpanel" id="metasSub-semana" data-metas-subpanel="semana" role="tabpanel" aria-labelledby="metasTab-semana" open><summary class="metas-subpanel__summary">Plano da semana</summary>
     <section class="chart-card card--default metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Acompanhe os resultados desejados e ajuste os valores quando necessário.</p></header><div id="metasContainer"></div></section>
 
     <section class="chart-card card--default metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo pode estudar em cada dia.</p></header><div id="weeklyHoursGoals"></div></section>
 
-    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância e sua necessidade de estudo.</p></header><aside class="context-note context-note--info"><strong>Informação</strong><p>A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação.</p></aside><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
+    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância e sua necessidade de estudo.</p></header><aside class="context-note context-note--info"><strong>Informação</strong><p>A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação. <a href="#instrucoes" class="text-brand hover:underline inline-flex items-center gap-0.5 text-xs font-medium ml-1">Como calculamos a confiança da evidência &rarr;</a></p></aside><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
 
     <section class="chart-card card--default metas-execution" id="planExecutionCard" aria-labelledby="planExecutionTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo planejado e estudo realizado no período atual.</p></header>
@@ -698,7 +700,7 @@
     </details>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-prova" data-metas-subpanel="prova"><summary class="metas-subpanel__summary">Prova e ritmo</summary>
+    <details class="metas-subpanel" id="metasSub-prova" data-metas-subpanel="prova" role="tabpanel" aria-labelledby="metasTab-prova"><summary class="metas-subpanel__summary">Prova e ritmo</summary>
     <div class="chart-card" id="metasExamStrategy" data-metas-section>
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
       <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
@@ -712,7 +714,7 @@
     </div>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas"><summary class="metas-subpanel__summary">Metas por disciplina</summary>
+    <details class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas" role="tabpanel" aria-labelledby="metasTab-metas"><summary class="metas-subpanel__summary">Metas por disciplina</summary>
     <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
     <div class="section-head">
       <h3 class="section-title">Metas de questões por disciplina</h3>
@@ -724,7 +726,7 @@
       <label for="novaMetaDisciplinaSelect" class="sr-only">Disciplina da nova meta</label>
       <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
       <label for="novaMetaDisciplinaValor" class="sr-only">Quantidade de questões da nova meta</label>
-      <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" style="width:80px;">
+      <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" class="w-20">
       <span class="metadata-text">questões/semana</span>
       <button class="btn small" type="submit" id="addMetaDisciplinaBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Adicionar meta</button>
     </form>
@@ -735,14 +737,14 @@
       <div id="historicoMetasContainer"></div>
     </div>
     </details>
-    <details class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento"><summary class="metas-subpanel__summary">Fechamento semanal</summary>
+    <details class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento"><summary class="metas-subpanel__summary">Fechamento semanal</summary>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasCloseTitle">Fechamento semanal</h3><p class="module-heading__description">Leia a semana, salve o retrato e decida a próxima.</p></header>
       <div id="weeklyCloseDashboard"></div>
     </section>
 
     </details>
-    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico"><summary class="metas-subpanel__summary">Histórico de retratos e decisões</summary>
+    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico" role="tabpanel" aria-labelledby="metasTab-historico"><summary class="metas-subpanel__summary">Histórico de retratos e decisões</summary>
     <section class="chart-card metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões" data-metas-section aria-labelledby="metasHistoryTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Retratos e Histórico de Decisões</h3><p class="module-heading__description">Retratos semanais salvos, decisões e trajetória das prioridades. Registros congelados e imutáveis.</p></header>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Retratos semanais</h3></header><div id="weeklyCloseHistoryDashboard"></div></section>
@@ -1040,7 +1042,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=dd7ea6dabc64"></script>
+  <script src="src/app.bundle.js?v=84cd07de219f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
