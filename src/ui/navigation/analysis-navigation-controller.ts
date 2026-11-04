@@ -89,6 +89,14 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
       });
       const topicDialog = document.getElementById('performanceTopicDialog') as HTMLDialogElement;
       if (topicDialog?.open) topicDialog.close();
+      if (destination === 'hoje')
+        setPerformanceViewState(
+          updatePerformanceViewState(getPerformanceViewState(), {
+            section: 'overview',
+            subjectId,
+            topicId,
+          })
+        );
       if (destination === 'desempenho')
         setPerformanceViewState(
           updatePerformanceViewState(getPerformanceViewState(), {
@@ -101,8 +109,11 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
       // O diagnóstico (destino 'hoje', nome antigo) mora em Desempenho desde que Hoje ficou só com o plano.
       activateTab(destination === 'hoje' ? 'desempenho' : destination!);
       requestAnimationFrame(() => {
-        if (destination === 'hoje')
+        if (destination === 'hoje') {
+          const panel = document.getElementById('panel-desempenho');
+          if (panel) panel.dataset.performanceView = 'overview';
           document.querySelector('.today-analysis-details')?.setAttribute('open', '');
+        }
         if (destination === 'metas')
           document.querySelector('#examStudyPlan .study-plan-details')?.setAttribute('open', '');
         if (destination === 'hoje') {

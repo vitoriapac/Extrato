@@ -2868,7 +2868,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 /* Histórico é uma subaba: conquistas, tempo de estudo e sessões só aparecem nela; a análise de risco fica nas outras. */
 #panel-desempenho:not([data-performance-view="overview"]) #performanceReadinessCard,
 #panel-desempenho:not([data-performance-view="overview"]) #performanceDecisionDetails,
-#panel-desempenho:not([data-performance-view="overview"]) .today-analysis-details,
+#panel-desempenho:not([data-performance-view="overview"]) .today-analysis-details:not([open]),
 #panel-desempenho:not([data-performance-view="overview"]) #desempenho-gaps,
 #panel-desempenho:not([data-performance-view="history"]) #performance-progress,
 #panel-desempenho:not([data-performance-view="history"]) #desempenho-study{display:none}
