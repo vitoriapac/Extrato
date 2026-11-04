@@ -359,7 +359,8 @@
   .heatmap-summary{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;font-family:var(--font-body);font-size:var(--text-micro);color:var(--ink-soft);}
   .session-day-row td{background:var(--slate-bg)!important;color:var(--heading);padding:0!important;}
   .session-day-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:transparent;color:inherit;padding:10px 12px;cursor:pointer;text-align:left;font-family:var(--font-body);font-size:var(--text-micro);font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
-  .session-day-toggle:hover,.session-day-toggle:focus-visible{background:var(--paper);outline:none;}
+  .session-day-toggle:hover,.session-day-toggle:focus-visible{background:var(--paper);}
+  .session-day-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
   .session-day-chevron{font-size:13px;transition:transform .18s ease;}
   .session-day-toggle[aria-expanded="true"] .session-day-chevron{transform:rotate(90deg);}
   .list-view-footer td{padding:14px 12px!important;background:var(--white)!important;text-align:center;border-bottom:0!important;}
@@ -2736,7 +2737,8 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 .review-redistribution__done{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);margin:0 0 var(--space-2);font-size:var(--text-small)}
 /* C9: transitions on interactive surfaces (150–200 ms); none at all when the user asks for reduced motion. */
 .btn,.tab-btn,.more-tab-btn,.theme-toggle-btn,summary,.select-control,.chart-card,.subject-block{transition:background-color var(--motion-duration) ease,border-color var(--motion-duration) ease,color var(--motion-duration) ease,box-shadow var(--motion-duration) ease}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;transition-delay:0s!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+/* Movimento reduzido: somem as transições de superfícies interativas e os laços de animação; os fades curtos que carregam mudança de estado (fade-in do painel, crédito da sessão) permanecem. */
+@media(prefers-reduced-motion:reduce){.btn,.tab-btn,.more-tab-btn,.theme-toggle-btn,summary,.select-control,.chart-card,.subject-block{transition-duration:0s!important;transition-delay:0s!important}*,*::before,*::after{animation-iteration-count:1!important;scroll-behavior:auto!important}}
 html[data-density="compact"] .chart-card{padding:var(--space-4)}
 html[data-density="compact"] .overview-section-heading{margin-top:var(--space-6)}
 .compact-streak__unit{margin-left:3px}
@@ -2862,7 +2864,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .cockpit-analytics-fold[open]>summary{padding-bottom:var(--space-3);border-bottom:1px solid var(--paper-line);margin-bottom:var(--space-4);border-radius:0}
 
 /* Badge de atalho de teclado na ação primária */
-.kbd-shortcut{display:inline-flex;align-items:center;padding:1px 5px;font-family:var(--font-mono);font-size:10px;font-weight:600;line-height:1.2;color:var(--text-secondary);background:color-mix(in srgb,var(--surface-card) 70%,var(--paper-line));border:1px solid var(--border-subtle);border-radius:4px;box-shadow:0 1px 0 var(--paper-line);margin-left:6px;vertical-align:middle;text-transform:none}
+.kbd-shortcut{display:inline-flex;align-items:center;padding:1px 5px;font-family:var(--font-mono);font-size:var(--text-micro);font-weight:600;line-height:1.2;color:var(--text-secondary);background:color-mix(in srgb,var(--surface-card) 70%,var(--paper-line));border:1px solid var(--border-subtle);border-radius:var(--radius-control);box-shadow:0 1px 0 var(--paper-line);margin-left:6px;vertical-align:middle;text-transform:none}
 .btn:hover .kbd-shortcut{color:var(--heading);border-color:var(--border-default)}
 
 /* Histórico é uma subaba: conquistas, tempo de estudo e sessões só aparecem nela; a análise de risco fica nas outras. */
@@ -2924,9 +2926,9 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   letter-spacing: 0.05em;
 }
 .meta-hoje-time-goal input {
-  width: 52px;
-  height: 24px;
-  padding: 1px 4px;
+  width: 60px;
+  min-height: var(--control-height);
+  padding: 2px 6px;
   font: 600 var(--text-micro) var(--font-mono);
   text-align: center;
   color: var(--heading);

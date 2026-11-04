@@ -67,7 +67,9 @@ test('Hoje mostra a constância de 4 semanas e a densidade compacta fica lembrad
   await expect(page.locator('#densityToggleBtn')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('transições curtas somem com prefers-reduced-motion', async ({ page }) => {
+test('transições curtas somem com prefers-reduced-motion e os fades de estado permanecem', async ({
+  page,
+}) => {
   await page.goto('/');
   const duration = () =>
     page.locator('.tab-btn').first().evaluate(node => getComputedStyle(node).transitionDuration);
@@ -75,4 +77,9 @@ test('transições curtas somem com prefers-reduced-motion', async ({ page }) =>
   await page.emulateMedia({ reducedMotion: 'reduce' });
   expect(await duration()).not.toMatch(/0\.16s/);
   expect((await duration()).split(',').every(value => parseFloat(value) === 0)).toBe(true);
+  // O fade do painel ativo carrega a mudança de aba: não pode ser zerado.
+  const panelFade = await page
+    .locator('.panel.active')
+    .evaluate(node => getComputedStyle(node).animationDuration);
+  expect(panelFade.split(',').some(value => parseFloat(value) > 0)).toBe(true);
 });
