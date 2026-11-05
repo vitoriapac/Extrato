@@ -108,7 +108,7 @@ test('TodayExecutionSummary Preact Component — renderiza barra empilhada de te
   assert.match(html, /today-execution-budget-track/);
   assert.match(html, /Executado/);
   assert.match(html, /A realizar/);
-  assert.match(html, /Flexível/);
+  assert.match(html, /Livre/);
 });
 
 test('TodayGoalsCard Preact Component — renderiza metas diárias com BulletBars e input de meta', () => {

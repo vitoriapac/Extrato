@@ -815,7 +815,26 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 22. Rastreabilidade de Arquitetura e Governança
+## 22. Modernização Impeccable: Migração Preact de Visão Geral/Prontidão e Extrato do Dia em Hoje
+
+- **Objetivo Concluído:** Atender às diretrizes de governança do `AGENTS.md` e aos apontamentos da auditoria de UX/UI (`/impeccable`), eliminando montagens legadas de strings HTML concatenadas (`innerHTML`), consolidando componentes declarativos Preact 11 (`.tsx`) para a Visão Geral e Prontidão, e reprojetando o cockpit da aba Hoje com a metáfora autêntica de **Extrato do Dia** (livro-razão e saldo de tempo).
+- **Módulos Criados/Atualizados:**
+  - `src/ui/components/overview-sections.tsx` (novo): componentes Preact declarativos (`AlertListItem`, `OverviewAlerts`, `ExecutiveSummaryView`, `WeeklyCloseView`) com suporte a ícones do Tabler Icons via `<Icon />` / primitiva de badges e tipografia semântica.
+  - `src/ui/renderers/overview-renderer.ts`: migrado para invocar os componentes Preact via `preact-render-to-string`, preservando integralmente o contrato com controllers existentes e suíte de testes.
+  - `src/ui/components/readiness-overview.tsx` (novo): componente declarativo Preact `ReadinessOverviewView` cobrindo o Índice de Prontidão, Projeções de Desempenho e Fatores com semântica de acessibilidade (`role="meter"`, `aria-valuenow`, `aria-valuetext`) e remoção de estilos inline arbitrários.
+  - `src/ui/renderers/readiness-overview-renderer.ts`: migrado para delegar para `ReadinessOverviewView` via `preact-render-to-string`.
+  - `src/ui/tabs/today/TodayExecutionSummary.tsx`: reformulado sob a metáfora de **Extrato do Dia**, introduzindo linhas de ledger (*Disponível hoje*, *Planejado*, *Executado* e destaque para *Saldo do dia* com números tabulares), microcopy de orientação para planos não montados e celebração acessível afirmativa para meta cumprida.
+  - `styles/app.css`: novas classes de layout e livro-razão (`.today-statement-summary`, `.today-statement-ledger`, `.today-ledger-row--balance`, `.kpi-level`, `.badge-icon-slot`), garantindo responsividade perfeita de 320px a desktop nos temas Claro e Escuro.
+  - `tests/unit/today-components.test.js`: adequação de asserções textuais e testes unitários 100% verdes.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **60.72s** com **1.327 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Detector Impeccable: 0 apontamentos de layout ou qualidade de UI (`impeccable detect`).
+  - Build reproduzível (`npm run build`): bundles atualizados e sincronizados.
+
+---
+
+## 23. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

@@ -1,47 +1,36 @@
-import { ALERT_SEVERITY_VARIANT, renderBadgeIcon } from '../primitives/badge.js';
-export function renderIntelligentAlerts({
-  alerts,
-  additional,
-  currentAction = null,
-  escapeHtml,
-  escapeAttr,
-}: any) {
+import { h } from 'preact';
+import { render as renderToString } from 'preact-render-to-string';
+import {
+  AlertListItem,
+  ExecutiveSummaryView,
+  OverviewAlerts,
+  WeeklyCloseView,
+} from '../components/overview-sections.js';
+
+// Marcação declarativa em Preact; as funções mantêm o contrato de string dos controllers.
+// Os parâmetros escapeHtml/escapeAttr seguem aceitos por compatibilidade: o Preact já escapa o conteúdo.
+export function renderIntelligentAlerts({ alerts, additional, currentAction = null }: any) {
   if (!alerts.length)
     return {
       list: '<div class="upcoming-empty">Nenhum alerta no momento.</div>',
       overview: '<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>',
     };
-  const renderAlert = (alert: Record<string, any>) =>
-    `<div class="alerta-item alerta-${escapeAttr(alert.nivel)}"><span class="alerta-icon">${renderBadgeIcon(ALERT_SEVERITY_VARIANT[alert.severity] || 'info')}</span><span><strong>${escapeHtml(alert.reason || alert.texto)}</strong> <small>${escapeHtml(alert.recommendedAction || '')}</small></span>${alert.severity !== 'ok' ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(alert.id)}')">Dispensar 7 dias</button>` : ''}</div>`;
-  const list = [...alerts, ...additional].map(renderAlert).join('');
-  const overview = `<div class="overview-alert-list">${alerts
-    .slice(0, 2)
-    .map(
-      (alert: any) =>
-        `<article class="overview-alert alerta-${escapeAttr(alert.severity)}">${alert.topicId && alert.topicId === currentAction?.topicId && alert.subjectId === currentAction?.subjectId ? '<span class="overview-alert-related">Relacionado à recomendação atual</span>' : ''}<strong>${renderBadgeIcon(ALERT_SEVERITY_VARIANT[alert.severity] || 'info')}${escapeHtml(alert.reason || alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction || '')}</small></article>`
-    )
-    .join(
-      ''
-    )}</div>${alerts.length > 2 ? `<p class="overview-alert-empty">+ ${alerts.length - 2} ${alerts.length - 2 === 1 ? 'alerta ativo' : 'alertas ativos'}</p>` : ''}`;
+  const list = [...alerts, ...additional]
+    .map(alert => renderToString(h(AlertListItem, { alert })))
+    .join('');
+  const overview = renderToString(h(OverviewAlerts, { alerts, currentAction }));
   return { list, overview };
 }
 
-export function renderExecutiveSummary({ summary, escapeHtml }: any) {
-  const cards = summary.cards
-    .map(
-      (card: any) =>
-        `<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`
-    )
-    .join('');
-  return `<div class="executive-kpis">${cards}</div><div class="executive-decision-grid"><section><h4>Próxima ação</h4><p>A prioridade do dia e o motivo ficam em Hoje.</p><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Abrir Hoje</button></section><section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? '' : 's'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
+export function renderExecutiveSummary({ summary }: any) {
+  return renderToString(h(ExecutiveSummaryView, { summary }));
 }
 
 export function renderWeeklyCloseSummary(
   weekly: Record<string, any>,
-  { escapeHtml, period = null, formatDate = String }: any = {}
+  { period = null, formatDate = String }: any = {}
 ) {
   if (!weekly || weekly.state === 'insufficient')
     return '<p class="analytics-note">Ainda não há evidência suficiente para interpretar o fechamento. Registre sessões e resultados ao longo da semana.</p>';
-  const adherence = weekly.adherence?.model?.summary?.temporalAdherence;
-  return `<div class="metas-close-metrics"><div><span>Aderência ao plano</span><strong>${adherence == null ? '—' : Math.round(adherence) + '%'}</strong></div><div><span>Questões resolvidas</span><strong>${weekly.questions?.resolved ?? 0}</strong></div><div><span>Precisão</span><strong>${weekly.questions?.accuracy == null ? '—' : weekly.questions.accuracy + '%'}</strong></div></div><p>Resumo do fechamento${period?.start && period?.end ? ' · ' + escapeHtml(formatDate(period.start)) + ' a ' + escapeHtml(formatDate(period.end)) : ''}. Consulte o fechamento para interpretar sinais e decidir a próxima semana.</p>`;
+  return renderToString(h(WeeklyCloseView, { weekly, period, formatDate }));
 }

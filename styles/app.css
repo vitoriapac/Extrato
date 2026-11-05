@@ -3384,4 +3384,93 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
     animation: none !important;
   }
 }
+.kpi-cell .n.kpi-level{font-size:18px}
+.raw-html,.badge-icon-slot{display:contents}
 
+/* Extrato de Estudos: Aba Hoje — Composição de Extrato / Balanço do Dia */
+.today-statement-summary {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card, var(--white));
+  border: 1px solid var(--border-subtle, var(--paper-line));
+  border-radius: var(--radius-card, 12px);
+  padding: var(--space-4, 16px);
+  margin-bottom: var(--space-4, 16px);
+  gap: var(--space-3, 12px);
+}
+.today-statement-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle, var(--paper-line));
+  padding-bottom: var(--space-2, 8px);
+}
+.today-statement-title {
+  font-family: var(--font-display);
+  font-size: var(--text-md, 1rem);
+  font-weight: 600;
+  color: var(--heading, var(--ink));
+  margin: 0;
+}
+.today-statement-date {
+  font-family: var(--font-body);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-secondary, var(--ink-soft));
+}
+.today-statement-ledger {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--space-3, 12px);
+  padding: var(--space-2, 8px) 0;
+}
+.today-ledger-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.today-ledger-label {
+  font-family: var(--font-body);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-secondary, var(--ink-soft));
+}
+.today-ledger-value {
+  font-family: var(--font-data);
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--heading, var(--ink));
+  font-variant-numeric: tabular-nums;
+}
+.today-ledger-row--balance {
+  padding-left: var(--space-3, 12px);
+  border-left: 2px solid var(--border-emphasis, var(--brand-secondary));
+}
+.today-ledger-row--balance .today-ledger-label {
+  color: var(--heading, var(--ink));
+  font-weight: 500;
+}
+.today-ledger-row--balance .today-ledger-value {
+  color: var(--brand, var(--brand-secondary));
+}
+.today-statement-summary .today-execution-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px);
+  background: var(--surface-subtle, var(--slate-bg));
+  border-radius: var(--radius-sm, 6px);
+}
+.today-execution-progress-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.today-progress-status {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm, 0.8125rem);
+  color: var(--text-secondary, var(--ink-soft));
+}
+.today-progress-status strong {
+  color: var(--heading, var(--ink));
+  font-family: var(--font-data);
+}
