@@ -55,7 +55,7 @@
   }
   .statement-eyebrow{
     font-family:var(--font-body);
-    font-size:var(--text-micro);letter-spacing:0.14em;text-transform:uppercase;
+    font-size:var(--text-micro);letter-spacing:0.04em;text-transform:uppercase;
     color:var(--brand-on-header);
   }
   .statement-title{
@@ -75,7 +75,7 @@
   .statement-account strong{color:var(--on-brand);display:block;font-size:13px;}
   .statement-body{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-end;}
   .balance-block{flex:1;min-width:220px;padding-right:var(--space-4);}
-  .balance-label{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:color-mix(in srgb,var(--on-brand) 80%,transparent);margin-bottom:6px;}
+  .balance-label{font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:color-mix(in srgb,var(--on-brand) 80%,transparent);margin-bottom:6px;}
   .balance-figure{
     font-family:'Fraunces',serif;font-weight:600;
     font-size:54px;line-height:1;color:var(--attention);
@@ -86,7 +86,7 @@
   .mini-stats{display:flex;gap:22px;flex-wrap:wrap;}
   .mini-stat{font-family:var(--font-body);}
   .mini-stat .n{font:600 22px/1.15 var(--font-display);font-variant-numeric:lining-nums tabular-nums;color:var(--on-brand);}
-  .mini-stat .l{font-size:var(--text-micro);text-transform:uppercase;letter-spacing:0.09em;color:color-mix(in srgb,var(--on-brand) 80%,transparent);}
+  .mini-stat .l{font-size:var(--text-micro);text-transform:uppercase;letter-spacing:0.04em;color:color-mix(in srgb,var(--on-brand) 80%,transparent);}
 
   .exam-countdown{
     margin-top:20px;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--on-brand) 18%,transparent);

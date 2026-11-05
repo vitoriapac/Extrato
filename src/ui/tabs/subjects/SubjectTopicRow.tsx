@@ -1,4 +1,5 @@
 import { BookmarkBadge } from '../../components/BookmarkBadge.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface SubjectTopicRowProps {
   subjectId: string;
@@ -92,7 +93,7 @@ export function SubjectTopicRow({
               </option>
             ))}
           </select>
-          <span class="stamp">✓ ok</span>
+          <span class="stamp inline-flex items-center gap-0.5"><Icon name="check" size={11} /> ok</span>
         </td>
         <td>
           <select
@@ -135,7 +136,7 @@ export function SubjectTopicRow({
             aria-label={`Arquivar ${topic.name || 'tópico sem nome'}`}
             onClick={() => onArchiveTopic?.(subjectId, topic.id)}
           >
-            ✕
+            <Icon name="x" size={14} />
           </button>
         </td>
       </tr>

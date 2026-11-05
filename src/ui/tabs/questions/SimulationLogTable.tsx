@@ -287,7 +287,7 @@ export function SimulationLogTable({
                               aria-label="Excluir disciplina do simulado"
                               data-delegated-click={`deleteBreakdownRow('${sim.id}','${row.id}')`}
                             >
-                              ✕
+                              <Icon name="x" size={14} />
                             </button>
                           </div>
                         );

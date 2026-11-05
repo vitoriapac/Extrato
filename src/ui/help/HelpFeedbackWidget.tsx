@@ -50,7 +50,7 @@ export function HelpFeedbackWidget({
         aria-live="polite"
       >
         <span class="flex items-center gap-1.5 font-medium text-text">
-          <span>✓</span>
+          <Icon name="check" size={14} class="text-success-emphasis" />
           <span>
             {feedback
               ? 'Obrigado! Ficamos felizes que esta explicação ajudou.'

@@ -515,11 +515,11 @@ export function ErrorNotebookView({
                       {onDeleteFlashcard && (
                         <button
                           type="button"
-                          class="text-muted hover:text-red p-1"
+                          class="text-muted hover:text-red p-1 flex items-center justify-center"
                           onClick={() => onDeleteFlashcard(card.id)}
                           aria-label="Excluir flashcard"
                         >
-                          ✕
+                          <Icon name="x" size={14} />
                         </button>
                       )}
                     </div>

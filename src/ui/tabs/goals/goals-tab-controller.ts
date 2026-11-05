@@ -301,7 +301,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       <div class="meta-inputs">
         Meta:
         <input type="number" min="1" value="${md.meta}" data-delegated-blur="updateMetaDisciplina('${md.id}', this.value)">
-        <button class="icon-btn" data-delegated-click="deleteMetaDisciplina('${md.id}')" title="Remover meta" aria-label="Remover meta de questões">✕</button>
+        <button class="icon-btn" data-delegated-click="deleteMetaDisciplina('${md.id}')" title="Remover meta" aria-label="Remover meta de questões">${renderIconSvg('x', { size: 14 })}</button>
       </div>
     </div>`;
       })
@@ -315,8 +315,8 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       current
         ? `<span class="wk-current">em andamento</span>`
         : ok
-          ? `<span class="wk-ok">✓ cumprida</span>`
-          : `<span class="wk-fail">✗ não cumprida</span>`;
+          ? `<span class="wk-ok inline-flex items-center gap-1">${renderIconSvg('check', { size: 12 })} cumprida</span>`
+          : `<span class="wk-fail inline-flex items-center gap-1">${renderIconSvg('x', { size: 12 })} não cumprida</span>`;
     // Semanas anteriores ao primeiro registro não são listadas; a nota diz onde o histórico começa.
     const lived = weeks.filter(w => !w.beforeStart);
     const firstLived = lived.filter(w => !w.current).at(-1);

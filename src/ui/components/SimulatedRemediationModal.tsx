@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
+import { Icon } from '../primitives/icon.js';
 import type {
   SimulatedRemediationDiagnostic,
   RemediationDailyAction,
@@ -211,7 +212,14 @@ export function SimulatedRemediationModal({
               disabled={appliedPlan}
               aria-label="Criar 7 dias de Remediação"
             >
-              {appliedPlan ? '✓ Plano Criado na Agenda' : 'Criar 7 dias de Remediação'}
+              {appliedPlan ? (
+                <span class="inline-flex items-center gap-1.5">
+                  <Icon name="check" size={14} />
+                  Plano Criado na Agenda
+                </span>
+              ) : (
+                'Criar 7 dias de Remediação'
+              )}
             </Button>
 
             <Button
@@ -221,9 +229,14 @@ export function SimulatedRemediationModal({
               disabled={generatedCards || diagnostic.errorCardDrafts.length === 0}
               aria-label="Gerar rascunhos para o Caderno de Erros"
             >
-              {generatedCards
-                ? '✓ Rascunhos Gerados'
-                : `Gerar ${diagnostic.errorCardDrafts.length} rascunhos p/ Caderno de Erros`}
+              {generatedCards ? (
+                <span class="inline-flex items-center gap-1.5">
+                  <Icon name="check" size={14} />
+                  Rascunhos Gerados
+                </span>
+              ) : (
+                `Gerar ${diagnostic.errorCardDrafts.length} rascunhos p/ Caderno de Erros`
+              )}
             </Button>
           </div>
 

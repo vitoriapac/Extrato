@@ -1,6 +1,7 @@
 import type { ComponentChildren, JSX } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { Button } from './button.js';
+import { Icon } from './icon.js';
 
 export type DialogProps = JSX.IntrinsicElements['dialog'] & {
   open: boolean;
@@ -77,7 +78,7 @@ export function Dialog({
             aria-label="Fechar"
             class="min-h-0 p-1 text-secondary hover:text-primary"
           >
-            ✕
+            <Icon name="x" size={16} />
           </Button>
         </header>
         <div class="p-4 overflow-y-auto max-h-[80vh]">{children}</div>

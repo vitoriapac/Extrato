@@ -4,6 +4,7 @@ import {
   rankHelpSearch,
 } from './help-search.js';
 import { openSectionFor } from '../remembered-sections.js';
+import { renderIconSvg } from '../primitives/icon.js';
 
 declare const __STUDYTRACK_BUILD_VERSION__: string;
 
@@ -400,7 +401,7 @@ export function createHelpController({
           if (helpRuntime?.saveTopicFeedback && window.localStorage) {
             helpRuntime.saveTopicFeedback(window.localStorage, topicId, isHelpful);
           }
-          mountEl.innerHTML = `<span class="help-feedback-thanks">✓ Obrigado! ${isHelpful ? 'Ficamos felizes que ajudou.' : 'Vamos aprimorar esta explicação.'}</span>`;
+          mountEl.innerHTML = `<span class="help-feedback-thanks inline-flex items-center gap-1">${renderIconSvg('check', { size: 14 })} Obrigado! ${isHelpful ? 'Ficamos felizes que ajudou.' : 'Vamos aprimorar esta explicação.'}</span>`;
         }
         return;
       }

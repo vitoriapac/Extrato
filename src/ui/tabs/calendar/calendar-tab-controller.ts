@@ -18,6 +18,7 @@ import { createCalendarController } from '../../calendar/calendar-controller.js'
 import { STATUS_CLASS, STATUS_OPTIONS, REVIEW_OPTIONS } from '../../../state/schema.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
 import { runUndoable } from '../../undoable.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 
 export interface CalendarTabControllerContext {
   state: {
@@ -430,7 +431,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
   function quickReviewButton(item: Record<string, any>, elId: string) {
     if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') return '';
-    return `<button type="button" class="btn small tonal quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
+    return `<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}Revisar</button>`;
   }
 
   function renderCalTarefasHoje(elId = 'calTarefasHoje') {
