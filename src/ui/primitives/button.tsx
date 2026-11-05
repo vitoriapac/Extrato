@@ -25,12 +25,12 @@ export function Button({
   const variantClasses: Record<string, string> = {
     primary: 'btn-primary bg-brand text-on-brand hover:brightness-110 active:brightness-95',
     secondary:
-      'btn-secondary bg-surface-card text-primary border border-border-default hover:bg-surface-subtle',
+      'btn-secondary ghost bg-surface-card text-text border border-border-default hover:bg-surface-subtle',
     tonal: 'btn-tonal tonal',
     tertiary: 'btn-tertiary tertiary',
-    ghost: 'btn-ghost bg-transparent text-secondary hover:text-primary hover:bg-surface-subtle',
-    danger: 'btn-danger bg-red text-white hover:brightness-110',
-    icon: 'btn-icon p-1 bg-transparent text-secondary hover:text-primary',
+    ghost: 'btn-ghost ghost border-transparent bg-transparent text-secondary hover:text-text hover:bg-surface-subtle',
+    danger: 'btn-danger danger bg-red text-white hover:brightness-110',
+    icon: 'btn-icon ghost border-transparent p-1 bg-transparent text-secondary hover:text-text',
   };
 
   const sizeClasses: Record<string, string> = {

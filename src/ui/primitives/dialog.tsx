@@ -61,7 +61,7 @@ export function Dialog({
   return (
     <dialog
       ref={dialogRef}
-      class={`p-0 rounded-default border border-border-default bg-surface-card text-primary shadow-xl backdrop:bg-brand/40 w-full ${maxWidthClasses[maxWidth]}${className ? ` ${className}` : ''}`}
+      class={`p-0 rounded-default border border-border-default bg-surface-card text-text shadow-xl backdrop:bg-brand/40 w-full ${maxWidthClasses[maxWidth]}${className ? ` ${className}` : ''}`}
       onCancel={e => {
         e.preventDefault();
         onClose();
@@ -70,13 +70,13 @@ export function Dialog({
     >
       <div class="flex flex-col">
         <header class="flex items-center justify-between p-4 border-b border-border-default bg-surface-subtle">
-          <h3 class="text-base font-semibold font-display text-primary m-0">{title}</h3>
+          <h3 class="text-base font-semibold font-display text-text m-0">{title}</h3>
           <Button
             variant="ghost"
             size="small"
             onClick={onClose}
             aria-label="Fechar"
-            class="min-h-0 p-1 text-secondary hover:text-primary"
+            class="min-h-0 p-1 text-secondary hover:text-text"
           >
             <Icon name="x" size={16} />
           </Button>

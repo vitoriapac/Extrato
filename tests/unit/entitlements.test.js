@@ -213,5 +213,9 @@ test('PaywallModal e AuthAccountModal — renderizam sem emojis e com preços/li
   assert.ok(landingHtml.includes('Pare de estudar no escuro'));
   assert.ok(landingHtml.includes('R$ 14,90'));
   assert.ok(landingHtml.includes('R$ 19,90'));
+  assert.ok(landingHtml.includes('chart-ring'));
+  assert.ok(landingHtml.includes('chart-sparkline'));
+  assert.ok(!landingHtml.includes('DISC-01'));
+  assert.ok(!landingHtml.includes('MOTOR 01'));
   assert.ok(!/\p{Extended_Pictographic}/u.test(landingHtml));
 });

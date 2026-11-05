@@ -66,13 +66,15 @@ export function AuthAccountModal({
       aria-label="Gerenciar conta e sincronização na nuvem"
     >
       {isAuthenticated ? (
-        <div class="flex flex-col gap-4">
-          <div class="p-3.5 rounded border border-border-default bg-surface-subtle flex items-center justify-between gap-3">
+        <div class="flex flex-col gap-4 text-text">
+          <div class="p-3.5 rounded-default border border-border-default bg-surface-subtle flex items-center justify-between gap-3">
             <div class="flex flex-col gap-0.5">
               <span class="text-xs text-secondary">Conectado como</span>
-              <strong class="text-sm font-semibold text-primary">{userEmail}</strong>
+              <strong class="text-sm font-semibold text-text">{userEmail}</strong>
               {lastSyncedAt && (
-                <span class="text-xs text-secondary">Última sincronização: {lastSyncedAt}</span>
+                <span class="text-xs font-data text-secondary">
+                  Última sincronização: {lastSyncedAt}
+                </span>
               )}
             </div>
             <Badge variant={isPaid ? 'success' : 'default'} icon={isPaid ? 'circle-check' : false}>
@@ -101,14 +103,14 @@ export function AuthAccountModal({
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} class="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} class="flex flex-col gap-4 text-text">
           <p class="text-xs text-secondary m-0">
             Seus dados já estão salvos neste navegador. Conecte seu e-mail para vincular sua
             assinatura Pro e manter todo o histórico sincronizado entre computador e celular.
           </p>
 
           <div class="flex flex-col gap-1.5">
-            <label for="saasAuthEmailInput" class="text-xs font-medium text-primary">
+            <label for="saasAuthEmailInput" class="text-xs font-medium text-text">
               Seu e-mail de estudante
             </label>
             <input
@@ -118,7 +120,7 @@ export function AuthAccountModal({
               value={emailInput}
               onInput={e => setEmailInput((e.target as HTMLInputElement).value)}
               placeholder="voce@exemplo.com.br"
-              class="px-3 py-2 text-sm rounded border border-border-control bg-surface-card text-primary"
+              class="min-h-[44px] sm:min-h-[38px] px-3 py-2 text-sm rounded border border-border-default bg-surface-card text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             />
           </div>
 
@@ -138,7 +140,12 @@ export function AuthAccountModal({
               class="p-2.5 rounded bg-red-bg text-red text-xs flex items-start gap-2"
             >
               <Icon name="alert-circle" size={16} class="shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
+              <div class="flex flex-col gap-0.5">
+                <span>{errorMessage}</span>
+                <span class="text-secondary">
+                  Confira o formato do e-mail digitado ou tente entrar com Google abaixo.
+                </span>
+              </div>
             </div>
           )}
 

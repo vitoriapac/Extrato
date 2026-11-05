@@ -68,6 +68,7 @@
   --font-body: var(--font-body);
   --font-display: var(--font-display);
   --font-data: var(--font-data);
+  --font-mono: var(--font-data);
 
   --radius-default: var(--radius-card);
   --radius: var(--radius-control);
