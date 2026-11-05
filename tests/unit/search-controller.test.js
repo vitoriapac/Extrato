@@ -6,6 +6,7 @@ import {
   createSearchController,
   SEARCH_COMMANDS,
 } from '../../src/ui/controllers/search-controller.js';
+import { renderGlobalSearchPanel } from '../../src/ui/renderers/global-search-renderer.js';
 
 test('normalizeSearchText — remove acentos e normaliza para minúsculas', () => {
   assert.equal(normalizeSearchText('Atenção e Foco'), 'atencao e foco');
@@ -93,4 +94,49 @@ test('SEARCH_COMMANDS — termos do glossário encontram o destino certo', () =>
   assert.ok(find('fecha').includes('Abrir fechamento semanal'));
   assert.ok(find('Aderência').includes('Abrir Planejamento e metas'));
   assert.ok(find('trajetória').includes('Abrir Desempenho'));
+});
+
+test('renderGlobalSearchPanel — renderiza paleta de comandos com grupos, ícones, atalhos e footer', () => {
+  const html = renderGlobalSearchPanel({
+    query: 'cronômetro',
+    commands: [
+      { label: 'Abrir cronômetro', action: 'timer', icon: 'clock' },
+      { label: 'Visão Geral', tab: 'dashboard', icon: 'layout-dashboard' },
+    ],
+    results: [
+      {
+        topicId: 't1',
+        topicName: 'Controle de Constitucionalidade',
+        subjectId: 's1',
+        subjectName: 'Direito Constitucional',
+        colorSlot: 2,
+      },
+    ],
+    escapeHtml: s => s,
+    escapeAttr: s => s,
+  });
+
+  assert.ok(html.includes('role="group" aria-label="Ações"'));
+  assert.ok(html.includes('role="group" aria-label="Navegação"'));
+  assert.ok(html.includes('role="group" aria-label="Tópicos"'));
+  assert.ok(html.includes('Abrir cronômetro'));
+  assert.ok(html.includes('Controle de Constitucionalidade'));
+  assert.ok(html.includes('subject-bg-2'));
+  assert.ok(html.includes('command-palette-footer'));
+  assert.ok(html.includes('Navegar'));
+  assert.ok(html.includes('↵'));
+});
+
+test('renderGlobalSearchPanel — renderiza empty state amigável quando nada é encontrado', () => {
+  const html = renderGlobalSearchPanel({
+    query: 'termo inexistente',
+    commands: [],
+    results: [],
+    escapeHtml: s => s,
+    escapeAttr: s => s,
+  });
+
+  assert.ok(html.includes('search-result-empty'));
+  assert.ok(html.includes('termo inexistente'));
+  assert.ok(html.includes('command-palette-footer'));
 });

@@ -1,12 +1,14 @@
 import { renderGlobalSearchPanel } from '../renderers/global-search-renderer.js';
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { scrollBehavior } from '../accessibility.js';
+import { subjectColorOf } from '../../domain/subjects/subject-color.js';
 
 export interface SearchCommand {
   label: string;
   keywords: string;
   tab?: string;
   action?: string;
+  icon?: string;
 }
 
 export const SEARCH_COMMANDS: SearchCommand[] = [
@@ -14,67 +16,123 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     label: 'Visão Geral',
     keywords: 'inicio dashboard resumo prontidao conquistas saldo',
     tab: 'dashboard',
+    icon: 'layout-dashboard',
   },
   {
     label: 'Abrir Desempenho',
     keywords:
       'evolucao historico tendencias comparacao progresso prontidao trajetoria consistencia inteligencia da prova incidencia dominio retencao',
     tab: 'desempenho',
+    icon: 'chart-line',
   },
   {
     label: 'Ir para Hoje',
     keywords: 'hoje tarefa recomendacao estudo proxima melhor acao plano do dia',
     tab: 'hoje',
+    icon: 'sun',
   },
   {
     label: 'Iniciar recomendação prioritária',
     keywords: 'começar iniciar estudo primeiro item do plano próxima ação estudar recomendação prioritária',
     action: 'recommendation',
+    icon: 'player-play',
   },
-  { label: 'Abrir cronômetro', keywords: 'iniciar sessao timer estudar foco', action: 'timer' },
-  { label: 'Abrir Disciplinas', keywords: 'materias edital topicos', tab: 'disciplinas' },
+  {
+    label: 'Abrir cronômetro',
+    keywords: 'iniciar sessao timer estudar foco',
+    action: 'timer',
+    icon: 'clock',
+  },
+  {
+    label: 'Abrir Disciplinas',
+    keywords: 'materias edital topicos',
+    tab: 'disciplinas',
+    icon: 'books',
+  },
   {
     label: 'Carregar edital do catálogo',
     keywords: 'importar edital concurso bb caixa',
     action: 'exam-import',
+    icon: 'file-import',
   },
   {
     label: 'Importar JSON ou CSV',
     keywords: 'importar arquivo conteudo disciplinas',
     action: 'structured-import',
+    icon: 'upload',
   },
-  { label: 'Abrir Calendário (visão Mês da Agenda)', keywords: 'calendario sessoes datas mes', tab: 'agenda' },
-  { label: 'Abrir Agenda de Revisões', keywords: 'agenda revisao atrasadas', tab: 'agenda' },
-  { label: 'Adicionar revisão', keywords: 'criar nova revisão agenda', action: 'add-review' },
+  {
+    label: 'Abrir Calendário (visão Mês da Agenda)',
+    keywords: 'calendario sessoes datas mes',
+    tab: 'agenda',
+    icon: 'calendar-month',
+  },
+  {
+    label: 'Abrir Agenda de Revisões',
+    keywords: 'agenda revisao atrasadas',
+    tab: 'agenda',
+    icon: 'repeat',
+  },
+  {
+    label: 'Adicionar revisão',
+    keywords: 'criar nova revisão agenda',
+    action: 'add-review',
+    icon: 'calendar-event',
+  },
   {
     label: 'Abrir Questões e Simulados',
     keywords: 'questoes erros simulados desempenho',
     tab: 'questoes',
+    icon: 'clipboard-text',
   },
   {
     label: 'Registrar questões',
     keywords: 'lancar registrar acertos erros',
     action: 'add-questions',
+    icon: 'list-check',
   },
   {
     label: 'Abrir Planejamento e metas',
     keywords:
       'metas capacidade plano planejamento estrategia aderencia adaptacao semanal recuperacao',
     tab: 'metas',
+    icon: 'target',
   },
   {
     label: 'Abrir fechamento semanal',
     keywords: 'fechamento semana retrato linha do tempo historico de decisoes',
     action: 'weekly-close',
+    icon: 'circle-check',
   },
-  { label: 'Ver Diagnóstico', keywords: 'diagnostico lacunas prioridades', action: 'diagnosis' },
-  { label: 'Planejar semana', keywords: 'plano semanal distribuir carga', tab: 'metas' },
-  { label: 'Abrir Instruções', keywords: 'ajuda guia como usar instrucoes', tab: 'instrucoes' },
-  { label: 'Exportar backup', keywords: 'backup salvar dados json', action: 'backup' },
+  {
+    label: 'Ver Diagnóstico',
+    keywords: 'diagnostico lacunas prioridades',
+    action: 'diagnosis',
+    icon: 'sparkles',
+  },
+  {
+    label: 'Planejar semana',
+    keywords: 'plano semanal distribuir carga',
+    tab: 'metas',
+    icon: 'calendar-event',
+  },
+  {
+    label: 'Abrir Instruções',
+    keywords: 'ajuda guia como usar instrucoes',
+    tab: 'instrucoes',
+    icon: 'help-circle',
+  },
+  {
+    label: 'Exportar backup',
+    keywords: 'backup salvar dados json',
+    action: 'backup',
+    icon: 'database',
+  },
   {
     label: 'Exportar relatório PDF',
     keywords: 'pdf relatorio imprimir exportar',
     action: 'report',
+    icon: 'file-type-pdf',
   },
 ];
 
@@ -89,6 +147,7 @@ export interface SearchResultItem {
   subjectName: string;
   topicId: string;
   topicName: string;
+  colorSlot?: number;
 }
 
 export function performGlobalSearch(query: string, subjects: any[]): SearchResultItem[] {
@@ -104,6 +163,7 @@ export function performGlobalSearch(query: string, subjects: any[]): SearchResul
           subjectName: s.name,
           topicId: t.id,
           topicName: t.name || '(sem nome)',
+          colorSlot: subjectColorOf(s, subjects),
         });
       }
     });
@@ -173,12 +233,18 @@ export function createSearchController(options: SearchControllerOptions) {
 
     if (typeof input.getBoundingClientRect === 'function') {
       const inputRect = input.getBoundingClientRect();
-      const left = Math.max(8, inputRect.left);
-      const width = Math.min(inputRect.width, window.innerWidth - left - 8);
-      const top = Math.min(inputRect.bottom + 4, window.innerHeight - 80);
-      panel.style.left = `${left}px`;
-      panel.style.width = `${Math.max(180, width)}px`;
-      panel.style.top = `${Math.max(8, top)}px`;
+      const isMobile = (window.innerWidth || 1024) <= 760;
+      if (isMobile) {
+        panel.style.left = '12px';
+        panel.style.width = `${Math.max(280, (window.innerWidth || 360) - 24)}px`;
+        panel.style.top = `${Math.min(inputRect.bottom + 6, (window.innerHeight || 600) - 80)}px`;
+      } else {
+        const targetWidth = Math.min(620, Math.max(inputRect.width, 500));
+        const left = Math.max(16, Math.min(inputRect.left, (window.innerWidth || 1200) - targetWidth - 16));
+        panel.style.left = `${left}px`;
+        panel.style.width = `${Math.min(targetWidth, (window.innerWidth || 1200) - 32)}px`;
+        panel.style.top = `${Math.min(inputRect.bottom + 6, (window.innerHeight || 800) - 100)}px`;
+      }
     }
   }
 

@@ -757,7 +757,23 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 19. Rastreabilidade de Arquitetura e Governança
+## 19. Modernização da Busca Global: Command Palette (Estilo Prestige UI / Raycast / shadcn)
+
+- **Objetivo Concluído:** Transformar a busca global legada (`#globalSearchInput` / `#globalSearchResults`) em um **Command Palette** flutuante e responsivo, inspirado em padrões high-end (Prestige UI, Raycast, Linear e shadcn/ui `CommandDialog`), com efeito *backdrop blur*, categorização de grupos (`Ações`, `Navegação`, `Tópicos`), ícones vetoriais Tabler em cada comando, swatches coloridos de disciplinas (`subject-bg-X`) nos tópicos do edital e rodapé acessível com dicas de navegação por teclado (`↑↓`, `↵`, `ESC`).
+- **Módulos Criados/Atualizados:**
+  - `src/ui/controllers/search-controller.ts`: enriquecimento de `SEARCH_COMMANDS` com metadados de ícones Tabler (`layout-dashboard`, `chart-line`, `sun`, `player-play`, `clock`, `books`, `upload`, `calendar-month`, `repeat`, `clipboard-text`, `list-check`, `target`, `circle-check`, `sparkles`, `calendar-event`, `help-circle`, `database`, `file-type-pdf`), e cálculo de largura/posicionamento responsivo.
+  - `src/ui/renderers/global-search-renderer.ts`: renderização da estrutura Command Palette com cabeçalhos de grupos temáticos, badges de tipo (`Ação` / `Navegação`), atalhos de seleção rápida (`↵`), dot de cor das matérias nos tópicos, estado vazio formatado e rodapé com atalhos de teclado.
+  - `styles/app.css`: estilização do Command Palette com backdrop blur (`.global-search-row:has(.search-results.show)::before`), elevação de sombras profundas (`shadow-2xl`), cantos arredondados, animação suave de entrada (`commandPalettePop`) e suporte integral aos temas Claro e Escuro via design tokens.
+  - `tests/unit/search-controller.test.js`: adição de 2 novos testes unitários para validar a renderização do Command Palette e o estado vazio.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **58.33s** com **1.317 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Playwright E2E: 14 testes passando em `tests/e2e/quick-flows.spec.js` e `tests/e2e/release-gate.spec.js` (validando navegação por setas, combobox, tecla `Ctrl+K`, abertura via lupa no celular e tecla `Escape`).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Build reproduzível (`npm run check:bundle`): 100% em sincronia.
+
+---
+
+## 20. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
