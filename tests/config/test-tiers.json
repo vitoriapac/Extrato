@@ -66,6 +66,11 @@
       ]
     },
     {
+      "file": "tests/e2e/comfort.spec.js",
+      "tier": "FULL",
+      "rationale": "Conforto (C6–C9): prévia e desfazer da redistribuição, constância, densidade e movimento reduzido."
+    },
+    {
       "file": "tests/e2e/consolidated-signals.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -365,11 +370,6 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
-      "file": "tests/e2e/comfort.spec.js",
-      "tier": "FULL",
-      "rationale": "Conforto (C6–C9): prévia e desfazer da redistribuição, constância, densidade e movimento reduzido."
-    },
-    {
       "file": "tests/e2e/subject-color.spec.js",
       "tier": "FULL",
       "rationale": "Migração de schema (cor por disciplina) e importação de backup antigo; exigido pelo gate Full."
@@ -465,6 +465,11 @@
       "file": "tests/unit/achievements-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/activity-heatmap.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico para os modelos visuais e componente do Activity Heatmap padrão EasyUI."
     },
     {
       "file": "tests/unit/adaptive-planning-renderer.test.js",
@@ -632,14 +637,14 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/crypto-utils.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
       "file": "tests/unit/critical-vulnerabilities-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo analítico do Radar de Vulnerabilidades Críticas (alta incidência × domínio frágil)."
+    },
+    {
+      "file": "tests/unit/crypto-utils.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
       "file": "tests/unit/daily-execution.test.js",
@@ -730,6 +735,11 @@
       "file": "tests/unit/demo-sustainability.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/density-preference.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/diagnosis-center.test.js",
@@ -1057,6 +1067,11 @@
       "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
+      "file": "tests/unit/motivation.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
+    },
+    {
       "file": "tests/unit/multidimensional-radar.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1177,14 +1192,14 @@
       "rationale": "Contrato puro em Node para cálculos visuais de planejamento, alocação de capacidade, régua pedagógica e renderização SVG."
     },
     {
-      "file": "tests/unit/plateau-detector.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Detecção algorítmica pura de platô de desempenho, estabilidade de acerto e prescrição pedagógica."
-    },
-    {
       "file": "tests/unit/plateau-detector-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo analítico do Detector de Platô e Estagnação de Desempenho."
+    },
+    {
+      "file": "tests/unit/plateau-detector.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Detecção algorítmica pura de platô de desempenho, estabilidade de acerto e prescrição pedagógica."
     },
     {
       "file": "tests/unit/post-simulation-replan.test.js",
@@ -1402,7 +1417,7 @@
       "rationale": "Contrato unitário rápido no Node."
     },
     {
-      "file": "tests/unit/row-action-names.test.js",
+      "file": "tests/unit/review-redistribution.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato unitário rápido no Node."
     },
@@ -1450,6 +1465,11 @@
       "file": "tests/unit/routine-sustainability.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; avaliação de sustentabilidade de carga e descanso no onboarding."
+    },
+    {
+      "file": "tests/unit/row-action-names.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato unitário rápido no Node."
     },
     {
       "file": "tests/unit/scroll-behavior.test.js",
@@ -1647,21 +1667,6 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/motivation.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato unitário rápido no Node."
-    },
-    {
-      "file": "tests/unit/review-redistribution.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato unitário rápido no Node."
-    },
-    {
-      "file": "tests/unit/density-preference.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato unitário rápido no Node."
-    },
-    {
       "file": "tests/unit/subject-color.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato unitário rápido no Node."
@@ -1837,14 +1842,14 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/volatile-mastery.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
       "file": "tests/unit/volatile-mastery-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo analítico do Diagnóstico de Domínio Volátil / Falsa Consolidação."
+    },
+    {
+      "file": "tests/unit/volatile-mastery.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
       "file": "tests/unit/weekly-adherence.test.js",

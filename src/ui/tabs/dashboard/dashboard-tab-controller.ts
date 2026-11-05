@@ -124,6 +124,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     expanded: false,
     onlyActiveDays: false,
     selectedDate: null as string | null,
+    mode: 'calendar' as 'calendar' | 'hours',
   };
 
   function renderNextActionCardHtml(props: NextActionCardProps): string {
@@ -510,6 +511,9 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
         ? deps.getDailyStudySummary(streakView.selectedDate, { subjectId: streakView.subjectId })
         : null;
 
+    const state = deps.getState ? deps.getState() : {};
+    const sessions = state.studySessions || state.sessions || [];
+
     container.innerHTML = renderHeatmapView({
       cells: heatmapModel.cells,
       hasActivity: heatmapModel.hasActivity,
@@ -527,6 +531,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       escapeHtml,
       escapeAttr,
       pluralize,
+      mode: streakView.mode,
+      sessions,
     });
   }
 
@@ -534,6 +540,11 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (field === 'metric' && HEATMAP_METRICS.includes(value)) streakView.metric = value;
     if (field === 'subjectId') streakView.subjectId = value;
     streakView.selectedDate = null;
+    renderHeatmap();
+  }
+
+  function setHeatmapMode(mode: 'calendar' | 'hours'): void {
+    streakView.mode = mode === 'hours' ? 'hours' : 'calendar';
     renderHeatmap();
   }
 
@@ -765,6 +776,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     heatmapTooltip,
     renderHeatmap,
     setHeatmapFilter,
+    setHeatmapMode,
     selectHeatmapDay,
     viewSelectedHeatmapSessions,
     toggleStreakExpanded,

@@ -54,7 +54,7 @@ flowchart TD
 - `styles/tokens.css`: cores, temas e tokens visuais.
 - `styles/tailwind.input.css` e `styles/tailwind.css`: estilos utilitários gerados sob demanda via Tailwind CSS v4, conectados aos tokens sem Preflight global.
 - `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`, `Tabs`).
-- `src/ui/primitives/charts/*.tsx`: catálogo de gráficos visuais vetoriais em Preact/SVG (`DonutChart`, `StackedColumnChart`, `MultiLineChart`, `PedagogicalMatrixChart`, `GroupedBarChart`, `AllocationBar`, `PhaseRoadmapTimeline`).
+- `src/ui/primitives/charts/*.tsx`: catálogo de gráficos visuais vetoriais em Preact/SVG (`DonutChart`, `StackedColumnChart`, `MultiLineChart`, `PedagogicalMatrixChart`, `GroupedBarChart`, `AllocationBar`, `PhaseRoadmapTimeline`, `WeeklyTrendChart`, `ErrorParetoChart`, `SimulationTrendChart`, `SimulationBreakdownBarChart`, `ActivityHeatmap`).
 - `src/ui/primitives/a11y.ts`: utilitários de acessibilidade e gerenciamento de anúncios `aria-live` para leitores de tela em tempo real (cronômetro e cards).
 - `src/ui/tabs/dashboard/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada, ponto de parada e estado acolhedor de boas-vindas no primeiro uso (`WelcomeHeroCard`), compondo a seção `.overview-now` em grid responsivo ao lado do card de Atenção.
 - `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`: card de Saúde do Edital com radar multidimensional, faixas de cobertura, domínio e retenção, e simetria de altura total (Camada 2).
@@ -126,6 +126,7 @@ flowchart TD
 - `src/domain/analytics/trends.ts`: comparação de janelas equivalentes de desempenho.
 - `src/domain/analytics/study-metrics.ts`: consolidação pura de sessões, questões e simulados.
 - `src/domain/analytics/heatmap.ts`: intensidade e níveis do mapa de atividade por indicador.
+- `src/domain/analytics/activity-heatmap-models.ts`: modelos determinísticos do Activity Heatmap padrão EasyUI com dual-modes: calendário contínuo estilo GitHub (semanas, meses alinhados e 5 níveis) e matriz circadiana 7x24 com cards de horários de pico.
 - `src/domain/analytics/multidimensional-radar.ts`: eixos, confiança e interpretação do radar comparativo.
 - `src/domain/diagnostics/cognitive-profile.ts`: perfil de erros com amostra, período, cobertura e confiança.
 - `src/domain/diagnostics/risk-score.ts`: risco composto com pesos redistribuídos, confiança e contribuições auditáveis.

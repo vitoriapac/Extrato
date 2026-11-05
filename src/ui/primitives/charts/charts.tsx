@@ -264,6 +264,7 @@ export { WeeklyTrendChart, type WeeklyTrendChartProps } from './WeeklyTrendChart
 export { ErrorParetoChart, type ErrorParetoChartProps } from './ErrorParetoChart.js';
 export { SimulationTrendChart, type SimulationTrendChartProps } from './SimulationTrendChart.js';
 export { SimulationBreakdownBarChart, type SimulationBreakdownBarChartProps } from './SimulationBreakdownBarChart.js';
+export { ActivityHeatmap, type ActivityHeatmapProps } from './ActivityHeatmap.js';
 
 import { StackedColumnChart, StackedColumnChartProps } from './StackedColumnChart.js';
 import { DonutChart, DonutChartProps } from './DonutChart.js';
@@ -276,6 +277,7 @@ import { WeeklyTrendChart, WeeklyTrendChartProps } from './WeeklyTrendChart.js';
 import { ErrorParetoChart, ErrorParetoChartProps } from './ErrorParetoChart.js';
 import { SimulationTrendChart, SimulationTrendChartProps } from './SimulationTrendChart.js';
 import { SimulationBreakdownBarChart, SimulationBreakdownBarChartProps } from './SimulationBreakdownBarChart.js';
+import { ActivityHeatmap, ActivityHeatmapProps } from './ActivityHeatmap.js';
 
 export const renderStackedColumnChart = (props: StackedColumnChartProps) => render(h(StackedColumnChart, props));
 export const renderDonutChart = (props: DonutChartProps) => render(h(DonutChart, props));
@@ -288,3 +290,4 @@ export const renderWeeklyTrendChart = (props: WeeklyTrendChartProps) => render(h
 export const renderErrorParetoChart = (props: ErrorParetoChartProps) => render(h(ErrorParetoChart, props));
 export const renderSimulationTrendChart = (props: SimulationTrendChartProps) => render(h(SimulationTrendChart, props));
 export const renderSimulationBreakdownBarChart = (props: SimulationBreakdownBarChartProps) => render(h(SimulationBreakdownBarChart, props));
+export const renderActivityHeatmap = (props: ActivityHeatmapProps) => render(h(ActivityHeatmap, props));

@@ -773,7 +773,29 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 20. Rastreabilidade de Arquitetura e Governança
+## 20. Modernização do Activity Heatmap no Padrão EasyUI (Dual Modes: Calendário e Horários 24h)
+
+- **Objetivo Concluído:** Modernizar o mapa de calor de consistência e hábitos de estudo (`#heatmapContainer`) na aba Visão Geral, adotando a arquitetura do componente **EasyUI Activity Heatmap** (`Surajmaurya1/easyui/activity-heatmap`) em Preact 11 nativo e Tailwind CSS v4, com transição fluida entre dois modos de visualização:
+  1. **Modo Calendário Contínuo (Estilo GitHub / EasyUI):** Células organizadas por colunas de semanas e 7 linhas de dias (Seg a Dom); alinhamento dinâmico e exato de rótulos de meses no topo (`Jan`, `Fev`, `Mar`...); rótulos de dias à esquerda (`Seg`, `Qua`, `Sex`); 5 níveis de intensidade (`heat-0` a `heat-4`); micro-interações de elevação (`scale(1.22)` ao hover, foco com anel semântico); persistência de filtros existentes (Horas, Questões, Revisões, Simulados, Disciplina e expansão).
+  2. **Modo Horários do Dia (Matriz 7 Dias da Semana × 24 Horas):** Grade 7 × 24 mapeando hábitos circadianos a partir das sessões de estudo registradas; tooltips detalhados (*"Segunda-feira às 14:00: 90 min estudados (2 sessões)"*); cards de insights inteligentes (*Horário de Maior Foco*, *Dia Mais Produtivo* e *Tempo Total Mapeado*).
+- **Módulos Criados/Atualizados:**
+  - `src/domain/analytics/activity-heatmap-models.ts`: modelos determinísticos e puramente algorítmicos (`buildActivityCalendarHeatmapVisual`, `buildActivityHoursHeatmapVisual`, `getMondayFirstWeekday`).
+  - `src/ui/primitives/charts/ActivityHeatmap.tsx`: componente Preact 11 com seletor em abas, cabeçalho de streaks com Tabler Icons (`flame`, `target`), renderização das grades de calendário e horários 24h, cards de insights e rodapé com legenda.
+  - `src/ui/primitives/charts/charts.tsx`: exportação unificada de `ActivityHeatmap`, `ActivityHeatmapProps` e `renderActivityHeatmap`.
+  - `src/ui/renderers/heatmap-renderer.ts`: integração completa do componente moderno no renderer mantendo a barra de filtros existente.
+  - `src/ui/tabs/dashboard/dashboard-tab-controller.ts`: inclusão de `mode: 'calendar' | 'hours'`, extração de sessões para o mapa circadiano, método `setHeatmapMode` e deleção de ações.
+  - `src/ui/navigation/delegated-actions-registry.ts`: registro de `setHeatmapMode`.
+  - `styles/app.css`: definição de `.grid-cols-24`, `.heat-0` a `.heat-4` (com suporte automático aos temas Claro e Escuro), transições e micro-animações de zoom nas células.
+  - `tests/unit/activity-heatmap.test.js`: 6 testes unitários cobrindo o modelo de calendário, matriz 24h, horários de pico e renderização Preact com acessibilidade.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **53.99s** com **1.323 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Auditoria de Tiers: 363 arquivos classificados e auditados em `tests/config/test-tiers.json`.
+  - Build reproduzível (`npm run build`): bundles atualizados e sincronizados.
+
+---
+
+## 21. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

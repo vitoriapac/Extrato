@@ -235,6 +235,7 @@ export function buildDelegatedActionHandlers(
     unlockReadinessFactor: (...args: any[]) => c.dashboard?.unlockReadinessFactor?.(...args),
     selectHeatmapDay: (...args: any[]) => c.dashboard?.selectHeatmapDay?.(...args),
     setHeatmapFilter: (...args: any[]) => c.dashboard?.setHeatmapFilter?.(...args),
+    setHeatmapMode: (...args: any[]) => c.dashboard?.setHeatmapMode?.(...args),
     viewSelectedHeatmapSessions: (...args: any[]) =>
       c.dashboard?.viewSelectedHeatmapSessions?.(...args),
     toggleStreakActiveDays: (...args: any[]) => c.dashboard?.toggleStreakActiveDays?.(...args),
