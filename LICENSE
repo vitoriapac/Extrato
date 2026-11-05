@@ -1,21 +1,18 @@
-MIT License
+Copyright (c) 2026 Vitória Pac. Todos os direitos reservados.
+All rights reserved.
 
-Copyright (c) 2026 Vitória Pac
+Este software e a documentação associada (o "Software") são proprietários e confidenciais.
+Nenhuma parte deste Software pode ser copiada, reproduzida, modificada, mesclada, publicada,
+distribuída, sublicenciada, comercializada ou explorada de qualquer forma, no todo ou em parte,
+sem a autorização prévia, expressa e por escrito da titular dos direitos autorais.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+O acesso ao código-fonte ou à aplicação publicada para fins de visualização ou demonstração
+não concede qualquer licença, implícita ou explícita, sobre a propriedade intelectual,
+código-fonte, arquitetura, algoritmos ou identidade visual do projeto.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA" ("AS IS"), SEM GARANTIA DE QUALQUER
+TIPO, EXPRESSA OU IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIALIZAÇÃO,
+ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA E NÃO VIOLAÇÃO. EM NENHUMA CIRCUNSTÂNCIA A AUTORA OU
+TITULAR DOS DIREITOS AUTORAIS SERÁ RESPONSÁVEL POR QUALQUER RECLAMAÇÃO, DANO OU OUTRA
+RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, ATO ILÍCITO OU DE OUTRA FORMA, DECORRENTE DE,
+OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS OPERAÇÕES NO SOFTWARE.

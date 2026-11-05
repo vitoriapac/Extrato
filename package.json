@@ -2,6 +2,7 @@
   "name": "extrato-de-estudos",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Painel local para planejamento, revisao e acompanhamento de estudos.",
   "scripts": {

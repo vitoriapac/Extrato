@@ -328,7 +328,7 @@ As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adap
 
 ## Licença
 
-Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).
+Software proprietário — Todos os direitos reservados. Consulte [LICENSE](LICENSE).
 Veja também a [jornada do produto](docs/product-journey.md), com cenários e medidas de referência para o primeiro uso e semanas irregulares.
 
 ## Fluxos entregues
