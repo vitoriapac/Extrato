@@ -1,4 +1,8 @@
 import { formatDecimal } from '../../core/format-number.js';
+import { buildPhaseRoadmapVisual } from '../../domain/planning/planning-visual-models.js';
+import { renderPhaseRoadmapTimeline } from '../primitives/charts/charts.js';
+import { subjectColorOf } from '../../domain/subjects/subject-color.js';
+
 export function renderExamBlueprintConfigView({
   container,
   blueprint,
@@ -9,11 +13,24 @@ export function renderExamBlueprintConfigView({
   EXAM_TAGS,
   EXAM_SOURCES,
   globalAccuracyTarget = 80,
+  today,
   document = globalThis.document,
 }: any) {
   const generalWasOpen = container.querySelector('.exam-general-config')?.open || false;
+
+  const roadmapVisual = buildPhaseRoadmapVisual({
+    examDate: blueprint?.examDate || null,
+    today: today || new Date().toISOString().slice(0, 10),
+  });
+  const roadmapHtml = renderPhaseRoadmapTimeline({
+    visual: roadmapVisual,
+    label: 'Régua de preparação e fases até a prova',
+    className: 'mb-4',
+  });
+
   const rows = subjects
     .map((subject: any) => {
+      const colorSlot = subjectColorOf(subject, subjects);
       const config = blueprint.subjects.find((item: any) => item.subjectId === subject.id);
       const priorityLabel = (
         { high: 'Alta', low: 'Baixa', normal: 'Normal' } as Record<string, any>
@@ -30,10 +47,11 @@ export function renderExamBlueprintConfigView({
         config?.questionWeight != null
           ? `Peso ${formatDecimal(config.questionWeight)}`
           : 'Peso padrão';
-      return `<details class="exam-subject-config"><summary><strong>${escapeHtml(subject.name)}</strong><span>${priorityLabel}</span><span>${masteryLabel}</span><span>${questionsLabel} · ${weightLabel}</span><em>Editar configuração</em></summary><div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${escapeAttr(subject.id)}','priority',this.value)"><option value="normal" ${!config || config.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="high" ${config?.priority === 'high' ? 'selected' : ''}>Alta</option><option value="low" ${config?.priority === 'low' ? 'selected' : ''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ''}" placeholder="Herdar ${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ''}" placeholder="1" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? ' · oficial' : ''}</small>` : ''}</label><label>Meta de acerto (%)<input type="number" min="0" max="100" value="${config?.accuracyTarget ?? ''}" placeholder="Herdar ${globalAccuracyTarget}%" name="accuracyTarget"><small>Em branco: ${globalAccuracyTarget}% (geral). Separada da meta de domínio.</small></label></div></details>`;
+      return `<details class="exam-subject-config"><summary><span class="w-2.5 h-2.5 rounded-full inline-block mr-1.5 subject-bg-${colorSlot}" aria-hidden="true"></span><strong>${escapeHtml(subject.name)}</strong><span>${priorityLabel}</span><span>${masteryLabel}</span><span>${questionsLabel} · ${weightLabel}</span><em>Editar configuração</em></summary><div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${escapeAttr(subject.id)}','priority',this.value)"><option value="normal" ${!config || config.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="high" ${config?.priority === 'high' ? 'selected' : ''}>Alta</option><option value="low" ${config?.priority === 'low' ? 'selected' : ''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ''}" placeholder="Herdar ${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ''}" placeholder="1" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? ' · oficial' : ''}</small>` : ''}</label><label>Meta de acerto (%)<input type="number" min="0" max="100" value="${config?.accuracyTarget ?? ''}" placeholder="Herdar ${globalAccuracyTarget}%" name="accuracyTarget"><small>Em branco: ${globalAccuracyTarget}% (geral). Separada da meta de domínio.</small></label></div></details>`;
     })
     .join('');
-  container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || '')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[
+
+  container.innerHTML = `${roadmapHtml}<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || '')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[
     ['bb-escriturario', 'Banco do Brasil — Escriturário'],
     ['caixa-tbn', 'Caixa — TBN'],
     ['caixa-tbn-ti', 'Caixa — TBN TI'],
@@ -45,6 +63,7 @@ export function renderExamBlueprintConfigView({
     .join(
       ''
     )}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+
   const general = document.createElement('details');
   general.className = 'exam-general-config';
   general.innerHTML = `<summary>Opções gerais da prova · ${escapeHtml(blueprint.examDate ? formatDatePt(blueprint.examDate) : 'sem data')} · meta ${blueprint.masteryTarget}%</summary>`;

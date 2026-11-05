@@ -112,3 +112,47 @@ Revisar e confirmar cria nova versão com mudanças, evidências e prontidão co
 - **Radar Multidimensional de Disciplinas:** Suporte nativo aos slots de cor (`radar-shape[data-subject-color]`, `radar-dot[data-subject-color]`, `radar-key[data-subject-color]`), substituindo as cores neutras legadas pela cor escolhida pelo usuário.
 - **Barras de Progresso por Disciplina:** Exibição da bolinha colorida (`subject-color-swatch`) ao lado do nome da disciplina e preenchimento da barra com a classe semântica correspondente (`subject-bg-X`).
 
+## Gráficos Visuais da Aba de Planejamento (Modernização Visual)
+
+### 1. Gráfico de Barras Agrupadas: Planejado × Realizado por Disciplina
+- **Localização:** Aba Planejamento → Plano da semana → **Resumo da semana** (`#studyDistribution`).
+- **Propósito:** Comparar visualmente o tempo planejado nos planos diários contra o tempo efetivamente estudado em sessões durante a semana atual.
+- **Estrutura:** Par de barras horizontais por disciplina. A barra de planejado utiliza tom neutro de contorno (`bg-content-secondary/30`), e a barra de realizado é preenchida com a cor oficial da disciplina (`subject-bg-X`).
+- **Indicadores:** Marcador circular colorido da matéria, minutos formatados e badge semântico com ícone Tabler de status pedagógico:
+  - *No ritmo:* Execução dentro da margem planejada.
+  - *Superávit (+Xh):* Estudo acima do planejado.
+  - *Déficit (-Xh):* Estudo abaixo do planejado.
+  - *Extra:* Disciplina estudada sem plano prévio.
+
+### 2. Barras Duplas de Alinhamento com o Edital (Plano × Impacto)
+- **Localização:** Aba Planejamento → Plano da semana → **Resumo da semana** (`#planImpactAlignment`).
+- **Propósito:** Contrastar o percentual de esforço alocado no plano semanal contra o peso relativo e incidência de questões no edital.
+- **Estrutura:** Cada disciplina é exibida com seu dot de cor oficial (`subject-bg-X`), barra do plano semanal na cor da matéria e barra de impacto relativo do edital em tom contrastante.
+- **Classificação:**
+  - *Alinhada:* Diferença ≤ 8 p.p. entre esforço e relevância.
+  - *Subalocada:* Mais de 8 p.p. abaixo do impacto da prova (alerta para não negligenciar matérias de alto peso).
+  - *Sobrealocada:* Mais de 8 p.p. acima do impacto da prova.
+
+### 3. Barra Contínua de Capacidade Semanal e Mix Pedagógico
+- **Localização:** Aba Planejamento → Plano da semana → **Plano semanal até a prova** (`#examStudyPlan`).
+- **Propósito:** Proporcionar uma visão panorâmica e imediata da capacidade semanal alocada em horas, fatiada pelas disciplinas na sua cor oficial e decomposta no mix de atividades.
+- **Estrutura:**
+  - *Barra de Capacidade:* Segmentos contínuos proporcionais à carga de cada disciplina com `subject-bg-X`, além de indicador de tempo livre (*flex*).
+  - *Chips de Disciplina:* Listagem com badge colorido, horas alocadas e percentual da capacidade total.
+  - *Mix Pedagógico:* Barra tricolor dividindo o tempo em Teoria (azul), Questões (roxo/accent) e Revisões (verde), apoiando a execução da rotina de estudos.
+
+### 4. Linha do Tempo da Jornada e Régua Pedagógica até a Prova
+- **Localização:** Aba Planejamento → Prova e ritmo → **Configuração estratégica da prova** (`#metasExamStrategy`).
+- **Propósito:** Exibir a contagem regressiva em dias, percentual decorrido de cronograma e as 4 fases pedagógicas de preparação até o dia do concurso.
+- **Régua e Fases:**
+  - *Construção de Base (>90 dias):* Foco em teoria e fundação.
+  - *Consolidação e Fixação (31–90 dias):* Equilíbrio entre teoria, questões e revisões.
+  - *Modo Reta Final (8–30 dias):* Transição para 85% questões/revisão e 15% teoria.
+  - *Semana de Revisão Final (0–7 dias):* Manutenção rápida e descanso ativo.
+- **Interatividade:** Destaque dinâmico da fase ativa com badge "Agora", indicação das fases já ultrapassadas e régua de progresso com gradiente.
+
+### 5. Cores Oficiais nas Metas por Disciplina e Configuração Estratégica
+- **Metas de Acerto por Disciplina (`#subjectTargetEditor`):** Cada linha da tabela agora apresenta o swatch de cor da disciplina ao lado da caixa de seleção e nome, harmonizando com os gráficos da aba Desempenho.
+- **Configuração da Prova por Disciplina (`.exam-subject-config`):** Cada disciplina expansível recebe seu swatch oficial `subject-bg-X`, facilitando a identificação imediata ao revisar pesos e prioridades.
+
+

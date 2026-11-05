@@ -1172,6 +1172,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/planning-visual-charts.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato puro em Node para cálculos visuais de planejamento, alocação de capacidade, régua pedagógica e renderização SVG."
+    },
+    {
       "file": "tests/unit/plateau-detector.test.js",
       "tier": "FAST_GATE",
       "rationale": "Detecção algorítmica pura de platô de desempenho, estabilidade de acerto e prescrição pedagógica."

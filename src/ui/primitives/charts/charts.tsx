@@ -257,13 +257,22 @@ export { StackedColumnChart } from './StackedColumnChart.js';
 export { DonutChart } from './DonutChart.js';
 export { MultiLineChart } from './MultiLineChart.js';
 export { PedagogicalMatrixChart } from './PedagogicalMatrixChart.js';
+export { GroupedBarChart, type GroupedBarChartProps } from './GroupedBarChart.js';
+export { AllocationBar, type AllocationBarProps } from './AllocationBar.js';
+export { PhaseRoadmapTimeline, type PhaseRoadmapTimelineProps } from './PhaseRoadmapTimeline.js';
 
 import { StackedColumnChart, StackedColumnChartProps } from './StackedColumnChart.js';
 import { DonutChart, DonutChartProps } from './DonutChart.js';
 import { MultiLineChart, MultiLineChartProps } from './MultiLineChart.js';
 import { PedagogicalMatrixChart, PedagogicalMatrixChartProps } from './PedagogicalMatrixChart.js';
+import { GroupedBarChart, GroupedBarChartProps } from './GroupedBarChart.js';
+import { AllocationBar, AllocationBarProps } from './AllocationBar.js';
+import { PhaseRoadmapTimeline, PhaseRoadmapTimelineProps } from './PhaseRoadmapTimeline.js';
 
 export const renderStackedColumnChart = (props: StackedColumnChartProps) => render(h(StackedColumnChart, props));
 export const renderDonutChart = (props: DonutChartProps) => render(h(DonutChart, props));
 export const renderMultiLineChart = (props: MultiLineChartProps) => render(h(MultiLineChart, props));
 export const renderPedagogicalMatrixChart = (props: PedagogicalMatrixChartProps) => render(h(PedagogicalMatrixChart, props));
+export const renderGroupedBarChart = (props: GroupedBarChartProps) => render(h(GroupedBarChart, props));
+export const renderAllocationBar = (props: AllocationBarProps) => render(h(AllocationBar, props));
+export const renderPhaseRoadmapTimeline = (props: PhaseRoadmapTimelineProps) => render(h(PhaseRoadmapTimeline, props));

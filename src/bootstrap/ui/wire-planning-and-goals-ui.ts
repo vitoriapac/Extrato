@@ -126,6 +126,7 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     activeSubjects,
     currentAchievementProjection: () => currentAchievementProjection(),
     nowISO,
+    todayISO,
     idGenerator: uid,
     escapeHtml,
     escapeAttr,

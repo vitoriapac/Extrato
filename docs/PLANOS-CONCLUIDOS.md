@@ -713,7 +713,30 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 17. Rastreabilidade de Arquitetura e Governança
+## 17. Modernização Visual da Aba de Planejamento com Cores das Disciplinas
+
+- **Data de Conclusão:** 04 de Novembro de 2026.
+- **Artefato de Planejamento:** [plano-graficos-planejamento.md](file:///c:/Users/vitor/.gemini/antigravity/brain/f6a41a31-d7f5-4c51-9c65-2a7abb501d7b/plano-graficos-planejamento.md).
+- **Módulos Criados/Atualizados:**
+  - `src/domain/planning/planning-visual-models.ts`: construtores puros e determinísticos para agregação visual de planejamento (`buildSubjectStudyDistributionVisual`, `buildPlanImpactAlignmentVisual`, `buildWeeklyAllocationBarVisual`, `buildPhaseRoadmapVisual`).
+  - `src/ui/primitives/charts/geometry.ts`: layouts geométricos `groupedBarsGeometry` e `phaseRoadmapGeometry`.
+  - `src/ui/primitives/charts/GroupedBarChart.tsx`: gráfico de barras horizontais agrupadas (Planejado vs Realizado) com as cores das disciplinas (`subject-bg-X`) e badges pedagógicos com ícones Tabler (No ritmo, Superávit, Déficit, Extra).
+  - `src/ui/primitives/charts/AllocationBar.tsx`: barra contínua de capacidade semanal segmentada pelas disciplinas, chips de horas alocadas e barra tricolor do mix pedagógico (Teoria, Questões, Revisões).
+  - `src/ui/primitives/charts/PhaseRoadmapTimeline.tsx`: linha do tempo de preparação para a prova com contagem regressiva em dias, régua de progresso percentual e as 4 fases pedagógicas (Construção, Consolidação, Reta Final, Revisão Final).
+  - `src/ui/renderers/study-distribution-renderer.ts`: integração de `renderGroupedBarChart` no resumo da semana.
+  - `src/ui/renderers/plan-impact-alignment-renderer.ts`: integração de barras duplas de esforço vs peso no edital com cores das disciplinas e diagnóstico de alinhamento (`aligned`, `underallocated`, `overallocated`).
+  - `src/ui/tabs/goals/study-plan-builder-controller.ts`: inclusão da barra de capacidade contínua e mix pedagógico tanto no plano confirmado quanto na proposta semanal.
+  - `src/ui/renderers/exam-blueprint-config-renderer.ts`: inserção da régua de fases e linha do tempo até a prova no topo da configuração estratégica, e swatches coloridos por disciplina.
+  - `src/ui/renderers/subject-target-editor-renderer.ts` e `subject-accuracy-renderer.ts`: inclusão das cores oficiais das matérias nas metas de acerto por disciplina.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **55.62s** com **1.304 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Auditoria de Tiers: 361 arquivos classificados e auditados em `tests/config/test-tiers.json`.
+  - Suíte de Testes Adicionada: `tests/unit/planning-visual-charts.test.js` (5 testes unitários verdes em ~320ms).
+
+---
+
+## 18. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

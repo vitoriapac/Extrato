@@ -54,6 +54,7 @@ flowchart TD
 - `styles/tokens.css`: cores, temas e tokens visuais.
 - `styles/tailwind.input.css` e `styles/tailwind.css`: estilos utilitários gerados sob demanda via Tailwind CSS v4, conectados aos tokens sem Preflight global.
 - `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`, `Tabs`).
+- `src/ui/primitives/charts/*.tsx`: catálogo de gráficos visuais vetoriais em Preact/SVG (`DonutChart`, `StackedColumnChart`, `MultiLineChart`, `PedagogicalMatrixChart`, `GroupedBarChart`, `AllocationBar`, `PhaseRoadmapTimeline`).
 - `src/ui/primitives/a11y.ts`: utilitários de acessibilidade e gerenciamento de anúncios `aria-live` para leitores de tela em tempo real (cronômetro e cards).
 - `src/ui/tabs/dashboard/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada, ponto de parada e estado acolhedor de boas-vindas no primeiro uso (`WelcomeHeroCard`), compondo a seção `.overview-now` em grid responsivo ao lado do card de Atenção.
 - `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`: card de Saúde do Edital com radar multidimensional, faixas de cobertura, domínio e retenção, e simetria de altura total (Camada 2).
@@ -131,6 +132,7 @@ flowchart TD
 - `src/domain/forecasts/performance-forecast.ts`: faixa atual, distância até a meta e projeção conservadora de 30 dias com requisitos mínimos de evidência.
 - `src/domain/forecasts/what-if-simulator.ts`: simulação puramente em memória (`structuredCloneSafe`) para projetar variações de minutos/dia, foco e antecipação de prova.
 - `src/domain/planning/final-stretch-policy.ts`: política do Modo Reta Final com rebalanceamento 85/15 entre questões/revisão e teoria.
+- `src/domain/planning/planning-visual-models.ts`: modelos puros e determinísticos para os gráficos visuais de planejamento (barras agrupadas Planejado × Realizado, contraste Plano × Impacto, alocação contínua de capacidade e régua pedagógica de fases até a prova).
 - `src/domain/analytics/volatile-mastery.ts`: diagnóstico de ilusão de competência para tópicos com queda de retenção após 14 dias sem revisão.
 - `src/domain/analytics/plateau-detector.ts`: detecção pura de platô e estagnação de precisão em alto volume com prescrição metodológica.
 - `src/application/analytics/build-performance-trend-view-model.ts`: modelo de apresentação da tendência de acertos (8 baldes semanais), simulados, gap em relação à meta benchmark e resumo textual explicável.

@@ -6656,6 +6656,37 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/planning-visual-charts.test.js",
+      "layer": "node",
+      "area": "Planejamento",
+      "areaBasis": "filename_hint",
+      "criticality": "critical",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/planning/planning-visual-models.js",
+        "../../src/ui/primitives/charts/charts.js"
+      ],
+      "staticTestDeclarations": 5,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/plateau-detector-view-model.test.js",
       "layer": "node",
       "area": "Aplicação",

@@ -369,3 +369,70 @@ export function pedagogicalMatrixGeometry(
     bubbles,
   };
 }
+
+export interface GroupedBarItemInput {
+  label: string;
+  planned: number;
+  actual: number;
+  colorSlot: number;
+}
+
+/** Layout for horizontal grouped bars (e.g. Planned vs Actual hours per subject). */
+export function groupedBarsGeometry(
+  items: GroupedBarItemInput[],
+  {
+    maxVal,
+  }: {
+    maxVal?: number;
+  } = {}
+) {
+  const ceiling = Math.max(
+    1,
+    isFiniteNumber(maxVal) ? maxVal : 0,
+    ...items.map(it => Math.max(it.planned || 0, it.actual || 0))
+  );
+
+  const bars = items.map(it => {
+    const plannedRatio = Math.max(0, it.planned) / ceiling;
+    const actualRatio = Math.max(0, it.actual) / ceiling;
+    return {
+      label: it.label,
+      colorSlot: it.colorSlot,
+      planned: it.planned,
+      actual: it.actual,
+      plannedWidthPct: +(plannedRatio * 100).toFixed(1),
+      actualWidthPct: +(actualRatio * 100).toFixed(1),
+      isExceeded: it.actual > it.planned && it.planned > 0,
+      isDeficit: it.actual < it.planned,
+    };
+  });
+
+  return { ceiling, bars };
+}
+
+/** Layout for Phase Roadmap timeline in SVG units. */
+export function phaseRoadmapGeometry(
+  progressPct: number,
+  phasesCount = 4,
+  width = 600,
+  padX = 30
+) {
+  const plotW = width - padX * 2;
+  const clampedProgress = Math.max(0, Math.min(100, progressPct));
+  const currentX = +(padX + (clampedProgress / 100) * plotW).toFixed(1);
+
+  const nodeStep = phasesCount > 1 ? plotW / (phasesCount - 1) : 0;
+  const nodes = Array.from({ length: phasesCount }, (_, i) => ({
+    index: i,
+    x: +(padX + i * nodeStep).toFixed(1),
+  }));
+
+  return {
+    width,
+    padX,
+    plotW,
+    progressPct: clampedProgress,
+    currentX,
+    nodes,
+  };
+}

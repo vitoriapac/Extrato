@@ -12,6 +12,8 @@ import { buildPhasePlanningPreview } from '../../../application/planning/build-p
 import { renderPhaseStrategy } from '../../renderers/phase-strategy-renderer.js';
 import { buildRecommendationExplanation } from '../../../application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from '../../renderers/recommendation-explanation-renderer.js';
+import { buildWeeklyAllocationBarVisual } from '../../../domain/planning/planning-visual-models.js';
+import { renderAllocationBar } from '../../primitives/charts/charts.js';
 
 export interface StudyPlanBuilderControllerDeps {
   document?: any;
@@ -499,7 +501,21 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       const activeOperation = [...(latest?.dailyPlanOperations || [])]
         .reverse()
         .find((item: any) => !item.undoneAt);
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest ? '<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ''}${activeOperation ? '<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}</div>`;
+      const allocationVisual = latest?.items?.length
+        ? buildWeeklyAllocationBarVisual({
+            planItems: latest.items,
+            subjects: deps.getState()?.subjects || [],
+            weeklyCapacityMinutes: latest.weeklyPlannedMinutes || 0,
+          })
+        : null;
+      const allocationBarHtml = allocationVisual
+        ? renderAllocationBar({
+            visual: allocationVisual,
+            weeklyCapacityMinutes: latest.weeklyPlannedMinutes || 0,
+            label: 'Distribuição da capacidade semanal do plano confirmado',
+          })
+        : '';
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>${allocationBarHtml}` : ''}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest ? '<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ''}${activeOperation ? '<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}</div>`;
       return;
     }
 
@@ -538,7 +554,18 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       )
       .join('');
 
-    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? '-' : '+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === 'deficit' ? 'ritmo insuficiente' : plan.paceState === 'surplus' ? 'capacidade disponível' : 'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div>${plan.paceState === 'deficit' ? `<p class="context-note context-note--attention">A necessidade estimada até a prova passa a sua capacidade em ${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))} por semana. A proposta distribui só o que cabe na disponibilidade atual. <a class="btn ghost small" href="#metasCapacity">Revisar disponibilidade</a></p>` : ''}<div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || 'não avaliada'}${plan.missingEffort?.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? '' : 's'} sem esforço estimado` : ''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+    const planAllocationVisual = buildWeeklyAllocationBarVisual({
+      planItems: plan.items || [],
+      subjects: deps.getState()?.subjects || [],
+      weeklyCapacityMinutes: plan.weeklyAvailableMinutes || plan.weeklyPlannedMinutes || 0,
+    });
+    const planAllocationBarHtml = renderAllocationBar({
+      visual: planAllocationVisual,
+      weeklyCapacityMinutes: plan.weeklyAvailableMinutes || 0,
+      label: 'Distribuição proposta da capacidade semanal por disciplina',
+    });
+
+    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? '-' : '+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === 'deficit' ? 'ritmo insuficiente' : plan.paceState === 'surplus' ? 'capacidade disponível' : 'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div>${planAllocationBarHtml}${plan.paceState === 'deficit' ? `<p class="context-note context-note--attention">A necessidade estimada até a prova passa a sua capacidade em ${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))} por semana. A proposta distribui só o que cabe na disponibilidade atual. <a class="btn ghost small" href="#metasCapacity">Revisar disponibilidade</a></p>` : ''}<div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || 'não avaliada'}${plan.missingEffort?.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? '' : 's'} sem esforço estimado` : ''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
 
     const phase = plan.examPhase;
     const advice = plan.adaptiveAdvice;

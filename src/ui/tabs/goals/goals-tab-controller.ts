@@ -184,10 +184,10 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       formatDate: ctx.formatDatePt,
     });
     const distributionHtml = distribution
-      ? renderStudyDistribution(distribution, { escapeHtml: ctx.escapeHtml })
+      ? renderStudyDistribution(distribution, { escapeHtml: ctx.escapeHtml, subjects: state.subjects })
       : '';
     const alignmentHtml = alignment
-      ? renderPlanImpactAlignment(alignment, { escapeHtml: ctx.escapeHtml })
+      ? renderPlanImpactAlignment(alignment, { escapeHtml: ctx.escapeHtml, subjects: state.subjects })
       : '';
 
     return h(PlanExecutionCard, {
