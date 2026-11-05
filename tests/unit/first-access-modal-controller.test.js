@@ -20,6 +20,12 @@ test('first-access-modal-controller — inicializa fechado e responde a open/clo
   assert.equal(controller.isOpen(), false);
   controller.open();
   assert.equal(controller.isOpen(), true);
+  assert.equal(controller.getActiveView(), 'welcome');
+  controller.openSalesLanding();
+  assert.equal(controller.isOpen(), true);
+  assert.equal(controller.getActiveView(), 'landing');
+  controller.openPaywall('annual', 'Simulador');
+  assert.equal(controller.getActiveView(), 'paywall');
   controller.close();
   assert.equal(controller.isOpen(), false);
 });

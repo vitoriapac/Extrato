@@ -11,6 +11,7 @@ import {
 import { createSaaSAuthService } from '../../src/auth/saas-auth-service.js';
 import { PaywallModal } from '../../src/ui/components/PaywallModal.js';
 import { AuthAccountModal } from '../../src/ui/components/AuthAccountModal.js';
+import { SalesLandingPage } from '../../src/ui/components/SalesLandingPage.js';
 
 test('resolveEntitlements — perfil nulo ou ausente retorna tier free com limites calibrados (8 disciplinas, 1 concurso, 30 flashcards)', () => {
   const result = resolveEntitlements(null);
@@ -200,4 +201,17 @@ test('PaywallModal e AuthAccountModal — renderizam sem emojis e com preços/li
 
   assert.ok(authHtml.includes('Receber link de acesso'));
   assert.ok(!/\p{Extended_Pictographic}/u.test(authHtml));
+
+  const landingHtml = renderToString(
+    h(SalesLandingPage, {
+      onStartFreeApp: () => {},
+      onStartLiveDemo: () => {},
+      onSelectProPlan: () => {},
+    })
+  );
+
+  assert.ok(landingHtml.includes('Pare de estudar no escuro'));
+  assert.ok(landingHtml.includes('R$ 14,90'));
+  assert.ok(landingHtml.includes('R$ 19,90'));
+  assert.ok(!/\p{Extended_Pictographic}/u.test(landingHtml));
 });

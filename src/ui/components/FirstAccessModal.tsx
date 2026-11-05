@@ -8,6 +8,7 @@ export interface FirstAccessModalProps {
   onStartGuidedPlan: () => void;
   onStartDemo: () => void;
   onExploreManually?: () => void;
+  onOpenSalesLanding?: () => void;
 }
 
 export function FirstAccessModal({
@@ -16,6 +17,7 @@ export function FirstAccessModal({
   onStartGuidedPlan,
   onStartDemo,
   onExploreManually,
+  onOpenSalesLanding,
 }: FirstAccessModalProps) {
   if (!open) return null;
 
@@ -113,8 +115,8 @@ export function FirstAccessModal({
           </article>
         </div>
 
-        {/* Rodapé: Opção Manual */}
-        <footer className="pt-2 border-t border-border-subtle flex items-center justify-between">
+        {/* Rodapé: Opção Manual e Página de Apresentação */}
+        <footer className="pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2">
           <button
             type="button"
             onClick={handleExploreManually}
@@ -123,6 +125,16 @@ export function FirstAccessModal({
           >
             Configurar manualmente ou explorar livremente
           </button>
+          {onOpenSalesLanding && (
+            <button
+              type="button"
+              onClick={onOpenSalesLanding}
+              className="text-xs font-medium text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs"
+              aria-label="Ver apresentação completa e planos Free e Pro"
+            >
+              Ver apresentação e planos (Free / Pro)
+            </button>
+          )}
         </footer>
       </div>
     </Dialog>

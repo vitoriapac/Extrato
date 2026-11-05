@@ -4037,9 +4037,10 @@
         "../../src/domain/billing/entitlements.js",
         "../../src/auth/saas-auth-service.js",
         "../../src/ui/components/PaywallModal.js",
-        "../../src/ui/components/AuthAccountModal.js"
+        "../../src/ui/components/AuthAccountModal.js",
+        "../../src/ui/components/SalesLandingPage.js"
       ],
-      "staticTestDeclarations": 11,
+      "staticTestDeclarations": 12,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

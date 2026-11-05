@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studytrack-a9b571743e54';
+const CACHE_NAME = 'studytrack-fbe48bb3be56';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,15 +10,15 @@ const APP_SHELL = [
   './fonts/ibm-plex-sans-latin-600-normal.woff2',
   './fonts/ibm-plex-mono-latin-400-normal.woff2',
   './fonts/ibm-plex-mono-latin-600-normal.woff2',
-  './styles/tailwind.css?v=a9b571743e54',
-  './styles/app.css?v=a9b571743e54',
+  './styles/tailwind.css?v=fbe48bb3be56',
+  './styles/app.css?v=fbe48bb3be56',
   './styles/print.css',
   './src/theme-bootstrap.js',
-  './src/app.bundle.js?v=a9b571743e54',
-  './src/report.bundle.js?v=a9b571743e54',
-  './src/exam-catalog.bundle.js?v=a9b571743e54',
-  './src/help.bundle.js?v=a9b571743e54',
-  './src/demo.bundle.js?v=a9b571743e54',
+  './src/app.bundle.js?v=fbe48bb3be56',
+  './src/report.bundle.js?v=fbe48bb3be56',
+  './src/exam-catalog.bundle.js?v=fbe48bb3be56',
+  './src/help.bundle.js?v=fbe48bb3be56',
+  './src/demo.bundle.js?v=fbe48bb3be56',
   './src/pwa.js',
   './manifest.webmanifest',
   './icons/app-icon.svg',

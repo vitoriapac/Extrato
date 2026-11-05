@@ -7,7 +7,7 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const distRoot = resolve(projectRoot, 'dist');
 const skipCompile = process.argv.includes('--skip-compile');
 
-const ROOT_FILES = ['index.html', 'manifest.webmanifest', 'service-worker.js'];
+const ROOT_FILES = ['index.html', 'landing.html', 'manifest.webmanifest', 'service-worker.js'];
 
 const SRC_RUNTIME_FILES = [
   'src/theme-bootstrap.js',
