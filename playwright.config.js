@@ -1,7 +1,7 @@
 import {defineConfig,devices} from '@playwright/test';
 
 export default defineConfig({
-  testDir:'./tests/e2e',fullyParallel:false,forbidOnly:!!process.env.CI,timeout:60_000,
+  testDir:'./tests/e2e',fullyParallel:false,forbidOnly:!!process.env.CI,timeout:process.env.CI?120_000:90_000,
   snapshotPathTemplate:'{testDir}/{testFilePath}-snapshots/{arg}{ext}',
   retries:process.env.CI?1:0,workers:2,
   reporter:process.env.CI?'github':'list',

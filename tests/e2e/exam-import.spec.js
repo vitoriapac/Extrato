@@ -36,9 +36,15 @@ test('abre, cancela e importa edital sem duplicar', async ({ page }) => {
 test('seleção parcial controla os tópicos importados', async ({ page }) => {
   await openExamImport(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
-  const topics = page.locator('[data-exam-topic]');
-  const total = await topics.count();
-  for (let i = 1; i < total; i++) await topics.nth(i).uncheck();
+  const subjects = page.locator('[data-exam-subject]');
+  const subjectTotal = await subjects.count();
+  for (let i = 1; i < subjectTotal; i++) await subjects.nth(i).uncheck();
+  const firstSubjectTopics = page
+    .locator('.exam-subject-choice')
+    .first()
+    .locator('[data-exam-topic]');
+  const topicTotal = await firstSubjectTopics.count();
+  for (let i = 1; i < topicTotal; i++) await firstSubjectTopics.nth(i).uncheck();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(page.locator('#examImportContent')).toContainText('1tópicos novos');
 });

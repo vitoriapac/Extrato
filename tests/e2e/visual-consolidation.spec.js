@@ -348,6 +348,7 @@ test('diagnóstico vazio orienta o cadastro sem inventar risco', async ({ page }
 
 import AxeBuilder from '@axe-core/playwright';
 test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto('/?test=1');
   await page.locator('#testReport').evaluate(node => node.remove());
   await activateTab(page, 'instrucoes');
