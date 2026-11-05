@@ -4032,9 +4032,14 @@
       "imports": [
         "node:test",
         "node:assert/strict",
-        "../../src/domain/billing/entitlements.js"
+        "preact",
+        "preact-render-to-string",
+        "../../src/domain/billing/entitlements.js",
+        "../../src/auth/saas-auth-service.js",
+        "../../src/ui/components/PaywallModal.js",
+        "../../src/ui/components/AuthAccountModal.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 11,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

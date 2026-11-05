@@ -270,14 +270,13 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ## 4. Status de Implementação e Cronograma de Lançamento
 
-### 4.1. Fundações Concluídas no Cliente (Fases 1 a 4 do Plano Master)
+### 4.1. Fundações Concluídas no Cliente e Servidor (Fases 1 a 4 do Plano Master)
 
-> [!NOTE]
-> `entitlements.ts` e `cloud-saas-provider.ts` são módulos preparatórios, cobertos por testes unitários, mas ainda sem consumidor na interface. Nenhum recurso é bloqueado por plano hoje.
-
-- [x] **Motor de Entitlements & Plan Tiers:** [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) implementa regras puras para `free`, `pro` e `mentor` com limites de matérias ativas, simulados/mês e feature gates.
+- [x] **Motor de Entitlements, Precificação & Limites Calibrados:** [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) implementa regras puras para `free` (até **8 disciplinas ativas**, **1 concurso ativo** e **30 flashcards** no Caderno de Erros, além de seleção das 8 matérias de maior peso no catálogo do Onboarding via `partitionOnboardingSubjectsByEntitlement`), `pro` (Mensal **R$ 19,90/mês** e Anual **R$ 14,90/mês — R$ 178,80/ano** no PIX com 25% de economia) e `mentor`, mantendo o Modo Demonstração (`isDemoMode: true`) 100% liberado para degustação.
+- [x] **Autenticação, Sessão e Checkout PIX (AbacatePay):** [`src/auth/saas-auth-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/auth/saas-auth-service.ts) e modais declarativos [`src/ui/components/PaywallModal.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/PaywallModal.tsx) e [`src/ui/components/AuthAccountModal.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/AuthAccountModal.tsx) prontos com Magic Link, Google OAuth e disparo de cobrança PIX.
+- [x] **Infraestrutura Supabase + AbacatePay Pronta para Deploy:** Schema SQL com RLS em [`supabase/migrations/20261105000000_initial_saas_schema.sql`](file:///c:/Users/vitor/Documents/Extrato/supabase/migrations/20261105000000_initial_saas_schema.sql) e Edge Functions em `supabase/functions/` (`state-sync`, `abacatepay-checkout` e `abacatepay-webhook`).
+- [x] **Empacotamento Fechado de Produção (`dist/`):** [`scripts/build-prod.mjs`](file:///c:/Users/vitor/Documents/Extrato/scripts/build-prod.mjs) (`npm run build:prod`) gera a pasta `dist/` com bundles minificados, zero arquivos `.ts`/`.tsx` expostos e cabeçalhos de segurança para **Cloudflare Pages** (`_headers`) e **Vercel** ([`vercel.json`](file:///c:/Users/vitor/Documents/Extrato/vercel.json)).
 - [x] **Conector de Nuvem SaaS Desacoplado:** [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) com contratos de push/pull com debounce, verificação de versão remota e fallback local seguro.
-- [x] **Recursos de Alto Valor do Plano Pro:** Simulador "E se?", Modo Reta Final, Edital Verticalizado com parser de PDF, Ciclo de Estudos flexível, Análise de Fadiga/Energia e Caderno de Erros com Repetição Espaçada.
 
 ### 4.2. Cronograma Executivo de Lançamento na Nuvem (Infraestrutura)
 

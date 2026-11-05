@@ -14,6 +14,7 @@ export default [
       'playwright-report/**',
       'blob-report/**',
       'dist/**',
+      'supabase/**',
     ],
   },
   // Arquivos JavaScript e TypeScript padrão

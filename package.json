@@ -7,6 +7,7 @@
   "description": "Painel local para planejamento, revisao e acompanhamento de estudos.",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:prod": "node scripts/build-prod.mjs",
     "format": "prettier --write src scripts tests",
     "check:format": "prettier --check src scripts tests",
     "lint": "eslint .",
