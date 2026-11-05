@@ -6,6 +6,7 @@ import {
   type SimulationItem,
   type SimulationViewModel,
 } from './SimulationLogTable.js';
+import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 
 export interface QuestionsControllerOptions {
   state: {
@@ -113,6 +114,8 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
         errorCategories: opts.errorCategories,
         getViewModel: opts.questionViewModel,
         getCategorizedErrors: opts.questionCategorizedErrors,
+        getSubjectColorSlot: (subId?: string | null) =>
+          subjectColorOf({ id: subId || '' }, opts.state.subjects || []),
         subjectOptionsHtml,
         topicOptionsHtml,
         footerHtml,
@@ -166,6 +169,7 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
         isMobile,
         getViewModel,
         getSubjectOptionsHtml: opts.getSubjectOptionsHtml || (() => ''),
+        subjects: opts.state.subjects || [],
         footerHtml,
       })
     );

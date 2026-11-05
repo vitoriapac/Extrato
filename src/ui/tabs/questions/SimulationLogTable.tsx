@@ -1,6 +1,9 @@
 import type { JSX } from 'preact';
 import { formatDecimal } from '../../../core/format-number.js';
 import { Icon } from '../../primitives/icon.js';
+import { buildSimulationBreakdownVisual } from '../../../domain/practice/practice-visual-models.js';
+import { SimulationBreakdownBarChart } from '../../primitives/charts/SimulationBreakdownBarChart.js';
+import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 
 export interface SimulationBreakdownItem {
   id: string;
@@ -35,6 +38,7 @@ export interface SimulationLogTableProps {
   isMobile?: boolean;
   getViewModel: (sim: SimulationItem) => SimulationViewModel;
   getSubjectOptionsHtml: (selectedSubjectId?: string | null) => string;
+  subjects?: any[];
   footerHtml?: string;
 }
 
@@ -47,6 +51,7 @@ export function SimulationLogTable({
   isMobile = false,
   getViewModel,
   getSubjectOptionsHtml,
+  subjects = [],
   footerHtml = '',
 }: SimulationLogTableProps): JSX.Element {
   if (simulations.length === 0) {
@@ -216,16 +221,33 @@ export function SimulationLogTable({
                 <td colSpan={7}>
                   <div class="breakdown-box">
                     <strong class="breakdown-title">Desempenho por disciplina</strong>
+                    {sim.breakdown && sim.breakdown.length > 0 && (
+                      <SimulationBreakdownBarChart
+                        visual={buildSimulationBreakdownVisual({
+                          breakdownItems: sim.breakdown,
+                          subjects: subjects || [],
+                          overallScore: vm.score,
+                        })}
+                        className="mb-3"
+                      />
+                    )}
                     <div class="breakdown-list">
                       {(sim.breakdown || []).map(row => {
                         const total = Number(row.total) || 0;
                         const correct = Number(row.correct) || 0;
                         const accuracy = total ? Math.round((correct / total) * 100) : null;
+                        const colorSlot = subjectColorOf({ id: row.subjectId || '' }, subjects || []);
 
                         return (
                           <div key={row.id} class="breakdown-line">
                             <label class="breakdown-subject">
-                              <span>Disciplina</span>
+                              <span class="flex items-center gap-1.5">
+                                <span
+                                  class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
+                                  aria-hidden="true"
+                                />
+                                Disciplina
+                              </span>
                               <select
                                 class="select-control"
                                 data-delegated-change={`updateBreakdownRow('${sim.id}','${row.id}','subjectId',this.value)`}

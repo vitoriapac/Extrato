@@ -260,6 +260,10 @@ export { PedagogicalMatrixChart } from './PedagogicalMatrixChart.js';
 export { GroupedBarChart, type GroupedBarChartProps } from './GroupedBarChart.js';
 export { AllocationBar, type AllocationBarProps } from './AllocationBar.js';
 export { PhaseRoadmapTimeline, type PhaseRoadmapTimelineProps } from './PhaseRoadmapTimeline.js';
+export { WeeklyTrendChart, type WeeklyTrendChartProps } from './WeeklyTrendChart.js';
+export { ErrorParetoChart, type ErrorParetoChartProps } from './ErrorParetoChart.js';
+export { SimulationTrendChart, type SimulationTrendChartProps } from './SimulationTrendChart.js';
+export { SimulationBreakdownBarChart, type SimulationBreakdownBarChartProps } from './SimulationBreakdownBarChart.js';
 
 import { StackedColumnChart, StackedColumnChartProps } from './StackedColumnChart.js';
 import { DonutChart, DonutChartProps } from './DonutChart.js';
@@ -268,6 +272,10 @@ import { PedagogicalMatrixChart, PedagogicalMatrixChartProps } from './Pedagogic
 import { GroupedBarChart, GroupedBarChartProps } from './GroupedBarChart.js';
 import { AllocationBar, AllocationBarProps } from './AllocationBar.js';
 import { PhaseRoadmapTimeline, PhaseRoadmapTimelineProps } from './PhaseRoadmapTimeline.js';
+import { WeeklyTrendChart, WeeklyTrendChartProps } from './WeeklyTrendChart.js';
+import { ErrorParetoChart, ErrorParetoChartProps } from './ErrorParetoChart.js';
+import { SimulationTrendChart, SimulationTrendChartProps } from './SimulationTrendChart.js';
+import { SimulationBreakdownBarChart, SimulationBreakdownBarChartProps } from './SimulationBreakdownBarChart.js';
 
 export const renderStackedColumnChart = (props: StackedColumnChartProps) => render(h(StackedColumnChart, props));
 export const renderDonutChart = (props: DonutChartProps) => render(h(DonutChart, props));
@@ -276,3 +284,7 @@ export const renderPedagogicalMatrixChart = (props: PedagogicalMatrixChartProps)
 export const renderGroupedBarChart = (props: GroupedBarChartProps) => render(h(GroupedBarChart, props));
 export const renderAllocationBar = (props: AllocationBarProps) => render(h(AllocationBar, props));
 export const renderPhaseRoadmapTimeline = (props: PhaseRoadmapTimelineProps) => render(h(PhaseRoadmapTimeline, props));
+export const renderWeeklyTrendChart = (props: WeeklyTrendChartProps) => render(h(WeeklyTrendChart, props));
+export const renderErrorParetoChart = (props: ErrorParetoChartProps) => render(h(ErrorParetoChart, props));
+export const renderSimulationTrendChart = (props: SimulationTrendChartProps) => render(h(SimulationTrendChart, props));
+export const renderSimulationBreakdownBarChart = (props: SimulationBreakdownBarChartProps) => render(h(SimulationBreakdownBarChart, props));

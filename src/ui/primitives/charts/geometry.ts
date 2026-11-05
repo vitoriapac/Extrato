@@ -436,3 +436,165 @@ export function phaseRoadmapGeometry(
     nodes,
   };
 }
+
+export interface WeeklyTrendPointGeomInput {
+  label: string;
+  resolved: number;
+  accuracy: number | null;
+}
+
+/** Layout for Weekly Trend chart: accuracy line (0..100%) + volume bars on the bottom. */
+export function weeklyTrendGeometry(
+  points: WeeklyTrendPointGeomInput[],
+  maxResolved = 50,
+  {
+    width = 500,
+    height = 160,
+    padLeft = 30,
+    padRight = 20,
+    padTop = 15,
+    padBottom = 25,
+  }: {
+    width?: number;
+    height?: number;
+    padLeft?: number;
+    padRight?: number;
+    padTop?: number;
+    padBottom?: number;
+  } = {}
+) {
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+  const n = points.length;
+  const step = n > 1 ? plotW / (n - 1) : 0;
+  const barW = Math.max(6, Math.min(24, n > 0 ? (plotW / n) * 0.45 : 12));
+
+  // O volume de questões ocupa os 40% inferiores do gráfico
+  const maxBarH = plotH * 0.4;
+  const ceilingResolved = Math.max(1, maxResolved);
+
+  const xFor = (index: number) => +(padLeft + (n === 1 ? plotW / 2 : index * step)).toFixed(1);
+  const yForAccuracy = (acc: number) => +(padTop + plotH - (Math.max(0, Math.min(100, acc)) / 100) * plotH).toFixed(1);
+
+  const items = points.map((p, idx) => {
+    const x = xFor(idx);
+    const y = p.accuracy !== null ? yForAccuracy(p.accuracy) : null;
+    const barH = Math.max(p.resolved > 0 ? 3 : 0, +((p.resolved / ceilingResolved) * maxBarH).toFixed(1));
+    const barX = +(x - barW / 2).toFixed(1);
+    const barY = +(padTop + plotH - barH).toFixed(1);
+
+    return {
+      index: idx,
+      label: p.label,
+      resolved: p.resolved,
+      accuracy: p.accuracy,
+      x,
+      y,
+      barX,
+      barY,
+      barW,
+      barH,
+    };
+  });
+
+  const validLinePoints = items.filter(it => it.y !== null);
+  let pathD = '';
+  if (validLinePoints.length > 0) {
+    pathD = `M ${validLinePoints[0].x} ${validLinePoints[0].y}`;
+    for (let i = 1; i < validLinePoints.length; i++) {
+      pathD += ` L ${validLinePoints[i].x} ${validLinePoints[i].y}`;
+    }
+  }
+
+  return {
+    width,
+    height,
+    plotW,
+    plotH,
+    padLeft,
+    padRight,
+    padTop,
+    padBottom,
+    items,
+    pathD,
+  };
+}
+
+export interface SimulationTrendPointGeomInput {
+  name: string;
+  date: string;
+  score: number;
+  onTarget: boolean;
+  correct?: number;
+  total?: number;
+}
+
+/** Layout for Simulation Trend chart: score line vs target score benchmark. */
+export function simulationTrendGeometry(
+  simulations: SimulationTrendPointGeomInput[],
+  targetScore = 80,
+  {
+    width = 560,
+    height = 160,
+    padLeft = 35,
+    padRight = 20,
+    padTop = 15,
+    padBottom = 25,
+  }: {
+    width?: number;
+    height?: number;
+    padLeft?: number;
+    padRight?: number;
+    padTop?: number;
+    padBottom?: number;
+  } = {}
+) {
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+  const n = simulations.length;
+  const step = n > 1 ? plotW / (n - 1) : 0;
+
+  const xFor = (index: number) => +(padLeft + (n === 1 ? plotW / 2 : index * step)).toFixed(1);
+  const yFor = (pct: number) => +(padTop + plotH - (Math.max(0, Math.min(100, pct)) / 100) * plotH).toFixed(1);
+
+  const points = simulations.map((sim, idx) => {
+    const x = xFor(idx);
+    const y = yFor(sim.score);
+    return {
+      index: idx,
+      name: sim.name,
+      date: sim.date,
+      score: sim.score,
+      onTarget: sim.onTarget,
+      correct: sim.correct,
+      total: sim.total,
+      x,
+      y,
+    };
+  });
+
+  let pathD = '';
+  if (points.length > 0) {
+    pathD = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      pathD += ` L ${points[i].x} ${points[i].y}`;
+    }
+  }
+
+  const targetY = yFor(targetScore);
+
+  return {
+    width,
+    height,
+    plotW,
+    plotH,
+    padLeft,
+    padRight,
+    padTop,
+    padBottom,
+    targetScore,
+    targetY,
+    points,
+    pathD,
+  };
+}

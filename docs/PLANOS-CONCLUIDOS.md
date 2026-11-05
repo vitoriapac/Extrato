@@ -736,7 +736,28 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 18. Rastreabilidade de Arquitetura e Governança
+## 18. Modernização Visual da Aba de Questões e Simulados com Cores de Disciplinas
+
+- **Objetivo Concluído:** Expandir os componentes visuais avançados para a aba de Questões e Simulados (`#panel-questoes`), integrando gráficos responsivos SVG, paleta cromática semântica das disciplinas (`--subject-1` a `--subject-8`), curva contínua de evolução, análise de falhas em Pareto 80/20, acompanhamento de simulados vs linha de aprovação e raio-x detalhado por disciplina.
+- **Módulos Criados/Atualizados:**
+  - `src/domain/practice/practice-visual-models.ts`: construtores puramente determinísticos de agregação visual de prática (`buildSubjectWeeklyTrendVisual`, `buildErrorParetoVisual`, `buildSimulationTrendVisual`, `buildSimulationBreakdownVisual`).
+  - `src/ui/primitives/charts/geometry.ts`: layouts geométricos `weeklyTrendGeometry` e `simulationTrendGeometry`.
+  - `src/ui/primitives/charts/WeeklyTrendChart.tsx`: gráfico semanal de 8 semanas com colunas de volume de questões na cor da disciplina (`subject-bg-X`) e curva contínua de taxa de acerto (`subject-stroke-X`, `subject-fill-X`), com KPIs de tendência e volume.
+  - `src/ui/primitives/charts/ErrorParetoChart.tsx`: gráfico de Pareto (80/20) para causas de falhas, com identificação destacada da causa raiz dominante, badges de itens vitais e marcadores acumulados.
+  - `src/ui/primitives/charts/SimulationTrendChart.tsx`: gráfico de evolução temporal de notas de simulados com cards de KPIs (Média recente, Melhor nota, Último simulado com delta `+X p.p.` e Simulados na meta), linha tracejada de meta (`metaAprovacao`, 80%) e pontos interativos com tooltips detalhados.
+  - `src/ui/primitives/charts/SimulationBreakdownBarChart.tsx`: gráfico horizontal de raio-x das matérias dentro da linha de detalhe do simulado contra a linha vertical da média geral da prova.
+  - `src/ui/tabs/questions/QuestionLogTable.tsx` e `SimulationLogTable.tsx`: integração de swatches de cor (`subject-bg-X`) por disciplina nas tabelas de questões e simulados (desktop e mobile).
+  - `src/ui/tabs/questions/simulations-tab-controller.ts`: orquestração do `SimulationTrendChart` no topo da seção de simulados (`#simuladosEvolutionSlot`).
+  - `src/ui/renderers/question-analytics-renderer.ts` e `error-analysis-renderer.ts`: integração de `WeeklyTrendChart`, `ErrorParetoChart` e barras de tópicos coloridas.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **76.91s** com **1.315 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Auditoria de Tiers: 362 arquivos classificados e auditados em `tests/config/test-tiers.json`.
+  - Suíte de Testes Adicionada: `tests/unit/practice-visual-charts.test.js` (11 testes unitários verdes em ~370ms).
+
+---
+
+## 19. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

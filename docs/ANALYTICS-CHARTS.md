@@ -155,4 +155,49 @@ Revisar e confirmar cria nova versão com mudanças, evidências e prontidão co
 - **Metas de Acerto por Disciplina (`#subjectTargetEditor`):** Cada linha da tabela agora apresenta o swatch de cor da disciplina ao lado da caixa de seleção e nome, harmonizando com os gráficos da aba Desempenho.
 - **Configuração da Prova por Disciplina (`.exam-subject-config`):** Cada disciplina expansível recebe seu swatch oficial `subject-bg-X`, facilitando a identificação imediata ao revisar pesos e prioridades.
 
+## Gráficos Visuais da Aba de Questões e Simulados (Modernização Visual)
+
+### 1. Tendência Semanal da Matéria (Curva de Precisão + Colunas de Volume)
+- **Localização:** Aba Questões e Simulados → Análise da disciplina → **Tendência semanal — últimas 8 semanas** (`#subjectWeeklyTrend`).
+- **Propósito:** Mostrar a evolução da taxa de acerto (%) ao longo das últimas 8 semanas combinada com as barras verticais de volume de questões resolvidas por semana, na cor oficial da disciplina selecionada.
+- **Estrutura:**
+  - *Colunas de Volume:* Barras verticais semitransparentes na base (`subject-bg-X`) representando a quantidade de exercícios concluídos em cada semana.
+  - *Curva de Precisão:* Linha vetorial contínua conectando a taxa de acerto semanal (`subject-stroke-X`), com pontos de destaque (`subject-fill-X`) e rótulos de percentual.
+  - *KPIs do Topo:* Card com a direção da tendência (Evolução positiva, Estável ou Sob atenção com ícones Tabler), taxa média recente e volume total praticado.
+- **Acessibilidade:** Suporte completo a navegação por teclado, tooltips descritivos via `<title>` e contraste WCAG AA.
+
+### 2. Distribuição de Falhas e Pareto 80/20 (Error Pareto Chart)
+- **Localização:** Aba Questões e Simulados → Análise da disciplina → **Perfil de erros categorizados** (`#subjectErrorProfile`).
+- **Propósito:** Expor o princípio de Pareto (80/20) sobre as causas de erro (interpretação, lacuna teórica, desatenção, gestão de tempo, etc.), apontando a causa raiz e as categorias responsáveis por 80% das falhas.
+- **Estrutura:**
+  - *Causa Principal:* Badge destacado com ícone Tabler `alert-triangle` identificando a causa raiz dominante.
+  - *Barras Horizontais:* Progresso de cada categoria com badge de alerta "Vital (80/20)" nas causas que acumulam até 80% do total de erros.
+  - *Marcador de Acumulado:* Traço vertical na barra marcando o percentual acumulado e texto explícito `acumulado X%`.
+  - *Resumo de Pareto:* Texto explicativo destacando a concentração: *"As X primeiras categorias somam Y% dos erros."*
+  - *Deltas vs. Período Anterior:* Variação explícita no formato `+X erros vs. período anterior`.
+
+### 3. Trajetória de Simulados vs. Meta de Aprovação (Simulation Trend Chart)
+- **Localização:** Aba Questões e Simulados → Seção **Simulados** (`#simuladosEvolutionSlot`).
+- **Propósito:** Visualizar a curva de notas alcançadas nos simulados ao longo do tempo em comparação direta com a linha de corte da meta de aprovação (`metaAprovacao`, default 80%).
+- **Estrutura:**
+  - *Cards de KPIs Rápidos:* 4 métricas de alto nível (Média Recente, Melhor Nota, Último Simulado com delta `+X p.p.` e indicador de simulados na meta `X de Y`).
+  - *Linha de Meta:* Linha tracejada horizontal na nota alvo (`metaAprovacao%`) em tom de destaque semântico.
+  - *Curva de Aproveitamento:* Linha vetorial com marcadores coloridos para cada simulado (verde para nota ≥ meta, âmbar para abaixo da meta), tooltip com data/nome/acertos e rótulo de nota.
+  - *Exibição Inteligente:* Requer ao menos 2 simulados registrados para traçar a evolução; oculta-se suavemente caso haja histórico insuficiente.
+
+### 4. Raio-X do Simulado por Disciplina (Simulation Breakdown Bar Chart)
+- **Localização:** Aba Questões e Simulados → Seção **Simulados** → Linha expansível de detalhamento da prova.
+- **Propósito:** Contrastar o desempenho obtido em cada matéria dentro da prova contra a média geral do próprio simulado.
+- **Estrutura:**
+  - *Barra Horizontal por Matéria:* Preenchida na cor oficial da disciplina (`subject-bg-X`) e dimensionada pelo aproveitamento percentual na prova.
+  - *Marcador de Corte Vertical:* Traço vertical indicando a média global da prova na barra de cada disciplina.
+  - *Gaps em Pontos Percentuais:* Badge indicando a distância da matéria para a média do simulado (`+X p.p.` em verde ou `-X p.p.` em âmbar).
+  - *Destaques:* Chips identificando a matéria de maior pontuação (*Destaque*) e a matéria com menor nota (*Atenção*).
+
+### 5. Harmonização Cromática nas Listagens e Tabelas
+- **Histórico de Questões (`QuestionLogTable`):** Swatches circulares (`subject-bg-X`) identificando a matéria em cada linha da tabela desktop e cards mobile.
+- **Histórico de Simulados (`SimulationLogTable`):** Swatches coloridos em cada linha do detalhamento de matérias.
+- **Desempenho dos Tópicos (`#topicPerformanceBars`):** Barras de progresso e chips dos tópicos utilizam a cor oficial da disciplina mãe (`subject-bg-X`).
+
+
 

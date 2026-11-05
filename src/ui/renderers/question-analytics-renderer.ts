@@ -1,5 +1,8 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
+import { buildSubjectWeeklyTrendVisual } from '../../domain/practice/practice-visual-models.js';
+import { renderWeeklyTrendChart } from '../primitives/charts/charts.js';
+
 export function renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend }: any) {
   return (
     [
@@ -23,6 +26,7 @@ export function renderTopicQuestionPerformance({
   masteryForTopic,
   renderFooter,
   visibleLimit,
+  colorSlot,
   escapeHtml,
 }: any) {
   const tabs = `<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${mode === 'with-data' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${mode === 'insufficient' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${mode === 'without-data' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${mode === 'all' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
@@ -36,7 +40,8 @@ export function renderTopicQuestionPerformance({
     .map((topic: any) => {
       const mastery = masteryForTopic(topic.id),
         width = topic.accuracy === null ? 0 : topic.accuracy;
-      return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${mastery.value == null ? 'aguardando dados' : mastery.value + '/100'}</div></div><div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? '—' : formatDecimal(topic.accuracy) + '%'}</div></div>`;
+      const fillClass = colorSlot ? `subject-bg-${colorSlot}` : `performance-fill ${topic.classification.key}`;
+      return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${mastery.value == null ? 'aguardando dados' : mastery.value + '/100'}</div></div><div class="performance-track"><div class="${fillClass} rounded-full" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? '—' : formatDecimal(topic.accuracy) + '%'}</div></div>`;
     })
     .join('');
   return (
@@ -55,8 +60,14 @@ export function renderTopicQuestionPerformance({
   );
 }
 
-export function renderWeeklyQuestionTrend({ weeks, trend, formatDate }: any) {
-  return `<div class="trend-grid">${weeks.map((week: any) => `<div class="trend-week ${week.insufficientData ? 'insufficient' : ''}"><span>${formatDate(week.start).slice(0, 5)}</span><strong>${week.insufficientData ? '—' : formatDecimal(week.accuracy) + '%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? '' : ` · ${trend.delta > 0 ? '+' : ''}${formatDecimal(trend.delta)} p.p.`}</div>`;
+export function renderWeeklyQuestionTrend({ weeks = [], trend = {}, colorSlot = 1, formatDate }: any) {
+  const visual = buildSubjectWeeklyTrendVisual({
+    weeks,
+    trend,
+    colorSlot,
+    formatDate,
+  });
+  return renderWeeklyTrendChart({ visual });
 }
 
 export function renderQuestionErrorToolbar({ days, topicId, topics, escapeHtml, escapeAttr }: any) {

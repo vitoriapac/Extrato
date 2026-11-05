@@ -12,6 +12,7 @@ import { buildErrorAnalysisViewModel as defaultBuildErrorAnalysisViewModel } fro
 import { renderErrorAnalysis as defaultRenderErrorAnalysis } from '../../renderers/error-analysis-renderer.js';
 import { renderCollectionFooter as defaultRenderCollectionFooter } from '../../list-components.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 
 export interface QuestionAnalyticsControllerOptions {
   document: any;
@@ -165,6 +166,9 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
 
     const performanceVisible = getPerformanceVisible();
 
+    const activeSubject = subjects.find(subject => subject.id === currentSubjectId);
+    const currentSubjectColorSlot = activeSubject ? subjectColorOf(activeSubject, subjects) : 1;
+
     if (bars) {
       bars.innerHTML = renderTopicQuestionPerformance({
         mode: viewMode,
@@ -173,6 +177,7 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
         masteryForTopic: (id: string) => opts.topicMasteryIndex(currentSubjectId!, id),
         renderFooter: renderCollectionFooter,
         visibleLimit: performanceVisible,
+        colorSlot: currentSubjectColorSlot,
         escapeHtml: opts.escapeHtml,
       });
     }
@@ -181,6 +186,7 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
       weeklyEl.innerHTML = renderWeeklyQuestionTrend({
         weeks: weekly,
         trend,
+        colorSlot: currentSubjectColorSlot,
         formatDate: opts.formatDatePt,
       });
     }

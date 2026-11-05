@@ -133,6 +133,7 @@ flowchart TD
 - `src/domain/forecasts/what-if-simulator.ts`: simulação puramente em memória (`structuredCloneSafe`) para projetar variações de minutos/dia, foco e antecipação de prova.
 - `src/domain/planning/final-stretch-policy.ts`: política do Modo Reta Final com rebalanceamento 85/15 entre questões/revisão e teoria.
 - `src/domain/planning/planning-visual-models.ts`: modelos puros e determinísticos para os gráficos visuais de planejamento (barras agrupadas Planejado × Realizado, contraste Plano × Impacto, alocação contínua de capacidade e régua pedagógica de fases até a prova).
+- `src/domain/practice/practice-visual-models.ts`: modelos puros e determinísticos para os gráficos visuais de questões e simulados (tendência semanal contínua com colunas de volume, distribuição de falhas em Pareto 80/20, trajetória de simulados vs linha de meta e raio-x por disciplina).
 - `src/domain/analytics/volatile-mastery.ts`: diagnóstico de ilusão de competência para tópicos com queda de retenção após 14 dias sem revisão.
 - `src/domain/analytics/plateau-detector.ts`: detecção pura de platô e estagnação de precisão em alto volume com prescrição metodológica.
 - `src/application/analytics/build-performance-trend-view-model.ts`: modelo de apresentação da tendência de acertos (8 baldes semanais), simulados, gap em relação à meta benchmark e resumo textual explicável.

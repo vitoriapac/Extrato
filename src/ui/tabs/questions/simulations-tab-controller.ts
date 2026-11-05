@@ -7,6 +7,8 @@ import { SimulatedRemediationModal } from '../../components/SimulatedRemediation
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { createErrorFlashcard } from '../../../domain/notebook/error-notebook-engine.js';
 import { runUndoable } from '../../undoable.js';
+import { buildSimulationTrendVisual } from '../../../domain/practice/practice-visual-models.js';
+import { renderSimulationTrendChart } from '../../primitives/charts/charts.js';
 
 export interface SimulationsTabControllerContext {
   document: Document;
@@ -181,6 +183,24 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   function renderSimulados(): void {
     const body = ctx.document.getElementById('simuladosBody');
     if (!body) return;
+
+    const evolutionSlot = ctx.document.getElementById('simuladosEvolutionSlot');
+    if (evolutionSlot) {
+      const simulations = ctx.state?.simulados || [];
+      const targetScore = Number(ctx.state?.metas?.metaAprovacao) || 80;
+      const trendVisual = buildSimulationTrendVisual({
+        simulations,
+        targetScore,
+      });
+
+      if (trendVisual.simulations.length >= 2) {
+        evolutionSlot.innerHTML = renderSimulationTrendChart({ visual: trendVisual });
+        evolutionSlot.hidden = false;
+      } else {
+        evolutionSlot.innerHTML = '';
+        evolutionSlot.hidden = true;
+      }
+    }
 
     const controller = createQuestionsController({
       state: ctx.state,

@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-292 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+293 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -243,6 +243,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/plateau-detector-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/plateau-detector.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/post-simulation-replan.test.js | node | Planejamento | critical | — | contract | none |
+| tests/unit/practice-visual-charts.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/preact-mount.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/preparation-signals.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/priority-history.test.js | node | Aplicação | critical | — | contract | none |

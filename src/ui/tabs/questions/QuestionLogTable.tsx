@@ -33,6 +33,7 @@ export interface QuestionLogTableProps {
   errorCategories: Record<string, { icon: string; label: string }>;
   getViewModel: (q: QuestionItem) => QuestionViewModel;
   getCategorizedErrors: (q: QuestionItem) => number;
+  getSubjectColorSlot?: (subjectId?: string | null) => number;
   subjectOptionsHtml?: string;
   topicOptionsHtml?: string;
   footerHtml?: string;
@@ -48,6 +49,7 @@ export function QuestionLogTable({
   errorCategories,
   getViewModel,
   getCategorizedErrors,
+  getSubjectColorSlot,
   subjectOptionsHtml = '',
   topicOptionsHtml = '',
   footerHtml = '',
@@ -212,6 +214,8 @@ export function QuestionLogTable({
           </button>
         );
 
+        const colorSlot = getSubjectColorSlot ? getSubjectColorSlot(q.subjectId) : null;
+
         return (
           <>
             {isMobile ? (
@@ -221,7 +225,15 @@ export function QuestionLogTable({
                     <div class="mobile-card-head">
                       <div>
                         <div class="mobile-card-date">{vm.date}</div>
-                        <div class="mobile-card-title">{vm.subject}</div>
+                        <div class="mobile-card-title flex items-center gap-1.5">
+                          {colorSlot && (
+                            <span
+                              class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{vm.subject}</span>
+                        </div>
                         <div class="mobile-card-subtitle">{vm.topic}</div>
                       </div>
                       <button
@@ -246,7 +258,15 @@ export function QuestionLogTable({
               <tr key={q.id} class="history-read-row history-desktop-row" data-id={q.id}>
                 <td>{vm.date}</td>
                 <td>
-                  <div class="row-primary">{vm.subject}</div>
+                  <div class="row-primary flex items-center gap-1.5">
+                    {colorSlot && (
+                      <span
+                        class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span>{vm.subject}</span>
+                  </div>
                 </td>
                 <td>
                   <div class="row-secondary">{vm.topic}</div>

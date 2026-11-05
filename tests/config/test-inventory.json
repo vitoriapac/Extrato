@@ -6777,6 +6777,37 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/practice-visual-charts.test.js",
+      "layer": "node",
+      "area": "Visual",
+      "areaBasis": "filename_hint",
+      "criticality": "visual",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/practice/practice-visual-models.js",
+        "../../src/ui/primitives/charts/charts.js"
+      ],
+      "staticTestDeclarations": 11,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/preact-mount.test.js",
       "layer": "node",
       "area": "Aplicação",
