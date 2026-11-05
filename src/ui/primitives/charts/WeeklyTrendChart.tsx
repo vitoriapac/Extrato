@@ -41,7 +41,7 @@ export function WeeklyTrendChart({
 
   return (
     <div
-      class={`chart-weekly-trend space-y-3 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`chart-weekly-trend chart-card-interactive space-y-3 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
       role="region"
       aria-label={label}
     >
@@ -123,7 +123,7 @@ export function WeeklyTrendChart({
               width={it.barW}
               height={it.barH}
               rx={2}
-              class={`subject-fill-${colorSlot} opacity-40 hover:opacity-75 transition-opacity`}
+              class={`subject-fill-${colorSlot} opacity-40 hover:opacity-75 transition-opacity chart-bar-interactive`}
             >
               <title>{`${it.label}: ${it.resolved} questões resolvidas`}</title>
             </rect>
@@ -163,7 +163,7 @@ export function WeeklyTrendChart({
                   fill="var(--surface-ground, #fff)"
                   stroke="var(--accent, #6366f1)"
                   stroke-width="2"
-                  class="cursor-pointer hover:r-5 transition-all"
+                  class="cursor-pointer hover:r-5 transition-all chart-point-interactive"
                 >
                   <title>{`${it.label}: ${it.accuracy}% de acerto (${it.resolved} questões)`}</title>
                 </circle>

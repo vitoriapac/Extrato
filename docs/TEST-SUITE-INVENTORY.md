@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-294 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+295 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -105,6 +105,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/adherence-target.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/alert-lifecycle.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/allocation-balance-view-model.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/amicro-chart-transitions.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/analytics-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-foundation.test.js | node | Aplicação | functional | — | contract | none |

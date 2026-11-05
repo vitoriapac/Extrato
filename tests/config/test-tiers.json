@@ -512,6 +512,11 @@
       "rationale": "Cálculo analítico do Balanço de Alocação de Tempo vs. Peso no Edital."
     },
     {
+      "file": "tests/unit/amicro-chart-transitions.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário para micro-transições e classes interativas dos componentes gráficos estilo Amicro."
+    },
+    {
       "file": "tests/unit/analytics-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

@@ -82,7 +82,7 @@ export function StackedColumnChart({
                 col.segments.map((seg, sIdx) => (
                   <rect
                     key={`seg-${col.date}-${sIdx}`}
-                    class={`chart-stacked-columns__bar subject-fill-${seg.colorSlot}`}
+                    class={`chart-stacked-columns__bar chart-bar-interactive subject-fill-${seg.colorSlot}`}
                     x={seg.x}
                     y={seg.y}
                     width={seg.width}

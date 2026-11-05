@@ -34,7 +34,7 @@ export function ActivityHeatmap({
 
   return (
     <div
-      class={`activity-heatmap-container space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`activity-heatmap-container chart-card-interactive space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
       role="region"
       aria-label="Mapa de calor de consistência e hábitos de estudo"
     >

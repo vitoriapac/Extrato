@@ -36,7 +36,7 @@ export function SimulationTrendChart({
 
   return (
     <div
-      class={`chart-simulation-trend space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`chart-simulation-trend chart-card-interactive space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
       role="region"
       aria-label={label}
     >
@@ -182,7 +182,7 @@ export function SimulationTrendChart({
                   fill="var(--surface-ground, #fff)"
                   stroke={ptColor}
                   stroke-width="2.5"
-                  class="cursor-pointer hover:r-6 transition-all"
+                  class="cursor-pointer hover:r-6 transition-all chart-point-interactive"
                 >
                   <title>{`${pt.name} (${pt.date}): ${pt.score}% (${pt.correct}/${pt.total})`}</title>
                 </circle>

@@ -39,7 +39,7 @@ export function GroupedBarChart({
 
   return (
     <div
-      class={`chart-grouped-bars space-y-3.5 ${className}`}
+      class={`chart-grouped-bars chart-card-interactive space-y-3.5 ${className}`}
       role="region"
       aria-label={label}
     >

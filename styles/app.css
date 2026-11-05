@@ -3249,5 +3249,139 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   border-color: var(--action-outline);
 }
 
+/* ==========================================================================
+   Micro-Transições e Animações Fluidas Inspiradas no Amicro (Preact + SVG Nativo)
+   ========================================================================== */
 
+:root {
+  --ease-amicro: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-smooth: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* 1. Elevação e Micro-Interação nos Cards de Gráficos */
+.chart-card-interactive,
+.chart-weekly-trend,
+.activity-heatmap-container,
+.chart-card-elevated {
+  transition: transform 0.24s var(--ease-amicro),
+              box-shadow 0.24s var(--ease-amicro),
+              border-color 0.2s ease;
+  will-change: transform, box-shadow;
+}
+
+.chart-card-interactive:hover,
+.chart-weekly-trend:hover,
+.activity-heatmap-container:hover,
+.chart-card-elevated:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.08), 0 4px 8px -4px rgba(0, 0, 0, 0.04);
+}
+
+:is(.dark, [data-theme="dark"]) .chart-card-interactive:hover,
+:is(.dark, [data-theme="dark"]) .chart-weekly-trend:hover,
+:is(.dark, [data-theme="dark"]) .activity-heatmap-container:hover,
+:is(.dark, [data-theme="dark"]) .chart-card-elevated:hover {
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* 2. Micro-Interações em Barras e Colunas SVG */
+.chart-bar-interactive {
+  transition: transform 0.2s var(--ease-amicro),
+              opacity 0.2s ease,
+              filter 0.2s ease;
+  transform-origin: bottom center;
+  cursor: pointer;
+}
+
+.chart-bar-interactive:hover {
+  opacity: 1 !important;
+  transform: scaleY(1.03);
+  filter: brightness(1.12);
+}
+
+/* 3. Micro-Interações em Pontos de Dados SVG */
+.chart-point-interactive {
+  transition: r 0.22s var(--ease-amicro),
+              stroke-width 0.22s var(--ease-amicro),
+              filter 0.22s var(--ease-amicro);
+  cursor: pointer;
+}
+
+.chart-point-interactive:hover {
+  r: 6 !important;
+  stroke-width: 3 !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+/* 4. Arcos do Donut Chart com Transição Fluida */
+.chart-donut__slice {
+  transition: stroke-width 0.25s var(--ease-amicro),
+              opacity 0.2s ease,
+              filter 0.25s var(--ease-amicro);
+  cursor: pointer;
+}
+
+.chart-donut__slice:hover {
+  stroke-width: 24 !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.18));
+}
+
+/* 5. Keyframes de Entrada Suave (Stagger Reveal) */
+@keyframes amicro-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes amicro-scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.amicro-reveal {
+  animation: amicro-fade-in 0.35s var(--ease-amicro) both;
+}
+
+.amicro-scale-reveal {
+  animation: amicro-scale-up 0.3s var(--ease-amicro) both;
+}
+
+/* 6. Respeito Rigoroso a prefers-reduced-motion (A11y / WCAG AA) */
+@media (prefers-reduced-motion: reduce) {
+  .chart-card-interactive,
+  .chart-weekly-trend,
+  .activity-heatmap-container,
+  .chart-card-elevated,
+  .chart-bar-interactive,
+  .chart-point-interactive,
+  .chart-donut__slice {
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .chart-card-interactive:hover,
+  .chart-weekly-trend:hover,
+  .activity-heatmap-container:hover,
+  .chart-card-elevated:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .amicro-reveal,
+  .amicro-scale-reveal {
+    animation: none !important;
+  }
+}
 

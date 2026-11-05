@@ -33,7 +33,7 @@ export function ErrorParetoChart({
 
   return (
     <div
-      class={`chart-error-pareto space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`chart-error-pareto chart-card-interactive space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
       role="region"
       aria-label={label}
     >

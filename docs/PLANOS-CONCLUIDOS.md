@@ -795,7 +795,27 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 21. Rastreabilidade de Arquitetura e Governança
+## 21. Micro-Transições e Animações Fluidas nos Gráficos (Padrão Amicro Nativo)
+
+- **Objetivo Concluído:** Adaptar a essência de micro-interações, curvas de física spring e feedback fluido da biblioteca **Amicro** (`Subhan-code/Amicro--Micro-transitions-`) para a suíte de gráficos analíticos e cards de métricas do StudyTrack, de forma 100% nativa em **Preact 11 + Tailwind CSS v4 + SVG**, sem Framer Motion (`motion/react`) nem impacto no bundle.
+- **Módulos Criados/Atualizados:**
+  - `styles/app.css`: introdução das variáveis físicas de aceleração `--ease-amicro: cubic-bezier(0.16, 1, 0.3, 1)` e `--ease-spring`, classes de elevação interativa com sombra profunda e iluminação de borda (`.chart-card-interactive`), micro-interações em barras e colunas (`.chart-bar-interactive`), pontos de dados com efeito magnético (`.chart-point-interactive`), arcos dinâmicos (`.chart-donut__slice`), keyframes de revelação suave (`amicro-fade-in`, `amicro-scale-up`) e respeito estrito a `@media (prefers-reduced-motion: reduce)` (WCAG AA).
+  - `src/ui/primitives/charts/WeeklyTrendChart.tsx`: aplicação de `.chart-card-interactive`, `.chart-bar-interactive` e `.chart-point-interactive`.
+  - `src/ui/primitives/charts/SimulationTrendChart.tsx`: aplicação de `.chart-card-interactive` e `.chart-point-interactive`.
+  - `src/ui/primitives/charts/ErrorParetoChart.tsx`: elevação reativa `.chart-card-interactive`.
+  - `src/ui/primitives/charts/GroupedBarChart.tsx`: elevação reativa `.chart-card-interactive`.
+  - `src/ui/primitives/charts/StackedColumnChart.tsx`: barras interativas com crescimento e brilho `.chart-bar-interactive`.
+  - `src/ui/primitives/charts/ActivityHeatmap.tsx`: elevação do container `.chart-card-interactive` e ampliação com anel de foco.
+  - `tests/unit/amicro-chart-transitions.test.js`: 4 novos testes unitários garantindo que os componentes renderizam as classes interativas e preservam compatibilidade total com SSR no Node.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **62.56s** com **1.327 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Auditoria de Tiers: 364 arquivos classificados e auditados em `tests/config/test-tiers.json` e `tests/config/test-inventory.json`.
+  - Build reproduzível (`npm run build`): bundles atualizados e sincronizados.
+
+---
+
+## 22. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
