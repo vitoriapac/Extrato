@@ -3474,3 +3474,8 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   color: var(--heading, var(--ink));
   font-family: var(--font-data);
 }
+
+/* Ajuste refinado de espessura de traço para a iconografia Tabler Icons */
+.icon-tabler {
+  stroke-width: 1.5;
+}

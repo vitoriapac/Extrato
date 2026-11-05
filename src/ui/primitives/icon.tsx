@@ -14,7 +14,7 @@ export type IconProps = Omit<JSX.IntrinsicElements['svg'], 'stroke'> & {
 export function Icon({
   name,
   size = 16,
-  stroke = 2,
+  stroke = 1.5,
   class: className = '',
   'aria-label': ariaLabel,
   ...rest
@@ -57,7 +57,7 @@ export function renderIconSvg(
 ): string {
   const {
     size = 16,
-    stroke = options.strokeWidth ?? 2,
+    stroke = options.strokeWidth ?? 1.5,
     class: classProp,
     className: classNameProp,
     'aria-label': ariaLabel,
