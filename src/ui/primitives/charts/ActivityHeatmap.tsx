@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
+import { formatDecimal } from '../../../core/format-number.js';
 import type {
   ActivityCalendarHeatmapVisualModel,
   ActivityHoursHeatmapVisualModel,
@@ -115,14 +116,13 @@ export function ActivityHeatmap({
                 {/* Grid de células do calendário */}
                 <div
                   class="heatmap-grid"
-                  role="grid"
+                  role="region"
                   aria-label="Grade de consistência diária de estudos"
                 >
                   {calendarVisual.days.map(day => (
                     <button
                       key={`day-${day.date}`}
                       type="button"
-                      role="gridcell"
                       class={`heatmap-cell heat-${day.level} ${day.selected ? 'selected' : ''}`}
                       title={day.tooltip}
                       aria-label={day.tooltip}
@@ -213,7 +213,7 @@ export function ActivityHeatmap({
             <div class="p-2.5 rounded-lg bg-surface-ground border border-border-subtle">
               <span class="text-content-secondary text-[11px] block">Tempo Total Mapeado</span>
               <strong class="text-sm font-mono text-content-primary">
-                {Math.round((hoursVisual.totalStudyMinutes / 60) * 10) / 10}h
+                {formatDecimal(hoursVisual.totalStudyMinutes / 60, 1)}h
               </strong>
             </div>
           </div>

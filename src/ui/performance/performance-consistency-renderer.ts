@@ -47,7 +47,7 @@ export function renderPerformanceConsistency(
     const summaries = (timeline.subjectSummaries || [])
       .map(
         (sub: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${sub.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(sub.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatDecimal(sub.totalSeconds / 3600)}h <span class="text-micro font-sans opacity-75">(${sub.percentage}%)</span></div></li>`
+          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${sub.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(sub.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatDecimal(sub.totalSeconds / 3600)}h <span class="text-micro font-sans opacity-75">(${formatDecimal(sub.percentage)}%)</span></div></li>`
       )
       .join('');
 
@@ -87,7 +87,7 @@ export function renderPerformanceConsistency(
     const legend = distribution.slices
       .map(
         (slice: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${slice.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(slice.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatDecimal(slice.seconds / 3600)}h <span class="text-micro font-sans opacity-75">(${slice.percentage}%)</span></div></li>`
+          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${slice.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(slice.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatDecimal(slice.seconds / 3600)}h <span class="text-micro font-sans opacity-75">(${formatDecimal(slice.percentage)}%)</span></div></li>`
       )
       .join('');
 

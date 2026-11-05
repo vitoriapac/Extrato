@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import type { ErrorParetoVisualModel } from '../../../domain/practice/practice-visual-models.js';
+import { formatDecimal } from '../../../core/format-number.js';
 
 export interface ErrorParetoChartProps {
   visual: ErrorParetoVisualModel;
@@ -69,7 +70,7 @@ export function ErrorParetoChart({
           return (
             <div
               key={item.id}
-              class="group p-2 rounded-lg bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
+              class="error-profile-item group p-2 rounded-lg bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
             >
               <div class="flex items-center justify-between gap-2 mb-1 text-xs">
                 <div class="flex items-center gap-1.5 min-w-0">
@@ -94,7 +95,7 @@ export function ErrorParetoChart({
                     {item.count}
                   </span>
                   <span class="text-content-secondary font-mono text-[11px]">
-                    ({item.share}%)
+                    ({formatDecimal(item.share)}%)
                   </span>
                   {hasPrevious && item.delta !== null && (
                     <span
@@ -132,7 +133,7 @@ export function ErrorParetoChart({
 
               <div class="flex justify-between items-center text-[10px] text-content-secondary mt-1">
                 <span>Parcela relativa</span>
-                <span class="font-mono text-content-secondary">acumulado {item.cumulativeShare}%</span>
+                <span class="error-profile-cumulative-text font-mono text-content-secondary">acumulado {formatDecimal(item.cumulativeShare)}%</span>
               </div>
             </div>
           );

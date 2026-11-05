@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import type { WeeklyAllocationBarVisualModel } from '../../../domain/planning/planning-visual-models.js';
+import { formatDecimal } from '../../../core/format-number.js';
 
 export interface AllocationBarProps {
   visual: WeeklyAllocationBarVisualModel;
@@ -63,6 +64,7 @@ export function AllocationBar({
       <div
         class="h-3 w-full bg-surface-sunken rounded-full overflow-hidden flex shadow-inner"
         role="progressbar"
+        aria-label={label || 'Capacidade semanal alocada'}
         aria-valuenow={Math.min(100, Math.round((totalWeeklyMinutes / capacityTotal) * 100))}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -74,7 +76,7 @@ export function AllocationBar({
               key={s.subjectId}
               class={`h-full subject-bg-${s.colorSlot} transition-all duration-300 hover:brightness-110`}
               style={{ width: `${slicePct}%` }}
-              title={`${s.subjectName}: ${formatMinutes(s.minutes)} (${s.percentage}%)`}
+              title={`${s.subjectName}: ${formatMinutes(s.minutes)} (${formatDecimal(s.percentage)}%)`}
             />
           );
         })}
@@ -100,7 +102,7 @@ export function AllocationBar({
             />
             <span class="font-medium truncate max-w-[120px]">{s.subjectName}</span>
             <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
-            <span class="text-content-secondary text-[10px]">({s.percentage}%)</span>
+            <span class="text-content-secondary text-[10px]">({formatDecimal(s.percentage)}%)</span>
           </div>
         ))}
       </div>
@@ -110,28 +112,28 @@ export function AllocationBar({
         <div class="pt-2 border-t border-border-subtle">
           <div class="flex items-center justify-between text-[11px] font-medium text-content-secondary mb-2">
             <span>Mix Pedagógico Previsto</span>
-            <span>{mix.theoryPercentage}% T • {mix.questionsPercentage}% Q • {mix.reviewsPercentage}% R</span>
+            <span>{formatDecimal(mix.theoryPercentage)}% T • {formatDecimal(mix.questionsPercentage)}% Q • {formatDecimal(mix.reviewsPercentage)}% R</span>
           </div>
           <div class="h-1.5 w-full bg-surface-sunken rounded-full overflow-hidden flex">
             {mix.theoryPercentage > 0 && (
               <div
                 class="h-full bg-info-emphasis transition-all"
                 style={{ width: `${mix.theoryPercentage}%` }}
-                title={`Teoria: ${formatMinutes(mix.theoryMinutes)} (${mix.theoryPercentage}%)`}
+                title={`Teoria: ${formatMinutes(mix.theoryMinutes)} (${formatDecimal(mix.theoryPercentage)}%)`}
               />
             )}
             {mix.questionsPercentage > 0 && (
               <div
                 class="h-full bg-accent-emphasis transition-all"
                 style={{ width: `${mix.questionsPercentage}%` }}
-                title={`Questões: ${formatMinutes(mix.questionsMinutes)} (${mix.questionsPercentage}%)`}
+                title={`Questões: ${formatMinutes(mix.questionsMinutes)} (${formatDecimal(mix.questionsPercentage)}%)`}
               />
             )}
             {mix.reviewsPercentage > 0 && (
               <div
                 class="h-full bg-success-emphasis transition-all"
                 style={{ width: `${mix.reviewsPercentage}%` }}
-                title={`Revisões: ${formatMinutes(mix.reviewsMinutes)} (${mix.reviewsPercentage}%)`}
+                title={`Revisões: ${formatMinutes(mix.reviewsMinutes)} (${formatDecimal(mix.reviewsPercentage)}%)`}
               />
             )}
           </div>

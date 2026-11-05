@@ -75,7 +75,7 @@ export function DonutChart({
             stroke-dashoffset={item.dashoffset}
             transform={`rotate(-90 ${cx} ${cy})`}
           >
-            <title>{`${slice.subjectName}: ${formatDecimal(slice.seconds / 3600)}h (${slice.percentage}%)`}</title>
+            <title>{`${slice.subjectName}: ${formatDecimal(slice.seconds / 3600)}h (${formatDecimal(slice.percentage)}%)`}</title>
           </circle>
         );
       })}
