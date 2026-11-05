@@ -22,6 +22,10 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 | Tempo de Estudo por Disciplina | Desempenho → Consistência | `buildStudyDistributionModel`, `DonutChart` | Sessões do período e concurso ativo | Consistência: gráfico Donut em SVG com arcos coloridos e legenda percentual de carga horária. |
 | Desempenho por Disciplina | Desempenho → Questões | `buildMultiSubjectPerformanceModel`, `MultiLineChart` | Questões pessoais no período | Questões: curvas multilineares de taxa de acerto por matéria, média geral e proporções. |
 | Matriz Domínio × Retenção | Desempenho → Disciplinas | `buildPedagogicalMatrixModel`, `PedagogicalMatrixChart` | Métricas de tópicos e sessões | Disciplinas: dispersão em 4 quadrantes pedagógicos com esferas coloridas nas cores das matérias. |
+| Distribuição Planejado × Realizado | Planejamento → Resumo da semana | `buildSubjectStudyDistributionVisual`, `GroupedBarChart` | Planos diários e sessões da semana | Planejamento: barras horizontais agrupadas por matéria com cores oficiais e status pedagógico. |
+| Alinhamento Plano × Impacto no Edital | Planejamento → Resumo da semana | `buildPlanImpactAlignmentVisual`, `renderPlanImpactAlignment` | Planos da semana e relevância do edital | Planejamento: barras duplas contrastantes de esforço vs. relevância e diagnóstico de alinhamento. |
+| Capacidade Semanal e Mix Pedagógico | Planejamento → Plano até a prova | `buildWeeklyAllocationBarVisual`, `AllocationBar` | Plano semanal (confirmado e proposta) | Planejamento: barra segmentada contínua com cores das disciplinas e divisão Teoria / Questões / Revisão. |
+| Régua da Jornada e Fases até a Prova | Planejamento → Prova e ritmo | `buildPhaseRoadmapVisual`, `PhaseRoadmapTimeline` | Data da prova e cronograma de estudo | Planejamento: contagem regressiva, progresso decorrido e 4 fases pedagógicas de preparação. |
 
 ## Definições para os primeiros três pacotes
 
