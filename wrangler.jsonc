@@ -3,5 +3,15 @@
   "compatibility_date": "2025-04-01",
   "assets": {
     "directory": "./dist"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "extratoestudos.com.br",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.extratoestudos.com.br",
+      "custom_domain": true
+    }
+  ]
 }
