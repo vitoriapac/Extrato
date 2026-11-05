@@ -56,7 +56,7 @@ export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
               cx="32"
               cy="32"
               r="26"
-              stroke="var(--brand, #1E3F35)"
+              stroke="var(--brand)"
               stroke-width="6"
               stroke-linecap="round"
               stroke-dasharray={circumference.toFixed(2)}

@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=39f2d60b1807">
-<link rel="stylesheet" href="styles/app.css?v=39f2d60b1807">
+<link rel="stylesheet" href="styles/tailwind.css?v=1a78bc68aefc">
+<link rel="stylesheet" href="styles/app.css?v=1a78bc68aefc">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -145,32 +145,26 @@
       <div id="guidedOnboardingEntry"></div>
     </section>
     <div id="overviewExamPhase"></div>
-    <!-- CAMADA 2: PANORAMA ANALÍTICO E ROTINA (PROGRESSIVE DISCLOSURE) -->
-    <details class="chart-card cockpit-analytics-fold mt-4" id="cockpitAnalyticsDisclosure" data-remember="cockpit-analytics">
-      <summary class="cockpit-analytics-summary">
-        <div class="cockpit-analytics-summary__header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chart-bar icon-inline" aria-hidden="true"><path d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path><path d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path><path d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path><path d="M4 20l14 0"></path></svg>
-          <span class="cockpit-analytics-summary__title">Balanço analítico do edital</span>
-          <span class="cockpit-analytics-summary__hint">3 balanços estratégicos: cobertura do edital, desempenho e consistência</span>
-        </div>
-        <span class="cockpit-analytics-summary__action">
-          <span class="cockpit-analytics-label-open">Expandir (3 análises)</span>
-          <span class="cockpit-analytics-label-closed">Recolher análises</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chevron-down disclosure-chevron" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg>
-        </span>
-      </summary>
-      <div class="cockpit-analytics-body pt-3">
-        <!-- GRADE SUPERIOR DO COCKPIT (SAÚDE DO EDITAL, DESEMPENHO E ROTINA DIÁRIA) -->
-        <section class="cockpit-top-grid grid grid-cols-1 lg:grid-cols-12 gap-4" aria-label="Panorama e rotina diária">
-          <div class="lg:col-span-8 space-y-4" id="cockpitLeftColumn">
-            <div class="cockpit-performance-grid grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch" aria-label="Saúde do edital e tendência de desempenho">
-              <div id="cockpitSyllabusHealthMount" class="h-full"></div>
-              <div id="cockpitPerformanceMount" class="h-full"></div>
-            </div>
-          </div>
-          <div class="lg:col-span-4 space-y-4 order-first lg:order-none" id="cockpitRightColumnMount"></div>
+      <!-- COCKPIT PANORÂMICO EM 3 CAMADAS -->
+      <div id="cockpitAnalyticsDisclosure" class="cockpit-three-layers space-y-4 mt-4">
+        <!-- CAMADA 1: OPERACIONAL IMEDIATO (2 COLUNAS: META DE HOJE × CARGA DE REVISÕES) -->
+        <section class="dashboard-layer-1 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch" aria-label="Meta de hoje e carga de revisões">
+          <div id="cockpitTodayGoalMount" class="h-full"></div>
+          <div id="cockpitReviewLoadMount" class="h-full"></div>
         </section>
-        <!-- FECHAMENTO: a análise detalhada mora em Desempenho -->
+
+        <!-- CAMADA 2: TÁTICO & RETENÇÃO (2 COLUNAS: SALDO DO EDITAL × EVOLUÇÃO DE ACERTOS) -->
+        <section class="dashboard-layer-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch" aria-label="Saldo do edital e evolução de acertos">
+          <div id="cockpitSyllabusHealthMount" class="h-full"></div>
+          <div id="cockpitPerformanceMount" class="h-full"></div>
+        </section>
+
+        <!-- CAMADA 3: MURAL DE CONSISTÊNCIA HISTÓRICA (LARGURA TOTAL ESTILO GITHUB) -->
+        <section class="dashboard-layer-3 w-full" aria-label="Consistência histórica de estudos">
+          <div id="heatmapContainer" class="w-full"></div>
+        </section>
+
+        <!-- FECHAMENTO: link para análise detalhada em Desempenho -->
         <section class="chart-card overview-more mt-4" aria-labelledby="overviewMoreTitle">
           <h2 id="overviewMoreTitle">Análise detalhada</h2>
           <p id="overviewClosingNote" hidden></p>
@@ -178,7 +172,6 @@
           <button class="btn ghost small" id="overviewOpenPerformance" type="button">Abrir Desempenho</button>
         </section>
       </div>
-    </details>
   </div>
 
 
@@ -1043,7 +1036,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=39f2d60b1807"></script>
+  <script src="src/app.bundle.js?v=1a78bc68aefc"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

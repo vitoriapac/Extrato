@@ -834,7 +834,31 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 23. Rastreabilidade de Arquitetura e Governança
+## 23. Reestruturação do Cockpit da Visão Geral em 3 Camadas Simétricas & Heatmap GitHub Full-Width
+
+- **Objetivo Concluído:** Reestruturar integralmente o painel da Visão Geral (`#panel-dashboard`) eliminando o acordeão colapsado artificial (`#cockpitAnalyticsDisclosure`) e o grid assimétrico 8x4. A tela passa a operar em uma grade modular de 2 colunas perfeitamente balanceadas e um mural histórico contínuo em largura total, cobrindo o histórico de consistência da preparação no estilo GitHub.
+- **Arquitetura em 3 Camadas Implementada:**
+  - **Camada 1 (2 Colunas - Operacional Imediato):**
+    - Esquerda: `TodayGoalCard` (Meta de Hoje: Horas estudadas vs meta, questões realizadas vs previstas e anel de progresso).
+    - Direita: `WeeklyReviewLoadCard` (Carga de Revisões: Distribuição dos próximos 7 dias com indicação de picos e alerta de atrasos).
+  - **Camada 2 (2 Colunas - Tático & Retenção):**
+    - Esquerda: `SyllabusHealthCard` (Saldo do Edital: Cobertura acumulada vs pendente por disciplina e horas estimadas).
+    - Direita: `PerformanceTrendCard` (Evolução de Acertos: Tendência semanal de acertos em questões e simulados vs linha de nota de corte).
+  - **Camada 3 (Largura Total - Histórico & Consistência):**
+    - `ActivityHeatmap`: Mural de consistência contínua estilo GitHub em largura total (`#heatmapContainer`), cobrindo no mínimo 24 semanas (ou desde o início do plano de preparação), com alternância de métricas (horas, questões, revisões, simulados), streaks e modo 24h.
+- **Módulos Criados/Atualizados:**
+  - `index.html`: Substituição do `<details id="cockpitAnalyticsDisclosure">` e da estrutura 8x4 pela divisão estrutural em 3 seções (`.dashboard-layer-1`, `.dashboard-layer-2`, `.dashboard-layer-3`).
+  - `src/ui/tabs/dashboard/dashboard-tab-controller.ts`: Montagem direta e isolada de `TodayGoalCard` e `WeeklyReviewLoadCard` nos respectivos contêineres da Camada 1, ativação da renderização automática de `renderHeatmap()`, e ampliação de `DEFAULT_STREAK_WEEKS` para 24 semanas.
+  - `src/ui/renderers/heatmap-renderer.ts`: Atualização do padrão inicial de semanas para 24 semanas com suporte a visualização completa.
+  - `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: Saneamento de cores com remoção de fallback hexadecimal solto (`#1E3F35`), adotando estritamente `var(--brand)`.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **52.82s** com **1.327 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types`).
+  - Build reproduzível (`npm run build`): sincronização limpa de artefatos.
+
+---
+
+## 24. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)

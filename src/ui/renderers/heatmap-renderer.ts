@@ -12,7 +12,7 @@ export function renderHeatmap({
   subjects = [],
   expanded = false,
   onlyActiveDays = false,
-  defaultWeeks = 12,
+  defaultWeeks = 24,
   activityStreak = 0,
   goalStreak = 0,
   selectedDate = null,

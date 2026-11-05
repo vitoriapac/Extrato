@@ -28,6 +28,8 @@ import {
 import {
   CockpitSidebarCards,
   type CockpitSidebarCardsProps,
+  TodayGoalCard,
+  WeeklyReviewLoadCard,
 } from './CockpitSidebarCards.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 import { buildAllocationBalanceViewModel } from '../../../application/analytics/build-allocation-balance-view-model.js';
@@ -115,7 +117,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;'));
   const escapeAttr = deps.escapeAttr || ((str: any) => String(str ?? '').replace(/"/g, '&quot;'));
-  const DEFAULT_STREAK_WEEKS = 12;
+  const DEFAULT_STREAK_WEEKS = 24;
   const heatmapMetricLevel = deps.heatmapMetricLevel || defaultHeatmapMetricLevel;
 
   const streakView = {
@@ -257,26 +259,42 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       }
     }
 
-    // Camada 1: Coluna Direita (Meta de Hoje + Carga de Revisões + Consistência 28 dias)
+        // Camada 1 (2 Colunas): Meta de Hoje (Esquerda) × Carga de Revisões (Direita)
+    const sidebarModel = buildCockpitSidebarViewModel(state, today, {
+      goalMinutes: (deps.metaHoursToday?.() ?? 0) * 60,
+      planMinutes: deps.getTodayPlannedMinutes?.() ?? 0,
+      reviews: deps.getRevisoesUnificadas?.() ?? [],
+      overdueCount: deps.revisoesAtrasadas?.(),
+    });
+
+    const todayGoalMount = doc.getElementById('cockpitTodayGoalMount');
+    if (todayGoalMount) {
+      mountPreact(h(TodayGoalCard, { data: sidebarModel.todayGoal }), todayGoalMount);
+    }
+
+    const reviewLoadMount = doc.getElementById('cockpitReviewLoadMount');
+    if (reviewLoadMount) {
+      mountPreact(h(WeeklyReviewLoadCard, { data: sidebarModel.reviewLoad }), reviewLoadMount);
+    }
+
+    // Suporte legado se cockpitRightColumnMount ainda existir em algum lugar
     const rightMount = doc.getElementById('cockpitRightColumnMount');
     if (rightMount) {
-      const sidebarModel = buildCockpitSidebarViewModel(state, today, {
-        goalMinutes: (deps.metaHoursToday?.() ?? 0) * 60,
-        planMinutes: deps.getTodayPlannedMinutes?.() ?? 0,
-        reviews: deps.getRevisoesUnificadas?.() ?? [],
-        overdueCount: deps.revisoesAtrasadas?.(),
-      });
       mountCockpitSidebar(rightMount, {
         model: sidebarModel,
       });
-      const note = doc.getElementById('overviewClosingNote');
-      if (note) {
-        const { activeDaysCount, totalDays } = sidebarModel.consistency;
-        note.textContent =
-          activeDaysCount > 0 ? `Você estudou em ${activeDaysCount} de ${totalDays} dias nas últimas 4 semanas.` : '';
-        note.hidden = activeDaysCount === 0;
-      }
     }
+
+    const note = doc.getElementById('overviewClosingNote');
+    if (note) {
+      const { activeDaysCount, totalDays } = sidebarModel.consistency;
+      note.textContent =
+        activeDaysCount > 0 ? `Você estudou em ${activeDaysCount} de ${totalDays} dias nas últimas semanas.` : '';
+      note.hidden = activeDaysCount === 0;
+    }
+
+    // Camada 3: Renderização do Heatmap GitHub em Largura Total
+    renderHeatmap();
 
     // 1. Balanço de Alocação de Tempo vs. Peso no Edital
     const allocMount = doc.getElementById('cockpitAllocationMount');
