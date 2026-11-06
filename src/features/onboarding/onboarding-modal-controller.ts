@@ -383,6 +383,10 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
           const input = document.querySelector<HTMLInputElement>(`[data-guided-day="${day}"]`);
           if (input) input.value = String(hours);
         }
+        const customization = document.getElementById(
+          'guidedAvailabilityDetails'
+        ) as HTMLDetailsElement | null;
+        if (customization) customization.open = false;
         const buttons = document.querySelectorAll('[data-guided-availability-preset]');
         buttons.forEach((b: any) => {
           const active = (b as HTMLElement).dataset.guidedAvailabilityPreset === presetId;
@@ -461,6 +465,12 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       renderGuidedOnboarding();
     }
     if (action === 'create-plan') createGuidedInitialPlan();
+    if (action === 'explore-no-plan') {
+      closeGuidedOnboarding();
+      activateTab('hoje');
+      showToast('Você pode informar a data depois em Planejamento. Nenhum plano foi criado.');
+      return;
+    }
     if (['back', 'next', 'availability'].includes(action)) {
       document.getElementById('guidedOnboardingClose')?.focus();
     }

@@ -3,14 +3,14 @@ import { renderIconSvg } from '../../ui/primitives/icon.js';
 const stepCopy: Record<string, any> = {
   goal: {
     title: 'Qual é o seu objetivo?',
-    help: 'Defina a prova e a data para calcular o ritmo necessário.',
+    help: 'Defina a data se já souber. Você também pode continuar sem ela e informar depois.',
     why: 'A data da prova permite distribuir a carga sem concentrar tudo nas últimas semanas.',
     benefits: [
       'calcular o ritmo necessário',
       'medir a urgência de cada tópico',
       'priorizar o que mais impacta a prova',
     ],
-    tip: 'Se a data ainda não foi publicada, use uma estimativa conservadora. Você poderá alterá-la depois.',
+    tip: 'Sem uma data, você ainda pode explorar o app. Para criar o primeiro plano, será preciso informar um prazo.',
   },
   availability: {
     title: 'Quanto tempo cabe na sua semana?',
@@ -64,18 +64,23 @@ export function renderOnboardingEntry(
     title = complete ? 'Continue sua configuração' : 'Monte seu plano de estudos';
   const description = complete
     ? `Falta concluir ${escapeHtml(next?.label || 'a configuração inicial')}. Suas escolhas já feitas serão preservadas.`
-    : `Roteiro de 4 etapas: comece por ${escapeHtml(next?.label || 'seu objetivo')} para transformar o edital em metas diárias na sua rotina.`;
+    : next?.id === 'goal'
+      ? 'Escolha a data da prova se já souber. Se ainda não souber, continue sem prazo e explore o app.'
+      : `Roteiro de 4 etapas: comece por ${escapeHtml(next?.label || 'seu objetivo')} para transformar o edital em metas diárias na sua rotina.`;
   const progress = total ? Math.round((complete / total) * 100) : 0;
   const stepItems = steps
     .map((step: any, index: any) => {
       const status =
         step.status ||
+        (step.skipped
+          ? 'skipped'
+          :
         (step.complete === true || (step.complete == null && index < complete)
           ? 'complete'
           : step.id === next?.id
             ? 'current'
-            : 'pending');
-      return `<li class="${status === 'complete' ? 'is-complete' : status === 'current' ? 'is-next' : ''}"${status === 'current' ? ' aria-current="step"' : ''}><span aria-hidden="true">${status === 'complete' ? '✓' : index + 1}</span><div class="onboarding-entry-step-copy"><em>${escapeHtml(step.label || entryStepLabels[step.id] || 'Etapa')}</em><small>${status === 'complete' ? 'Concluída' : status === 'current' ? 'Atual' : 'Pendente'}</small></div></li>`;
+            : 'pending'));
+      return `<li class="${status === 'complete' ? 'is-complete' : status === 'current' ? 'is-next' : ''}"${status === 'current' ? ' aria-current="step"' : ''}><span aria-hidden="true">${status === 'complete' ? '✓' : status === 'skipped' ? '—' : index + 1}</span><div class="onboarding-entry-step-copy"><em>${escapeHtml(step.label || entryStepLabels[step.id] || 'Etapa')}</em><small>${status === 'complete' ? 'Concluída' : status === 'skipped' ? 'Sem data' : status === 'current' ? 'Atual' : 'Pendente'}</small></div></li>`;
     })
     .join('');
   return `<div class="onboarding-entry-copy"><div class="onboarding-entry-main"><span class="onboarding-kicker">CONFIGURAÇÃO INICIAL</span><div class="onboarding-entry-heading"><h3 id="guidedOnboardingEntryTitle">${title}</h3><span class="onboarding-entry-count">${complete} de ${total} etapas</span></div><p>${description}</p><div class="onboarding-entry-progress" role="progressbar" aria-label="Progresso da configuração inicial" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${complete}" aria-valuetext="${complete} de ${total} etapas concluídas"><span style="width:${progress}%"></span></div><ol class="onboarding-entry-steps" aria-label="Etapas da configuração">${stepItems}</ol></div></div><button class="btn ghost onboarding-entry-cta" type="button" data-guided-action="open">${complete ? 'Continuar configuração' : 'Montar meu plano'}${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</button>`;
@@ -85,9 +90,10 @@ export function renderOnboardingProgress(model: Record<string, any>) {
   return model.steps
     .map((step: any, index: any) => {
       const current = step.id === model.current?.id,
-        complete = step.complete && index < model.currentIndex,
+        skipped = step.skipped && index < model.currentIndex,
+        complete = step.complete && index < model.currentIndex && !step.skipped,
         state = current ? 'step' : 'false';
-      return `<span class="${current ? 'is-current' : complete ? 'is-complete' : ''}" data-onboarding-step="${step.id}" aria-current="${state}"><b>${complete ? '✓' : index + 1}</b><em>${step.label}</em></span>`;
+      return `<span class="${current ? 'is-current' : complete ? 'is-complete' : skipped ? 'is-skipped' : ''}" data-onboarding-step="${step.id}" aria-current="${state}"${skipped ? ' aria-label="Data da prova, sem data"' : ''}><b>${skipped ? '—' : complete ? '✓' : index + 1}</b><em>${step.label}</em></span>`;
     })
     .join('');
 }
@@ -97,7 +103,18 @@ export function renderOnboardingHelp(
   { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   const step = model.current || model.next || model.steps?.[0],
-    copy = stepCopy[step.id] || stepCopy.goal;
+    copy =
+      step.id === 'plan' && !model.hasGoal
+        ? {
+            why: 'O prazo da prova transforma sua rotina e matérias em prioridades semanais.',
+            benefits: [
+              'manter sua rotina e matérias salvas',
+              'explorar o app sem criar um plano',
+              'informar a data depois em Planejamento',
+            ],
+            tip: 'Sem data, o botão final abre o app sem gerar um plano semanal.',
+          }
+        : stepCopy[step.id] || stepCopy.goal;
   return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml(copy.why)}</h3><ul>${copy.benefits.map((item: any) => `<li><span aria-hidden="true">✓</span>${escapeHtml(item)}</li>`).join('')}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml(copy.tip)}</p></div>`;
 }
 
@@ -125,7 +142,7 @@ export function renderOnboardingContent(
       model.presetId === 'custom'
         ? `<label for="guidedCustomExamName">Nome do concurso ou exame<input id="guidedCustomExamName" type="text" placeholder="Ex: OAB, Residência Médica, Vestibular..." value="${escapeAttr(model.customExamName || '')}"></label>`
         : '';
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso ou exame<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso"><option value="undecided" ${!model.presetId || model.presetId === 'undecided' ? 'selected' : ''}>Ainda não escolhi um concurso</option>${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}<option value="custom" ${model.presetId === 'custom' ? 'selected' : ''}>Outro concurso ou exame...</option></select></label>${customExamField}<label for="guidedExamDate">Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label>${shortcutsGroup}</div>`;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso ou exame<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso"><option value="undecided" ${!model.presetId || model.presetId === 'undecided' ? 'selected' : ''}>Ainda não escolhi um concurso</option>${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}<option value="custom" ${model.presetId === 'custom' ? 'selected' : ''}>Outro concurso ou exame...</option></select></label>${customExamField}<label for="guidedExamDate">Data da prova (opcional)<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label>${shortcutsGroup}</div>`;
   }
   if (step.id === 'availability') {
     const presets = (model.availabilityPresets || [])
@@ -135,36 +152,50 @@ export function renderOnboardingContent(
       })
       .join('');
     const presetsGroup = presets
-      ? `<div class="guided-routine-presets" role="group" aria-label="Rotinas sugeridas"><span class="guided-shortcut-title">Rotinas sugeridas em 1 clique:</span><div class="guided-shortcut-chips">${presets}<button type="button" class="btn ghost small" data-guided-action="rest-sunday" aria-label="Zerar domingo para descanso semanal">${renderIconSvg('sun', { size: 14, className: 'inline-block align-middle mr-1' })}Folga aos Domingos</button></div></div>`
+      ? `<div class="guided-routine-presets" role="group" aria-label="Rotinas sugeridas"><span class="guided-shortcut-title">Rotinas sugeridas em 1 clique:</span><div class="guided-shortcut-chips">${presets}</div></div>`
       : '';
     const sustainabilityCallout = model.routineSustainability?.isExcessive
       ? `<div class="guided-sustainability-callout" data-sustainability="${escapeAttr(model.routineSustainability.statusTag)}"><strong>${renderIconSvg('bulb', { size: 14, className: 'inline-block align-middle mr-1' })}Dica de sustentabilidade (${escapeHtml(model.routineSustainability.statusTag)}):</strong><p>${escapeHtml(model.routineSustainability.feedbackMessage)}</p></div>`
       : '';
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${presetsGroup}<div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div>${sustainabilityCallout}</div>`;
+    const customizeOpen = model.availableMinutes > 0 && !model.activeAvailabilityPreset;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${presetsGroup}<details id="guidedAvailabilityDetails" class="grid gap-3 border-t border-border-default pt-3"${customizeOpen ? ' open' : ''}><summary class="cursor-pointer font-medium text-text">Personalizar dias e horários</summary><div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><button type="button" class="btn ghost small justify-self-start" data-guided-action="rest-sunday" aria-label="Zerar domingo para descanso semanal">${renderIconSvg('sun', { size: 14, className: 'inline-block align-middle mr-1' })}Folga aos domingos</button></details><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div>${sustainabilityCallout}</div>`;
   }
   if (step.id === 'content') {
     const bulkLevels = model.subjects.length
       ? `<div class="guided-bulk-levels" role="group" aria-label="Nivelamento rápido"><span>Aplicar a todas:</span><button type="button" class="btn ghost small" data-guided-bulk-level="Médio">Intermediária (Recomendado)</button><button type="button" class="btn ghost small" data-guided-bulk-level="Difícil">Começar da base</button><button type="button" class="btn ghost small" data-guided-bulk-level="Fácil">Tenho boa base</button></div>`
       : '';
-    const starterPacksHtml =
-      !model.subjects.length && model.starterPacks?.length
-        ? `<div class="guided-starter-packs" role="group" aria-label="Pacotes fundamentais em 1 clique"><span class="guided-shortcut-title">${model.packsFirst ? 'Comece em 1 clique com matérias fundamentais:' : 'Ou comece em 1 clique com matérias fundamentais:'}</span><div class="guided-starter-pack-list">${model.starterPacks
-            .map((pack: any) => {
-              const subjectsBadges = (pack.subjects || [])
-                .map(
-                  (s: any) =>
-                    `<span class="guided-pack-subject-tag text-xs px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(s.name)}</span>`
-                )
-                .join('');
-              const subjectsList = subjectsBadges
-                ? `<div class="guided-starter-pack-subjects mt-2 flex flex-wrap gap-1" aria-label="Disciplinas inclusas">${subjectsBadges}</div>`
-                : '';
-              return `<button type="button" class="guided-starter-pack-btn" data-guided-starter-pack="${escapeAttr(pack.id)}" aria-label="Carregar pacote de matérias ${escapeAttr(pack.name)}"><div class="guided-starter-pack-copy"><div class="guided-starter-pack-head"><strong>${escapeHtml(pack.name)}</strong><span class="status-badge status-badge--success">${escapeHtml(pack.badge)}</span></div><small>${escapeHtml(pack.description)}</small>${subjectsList}</div><span class="guided-starter-pack-cta">Usar pacote${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</span></button>`;
-            })
-            .join('')}</div></div>`
+    const starterPacks = model.starterPacks || [];
+    const selectedPath = (model.contentPaths || []).find((path: any) => path.primary);
+    const recommendedPack = !model.subjects.length && !selectedPath ? starterPacks[0] : null;
+    const renderPack = (pack: any) => {
+      const subjectsBadges = (pack.subjects || [])
+        .map(
+          (subject: any) =>
+            `<span class="guided-pack-subject-tag text-xs px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(subject.name)}</span>`
+        )
+        .join('');
+      const subjectsList = subjectsBadges
+        ? `<div class="guided-starter-pack-subjects mt-2 flex flex-wrap gap-1" aria-label="Disciplinas inclusas">${subjectsBadges}</div>`
         : '';
-    const pathsHtml = `<div class="study-plan-actions">${(model.contentPaths || []).map((path: any) => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>`;
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${model.packsFirst ? starterPacksHtml + pathsHtml : pathsHtml + starterPacksHtml}${model.subjects.length ? `${bulkLevels}<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Escolha um pacote acima, importe um edital ou cadastre disciplinas manualmente.</div>'}</div>`;
+      return `<button type="button" class="guided-starter-pack-btn" data-guided-starter-pack="${escapeAttr(pack.id)}" aria-label="Carregar pacote de matérias ${escapeAttr(pack.name)}"><div class="guided-starter-pack-copy"><div class="guided-starter-pack-head"><strong>${escapeHtml(pack.name)}</strong><span class="status-badge status-badge--success">${escapeHtml(pack.badge)}</span></div><small>${escapeHtml(pack.description)}</small>${subjectsList}</div><span class="guided-starter-pack-cta">Usar pacote${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</span></button>`;
+    };
+    const recommendedHtml = selectedPath
+      ? `<div class="guided-starter-packs" role="group" aria-label="Ação recomendada"><span class="guided-shortcut-title">Comece pelo edital escolhido</span><div class="study-plan-actions"><button type="button" class="btn" data-guided-action="${escapeAttr(selectedPath.action)}">${escapeHtml(selectedPath.label)}</button></div></div>`
+      : recommendedPack
+        ? `<div class="guided-starter-packs" role="group" aria-label="Sugestão para começar"><span class="guided-shortcut-title">Sugestão para começar</span><div class="guided-starter-pack-list">${renderPack(recommendedPack)}</div><p class="text-sm text-content-secondary m-0">Esse pacote é geral. Se seu concurso for de outra área, você pode escolher outro caminho.</p></div>`
+        : '';
+    const alternativePacks = starterPacks.filter((pack: any) => pack !== recommendedPack);
+    const alternativePaths = (model.contentPaths || []).filter(
+      (path: any) => path !== selectedPath
+    );
+    const alternativesHtml =
+      alternativePacks.length || alternativePaths.length
+        ? `<details class="guided-content-alternatives grid gap-3 border-t border-border-default pt-3"><summary class="cursor-pointer font-medium text-text">Escolher outra forma de adicionar conteúdo</summary>${alternativePacks.length ? `<div class="guided-starter-pack-list">${alternativePacks.map(renderPack).join('')}</div>` : ''}${alternativePaths.length ? `<div class="study-plan-actions">${alternativePaths.map((path: any) => `<button type="button" class="btn ghost" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>` : ''}</details>`
+        : '';
+    const levelsHtml = model.subjects.length
+      ? `${bulkLevels}<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>`
+      : '<div class="upcoming-empty">Escolha a sugestão ou abra outras formas de adicionar conteúdo.</div>';
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${recommendedHtml}${alternativesHtml}${levelsHtml}</div>`;
   }
   const activities = (model.firstActivities || [])
     .map(
@@ -176,7 +207,11 @@ export function renderOnboardingContent(
     ? `<div class="guided-feasibility-card" data-feasibility="${escapeAttr(model.planFeasibility.status)}"><div class="guided-feasibility-header"><span class="status-badge ${model.planFeasibility.status === 'comfortable' || model.planFeasibility.status === 'balanced' ? 'status-badge--success' : 'status-badge--warning'}">${escapeHtml(model.planFeasibility.badgeText)}</span><p class="guided-feasibility-message">${escapeHtml(model.planFeasibility.verdictMessage)}</p></div></div>`
     : '';
   const flexibilityNote = `<p class="guided-flexibility-note text-xs text-content-secondary mt-2.5 leading-relaxed">${renderIconSvg('info-circle', { size: 14, className: 'inline-block align-middle mr-1' })}<strong>Total flexibilidade:</strong> Você poderá adicionar novas matérias, editar tópicos ou ajustar sua rotina semanal a qualquer momento na aba Disciplinas.</p>`;
-  return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
+  const title = model.hasGoal ? copy.title : 'Sua configuração está pronta para explorar';
+  const help = model.hasGoal
+    ? copy.help
+    : 'Sem data de prova, não dá para calcular o prazo e criar um plano semanal. Você pode abrir o app agora e informar a data depois em Planejamento.';
+  return `<div class="guided-onboarding-panel"><h3>${title}</h3><p>${help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
     model.canCreatePlan
       ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>'
       : model.canConfigurePlan
@@ -190,7 +225,9 @@ export function renderOnboardingContent(
             .join(
               ' · '
             )}</p><div class="study-plan-actions"><button class="btn ghost small" data-guided-action="manual">Revisar tópicos e pré-requisitos</button><button class="btn ghost small" data-guided-action="availability">Ajustar disponibilidade</button></div></div>`
-        : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'
+        : model.canExploreWithoutPlan
+          ? '<p class="availability-warning">A rotina e as matérias estão prontas. Você poderá criar o plano depois de informar a data da prova em Planejamento.</p>'
+          : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'
   }</div>`;
 }
 
@@ -204,7 +241,11 @@ const BLOCKED_REASONS: Record<string, any> = {
 export function onboardingBlockedReason(model: Record<string, any>) {
   const id = model.current?.id || 'goal',
     ready =
-      id === 'content' ? model.hasContent : id === 'plan' ? model.canCreatePlan : model.canAdvance;
+      id === 'content'
+        ? model.hasContent
+        : id === 'plan'
+          ? model.canCreatePlan || model.canExploreWithoutPlan
+          : model.canAdvance;
   return ready ? '' : BLOCKED_REASONS[id] || '';
 }
 export function renderOnboardingActions(model: Record<string, any>) {
@@ -221,7 +262,10 @@ function renderOnboardingButtons(model: Record<string, any>) {
         : '<button class="btn ghost" data-guided-action="cancel">Cancelar</button>';
   if (id === 'content')
     return `${previous}<button class="btn" data-guided-action="next" ${model.hasContent ? '' : 'disabled'}>Ver prévia${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</button>`;
+  if (id === 'plan' && model.canExploreWithoutPlan)
+    return `${previous}<button class="btn" data-guided-action="explore-no-plan">Explorar o app sem criar plano</button>`;
   if (id === 'plan')
     return `${previous}<button class="btn" data-guided-action="create-plan" ${model.canCreatePlan ? '' : 'disabled'}>Confirmar e criar meu plano</button>`;
-  return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? '' : 'disabled'}>Continuar${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</button>`;
+  const nextLabel = id === 'goal' && !model.hasGoal ? 'Continuar sem data' : 'Continuar';
+  return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? '' : 'disabled'}>${nextLabel}${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</button>`;
 }

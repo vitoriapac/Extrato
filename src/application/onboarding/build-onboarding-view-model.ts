@@ -157,6 +157,7 @@ export function buildOnboardingViewModel({
 }: any = {}) {
   type Row = Record<string, any>;
   const hasGoal = Boolean(examDate),
+    goalSkipped = !examDate && ['availability', 'content', 'plan'].includes(currentStep),
     availableMinutes = (Object.values(hoursByDay || {}) as any[]).reduce(
       (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
       0
@@ -170,8 +171,19 @@ export function buildOnboardingViewModel({
       ? studyPlans.length > 0
       : (dailyPlans || []).some((plan: Row) => (plan.items || []).length > 0),
     hasHistory = (sessions || []).length > 0 || (questions || []).length > 0;
-  const steps: Array<{ id: string; label: string; complete: boolean; status?: string }> = [
-    { id: 'goal', label: 'Objetivo e data', complete: hasGoal },
+  const steps: Array<{
+    id: string;
+    label: string;
+    complete: boolean;
+    skipped?: boolean;
+    status?: string;
+  }> = [
+    {
+      id: 'goal',
+      label: 'Data da prova (opcional)',
+      complete: hasGoal || goalSkipped,
+      skipped: goalSkipped,
+    },
     { id: 'availability', label: 'Disponibilidade', complete: hasAvailability },
     { id: 'content', label: 'Edital ou matérias', complete: hasContent },
     { id: 'plan', label: 'Prévia e Hoje', complete: hasPlan || hasHistory },
@@ -182,7 +194,7 @@ export function buildOnboardingViewModel({
   });
   const next = steps.find(step => !step.complete) || null;
   for (const step of steps)
-    step.status = step.complete ? 'complete' : step === next ? 'current' : 'pending';
+    step.status = step.skipped ? 'skipped' : step.complete ? 'complete' : step === next ? 'current' : 'pending';
   const requestedIndex = steps.findIndex(step => step.id === currentStep),
     currentIndex =
       requestedIndex >= 0
@@ -294,14 +306,14 @@ export function buildOnboardingViewModel({
     next,
     current,
     currentIndex,
-    completed: steps.filter(step => step.status === 'complete').length,
+    completed: steps.filter(step => step.status === 'complete' && !step.skipped).length,
     availableMinutes,
     hasGoal,
     hasAvailability,
     hasContent,
-    canAdvance:
-      current.id === 'goal' ? hasGoal : current.id === 'availability' ? hasAvailability : true,
+    canAdvance: current.id === 'goal' ? true : current.id === 'availability' ? hasAvailability : true,
     canConfigurePlan,
+    canExploreWithoutPlan: !hasGoal && hasAvailability && hasContent,
     hasEligibleActivities,
     canCreatePlan: canConfigurePlan && hasEligibleActivities,
     topicCount,
