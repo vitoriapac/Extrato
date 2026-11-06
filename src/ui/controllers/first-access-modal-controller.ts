@@ -47,16 +47,21 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
         h(
           'div',
           {
-            className: 'fixed inset-0 z-50 overflow-y-auto bg-surface-page',
+            className: 'fixed inset-0 z-[1300] overflow-y-auto bg-surface-page',
             role: 'dialog',
             'aria-modal': 'true',
             'aria-label': 'Apresentação do StudyTrack — Extrato de Estudos',
           },
           h(SalesLandingPage, {
             onStartFreeApp: () => {
+              const shouldStartGuidedPlan = isFirstAccessSession(context.getState(), {
+                isDemoMode: context.isDemoMode(),
+                isTestMode: context.isTestMode(),
+                storage: context.storage,
+              });
               markFirstAccessDismissed(context.storage);
               close();
-              context.onStartGuidedPlan();
+              if (shouldStartGuidedPlan) context.onStartGuidedPlan();
             },
             onStartLiveDemo: () => {
               markFirstAccessDismissed(context.storage);
@@ -226,7 +231,7 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
       // Falha silenciosa caso location ou navigator não estejam acessíveis
     }
 
-    if (forceLanding && !isTest && !isAutomation) {
+    if (!isTest && !isAutomation && (forceLanding || !forceFirstAccess)) {
       openSalesLanding();
       return true;
     }

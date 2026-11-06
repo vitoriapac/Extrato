@@ -188,28 +188,28 @@ const ENGINE_SPECS: ReadonlyArray<{
   metricTag: string;
 }> = [
   {
-    title: 'Edital Verticalizado & Leitor Estruturado de PDF',
+    title: 'Acompanhe cada tópico do edital',
     summary:
-      'Cole o texto bruto do edital (Cebraspe, FGV, FCC, Cesgranrio) ou escolha do catálogo. Controle as 4 etapas por tópico: Teoria, Resumo, Lei Seca e Questões.',
+      'Escolha um edital do catálogo ou importe um arquivo. Acompanhe teoria, resumo, lei seca e questões em cada tópico.',
     metricTag: '4 etapas por tópico',
   },
   {
-    title: 'Ciclo Rotativo & Agenda Unificada de Revisões',
+    title: 'Retome o plano sem acumular atrasos',
     summary:
-      'Alterne entre agenda semanal fixa ou fila rotativa proporcional ao peso de cada disciplina. Se um dia atrasar, o ciclo retoma do ponto exato sem quebrar seu plano.',
-    metricTag: 'Zero efeito bola de neve',
+      'Use uma agenda semanal ou um ciclo flexível proporcional ao peso das disciplinas. Quando um dia atrasa, o ciclo continua do ponto em que parou.',
+    metricTag: 'Ciclo flexível',
   },
   {
-    title: 'Simulador de Cenários "E se?" & Modo Reta Final',
+    title: 'Teste mudanças sem mexer no seu plano',
     summary:
-      'Simule em memória o ganho de prontidão ao adicionar +30 min/dia sem alterar seus dados reais. A 15 dias da prova, o Modo Reta Final prioriza 85% questões e revisão.',
-    metricTag: 'Simulação 100% segura',
+      'Simule mais tempo de estudo ou uma prova antecipada. A prévia mostra o impacto sem alterar seus dados salvos.',
+    metricTag: 'Prévia sem salvar',
   },
   {
-    title: 'Caderno de Erros Inteligente & Energia Cronobiológica',
+    title: 'Revise seus erros e entenda seus horários',
     summary:
-      'Transforme cada questão errada em flashcard com a Pegadinha da Banca e o Conceito Correto, enquanto o diagnóstico cruza seu rendimento entre Manhã, Tarde e Noite.',
-    metricTag: 'Repetição espaçada ativa',
+      'Transforme questões erradas em cartões de revisão e compare seu rendimento de manhã, à tarde e à noite.',
+    metricTag: 'Erros que viram revisão',
   },
 ];
 
@@ -324,7 +324,8 @@ export function SalesLandingPage({
               iconRight="arrow-right"
               onClick={onStartFreeApp}
             >
-              Abrir Aplicativo
+              <span class="hidden sm:inline">Abrir Aplicativo</span>
+              <span class="sm:hidden">Abrir app</span>
             </Button>
           </div>
         </div>
@@ -337,13 +338,12 @@ export function SalesLandingPage({
             {/* Coluna Esquerda: Proposta de Valor */}
             <div class="lg:col-span-6 flex flex-col gap-5 pt-2">
               <h1 class="font-display font-semibold text-3xl sm:text-4xl leading-tight tracking-tight text-text m-0">
-                Pare de estudar no escuro. Transforme cada hora líquida em um extrato de prontidão auditável.
+                Saiba o que estudar hoje e por quê.
               </h1>
 
               <p class="text-base text-secondary leading-relaxed m-0 max-w-[65ch]">
-                Planilhas quebram na primeira semana difícil e tratam todas as matérias como iguais.
-                O StudyTrack cruza o peso real do seu edital com a sua taxa de acerto pessoal para
-                mostrar exatamente o que estudar hoje, quando revisar e o quanto falta para a sua meta.
+                O StudyTrack combina o peso do seu edital com o que você já estudou para sugerir a
+                próxima ação e explicar quais dados levaram à recomendação.
               </p>
 
               <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
@@ -361,22 +361,22 @@ export function SalesLandingPage({
                   iconLeft="player-play"
                   onClick={onStartLiveDemo}
                 >
-                  Testar Demo Ao Vivo (140 dias)
+                  Explorar demonstração
                 </Button>
               </div>
 
-              <div class="grid grid-cols-3 gap-3 pt-4 border-t border-border-default">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-border-default">
                 <div>
-                  <div class="font-display font-semibold text-lg text-text">100% Local-First</div>
-                  <div class="text-xs text-secondary">Zero espera ao registrar</div>
+                  <div class="font-display font-semibold text-lg text-text">Sem cadastro</div>
+                  <div class="text-xs text-secondary">No plano grátis</div>
                 </div>
                 <div>
-                  <div class="font-display font-semibold text-lg text-text">Até 8 matérias</div>
-                  <div class="text-xs text-secondary">Grátis sem pedir cartão</div>
+                  <div class="font-display font-semibold text-lg text-text">Até 8 disciplinas</div>
+                  <div class="text-xs text-secondary">No plano grátis</div>
                 </div>
-                <div>
-                  <div class="font-display font-semibold text-lg text-text">R$ 14,90/mês</div>
-                  <div class="text-xs text-secondary">No Plano Pro Anual (PIX)</div>
+                <div class="col-span-2 sm:col-span-1">
+                  <div class="font-display font-semibold text-lg text-text">R$ 178,80/ano</div>
+                  <div class="text-xs text-secondary">Plano Pro anual via PIX</div>
                 </div>
               </div>
             </div>
@@ -387,6 +387,10 @@ export function SalesLandingPage({
                 aria-label="Demonstração interativa do Extrato de Prontidão"
                 class="rounded-default border border-border-default bg-surface-card overflow-hidden"
               >
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2 border-b border-border-default bg-surface-subtle text-xs">
+                  <strong class="text-text">Exemplo ilustrativo.</strong>
+                  <span class="text-secondary">Dados fictícios, sem relação com resultados de usuários.</span>
+                </div>
                 {/* Cabeçalho Musgo Oficial do Extrato */}
                 <div
                   style={{
@@ -558,7 +562,7 @@ export function SalesLandingPage({
 
                 <div class="px-4 py-3 bg-surface-subtle border-t border-border-default flex items-center justify-between gap-2 text-xs">
                   <span class="text-secondary">
-                    Quer interagir com esse histórico completo de 140 dias agora?
+                    Quer explorar a demonstração com 140 dias de dados fictícios?
                   </span>
                   <button
                     type="button"
@@ -623,11 +627,11 @@ export function SalesLandingPage({
           <div class="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col gap-8">
             <div class="max-w-[68ch] flex flex-col gap-2">
               <h2 class="font-display font-semibold text-2xl sm:text-3xl text-text m-0">
-                Quatro motores desenhados para fechar lacunas de edital
+                Mais clareza para escolher a próxima ação
               </h2>
               <p class="text-sm sm:text-base text-secondary m-0 leading-relaxed">
-                Cada sessão cronometrada, bateria de questões ou simulado alimenta um único índice
-                explicável, sem fórmulas opacas.
+                O app usa o edital e seu histórico de estudo para explicar o próximo passo e os sinais
+                que sustentam cada sugestão.
               </p>
             </div>
 
@@ -872,7 +876,7 @@ export function SalesLandingPage({
           onClick={onStartLiveDemo}
           className="flex-1"
         >
-          Demo (140d)
+          Ver demonstração
         </Button>
         <Button
           variant="primary"

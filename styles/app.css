@@ -1181,11 +1181,14 @@
 :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 :root{caret-color:var(--accent);scrollbar-color:var(--border-control) transparent}
 ::selection{background:var(--brand-on-header);color:var(--brand)}
-/* Piso de alvo (WCAG 2.5.8, 24px) para mouse; toque e tela estreita sobem para 44px abaixo. */
-:where(summary){min-height:24px;align-content:center}
-:where(.icon-btn,.icon-btn-nav){min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
-:where(.panel input:not([type=checkbox]):not([type=radio])){min-height:24px}
-@media (pointer:coarse),(max-width:760px){summary{min-height:var(--touch-target)}}
+/* Piso de alvo (DESIGN.md: 44px para summary/toque e 36px para controles desktop). */
+:where(summary){min-height:var(--touch-target);align-content:center}
+:where(.icon-btn,.icon-btn-nav){min-width:var(--control-height);min-height:var(--control-height);display:inline-flex;align-items:center;justify-content:center}
+:where(.panel input:not([type=checkbox]):not([type=radio]):not(.meta-inputs input),table.ledger input:not([type=checkbox]):not([type=radio]),.weekday-goal input){min-height:var(--control-height)}
+:where(.help-text-link){min-height:var(--control-height)}
+@media (pointer:coarse),(max-width:760px){
+  summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link{min-height:var(--touch-target)}
+}
 /* Toque em tela larga (tablet, celular deitado): só tamanhos de alvo, sem o layout estreito. */
 @media (pointer:coarse){
   .btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn,.tab-btn{min-height:var(--touch-target)}
@@ -1948,6 +1951,7 @@ body.modal-open{overflow:hidden}
 .guided-shortcut-chips{display:flex;flex-wrap:wrap;gap:6px}
 .guided-shortcut-btn,.guided-preset-btn{font-size:.8rem;padding:6px 10px;min-height:36px;cursor:pointer;background:var(--wizard-input-bg);color:var(--wizard-text);border:1px solid var(--wizard-border)}
 .guided-shortcut-btn:hover,.guided-preset-btn:hover{border-color:var(--wizard-primary);background:var(--surface-highlight)}
+.guided-preset-btn.is-active{border-color:var(--wizard-primary);background:var(--surface-highlight);box-shadow:inset 0 0 0 1px var(--wizard-primary)}
 .is-tour-highlighted{position:relative!important;z-index:45!important;box-shadow:0 0 0 4px var(--accent),0 0 24px color-mix(in srgb,var(--accent) 45%,transparent)!important;outline:2px solid var(--accent)!important;outline-offset:4px!important;border-radius:var(--radius-card);transition:box-shadow .2s ease,outline .2s ease}
 .guided-tour-overlay{position:fixed;inset:0;z-index:200!important;pointer-events:none}
 .guided-tour-popover{position:absolute;z-index:205!important;pointer-events:auto}
@@ -3082,8 +3086,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 .metas-subpanel{margin:0 0 var(--space-4)}
 .metas-subpanel:not([open]){display:none}
-.metas-subpanel__summary{cursor:pointer;padding:12px 14px;border:1px solid var(--paper-line);border-radius:var(--radius-card);background:var(--paper);color:var(--heading);font:600 var(--text-md) var(--font-display)}
-.metas-subpanel[open]>.metas-subpanel__summary{margin-bottom:var(--space-3)}
+.metas-subpanel__summary{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .metas-subtab[aria-current="true"],.metas-subtab.active{background:var(--slate-bg);color:var(--heading);box-shadow:inset 0 -2px 0 var(--accent)}
 
 /* Agenda: cockpit operacional compacto com cards em grid responsivo */
@@ -3100,8 +3103,17 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .decision-fold>summary{cursor:pointer;color:var(--heading);font:600 var(--text-md) var(--font-display)}
 .decision-fold[open]>summary{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--paper-line)}
 
+/* Desaninhar blocos recolhíveis e sub-cards (DESIGN.md: nunca aninhe cards para criar hierarquia) */
+.chart-card:is(.today-analysis-details,.desempenho-extra-details){padding:0;border:0;background:transparent;box-shadow:none;margin-bottom:var(--space-4)}
+.chart-card:is(.today-analysis-details,.desempenho-extra-details)>summary{padding:var(--space-3) var(--space-4);border:1px solid var(--paper-line);border-radius:var(--radius-card);background:var(--surface-card)}
+.chart-card:is(.today-analysis-details,.desempenho-extra-details)[open]>summary{margin-bottom:var(--space-4);border-bottom:1px solid var(--paper-line)}
+.chart-card :is(.plateau-detector-card,.shift-energy-card){border:0;border-top:1px solid var(--border-subtle);border-radius:0;background:transparent;padding:var(--space-4) 0 0;margin:var(--space-4) 0 0;box-shadow:none}
+.subject-name[contenteditable="true"]{border-bottom:1px dashed transparent;border-radius:2px;padding:2px 4px;transition:border-color var(--motion-duration) ease}
+.subject-name[contenteditable="true"]:hover{border-bottom-color:var(--border-control)}
+.subject-name[contenteditable="true"]:focus-visible{background:var(--surface-card);outline:2px solid var(--accent);border-bottom-color:transparent}
+
 /* Acordeão analítico na Visão Geral: destila o primeiro viewport para o ritual imediato */
-.cockpit-analytics-fold{margin-top:var(--space-4);padding:var(--space-3) var(--space-4);border:1px solid var(--border-subtle);border-radius:var(--radius-lg,12px);background:var(--surface-card)}
+.cockpit-analytics-fold{margin-top:var(--space-4);padding:var(--space-3) var(--space-4);border:1px solid var(--border-subtle);border-radius:var(--radius-card);background:var(--surface-card)}
 .cockpit-analytics-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);cursor:pointer;list-style:none;user-select:none;padding:var(--space-2) var(--space-2);border-radius:var(--radius-md,8px);transition:background .15s ease}
 .cockpit-analytics-fold>summary::-webkit-details-marker{display:none}
 .cockpit-analytics-fold>summary:hover{background:color-mix(in srgb,var(--surface-card) 94%,var(--brand))}
@@ -3394,7 +3406,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   flex-direction: column;
   background: var(--surface-card, var(--white));
   border: 1px solid var(--border-subtle, var(--paper-line));
-  border-radius: var(--radius-card, 12px);
+  border-radius: var(--radius-card, 8px);
   padding: var(--space-4, 16px);
   margin-bottom: var(--space-4, 16px);
   gap: var(--space-3, 12px);

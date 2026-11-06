@@ -25,11 +25,11 @@ export function renderPlanImpactAlignment(
   const rowsHtml = visual.rows.map(row => {
     let statusBadge = '';
     if (row.alignmentStatus === 'underallocated') {
-      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-warning-emphasis bg-warning-subtle" title="Menos tempo planejado do que o peso proporcional no edital">${alertIcon} Subalocada (${row.gapShare}% p.p.)</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle" title="Menos tempo planejado do que o peso proporcional no edital">${alertIcon} Subalocada (${row.gapShare}% p.p.)</span>`;
     } else if (row.alignmentStatus === 'overallocated') {
-      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-accent-emphasis bg-accent-subtle" title="Mais tempo planejado do que o peso proporcional no edital">${trendingIcon} Sobrealocada (+${row.gapShare}% p.p.)</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-accent-emphasis bg-accent-subtle" title="Mais tempo planejado do que o peso proporcional no edital">${trendingIcon} Sobrealocada (+${row.gapShare}% p.p.)</span>`;
     } else {
-      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-success-emphasis bg-success-subtle">${checkIcon} Alinhada</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-success-emphasis bg-success-subtle">${checkIcon} Alinhada</span>`;
     }
 
     const maxShare = Math.max(1, row.plannedShare, row.impactShare);
@@ -37,7 +37,7 @@ export function renderPlanImpactAlignment(
     const impactPct = Math.min(100, (row.impactShare / Math.max(50, maxShare)) * 100);
 
     return `
-      <div class="p-2.5 rounded-lg border border-border-subtle bg-surface-elevated/40 space-y-2">
+      <div class="p-2.5 rounded-default border border-border-subtle bg-surface-elevated/40 space-y-2">
         <div class="flex items-center justify-between gap-2 text-xs">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}" aria-hidden="true"></span>
@@ -48,7 +48,7 @@ export function renderPlanImpactAlignment(
           </div>
         </div>
 
-        <div class="space-y-1.5 text-[11px]">
+        <div class="space-y-1.5 text-xs">
           <div>
             <div class="flex justify-between text-content-secondary mb-0.5">
               <span>Plano semanal</span>
@@ -70,7 +70,7 @@ export function renderPlanImpactAlignment(
           </div>
         </div>
 
-        <div class="text-[10px] text-content-secondary">
+        <div class="text-xs text-content-secondary">
           ${row.impactCount} de ${row.topicCount} tópicos com impacto estimado
         </div>
       </div>

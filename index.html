@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=e85b5ff70b7a">
-<link rel="stylesheet" href="styles/app.css?v=e85b5ff70b7a">
+<link rel="stylesheet" href="styles/tailwind.css?v=e8a2afc53603">
+<link rel="stylesheet" href="styles/app.css?v=e8a2afc53603">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -423,7 +423,7 @@
       <h2 class="section-title">Disciplinas &amp; tópicos</h2>
       <div class="subjects-header-actions">
         <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução</button>
-        <button class="btn ghost small" type="button" id="verticalizedSyllabusToggleBtn" data-testid="verticalized-syllabus-toggle">Edital verticalizado</button>
+        <button class="btn ghost small" type="button" id="verticalizedSyllabusToggleBtn" data-testid="verticalized-syllabus-toggle" aria-pressed="false">Edital verticalizado</button>
         <details class="action-menu subjects-import-menu"><summary class="btn ghost" aria-label="Opções de importação de disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></summary><div class="action-menu__items">
           <button type="button" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">Carregar disciplinas do edital</button>
           <button type="button" id="structuredContentImportBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar JSON ou CSV</button>
@@ -580,7 +580,7 @@
   <div class="panel" id="panel-questoes" role="tabpanel" aria-labelledby="tab-questoes">
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Questões resolvidas</h2>
-      <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle">Caderno de Erros (Flashcards)</button>
+      <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle" aria-pressed="false">Caderno de Erros (Flashcards)</button>
       <button class="btn" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Registrar sessão</button>
       <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></summary><div class="action-menu__items">
         <button type="button" id="importQuestionsBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar CSV (QConcursos / Tec / Padrão)</button>
@@ -754,7 +754,7 @@
 
   <footer>
     <div class="footer-primary-row">
-      <span>Salvo automaticamente no seu navegador — extrato.gerado localmente</span>
+      <span>Salvo automaticamente no seu navegador — extrato gerado localmente</span>
       <div class="footer-actions">
         <button class="btn ghost small" id="enterDemoBtn" aria-describedby="enterDemoNote">Explorar demonstração</button><small class="footer-demo-note" id="enterDemoNote">Dados fictícios, separados dos seus.</small>
         <button type="button" class="btn ghost small" id="openSalesLandingBtn" aria-haspopup="dialog">Apresentação</button>
@@ -1038,7 +1038,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=e85b5ff70b7a"></script>
+  <script src="src/app.bundle.js?v=e8a2afc53603"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

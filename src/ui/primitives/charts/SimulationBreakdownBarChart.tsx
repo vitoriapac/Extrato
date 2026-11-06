@@ -25,19 +25,19 @@ export function SimulationBreakdownBarChart({
 
   return (
     <div
-      class={`chart-simulation-breakdown space-y-3 p-3.5 rounded-lg bg-surface-ground/70 border border-border-subtle ${className}`}
+      class={`chart-simulation-breakdown space-y-3 p-3.5 rounded-default bg-surface-ground/70 border border-border-subtle ${className}`}
       role="region"
       aria-label={label}
     >
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Raio-X do Simulado</span>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono font-medium text-accent-emphasis bg-accent-subtle">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-medium text-accent-emphasis bg-accent-subtle">
             Média da prova: {overallScore}%
           </span>
         </div>
 
-        <div class="flex items-center gap-3 text-[11px] text-content-secondary">
+        <div class="flex items-center gap-3 text-xs text-content-secondary">
           {highestSubject && (
             <span class="inline-flex items-center gap-1 text-success-emphasis">
               <Icon name="trending-up" size={12} stroke={2.5} />
@@ -72,14 +72,14 @@ export function SimulationBreakdownBarChart({
                 </div>
 
                 <div class="flex items-center gap-2 flex-shrink-0 text-xs font-mono">
-                  <span class="text-content-secondary text-[11px]">
+                  <span class="text-content-secondary text-xs">
                     {row.correct}/{row.total}
                   </span>
                   <span class="font-bold text-content-primary">
                     {row.score}%
                   </span>
                   <span
-                    class={`text-[10px] font-medium px-1.5 py-0.2 rounded ${
+                    class={`text-xs font-medium px-1.5 py-0.5 rounded ${
                       isAbove
                         ? 'text-success-emphasis bg-success-subtle'
                         : 'text-warning-emphasis bg-warning-subtle'

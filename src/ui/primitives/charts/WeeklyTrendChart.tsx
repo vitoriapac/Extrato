@@ -41,7 +41,7 @@ export function WeeklyTrendChart({
 
   return (
     <div
-      class={`chart-weekly-trend chart-card-interactive space-y-3 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`chart-weekly-trend chart-card-interactive space-y-3 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
       role="region"
       aria-label={label}
     >
@@ -49,14 +49,14 @@ export function WeeklyTrendChart({
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Evolução Semanal</span>
-          <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${trendBadgeClass}`}>
+          <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${trendBadgeClass}`}>
             <Icon name={trendIcon} size={12} stroke={2.5} />
             {trendLabel}
             {trendDelta !== null && ` (${trendDelta > 0 ? '+' : ''}${trendDelta} p.p.)`}
           </span>
         </div>
 
-        <div class="flex items-center gap-3 text-[11px] text-content-secondary">
+        <div class="flex items-center gap-3 text-xs text-content-secondary">
           <span class="flex items-center gap-1.5">
             <span class={`inline-block w-2.5 h-2.5 rounded-sm subject-bg-${colorSlot} opacity-50`}></span>
             Volume
@@ -110,9 +110,9 @@ export function WeeklyTrendChart({
           />
 
           {/* Rótulos de escala Y */}
-          <text x={geom.padLeft - 6} y={geom.padTop + 4} text-anchor="end" class="text-[9px] fill-content-secondary font-mono">100%</text>
-          <text x={geom.padLeft - 6} y={geom.padTop + geom.plotH * 0.5 + 3} text-anchor="end" class="text-[9px] fill-content-secondary font-mono">50%</text>
-          <text x={geom.padLeft - 6} y={geom.padTop + geom.plotH} text-anchor="end" class="text-[9px] fill-content-secondary font-mono">0%</text>
+          <text x={geom.padLeft - 6} y={geom.padTop + 4} text-anchor="end" class="text-xs fill-content-secondary font-mono">100%</text>
+          <text x={geom.padLeft - 6} y={geom.padTop + geom.plotH * 0.5 + 3} text-anchor="end" class="text-xs fill-content-secondary font-mono">50%</text>
+          <text x={geom.padLeft - 6} y={geom.padTop + geom.plotH} text-anchor="end" class="text-xs fill-content-secondary font-mono">0%</text>
 
           {/* Barras de volume na base do gráfico */}
           {geom.items.map(it => (
@@ -149,7 +149,7 @@ export function WeeklyTrendChart({
                 x={it.x}
                 y={geom.height - 6}
                 text-anchor="middle"
-                class="text-[10px] fill-content-secondary font-mono"
+                class="text-xs fill-content-secondary font-mono"
               >
                 {it.label}
               </text>

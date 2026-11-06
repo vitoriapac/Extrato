@@ -35,22 +35,22 @@ export function ActivityHeatmap({
 
   return (
     <div
-      class={`activity-heatmap-container chart-card-interactive space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`activity-heatmap-container chart-card-interactive space-y-3.5 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
       role="region"
       aria-label="Mapa de calor de consistência e hábitos de estudo"
     >
       {/* Topo com seletor de modo e atalhos rápidos */}
       <div class="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-border-subtle pb-3">
         {/* Seletor de Modo (Calendário vs Horários do Dia) */}
-        <div class="inline-flex items-center p-0.5 rounded-lg bg-surface-sunken border border-border-subtle" role="tablist" aria-label="Visualização do heatmap">
+        <div class="inline-flex items-center p-0.5 rounded bg-surface-sunken border border-border-subtle" role="tablist" aria-label="Visualização do heatmap">
           <button
             type="button"
             role="tab"
             aria-selected={isCalendar}
             data-delegated-click="setHeatmapMode('calendar')"
-            class={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md font-medium text-xs transition-all ${
+            class={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium text-xs transition-all ${
               isCalendar
-                ? 'bg-surface-elevated text-content-primary shadow-xs font-semibold'
+                ? 'bg-surface-elevated text-content-primary font-semibold'
                 : 'text-content-secondary hover:text-content-primary'
             }`}
           >
@@ -62,9 +62,9 @@ export function ActivityHeatmap({
             role="tab"
             aria-selected={!isCalendar}
             data-delegated-click="setHeatmapMode('hours')"
-            class={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md font-medium text-xs transition-all ${
+            class={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium text-xs transition-all ${
               !isCalendar
-                ? 'bg-surface-elevated text-content-primary shadow-xs font-semibold'
+                ? 'bg-surface-elevated text-content-primary font-semibold'
                 : 'text-content-secondary hover:text-content-primary'
             }`}
           >
@@ -92,7 +92,7 @@ export function ActivityHeatmap({
           <div class="w-full overflow-x-auto pb-2">
             <div class="inline-flex flex-col min-w-[580px]">
               {/* Linha com os rótulos de meses */}
-              <div class="relative h-4 mb-1 pl-8 text-[10px] text-content-secondary font-mono">
+              <div class="relative h-4 mb-1 pl-8 text-xs text-content-secondary font-mono">
                 {calendarVisual.monthLabels.map(m => (
                   <span
                     key={`month-${m.label}-${m.weekIndex}`}
@@ -107,7 +107,7 @@ export function ActivityHeatmap({
               {/* Grade de 7 dias com rótulos à esquerda */}
               <div class="flex items-start gap-2">
                 {/* Rótulos dos dias da semana (Seg, Qua, Sex) */}
-                <div class="flex flex-col justify-between h-[116px] text-[10px] text-content-secondary font-mono select-none pt-0.5">
+                <div class="flex flex-col justify-between h-[116px] text-xs text-content-secondary font-mono select-none pt-0.5">
                   <span class="h-3.5 leading-none">Seg</span>
                   <span class="h-3.5 leading-none">Qua</span>
                   <span class="h-3.5 leading-none">Sex</span>
@@ -135,7 +135,7 @@ export function ActivityHeatmap({
           </div>
 
           {!hasActivity && (
-            <div class="empty-inline heatmap-empty p-3 rounded-lg bg-surface-ground text-center text-xs text-content-secondary">
+            <div class="empty-inline heatmap-empty p-3 rounded-default bg-surface-ground text-center text-xs text-content-secondary">
               <p>Nenhuma atividade encontrada para este indicador e disciplina.</p>
               <button
                 class="btn ghost small mt-1.5"
@@ -155,7 +155,7 @@ export function ActivityHeatmap({
           <div class="w-full overflow-x-auto pb-2">
             <div class="inline-flex flex-col min-w-[580px] space-y-1.5">
               {/* Cabeçalho com marcadores de hora */}
-              <div class="flex items-center pl-10 text-[10px] font-mono text-content-secondary">
+              <div class="flex items-center pl-10 text-xs font-mono text-content-secondary">
                 <div class="grid grid-cols-24 gap-[3px] w-full">
                   {Array.from({ length: 24 }, (_, h) => {
                     const isMarker = h % 4 === 0;
@@ -175,7 +175,7 @@ export function ActivityHeatmap({
               {/* 7 Linhas de dias da semana */}
               {hoursVisual.rows.map(row => (
                 <div key={`hours-row-${row.weekdayIndex}`} class="flex items-center gap-2">
-                  <span class="w-8 text-[11px] font-mono font-medium text-content-secondary text-right select-none">
+                  <span class="w-8 text-xs font-mono font-medium text-content-secondary text-right select-none">
                     {row.weekdayName}
                   </span>
                   <div class="grid grid-cols-24 gap-[3px] flex-1">
@@ -198,20 +198,20 @@ export function ActivityHeatmap({
 
           {/* Card de Insights Circadianos */}
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border-subtle text-xs">
-            <div class="p-2.5 rounded-lg bg-surface-ground border border-border-subtle">
-              <span class="text-content-secondary text-[11px] block">Horário de Maior Foco</span>
+            <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
+              <span class="text-content-secondary text-xs block">Horário de Maior Foco</span>
               <strong class="text-sm font-mono text-content-primary">
                 {hoursVisual.peakHour !== null ? `${String(hoursVisual.peakHour).padStart(2, '0')}:00` : '—'}
               </strong>
             </div>
-            <div class="p-2.5 rounded-lg bg-surface-ground border border-border-subtle">
-              <span class="text-content-secondary text-[11px] block">Dia Mais Produtivo</span>
+            <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
+              <span class="text-content-secondary text-xs block">Dia Mais Produtivo</span>
               <strong class="text-sm font-medium text-content-primary">
                 {hoursVisual.peakWeekday || '—'}
               </strong>
             </div>
-            <div class="p-2.5 rounded-lg bg-surface-ground border border-border-subtle">
-              <span class="text-content-secondary text-[11px] block">Tempo Total Mapeado</span>
+            <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
+              <span class="text-content-secondary text-xs block">Tempo Total Mapeado</span>
               <strong class="text-sm font-mono text-content-primary">
                 {formatDecimal(hoursVisual.totalStudyMinutes / 60, 1)}h
               </strong>
@@ -222,7 +222,7 @@ export function ActivityHeatmap({
 
       {/* Detalhamento do Dia Selecionado */}
       {selectedDate && selectedTooltip && (
-        <div class="heatmap-detail p-3 rounded-lg bg-surface-ground border border-border-subtle flex flex-wrap items-center justify-between gap-2 text-xs" role="status">
+        <div class="heatmap-detail p-3 rounded-default bg-surface-ground border border-border-subtle flex flex-wrap items-center justify-between gap-2 text-xs" role="status">
           <span class="text-content-primary font-medium">{selectedTooltip}</span>
           <button
             class="btn ghost small"
@@ -235,7 +235,7 @@ export function ActivityHeatmap({
       )}
 
       {/* Rodapé com Legenda de Intensidade */}
-      <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-content-secondary pt-2 border-t border-border-subtle">
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-content-secondary pt-2 border-t border-border-subtle">
         <span>
           {metric === 'hours'
             ? 'Cores: <25% · 25–50% · 50–75% · ≥100% da meta diária'

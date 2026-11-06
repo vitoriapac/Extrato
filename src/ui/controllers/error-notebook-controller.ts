@@ -129,6 +129,7 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
       mount.hidden = false;
       if (toggleBtn) {
         toggleBtn.textContent = 'Visão de questões';
+        toggleBtn.setAttribute?.('aria-pressed', 'true');
         toggleBtn.classList.add('btn-primary');
       }
       renderView();
@@ -142,6 +143,7 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
     if (mainContainer) mainContainer.hidden = false;
     if (toggleBtn) {
       toggleBtn.textContent = 'Caderno de Erros (Flashcards)';
+      toggleBtn.setAttribute?.('aria-pressed', 'false');
       toggleBtn.classList.remove('btn-primary');
     }
     return false;

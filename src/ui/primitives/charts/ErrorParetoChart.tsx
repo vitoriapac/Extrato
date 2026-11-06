@@ -34,7 +34,7 @@ export function ErrorParetoChart({
 
   return (
     <div
-      class={`chart-error-pareto chart-card-interactive space-y-3.5 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`chart-error-pareto chart-card-interactive space-y-3.5 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
       role="region"
       aria-label={label}
     >
@@ -42,13 +42,13 @@ export function ErrorParetoChart({
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div>
           <span class="font-semibold text-content-primary">Distribuição de Falhas (Pareto)</span>
-          <div class="text-[11px] text-content-secondary">
+          <div class="text-xs text-content-secondary">
             {totalErrors} {totalErrors === 1 ? 'erro categorizado' : 'erros categorizados'} no período
           </div>
         </div>
 
         {predominantCause && (
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-warning-emphasis bg-warning-subtle border border-warning-subtle">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle border border-warning-subtle">
             <Icon name="alert-triangle" size={13} stroke={2.5} />
             Causa principal: <strong class="font-bold">{predominantCause}</strong>
           </span>
@@ -70,7 +70,7 @@ export function ErrorParetoChart({
           return (
             <div
               key={item.id}
-              class="error-profile-item group p-2 rounded-lg bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
+              class="error-profile-item group p-2 rounded-default bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
             >
               <div class="flex items-center justify-between gap-2 mb-1 text-xs">
                 <div class="flex items-center gap-1.5 min-w-0">
@@ -82,7 +82,7 @@ export function ErrorParetoChart({
                   </span>
                   {item.isVital && (
                     <span
-                      class="px-1.5 py-0.2 rounded text-[9px] font-semibold uppercase tracking-wider text-warning-emphasis bg-warning-subtle"
+                      class="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider text-warning-emphasis bg-warning-subtle"
                       title="Item dentro dos 80% prioritários do Princípio de Pareto"
                     >
                       Vital (80/20)
@@ -94,12 +94,12 @@ export function ErrorParetoChart({
                   <span class="font-mono font-semibold text-content-primary">
                     {item.count}
                   </span>
-                  <span class="text-content-secondary font-mono text-[11px]">
+                  <span class="text-content-secondary font-mono text-xs">
                     ({formatDecimal(item.share)}%)
                   </span>
                   {hasPrevious && item.delta !== null && (
                     <span
-                      class={`text-[10px] font-mono font-medium ${
+                      class={`text-xs font-mono font-medium ${
                         item.delta > 0
                           ? 'text-warning-emphasis'
                           : item.delta < 0
@@ -131,7 +131,7 @@ export function ErrorParetoChart({
                 />
               </div>
 
-              <div class="flex justify-between items-center text-[10px] text-content-secondary mt-1">
+              <div class="flex justify-between items-center text-xs text-content-secondary mt-1">
                 <span>Parcela relativa</span>
                 <span class="error-profile-cumulative-text font-mono text-content-secondary">acumulado {formatDecimal(item.cumulativeShare)}%</span>
               </div>

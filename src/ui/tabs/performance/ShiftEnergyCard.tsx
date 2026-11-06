@@ -45,9 +45,9 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
           return (
             <div
               key={shift.shift}
-              class={`p-3.5 rounded-lg border transition-all ${
+              class={`p-3.5 rounded-default border transition-all ${
                 shift.isPeak
-                  ? 'border-brand bg-surface-elevated ring-1 ring-brand/20 shadow-sm'
+                  ? 'border-brand bg-surface-elevated ring-1 ring-brand/20'
                   : 'border-border-subtle bg-surface-card'
               }`}
             >

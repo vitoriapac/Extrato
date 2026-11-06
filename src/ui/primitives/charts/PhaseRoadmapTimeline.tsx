@@ -33,7 +33,7 @@ export function PhaseRoadmapTimeline({
 
   if (phase === 'undated' || !examDate) {
     return (
-      <div class={`p-4 rounded-xl bg-surface-elevated border border-border-default text-center ${className}`}>
+      <div class={`p-4 rounded-default bg-surface-elevated border border-border-default text-center ${className}`}>
         <div class="inline-flex p-2.5 rounded-full bg-surface-sunken text-content-secondary mb-2">
           <Icon name="calendar-event" size={20} stroke={1.5} />
         </div>
@@ -47,14 +47,14 @@ export function PhaseRoadmapTimeline({
 
   return (
     <div
-      class={`chart-phase-roadmap p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs space-y-4 ${className}`}
+      class={`chart-phase-roadmap p-4 rounded-default bg-surface-elevated border border-border-default space-y-4 ${className}`}
       role="region"
       aria-label={label}
     >
       {/* Top Banner com Dias Restantes e Fase Ativa */}
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="p-2.5 rounded-lg bg-accent-subtle text-accent-emphasis flex items-center justify-center">
+          <div class="p-2.5 rounded-default bg-accent-subtle text-accent-emphasis flex items-center justify-center">
             <Icon name="flag" size={20} stroke={2} />
           </div>
           <div>
@@ -77,7 +77,7 @@ export function PhaseRoadmapTimeline({
             {daysRemaining}
             <span class="text-xs font-normal text-content-secondary ml-1">dias</span>
           </div>
-          <span class="text-[11px] text-content-secondary">
+          <span class="text-xs text-content-secondary">
             {progressPercentage}% do cronograma decorrido
           </span>
         </div>
@@ -87,11 +87,11 @@ export function PhaseRoadmapTimeline({
       <div class="space-y-1.5 pt-1">
         <div class="relative w-full h-3 bg-surface-sunken rounded-full overflow-hidden flex">
           <div
-            class="h-full bg-gradient-to-r from-accent-emphasis to-success-emphasis rounded-full transition-all duration-500"
+            class="h-full bg-accent-emphasis rounded-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
-        <div class="flex justify-between text-[10px] text-content-secondary px-0.5">
+        <div class="flex justify-between text-xs text-content-secondary px-0.5">
           <span>Início</span>
           <span class="font-medium text-content-primary font-mono">{progressPercentage}%</span>
           <span>Dia da Prova</span>
@@ -118,13 +118,13 @@ export function PhaseRoadmapTimeline({
           return (
             <div
               key={item.key}
-              class={`p-2.5 rounded-lg border flex flex-col justify-between transition-all ${cardClass}`}
+              class={`p-2.5 rounded-default border flex flex-col justify-between transition-all ${cardClass}`}
             >
               <div>
                 <div class="flex items-center justify-between gap-1 mb-1">
                   <span class="text-xs font-semibold truncate">{item.label}</span>
                   {isCurrent && (
-                    <span class={`px-1.5 py-0.2 rounded text-[9px] uppercase tracking-wider ${badgeClass}`}>
+                    <span class={`px-1.5 py-0.5 rounded text-xs uppercase tracking-wider ${badgeClass}`}>
                       Agora
                     </span>
                   )}
@@ -134,12 +134,12 @@ export function PhaseRoadmapTimeline({
                     </span>
                   )}
                 </div>
-                <p class="text-[10px] leading-snug line-clamp-2 text-content-secondary">
+                <p class="text-xs leading-snug line-clamp-2 text-content-secondary">
                   {item.description}
                 </p>
               </div>
 
-              <div class="mt-2 text-[10px] font-mono font-medium text-content-secondary">
+              <div class="mt-2 text-xs font-mono font-medium text-content-secondary">
                 {item.minDays === 0 ? 'Última semana' : `${item.minDays}–${item.maxDays} dias`}
               </div>
             </div>

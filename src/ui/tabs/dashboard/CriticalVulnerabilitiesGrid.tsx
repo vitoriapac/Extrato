@@ -73,7 +73,7 @@ export function CriticalVulnerabilitiesGrid({
           {vulnerabilities.map(item => (
             <div
               key={item.topicId}
-              class="p-3 rounded-lg border border-border-subtle bg-surface-elevated hover:border-border-strong transition-all flex flex-col justify-between"
+              class="p-3 rounded-default border border-border-subtle bg-surface-elevated hover:border-border-strong transition-all flex flex-col justify-between"
             >
               <div>
                 <div class="flex items-start justify-between gap-2 mb-1.5">

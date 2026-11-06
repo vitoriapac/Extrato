@@ -39,7 +39,7 @@ export function AllocationBar({
 
   return (
     <div
-      class={`chart-allocation-bar space-y-4 p-4 rounded-xl bg-surface-elevated border border-border-default shadow-xs ${className}`}
+      class={`chart-allocation-bar space-y-4 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
       role="region"
       aria-label={label}
     >
@@ -47,13 +47,13 @@ export function AllocationBar({
       <div class="flex items-center justify-between gap-3 text-xs">
         <div>
           <span class="font-semibold text-content-primary">Capacidade Semanal Alocada</span>
-          <div class="text-[11px] text-content-secondary">
+          <div class="text-xs text-content-secondary">
             {formatMinutes(totalWeeklyMinutes)} planejados
             {weeklyCapacityMinutes > 0 && ` de ${formatMinutes(weeklyCapacityMinutes)} de meta`}
           </div>
         </div>
         {flexMinutes > 0 && (
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium text-accent-emphasis bg-accent-subtle">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-accent-emphasis bg-accent-subtle">
             <Icon name="clock" size={12} stroke={2} />
             {formatMinutes(flexMinutes)} livres
           </span>
@@ -62,7 +62,7 @@ export function AllocationBar({
 
       {/* Barra segmentada contínua */}
       <div
-        class="h-3 w-full bg-surface-sunken rounded-full overflow-hidden flex shadow-inner"
+        class="h-3 w-full bg-surface-sunken rounded-full overflow-hidden flex"
         role="progressbar"
         aria-label={label || 'Capacidade semanal alocada'}
         aria-valuenow={Math.min(100, Math.round((totalWeeklyMinutes / capacityTotal) * 100))}
@@ -94,7 +94,7 @@ export function AllocationBar({
         {subjects.map(s => (
           <div
             key={s.subjectId}
-            class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-sunken/60 text-[11px] text-content-primary border border-border-subtle"
+            class="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
           >
             <span
               class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`}
@@ -102,7 +102,7 @@ export function AllocationBar({
             />
             <span class="font-medium truncate max-w-[120px]">{s.subjectName}</span>
             <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
-            <span class="text-content-secondary text-[10px]">({formatDecimal(s.percentage)}%)</span>
+            <span class="text-content-secondary text-xs">({formatDecimal(s.percentage)}%)</span>
           </div>
         ))}
       </div>
@@ -110,7 +110,7 @@ export function AllocationBar({
       {/* Mix de Atividades da Semana (Teoria × Questões × Revisão) */}
       {mix.totalMinutes > 0 && (
         <div class="pt-2 border-t border-border-subtle">
-          <div class="flex items-center justify-between text-[11px] font-medium text-content-secondary mb-2">
+          <div class="flex items-center justify-between text-xs font-medium text-content-secondary mb-2">
             <span>Mix Pedagógico Previsto</span>
             <span>{formatDecimal(mix.theoryPercentage)}% T • {formatDecimal(mix.questionsPercentage)}% Q • {formatDecimal(mix.reviewsPercentage)}% R</span>
           </div>
@@ -137,7 +137,7 @@ export function AllocationBar({
               />
             )}
           </div>
-          <div class="flex items-center justify-between text-[10px] text-content-secondary mt-1.5 px-0.5">
+          <div class="flex items-center justify-between text-xs text-content-secondary mt-1.5 px-0.5">
             <span class="flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-info-emphasis"></span>
               Teoria: {formatMinutes(mix.theoryMinutes)}

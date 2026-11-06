@@ -60,7 +60,7 @@ export function SyllabusHealthCard({
           <p class="m-0">Cadastre disciplinas e tópicos para visualizar a saúde do edital.</p>
         </div>
       ) : (
-        <div class="space-y-3">
+        <div class="divide-y divide-border-subtle">
           {subjects.slice(0, 5).map((subject: SyllabusHealthSubject) => {
             const isAttention = subject.status === 'attention';
             const hasAccuracy = subject.accuracy != null;
@@ -68,7 +68,7 @@ export function SyllabusHealthCard({
             return (
               <div
                 key={subject.id}
-                class="p-2.5 rounded bg-surface-subtle border border-border-default"
+                class="py-2.5 first:pt-0 last:pb-0"
               >
                 <div class="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-xs mb-1.5 font-medium">
                   <span class="font-semibold text-content-primary flex items-center gap-1.5">

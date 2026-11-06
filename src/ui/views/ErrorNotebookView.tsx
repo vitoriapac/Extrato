@@ -188,12 +188,13 @@ export function ErrorNotebookView({
         </div>
 
         <div class="flex items-center gap-2">
-          <div class="inline-flex rounded-default shadow-xs" role="group">
+          <div class="inline-flex rounded-default" role="group">
             <button
               type="button"
-              class={`px-3 py-1.5 text-xs font-semibold rounded-l-md border border-border-default inline-flex items-center gap-1.5 ${
+              aria-pressed={viewMode === 'deck'}
+              class={`px-3 py-1.5 text-xs font-semibold rounded-l border border-border-default inline-flex items-center gap-1.5 ${
                 viewMode === 'deck'
-                  ? 'bg-brand-primary text-white border-brand-primary'
+                  ? 'bg-primary text-primary-contrast border-primary'
                   : 'bg-surface-card text-secondary hover:text-primary'
               }`}
               onClick={() => {
@@ -206,9 +207,10 @@ export function ErrorNotebookView({
             </button>
             <button
               type="button"
-              class={`px-3 py-1.5 text-xs font-semibold rounded-r-md border-t border-b border-r border-border-default inline-flex items-center gap-1.5 ${
+              aria-pressed={viewMode === 'catalog'}
+              class={`px-3 py-1.5 text-xs font-semibold rounded-r border-t border-b border-r border-border-default inline-flex items-center gap-1.5 ${
                 viewMode === 'catalog'
-                  ? 'bg-brand-primary text-white border-brand-primary'
+                  ? 'bg-primary text-primary-contrast border-primary'
                   : 'bg-surface-card text-secondary hover:text-primary'
               }`}
               onClick={() => setViewMode('catalog')}
@@ -325,7 +327,7 @@ export function ErrorNotebookView({
               </div>
 
               {/* CARD PRINCIPAL */}
-              <div class="rounded-default border border-border-default bg-surface-card shadow-sm overflow-hidden">
+              <div class="rounded-default border border-border-default bg-surface-card overflow-hidden">
                 {/* Frente: Enunciado / Pergunta */}
                 <div class="p-6 space-y-3">
                   <div class="flex items-center justify-between">

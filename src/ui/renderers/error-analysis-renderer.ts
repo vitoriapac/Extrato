@@ -28,7 +28,7 @@ export function renderErrorAnalysis(
     '</strong></div></section>';
 
   const metaHtml =
-    '<div class="analytics-note mt-2 text-[11px] text-content-secondary">' +
+    '<div class="analytics-note mt-2 text-xs text-content-secondary">' +
     formatDecimal(model.coverage) +
     '% dos ' +
     model.totalErrors +

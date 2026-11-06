@@ -293,6 +293,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       mount.hidden = false;
       if (toggleBtn) {
         toggleBtn.textContent = 'Visão padrão';
+        toggleBtn.setAttribute?.('aria-pressed', 'true');
         toggleBtn.classList.add('btn-primary');
       }
       renderVerticalizedSyllabus();
@@ -306,6 +307,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     container.hidden = false;
     if (toggleBtn) {
       toggleBtn.textContent = 'Edital verticalizado';
+      toggleBtn.setAttribute?.('aria-pressed', 'false');
       toggleBtn.classList.remove('btn-primary');
     }
 

@@ -119,7 +119,7 @@ export function VerticalizedSyllabusView({
         filteredSubjects.map(subject => (
           <div
             key={subject.id}
-            class="rounded-default border border-border-default bg-surface-card shadow-xs overflow-hidden"
+            class="rounded-default border border-border-default bg-surface-card overflow-hidden"
           >
             {/* Cabeçalho da Disciplina */}
             <div class="bg-surface-subtle px-4 py-3 border-b border-border-subtle flex justify-between items-center">

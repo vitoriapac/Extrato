@@ -78,7 +78,7 @@ export function SubjectBlock({
               title="Mover para cima"
               aria-label={`Mover ${subject.name} para cima`}
             >
-              ▲
+              <Icon name="chevron-up" size={14} />
             </button>
             <button
               type="button"
@@ -88,7 +88,7 @@ export function SubjectBlock({
               title="Mover para baixo"
               aria-label={`Mover ${subject.name} para baixo`}
             >
-              ▼
+              <Icon name="chevron-down" size={14} />
             </button>
           </div>
           <button
@@ -111,6 +111,9 @@ export function SubjectBlock({
           <span
             class="subject-name"
             contentEditable={true}
+            role="textbox"
+            aria-label={`Nome da disciplina ${subject.name}`}
+            title="Clique para editar o nome da disciplina"
             data-delegated-click="event.stopPropagation()"
             data-delegated-blur={`renameSubject('${subject.id}', this.textContent)`}
           >
@@ -131,7 +134,7 @@ export function SubjectBlock({
               aria-label={`Ações de ${subject.name}`}
               data-delegated-click="event.stopPropagation()"
             >
-              ⋯
+              <Icon name="dots" size={16} />
             </summary>
             <div class="action-menu__items">
               <button

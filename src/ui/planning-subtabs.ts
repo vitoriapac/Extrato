@@ -91,6 +91,17 @@ export function initPlanningSubtabs(doc: Document = document) {
     const activePanel = doc.getElementById(`metasSub-${activeKey}`);
     if (activePanel) activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+  doc.querySelectorAll<HTMLDetailsElement>('[data-metas-subpanel]').forEach(panel => {
+    panel.addEventListener('toggle', () => {
+      const key = panel.dataset.metasSubpanel;
+      if (!key || !isPlanningSubtab(key)) return;
+      if (panel.open) {
+        selectPlanningSubtab(key, { doc, updateHash: true });
+      } else if (panel.classList.contains('active')) {
+        panel.open = true;
+      }
+    });
+  });
   const fromHash = () => {
     const key = subtabFromHash(doc.defaultView?.location.hash || '');
     if (key) selectPlanningSubtab(key, { doc });
