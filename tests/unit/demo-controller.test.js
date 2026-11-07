@@ -173,3 +173,18 @@ test('demoEmptyCta oculta imediatamente ao criar disciplinas, planos ou sessões
   controller.sync();
   assert.equal(nodes.demoEmptyCta.hidden, true);
 });
+test('atalho de relatório avisa e aciona a exportação mesmo com o botão em painel oculto', () => {
+  const nodes = { demoReportShortcut: node(), exportReportBtn: node() },
+    calls = [],
+    controller = createDemoController({
+      document: { getElementById: id => nodes[id], querySelectorAll: () => [] },
+      storage: {},
+      isDemo: true,
+      getState: () => ({}),
+      notify: message => calls.push(message),
+    });
+  nodes.exportReportBtn.addEventListener('click', () => calls.push('export'));
+  controller.mount();
+  nodes.demoReportShortcut.click();
+  assert.deepEqual(calls, ['Gerando relatório PDF…', 'export']);
+});

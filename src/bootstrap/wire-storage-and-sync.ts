@@ -196,6 +196,7 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
       location.reload();
     },
     activateTab: deps.activateTab,
+    notify: deps.showToast,
   }).mount();
 
   return {

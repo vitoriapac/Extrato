@@ -11,6 +11,7 @@ export function createDemoController({
   confirm,
   reload,
   activateTab,
+  notify,
 }: any = {}) {
   if (!document || !storage || typeof getState !== 'function')
     throw new TypeError('Controlador da demonstração requer documento, armazenamento e estado.');
@@ -82,9 +83,10 @@ export function createDemoController({
       .forEach((button: any) =>
         listen(button, 'click', () => activateTab(button.dataset.demoTarget))
       );
-    listen(document.getElementById('demoReportShortcut'), 'click', () =>
-      document.getElementById('exportReportBtn')?.click()
-    );
+    listen(document.getElementById('demoReportShortcut'), 'click', () => {
+      notify?.('Gerando relatório PDF…');
+      document.getElementById('exportReportBtn')?.click();
+    });
     sync();
     return api;
   };
