@@ -3444,8 +3444,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 }
 .today-statement-ledger {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: var(--space-3, 12px);
+  gap: var(--space-2, 8px);
   padding: var(--space-2, 8px) 0;
 }
 .today-ledger-row {
@@ -3530,6 +3529,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 /* Linha de razão: rótulo, guia pontilhada e valor. */
 .ledger-line{display:flex;align-items:baseline;gap:10px}
+.ledger-line__label{min-width:0;overflow-wrap:anywhere}
 .ledger-line__label small{display:block;font-size:var(--text-micro);color:var(--text-secondary)}
 .ledger-line__lead{flex:1;border-bottom:1px dotted var(--border-control);align-self:end;margin-bottom:.35em;min-width:16px}
 .ledger-line__value{font:var(--text-small) var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}

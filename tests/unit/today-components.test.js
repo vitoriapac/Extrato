@@ -39,15 +39,18 @@ test('TodayExecutionSummary Preact Component — renderiza métricas e anel de p
       executedMinutesFormatted: '45m',
       dateFormatted: '16 de março de 2026',
       progressPercent: 50,
+      availableMinutes: 120,
+      plannedMinutes: 90,
+      executedMinutes: 45,
     })
   );
 
   assert.match(html, /2h/);
-  assert.match(html, /Disponibilidade de hoje/);
+  assert.match(html, /Disponível/);
   assert.match(html, /1h 30m/);
-  assert.match(html, /Plano de hoje/);
+  assert.match(html, /Planejado/);
   assert.match(html, /45m/);
-  assert.match(html, /Estudado hoje/);
+  assert.match(html, /Estudado/);
   assert.match(html, /50% do plano executado/);
   assert.match(html, /<strong>45m de 1h 30m<\/strong>/);
   assert.match(html, /class="chart-ring chart-ring--ok"[^>]*aria-label="Progresso do plano de hoje: 50 de 100"/);
@@ -77,9 +80,12 @@ test('resumo separa tempo estudado do tempo creditado ao plano', () => {
     executedMinutes: 45, planCompletedMinutes: 15, planRemainingMinutes: 45,
   }));
   assert.match(html, /15m de 1h/);
-  assert.match(html, /Falta no plano: 45m/);
-  assert.match(html, /Disponibilidade restante/);
-  assert.match(html, /1h 15m/);
+  assert.match(html, /Disponível/);
+  assert.match(html, /Planejado/);
+  assert.match(html, /Estudado/);
+  assert.match(html, /Livre/);
+  assert.doesNotMatch(html, /Falta no plano|Disponibilidade restante/);
+  assert.doesNotMatch(html, /Ajustar o dia/);
 });
 
 test('resumo avisa quando existem atividades anteriores ao plano atual', () => {
@@ -124,8 +130,8 @@ test('createTodayTabController — coordena a renderização do resumo diário',
     progress: 50,
   });
 
-  assert.match(summaryHtml, /120m/);
-  assert.match(summaryHtml, /90m/);
+  assert.match(summaryHtml, />2h</);
+  assert.match(summaryHtml, />1h 30m</);
   assert.match(summaryHtml, /45m/);
   assert.match(summaryHtml, /50%/);
 });
@@ -249,4 +255,23 @@ test('TodayWeeklyRhythmCard Preact Component — renderiza gráfico de colunas p
   assert.match(html, /chart-columns/);
   assert.match(html, /plan-execution-axis/);
   assert.match(html, /font-bold text-content-primary/); // today highlighted
+});
+
+test('resumo mostra excedente com texto quando o plano passa da disponibilidade', () => {
+  const html = render(h(TodayExecutionSummary, {
+    availableMinutesFormatted: '1h', plannedMinutesFormatted: '1h 20m', executedMinutesFormatted: '0m',
+    dateFormatted: 'Hoje', progressPercent: 0, availableMinutes: 60, plannedMinutes: 80, executedMinutes: 0,
+  }));
+  assert.match(html, /Excedente/);
+  assert.match(html, /−20m/);
+  assert.match(html, /O plano passa 20 min da sua disponibilidade./);
+  assert.match(html, /Ajustar o dia/);
+});
+
+test('resumo sem disponibilidade declarada avisa em texto', () => {
+  const html = render(h(TodayExecutionSummary, {
+    availableMinutesFormatted: '0m', plannedMinutesFormatted: '1h', executedMinutesFormatted: '0m',
+    dateFormatted: 'Hoje', progressPercent: 0, availableMinutes: 0, plannedMinutes: 60, executedMinutes: 0,
+  }));
+  assert.match(html, /Sem disponibilidade declarada para hoje./);
 });

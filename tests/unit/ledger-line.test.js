@@ -22,3 +22,8 @@ test('LedgerLine total e hint', () => {
   assert.match(html, /<small>na semana<\/small>/);
   assert.doesNotMatch(render(h(LedgerLine, { label: 'a', value: 'b' })), /ledger-line--total|is-negative|<small>/);
 });
+
+test('LedgerLine positivo marca is-positive', () => {
+  const html = render(h(LedgerLine, { label: 'Sobra', value: '10m', tone: 'positive' }));
+  assert.match(html, /is-positive/);
+});

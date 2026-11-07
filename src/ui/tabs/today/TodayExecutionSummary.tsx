@@ -1,6 +1,8 @@
 import type { JSX } from 'preact';
 import { RingGauge, StackedBar, type StackedBarPart } from '../../primitives/charts/charts.js';
 import { Icon } from '../../primitives/icon.js';
+import { LedgerLine } from '../../primitives/ledger-line.js';
+import { buildDayReconciliation } from './day-reconciliation.js';
 
 export interface TodayExecutionSummaryProps {
   availableMinutesFormatted: string;
@@ -26,7 +28,6 @@ function formatMinutes(minutes: number): string {
 }
 
 export function TodayExecutionSummary({
-  availableMinutesFormatted,
   plannedMinutesFormatted,
   executedMinutesFormatted,
   dateFormatted,
@@ -44,9 +45,7 @@ export function TodayExecutionSummary({
   const validPlanned = Math.max(0, Number(plannedMinutes) || 0);
   const validExecuted = Math.max(0, Number(executedMinutes) || 0);
 
-  // Balanço de minutos do dia (metáfora de extrato: Disponível - Executado)
-  const remainingMinutes = Math.max(0, validAvailable - validExecuted);
-  const remainingFormatted = formatMinutes(remainingMinutes);
+  const reconciliation = buildDayReconciliation({ available: validAvailable, planned: validPlanned, executed: validExecuted });
 
   const stackedParts: StackedBarPart[] = [];
   if (validExecuted > 0) {
@@ -85,29 +84,27 @@ export function TodayExecutionSummary({
         <span class="today-statement-date">{dateFormatted}</span>
       </header>
 
-      <div class="today-statement-ledger">
-        <div class="today-ledger-row">
-          <span class="today-ledger-label">Disponibilidade de hoje</span>
-          <strong class="today-ledger-value">{availableMinutesFormatted}</strong>
-        </div>
-        <div class="today-ledger-row">
-          <span class="today-ledger-label">Plano de hoje</span>
-          <strong class="today-ledger-value">{plannedMinutesFormatted}</strong>
-        </div>
-        <div class="today-ledger-row">
-          <span class="today-ledger-label">Estudado hoje</span>
-          <strong class="today-ledger-value">{executedMinutesFormatted}</strong>
-        </div>
-        {validAvailable > 0 && (
-          <div class="today-ledger-row today-ledger-row--balance">
-            <span class="today-ledger-label">Disponibilidade restante</span>
-            <strong class="today-ledger-value">{remainingFormatted}</strong>
-          </div>
-        )}
-      </div>
-      {needsPlanReview && <p class="context-note context-note--info">Há atividades preservadas que não estão vinculadas ao plano semanal atual. Confira a distribuição em Planejamento.</p>}
       {progressPercent !== null && (
-        <p class="today-progress-status">Falta no plano: {formatMinutes(remainingPlanned)}. A disponibilidade inclui o tempo livre além do plano.</p>
+        <div class="today-statement-ledger">
+          {reconciliation.rows.map((row) => (
+            <LedgerLine
+              key={row.key}
+              label={row.label}
+              value={row.key === 'overrun' ? `−${formatMinutes(row.minutes)}` : formatMinutes(row.minutes)}
+              tone={row.key === 'overrun' ? 'negative' : 'neutral'}
+              total={row.key === 'overrun' || row.key === 'free'}
+            />
+          ))}
+        </div>
+      )}
+      {needsPlanReview && <p class="context-note context-note--info">Há atividades preservadas que não estão vinculadas ao plano semanal atual. Confira a distribuição em Planejamento.</p>}
+      {progressPercent !== null && reconciliation.status !== 'within' && (
+        <p class="today-progress-status">
+          {reconciliation.status === 'over'
+            ? `O plano passa ${reconciliation.overrunMinutes} min da sua disponibilidade. `
+            : 'Sem disponibilidade declarada para hoje. '}
+          <a href="#planejamento/semana">Ajustar o dia</a>
+        </p>
       )}
 
       <div class="today-execution-progress">
