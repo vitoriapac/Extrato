@@ -74,7 +74,7 @@ export function renderErrorProfileChart({
     .join('');
 
   return `<div class="error-profile-chart mt-2 space-y-3" role="region" aria-label="Distribuição do perfil de erros">
-    <div class="w-full h-3 rounded-full overflow-hidden flex bg-surface-subtle/50" role="img" aria-label="Gráfico de distribuição de categorias de erro: ${allParts.map(p => `${p.label} ${Math.round((p.count / totalErrors) * 100)}%`).join(', ')}">
+    <div class="w-full h-3 rounded-full overflow-hidden flex bg-surface-subtle/50" role="img" aria-label="Gráfico de distribuição de categorias de erro: ${allParts.map(p => `${escapeHtml(p.label)} ${Math.round((p.count / totalErrors) * 100)}%`).join(', ')}">
       <svg class="w-full h-full" preserveAspectRatio="none">
         ${segmentsSvg}
       </svg>

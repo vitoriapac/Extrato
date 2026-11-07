@@ -12,6 +12,40 @@
 
 export const REMOTE_SYNC_CONFIG_KEY = 'studytrack_remote_sync_config';
 
+export const MIN_PASSPHRASE_LENGTH = 12;
+export const PASSPHRASE_LOSS_WARNING =
+  'Se você perder esta frase, o backup remoto não poderá ser recuperado: ninguém consegue decifrá-lo.';
+
+/** Regra de frase mestre: mínimo de 12 caracteres (bloqueia o envio); força é só aviso (tamanho + variedade). */
+export function evaluatePassphrase(passphrase: string): {
+  ok: boolean;
+  strength: 'invalida' | 'fraca' | 'media' | 'forte';
+  message: string;
+} {
+  const value = String(passphrase || '');
+  if (value.length < MIN_PASSPHRASE_LENGTH)
+    return {
+      ok: false,
+      strength: 'invalida',
+      message: `A frase precisa ter pelo menos ${MIN_PASSPHRASE_LENGTH} caracteres (faltam ${MIN_PASSPHRASE_LENGTH - value.length}).`,
+    };
+  const classes = [/[a-z]/, /[A-Z]/, /d/, /[^A-Za-z0-9]/].filter(re => re.test(value)).length;
+  const unique = new Set(value).size;
+  if (unique < 6 || (classes < 2 && value.length < 20))
+    return {
+      ok: true,
+      strength: 'fraca',
+      message: 'Frase fraca: misture letras, números e símbolos ou use uma frase longa.',
+    };
+  if (classes < 3 && value.length < 16)
+    return {
+      ok: true,
+      strength: 'media',
+      message: 'Frase razoável. Mais caracteres a deixam mais forte.',
+    };
+  return { ok: true, strength: 'forte', message: 'Frase forte.' };
+}
+
 /** Mesma normalização do provider, para que "pasta" e "pasta/" sejam o mesmo servidor. */
 type Row = Record<string, any>;
 const sameServer = (url: unknown) => {
@@ -121,6 +155,23 @@ export function createRemoteSyncController({
 
   const statusBox = document?.getElementById('remoteSyncStatusBox');
   const statusMsg = document?.getElementById('remoteSyncStatusMsg');
+
+  const passphraseHint = (() => {
+    if (!phraseInput || !document?.createElement || !phraseInput.parentNode) return null;
+    const hint = document.createElement('small');
+    hint.id = 'remoteSyncPassphraseHint';
+    hint.setAttribute('aria-live', 'polite');
+    hint.style.cssText = 'display:block;margin-top:4px;color:var(--text-muted);';
+    phraseInput.parentNode.insertBefore(hint, phraseInput.nextSibling);
+    return hint;
+  })();
+  const updatePassphraseHint = () => {
+    if (!passphraseHint) return;
+    const value = phraseInput?.value || '';
+    passphraseHint.textContent = value
+      ? `${evaluatePassphrase(value).message} ${PASSPHRASE_LOSS_WARNING}`
+      : `Mínimo de ${MIN_PASSPHRASE_LENGTH} caracteres. ${PASSPHRASE_LOSS_WARNING}`;
+  };
 
   const storage = (() => {
     try {
@@ -265,6 +316,11 @@ export function createRemoteSyncController({
     }
     const config = getConfig();
     if (!requireCredentials(config)) return;
+    const passphraseCheck = evaluatePassphrase(config.passphrase);
+    if (!passphraseCheck.ok) {
+      showStatus(passphraseCheck.message, true);
+      return;
+    }
     showStatus('Verificando o backup na nuvem...');
     let version;
     try {
@@ -318,7 +374,7 @@ export function createRemoteSyncController({
     return true;
   };
 
-  const pull = async () => {
+  const pull = async ({ allowOlder = false } = {}) => {
     if (isDisabled()) {
       notify('Ação indisponível na demonstração.');
       return;
@@ -328,9 +384,23 @@ export function createRemoteSyncController({
     showStatus('Baixando e decriptografando dados remotos...');
     let result;
     try {
-      result = await provider.downloadState(config);
+      result = await provider.downloadState({
+        ...config,
+        lastEnvelopeAt: lastSyncedEnvelopeAt(config.serverUrl),
+        allowOlder,
+      });
     } catch (error: any) {
       showStatus(`Erro na decriptografia/download: ${error?.message}`, true);
+      return;
+    }
+    if (result?.rollback) {
+      close({ restoreFocus: false });
+      confirm(
+        `${result.message} (backup de ${formatEnvelopeAt(result.envelopeAt)}). Isso pode ser um arquivo antigo reenviado ao servidor. Baixar mesmo assim?`,
+        () => {
+          pull({ allowOlder: true });
+        }
+      );
       return;
     }
     if (!result?.ok || !result.state) {
@@ -371,7 +441,9 @@ export function createRemoteSyncController({
     testBtn?.addEventListener('click', testConnection);
     reconcileBtn?.addEventListener('click', reconcile);
     pushBtn?.addEventListener('click', push);
-    pullBtn?.addEventListener('click', pull);
+    pullBtn?.addEventListener('click', () => pull());
+    phraseInput?.addEventListener('input', updatePassphraseHint);
+    updatePassphraseHint();
 
     overlay?.addEventListener('keydown', (event: any) => {
       if ((event as KeyboardEvent).key === 'Escape') {

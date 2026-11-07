@@ -38,6 +38,16 @@ export default [
       'no-debugger': 'error',
       'no-duplicate-case': 'error',
       'no-empty': ['warn', { allowEmptyCatch: true }],
+      // Aviso (não erro): há usos legados; todo valor interpolado deve passar por escapeHtml/escapeAttr.
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            "AssignmentExpression[left.property.name='innerHTML'][right.type='TemplateLiteral'][right.expressions.length>0]",
+          message:
+            'innerHTML com template literal interpolado: escape todo texto do usuário com escapeHtml/escapeAttr.',
+        },
+      ],
     },
   },
   // Componentes e interfaces com JSX (Preact)

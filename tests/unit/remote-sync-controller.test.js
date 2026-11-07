@@ -444,3 +444,15 @@ test('verificar status: usa a mesma regra de versão e não exige a chave', asyn
     /igual à última sincronização/
   );
 });
+
+test('regra da frase mestre: mínimo de 12 caracteres e aviso de força', async () => {
+  const { evaluatePassphrase, MIN_PASSPHRASE_LENGTH } =
+    await import('../../src/ui/controllers/remote-sync-controller.js');
+  assert.equal(MIN_PASSPHRASE_LENGTH, 12);
+  assert.equal(evaluatePassphrase('curta123').ok, false);
+  assert.equal(evaluatePassphrase('').ok, false);
+  assert.equal(evaluatePassphrase('aaaaaaaaaaaa').strength, 'fraca');
+  assert.equal(evaluatePassphrase('minhasenhaboa').strength, 'fraca');
+  assert.equal(evaluatePassphrase('Correct-Horse-Battery-9').strength, 'forte');
+  assert.equal(evaluatePassphrase('Abcdefgh1234').ok, true);
+});

@@ -221,3 +221,61 @@ test('index.html: CSP permite conectar ao WebDAV em https e ao servidor local, e
     'https:',
   ]);
 });
+
+function memoryDav() {
+  const store = new Map();
+  const fetch = async (url, options) => {
+    if (options.method === 'PUT') return (store.set(url, options.body), { ok: true, status: 201 });
+    if (!store.has(url)) return { ok: false, status: 404 };
+    return { ok: true, status: 200, text: async () => store.get(url) };
+  };
+  return { store, provider: createRemoteSyncProvider({ fetch }) };
+}
+const davConfig = {
+  serverUrl: 'https://dav.exemplo.com/files/',
+  passphrase: 'chave-mestra-segura',
+};
+const davUrl = 'https://dav.exemplo.com/files/studytrack-backup-encrypted.json';
+
+test('remote-sync-provider: upload grava envelope v2 com createdAt dentro do texto cifrado', async () => {
+  const { store, provider } = memoryDav();
+  const up = await provider.uploadState({ subjects: [] }, davConfig);
+  const envelope = JSON.parse(store.get(davUrl));
+  assert.equal(envelope.version, 2);
+  assert.equal(envelope.createdAt, up.envelopeAt);
+  const down = await provider.downloadState(davConfig);
+  assert.deepEqual(down.state, { subjects: [] });
+  assert.equal(down.envelopeAt, up.envelopeAt);
+});
+
+test('remote-sync-provider: envelope v1 legado continua sendo aceito', async () => {
+  const { encryptPayload } = await import('../../src/core/crypto-utils.js');
+  const { store, provider } = memoryDav();
+  const v1 = await encryptPayload(
+    JSON.stringify({ subjects: [{ id: 'a' }] }),
+    davConfig.passphrase
+  );
+  store.set(davUrl, JSON.stringify(v1));
+  const down = await provider.downloadState(davConfig);
+  assert.deepEqual(down.state, { subjects: [{ id: 'a' }] });
+  assert.equal(down.envelopeAt, v1.createdAt);
+});
+
+test('remote-sync-provider: recusa versão mais antiga que a última sincronização sem confirmação', async () => {
+  const { store, provider } = memoryDav();
+  const up = await provider.uploadState({ subjects: [] }, davConfig);
+  const later = new Date(Date.parse(up.envelopeAt) + 60_000).toISOString();
+  const blocked = await provider.downloadState({ ...davConfig, lastEnvelopeAt: later });
+  assert.equal(blocked.ok, false);
+  assert.equal(blocked.rollback, true);
+  const allowed = await provider.downloadState({
+    ...davConfig,
+    lastEnvelopeAt: later,
+    allowOlder: true,
+  });
+  assert.equal(allowed.ok, true);
+  // Servidor adulterando o createdAt externo para parecer recente é detectado (v2).
+  const forged = { ...JSON.parse(store.get(davUrl)), createdAt: later };
+  store.set(davUrl, JSON.stringify(forged));
+  await assert.rejects(provider.downloadState(davConfig), /adulterado/);
+});

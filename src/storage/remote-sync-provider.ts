@@ -18,7 +18,10 @@ function basicAuthHeader(username: string, password: string): string {
   return `Basic ${bytesToBase64(new TextEncoder().encode(`${username}:${password}`))}`;
 }
 
-/** Envelope gerado por encryptPayload; o createdAt fica fora da parte cifrada e serve de marcador de versão. */
+/**
+ * Envelope gerado por encryptPayload. v1: createdAt só fora da parte cifrada (adulterável pelo servidor).
+ * v2: o texto cifrado é {createdAt, state} e o createdAt externo deve coincidir com o interno (dica de versão).
+ */
 function parseEnvelope(text: string): EncryptedEnvelope | null {
   try {
     const envelope = JSON.parse(text);
@@ -39,6 +42,10 @@ export interface RemoteSyncConfig {
   password?: string;
   passphrase?: string;
   fileName?: string;
+  /** envelopeAt da última sincronização deste navegador; base para recusar versão mais antiga. */
+  lastEnvelopeAt?: string | null;
+  /** Confirmação explícita do usuário para aceitar uma versão mais antiga que lastEnvelopeAt. */
+  allowOlder?: boolean;
 }
 
 export type RemoteVersionCheckResult =
@@ -143,7 +150,13 @@ export function createRemoteSyncProvider({
       if (!config.passphrase) throw new TypeError('Chave de criptografia mestre obrigatória.');
       const { url, headers } = prepare(config, config.fileName);
 
-      const envelope = await encryptPayload(JSON.stringify(state), config.passphrase);
+      const createdAt = new Date().toISOString();
+      const envelope = await encryptPayload(
+        JSON.stringify({ createdAt, state }),
+        config.passphrase
+      );
+      envelope.version = 2;
+      envelope.createdAt = createdAt;
       const envelopeString = JSON.stringify(envelope, null, 2);
 
       const response = await request(url, {
@@ -183,12 +196,30 @@ export function createRemoteSyncProvider({
 
       const envelope = parseEnvelope(await response.text());
       if (!envelope) throw new Error('O arquivo remoto não é um backup reconhecido.');
-      const state = JSON.parse(await decryptPayload(envelope, config.passphrase));
+      const plain = JSON.parse(await decryptPayload(envelope, config.passphrase));
+      let state = plain;
+      let envelopeAt = envelope.createdAt;
+      if (envelope.version === 2) {
+        if (!plain || typeof plain.createdAt !== 'string' || plain.createdAt !== envelope.createdAt)
+          throw new Error('O backup remoto foi adulterado ou está inconsistente.');
+        state = plain.state;
+        envelopeAt = plain.createdAt;
+      }
+
+      // ISO-8601 em UTC ordena lexicograficamente; só compara quando o marcador local é confiável.
+      if (!config.allowOlder && config.lastEnvelopeAt && envelopeAt < config.lastEnvelopeAt) {
+        return {
+          ok: false,
+          rollback: true,
+          envelopeAt,
+          message: 'O backup remoto é mais antigo que a última sincronização deste navegador.',
+        };
+      }
 
       return {
         ok: true,
         state,
-        envelopeAt: envelope.createdAt,
+        envelopeAt,
       };
     },
   });
