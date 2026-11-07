@@ -4,6 +4,7 @@ import { activateTab, openDemo } from './helpers.js';
 test('explica impacto e permite editar pré-requisitos sem criar ciclos', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'disciplinas');
+  await page.locator('.subject-toggle').first().click();
   await page.locator('.notes-toggle-btn').first().click();
   const details = page.locator('.notes-row').first();
   await expect(details.locator('.topic-strategy-summary')).toContainText(

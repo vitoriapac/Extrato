@@ -24,6 +24,7 @@ test('calendário móvel explica a rolagem e mantém lista e teclado acessíveis
   const grid = page.locator('#monthCalendar .month-grid-wrap');
   await expect(page.locator('#calendarScrollHelp')).toContainText('visualização Lista');
   await expect(grid).toHaveAttribute('aria-describedby', 'calendarScrollHelp');
+  await page.locator('.calendar-view-btn[data-calendar-view="month"]').click();
   await grid.focus();
   await expect(grid).toBeFocused();
   await page.keyboard.press('ArrowRight');
@@ -32,6 +33,18 @@ test('calendário móvel explica a rolagem e mantém lista e teclado acessíveis
   await expect(page.locator('#panel-agenda')).toHaveAttribute('data-calendar-view', 'agenda');
   await expectNoPageOverflow(page);
 });
+
+for (const [width, view] of [
+  [1280, 'month'],
+  [375, 'agenda'],
+]) {
+  test(`agenda abre em ${view === 'month' ? 'Mês' : 'Lista'} a ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await openDemo(page);
+    await activateTab(page, 'agenda');
+    await expect(page.locator('#panel-agenda')).toHaveAttribute('data-calendar-view', view);
+  });
+}
 
 test('históricos editoriais distinguem filtros e mantêm estudo legível com poucos e muitos dados', async ({
   page,
