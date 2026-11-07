@@ -38,3 +38,4 @@ dist/
 .env.local
 .env.*.local
 !.env.example
+design-shots/
