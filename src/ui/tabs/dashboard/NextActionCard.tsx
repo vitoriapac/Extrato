@@ -85,7 +85,7 @@ export function NextActionCard({
             data-welcome-hero="true"
           >
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wider uppercase text-secondary">
+              <span className="text-xs font-semibold tracking-wide uppercase text-secondary">
                 PRIMEIRO ACESSO AO EXTRATO DE ESTUDOS
               </span>
               <h3

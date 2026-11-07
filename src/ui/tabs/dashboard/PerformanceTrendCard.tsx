@@ -203,7 +203,7 @@ export function PerformanceTrendCard({
                 y1={yTarget}
                 x2={width - padRight}
                 y2={yTarget}
-                class="stroke-amber"
+                class="stroke-content-secondary"
                 stroke-dasharray="4 3"
                 stroke-width="1.5"
                 opacity="0.8"
@@ -212,7 +212,7 @@ export function PerformanceTrendCard({
                 x={width - padRight - 2}
                 y={yTarget - 4}
                 text-anchor="end"
-                class="fill-amber text-xs font-data font-semibold"
+                class="fill-content-secondary text-xs font-data font-semibold"
               >
                 Meta {formatDecimal(targetScore)}%
               </text>
@@ -289,7 +289,7 @@ export function PerformanceTrendCard({
               <span>Simulados</span>
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-3 border-b border-dashed border-amber inline-block" />
+              <span class="w-3 border-b border-dashed border-content-secondary inline-block" />
               <span>Meta ({formatDecimal(targetScore)}%)</span>
             </span>
           </div>

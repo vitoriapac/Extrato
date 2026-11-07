@@ -56,8 +56,8 @@ function formatMinutesDuration(totalMinutes: number): string {
 }
 
 const MONTH_NAMES = [
-  'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-  'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  'jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.',
+  'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.',
 ];
 
 /**

@@ -77,7 +77,7 @@ export function SyllabusHealthCard({
                   <span class="font-data text-content-secondary whitespace-nowrap">
                     {hasAccuracy ? (
                       <>
-                        <span class={isAttention ? 'text-amber font-semibold' : 'text-content-primary font-medium'}>
+                        <span class={isAttention ? 'text-content-primary font-semibold' : 'text-content-primary font-medium'}>
                           {formatDecimal(subject.accuracy)}% acerto
                         </span>{' '}
                         <span class="text-content-secondary font-normal">(meta {formatDecimal(subject.target)}%)</span>
@@ -100,7 +100,7 @@ export function SyllabusHealthCard({
                         style={{ width: `${subject.concludedPct}%` }}
                       />
                       <div
-                        class="bg-amber h-full"
+                        class="bg-green opacity-40 h-full"
                         style={{ width: `${subject.inProgressPct}%` }}
                       />
                     </div>
@@ -126,7 +126,7 @@ export function SyllabusHealthCard({
                         !hasAccuracy
                           ? 'text-content-secondary'
                           : isAttention
-                            ? 'text-amber'
+                            ? 'text-content-secondary'
                             : 'text-green'
                       }`}
                     >

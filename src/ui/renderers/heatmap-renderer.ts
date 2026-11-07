@@ -57,13 +57,21 @@ export function renderHeatmap({
     hasActivity: hasActivity !== undefined ? hasActivity : cells.some((c: any) => (c.level ?? 0) > 0),
   });
 
+  // Filtros ficam num disclosure fechado; abre sozinho enquanto algum filtro foge do padrão.
+  const filtersActive = metric !== 'hours' || Boolean(subjectId) || onlyActiveDays;
+
   return `<div class="heatmap-toolbar" aria-label="Período da sequência">
-      <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)"><option value="hours" ${metric === 'hours' ? 'selected' : ''}>Horas</option><option value="questions" ${metric === 'questions' ? 'selected' : ''}>Questões</option><option value="reviews" ${metric === 'reviews' ? 'selected' : ''}>Revisões</option><option value="simulations" ${metric === 'simulations' ? 'selected' : ''}>Simulados</option></select>
-      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${subjectOptions}</select>
       <span>${expanded ? 'Período completo' : `Últimas ${defaultWeeks} semanas`}</span>
       <button class="btn ghost small" data-delegated-click="toggleStreakExpanded()">${expanded ? 'Mostrar menos' : 'Ver período completo'}</button>
-      <button class="btn ghost small" aria-pressed="${onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${onlyActiveDays ? 'Mostrar todos os dias' : 'Apenas dias com atividade'}</button>
     </div>
+    <details class="heatmap-filters" ${filtersActive ? 'open' : ''}>
+      <summary>Filtros do mapa${filtersActive ? ' (ativos)' : ''}</summary>
+      <div class="heatmap-toolbar">
+        <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)"><option value="hours" ${metric === 'hours' ? 'selected' : ''}>Horas</option><option value="questions" ${metric === 'questions' ? 'selected' : ''}>Questões</option><option value="reviews" ${metric === 'reviews' ? 'selected' : ''}>Revisões</option><option value="simulations" ${metric === 'simulations' ? 'selected' : ''}>Simulados</option></select>
+        <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${subjectOptions}</select>
+        <button class="btn ghost small" aria-pressed="${onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${onlyActiveDays ? 'Mostrar todos os dias' : 'Apenas dias com atividade'}</button>
+      </div>
+    </details>
     <div class="mt-3">
       ${heatmapComponentHtml}
     </div>`;

@@ -71,10 +71,10 @@ export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
           </div>
         </div>
 
-        <div class="space-y-1.5 text-xs font-data">
+        <div class="space-y-1.5 text-xs">
           <div>
             <span class="text-content-secondary">Estudo realizado:</span>
-            <div class="font-semibold text-sm text-content-primary">
+            <div class="font-data font-semibold text-sm text-content-primary">
               {studiedFormatted}{' '}
               <span class="text-content-secondary text-xs font-normal">/ {plannedFormatted} de meta diária</span>
             </div>
@@ -82,7 +82,7 @@ export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
           {planFormatted && (
             <div>
               <span class="text-content-secondary">Plano de hoje:</span>
-              <div class="font-semibold text-sm text-content-primary">
+              <div class="font-data font-semibold text-sm text-content-primary">
                 {planFormatted}{' '}
                 <span class="text-content-secondary text-xs font-normal">em atividades</span>
               </div>
@@ -90,7 +90,7 @@ export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
           )}
           <div>
             <span class="text-content-secondary">Questões resolvidas:</span>
-            <div class="font-semibold text-sm text-content-primary">
+            <div class="font-data font-semibold text-sm text-content-primary">
               {questionsDone}{' '}
               <span class="text-content-secondary text-xs font-normal">/ {questionsTarget} previstas</span>
             </div>
@@ -128,7 +128,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             <span
               class={`text-xs font-data ${
                 d.isPeak
-                  ? 'font-bold text-amber'
+                  ? 'font-bold text-content-primary'
                   : d.isToday
                     ? 'font-bold text-content-primary'
                     : 'text-content-secondary'
@@ -139,7 +139,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             <div
               class={`w-full rounded-t transition-all ${
                 d.isPeak
-                  ? 'bg-amber'
+                  ? 'bg-brand'
                   : d.isToday
                     ? 'bg-brand'
                     : d.count > 0
@@ -159,7 +159,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
           </div>
         ))}
       </div>
-      <p class="text-xs text-content-secondary mt-2 m-0 font-data">{tip}</p>
+      <p class="text-xs text-content-secondary mt-2 m-0">{tip}</p>
     </article>
   );
 }

@@ -128,6 +128,7 @@ test('renderActivityHeatmap renderiza o modo calendário contínuo com acessibil
   // Estrutura geral
   assert.match(html, /activity-heatmap-container/);
   assert.match(html, /role="region"/);
+  assert.match(html, /role="group"/);
   assert.match(html, /role="tablist"/);
 
   // Modos de visualização
@@ -175,4 +176,20 @@ test('renderActivityHeatmap renderiza o modo horários 24h com cards de insights
   assert.match(html, /Seg/);
   assert.match(html, /00h/);
   assert.match(html, /20h/);
+});
+
+test('renderActivityHeatmap mantém uma única parada de Tab na grade (roving tabindex)', () => {
+  const calendarVisual = buildActivityCalendarHeatmapVisual({
+    cells: [
+      { date: '2026-10-25', value: 0, level: 0 },
+      { date: '2026-10-26', value: 3600, level: 3, selected: true },
+      { date: '2026-10-27', value: 1800, level: 1 },
+    ],
+    tooltipForSummary: s => `${s.date}: atividade`,
+  });
+  const html = renderActivityHeatmap({ mode: 'calendar', calendarVisual });
+
+  assert.equal((html.match(/data-heatmap-date=/g) || []).length, 3);
+  assert.equal((html.match(/tabindex="0"[^>]*data-heatmap-date|data-heatmap-date[^>]*tabindex="0"/gi) || []).length, 1);
+  assert.match(html, /tabindex="0"[^>]*data-heatmap-date="2026-10-26"|data-heatmap-date="2026-10-26"[^>]*tabindex="0"/i);
 });

@@ -327,7 +327,8 @@ test('matriz operacional preserva atividade do plano, sessão ativa e ausência 
   const input = fixture(),
     aligned = planned(buildDailyExecutionModel(input));
   assert.match(aligned, /data-decision-role="planned"/);
-  assert.match(aligned, /Sua próxima atividade/);
+  assert.match(aligned, /<h3>[^<]+ · [^<]+<[/]h3>/);
+  assert.doesNotMatch(aligned, /Sua próxima atividade/);
   assert.match(aligned, /Prioridade principal prevista no plano/);
   input.nextBestAction.action.activityType = 'review';
   const model = buildDailyExecutionModel(input),

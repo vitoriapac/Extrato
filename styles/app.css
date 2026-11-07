@@ -345,26 +345,30 @@
   .timer-context select:disabled{opacity:.65;cursor:not-allowed;}
 
   /* ===== HEATMAP ===== */
+  .activity-heatmap-container{--hm-cell:14px;--hm-gap:3px;}
+  /* Toque: alvo de 24px (WCAG 2.5.8); a grade rola na horizontal dentro do contêiner. */
+  @media (pointer:coarse){.activity-heatmap-container{--hm-cell:24px;}}
   .heatmap-grid{
-    display:grid;grid-auto-flow:column;grid-template-rows:repeat(7, 13px);
-    gap:3px;overflow-x:auto;padding-bottom:6px;
+    display:grid;grid-auto-flow:column;grid-template-rows:repeat(7, var(--hm-cell));
+    gap:var(--hm-gap);overflow-x:auto;padding-bottom:6px;
   }
+  .heatmap-weekdays{height:calc(7 * var(--hm-cell) + 6 * var(--hm-gap));}
+  .heatmap-weekdays > span{height:var(--hm-cell);display:flex;align-items:center;}
   .grid-cols-24{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));}
-  .heatmap-cell{width:14px;height:14px;border:0;padding:0;border-radius:2.5px;background:var(--slate-bg);transition:transform .12s cubic-bezier(0.16,1,0.3,1),box-shadow .12s ease;}
+  span.heatmap-cell{width:12px;height:12px;}
+  .heatmap-cell{width:var(--hm-cell,14px);height:var(--hm-cell,14px);border:0;padding:0;border-radius:2.5px;background:var(--slate-bg);transition:transform .12s cubic-bezier(0.16,1,0.3,1),box-shadow .12s ease;}
   button.heatmap-cell{cursor:pointer;flex:0 0 auto;}
   button.heatmap-cell:hover{transform:scale(1.22);z-index:10;}
   button.heatmap-cell:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:1.5px;z-index:10;}
   button.heatmap-cell.selected{outline:2px solid var(--accent);outline-offset:1.5px;transform:scale(1.15);z-index:10;}
   .heatmap-cell.heat-0{background:var(--slate-bg);opacity:0.75;}
-  .heatmap-cell.heat-1{background:var(--heat-1);}
-  .heatmap-cell.heat-2{background:#86efac;}
-  .heatmap-cell.heat-3{background:#22c55e;}
-  .heatmap-cell.heat-4{background:#15803d;}
-  :is(.dark, [data-theme="dark"]) .heatmap-cell.heat-0{background:rgba(255,255,255,0.06);opacity:1;}
-  :is(.dark, [data-theme="dark"]) .heatmap-cell.heat-1{background:#1e3a2b;}
-  :is(.dark, [data-theme="dark"]) .heatmap-cell.heat-2{background:#14532d;}
-  :is(.dark, [data-theme="dark"]) .heatmap-cell.heat-3{background:#16a34a;}
-  :is(.dark, [data-theme="dark"]) .heatmap-cell.heat-4{background:#22c55e;}
+  /* Escala em musgo (tokens --heat-N); vale para a grade de dias e para a matriz de horários. */
+  .heat-0{background:var(--slate-bg);}
+  .heat-1{background:var(--heat-1);}
+  .heat-2{background:var(--heat-2);}
+  .heat-3{background:var(--heat-3);}
+  .heat-4{background:var(--heat-4);}
+  :is(.dark, [data-theme="dark"]) .heatmap-cell.heat-0,:is(.dark, [data-theme="dark"]) .heat-0{background:rgba(255,255,255,0.06);opacity:1;}
   .heatmap-legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-family:var(--font-body);font-size:var(--text-micro);color:var(--ink-soft);}
   .heatmap-legend .heatmap-cell{width:11px;height:11px;}
   .heatmap-summary{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;font-family:var(--font-body);font-size:var(--text-micro);color:var(--ink-soft);}
@@ -1232,6 +1236,10 @@
 
 .heatmap-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;font:var(--text-xs) var(--font-body);color:var(--ink-soft)}
 .heatmap-toolbar>span{margin-right:auto;font-weight:600;color:var(--ink)}
+.heatmap-filters{margin-bottom:12px}
+.heatmap-filters>summary{cursor:pointer;min-height:36px;display:flex;align-items:center;font:600 var(--text-xs) var(--font-body);color:var(--ink-soft)}
+.heatmap-filters>summary:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:2px}
+.heatmap-filters .heatmap-toolbar{margin-bottom:0}
 .heatmap-toolbar select,.radar-toolbar select{min-height:36px;border:1px solid var(--border-control);background:var(--paper);color:var(--ink);padding:7px 9px;font:var(--text-micro) var(--font-body)}
 .heatmap-detail{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:10px 12px;border:1px solid var(--paper-line);background:var(--paper);font:var(--text-micro)/1.5 var(--font-body);color:var(--ink)}
 .heatmap-empty{margin-top:var(--space-3)}
@@ -1594,7 +1602,7 @@ input,select,textarea{font-size:max(1em,var(--text-sm))}
 .overview-now-attention{border-top:1px solid var(--paper-line);box-shadow:none}
 .overview-now-attention h2{margin:4px 0 12px;color:var(--heading);font:600 var(--text-card-title)/1.3 var(--font-display)}
 .overview-now h2{margin:4px 0 12px;color:var(--heading);font:600 var(--text-card-title)/1.3 var(--font-display)}
-.overview-eyebrow{color:var(--ink-soft);font:600 var(--text-micro) var(--font-body);letter-spacing:.08em;text-transform:uppercase}
+.overview-eyebrow{color:var(--ink-soft);font:600 var(--text-micro) var(--font-body);letter-spacing:.05em;text-transform:uppercase}
 .overview-action-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;background:var(--paper);border:1px solid var(--paper-line)}
 .overview-action-card h3,.overview-action-card p{margin:0}
 .overview-action-card h3{color:var(--heading);font:600 1rem/1.35 var(--font-display)}
@@ -3502,3 +3510,17 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .icon-tabler {
   stroke-width: 1.5;
 }
+
+/* Layout da Visão geral: o cabeçalho lê prontidão + 3 sinais que pedem ação (conteúdo, revisões, sequência).
+   Disciplinas, em andamento e concluídos são inventário e vivem na aba Disciplinas. */
+.statement:not(.statement--compact) .mini-stat--inventory{display:none}
+@media(min-width:901px){
+  .statement:not(.statement--compact) .mini-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px}
+  .statement:not(.statement--compact) .mini-stat .n{font-size:24px}
+}
+/* Atenção acompanha o conteúdo em vez de esticar até a altura da ação. */
+.overview-now-attention{align-self:start}
+
+/* Quebras de linha: títulos equilibrados, texto corrido sem palavra órfã. */
+.overview-action-card h3,.overview-now h2,.chart-card h3{text-wrap:balance}
+.overview-action-suggestion,.overview-alert small,.chart-card p{text-wrap:pretty}

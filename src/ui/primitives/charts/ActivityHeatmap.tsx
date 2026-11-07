@@ -32,6 +32,9 @@ export function ActivityHeatmap({
   hasActivity = true,
 }: ActivityHeatmapProps): JSX.Element {
   const isCalendar = mode === 'calendar';
+  // Roving tabindex: uma única parada de Tab na grade; as setas movem entre as células.
+  const days = calendarVisual?.days ?? [];
+  const tabStopDate = (days.find(d => d.selected) ?? days[days.length - 1])?.date;
 
   return (
     <div
@@ -97,7 +100,7 @@ export function ActivityHeatmap({
                   <span
                     key={`month-${m.label}-${m.weekIndex}`}
                     class="absolute"
-                    style={{ left: `${32 + m.weekIndex * 17}px` }}
+                    style={{ left: `calc(32px + ${m.weekIndex} * (var(--hm-cell) + var(--hm-gap)))` }}
                   >
                     {m.label}
                   </span>
@@ -107,17 +110,18 @@ export function ActivityHeatmap({
               {/* Grade de 7 dias com rótulos à esquerda */}
               <div class="flex items-start gap-2">
                 {/* Rótulos dos dias da semana (Seg, Qua, Sex) */}
-                <div class="flex flex-col justify-between h-[116px] text-xs text-content-secondary font-mono select-none pt-0.5">
-                  <span class="h-3.5 leading-none">Seg</span>
-                  <span class="h-3.5 leading-none">Qua</span>
-                  <span class="h-3.5 leading-none">Sex</span>
+                <div class="heatmap-weekdays flex flex-col justify-between text-xs text-content-secondary font-mono select-none">
+                  <span class="leading-none">Seg</span>
+                  <span class="leading-none">Qua</span>
+                  <span class="leading-none">Sex</span>
                 </div>
 
                 {/* Grid de células do calendário */}
                 <div
                   class="heatmap-grid"
-                  role="region"
-                  aria-label="Grade de consistência diária de estudos"
+                  role="group"
+                  aria-label="Grade de consistência diária de estudos. Use as setas para percorrer os dias."
+                  data-heatmap-grid
                 >
                   {calendarVisual.days.map(day => (
                     <button
@@ -126,6 +130,9 @@ export function ActivityHeatmap({
                       class={`heatmap-cell heat-${day.level} ${day.selected ? 'selected' : ''}`}
                       title={day.tooltip}
                       aria-label={day.tooltip}
+                      aria-pressed={day.selected}
+                      tabIndex={day.date === tabStopDate ? 0 : -1}
+                      data-heatmap-date={day.date}
                       data-delegated-click={`selectHeatmapDay('${day.date}')`}
                     />
                   ))}

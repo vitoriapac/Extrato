@@ -15,7 +15,7 @@
   --radius-card:8px;--radius-control:6px;--heading:#1E3F35;--warn-on-dark:#F2B07A;--ok-on-dark:#A8D3B8;
   --danger-text:#A23B2A;--warn-text:#9A4F0E;--good-text:#2F6B4F;--ok-fill:#3E7A5C;
   --highlight-bg:#FBF1E4;--tab-hover-bg:#DDE6DE;--alerta-baixa-bg:#F7EEDC;
-  --alerta-baixa-text:#7E5A12;--heat-1:#CFE0D3;--info-bg:#E3ECE7;
+  --alerta-baixa-text:#7E5A12;--heat-1:#CFE0D3;--heat-2:#93BBA3;--heat-3:#5A9477;--heat-4:#2F5D4E;--info-bg:#E3ECE7;
   --green-bright:#5DAA80;--zebra-bg:#F8FAF8;--month-outside-bg:#EEF1EE;
   --month-outside-text:#5B6B63;--shadow-color:rgba(30,63,53,0.30);--on-brand:#F4F6F4;
   /* Highlights on the navy header only (1.53:1 on paper); amber stays for attention. */
@@ -43,7 +43,7 @@
   --red:#E58A78;--red-bg:#3A1E19;--slate-bg:#1A2621;--white:#16211D;
   --heading:#EEF3EE;--danger-text:#E58A78;--warn-text:#F0A55A;--good-text:#8CC5A2;
   --ok-fill:#6FBF93;--highlight-bg:#2A2416;--tab-hover-bg:#1F2D27;
-  --alerta-baixa-bg:#2E2715;--alerta-baixa-text:#D9B66B;--heat-1:#2C4A3B;
+  --alerta-baixa-bg:#2E2715;--alerta-baixa-text:#D9B66B;--heat-1:#2C4A3B;--heat-2:#3F6E56;--heat-3:#5F9C7D;--heat-4:#8CC5A2;
   --info-bg:#1A2E26;--green-bright:#8CC5A2;--zebra-bg:#141F1B;
   --month-outside-bg:#0D1412;--month-outside-text:#9DADA4;--shadow-color:rgba(0,0,0,.55);
   --on-brand:#E3EAE4;

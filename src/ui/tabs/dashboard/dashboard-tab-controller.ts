@@ -532,6 +532,11 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const state = deps.getState ? deps.getState() : {};
     const sessions = state.studySessions || state.sessions || [];
 
+    // O innerHTML recria os botões: guarda o dia focado para devolver o foco ao teclado.
+    const focusedDate = (doc.activeElement as HTMLElement | null)?.closest?.('[data-heatmap-date]')
+      ?.getAttribute('data-heatmap-date');
+    bindHeatmapKeys(container);
+
     container.innerHTML = renderHeatmapView({
       cells: heatmapModel.cells,
       hasActivity: heatmapModel.hasActivity,
@@ -551,6 +556,40 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       pluralize,
       mode: streakView.mode,
       sessions,
+    });
+
+    if (focusedDate) {
+      (container.querySelector(`[data-heatmap-date="${focusedDate}"]`) as HTMLElement | null)?.focus({
+        preventScroll: true,
+      });
+    }
+  }
+
+  // Setas em grade de 7 linhas (colunas = semanas): ↑↓ trocam o dia, ←→ trocam a semana.
+  let heatmapKeysBound: Element | null = null;
+  function bindHeatmapKeys(container: Element): void {
+    if (heatmapKeysBound === container || typeof container.addEventListener !== 'function') return;
+    heatmapKeysBound = container;
+    container.addEventListener('keydown', (event: Event) => {
+      const e = event as KeyboardEvent;
+      const current = (e.target as HTMLElement | null)?.closest('[data-heatmap-date]') as HTMLElement | null;
+      if (!current) return;
+      const cells = Array.from(
+        container.querySelectorAll<HTMLElement>('[data-heatmap-grid] [data-heatmap-date]')
+      );
+      const index = cells.indexOf(current);
+      const step: Record<string, number> = { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -7, ArrowRight: 7 };
+      let next = index;
+      if (e.key in step) next = index + step[e.key];
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = cells.length - 1;
+      else return;
+      e.preventDefault();
+      next = Math.max(0, Math.min(cells.length - 1, next));
+      if (next === index) return;
+      current.tabIndex = -1;
+      cells[next].tabIndex = 0;
+      cells[next].focus();
     });
   }
 
