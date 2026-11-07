@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=38453a20cbbf">
-<link rel="stylesheet" href="styles/app.css?v=38453a20cbbf">
+<link rel="stylesheet" href="styles/tailwind.css?v=fe740891baf9">
+<link rel="stylesheet" href="styles/app.css?v=fe740891baf9">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -593,6 +593,7 @@
     <div class="kpi-grid mb-4" id="kpiGrid"></div>
     <div id="errorNotebookMount" hidden></div>
     <div id="questionsMainContainer">
+    <div id="weakTopicsMount"></div>
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
         <caption class="sr-only">Histórico de questões resolvidas</caption>
@@ -655,13 +656,13 @@
         <tbody id="simuladosBody"></tbody>
       </table>
     </div>
-    <div class="chart-card">
-      <h3>Calibração das recomendações</h3>
+    <details class="chart-card decision-fold" id="recommendationCalibrationDetails" data-remember="questions-calibration">
+      <summary>Calibração e auditoria das recomendações</summary>
       <section aria-label="Histórico de recomendações"><h4>Recomendações · 30 dias</h4><div id="recommendationHistorySummary"></div></section>
       <details class="limits-disclosure"><summary aria-label="Limites da calibração">Limites</summary><p class="analytics-note">Resultados medidos por fator dominante. Os dados servem para auditoria e não alteram os pesos automaticamente.</p></details>
       <div id="recommendationCalibration"></div>
       <section aria-label="Auditoria de resultados posteriores"><h4>Resultados posteriores por tipo</h4><div id="recommendationOutcomeAudit"></div></section>
-    </div>
+    </details>
     </div>
   </div>
 
@@ -1038,7 +1039,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=38453a20cbbf"></script>
+  <script src="src/app.bundle.js?v=fe740891baf9"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

@@ -221,6 +221,8 @@ test('prova → decisão → plano → execução → resultado → fechamento �
     state.dailyPlans.flatMap(plan => plan.items).filter(item => item.weeklyCloseSnapshotId).length;
   expect(linked(undone)).toBe(linked(beforeApply));
   await activateTab(page, 'questoes');
+  // Calibração e auditoria ficam numa dobra fechada por padrão.
+  await page.locator('#recommendationCalibrationDetails > summary').click();
   const followup = page.locator('#recommendationOutcomeAudit .recommendation-followup-list');
   await expect(followup).toContainText('Juros');
   const detail = followup.locator(':scope > details').first();

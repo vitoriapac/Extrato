@@ -12,6 +12,7 @@ import { buildErrorAnalysisViewModel as defaultBuildErrorAnalysisViewModel } fro
 import { renderErrorAnalysis as defaultRenderErrorAnalysis } from '../../renderers/error-analysis-renderer.js';
 import { renderCollectionFooter as defaultRenderCollectionFooter } from '../../list-components.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { selectWeakTopics, renderWeakTopics } from './question-weak-topics.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 
 export interface QuestionAnalyticsControllerOptions {
@@ -105,6 +106,22 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
           `<option value="${opts.escapeAttr(subject.id)}" ${subject.id === currentSubjectId ? 'selected' : ''}>${opts.escapeHtml(subject.name)}</option>`
       )
       .join('');
+
+    const weakMount = opts.document.getElementById('weakTopicsMount');
+    if (weakMount) {
+      weakMount.innerHTML = renderWeakTopics({
+        topics: selectWeakTopics({
+          topics: subjects.flatMap(subject =>
+            opts
+              .getSubjectTopicPerformance(subject.id)
+              .map(topic => ({ ...topic, subjectName: subject.name }))
+          ),
+          records: opts.validQuestionRecords(),
+        }),
+        formatDate: opts.formatDatePt,
+        escapeHtml: opts.escapeHtml,
+      });
+    }
 
     const summary = opts.document.getElementById('questionAnalyticsSummary');
     const bars = opts.document.getElementById('topicPerformanceBars');

@@ -3544,3 +3544,27 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .ledger-line--total{border-top:2px solid var(--heading);padding-top:6px}
 .ledger-line.is-negative .ledger-line__value{color:var(--status-negative)}
 .ledger-line.is-positive .ledger-line__value{color:var(--status-positive)}
+
+/* Questões: tópicos críticos antes da tabela (DESIGN.md: sem sombra, Mono só em número/data). */
+.weak-topics{margin:0 0 var(--space-4);padding:var(--space-3) var(--space-4);background:var(--paper);border:1px solid var(--paper-line);border-radius:8px}
+.weak-topics__list{list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;gap:var(--space-2)}
+.weak-topics__item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--space-3);align-items:baseline;padding-top:var(--space-2);border-top:1px solid var(--paper-line)}
+.weak-topics__item:first-child{padding-top:0;border-top:0}
+.weak-topics__name{min-width:0;overflow-wrap:anywhere;color:var(--heading);font:600 14px var(--font-body)}
+.weak-topics__name small{color:var(--ink-soft);font:12px var(--font-body)}
+.weak-topics__acc{color:var(--heading);font-size:16px}
+.weak-topics__meta{grid-column:1/-1;color:var(--ink-soft);font:12px var(--font-body)}
+.weak-topics__num{font-family:var(--font-mono,monospace)}
+.weak-topics__flag{color:var(--heading);font-weight:600}
+
+/* Questões: tópicos críticos antes da tabela (DESIGN.md: sem sombra, Mono só em número/data). */
+.weak-topics{margin:0 0 var(--space-4);padding:var(--space-3) var(--space-4);background:var(--paper);border:1px solid var(--paper-line);border-radius:8px}
+.weak-topics__list{list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;gap:var(--space-2)}
+.weak-topics__item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--space-3);align-items:baseline;padding-top:var(--space-2);border-top:1px solid var(--paper-line)}
+.weak-topics__item:first-child{padding-top:0;border-top:0}
+.weak-topics__name{min-width:0;overflow-wrap:anywhere;color:var(--heading);font:600 14px var(--font-body)}
+.weak-topics__name small{color:var(--ink-soft);font:12px var(--font-body)}
+.weak-topics__acc{color:var(--heading);font-size:16px}
+.weak-topics__meta{grid-column:1/-1;color:var(--ink-soft);font:12px var(--font-body)}
+.weak-topics__num{font-family:var(--font-mono,monospace)}
+.weak-topics__flag{color:var(--heading);font-weight:600}
