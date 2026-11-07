@@ -1190,6 +1190,7 @@
 :where(.help-text-link){min-height:var(--control-height)}
 @media (pointer:coarse),(max-width:760px){
   summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link{min-height:var(--touch-target)}
+  .today-progress-status a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
 }
 /* Toque em tela larga (tablet, celular deitado): só tamanhos de alvo, sem o layout estreito. */
 @media (pointer:coarse){
