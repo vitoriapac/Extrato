@@ -210,7 +210,7 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   assignSubjectColors(state.subjects);
   state.subjects.forEach(s => {
     if (!Array.isArray(s.topics)) s.topics = [];
-    if (typeof s.collapsed !== 'boolean') s.collapsed = false;
+    if (typeof s.collapsed !== 'boolean') s.collapsed = true;
     if (typeof s.archived !== 'boolean') s.archived = false;
     if (s.archivedAt === undefined) s.archivedAt = null;
     if (typeof s.createdAt !== 'string') s.createdAt = nowISO();

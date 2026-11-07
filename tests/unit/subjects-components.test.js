@@ -158,3 +158,54 @@ test('SubjectTopicRow Preact Component — renderiza BookmarkBadge quando houver
   assert.ok(html.includes('bookmark-badge'));
   assert.ok(html.includes('pág. 25 de 80'));
 });
+
+const compactProps = subjects => ({
+  subjects,
+  archivedSubjects: [],
+  subjectProgressFn: () => 40,
+  accuracyTrends: new Map([['c-1', [60, null, 72]]]),
+  subjectTopicFilters: new Map(),
+  subjectTopicLimits: new Map(),
+  openNotesIds: new Set(),
+  statusOptions: mockStatusOptions,
+  statusClasses: mockStatusClasses,
+  difficultyOptions: mockDiffOptions,
+  difficultyClasses: mockDiffClasses,
+  topicMatchesExamFn: () => true,
+  matchesSearchFn: () => true,
+  pluralizeFn: (c, s) => `${c} ${s}`,
+});
+const compactSubject = (id, name, collapsed) => ({
+  id,
+  name,
+  collapsed,
+  archived: false,
+  topics: [{ id: `${id}-t`, name: `Tópico de ${name}`, status: 'Em andamento', difficulty: 'Médio', archived: false }],
+});
+
+test('Disciplinas — linha fechada mostra nome, progresso, acerto recente e a ação, sem tabela de tópicos', () => {
+  const html = render(h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)])));
+  assert.ok(html.includes('Língua Portuguesa'));
+  assert.ok(html.includes('40% · 1 de 1 tópico'));
+  assert.ok(html.includes('role="progressbar"'));
+  assert.match(html, /Acerto recente[\s\S]*72%/);
+  assert.ok(html.includes('Abrir tópicos'));
+  assert.ok(html.includes('aria-expanded="false"'));
+  assert.ok(!html.includes('<table'), 'tabela de tópicos não é montada fechada');
+  assert.ok(!html.includes('Tópico de Língua Portuguesa'));
+});
+
+test('Disciplinas — só a escolha lembrada (collapsed:false) abre a tabela; as demais ficam fechadas', () => {
+  const html = render(
+    h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true), compactSubject('c-2', 'Matemática', false)]))
+  );
+  assert.equal(html.match(/<table/g)?.length, 1);
+  assert.ok(html.includes('Tópico de Matemática'));
+  assert.ok(!html.includes('Tópico de Língua Portuguesa'));
+  assert.ok(html.includes('Fechar tópicos'));
+});
+
+test('Disciplinas — a cor é um traço decorativo antes do nome, nunca a única indicação', () => {
+  const html = render(h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)])));
+  assert.match(html, /class="subject-color-swatch[^"]*"[^>]*aria-hidden="true"[^>]*><\/span><span class="subject-name"/);
+});

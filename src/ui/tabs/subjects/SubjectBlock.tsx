@@ -58,6 +58,7 @@ export function SubjectBlock({
   const isLast = index === totalSubjects - 1;
   const isEmptySubject =
     subjectTopics.length === 0 && !topicFilter.status && !topicFilter.difficulty && !searchQuery;
+  const recentAccuracy = [...(accuracyTrend || [])].reverse().find(v => typeof v === 'number');
   const statusCount = (status: string) =>
     subjectTopics.filter((topic: any) => (topic.status || 'Não iniciado') === status).length;
 
@@ -91,21 +92,8 @@ export function SubjectBlock({
               <Icon name="chevron-down" size={14} />
             </button>
           </div>
-          <button
-            type="button"
-            class="subject-toggle btn ghost small"
-            aria-expanded={!collapsed}
-            disabled={Boolean(searchQuery)}
-            title={searchQuery ? 'A busca mantém os resultados abertos' : undefined}
-            aria-controls={`subject-body-${subject.id}`}
-            aria-label={`Expandir ou recolher ${subject.name}`}
-            data-delegated-click={`event.stopPropagation();toggleSubject('${subject.id}')`}
-          >
-            <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={16} />
-          </button>
           <span
             class={`subject-color-swatch subject-color-${colorSlot}`}
-            title={`Cor: ${SUBJECT_COLOR_NAMES[colorSlot - 1]}`}
             aria-hidden="true"
           />
           <span
@@ -125,6 +113,34 @@ export function SubjectBlock({
             {progressPercent}% · {allVisibleTopicsCount} de {subjectTopics.length} tópico
             {subjectTopics.length === 1 ? '' : 's'}
           </span>
+          <span
+            class="subject-progress-bar"
+            role="progressbar"
+            aria-valuenow={progressPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Progresso de ${subject.name}`}
+          >
+            <span style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }} />
+          </span>
+          {recentAccuracy !== undefined && (
+            <span class="subject-recent-accuracy">
+              Acerto recente <b>{recentAccuracy}%</b>
+            </span>
+          )}
+          <button
+            type="button"
+            class="subject-toggle btn ghost small"
+            aria-expanded={!collapsed}
+            disabled={Boolean(searchQuery)}
+            title={searchQuery ? 'A busca mantém os resultados abertos' : undefined}
+            aria-controls={`subject-body-${subject.id}`}
+            data-delegated-click={`event.stopPropagation();toggleSubject('${subject.id}')`}
+          >
+            <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={16} />
+            {collapsed ? 'Abrir tópicos' : 'Fechar tópicos'}
+            <span class="sr-only"> de {subject.name}</span>
+          </button>
           <details
             class="action-menu subject-action-menu"
             data-delegated-click="event.stopPropagation()"
@@ -171,7 +187,7 @@ export function SubjectBlock({
         </div>
       </div>
 
-      {subjectTopics.length > 0 && (
+      {!collapsed && subjectTopics.length > 0 && (
         <div class="subject-overview">
           <StackedBar
             className="subject-overview__status"
@@ -198,6 +214,8 @@ export function SubjectBlock({
       )}
 
       <div id={`subject-body-${subject.id}`} class={`subject-body ${collapsed ? 'collapsed' : ''}`}>
+        {!collapsed && (
+        <>
         {isEmptySubject && (
           <p class="helper-text" role="status">
             Nenhum tópico ainda. Adicione o primeiro para começar a acompanhar esta disciplina.
@@ -313,6 +331,8 @@ export function SubjectBlock({
               </div>
             ))}
           </div>
+        )}
+        </>
         )}
       </div>
     </div>

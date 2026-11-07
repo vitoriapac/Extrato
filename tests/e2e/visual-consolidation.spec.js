@@ -595,13 +595,14 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   await openDemo(page);
 
   await activateTab(page, 'disciplinas');
+  // Disciplinas vêm fechadas: o resumo de status e acerto aparece só nas abertas.
+  await expect(page.locator('.subject-block .subject-overview')).toHaveCount(0);
+  await page.locator('.subject-toggle').first().click();
   const overview = page.locator('.subject-block .subject-overview').first();
   await expect(overview.getByRole('img', { name: /por status: Concluído \d+ \(\d+%\)/ })).toBeVisible();
   await expect(overview.locator('.chart-stacked__legend')).toContainText('Não iniciado');
   await expect(overview.getByRole('img', { name: /^Acerto semanal em questões/ })).toBeVisible();
-  expect(await page.locator('.subject-block .subject-overview').count()).toBe(
-    await page.locator('.subject-block').count()
-  );
+  await expect(page.locator('.subject-block .subject-overview')).toHaveCount(1);
 
   await activateTab(page, 'agenda');
   const load = page.locator('#reviewLoad');

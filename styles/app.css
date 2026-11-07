@@ -1190,7 +1190,7 @@
 :where(.help-text-link){min-height:var(--control-height)}
 @media (pointer:coarse),(max-width:760px){
   .week-reconciliation__note a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
-  summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link{min-height:var(--touch-target)}
+  summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link,.subject-toggle{min-height:var(--touch-target)}
   .today-progress-status a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
 }
 /* Toque em tela larga (tablet, celular deitado): só tamanhos de alvo, sem o layout estreito. */
@@ -2943,7 +2943,7 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
   .demo-banner.is-menu-open .demo-banner-actions{flex-basis:100%}
 }
 /* C5: subject color swatch, always beside the subject name. */
-.subject-color-swatch{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--subject-color,var(--subject-1));box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 20%,transparent)}
+.subject-color-swatch{flex:0 0 auto;width:4px;align-self:stretch;min-height:24px;border-radius:2px;background:var(--subject-color,var(--subject-1))}
 .subject-color-1{--subject-color:var(--subject-1)}.subject-color-2{--subject-color:var(--subject-2)}.subject-color-3{--subject-color:var(--subject-3)}.subject-color-4{--subject-color:var(--subject-4)}
 .subject-color-5{--subject-color:var(--subject-5)}.subject-color-6{--subject-color:var(--subject-6)}.subject-color-7{--subject-color:var(--subject-7)}.subject-color-8{--subject-color:var(--subject-8)}
 /* Subject color fills, strokes and backgrounds for charts */
@@ -2979,7 +2979,12 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 .chart-matrix__bubble{opacity:.85;transition:transform .2s ease,opacity .2s ease;cursor:pointer}
 .chart-matrix__bubble:hover{opacity:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2))}
 .chart-matrix__bubble-text{font-family:var(--font-body);font-size:10px;font-weight:600;fill:var(--text-primary);pointer-events:none}
-.subject-block[data-subject-color]{border-left:4px solid var(--subject-color)}
+.subject-progress-bar{display:block;flex:0 0 120px;width:120px;height:6px;background:var(--surface-subtle);border:1px solid var(--border-default);border-radius:3px;overflow:hidden}
+.subject-progress-bar>span{display:block;height:100%;background:var(--accent-primary)}
+.subject-recent-accuracy{font:var(--text-small) var(--font-body);color:var(--text-secondary);white-space:nowrap}
+.subject-recent-accuracy b{font:600 var(--text-small) var(--font-data);font-variant-numeric:tabular-nums;color:var(--text-primary)}
+.subject-header .subject-toggle{gap:6px;white-space:nowrap}
+@media (max-width:760px){.subject-progress-bar{flex:1 0 100%;width:auto}.subject-recent-accuracy{flex:1 0 100%}.subject-header .subject-toggle{flex:1 1 140px}}
 .subject-color-field{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:6px 10px;font-size:var(--text-small);color:var(--text-secondary)}
 .subject-color-field select{min-height:36px;padding:4px 8px;border:1px solid var(--border-control);border-radius:var(--radius-control);background:var(--surface-card);color:var(--text-primary);font:inherit}
 /* C6: motivation. Streak in the fixed header, 4-week consistency strip, discreet goal cue. */
