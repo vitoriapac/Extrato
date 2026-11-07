@@ -125,13 +125,11 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     planRemainingMinutes?: number;
     execution?: { needsPlanReview?: boolean } | null;
   }) {
-    const availableMinutesFormatted = formatPlanMinutes(model.availableMinutes);
     const plannedMinutesFormatted = formatPlanMinutes(model.plannedMinutes);
     const executedMinutesFormatted = formatPlanMinutes(model.executedMinutes);
     const dateFormatted = formatDatePt(model.date);
 
     return h(TodayExecutionSummary, {
-      availableMinutesFormatted,
       plannedMinutesFormatted,
       executedMinutesFormatted,
       dateFormatted,

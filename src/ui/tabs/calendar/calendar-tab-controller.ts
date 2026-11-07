@@ -262,7 +262,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     el.innerHTML = renderCalendarIndicators({
       items: getRevisoesUnificadas(),
       today: todayISO(),
-      daysUntil: diasParaRevisao,
     });
   }
 

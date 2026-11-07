@@ -5,7 +5,6 @@ import { LedgerLine } from '../../primitives/ledger-line.js';
 import { buildDayReconciliation } from './day-reconciliation.js';
 
 export interface TodayExecutionSummaryProps {
-  availableMinutesFormatted: string;
   plannedMinutesFormatted: string;
   executedMinutesFormatted: string;
   dateFormatted: string;
@@ -101,7 +100,7 @@ export function TodayExecutionSummary({
       {progressPercent !== null && reconciliation.status !== 'within' && (
         <p class="today-progress-status">
           {reconciliation.status === 'over'
-            ? `O plano passa ${reconciliation.overrunMinutes} min da sua disponibilidade. `
+            ? `O plano passa ${formatMinutes(reconciliation.overrunMinutes)} da sua disponibilidade. `
             : 'Sem disponibilidade declarada para hoje. '}
           <a href="#planejamento/semana">Ajustar o dia</a>
         </p>

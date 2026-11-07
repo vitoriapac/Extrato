@@ -34,7 +34,6 @@ test('Hoje não salva atividades automáticas durante o primeiro acesso sem plan
 test('TodayExecutionSummary Preact Component — renderiza métricas e anel de progresso', () => {
   const html = render(
     h(TodayExecutionSummary, {
-      availableMinutesFormatted: '2h',
       plannedMinutesFormatted: '1h 30m',
       executedMinutesFormatted: '45m',
       dateFormatted: '16 de março de 2026',
@@ -60,7 +59,6 @@ test('TodayExecutionSummary Preact Component — renderiza métricas e anel de p
 test('TodayExecutionSummary Preact Component — exibe estado sem plano diário', () => {
   const html = render(
     h(TodayExecutionSummary, {
-      availableMinutesFormatted: '0m',
       plannedMinutesFormatted: '0m',
       executedMinutesFormatted: '0m',
       dateFormatted: '16 de março de 2026',
@@ -75,7 +73,7 @@ test('TodayExecutionSummary Preact Component — exibe estado sem plano diário'
 
 test('resumo separa tempo estudado do tempo creditado ao plano', () => {
   const html = render(h(TodayExecutionSummary, {
-    availableMinutesFormatted: '2h', plannedMinutesFormatted: '1h', executedMinutesFormatted: '45m',
+    plannedMinutesFormatted: '1h', executedMinutesFormatted: '45m',
     dateFormatted: 'Hoje', progressPercent: 25, availableMinutes: 120, plannedMinutes: 60,
     executedMinutes: 45, planCompletedMinutes: 15, planRemainingMinutes: 45,
   }));
@@ -90,7 +88,7 @@ test('resumo separa tempo estudado do tempo creditado ao plano', () => {
 
 test('resumo avisa quando existem atividades anteriores ao plano atual', () => {
   const html = render(h(TodayExecutionSummary, {
-    availableMinutesFormatted: '2h', plannedMinutesFormatted: '1h', executedMinutesFormatted: '0m',
+    plannedMinutesFormatted: '1h', executedMinutesFormatted: '0m',
     dateFormatted: 'Hoje', progressPercent: 0, needsPlanReview: true,
   }));
   assert.match(html, /atividades preservadas que não estão vinculadas ao plano semanal atual/);
@@ -139,7 +137,6 @@ test('createTodayTabController — coordena a renderização do resumo diário',
 test('TodayExecutionSummary Preact Component — renderiza barra empilhada de tempo quando há minutos informados', () => {
   const html = render(
     h(TodayExecutionSummary, {
-      availableMinutesFormatted: '2h',
       plannedMinutesFormatted: '1h 30m',
       executedMinutesFormatted: '45m',
       dateFormatted: '16 de março de 2026',
@@ -259,19 +256,27 @@ test('TodayWeeklyRhythmCard Preact Component — renderiza gráfico de colunas p
 
 test('resumo mostra excedente com texto quando o plano passa da disponibilidade', () => {
   const html = render(h(TodayExecutionSummary, {
-    availableMinutesFormatted: '1h', plannedMinutesFormatted: '1h 20m', executedMinutesFormatted: '0m',
+    plannedMinutesFormatted: '1h 20m', executedMinutesFormatted: '0m',
     dateFormatted: 'Hoje', progressPercent: 0, availableMinutes: 60, plannedMinutes: 80, executedMinutes: 0,
   }));
   assert.match(html, /Excedente/);
   assert.match(html, /−20m/);
-  assert.match(html, /O plano passa 20 min da sua disponibilidade./);
+  assert.match(html, /O plano passa 20m da sua disponibilidade./);
   assert.match(html, /Ajustar o dia/);
 });
 
 test('resumo sem disponibilidade declarada avisa em texto', () => {
   const html = render(h(TodayExecutionSummary, {
-    availableMinutesFormatted: '0m', plannedMinutesFormatted: '1h', executedMinutesFormatted: '0m',
+    plannedMinutesFormatted: '1h', executedMinutesFormatted: '0m',
     dateFormatted: 'Hoje', progressPercent: 0, availableMinutes: 0, plannedMinutes: 60, executedMinutes: 0,
   }));
   assert.match(html, /Sem disponibilidade declarada para hoje./);
+});
+
+test('sem progresso calculado (progressPercent nulo) não gera conciliação nem Excedente', () => {
+  const html = render(h(TodayExecutionSummary, {
+    plannedMinutesFormatted: '1h 20m', executedMinutesFormatted: '0m',
+    dateFormatted: 'Hoje', progressPercent: null, availableMinutes: 60, plannedMinutes: 80, executedMinutes: 0,
+  }));
+  assert.doesNotMatch(html, /Excedente|Disponível/);
 });

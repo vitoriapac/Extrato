@@ -48,7 +48,7 @@ test('cabeçalho fixo: sequência com chama só aparece a partir de 1 dia', () =
 });
 
 test('resumo de Hoje: meta do plano cumprida ganha aviso em texto e classe da animação', () => {
-  const props = { availableMinutesFormatted: '1h', plannedMinutesFormatted: '1h', executedMinutesFormatted: '1h', dateFormatted: 'hoje' };
+  const props = { plannedMinutesFormatted: '1h', executedMinutesFormatted: '1h', dateFormatted: 'hoje' };
   const met = render(h(TodayExecutionSummary, { ...props, progressPercent: 100 }));
   assert.match(met, /is-goal-met/);
   assert.match(met, /role="status"[^>]*>.*Plano do dia cumprido/s);
