@@ -8,13 +8,9 @@
  * - GET  /health
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-};
+import { corsFor } from '../_shared/cors.ts';
+import { MAX_REQUEST_BYTES, MAX_STATE_BYTES, parsePushBody } from '../_shared/request-validation.ts';
+import { createClient } from '../_shared/supabase.ts';
 
 async function computeSha256Hex(payload: string): Promise<string> {
   const bytes = new TextEncoder().encode(payload);
@@ -25,6 +21,11 @@ async function computeSha256Hex(payload: string): Promise<string> {
 }
 
 Deno.serve(async (req: Request) => {
+  const CORS_HEADERS = corsFor(
+    req,
+    'GET, POST, OPTIONS',
+    'authorization, x-client-info, apikey, content-type, x-device-id'
+  );
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS_HEADERS });
   }
@@ -108,20 +109,28 @@ Deno.serve(async (req: Request) => {
   }
 
   if (req.method === 'POST' && url.pathname.endsWith('/push')) {
-    const body = await req.json();
-    const stateJson = body?.stateJson;
-    const schemaVersion = Number(body?.schemaVersion || stateJson?.schemaVersion || 1);
-    const clientUpdatedAt = body?.clientUpdatedAt || new Date().toISOString();
-    const deviceId = req.headers.get('X-Device-Id') || null;
+    const tooBig = () =>
+      Response.json({ error: 'Corpo grande demais.' }, { status: 413, headers: CORS_HEADERS });
+    if (Number(req.headers.get('content-length') ?? 0) > MAX_REQUEST_BYTES) return tooBig();
 
-    if (!stateJson || typeof stateJson !== 'object') {
-      return Response.json(
-        { error: 'Payload stateJson inválido.' },
-        { status: 400, headers: CORS_HEADERS }
-      );
+    let body: unknown;
+    try {
+      const raw = await req.text();
+      if (raw.length > MAX_REQUEST_BYTES) return tooBig();
+      body = JSON.parse(raw);
+    } catch {
+      return Response.json({ error: 'Payload inválido.' }, { status: 400, headers: CORS_HEADERS });
     }
 
+    const parsed = parsePushBody(body);
+    if ('error' in parsed) {
+      return Response.json({ error: parsed.error }, { status: 400, headers: CORS_HEADERS });
+    }
+    const { stateJson, schemaVersion, clientUpdatedAt } = parsed;
+    const deviceId = (req.headers.get('X-Device-Id') || '').slice(0, 128) || null;
+
     const serialized = JSON.stringify(stateJson);
+    if (serialized.length > MAX_STATE_BYTES) return tooBig();
     const checksum = await computeSha256Hex(serialized);
     const serverUpdatedAt = new Date().toISOString();
 
@@ -136,8 +145,9 @@ Deno.serve(async (req: Request) => {
     });
 
     if (upsertError) {
+      console.error('state-sync: falha no upsert', upsertError.message);
       return Response.json(
-        { error: upsertError.message },
+        { error: 'Falha ao salvar.' },
         { status: 500, headers: CORS_HEADERS }
       );
     }
