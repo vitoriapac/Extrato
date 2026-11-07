@@ -1189,6 +1189,7 @@
 :where(.panel input:not([type=checkbox]):not([type=radio]):not(.meta-inputs input),table.ledger input:not([type=checkbox]):not([type=radio]),.weekday-goal input){min-height:var(--control-height)}
 :where(.help-text-link){min-height:var(--control-height)}
 @media (pointer:coarse),(max-width:760px){
+  .week-reconciliation__note a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
   summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link{min-height:var(--touch-target)}
   .today-progress-status a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
 }
@@ -3534,6 +3535,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .ledger-line__label small{display:block;font-size:var(--text-micro);color:var(--text-secondary)}
 .ledger-line__lead{flex:1;border-bottom:1px dotted var(--border-control);align-self:end;margin-bottom:.35em;min-width:16px}
 .ledger-line__value{font:var(--text-small) var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.week-reconciliation{display:grid;gap:var(--space-2);margin:4px 0 var(--space-6)}.week-reconciliation__period{margin:0;font:var(--text-micro) var(--font-data);color:var(--text-secondary)}.week-reconciliation__note{margin:var(--space-2) 0 0;color:var(--text-secondary)}
 .ledger-line--total{border-top:2px solid var(--heading);padding-top:6px}
 .ledger-line.is-negative .ledger-line__value{color:var(--status-negative)}
 .ledger-line.is-positive .ledger-line__value{color:var(--status-positive)}

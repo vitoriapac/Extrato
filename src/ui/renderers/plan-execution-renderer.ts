@@ -3,13 +3,25 @@ import { renderColumnChart } from '../primitives/charts/charts.js';
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import { renderEmptyState } from '../components/presentation.js';
 import { renderActionCard } from '../components/analytical-presentation.js';
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+import { WeekReconciliationSummary } from '../tabs/goals/WeekReconciliationSummary.js';
+import { buildWeekReconciliation } from '../tabs/goals/week-reconciliation.js';
 const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
 
 export function renderPlanExecution(model: Record<string, any>, { formatDate }: any) {
-  const scale = Math.max(60, model.capacityMinutes, model.plannedMinutes, model.studiedMinutes);
-  const ratio = (value: number, total: number) =>
-    total > 0 ? `${Math.round((value / total) * 100)}%` : '—';
-  const summary = `<div class="plan-execution-summary ui-metric-group"><div><span>Capacidade semanal</span><strong>${fmt(model.capacityMinutes)}</strong><small>Tempo disponível</small><span class="plan-execution-track" aria-hidden="true"><i style="width:${(model.capacityMinutes / scale) * 100}%"></i></span></div><div><span>Planejado nos dias</span><strong>${fmt(model.plannedMinutes)}</strong><small>${ratio(model.plannedMinutes, model.capacityMinutes)} da capacidade</small><span class="plan-execution-track is-planned" aria-hidden="true"><i style="width:${(model.plannedMinutes / scale) * 100}%"></i></span></div><div><span>Estudado até hoje</span><strong>${fmt(model.studiedMinutes)}</strong><small>${ratio(model.studiedMinutes, model.plannedMinutes)} do plano</small><span class="plan-execution-track is-studied" aria-hidden="true"><i style="width:${(model.studiedMinutes / scale) * 100}%"></i></span></div></div>`;
+  const range = (start: string, end: string) => `${formatDate(start).slice(0, 5)} a ${formatDate(end).slice(0, 5)}`;
+  const periodLabel = model.days.length ? range(model.days[0].date, model.days.at(-1).date) : 'esta semana';
+  const summary = render(
+    h(WeekReconciliationSummary, {
+      data: buildWeekReconciliation({
+        capacityMin: model.capacityMinutes,
+        plannedMin: model.plannedMinutes,
+        studiedMin: model.studiedMinutes,
+        periodLabel,
+      }),
+    })
+  );
   const warning =
     model.plannedMinutes > model.capacityMinutes
       ? '<aside class="context-note context-note--attention"><strong>Atenção</strong><p>O tempo planejado nos dias supera a capacidade semanal informada. Revise a distribuição antes de confirmar novos planos.</p></aside>'
@@ -83,7 +95,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
     summary +
     warning +
     unplanned +
-    renderStrategicExecution(model.strategic) +
+    renderStrategicExecution(model.strategic, periodLabel) +
     `<details class="metas-execution-history"><summary>Ver execução diária e histórico</summary>` +
     renderChartFrame({
       title: 'Planejado × realizado nesta semana',
