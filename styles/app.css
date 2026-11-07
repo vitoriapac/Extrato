@@ -2938,7 +2938,9 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
   .demo-banner.is-menu-open .demo-banner-actions{flex-basis:100%}
 }
 /* C5: subject color swatch, always beside the subject name. */
-.subject-color-swatch{flex:0 0 auto;width:4px;align-self:stretch;min-height:24px;border-radius:2px;background:var(--subject-color,var(--subject-1))}
+.subject-color-swatch{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--subject-color,var(--subject-1));box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 20%,transparent)}
+/* Traço fechado só na linha da aba Disciplinas. */
+.subject-header .subject-color-swatch{width:4px;height:auto;align-self:stretch;min-height:24px;border-radius:2px;box-shadow:none}
 .subject-color-1{--subject-color:var(--subject-1)}.subject-color-2{--subject-color:var(--subject-2)}.subject-color-3{--subject-color:var(--subject-3)}.subject-color-4{--subject-color:var(--subject-4)}
 .subject-color-5{--subject-color:var(--subject-5)}.subject-color-6{--subject-color:var(--subject-6)}.subject-color-7{--subject-color:var(--subject-7)}.subject-color-8{--subject-color:var(--subject-8)}
 /* Subject color fills, strokes and backgrounds for charts */
@@ -3449,6 +3451,10 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   gap: var(--space-2, 8px);
   padding: var(--space-2, 8px) 0;
 }
+/* --brand escuro é quase o papel: sobre papel o destaque é --accent */
+:is(.dark, [data-theme="dark"]) .text-brand {
+  color: var(--accent);
+}
 .context-note--info a.text-brand {
   color: var(--text-primary);
   text-decoration: underline;
@@ -3513,7 +3519,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .ledger-line.is-positive .ledger-line__value{color:var(--status-positive)}
 
 /* Questões: tópicos críticos antes da tabela; sem sombra, Mono só em número/data (DESIGN.md). */
-.weak-topics{margin:0 0 var(--space-4);padding:var(--space-3) var(--space-4);background:var(--paper);border:1px solid var(--paper-line);border-radius:8px}
+.weak-topics{margin:0 0 var(--space-4);padding:var(--space-3) var(--space-4);background:var(--paper);border:1px solid var(--paper-line);border-radius:var(--radius-card)}
 .weak-topics__list{list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;gap:var(--space-2)}
 .weak-topics__item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--space-3);align-items:baseline;padding-top:var(--space-2);border-top:1px solid var(--paper-line)}
 .weak-topics__item:first-child{padding-top:0;border-top:0}
