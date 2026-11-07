@@ -356,11 +356,11 @@
   .heatmap-weekdays > span{height:var(--hm-cell);display:flex;align-items:center;}
   .grid-cols-24{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));}
   span.heatmap-cell{width:12px;height:12px;}
-  .heatmap-cell{width:var(--hm-cell,14px);height:var(--hm-cell,14px);border:0;padding:0;border-radius:2.5px;background:var(--slate-bg);transition:transform .12s cubic-bezier(0.16,1,0.3,1),box-shadow .12s ease;}
+  .heatmap-cell{width:var(--hm-cell,14px);height:var(--hm-cell,14px);border:0;padding:0;border-radius:2.5px;background:var(--slate-bg);}
   button.heatmap-cell{cursor:pointer;flex:0 0 auto;}
-  button.heatmap-cell:hover{transform:scale(1.22);z-index:10;}
+  button.heatmap-cell:hover{outline:1.5px solid var(--ink-soft);outline-offset:1px;z-index:10;}
   button.heatmap-cell:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:1.5px;z-index:10;}
-  button.heatmap-cell.selected{outline:2px solid var(--accent);outline-offset:1.5px;transform:scale(1.15);z-index:10;}
+  button.heatmap-cell.selected{outline:2px solid var(--accent);outline-offset:1.5px;z-index:10;}
   .heatmap-cell.heat-0{background:var(--slate-bg);opacity:0.75;}
   /* Escala em musgo (tokens --heat-N); vale para a grade de dias e para a matriz de horários. */
   .heat-0{background:var(--slate-bg);}
@@ -1236,8 +1236,8 @@
 
 .heatmap-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;font:var(--text-xs) var(--font-body);color:var(--ink-soft)}
 .heatmap-toolbar>span{margin-right:auto;font-weight:600;color:var(--ink)}
-.heatmap-filters{margin-bottom:12px}
-.heatmap-filters>summary{cursor:pointer;min-height:36px;display:flex;align-items:center;font:600 var(--text-xs) var(--font-body);color:var(--ink-soft)}
+.heatmap-filters{margin:0}
+.heatmap-filters>summary{cursor:pointer;display:list-item;list-style-position:inside;padding-block:8px;font:600 var(--text-xs) var(--font-body);color:var(--ink-soft)}
 .heatmap-filters>summary:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:2px}
 .heatmap-filters .heatmap-toolbar{margin-bottom:0}
 .heatmap-toolbar select,.radar-toolbar select{min-height:36px;border:1px solid var(--border-control);background:var(--paper);color:var(--ink);padding:7px 9px;font:var(--text-micro) var(--font-body)}
@@ -1411,7 +1411,7 @@
   .btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn{min-height:var(--touch-target)}
   .icon-btn,.icon-btn-nav,.month-nav-btn{min-width:var(--touch-target)}
   .heatmap-toolbar .btn{flex:1 1 150px}
-  .heatmap-grid{grid-template-rows:repeat(7,13px);grid-auto-flow:column;grid-auto-columns:13px;justify-content:start}
+  .heatmap-grid{grid-template-rows:repeat(7,var(--hm-cell));grid-auto-flow:column;grid-auto-columns:var(--hm-cell);justify-content:start}
   .calendar-view-switch{display:flex}
   .calendar-month-toolbar{flex-wrap:wrap;gap:8px}
   .calendar-month-toolbar h3{order:-1;flex:1 0 100%;min-width:0}
@@ -2834,7 +2834,7 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 /* The welcome card already offers the demo; a second invitation above it only pushes the first step down. */
 body:has(#panel-dashboard.active [data-welcome-hero]) #demoEmptyCta{display:none}
 .overview-now:has([data-welcome-hero]){grid-template-columns:minmax(0,1fr)}
-.overview-now:has([data-welcome-hero]) .overview-now-attention{display:none}
+.overview-now:has([data-welcome-hero]) .overview-now-side{display:none}
 .overview-now-action:has([data-welcome-hero])>.overview-eyebrow,.overview-now-action:has([data-welcome-hero])>h2{display:none}
 .overview-now-action:has([data-welcome-hero]) .welcome-hero-card{padding:0;border:0;box-shadow:none;background:transparent}
 @media(min-width:901px){
@@ -3519,7 +3519,12 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   .statement:not(.statement--compact) .mini-stat .n{font-size:24px}
 }
 /* Atenção acompanha o conteúdo em vez de esticar até a altura da ação. */
-.overview-now-attention{align-self:start}
+.overview-now-side{display:flex;flex-direction:column;gap:var(--space-4);min-width:0;align-self:start}
+.overview-now-side>.chart-card{margin:0}
+.overview-now-side>[hidden]{display:none}
+/* Meta diária e questões: uma linha discreta ao fim de "Próxima ação". */
+.today-goal-inline{margin:var(--space-3) 0 0;color:var(--ink-soft);font:var(--text-xs)/1.5 var(--font-body)}
+.today-goal-inline .font-data{color:var(--ink);font-variant-numeric:tabular-nums}
 
 /* Quebras de linha: títulos equilibrados, texto corrido sem palavra órfã. */
 .overview-action-card h3,.overview-now h2,.chart-card h3{text-wrap:balance}

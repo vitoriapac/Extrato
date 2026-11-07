@@ -9,7 +9,7 @@ import { AllocationBalanceGrid } from '../../src/ui/tabs/dashboard/AllocationBal
 import { CriticalVulnerabilitiesGrid } from '../../src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.js';
 import { VolatileMasteryGrid } from '../../src/ui/tabs/dashboard/VolatileMasteryGrid.js';
 import { SyllabusHealthCard } from '../../src/ui/tabs/dashboard/SyllabusHealthCard.js';
-import { CockpitSidebarCards } from '../../src/ui/tabs/dashboard/CockpitSidebarCards.js';
+import { CockpitSidebarCards, TodayGoalCard } from '../../src/ui/tabs/dashboard/CockpitSidebarCards.js';
 import { buildAllocationBalanceViewModel } from '../../src/application/analytics/build-allocation-balance-view-model.js';
 import { buildCriticalVulnerabilitiesViewModel } from '../../src/application/analytics/build-critical-vulnerabilities-view-model.js';
 import { buildVolatileMasteryViewModel } from '../../src/application/analytics/build-volatile-mastery-view-model.js';
@@ -375,3 +375,21 @@ test('CockpitSidebarCards Preact Component — renderiza Meta de Hoje, Carga e M
 });
 
 
+
+test('TodayGoalCard inline — mostra só meta diária e questões, e some sem plano', () => {
+  const data = {
+    hasConfiguredPlan: true,
+    percent: 50,
+    studiedFormatted: '30min',
+    plannedFormatted: '1h',
+    planFormatted: '1h20',
+    questionsDone: 3,
+    questionsTarget: 5,
+    dateLabel: '2 de nov.',
+  };
+  const html = render(h(TodayGoalCard, { data, variant: 'inline' }));
+  assert.match(html, /Meta diária/);
+  assert.match(html, /3 de 5/);
+  assert.doesNotMatch(html, /Meta de Hoje|Estudo realizado/);
+  assert.equal(render(h(TodayGoalCard, { data: { ...data, hasConfiguredPlan: false }, variant: 'inline' })), '');
+});

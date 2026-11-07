@@ -250,7 +250,7 @@ export function PerformanceTrendCard({
                       cx={cx}
                       cy={cy}
                       r="5.5"
-                      class="fill-brand stroke-surface-card"
+                      class="fill-accent stroke-surface-card"
                       stroke-width="2"
                     >
                       <title>{`${p.simulationName || 'Simulado'} (${p.label}): ${formatDecimal(p.simulationScore)}%`}</title>
@@ -285,7 +285,7 @@ export function PerformanceTrendCard({
               <span>Questões</span>
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-brand inline-block" />
+              <span class="w-2 h-2 rounded-full bg-accent inline-block" />
               <span>Simulados</span>
             </span>
             <span class="inline-flex items-center gap-1.5">

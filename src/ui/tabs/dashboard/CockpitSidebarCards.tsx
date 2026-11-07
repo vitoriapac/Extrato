@@ -10,8 +10,25 @@ export interface CockpitSidebarCardsProps {
   model: CockpitSidebarViewModel;
 }
 
-export function TodayGoalCard({ data }: { data: TodayGoalData }): JSX.Element {
+export function TodayGoalCard({
+  data,
+  variant = 'card',
+}: {
+  data: TodayGoalData;
+  variant?: 'card' | 'inline';
+}): JSX.Element | null {
   const { hasConfiguredPlan, percent, studiedFormatted, plannedFormatted, planFormatted, questionsDone, questionsTarget, dateLabel } = data;
+
+  // Inline: dentro do card "Próxima ação", só o que "Execução de hoje" não mostra (meta diária e questões).
+  if (variant === 'inline') {
+    if (!hasConfiguredPlan) return null;
+    return (
+      <p class="today-goal-inline" aria-label="Meta diária e questões de hoje">
+        Meta diária <span class="font-data">{plannedFormatted}</span>
+        {' · '}Questões <span class="font-data">{questionsDone} de {questionsTarget}</span> previstas
+      </p>
+    );
+  }
 
   if (!hasConfiguredPlan) {
     return (
@@ -139,11 +156,11 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             <div
               class={`w-full rounded-t transition-all ${
                 d.isPeak
-                  ? 'bg-brand'
+                  ? 'bg-accent'
                   : d.isToday
-                    ? 'bg-brand'
+                    ? 'bg-accent'
                     : d.count > 0
-                      ? 'bg-brand-secondary'
+                      ? 'bg-brand-secondary opacity-50'
                       : 'bg-surface-subtle'
               }`}
               style={{ height: `${d.heightPct}%` }}

@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=cceb04fa1c9e">
-<link rel="stylesheet" href="styles/app.css?v=cceb04fa1c9e">
+<link rel="stylesheet" href="styles/tailwind.css?v=090e638edd16">
+<link rel="stylesheet" href="styles/app.css?v=090e638edd16">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -134,12 +134,16 @@
         <h2>Próxima ação</h2>
         <div id="overviewNextAction"></div>
         <div id="dailyExecutionDashboard"></div>
+        <div id="cockpitTodayGoalMount"></div>
       </article>
-      <article class="chart-card overview-now-attention">
-        <h2>Atenção</h2>
-        <div id="overviewAttention"></div>
-        <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver pendências na aba Hoje</button>
-      </article>
+      <div class="overview-now-side">
+        <article class="chart-card overview-now-attention">
+          <h2>Atenção</h2>
+          <div id="overviewAttention"></div>
+          <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver pendências na aba Hoje</button>
+        </article>
+        <div id="cockpitReviewLoadMount"></div>
+      </div>
     </section>
     <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
       <div id="guidedOnboardingEntry"></div>
@@ -147,12 +151,7 @@
     <div id="overviewExamPhase"></div>
       <!-- COCKPIT PANORÂMICO EM 3 CAMADAS -->
       <div id="cockpitAnalyticsDisclosure" class="cockpit-three-layers space-y-4 mt-4">
-        <!-- CAMADA 1: OPERACIONAL IMEDIATO (2 COLUNAS: META DE HOJE × CARGA DE REVISÕES) -->
-        <section class="dashboard-layer-1 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch" aria-label="Meta de hoje e carga de revisões">
-          <div id="cockpitTodayGoalMount" class="h-full"></div>
-          <div id="cockpitReviewLoadMount" class="h-full"></div>
-        </section>
-
+        <!-- Meta diária/questões ficam em "Próxima ação"; Carga de revisões na coluna de Atenção (acima). -->
         <!-- CAMADA 2: TÁTICO & RETENÇÃO (2 COLUNAS: SALDO DO EDITAL × EVOLUÇÃO DE ACERTOS) -->
         <section class="dashboard-layer-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch" aria-label="Saldo do edital e evolução de acertos">
           <div id="cockpitSyllabusHealthMount" class="h-full"></div>
@@ -1039,7 +1038,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=cceb04fa1c9e"></script>
+  <script src="src/app.bundle.js?v=090e638edd16"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

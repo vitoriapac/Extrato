@@ -239,7 +239,6 @@ export function buildDelegatedActionHandlers(
     viewSelectedHeatmapSessions: (...args: any[]) =>
       c.dashboard?.viewSelectedHeatmapSessions?.(...args),
     toggleStreakActiveDays: (...args: any[]) => c.dashboard?.toggleStreakActiveDays?.(...args),
-    toggleStreakExpanded: (...args: any[]) => c.dashboard?.toggleStreakExpanded?.(...args),
     changeUpcomingLimit: (...args: any[]) => c.dashboard?.changeUpcomingLimit?.(...args),
     resetUpcomingLimit: (...args: any[]) => c.dashboard?.resetUpcomingLimit?.(...args),
     showAllUpcoming: (...args: any[]) => c.dashboard?.showAllUpcoming?.(...args),

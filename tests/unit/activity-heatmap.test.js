@@ -129,7 +129,7 @@ test('renderActivityHeatmap renderiza o modo calendário contínuo com acessibil
   assert.match(html, /activity-heatmap-container/);
   assert.match(html, /role="region"/);
   assert.match(html, /role="group"/);
-  assert.match(html, /role="tablist"/);
+  assert.match(html, /aria-label="Visualização do heatmap"/);
 
   // Modos de visualização
   assert.match(html, /Calendário contínuo/);
@@ -192,4 +192,44 @@ test('renderActivityHeatmap mantém uma única parada de Tab na grade (roving ta
   assert.equal((html.match(/data-heatmap-date=/g) || []).length, 3);
   assert.equal((html.match(/tabindex="0"[^>]*data-heatmap-date|data-heatmap-date[^>]*tabindex="0"/gi) || []).length, 1);
   assert.match(html, /tabindex="0"[^>]*data-heatmap-date="2026-10-26"|data-heatmap-date="2026-10-26"[^>]*tabindex="0"/i);
+});
+
+test('renderActivityHeatmap com controls traz título, período e filtros dentro do card', () => {
+  const calendarVisual = buildActivityCalendarHeatmapVisual({
+    cells: [{ date: '2026-10-26', value: 3600, level: 3 }],
+    tooltipForSummary: s => `${s.date}: atividade`,
+  });
+  const controls = { subjects: [{ id: 's1', name: 'Português <b>' }], subjectId: '', weeks: 52, onlyActiveDays: false };
+  const html = renderActivityHeatmap({ mode: 'calendar', calendarVisual, controls });
+
+  assert.match(html, /<h3[^>]*>Consistência de estudos<\/h3>/);
+  assert.match(html, /aria-label="Período do heatmap"/);
+  assert.match(html, /<option value="52" selected[^>]*>Últimas 52 semanas/);
+  assert.match(html, /Todo o período/);
+  assert.match(html, /Filtros do mapa<\/summary>/);
+  assert.doesNotMatch(html, /<details[^>]*\sopen/);
+  assert.match(html, /Português &lt;b>/);
+
+  const active = renderActivityHeatmap({ mode: 'calendar', calendarVisual, metric: 'questions', controls });
+  assert.match(active, /<details[^>]*\sopen/);
+  assert.match(active, /Filtros do mapa \(ativos\)/);
+
+  assert.doesNotMatch(renderActivityHeatmap({ mode: 'calendar', calendarVisual }), /Consistência de estudos|Filtros do mapa/);
+});
+
+test('renderActivityHeatmap resume o período: dias ativos, maior sequência e dia mais ativo', () => {
+  // 2026-10-26 é segunda: ativos seg, ter, qua (sequência 3), pausa na quinta, ativo na sexta e na segunda seguinte.
+  const cells = [
+    ['2026-10-26', 3], ['2026-10-27', 1], ['2026-10-28', 2], ['2026-10-29', 0], ['2026-10-30', 4],
+    ['2026-10-31', 0], ['2026-11-01', 0], ['2026-11-02', 2],
+  ].map(([date, level]) => ({ date, value: level * 1800, level }));
+  const calendarVisual = buildActivityCalendarHeatmapVisual({ cells, tooltipForSummary: s => s.date });
+  const html = renderActivityHeatmap({ mode: 'calendar', calendarVisual });
+
+  assert.match(html, /Dias com atividade<\/dt><dd[^>]*>5 de 8<\/dd>/);
+  assert.match(html, /Maior sequência no período<\/dt><dd[^>]*>3 dias<\/dd>/);
+  assert.match(html, /Dia da semana mais ativo<\/dt><dd[^>]*>Segunda<\/dd>/);
+
+  const empty = buildActivityCalendarHeatmapVisual({ cells: [{ date: '2026-10-26', value: 0, level: 0 }], tooltipForSummary: s => s.date });
+  assert.doesNotMatch(renderActivityHeatmap({ mode: 'calendar', calendarVisual: empty, hasActivity: false }), /heatmap-insights/);
 });

@@ -117,13 +117,13 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;'));
   const escapeAttr = deps.escapeAttr || ((str: any) => String(str ?? '').replace(/"/g, '&quot;'));
-  const DEFAULT_STREAK_WEEKS = 24;
+  const HEATMAP_WEEK_OPTIONS = [12, 24, 52, 0];
   const heatmapMetricLevel = deps.heatmapMetricLevel || defaultHeatmapMetricLevel;
 
   const streakView = {
     metric: 'hours',
     subjectId: '',
-    expanded: false,
+    weeks: 52, // 0 = todo o histórico
     onlyActiveDays: false,
     selectedDate: null as string | null,
     mode: 'calendar' as 'calendar' | 'hours',
@@ -228,6 +228,9 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       (attentionCard as HTMLElement).hidden = !hasConfigured;
     }
 
+    const reviewLoadSlot = doc.getElementById('cockpitReviewLoadMount');
+    if (reviewLoadSlot) (reviewLoadSlot as HTMLElement).hidden = !hasConfigured;
+
     const analyticsDisclosure = doc.getElementById('cockpitAnalyticsDisclosure');
     if (analyticsDisclosure) {
       analyticsDisclosure.hidden = !hasConfigured;
@@ -259,7 +262,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       }
     }
 
-        // Camada 1 (2 Colunas): Meta de Hoje (Esquerda) × Carga de Revisões (Direita)
+        // Meta diária e questões ficam dentro de "Próxima ação"; Carga de Revisões na coluna de Atenção
     const sidebarModel = buildCockpitSidebarViewModel(state, today, {
       goalMinutes: (deps.metaHoursToday?.() ?? 0) * 60,
       planMinutes: deps.getTodayPlannedMinutes?.() ?? 0,
@@ -269,7 +272,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
     const todayGoalMount = doc.getElementById('cockpitTodayGoalMount');
     if (todayGoalMount) {
-      mountPreact(h(TodayGoalCard, { data: sidebarModel.todayGoal }), todayGoalMount);
+      mountPreact(h(TodayGoalCard, { data: sidebarModel.todayGoal, variant: 'inline' }), todayGoalMount);
     }
 
     const reviewLoadMount = doc.getElementById('cockpitReviewLoadMount');
@@ -494,8 +497,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
             (Number(parseLocalDate(todayISO())) - Number(parseLocalDate(earliest))) / 86400000
           ) + 1
         )
-      : DEFAULT_STREAK_WEEKS * 7;
-    const days = streakView.expanded ? historyDays : DEFAULT_STREAK_WEEKS * 7;
+      : 52 * 7;
+    const days = streakView.weeks === 0 ? historyDays : streakView.weeks * 7;
     const today = todayISO();
     const cells: any[] = [];
 
@@ -543,9 +546,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       metric: streakView.metric,
       subjectId: streakView.subjectId,
       subjects: deps.activeSubjects ? deps.activeSubjects() : [],
-      expanded: streakView.expanded,
+      weeks: streakView.weeks,
       onlyActiveDays: streakView.onlyActiveDays,
-      defaultWeeks: DEFAULT_STREAK_WEEKS,
       activityStreak,
       goalStreak,
       selectedDate: streakView.selectedDate,
@@ -596,6 +598,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
   function setHeatmapFilter(field: string, value: any): void {
     if (field === 'metric' && HEATMAP_METRICS.includes(value)) streakView.metric = value;
     if (field === 'subjectId') streakView.subjectId = value;
+    if (field === 'weeks' && HEATMAP_WEEK_OPTIONS.includes(Number(value))) streakView.weeks = Number(value);
     streakView.selectedDate = null;
     renderHeatmap();
   }
@@ -614,11 +617,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (streakView.selectedDate && deps.selectSessionHistoryDate) {
       deps.selectSessionHistoryDate(streakView.selectedDate);
     }
-  }
-
-  function toggleStreakExpanded(): void {
-    streakView.expanded = !streakView.expanded;
-    renderHeatmap();
   }
 
   function toggleStreakActiveDays(): void {
@@ -836,7 +834,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     setHeatmapMode,
     selectHeatmapDay,
     viewSelectedHeatmapSessions,
-    toggleStreakExpanded,
     toggleStreakActiveDays,
     getStreakView,
     changeUpcomingLimit,
