@@ -111,7 +111,7 @@ export function PhaseRoadmapTimeline({
             cardClass = 'bg-accent-subtle/40 border-accent-emphasis/50 text-content-primary ring-1 ring-accent-emphasis/30';
             badgeClass = 'bg-accent-emphasis text-surface-ground font-semibold';
           } else if (isPassed) {
-            cardClass = 'bg-surface-sunken/80 border-border-subtle text-content-secondary opacity-75';
+            cardClass = 'bg-surface-sunken border-border-subtle text-content-secondary';
             badgeClass = 'bg-success-emphasis text-surface-ground';
           }
 
