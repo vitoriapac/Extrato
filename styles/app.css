@@ -3452,7 +3452,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   padding: var(--space-2, 8px) 0;
 }
 /* --brand escuro é quase o papel: sobre papel o destaque é --accent */
-:is(.dark, [data-theme="dark"]) .text-brand {
+:is(.dark, [data-theme="dark"]) .helper-text--compact > a.text-brand {
   color: var(--accent);
 }
 .context-note--info a.text-brand {
