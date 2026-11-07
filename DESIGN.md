@@ -308,7 +308,7 @@ Plano por padrão. Profundidade vem de tom (papel → papel branco → ardósia)
 
 ## Shapes
 
-Cantos discretos: 8px (`--radius-card`) em cards, painéis, modais e tabelas; 6px (`--radius-control`) em botões, campos, selos e abas (só nos cantos superiores). Marcas pequenas — barras de progresso, células do heatmap, eventos do calendário — mantêm 2px. No Tailwind, `rounded-default` é o raio de card e `rounded` o de controle. Bordas de 1px em `paper-line`. Marcadores semânticos são faixas de 3px: no topo para ação (`accent`), à esquerda para insight (`accent`) e atenção (`amber`). Ativos e seleções usam sublinhado ou contorno interno sálvia (`inset 0 -2px` ou `inset 0 0 0 1px var(--accent)`). O cabeçalho do extrato tem uma textura de linhas verticais sálvia a 5% de opacidade a cada 40px — a única textura do sistema.
+Cantos discretos: 8px (`--radius-card`) em cards, painéis, modais e tabelas; 6px (`--radius-control`) em botões, campos, selos e abas (só nos cantos superiores). Marcas pequenas — barras de progresso, células do heatmap, eventos do calendário — mantêm 2px. No Tailwind, `rounded-default` é o raio de card e `rounded` o de controle. Bordas de 1px em `paper-line`. Marcadores semânticos são faixas de 3px: no topo para ação (`accent`), à esquerda para insight (`accent`) e atenção (`amber`). Ativos e seleções usam sublinhado ou contorno interno sálvia (`inset 0 -2px` ou `inset 0 0 0 1px var(--accent)`). O cabeçalho do extrato tem uma textura de linhas verticais sálvia a 5% de opacidade a cada 40px — a única textura do sistema; o fundo da página é liso (a textura pontilhada foi removida).
 
 ## Motion
 
@@ -353,6 +353,15 @@ Três níveis, um primário por card: o primário é a próxima ação; o tonal 
 
 ### Cabeçalho do Extrato (signature)
 Bloco musgo com eyebrow Sálvia Claro (11px, 0.14em), título Fraunces 28px, número do plano em mono à direita, divisor papel a 18%, saldo em Fraunces âmbar com anel de prontidão e tendência de 8 semanas, e textura de linhas verticais. Um único modelo alimenta a versão hero e a compacta fixa. Sem índice, o saldo diz "faltam N de 5 fatores" e "Como liberar os fatores" abre um botão por fator, cada um levando à ação que produz a evidência.
+
+### Linha de razão (`LedgerLine`)
+Rótulo à esquerda, guia pontilhada de 1px em `border-control` (decorativa, `aria-hidden`) e valor à direita em Mono pequeno com números tabulares, sem quebra. O total (`--total`, linha de 2px acima) e o estado (`is-negative`, `is-positive`) sempre vêm em texto, com sinal ou palavra; a cor nunca é a única leitura. É a forma de mostrar "quanto" em Hoje e em Planejamento; sem sombra nem moldura próprias.
+
+### Conciliação
+Compara minutos em linhas de razão, só na apresentação (sem regra de domínio nova). No dia (Hoje): Disponível, Planejado, Estudado, Excedente (só quando o plano passa da disponibilidade) e Livre; sem plano calculado, nada é conciliado. Na semana (Planejamento): capacidade, planejado, fora do plano (estudado acima do planejado) e realizado, com o período explícito. O excedente diz o tempo em minutos e leva a "Ajustar o dia", sublinhado e com alvo de 44px em toque.
+
+### Filas da Agenda
+Três filas rotuladas por tipo e período: Vencidas, Hoje e Próx. 7 dias, cada uma com o total e a divisão em Revisão espaçada e Tarefa de estudo. Vencidas só ganha ênfase quando há itens ("Nada atrasado" quando vazia). O calendário Mês continua visível no desktop, abaixo das filas.
 
 ### Gráficos
 SVG puro, sem biblioteca, em `src/ui/primitives/charts/`: `RingGauge` (anel com meta), `Sparkline` (tendência, com `connectGaps`), `BulletBar` (valor contra meta), `StackedBar` (composição) e `ColumnChart` (colunas, agrupadas ou com meta). A geometria é pura (`geometry.ts`) e testada. Todo gráfico tem `role="img"` com descrição em texto e, quando há tabela, um "Ver dados" acessível; a cor nunca é a única leitura. Séries usam `--chart-series-*`; atenção usa âmbar só abaixo da meta.

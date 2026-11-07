@@ -138,6 +138,16 @@ Cada um existe como componente Preact e como `render*` em string, para os render
 | Listas de registros   | `src/ui/progressive-list.ts` e `src/ui/list-components.ts`           | Em migração incremental                                  |
 | Gráficos              | `src/ui/chart-components.ts`, `chart-frame`, `chart-period-controls` | Contrato compartilhado mantido                           |
 
+### Linha de razão e conciliações
+
+`<LedgerLine label value hint? tone? total? />` (`src/ui/primitives/ledger-line.tsx`) desenha rótulo, guia pontilhada decorativa (`.ledger-line__lead`, `aria-hidden`) e valor em Mono com `tabular-nums`. Estado (`is-negative`, `is-positive`) e total (`ledger-line--total`) sempre acompanham texto. Consumidores:
+
+- **Hoje:** `buildDayReconciliation` (`src/ui/tabs/today/day-reconciliation.ts`) gera Disponível, Planejado, Estudado, Excedente e Livre; sem `progressPercent` não há conciliação.
+- **Planejamento:** `buildWeekReconciliation` (`src/ui/tabs/goals/week-reconciliation.ts`) gera capacidade, planejado, fora do plano e realizado, com `periodLabel` obrigatório.
+- **Agenda:** `buildAgendaBuckets` (`src/application/reviews/build-agenda-buckets.ts`) separa Vencidas, Hoje e Próx. 7 dias em Revisão espaçada e Tarefa de estudo.
+
+O fundo da página não tem mais textura pontilhada; a única textura do sistema é a de linhas verticais do cabeçalho do extrato.
+
 ### Componentes de tela das abas (Preact `.tsx`)
 
 A migração incremental da interface introduziu componentes funcionais Preact para as telas centrais, organizados por domínio funcional:
