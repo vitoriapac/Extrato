@@ -177,6 +177,7 @@ test('createReviewsTabController — geração automática e avaliação adaptat
           },
           setAttribute() {},
           removeAttribute() {},
+          focus() {},
           querySelector() {
             return { focus() {} };
           },

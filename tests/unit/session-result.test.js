@@ -151,6 +151,8 @@ test('resultado mostra variação da prontidão e revisões agendadas pela sess�
   assert.equal(withGoal.effects.goal, '80 min de 80 min · cumprida');
   const html = renderSessionResult(model, { escapeHtml: String });
   assert.match(html, /Prontidão<\/dt><dd>46 → 48\/100 <span class="session-effects__delta">\(\+2\)/);
+  assert.match(html, /O índice reúne diferentes sinais/);
+  assert.match(html, /não representa probabilidade de aprovação/);
   assert.match(html, /Revisões agendadas<\/dt><dd>2 revisões · próxima em 03\/11\/2026/);
   const same = buildSessionResultViewModel(session, null, false, {
     ...options,
@@ -162,7 +164,21 @@ test('resultado mostra variação da prontidão e revisões agendadas pela sess�
     ...options,
     outcome: { readiness: { before: null, after: null }, reviewDates: [] },
   });
-  assert.equal(none.effects, null);
+  assert.match(renderSessionResult(none, { escapeHtml: String }), /Índice em formação/);
+});
+
+test('resultado explica fatores comparáveis e não inventa variação quando a base muda', () => {
+  const snapshot = (value, factors) => ({ value, factors, algorithmVersion: 1, availableFactors: Object.keys(factors).filter(key => factors[key] != null) });
+  const before = snapshot(50, { coverage: 50, mastery: 50, consistency: null });
+  const after = snapshot(55, { coverage: 60, mastery: 50, consistency: null });
+  const model = buildSessionResultViewModel(session, null, false, { ...options, outcome: { readiness: { before, after } } });
+  const html = renderSessionResult(model, { escapeHtml: String });
+  assert.match(html, /Cobertura/);
+  assert.match(html, /50 → 60/);
+  const changed = buildSessionResultViewModel(session, null, false, { ...options, outcome: { readiness: { before, after: snapshot(55, { coverage: 60, mastery: 50, consistency: 40 }) } } });
+  const changedHtml = renderSessionResult(changed, { escapeHtml: String });
+  assert.match(changedHtml, /disponibilidade dos fatores mudou/i);
+  assert.doesNotMatch(changedHtml, /50 → 55\/100/);
 });
 
 test('resultado de sessão teórica ou revisão expõe ação de encadeamento para questões (Fase 1 Alex)', () => {

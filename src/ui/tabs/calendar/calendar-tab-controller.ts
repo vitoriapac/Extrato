@@ -441,7 +441,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!ul) return;
     const today = todayISO();
     const items = getRevisoesUnificadas()
-      .filter(r => r.date === today)
+      .filter(r => r.date === today && r.status !== 'Concluído')
       .sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
 
     if (!items.length) {

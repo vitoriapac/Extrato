@@ -2,6 +2,7 @@ import { DIFFICULTY_OPTIONS } from '../../state/schema.js';
 import { formatDuration, formatPlanMinutes } from '../../core/format-duration.js';
 import { needsMaintenance } from '../../domain/study-eligibility.js';
 import { recommendationActionKind } from '../../application/recommendations/recommendation-action.js';
+import { displayReadinessValue } from '../../application/analytics/build-header-view-model.js';
 import { freezePlanExecution } from '../../domain/planning/plan-execution-snapshot.js';
 import { createTimerUiController } from '../../ui/controllers/timer-ui-controller.js';
 import { createStudyTimerRuntimeController } from '../../ui/controllers/study-timer-runtime-controller.js';
@@ -121,8 +122,13 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
     getDailyExecutionItems: () => todayTabController.dailyExecutionController.build(),
     getReadinessValue: () =>
-      approvalReadinessService.readinessResult(approvalReadinessService.computeApprovalMetrics())
-        .value ?? null,
+      displayReadinessValue(
+        approvalReadinessService.readinessResult(approvalReadinessService.computeApprovalMetrics())
+      ),
+    getReadinessResult: () => {
+      const result = approvalReadinessService.readinessResult(approvalReadinessService.computeApprovalMetrics());
+      return { ...result, value: displayReadinessValue(result) };
+    },
     getCurrentStudyRecommendations: () =>
       studyRecommendationController?.getCurrentRecommendations() || [],
     guidedStudyService: services.guidedStudyService,

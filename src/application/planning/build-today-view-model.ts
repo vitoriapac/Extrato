@@ -1,5 +1,9 @@
 import { buildDailyExecutionModel } from '../daily-execution/build-daily-execution-model.js';
 
+export function canGenerateAutomaticTodayPlan(state: Record<string, any>, activePlan: unknown) {
+  return !activePlan && Boolean((state.studySessions || []).length || (state.questoes || []).length);
+}
+
 export function buildTodayViewModel({
   date,
   availableMinutes = 0,
@@ -55,6 +59,8 @@ export function buildTodayViewModel({
       availableMinutes: minutes(availableMinutes),
       plannedMinutes: execution.progress!.plannedMinutes,
       executedMinutes: Math.round(execution.progress!.studiedMinutes),
+      planCompletedMinutes: Math.max(0, Math.round(execution.progress!.plannedMinutes - execution.progress!.remainingMinutes)),
+      planRemainingMinutes: Math.max(0, Math.round(execution.progress!.remainingMinutes)),
       recoveryMinutes,
       progress: execution.progress!.progress,
       nextActivity: execution.priority!.nextItem || execution.priority!.unplannedAction || null,
@@ -65,6 +71,8 @@ export function buildTodayViewModel({
     availableMinutes: minutes(availableMinutes),
     plannedMinutes,
     executedMinutes,
+    planCompletedMinutes: Math.min(plannedMinutes, executedMinutes),
+    planRemainingMinutes: Math.max(0, plannedMinutes - executedMinutes),
     recoveryMinutes,
     progress: plannedMinutes
       ? Math.min(100, Math.round((executedMinutes / plannedMinutes) * 100))

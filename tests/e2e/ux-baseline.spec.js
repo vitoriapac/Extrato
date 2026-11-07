@@ -17,7 +17,7 @@ async function prepareDiagnosisScreenshot(page) {
   await activateTab(page, 'desempenho');
   await page.locator('.today-analysis-details > summary').click();
   await page
-    .locator('.sticky-shell, #demoBanner, #backToTopBtn')
+    .locator('.sticky-shell, .bottom-nav, .skip-link, #demoBanner, #backToTopBtn')
     .evaluateAll(elements => elements.forEach(element => element.remove()));
 }
 
@@ -38,11 +38,13 @@ test('baseline visual da ação principal no desktop', async ({ page }) => {
     attention = await page.locator('.overview-now-attention').boundingBox();
   expect(action.x + action.width).toBeLessThanOrEqual(attention.x + 1);
   expect(action.y).toBe(attention.y);
-  if (process.platform === 'win32')
+  if (process.platform === 'win32') {
+    await page.locator('.sticky-shell, .bottom-nav, #demoBanner, #backToTopBtn').evaluateAll(elements => elements.forEach(element => { element.style.visibility = 'hidden'; }));
     await expect(page.locator('.overview-now')).toHaveScreenshot(
       screenshotName('agora-desktop-light.png'),
       screenshotOptions
     );
+  }
 });
 
 test('baseline visual da ação principal no mobile escuro', async ({ page }) => {
@@ -55,11 +57,13 @@ test('baseline visual da ação principal no mobile escuro', async ({ page }) =>
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth
     )
   ).toBeLessThanOrEqual(1);
-  if (process.platform === 'win32')
+  if (process.platform === 'win32') {
+    await page.locator('.sticky-shell, .bottom-nav, #demoBanner, #backToTopBtn').evaluateAll(elements => elements.forEach(element => { element.style.visibility = 'hidden'; }));
     await expect(page.locator('.overview-now')).toHaveScreenshot(
       screenshotName('agora-mobile-dark.png'),
       screenshotOptions
     );
+  }
 });
 
 test('baseline visual da Central de Diagnóstico no desktop', async ({ page }) => {

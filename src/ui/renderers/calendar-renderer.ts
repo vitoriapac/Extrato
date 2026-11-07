@@ -38,10 +38,10 @@ export function renderCalendarIndicators({ items = [], today, daysUntil }: any) 
     const days = daysUntil(item.date);
     return days !== null && days > 0 && days <= 7;
   }).length;
-  return `<div class="kpi-cell"><div class="n">${total}</div><div class="l">Itens no total</div></div>
-    <div class="kpi-cell ${overdue > 0 ? 'warn' : ''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div><small>Tarefas: ${calendarOverdue} · Revisões: ${agendaOverdue}${otherOverdue ? ' · Outras: ' + otherOverdue : ''}</small></div>
-    <div class="kpi-cell ${todayCount > 0 ? 'ok' : ''}"><div class="n">${todayCount}</div><div class="l">Hoje</div></div>
-    <div class="kpi-cell"><div class="n">${upcoming}</div><div class="l">Próximos 7 dias</div></div>`;
+  return `<div class="kpi-cell"><div class="n">${total}</div><div class="l">Itens no total</div><small>Inclui concluídos</small></div>
+    <div class="kpi-cell ${overdue > 0 ? 'warn' : ''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div><small>Detalhe das atrasadas: Tarefas: ${calendarOverdue} · Revisões: ${agendaOverdue}${otherOverdue ? ' · Outras: ' + otherOverdue : ''}</small></div>
+    <div class="kpi-cell ${todayCount > 0 ? 'ok' : ''}"><div class="n">${todayCount}</div><div class="l">Hoje</div><small>Inclui concluídos</small></div>
+    <div class="kpi-cell"><div class="n">${upcoming}</div><div class="l">Próximos 7 dias</div><small>Inclui concluídos</small></div>`;
 }
 
 export function renderCalendarMonth({
@@ -73,7 +73,7 @@ export function renderCalendarMonth({
   const busiest = Math.max(0, ...pending.values());
   const loadLevel = (count: number) => (count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0);
   let html =
-    `<div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}"><div class="month-grid">` +
+    `<p id="calendarScrollHelp" class="text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use a visualização Lista. Pelo teclado, use as setas na grade.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
       .map(day => `<div class="month-header">${day}</div>`)
       .join('');

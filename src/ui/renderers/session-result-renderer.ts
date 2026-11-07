@@ -20,7 +20,13 @@ function renderEffects(effects: Record<string, any> | null) {
     (readiness ? `<div><dt>Prontidão</dt><dd>${readiness.text}${delta}</dd></div>` : '') +
     (goal ? `<div><dt>Meta do dia</dt><dd>${goal}</dd></div>` : '') +
     (reviews ? `<div><dt>Revisões agendadas</dt><dd>${reviews.text}</dd></div>` : '');
-  return `<dl class="session-effects" aria-label="Efeitos desta sessão">${rows}</dl>`;
+  const factors = readiness?.factors?.length
+    ? `<p>Fatores que mudaram${readiness.confidence ? ` · confiança ${String(readiness.confidence).toLocaleLowerCase('pt-BR')}` : ''}:</p><ul>${readiness.factors.map((factor: any) => `<li>${factor.label}: ${factor.before} → ${factor.after}/100 · contribuição ${factor.contribution > 0 ? '+' : ''}${factor.contribution.toFixed(1).replace('.', ',')} ponto(s)</li>`).join('')}</ul>`
+    : '';
+  const explanation = readiness?.reason ? `<p>${readiness.reason}</p>` : readiness && readiness.delta != null
+    ? '<p>O índice reúne diferentes sinais, que podem mudar em conjunto. Consulte Desempenho para ver os fatores; não representa probabilidade de aprovação.</p>'
+    : '';
+  return `<dl class="session-effects" aria-label="Efeitos desta sessão">${rows}</dl>${factors}${explanation}`;
 }
 export function renderSessionResult(
   model: Record<string, any>,

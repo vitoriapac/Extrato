@@ -7,6 +7,6 @@ export function renderPerformanceSummary(story: string, metrics: string, note = 
   return `<section class="performance-summary" aria-label="Resumo interpretativo">${story}${metrics}${note}</section>`;
 }
 
-export function renderPerformanceDetails(title: string, content: string) {
-  return renderDisclosure({ title, contentHTML: content });
+export function renderPerformanceDetails(title: string, content: string, className = 'performance-details') {
+  return renderDisclosure({ title, contentHTML: content, className });
 }

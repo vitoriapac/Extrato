@@ -9,10 +9,11 @@ import { h } from 'preact';
 import { mountPreact, unmountPreact } from '../preact-mount.js';
 import { ErrorNotebookView } from '../views/ErrorNotebookView.js';
 import { ErrorNotebookDueNotice } from '../components/ErrorNotebookDueNotice.js';
+import { ReviewQueueSummary } from '../components/ReviewQueueSummary.js';
+import { buildReviewQueueSummary } from '../../application/reviews/build-review-queue-summary.js';
 import {
   addErrorFlashcard,
   reviewErrorFlashcard,
-  getDueFlashcards,
   findQuestionsAwaitingFlashcard,
   type CreateFlashcardInput,
 } from '../../domain/notebook/error-notebook-engine.js';
@@ -151,13 +152,20 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
 
   function renderDueNotices(): void {
     const state = context.getState();
-    const dueCount = getDueFlashcards(state.errorFlashcards || [], context.todayISO()).length;
-
-    for (const getEl of [context.getDueAgendaMount, context.getDueTodayMount]) {
-      const mount = getEl();
-      if (!mount) continue;
-      mountComponent(h(ErrorNotebookDueNotice, { dueCount, onOpen: open }), mount);
-    }
+    const summary = buildReviewQueueSummary({ reviews: state.reviewAgenda || [], flashcards: state.errorFlashcards || [], today: context.todayISO() });
+    const agenda = context.getDueAgendaMount();
+    if (agenda) mountComponent(h(ReviewQueueSummary, {
+      summary, onFlashcards: open,
+      onTopics: () => {
+        const target = agenda.ownerDocument.getElementById('agendaBody');
+        if (!target) return;
+        target.tabIndex = -1;
+        target.focus();
+        target.scrollIntoView({ block: 'start' });
+      },
+    }), agenda);
+    const today = context.getDueTodayMount();
+    if (today) mountComponent(h(ErrorNotebookDueNotice, { dueCount: summary.flashcardsDue, onOpen: open }), today);
   }
 
   return {

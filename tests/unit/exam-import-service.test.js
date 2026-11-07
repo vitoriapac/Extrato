@@ -4,6 +4,8 @@ import {
   previewExamStructureImport,
   createExamImportService,
 } from '../../src/application/subjects/exam-import-service.js';
+import { createExamImportState, syncExamImportSelection } from '../../src/features/exam-import/exam-import-state.js';
+import { toggleExamTopic, selectExamTopics } from '../../src/features/exam-import/exam-import-actions.js';
 import { createSubjectService } from '../../src/application/subjects/subject-service.js';
 import { createSubjectsRepository } from '../../src/repositories/subjects-repository.js';
 import {
@@ -25,6 +27,22 @@ const preset = {
     },
   ],
 };
+
+test('seleção começa vazia e um tópico isolado inclui somente sua disciplina na prévia', () => {
+  const state = createExamImportState(preset);
+  assert.equal(state.topicIds.size, 0);
+  assert.equal(state.subjectIds.size, 0);
+  toggleExamTopic(state, 's1:t1', true, preset);
+  const preview = previewExamStructureImport({ preset, selectedSubjectIds: state.subjectIds, selectedTopicIds: state.topicIds });
+  assert.equal(preview.addedSubjects, 1);
+  assert.equal(preview.addedTopics, 1);
+  toggleExamTopic(state, 's1:t1', false, preset);
+  assert.equal(state.subjectIds.size, 0);
+  selectExamTopics(state, preset, () => true);
+  assert.equal(state.topicIds.size, 2);
+  syncExamImportSelection(state, preset);
+  assert.equal(state.topicIds.size, 0);
+});
 function fixture(subjects = []) {
   const state = { subjects },
     repository = createSubjectsRepository({ getState: () => state });

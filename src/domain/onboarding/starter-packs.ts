@@ -13,7 +13,7 @@ export interface StarterPackSubject {
 export interface StarterPack {
   id: string;
   name: string;
-  badge: string;
+  badge?: string;
   description: string;
   subjects: readonly StarterPackSubject[];
 }
@@ -22,7 +22,6 @@ export const STARTER_PACKS: readonly StarterPack[] = Object.freeze([
   {
     id: 'admin_general',
     name: 'Área Administrativa Geral',
-    badge: 'Mais Popular',
     description:
       'Português, Raciocínio Lógico, Dir. Constitucional, Dir. Administrativo e Informática',
     subjects: Object.freeze([

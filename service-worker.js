@@ -1,7 +1,7 @@
-const CACHE_NAME = 'studytrack-306a006ffeb8';
+const CACHE_NAME = 'studytrack-be9324e3910b';
 const APP_SHELL = [
   './',
-  './index.html',
+  './app',
   './styles/tokens.css',
   './styles/fonts.css',
   './fonts/fraunces-latin-opsz-normal.woff2',
@@ -10,16 +10,17 @@ const APP_SHELL = [
   './fonts/ibm-plex-sans-latin-600-normal.woff2',
   './fonts/ibm-plex-mono-latin-400-normal.woff2',
   './fonts/ibm-plex-mono-latin-600-normal.woff2',
-  './styles/tailwind.css?v=306a006ffeb8',
-  './styles/app.css?v=306a006ffeb8',
+  './styles/tailwind.css?v=be9324e3910b',
+  './styles/app.css?v=be9324e3910b',
   './styles/print.css',
   './src/theme-bootstrap.js',
-  './src/app.bundle.js?v=306a006ffeb8',
-  './src/report.bundle.js?v=306a006ffeb8',
-  './src/exam-catalog.bundle.js?v=306a006ffeb8',
-  './src/help.bundle.js?v=306a006ffeb8',
-  './src/demo.bundle.js?v=306a006ffeb8',
+  './src/app.bundle.js?v=be9324e3910b',
+  './src/report.bundle.js?v=be9324e3910b',
+  './src/exam-catalog.bundle.js?v=be9324e3910b',
+  './src/help.bundle.js?v=be9324e3910b',
+  './src/demo.bundle.js?v=be9324e3910b',
   './src/pwa.js',
+  './src/landing.bundle.js?v=be9324e3910b',
   './manifest.webmanifest',
   './icons/app-icon.svg',
   './icons/icon-192.png',
@@ -32,7 +33,7 @@ self.addEventListener('install', event =>
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => cache.addAll(APP_SHELL.map(url => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   )
 );
@@ -52,7 +53,14 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin)
     return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
+    const url = new URL(event.request.url);
+    event.respondWith(fetch(event.request).catch(() => {
+      if (url.pathname === '/app/') {
+        url.pathname = '/app';
+        return Response.redirect(url.href, 308);
+      }
+      return caches.match(url.pathname === '/app' ? './app' : './');
+    }));
     return;
   }
   event.respondWith(

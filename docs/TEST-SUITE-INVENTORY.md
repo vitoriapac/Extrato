@@ -34,7 +34,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/daily-execution.spec.js | browser | Aplicação | critical | 106.6 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/demo.spec.js | browser | Demo | functional | 150 | journey, demo, viewport | none |
 | tests/e2e/error-analysis.spec.js | browser | Aplicação | functional | 11.6 | journey, demo | none |
-| tests/e2e/error-notebook-and-a11y.spec.js | browser | Aplicação | functional | — | journey, demo | none |
+| tests/e2e/error-notebook-and-a11y.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/essential-mode.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/evidence-calibration.spec.js | browser | Aplicação | functional | 7.8 | journey, viewport | none |
 | tests/e2e/exam-import.spec.js | browser | Inteligência da prova | critical | 45.2 | journey | none |

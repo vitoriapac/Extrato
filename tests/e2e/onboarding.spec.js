@@ -107,11 +107,12 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await expect(welcome).toContainText('Experimentar demonstração');
   const entry = page.locator('#guidedOnboarding');
   await expect(entry).toContainText('0 de 4 etapas');
-  await expect(entry.locator('[aria-current="step"]')).toContainText('Objetivo e data');
+  await expect(entry.locator('[aria-current="step"]')).toContainText('Data da prova (opcional)');
   await expect(entry.locator('.is-complete')).toHaveCount(0);
   await entry.locator('[data-guided-action="open"]').click();
   const overlay = page.locator('#guidedOnboardingOverlay');
   await expect(overlay.locator('#guidedExamPreset')).toHaveValue('undecided');
+  await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await overlay.locator('#guidedExamDate').fill('2027-03-14');
   await overlay.locator('[data-guided-action="next"]').click();
   await overlay.locator('[data-guided-action="next"]').click();
@@ -153,22 +154,26 @@ test('primeiro uso preserva escolhas e chega à prévia do plano', async ({ page
   await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
   await expect(overlay).toBeVisible();
   await expect(overlay).toContainText(/Por que isso importa\?/i);
+  await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await clickButton('Continuar');
   await expect(overlay).toContainText('Quanto tempo cabe na sua semana?');
   await page.locator('[data-guided-day="1"]').fill('2');
   await clickButton('Continuar');
   await expect(overlay).toContainText('Quais conteúdos entram no plano?');
+  await overlay.getByText('Escolher outra forma de adicionar conteúdo').click();
   await clickButton('Carregar edital');
   await expect(overlay).toBeHidden();
   await expect(page.locator('#examImportOverlay')).toBeVisible();
   await page.locator('#examImportNextBtn').click();
+  await page.getByRole('button', { name: 'Selecionar tudo' }).click();
   await page.locator('#examImportNextBtn').click();
   await page.locator('#examImportNextBtn').click();
   await expect(page.locator('#examImportOverlay')).toBeHidden();
+  expect(await page.evaluate(() => window.__EXTRATO_TEST__.getState().dailyPlans.length)).toBe(0);
   await expect(overlay).toContainText('Confira a capacidade e crie o primeiro plano');
-  await expect(overlay).toContainText('Primeiras atividades priorizadas');
-  await expect(overlay).toContainText('mesma prioridade, elegibilidade e capacidade');
+  await expect(overlay).toContainText('Distribuição semanal por tópico');
+  await expect(overlay).toContainText('alocações semanais por tópico');
   await clickButton('Voltar');
   await expect(overlay).toContainText('Nível inicial por disciplina');
   await clickButton('Voltar');
@@ -226,7 +231,7 @@ for (const viewport of [
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height + 1);
     await expect(page.locator('#guidedOnboardingClose')).toBeFocused();
     await page.keyboard.press('Shift+Tab');
-    await expect(overlay.locator('[data-guided-action="cancel"]')).toBeFocused();
+    await expect(overlay.locator('[data-guided-action="next"]')).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(page.locator('#guidedOnboardingClose')).toBeFocused();
   });
@@ -300,6 +305,7 @@ for (const theme of ['light', 'dark'])
       expect(
         await goalControl.evaluate(input => input.getBoundingClientRect().height)
       ).toBeGreaterThanOrEqual(44);
+      await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
       await page.locator('#guidedExamDate').fill('2027-03-14');
       await next().click();
       await assertLayering(1);
@@ -308,17 +314,19 @@ for (const theme of ['light', 'dark'])
       await assertLayering(2);
       await next().click();
       await assertLayering(3);
-      await expect(overlay).toContainText('Primeiras atividades priorizadas');
+      await expect(overlay).toContainText('Distribuição semanal por tópico');
     });
 
 test('cancelar edital devolve foco e escolhas ao onboarding sem diálogos concorrentes', async ({
   page,
 }) => {
   await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
   await page.locator('[data-guided-day="1"]').fill('2');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
+  await page.getByText('Escolher outra forma de adicionar conteúdo').click();
   await page.locator('#guidedOnboardingOverlay [data-guided-action="import"]').click();
   await expect(page.locator('#guidedOnboardingOverlay')).toBeHidden();
   await expect(page.locator('#examImportOverlay')).toBeVisible();
@@ -337,10 +345,12 @@ test('cancelar edital devolve foco e escolhas ao onboarding sem diálogos concor
 
 test('importação CSV retorna à prévia do onboarding sem sobrepor diálogos', async ({ page }) => {
   await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
   await page.locator('[data-guided-day="1"]').fill('2');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
+  await page.getByText('Escolher outra forma de adicionar conteúdo').click();
   const fileChooser = page.waitForEvent('filechooser');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="structured"]').click();
   await (
@@ -361,20 +371,108 @@ test('importação CSV retorna à prévia do onboarding sem sobrepor diálogos',
   );
 });
 
-test('cadastro manual oferece retorno à configuração após criar conteúdo', async ({ page }) => {
+test('cadastro manual preserva rascunhos e adiciona matérias ao continuar', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__, state = structuredClone(api.getState());
+    state.subjects = [];
+    api.setState(state);
+    api.renderAll();
+  });
   await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
+  await page.getByText('Escolher outra forma de adicionar conteúdo').click();
   await page.locator('#guidedOnboardingOverlay [data-guided-action="manual"]').click();
-  await expect(page.locator('#panel-disciplinas')).toBeVisible();
-  await expect(page.locator('#guidedManualReturn')).toBeVisible();
-  await expect(page.locator('[data-guided-manual-return]')).toBeEnabled();
-  await page.locator('[data-guided-manual-return]').click();
-  await expect(page.locator('#guidedOnboardingOverlay')).toBeVisible();
-  await expect(page.locator('#guidedOnboardingOverlay')).toContainText(
-    'Quais conteúdos entram no plano?'
-  );
+  const form = page.locator('[data-manual-subjects-mount]');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  const next = page.locator('#guidedOnboardingOverlay [data-guided-action="next"]');
+  await expect(next).toBeDisabled();
+  await form.getByLabel('Nome da disciplina').fill('Matéria de teste');
+  await form.getByLabel('Tópico 1').fill('   ');
+  await expect(next).toBeDisabled();
+  await form.getByLabel('Tópico 1').fill('Primeiro tópico');
+  await form.getByRole('button', { name: 'Adicionar outro tópico' }).click();
+  await form.getByLabel('Tópico 2', { exact: true }).fill('Segundo tópico');
+  await form.getByRole('button', { name: 'Remover tópico 2 da disciplina 1' }).click();
+  await expect(form.getByLabel('Tópico 2', { exact: true })).toHaveCount(0);
+  await form.getByRole('button', { name: 'Adicionar outra disciplina' }).click();
+  await form.getByRole('button', { name: 'Remover disciplina 2' }).click();
+  await form.getByRole('button', { name: 'Adicionar outro tópico' }).click();
+  await form.getByLabel('Tópico 2', { exact: true }).fill('Segundo tópico');
+  await page.screenshot({ path: testInfo.outputPath('cadastro-manual-mobile.png') });
+  await page.locator('#guidedOnboardingOverlay [data-guided-action="back"]').click();
+  await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
+  await expect(page.locator('[data-manual-subjects-mount]').getByLabel('Tópico 2', { exact: true })).toHaveValue('Segundo tópico');
+  expect(await page.evaluate(() => window.__EXTRATO_TEST__.getState().subjects.length)).toBe(0);
+  await next.click();
+  await expect(page.locator('#guidedOnboardingOverlay')).toContainText('Distribuição semanal por tópico');
+  expect(await page.evaluate(() => window.__EXTRATO_TEST__.getState().subjects[0].topics.length)).toBe(2);
+});
+
+test('prazo longo mantém coerência entre prévia semanal e atividade diária', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-06T15:00:00Z') });
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__, state = structuredClone(api.getState());
+    state.subjects = [];
+    state.studyPlans = [];
+    state.dailyPlans = [];
+    api.setState(state);
+    api.renderAll();
+  });
+  const overlay = page.locator('#guidedOnboardingOverlay');
+  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
+  await overlay.locator('#guidedExamDate').fill('2027-05-07');
+  await overlay.locator('[data-guided-action="next"]').click();
+  await overlay.locator('[data-guided-availability-preset="work_study"]').click();
+  await overlay.locator('[data-guided-action="next"]').click();
+  await overlay.getByText('Escolher outra forma de adicionar conteúdo').click();
+  await overlay.locator('[data-guided-action="manual"]').click();
+  await overlay.getByLabel('Nome da disciplina').fill('Português de teste');
+  await overlay.getByLabel('Tópico 1', { exact: true }).fill('Concordância');
+  await overlay.locator('[data-guided-action="next"]').click();
+  await expect(overlay.locator('.onboarding-first-activities')).toContainText('15 min');
+  await expect(overlay).toContainText('07/05/2027');
+  await expect(overlay).toContainText('Português de teste');
+  await expect(overlay).toContainText('alocado na semana');
+  await overlay.locator('[data-guided-action="create-plan"]').click();
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  const result = await page.evaluate(() => {
+    const state = window.__EXTRATO_TEST__.getState(), weekly = state.studyPlans.at(-1);
+    return { weekly: weekly.items[0].minutes, daily: state.dailyPlans.flatMap(plan => plan.items).map(item => ({ minutes: item.plannedMinutes, planId: item.studyPlanId })) , weeklyId: weekly.id };
+  });
+  expect(result.weekly).toBe(15);
+  expect(result.daily.reduce((sum, item) => sum + item.minutes, 0)).toBe(result.weekly);
+  expect(result.daily.every(item => item.planId === result.weeklyId)).toBe(true);
+});
+
+test('sem data, explorar preserva matérias sem criar plano semanal ou diário', async ({ page }) => {
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__, state = structuredClone(api.getState());
+    state.subjects = []; state.studyPlans = []; state.dailyPlans = [];
+    api.setState(state); api.renderAll();
+  });
+  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  const overlay = page.locator('#guidedOnboardingOverlay');
+  await overlay.getByRole('button', { name: 'Continuar sem data' }).click();
+  await overlay.locator('[data-guided-action="next"]').click();
+  await overlay.getByText('Escolher outra forma de adicionar conteúdo').click();
+  await overlay.locator('[data-guided-action="manual"]').click();
+  await overlay.getByLabel('Nome da disciplina').fill('Matéria sem data');
+  await overlay.getByLabel('Tópico 1', { exact: true }).fill('Tópico de teste');
+  await overlay.locator('[data-guided-action="next"]').click();
+  await expect(overlay).toContainText('não dá para calcular o prazo');
+  await overlay.getByRole('button', { name: 'Explorar o app sem criar plano' }).click();
+  const result = await page.evaluate(() => {
+    const state = window.__EXTRATO_TEST__.getState();
+    return { subjects: state.subjects.map(subject => subject.name), weekly: state.studyPlans.length, daily: state.dailyPlans.length };
+  });
+  expect(result.subjects).toContain('Matéria sem data');
+  expect(result.weekly).toBe(0);
+  expect(result.daily).toBe(0);
 });
 
 test('campos da configuração possuem nomes acessíveis e retorno por teclado', async ({ page }) => {
@@ -384,6 +482,7 @@ test('campos da configuração possuem nomes acessíveis e retorno por teclado',
   await page.keyboard.press('Enter');
   const overlay = page.locator('#guidedOnboardingOverlay');
   await expect(page.getByRole('combobox', { name: 'Concurso do primeiro acesso' })).toBeVisible();
+  await overlay.locator('summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await expect(overlay.getByLabel('Data da prova', { exact: true })).toBeVisible();
   await overlay.getByLabel('Data da prova', { exact: true }).fill('2027-03-14');
   await overlay.locator('[data-guided-action="next"]').click();
@@ -401,11 +500,12 @@ test('campos da configuração possuem nomes acessíveis e retorno por teclado',
   await expect(open).toBeFocused();
 });
 
-test('atalhos de 1 clique no wizard inicial agilizam data e rotina', async ({ page }) => {
+test('atalhos no wizard inicial agilizam data e rotina', async ({ page }) => {
   const open = page.locator('#guidedOnboarding [data-guided-action="open"]');
   await open.click();
   const overlay = page.locator('#guidedOnboardingOverlay');
   await expect(overlay).toBeVisible();
+  await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
 
   // 1. Clicar no atalho de 6 meses (pré-edital)
   const shortcut6m = overlay.locator('[data-guided-date-offset="180"]');
@@ -527,7 +627,7 @@ test('tour guiado interativo percorre as 3 paradas essenciais e conclui com suce
   await expect(tourPopover).toContainText('1 de 3 · Hoje');
   await expect(tourPopover).toContainText('Seu QG diário de estudo');
   await expect(page.locator('#panel-hoje')).toBeVisible();
-  await expect(page.locator('.plano-hoje-card.is-tour-highlighted')).toHaveCount(1);
+  await expect(page.locator('.plano-hoje-card h3.is-tour-highlighted')).toHaveCount(1);
 
   // Avança para Parada 2: Visão Geral
   const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
@@ -637,3 +737,4 @@ test('gatilhos de entrada do tour iniciam o fluxo a partir de Instruções e Mod
   await page.keyboard.press('Escape');
   await expect(tourPopover).toBeHidden();
 });
+

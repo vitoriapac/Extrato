@@ -11,6 +11,26 @@ import {
 } from '../../src/ui/tabs/today/TodayWeeklyRhythmCard.js';
 import { createTodayTabController } from '../../src/ui/tabs/today/today-tab-controller.js';
 
+test('Hoje não cria um plano paralelo quando há plano semanal confirmado', () => {
+  const state = { dailyPlans: [], studyPlans: [{ id: 'weekly' }] };
+  const controller = createTodayTabController({
+    getState: () => state, latestStudyPlan: () => state.studyPlans[0],
+    todayISO: () => '2026-11-06', formatPlanMinutes: String, formatDatePt: String,
+  });
+  assert.equal(controller.ensureTodayDailyStudyPlan([{ subjectId: 's', topicId: 't', estimatedMinutes: 35 }], 120), null);
+  assert.deepEqual(state.dailyPlans, []);
+});
+
+test('Hoje não salva atividades automáticas durante o primeiro acesso sem plano', () => {
+  const state = { dailyPlans: [], studyPlans: [], studySessions: [], questoes: [] };
+  const controller = createTodayTabController({
+    getState: () => state, latestStudyPlan: () => null,
+    todayISO: () => '2026-11-06', formatPlanMinutes: String, formatDatePt: String,
+  });
+  assert.equal(controller.ensureTodayDailyStudyPlan([{ subjectId: 's', topicId: 't', estimatedMinutes: 35 }], 120), null);
+  assert.deepEqual(state.dailyPlans, []);
+});
+
 test('TodayExecutionSummary Preact Component — renderiza métricas e anel de progresso', () => {
   const html = render(
     h(TodayExecutionSummary, {
@@ -23,11 +43,11 @@ test('TodayExecutionSummary Preact Component — renderiza métricas e anel de p
   );
 
   assert.match(html, /2h/);
-  assert.match(html, /Disponível hoje/);
+  assert.match(html, /Disponibilidade de hoje/);
   assert.match(html, /1h 30m/);
-  assert.match(html, /Planejado/);
+  assert.match(html, /Plano de hoje/);
   assert.match(html, /45m/);
-  assert.match(html, /Executado/);
+  assert.match(html, /Estudado hoje/);
   assert.match(html, /50% do plano executado/);
   assert.match(html, /<strong>45m de 1h 30m<\/strong>/);
   assert.match(html, /class="chart-ring chart-ring--ok"[^>]*aria-label="Progresso do plano de hoje: 50 de 100"/);
@@ -48,6 +68,26 @@ test('TodayExecutionSummary Preact Component — exibe estado sem plano diário'
   assert.match(html, /Plano diário ainda não montado/);
   // No plan means no ring at all, never an unexplained empty one.
   assert.doesNotMatch(html, /chart-ring/);
+});
+
+test('resumo separa tempo estudado do tempo creditado ao plano', () => {
+  const html = render(h(TodayExecutionSummary, {
+    availableMinutesFormatted: '2h', plannedMinutesFormatted: '1h', executedMinutesFormatted: '45m',
+    dateFormatted: 'Hoje', progressPercent: 25, availableMinutes: 120, plannedMinutes: 60,
+    executedMinutes: 45, planCompletedMinutes: 15, planRemainingMinutes: 45,
+  }));
+  assert.match(html, /15m de 1h/);
+  assert.match(html, /Falta no plano: 45m/);
+  assert.match(html, /Disponibilidade restante/);
+  assert.match(html, /1h 15m/);
+});
+
+test('resumo avisa quando existem atividades anteriores ao plano atual', () => {
+  const html = render(h(TodayExecutionSummary, {
+    availableMinutesFormatted: '2h', plannedMinutesFormatted: '1h', executedMinutesFormatted: '0m',
+    dateFormatted: 'Hoje', progressPercent: 0, needsPlanReview: true,
+  }));
+  assert.match(html, /atividades preservadas que não estão vinculadas ao plano semanal atual/);
 });
 
 test('TodayAgendaSections Preact Component — renderiza grade de tarefas e listas', () => {
@@ -142,6 +182,17 @@ test('TodayGoalsCard Preact Component — renderiza metas diárias com BulletBar
   assert.match(html, /chart-bullet/);
 });
 
+test('revisões sem previsão não anunciam uma meta artificial', () => {
+  const html = render(h(TodayGoalsCard, {
+    topicosHoje: 0, metaTopicosHoje: 1, questoesHoje: 0, metaQuestoesHoje: 1,
+    revisoesConcluidasHoje: 0, totalRevisoesHoje: 0, tempoHojeSegundos: 0,
+    tempoHojeFormatado: '0m', metaHorasHoje: 0, metaHorasFormatado: '0h',
+    pctTempo: 0, todayDayOfWeek: 0,
+  }));
+  assert.match(html, /Nenhuma revisão prevista para hoje/);
+  assert.doesNotMatch(html, /Revisões de hoje concluídas: [^"<]*meta 1/);
+});
+
 test('createTodayTabController — renderTodayGoalsHtml gera marcação acessível', () => {
   const controller = createTodayTabController({
     formatPlanMinutes: mins => `${mins}m`,
@@ -197,5 +248,5 @@ test('TodayWeeklyRhythmCard Preact Component — renderiza gráfico de colunas p
   assert.match(html, /3h 30m total/);
   assert.match(html, /chart-columns/);
   assert.match(html, /plan-execution-axis/);
-  assert.match(html, /font-bold text-brand/); // today highlighted
+  assert.match(html, /font-bold text-content-primary/); // today highlighted
 });

@@ -57,7 +57,7 @@ export function TodayWeeklyRhythmCard({
         />
         <div class="plan-execution-axis mt-1.5" aria-hidden="true">
           {days.map(day => (
-            <span class={day.isToday ? 'font-bold text-brand' : 'text-content-secondary'}>
+            <span class={day.isToday ? 'font-bold text-content-primary' : 'text-content-secondary'}>
               {day.dayName}
             </span>
           ))}

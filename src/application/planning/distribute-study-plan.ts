@@ -111,9 +111,9 @@ export function buildDailyPlanProposal({
         )
       : slots;
     for (const slot of ordered) {
-      while (remaining > 0 && slot.remaining >= 15) {
+      while (remaining > 0 && slot.remaining > 0) {
         const chunk = Math.min(60, remaining, slot.remaining),
-          minutes = chunk < 15 ? 0 : chunk;
+          minutes = chunk < 15 && chunk < remaining ? 0 : chunk;
         if (!minutes) break;
         slot.items.push({ ...candidate, minutes });
         slot.remaining -= minutes;
@@ -153,13 +153,14 @@ export function applyDailyPlanProposal({
 }: any = {}) {
   if (proposal?.state !== 'proposal' || !operationId || typeof idGenerator !== 'function')
     return { createdItems: 0, createdPlans: 0 };
-  const existing = new Set(
-    dailyPlans.flatMap((plan: any) =>
-      (plan.items || [])
-        .filter((item: any) => item.studyPlanId === proposal.studyPlanId && item.studyPlanItemId)
-        .map((item: any) => `${item.studyPlanItemId}:${item.type}:${item.currentDate || plan.date}`)
-    )
-  );
+  const existing = new Map<string, number>();
+  for (const plan of dailyPlans)
+    for (const item of plan.items || [])
+      if (item.studyPlanId === proposal.studyPlanId && item.studyPlanItemId) {
+        const key = `${item.studyPlanItemId}:${item.type}:${item.currentDate || plan.date}`;
+        existing.set(key, (existing.get(key) || 0) + 1);
+      }
+  const occurrences = new Map<string, number>();
   let createdItems = 0,
     createdPlans = 0;
   proposal.days.forEach((day: any) => {
@@ -182,8 +183,9 @@ export function applyDailyPlanProposal({
     }
     day.items.forEach((source: any) => {
       const key = `${source.studyPlanItemId}:${source.type}:${day.date}`;
-      if (existing.has(key)) return;
-      existing.add(key);
+      const occurrence = (occurrences.get(key) || 0) + 1;
+      occurrences.set(key, occurrence);
+      if (occurrence <= (existing.get(key) || 0)) return;
       plan.items.push({
         id: idGenerator('plan-item'),
         subjectId: source.subjectId,

@@ -55,10 +55,10 @@ test('renderer de entrada percorre objetivo, disponibilidade, conteúdo e prévi
     canCreatePlan: true,
     firstActivities: [{ subject: 'Matemática', topic: 'Porcentagem', minutes: 45 }],
   });
-  assert.match(plan, /Primeiras atividades priorizadas/);
+  assert.match(plan, /Distribuição semanal por tópico/);
   assert.match(plan, /Porcentagem/);
   assert.match(plan, /45 min/);
-  assert.match(plan, /mesma prioridade, elegibilidade e capacidade/);
+  assert.match(plan, /alocações semanais por tópico/);
   assert.match(
     renderOnboardingActions({
       ...base,
@@ -244,3 +244,4 @@ test('conteúdo destaca o edital escolhido ou, sem concurso, os pacotes', () => 
   assert.match(goal(null), /<option value="undecided" selected>Ainda não escolhi um concurso/);
   assert.match(goal('bb'), /<option value="undecided" >/);
 });
+

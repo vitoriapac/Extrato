@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="1450" viewBox="0 0 1200 1450" role="img" aria-labelledby="title desc">
+<title id="title">Capturas anotadas — auditoria UX Extrato Estudos</title>
+<desc id="desc">Dois achados assinalados sobre a seleção inicial do edital e o calendário mensal em celular.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#183f34}.heading{font-size:28px;font-weight:700}.copy{font-size:19px}.small{font-size:15px}.badge{fill:#b8422b;stroke:#fff;stroke-width:4}.n{font-size:22px;font-weight:bold;fill:#fff;text-anchor:middle;dominant-baseline:middle}.lead{stroke:#b8422b;stroke-width:3;fill:none}.panel{fill:#f3f5f0;stroke:#c9d5ce;stroke-width:2}</style>
+<rect width="1200" height="1450" fill="#fff"/>
+<text x="28" y="42" class="heading">Capturas anotadas · auditoria de UX</text>
+<rect x="18" y="62" width="1164" height="580" rx="18" class="panel"/>
+<image x="28" y="78" width="896" height="504" preserveAspectRatio="none" href="screenshots/extrato-selecao-edital-desktop.png" xlink:href="screenshots/extrato-selecao-edital-desktop.png"/>
+<circle cx="173" cy="262" r="22" class="badge"/><text x="173" y="262" class="n">1</text>
+<path d="M195 262 C400 250, 700 280, 940 255" class="lead"/>
+<text x="950" y="220" class="heading">230/230 tópicos</text>
+<text x="950" y="252" class="copy">já selecionados ao abrir.</text>
+<text x="950" y="300" class="copy">A contagem existe, mas a</text>
+<text x="950" y="326" class="copy">carga completa pode surpreender</text>
+<text x="950" y="352" class="copy">quem só quer começar com poucas</text>
+<text x="950" y="378" class="copy">matérias. Considere seleção vazia</text>
+<text x="950" y="404" class="copy">ou escolha explícita do edital inteiro.</text>
+<text x="30" y="615" class="small">Desktop · seletor do edital · estado inicial, antes de alterar a seleção</text>
+<rect x="18" y="662" width="1164" height="760" rx="18" class="panel"/>
+<image x="32" y="684" width="300" height="649" preserveAspectRatio="none" href="screenshots/extrato-agenda-mobile-calendario.png" xlink:href="screenshots/extrato-agenda-mobile-calendario.png"/>
+<rect x="302" y="804" width="30" height="62" fill="none" stroke="#b8422b" stroke-width="4" stroke-dasharray="8 5"/>
+<circle cx="317" cy="804" r="22" class="badge"/><text x="317" y="804" class="n">2</text>
+<path d="M337 804 C390 785, 425 785, 470 785" class="lead"/>
+<text x="475" y="744" class="heading">Grade mensal no mobile</text>
+<text x="475" y="782" class="copy">A 390 px, o calendário mostra</text>
+<text x="475" y="810" class="copy">quatro colunas no primeiro quadro;</text>
+<text x="475" y="838" class="copy">os outros dias exigem deslize lateral.</text>
+<text x="475" y="884" class="copy">A rolagem não tem pista visual clara.</text>
+<text x="475" y="930" class="copy">Lista é a alternativa mais legível.</text>
+<text x="32" y="1374" class="small">Mobile · Agenda em calendário · captura de viewport 390 × 844 px</text>
+<text x="475" y="1010" class="small">Recomendação: priorizar lista/semana em telas estreitas ou</text>
+<text x="475" y="1034" class="small">indicar o deslize e manter a ação “Lista” em evidência.</text>
+</svg>

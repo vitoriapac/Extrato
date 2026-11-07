@@ -274,7 +274,7 @@ export function ErrorNotebookView({
         <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Revisões Hoje</span>
           <span class="text-lg font-semibold text-amber font-display mt-0.5 block">
-            {stats.dueCount} cards
+            {stats.dueCount} {stats.dueCount === 1 ? 'card' : 'cards'}
           </span>
         </div>
         <div class="p-3 rounded-default border border-border-default bg-surface-card">

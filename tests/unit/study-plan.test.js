@@ -1,6 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildStudyPlan } from '../../src/application/build-study-plan.js';
+import { buildDailyPlanProposal } from '../../src/application/planning/distribute-study-plan.js';
+
+test('prazo longo produz bloco distribuível sem ultrapassar capacidade ou esforço', () => {
+  const weekly = buildStudyPlan({
+    weeklyAvailableMinutes: 840, weeksUntilExam: 26,
+    topics: [{ id: 't', topicId: 't', subjectId: 's', estimatedMinutes: 75 }],
+  });
+  assert.equal(weekly.weeklyNeedMinutes, 3);
+  assert.equal(weekly.weeklyPlannedMinutes, 15);
+  const daily = buildDailyPlanProposal({ studyPlan: { ...weekly, id: 'w' }, days: [{ date: '2026-11-06', availableMinutes: 120 }] });
+  assert.equal(daily.plannedMinutes, weekly.weeklyPlannedMinutes);
+  assert.equal(daily.unallocatedMinutes, 0);
+});
+
+test('carga e capacidade menores que 15 minutos não são aumentadas', () => {
+  const short = buildStudyPlan({ weeklyAvailableMinutes: 840, weeksUntilExam: 26, topics: [{ id: 't', estimatedMinutes: 7 }] });
+  assert.equal(short.weeklyPlannedMinutes, 7);
+  const limited = buildStudyPlan({ weeklyAvailableMinutes: 8, weeksUntilExam: 26, topics: [{ id: 't', estimatedMinutes: 75 }] });
+  assert.equal(limited.weeklyPlannedMinutes, 8);
+});
 
 test('distribui o orçamento semanal sem ultrapassar disponibilidade', () => {
   const plan = buildStudyPlan({

@@ -3,7 +3,7 @@
   "short_name": "Extrato de Estudos",
   "description": "Planejamento, revisões e acompanhamento de estudos no navegador.",
   "lang": "pt-BR",
-  "start_url": "./",
+  "start_url": "/app",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f4f6f4",
@@ -33,7 +33,7 @@
       "name": "Iniciar estudo",
       "short_name": "Estudar",
       "description": "Abrir o plano de hoje e o cronômetro",
-      "url": "./#hoje",
+      "url": "/app#hoje",
       "icons": [
         {
           "src": "icons/icon-192.png",
@@ -46,7 +46,7 @@
       "name": "Registrar questões",
       "short_name": "Questões",
       "description": "Abrir o registro de questões",
-      "url": "./#questoes",
+      "url": "/app#questoes",
       "icons": [
         {
           "src": "icons/icon-192.png",

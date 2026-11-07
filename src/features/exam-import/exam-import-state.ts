@@ -20,13 +20,9 @@ export function createExamImportState(preset: Row | null | undefined): ExamImpor
   syncExamImportSelection(state, preset);
   return state;
 }
-export function syncExamImportSelection(state: ExamImportState, preset: Row | null | undefined) {
-  state.subjectIds = new Set((preset?.subjects || []).map((item: any) => item.id));
-  state.topicIds = new Set(
-    (preset?.subjects || []).flatMap((item: any) =>
-      (item.topics || []).map((topic: any) => `${item.id}:${topic.id}`)
-    )
-  );
+export function syncExamImportSelection(state: ExamImportState, _preset: Row | null | undefined) {
+  state.subjectIds = new Set();
+  state.topicIds = new Set();
   return state;
 }
 export function resetExamImportState(

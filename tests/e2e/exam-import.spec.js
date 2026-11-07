@@ -20,12 +20,16 @@ test('abre, cancela e importa edital sem duplicar', async ({ page }) => {
   await openExamImport(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(page.getByText(/Selecione as disciplinas/)).toBeVisible();
+  await expect(page.locator('.exam-selection-count')).toContainText(/^0 de /);
+  await expect(page.locator('#examImportNextBtn')).toBeDisabled();
+  await page.getByRole('button', { name: 'Selecionar tudo' }).click();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(page.getByText(/disciplinas novas/)).toBeVisible();
   await page.getByRole('button', { name: 'Importar', exact: true }).click();
   const first = await page.locator('.subject-block').count();
   await openExamImport(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.getByRole('button', { name: 'Selecionar tudo' }).click();
   await page.getByRole('button', { name: 'Continuar' }).click();
   const second = await page.locator('.subject-block').count();
   expect(second).toBe(first);
@@ -36,17 +40,13 @@ test('abre, cancela e importa edital sem duplicar', async ({ page }) => {
 test('seleção parcial controla os tópicos importados', async ({ page }) => {
   await openExamImport(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
-  const subjects = page.locator('[data-exam-subject]');
-  const subjectTotal = await subjects.count();
-  for (let i = 1; i < subjectTotal; i++) await subjects.nth(i).uncheck();
   const firstSubjectTopics = page
     .locator('.exam-subject-choice')
     .first()
     .locator('[data-exam-topic]');
-  const topicTotal = await firstSubjectTopics.count();
-  for (let i = 1; i < topicTotal; i++) await firstSubjectTopics.nth(i).uncheck();
+  await firstSubjectTopics.first().check();
   await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.locator('#examImportContent')).toContainText('1tópicos novos');
+  await expect(page.locator('#examImportContent')).toContainText('1tópico novo');
 });
 test('catálogo inteligente oferece Caixa TI, busca e seleção por origem', async ({ page }) => {
   await openExamImport(page);

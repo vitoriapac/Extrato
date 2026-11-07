@@ -184,7 +184,7 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
   await apply(partial);
   await expect(card).toContainText('do plano · 25%');
   await expect(card).toContainText('0 de 2 atividades concluídas');
-  await card.getByRole('button', { name: 'Iniciar estudo', exact: true }).click();
+  await card.getByRole('button', { name: 'Continuar estudo', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(card.getByRole('button', { name: 'Retomar sessão' })).toBeVisible();
   const blocked = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));

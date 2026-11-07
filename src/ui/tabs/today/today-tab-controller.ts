@@ -13,7 +13,7 @@ import {
 } from '../../../application/onboarding/build-first-steps-mission.js';
 import { buildFinalStretchBanner } from '../../../domain/planning/final-stretch-policy.js';
 import { FinalStretchBanner } from '../../components/FinalStretchBanner.js';
-import { buildTodayViewModel } from '../../../application/planning/build-today-view-model.js';
+import { buildTodayViewModel, canGenerateAutomaticTodayPlan } from '../../../application/planning/build-today-view-model.js';
 import { buildNextBestAction } from '../../../application/diagnostics/build-next-best-action.js';
 import { createDailyExecutionController } from '../../controllers/daily-execution-controller.js';
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
@@ -121,6 +121,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     executedMinutes: number;
     date: string;
     progress: number | null;
+    planCompletedMinutes?: number;
+    planRemainingMinutes?: number;
+    execution?: { needsPlanReview?: boolean } | null;
   }) {
     const availableMinutesFormatted = formatPlanMinutes(model.availableMinutes);
     const plannedMinutesFormatted = formatPlanMinutes(model.plannedMinutes);
@@ -136,6 +139,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       availableMinutes: model.availableMinutes,
       plannedMinutes: model.plannedMinutes,
       executedMinutes: model.executedMinutes,
+      planCompletedMinutes: model.planCompletedMinutes,
+      planRemainingMinutes: model.planRemainingMinutes,
+      needsPlanReview: Boolean(model.execution?.needsPlanReview),
     });
   }
 
@@ -347,7 +353,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   }
 
   function ensureTodayDailyStudyPlan(priorities: any[], availableMinutes: number) {
-    return todayDailyStudyPlan() || materializeDailyStudyPlan(priorities, availableMinutes);
+    return todayDailyStudyPlan() || (canGenerateAutomaticTodayPlan(getState(), latestStudyPlan()) ? materializeDailyStudyPlan(priorities, availableMinutes) : null);
   }
 
   function planItemStatusLabel(status: string) {
@@ -574,7 +580,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     }
     if (!plan) {
       container.innerHTML =
-        '<div class="upcoming-empty">Defina uma meta diária de pelo menos 15 minutos para montar o plano.</div>';
+        latestStudyPlan()
+          ? '<div class="upcoming-empty">Nenhuma atividade do plano semanal foi distribuída para hoje. Confira a distribuição em Planejamento.</div>'
+          : '<div class="upcoming-empty">Confirme um plano em Planejamento para organizar as atividades de hoje.</div>';
       return;
     }
 

@@ -17,6 +17,7 @@ for (const { width, theme } of [
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
     await expect(page.locator('#weeklyCloseDashboard .projection-close-context')).toHaveCount(1);
     await activateTab(page, 'desempenho');
+    await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
     await expect(page.locator('#achievementProjectionTitle')).toHaveText('Projeção até a prova');
     await expect(page.locator('.achievement-projection__status')).toBeVisible();
     const explanation = page
@@ -92,6 +93,7 @@ test('prévia de recuperação no Demo explica origem e destino sem ação de ap
   await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
   await openDemo(page);
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   const open = page.locator('[data-recovery-preview-open]');
   await expect(open).toBeVisible();
   await open.click();
@@ -124,6 +126,7 @@ test('Recovery exige confirmação, revalida e registra plano e decisão sem ree
     api.renderAll();
   }, demo);
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   await page.locator('[data-recovery-preview-open]').click();
   await page
     .getByRole('dialog', { name: 'Plano de recuperação' })
@@ -255,6 +258,7 @@ test('falha de persistência do Recovery preserva estado e permite repetir a con
     generateDemoData({ today: '2026-10-01' })
   );
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   const before = await page.evaluate(async () => {
     const api = window.__EXTRATO_TEST__;
     await api.settleSaves();
@@ -349,6 +353,7 @@ test('histórico comparável mostra tendência futura distinta dos resultados ob
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   await expect(page.locator('.achievement-trajectory__future')).toHaveCount(1);
   await expect(
     page.locator('.achievement-projection__metrics > div').last().locator('strong')
@@ -405,6 +410,7 @@ test('simulador compara cenário sem persistir estado real ou snapshots', async 
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   const decisionState = () =>
     page.evaluate(() => {
       const state = window.__EXTRATO_TEST__.getState();
@@ -448,6 +454,7 @@ test('simulador é acessível por teclado e cabe em 320px no tema escuro', async
   await openDemo(page);
   await page.locator('#themeToggleBtn').click();
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   await page.locator('[data-projection-scenario-open]').focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Simular cenário' });
@@ -489,6 +496,7 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
     });
   const before = await historical();
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   await expect(page.locator('.achievement-projection__status')).toHaveText('Em risco');
   await expect(
     page.locator('.performance-method-note').filter({ hasText: '10 dias' })

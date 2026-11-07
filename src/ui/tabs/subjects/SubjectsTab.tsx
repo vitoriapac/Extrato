@@ -89,7 +89,7 @@ export function SubjectsTab({
           value={searchQuery}
           placeholder="Nome da disciplina ou tópico"
         />
-        <p role="status">{subjects.length} disciplinas encontradas.</p>
+        <p role="status">{subjects.length} {subjects.length === 1 ? 'disciplina encontrada' : 'disciplinas encontradas'}.</p>
       </div>
 
       {showExamFilter && (

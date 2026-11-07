@@ -2,7 +2,9 @@
 @import 'tailwindcss/utilities' layer(utilities) source(none);
 
 @source "../src";
+@source not "../src/landing.bundle.js";
 @source "../index.html";
+@source "../landing.html";
 
 /* O tema vem do botão do app (data-theme), não da preferência do sistema. */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -91,4 +93,68 @@
 
   --radius-default: var(--radius-card);
   --radius: var(--radius-control);
+}
+
+.landing-wordmark {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  font-size: var(--wordmark-size, 14vw);
+  font-optical-sizing: none;
+  height: 0.75em;
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+
+.landing-wordmark-ruler {
+  position: absolute;
+  visibility: hidden;
+  font-size: 100px;
+  letter-spacing: -0.035em;
+}
+
+.landing-wordmark-rise {
+  position: relative;
+  padding-top: 0.03em;
+  text-align: center;
+}
+
+.landing-wordmark-ink {
+  display: block;
+  opacity: 0.62;
+  mask-image: linear-gradient(currentColor, transparent 100%);
+}
+
+.landing-wordmark-light {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-wordmark[data-reveal] .landing-wordmark-rise {
+    transition: transform 800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 800ms ease-out;
+  }
+
+  .landing-wordmark[data-reveal="pending"] .landing-wordmark-rise {
+    opacity: 0;
+    transform: translateY(24%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (any-hover: hover) and (any-pointer: fine) {
+  .landing-wordmark-light {
+    display: block;
+    position: absolute;
+    inset: 0;
+    padding-top: inherit;
+    opacity: 0;
+    pointer-events: none;
+    color: var(--accent);
+    mask-image: radial-gradient(ellipse clamp(120px, 22vw, 330px) clamp(55px, 12vw, 180px) at var(--spot-x, 50%) var(--spot-y, 30%), currentColor, transparent 82%);
+    transition: opacity 280ms ease-out;
+  }
+
+  .landing-wordmark:hover .landing-wordmark-light {
+    opacity: 1;
+  }
 }

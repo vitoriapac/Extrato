@@ -15,8 +15,17 @@ export function toggleExamSubject(
   }
   return state;
 }
-export function toggleExamTopic(state: ExamImportState, key: string, checked: boolean) {
+export function toggleExamTopic(state: ExamImportState, key: string, checked: boolean, preset: Row) {
   checked ? state.topicIds.add(key) : state.topicIds.delete(key);
+  const subject = (preset?.subjects || []).find((item: Row) =>
+    (item.topics || []).some((topic: Row) => `${item.id}:${topic.id}` === key)
+  );
+  if (subject) {
+    const hasSelectedTopic = (subject.topics || []).some((topic: Row) =>
+      state.topicIds.has(`${subject.id}:${topic.id}`)
+    );
+    hasSelectedTopic ? state.subjectIds.add(subject.id) : state.subjectIds.delete(subject.id);
+  }
   return state;
 }
 export function selectExamTopics(

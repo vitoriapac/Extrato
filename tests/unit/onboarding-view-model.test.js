@@ -9,7 +9,7 @@ test('onboarding aponta a próxima etapa sem substituir histórico real', () => 
   const configured = buildOnboardingViewModel({
     examDate: '2026-12-01',
     hoursByDay: { 1: 2 },
-    subjects: [{ topics: [{ archived: false }] }],
+    subjects: [{ topics: [{ name: 'Princípios', archived: false }] }],
   });
   assert.equal(configured.completed, 3);
   assert.equal(configured.next.id, 'plan');
@@ -20,7 +20,7 @@ test('onboarding aponta a próxima etapa sem substituir histórico real', () => 
 test('onboarding não marca etapas preenchidas por padrão antes da etapa anterior', () => {
   const prefilled = buildOnboardingViewModel({
     hoursByDay: { 1: 2.5 },
-    subjects: [{ topics: [{ archived: false }] }],
+    subjects: [{ topics: [{ name: 'Princípios', archived: false }] }],
   });
   assert.equal(prefilled.completed, 0);
   assert.equal(prefilled.next.id, 'goal');
@@ -38,7 +38,7 @@ test('onboarding calcula capacidade e bloqueia proposta sem atividades elegívei
       {
         id: 's1',
         name: 'Direito',
-        topics: [{ difficulty: 'Difícil', estimatedStudyMinutes: 120, archived: false }],
+        topics: [{ name: 'Princípios', difficulty: 'Difícil', estimatedStudyMinutes: 120, archived: false }],
       },
     ],
     currentStep: 'availability',
@@ -56,7 +56,7 @@ test('onboarding habilita confirmação somente com atividade do planejamento re
   const model = buildOnboardingViewModel({
     examDate: '2026-12-01',
     hoursByDay: { 1: 2 },
-    subjects: [{ topics: [{ archived: false }] }],
+    subjects: [{ topics: [{ name: 'Princípios', archived: false }] }],
     planPreview: {
       state: 'proposal',
       items: [{ subjectName: 'Direito', topicName: 'Princípios', minutes: 40 }],

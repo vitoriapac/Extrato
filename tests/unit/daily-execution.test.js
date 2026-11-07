@@ -58,6 +58,15 @@ test('modelo diário preserva input e contextualiza prioridade sem alterar plano
   assert.equal(result.needsPlanReview, true);
   assert.equal(result.progress.pendingActivities, 1);
 });
+test('atividade antiga sem vínculo é preservada e identificada fora do plano atual', () => {
+  const input = fixture();
+  delete input.dailyPlans[0].items[0].studyPlanId;
+  const before = structuredClone(input);
+  const result = buildDailyExecutionModel(input);
+  assert.equal(result.stalePlanItemCount, 1);
+  assert.equal(result.needsPlanReview, true);
+  assert.deepEqual(input, before);
+});
 test('execução parcial, completa e excedente mantém crédito limitado', () => {
   const input = fixture();
   input.sessions = [session()];
@@ -258,7 +267,7 @@ test('contexto excepcional recolhe detalhes, preserva alertas e não duplica rec
   assert.doesNotMatch(html, /<details class="daily-execution-context" open/);
   assert.match(html, /10 min de estudo adicional/);
   assert.match(html, /30 min com vínculo/);
-  assert.match(html, /<\/details>[\s\S]*versão anterior do plano/);
+  assert.match(html, /<\/details>[\s\S]*não estão vinculadas ao plano semanal atual/);
   assert.doesNotMatch(html, /Recomendação estratégica:/);
   assert.match(html, /daily-execution-footer/);
   assert.doesNotMatch(html, /daily-execution-suggestion/);
@@ -318,6 +327,7 @@ test('matriz operacional preserva atividade do plano, sessão ativa e ausência 
   const input = fixture(),
     aligned = planned(buildDailyExecutionModel(input));
   assert.match(aligned, /data-decision-role="planned"/);
+  assert.match(aligned, /Sua próxima atividade/);
   assert.match(aligned, /Prioridade principal prevista no plano/);
   input.nextBestAction.action.activityType = 'review';
   const model = buildDailyExecutionModel(input),
@@ -326,6 +336,8 @@ test('matriz operacional preserva atividade do plano, sessão ativa e ausência 
     });
   assert.match(html, /Sugestão fora do plano/);
   assert.match(html, /data-daily-start="i"/);
+  model.priority.nextItem.status = 'partial';
+  assert.match(planned(model), /Continuar estudo/);
   assert.doesNotMatch(html, /Lacuna prioritária/);
   assert.match(planned(model, { timer: { active: true, planItemId: 'i' } }), /Retomar sessão/);
   assert.match(

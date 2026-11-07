@@ -1,11 +1,16 @@
 import {
   buildOnboardingViewModel,
+  isValidOnboardingTopic,
   applyOnboardingDateShortcut,
   AVAILABILITY_PRESETS,
 } from '../../application/onboarding/build-onboarding-view-model.js';
 import { findStarterPackById, type StarterPack } from '../../domain/onboarding/starter-packs.js';
 import { applySundayRestDay } from '../../domain/onboarding/routine-sustainability.js';
 import { syncOnboardingPhase } from '../../ui/controllers/onboarding-phase-controller.js';
+import { h } from 'preact';
+import { mountPreact, unmountPreact } from '../../ui/preact-mount.js';
+import { ManualSubjects } from './ManualSubjects.js';
+import { validateManualSubjects, type ManualSubjectDraft } from '../../application/onboarding/manual-subject-drafts.js';
 import {
   renderOnboardingEntry,
   renderOnboardingProgress,
@@ -39,6 +44,9 @@ export interface OnboardingModalControllerDependencies {
   difficultyOptions: readonly string[];
   subjectService: {
     updateTopic: (subjectId: string, topicId: string, topic: any) => void;
+    create?: (name: string) => any;
+    addTopic?: (subjectId: string, input: any) => any;
+    remove?: (subjectId: string) => any;
   };
   getSubjectById: (id: string) => any;
   activeSubjects: () => any[];
@@ -62,6 +70,8 @@ export interface OnboardingModalControllerDependencies {
 }
 
 export function createOnboardingModalController(deps: OnboardingModalControllerDependencies) {
+  let manualDrafts: ManualSubjectDraft[] = [];
+  let manualOpen = false;
   const {
     document,
     getState,
@@ -101,12 +111,14 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       Boolean(state.examDate) &&
       Object.values(state.metas.horasPorDia || {}).some(value => Number(value) > 0) &&
       (state.subjects || []).some(
-        (subject: any) => !subject.archived && subject.topics?.some((topic: any) => !topic.archived)
+        (subject: any) => !subject.archived && subject.topics?.some(isValidOnboardingTopic)
       );
-    return buildOnboardingViewModel({
+    const model = buildOnboardingViewModel({
       examDate: state.examDate,
       hoursByDay: state.metas?.horasPorDia || {},
-      subjects: state.subjects || [],
+      subjects: [...(state.subjects || []), ...manualDrafts.map((draft, index) => ({
+        id: `manual-draft-${index}`, name: draft.name, topics: draft.topics.map((name, topicIndex) => ({ id: `draft-${topicIndex}`, name })),
+      }))],
       sessions: state.studySessions || [],
       questions: state.questoes || [],
       dailyPlans: state.dailyPlans || [],
@@ -118,6 +130,7 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       presetId: uiState.onboarding.presetId,
       customExamName: state.examBlueprint?.customTitle || null,
     });
+    return { ...model, manualDraftError: validateManualSubjects(manualDrafts, (state.subjects || []).map((subject: any) => subject.name || '')) };
   }
 
   function syncGuidedNext(model?: Record<string, any>) {
@@ -178,11 +191,27 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
 
     const contentEl = document.getElementById('guidedOnboardingContent');
     if (contentEl) {
+      const previousManual = contentEl.querySelector?.('[data-manual-subjects-mount]');
+      if (previousManual) unmountPreact(previousManual);
       contentEl.innerHTML = renderOnboardingContent(model, {
         escapeHtml,
         escapeAttr,
         formatMinutes: formatPlanMinutes,
       });
+      if (model.current.id === 'content' && manualOpen) {
+        const mount = document.createElement('div');
+        mount.setAttribute('data-manual-subjects-mount', '');
+        contentEl.appendChild(mount);
+        const renderManual = () => mountPreact(h(ManualSubjects, {
+          drafts: manualDrafts,
+          onChange: (drafts: ManualSubjectDraft[]) => {
+            manualDrafts = drafts;
+            renderManual();
+            syncGuidedNext(onboardingModel());
+          },
+        }), mount);
+        renderManual();
+      }
     }
     const helpEl = document.getElementById('guidedOnboardingHelp');
     if (helpEl) {
@@ -432,7 +461,35 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     if (!action) return;
     if (action === 'cancel') closeGuidedOnboarding();
     if (action === 'back') moveOnboarding(-1);
-    if (action === 'next') moveOnboarding(1);
+    if (action === 'next') {
+      const model = onboardingModel();
+      if (onboardingBlockedReason(model)) return;
+      if (model.current.id === 'content' && manualDrafts.length) {
+        if (!subjectService.create || !subjectService.addTopic || !subjectService.remove) {
+          showToast('Não foi possível adicionar as disciplinas.');
+          return;
+        }
+        const created: string[] = [];
+        try {
+          for (const draft of manualDrafts) {
+            const subject = subjectService.create(draft.name.trim());
+            if (!subject?.id) throw new Error('Disciplina não criada.');
+            created.push(subject.id);
+            for (const name of draft.topics)
+              if (!subjectService.addTopic(subject.id, { name: name.trim() }))
+                throw new Error('Tópico não criado.');
+          }
+        } catch {
+          created.forEach(id => subjectService.remove?.(id));
+          showToast('Não foi possível adicionar as matérias. Revise e tente novamente.');
+          return;
+        }
+        manualDrafts = [];
+        manualOpen = false;
+        scheduleSave();
+      }
+      moveOnboarding(1);
+    }
     if (action === 'rest-sunday') {
       const state = getState();
       const currentHours = state.metas?.horasPorDia || {};
@@ -456,9 +513,16 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       deps.onStructuredImport();
     }
     if (action === 'manual') {
-      closeGuidedOnboarding({ manual: true });
-      activateTab('disciplinas');
-      document.getElementById('addSubjectBtn')?.focus();
+      if (onboardingModel().current.id === 'content') {
+        manualOpen = true;
+        if (!manualDrafts.length) manualDrafts = [{ name: '', topics: [''] }];
+        renderGuidedOnboarding();
+        document.querySelector<HTMLElement>('[data-manual-subjects-mount] input')?.focus();
+      } else {
+        closeGuidedOnboarding({ manual: true });
+        activateTab('disciplinas');
+        document.getElementById('addSubjectBtn')?.focus();
+      }
     }
     if (action === 'availability') {
       getUiState().onboarding.currentStep = 'availability';

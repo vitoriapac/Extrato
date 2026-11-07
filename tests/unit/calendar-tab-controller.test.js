@@ -100,6 +100,19 @@ test('createCalendarTabController — gerencia atrasadas agrupadas e paginação
   controller.resetOverdueGroupLimit('calAtrasadas');
 });
 
+test('lista de hoje mostra somente itens pendentes e preserva concluídos no estado', () => {
+  const element = { innerHTML: '' };
+  const state = { calendar: [
+    { id: 'pending', date: '2026-03-10', status: 'Não iniciado', subjectId: 's1' },
+    { id: 'done', date: '2026-03-10', status: 'Concluído', subjectId: 's2' },
+  ], reviewAgenda: [] };
+  const controller = createCalendarTabController({ state, clock: { today: () => '2026-03-10' }, document: { getElementById: () => element }, entitySubjectName: item => item.subjectId });
+  controller.renderCalTarefasHoje();
+  assert.match(element.innerHTML, /s1/);
+  assert.doesNotMatch(element.innerHTML, /s2/);
+  assert.equal(state.calendar.length, 2);
+});
+
 test('createCalendarTabController — CRUD e conclusões integradas', () => {
   let saved = false;
   let toasted = '';

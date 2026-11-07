@@ -8,6 +8,7 @@ import {
   calculatePlanFeasibility,
 } from '../../src/application/onboarding/build-onboarding-view-model.js';
 import { buildFirstStepsMission } from '../../src/application/onboarding/build-first-steps-mission.js';
+import { validateManualSubjects } from '../../src/application/onboarding/manual-subject-drafts.js';
 import {
   createGuidedTourState,
   nextTourStep,
@@ -16,6 +17,26 @@ import {
   GUIDED_TOUR_STEPS,
   ESSENTIAL_TOUR_STEPS,
 } from '../../src/domain/onboarding/guided-tour-steps.js';
+
+test('rascunho manual exige nomes de disciplina e tópico', () => {
+  assert.match(validateManualSubjects([{ name: ' ', topics: ['Tópico'] }]), /disciplina/);
+  assert.match(validateManualSubjects([{ name: 'Direito', topics: [' '] }]), /tópico/);
+  assert.equal(validateManualSubjects([{ name: ' Direito ', topics: [' Princípios '] }]), '');
+  assert.match(validateManualSubjects([{ name: ' direito ', topics: ['Princípios'] }], ['Direito']), /Já existe/);
+});
+
+test('onboarding ignora tópicos vazios ou arquivados ao habilitar e resumir o plano', () => {
+  const options = { examDate: '2027-05-01', today: '2026-11-06', hoursByDay: { '1': 2 }, currentStep: 'content' };
+  const subject = { id: 's1', name: 'Português', topics: [{ name: '' }, { name: '   ' }, { name: 'Arquivado', archived: true }] };
+  const empty = buildOnboardingViewModel({ ...options, subjects: [subject] });
+  assert.equal(empty.hasContent, false);
+  assert.equal(empty.canConfigurePlan, false);
+  assert.equal(empty.topicCount, 0);
+  const valid = buildOnboardingViewModel({ ...options, subjects: [{ ...subject, topics: [...subject.topics, { name: 'Concordância', estimatedStudyMinutes: 30 }] }] });
+  assert.equal(valid.hasContent, true);
+  assert.equal(valid.topicCount, 1);
+  assert.equal(valid.estimatedNeedMinutes, 30);
+});
 
 test('applyOnboardingDateShortcut calcula datas sem deriva de fuso horário', () => {
   const base = '2026-10-26';

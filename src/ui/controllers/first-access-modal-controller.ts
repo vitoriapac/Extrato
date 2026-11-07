@@ -148,7 +148,8 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
           close();
         },
         onOpenSalesLanding: () => {
-          openSalesLanding();
+          const win = context.window || (typeof window !== 'undefined' ? window : null);
+          win?.location?.assign('/');
         },
       }),
       container
@@ -195,7 +196,7 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
     plansBtn?.addEventListener?.('click', () => openPaywall('annual'));
 
     const landingBtn = win.document.getElementById?.('openSalesLandingBtn');
-    landingBtn?.addEventListener?.('click', () => openSalesLanding());
+    landingBtn?.addEventListener?.('click', () => win.location.assign('/'));
   }
 
   function checkAndTrigger() {
@@ -231,8 +232,8 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
       // Falha silenciosa caso location ou navigator não estejam acessíveis
     }
 
-    if (!isTest && !isAutomation && (forceLanding || !forceFirstAccess)) {
-      openSalesLanding();
+    if (!isTest && !isAutomation && forceLanding) {
+      win?.location?.assign('/');
       return true;
     }
 

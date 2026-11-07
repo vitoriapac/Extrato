@@ -1,3 +1,5 @@
+import { compareReadinessSnapshots } from '../analytics/build-readiness-evolution.js';
+
 export function buildSessionResultViewModel(
   session: Record<string, any>,
   nextPriority: Record<string, any> | null | undefined,
@@ -108,13 +110,21 @@ function sessionEffects(
   const goal = planned
     ? `${formatMinutes(Math.round(day.after.studiedMinutes))} de ${formatMinutes(planned)}${day.after.studiedMinutes >= planned ? ' · cumprida' : ''}`
     : null;
-  const { before, after } = outcome.readiness || {};
+  const { before: rawBefore, after: rawAfter } = outcome.readiness || {};
+  const before = typeof rawBefore === 'object' && rawBefore !== null ? rawBefore.value : rawBefore;
+  const after = typeof rawAfter === 'object' && rawAfter !== null ? rawAfter.value : rawAfter;
+  const comparison = rawBefore && rawAfter && typeof rawBefore === 'object' && typeof rawAfter === 'object'
+    ? compareReadinessSnapshots({ ...rawBefore, score: before }, { ...rawAfter, score: after })
+    : null;
   const readiness =
     after == null
-      ? null
+      ? { text: 'Índice em formação', delta: null }
       : before == null
         ? { text: `${after}/100`, delta: null }
-        : { text: `${before} → ${after}/100`, delta: after - before };
+        : comparison && comparison.state !== 'comparable'
+          ? { text: `${after}/100`, delta: null, reason: comparison.reason }
+          : { text: `${before} → ${after}/100`, delta: after - before,
+              ...(comparison ? { factors: comparison.factors.filter(item => item.delta !== 0), confidence: rawAfter.confidenceLabel } : {}) };
   const dates: string[] = outcome.reviewDates || [];
   const reviews = dates.length
     ? {

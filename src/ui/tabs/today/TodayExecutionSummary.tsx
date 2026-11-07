@@ -11,6 +11,9 @@ export interface TodayExecutionSummaryProps {
   availableMinutes?: number;
   plannedMinutes?: number;
   executedMinutes?: number;
+  planCompletedMinutes?: number;
+  planRemainingMinutes?: number;
+  needsPlanReview?: boolean;
 }
 
 function formatMinutes(minutes: number): string {
@@ -31,6 +34,9 @@ export function TodayExecutionSummary({
   availableMinutes,
   plannedMinutes,
   executedMinutes,
+  planCompletedMinutes,
+  planRemainingMinutes,
+  needsPlanReview = false,
 }: TodayExecutionSummaryProps): JSX.Element {
   const goalMet = progressPercent !== null && progressPercent >= 100;
 
@@ -50,7 +56,7 @@ export function TodayExecutionSummary({
       tone: 'primary',
     });
   }
-  const remainingPlanned = Math.max(0, validPlanned - validExecuted);
+  const remainingPlanned = planRemainingMinutes ?? Math.max(0, validPlanned - validExecuted);
   if (remainingPlanned > 0) {
     stackedParts.push({
       label: 'A realizar',
@@ -58,7 +64,7 @@ export function TodayExecutionSummary({
       tone: 'secondary',
     });
   }
-  const flexMinutes = Math.max(0, validAvailable - Math.max(validPlanned, validExecuted));
+  const flexMinutes = Math.max(0, validAvailable - validExecuted - remainingPlanned);
   if (flexMinutes > 0) {
     stackedParts.push({
       label: 'Livre',
@@ -81,24 +87,28 @@ export function TodayExecutionSummary({
 
       <div class="today-statement-ledger">
         <div class="today-ledger-row">
-          <span class="today-ledger-label">Disponível hoje</span>
+          <span class="today-ledger-label">Disponibilidade de hoje</span>
           <strong class="today-ledger-value">{availableMinutesFormatted}</strong>
         </div>
         <div class="today-ledger-row">
-          <span class="today-ledger-label">Planejado</span>
+          <span class="today-ledger-label">Plano de hoje</span>
           <strong class="today-ledger-value">{plannedMinutesFormatted}</strong>
         </div>
         <div class="today-ledger-row">
-          <span class="today-ledger-label">Executado</span>
+          <span class="today-ledger-label">Estudado hoje</span>
           <strong class="today-ledger-value">{executedMinutesFormatted}</strong>
         </div>
         {validAvailable > 0 && (
           <div class="today-ledger-row today-ledger-row--balance">
-            <span class="today-ledger-label">Saldo do dia</span>
+            <span class="today-ledger-label">Disponibilidade restante</span>
             <strong class="today-ledger-value">{remainingFormatted}</strong>
           </div>
         )}
       </div>
+      {needsPlanReview && <p class="context-note context-note--info">Há atividades preservadas que não estão vinculadas ao plano semanal atual. Confira a distribuição em Planejamento.</p>}
+      {progressPercent !== null && (
+        <p class="today-progress-status">Falta no plano: {formatMinutes(remainingPlanned)}. A disponibilidade inclui o tempo livre além do plano.</p>
+      )}
 
       <div class="today-execution-progress">
         {progressPercent !== null && (
@@ -118,7 +128,7 @@ export function TodayExecutionSummary({
           ) : (
             <p class="today-progress-status">
               <strong>
-                {executedMinutesFormatted} de {plannedMinutesFormatted}
+                {planCompletedMinutes == null ? executedMinutesFormatted : formatMinutes(planCompletedMinutes)} de {plannedMinutesFormatted}
               </strong>{' '}
               · {progressPercent}% do plano executado
             </p>

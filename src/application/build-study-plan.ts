@@ -80,7 +80,9 @@ export function buildStudyPlan({
       activityMix: { theory: 0, questions: 0, reviews: 0 },
       confidence: 0,
     };
-  const weeklyBudget = Math.min(availability, weeklyNeedMinutes!);
+  // Reserve one usable block when the average weekly need is smaller, without exceeding total remaining effort.
+  const minimumUsefulMinutes = Math.min(15, remainingMinutes + maintenanceMinutes);
+  const weeklyBudget = Math.min(availability, Math.max(weeklyNeedMinutes!, minimumUsefulMinutes));
   const scored = configured
     .map(item => ({ ...scoreStudyDecision(item), capacityMinutes: effort(item) }))
     .sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));

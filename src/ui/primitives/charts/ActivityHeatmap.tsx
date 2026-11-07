@@ -51,7 +51,7 @@ export function ActivityHeatmap({
             class={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium text-xs transition-all ${
               isCalendar
                 ? 'bg-surface-elevated text-content-primary font-semibold'
-                : 'text-content-secondary hover:text-content-primary'
+                : 'bg-transparent text-content-secondary hover:text-content-primary'
             }`}
           >
             <Icon name="calendar" size={13} stroke={2} />
@@ -65,7 +65,7 @@ export function ActivityHeatmap({
             class={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium text-xs transition-all ${
               !isCalendar
                 ? 'bg-surface-elevated text-content-primary font-semibold'
-                : 'text-content-secondary hover:text-content-primary'
+                : 'bg-transparent text-content-secondary hover:text-content-primary'
             }`}
           >
             <Icon name="clock" size={13} stroke={2} />

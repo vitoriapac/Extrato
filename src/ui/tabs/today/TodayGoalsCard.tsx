@@ -72,15 +72,15 @@ export function TodayGoalsCard({
         <div class="meta-hoje-value">
           {revisoesConcluidasHoje} <span>/ {totalRevisoesHoje}</span>
         </div>
-        <div class="meta-hoje-chart mt-2">
+        {totalRevisoesHoje === 0 ? <p>Nenhuma revisão prevista para hoje.</p> : <div class="meta-hoje-chart mt-2">
           <BulletBar
             value={revisoesConcluidasHoje}
-            target={totalRevisoesHoje > 0 ? totalRevisoesHoje : 1}
+            target={totalRevisoesHoje}
             max={Math.max(totalRevisoesHoje, revisoesConcluidasHoje, 1)}
             unit=""
             label="Revisões de hoje concluídas"
           />
-        </div>
+        </div>}
       </div>
 
       <div class="meta-hoje-card">

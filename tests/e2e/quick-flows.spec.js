@@ -102,6 +102,8 @@ test('Alex (Power User) — encadeamento pós-sessão de estudo para questões d
   await activateTab(page, 'hoje');
   await page.locator('#timerSubjectSelect').selectOption({ index: 1 });
   await page.locator('#timerTopicSelect').selectOption({ index: 1 });
+  const subjectId = await page.locator('#timerSubjectSelect').inputValue();
+  const topicId = await page.locator('#timerTopicSelect').inputValue();
   await page.locator('#timerStartBtn').click();
   await page.locator('#timerFinishBtn').click();
   await page.locator('#sessionModalSaveBtn').click();
@@ -114,5 +116,15 @@ test('Alex (Power User) — encadeamento pós-sessão de estudo para questões d
   await expect(page.locator('#panel-questoes')).toBeVisible();
   await expect(page.locator('#questionDraft-resolved')).toBeVisible();
   await expect(page.locator('#questionDraft-resolved')).toBeFocused();
+  const row = page.locator('#questoesBody tr.row-editing');
+  const questionId = await row.getAttribute('data-id');
+  await expect(row.locator('select').nth(0)).toHaveValue(subjectId);
+  await expect(row.locator('select').nth(1)).toHaveValue(topicId);
+  await page.locator('#questionDraft-resolved').fill('10');
+  await page.locator('#questionDraft-correct').fill('8');
+  await row.getByRole('button', { name: 'Salvar alterações' }).click();
+  await expect(page.locator('#questoesBody tr.row-editing')).toHaveCount(0);
+  await expect(page.locator(`#questoesBody tr[data-id="${questionId}"]`)).toHaveCount(1);
+  await expect(page.locator(`#questoesBody tr[data-id="${questionId}"]:visible`)).toContainText('10');
 });
 

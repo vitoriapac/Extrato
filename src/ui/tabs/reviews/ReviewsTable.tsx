@@ -92,6 +92,24 @@ export function ReviewsTable({
 
   return (
     <>
+      {groups.today.length > 0 && (
+        <>
+          <tr
+            dangerouslySetInnerHTML={{
+              __html: renderGroupHeader({
+                title: 'Hoje',
+                count: groups.today.length,
+                tone: 'today',
+              }),
+            }}
+          />
+          {groups.today.map(renderRow)}
+        </>
+      )}
+      {groups.today.length === 0 && (
+        <tr><td colSpan={8} class="text-content-secondary">Nenhuma revisão pendente para hoje.</td></tr>
+      )}
+
       {groups.overdue.length > 0 && (
         <>
           <tr
@@ -107,27 +125,12 @@ export function ReviewsTable({
         </>
       )}
 
-      {groups.today.length > 0 && (
-        <>
-          <tr
-            dangerouslySetInnerHTML={{
-              __html: renderGroupHeader({
-                title: 'Hoje',
-                count: groups.today.length,
-                tone: 'today',
-              }),
-            }}
-          />
-          {groups.today.map(renderRow)}
-        </>
-      )}
-
       {groups.upcoming.length > 0 && (
         <>
           <tr
             dangerouslySetInnerHTML={{
               __html: renderGroupHeader({
-                title: 'Próximas',
+                title: 'Próximas revisões',
                 count: groups.upcoming.length,
                 tone: 'upcoming',
               }),
@@ -156,7 +159,7 @@ export function ReviewsTable({
           <tr
             dangerouslySetInnerHTML={{
               __html: renderGroupHeader({
-                title: 'Concluídas',
+                title: 'Histórico de revisões concluídas',
                 count: groups.completed.length,
                 tone: 'completed',
                 expanded: completedExpanded,

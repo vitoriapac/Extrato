@@ -212,14 +212,19 @@ export interface ColumnChartProps {
   columns: ColumnChartColumn[];
   /** Full text alternative; the chart is one image for assistive technology. */
   label: string;
+  /** Keeps the same scale across datasets when their values fit within this limit. */
+  max?: number;
   /** Horizontal target line, in the same unit as the values. */
   target?: number;
   height?: number;
   className?: string;
 }
 
-export function ColumnChart({ columns, label, target, height = 48, className = '' }: ColumnChartProps) {
-  const geometry = columnGeometry(columns, { height, max: isFiniteNumber(target) ? target : undefined });
+export function ColumnChart({ columns, label, max, target, height = 48, className = '' }: ColumnChartProps) {
+  const geometry = columnGeometry(columns, {
+    height,
+    max: Math.max(isFiniteNumber(max) ? max : 0, isFiniteNumber(target) ? target : 0),
+  });
   return (
     <svg
       class={`chart-columns${className ? ` ${className}` : ''}`}

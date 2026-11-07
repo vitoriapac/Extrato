@@ -2514,6 +2514,9 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .performance-page>.performance-toolbar,#performanceSectionContent>.performance-toolbar{padding:var(--space-3);background:var(--surface-card-muted);border-color:var(--border-subtle)}
 #performanceSectionContent>.empty-state{padding:var(--space-6);background:var(--surface-card)}
 @media(max-width:600px){#performanceSectionContent{gap:var(--space-3)}.performance-summary{gap:var(--space-3);padding:var(--space-3)}.performance-block{padding:var(--space-3)}.performance-details{padding-inline:var(--space-3)}}
+.performance-details--trajectory{padding-inline:0}
+.performance-details--trajectory>summary{padding-inline:var(--space-4)}
+.performance-details--trajectory .performance-details__body>.achievement-projection{padding-inline:var(--space-3)}
 
 /* Execução diária: resumo e próxima atividade compartilham a mesma superfície. */
 .daily-execution-card{background:var(--surface-card);padding:var(--space-6)}
@@ -2650,7 +2653,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .weekly-decision-summary .action-group{margin-block:var(--space-content-action)}
 body.timer-focus-active .study-distribution-heading{display:none}
 .guided-action-hint{order:-1;flex:1 1 100%;margin:0;text-align:end;color:var(--wizard-text-muted);font:var(--text-sm)/1.45 var(--font-body)}
-.guided-starter-packs{display:grid;gap:8px;margin:16px 0}.guided-starter-pack-list{display:grid;gap:10px}.guided-starter-pack-btn{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:14px 16px;text-align:left;font:inherit;color:var(--wizard-text);background:var(--wizard-input-bg);border:1px solid var(--wizard-border);border-left:3px solid var(--wizard-accent);cursor:pointer}.guided-starter-pack-btn:hover{border-color:var(--wizard-primary);border-left-color:var(--wizard-accent);background:var(--wizard-surface-muted)}.guided-starter-pack-btn:focus-visible{outline:3px solid var(--wizard-focus);outline-offset:2px}.guided-starter-pack-copy{display:grid;gap:4px;min-width:0}.guided-starter-pack-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.guided-starter-pack-head strong{font-size:15px}.guided-starter-pack-copy small{color:var(--wizard-text-muted);font-size:13px;line-height:1.45}.guided-starter-pack-cta{flex:none;color:var(--wizard-text);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.guided-starter-packs{display:grid;gap:8px;margin:16px 0}.guided-starter-pack-list{display:grid;gap:10px}.guided-starter-pack-btn{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:14px 16px;text-align:left;font:inherit;color:var(--wizard-text);background:var(--wizard-input-bg);border:1px solid var(--wizard-border);border-left:3px solid var(--wizard-accent);cursor:pointer}.guided-starter-pack-btn:hover{border-color:var(--wizard-primary);border-left-color:var(--wizard-accent);background:var(--wizard-surface-muted)}.guided-starter-pack-btn:focus-visible{outline:3px solid var(--wizard-focus);outline-offset:2px}.guided-starter-pack-copy{display:grid;gap:4px;min-width:0}.guided-starter-pack-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.guided-starter-pack-head strong{font-size:15px}.guided-starter-pack-copy small{color:var(--wizard-text-muted);font-size:13px;line-height:1.45}.guided-starter-pack-cta{flex:none;color:var(--wizard-text);font:600 var(--text-sm) var(--font-body);white-space:nowrap}
 @media(max-width:480px){.guided-starter-pack-btn{flex-direction:column;align-items:flex-start;gap:10px}}
 /* Mobile: primary navigation becomes a fixed bottom bar within thumb reach; secondary areas stay in "Mais". */
 @media(max-width:760px){
@@ -3465,7 +3468,11 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   font-weight: 500;
 }
 .today-ledger-row--balance .today-ledger-value {
-  color: var(--brand, var(--brand-secondary));
+  color: var(--text-primary);
+}
+.context-note--info a.text-brand {
+  color: var(--text-primary);
+  text-decoration: underline;
 }
 .today-statement-summary .today-execution-progress {
   display: flex;

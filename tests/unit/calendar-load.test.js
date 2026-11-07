@@ -28,4 +28,6 @@ test('calendário do mês: intensidade pelas revisões pendentes, com texto no n
   assert.match(day(7), /load-0/);
   assert.doesNotMatch(day(7), /pendente/);
   assert.match(html, /Fundo do dia: mais escuro, mais revisões pendentes/);
+  assert.match(html, /deslize a grade/);
+  assert.match(html, /aria-describedby="calendarScrollHelp"/);
 });

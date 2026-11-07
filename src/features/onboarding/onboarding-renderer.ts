@@ -138,11 +138,12 @@ export function renderOnboardingContent(
     const shortcutsGroup = shortcuts
       ? `<div class="guided-date-shortcuts" role="group" aria-label="Atalhos de data da prova"><span class="guided-shortcut-title">Sem edital publicado? Escolha um prazo estimado para começar:</span><div class="guided-shortcut-chips">${shortcuts}</div></div>`
       : '';
+    const optionalDate = `<details class="grid gap-3"${model.examDate ? ' open' : ''}><summary class="btn ghost small justify-self-start list-none">${renderIconSvg('plus', { size: 14, className: 'icon-inline icon-inline--start' })}Data da prova (opcional)</summary><label for="guidedExamDate">Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label>${shortcutsGroup}</details>`;
     const customExamField =
       model.presetId === 'custom'
         ? `<label for="guidedCustomExamName">Nome do concurso ou exame<input id="guidedCustomExamName" type="text" placeholder="Ex: OAB, Residência Médica, Vestibular..." value="${escapeAttr(model.customExamName || '')}"></label>`
         : '';
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso ou exame<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso"><option value="undecided" ${!model.presetId || model.presetId === 'undecided' ? 'selected' : ''}>Ainda não escolhi um concurso</option>${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}<option value="custom" ${model.presetId === 'custom' ? 'selected' : ''}>Outro concurso ou exame...</option></select></label>${customExamField}<label for="guidedExamDate">Data da prova (opcional)<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label>${shortcutsGroup}</div>`;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso ou exame<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso"><option value="undecided" ${!model.presetId || model.presetId === 'undecided' ? 'selected' : ''}>Ainda não escolhi um concurso</option>${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}<option value="custom" ${model.presetId === 'custom' ? 'selected' : ''}>Outro concurso ou exame...</option></select></label>${customExamField}${optionalDate}</div>`;
   }
   if (step.id === 'availability') {
     const presets = (model.availabilityPresets || [])
@@ -177,7 +178,10 @@ export function renderOnboardingContent(
       const subjectsList = subjectsBadges
         ? `<div class="guided-starter-pack-subjects mt-2 flex flex-wrap gap-1" aria-label="Disciplinas inclusas">${subjectsBadges}</div>`
         : '';
-      return `<button type="button" class="guided-starter-pack-btn" data-guided-starter-pack="${escapeAttr(pack.id)}" aria-label="Carregar pacote de matérias ${escapeAttr(pack.name)}"><div class="guided-starter-pack-copy"><div class="guided-starter-pack-head"><strong>${escapeHtml(pack.name)}</strong><span class="status-badge status-badge--success">${escapeHtml(pack.badge)}</span></div><small>${escapeHtml(pack.description)}</small>${subjectsList}</div><span class="guided-starter-pack-cta">Usar pacote${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</span></button>`;
+      const badgeHtml = pack.badge
+        ? `<span class="status-badge status-badge--success">${escapeHtml(pack.badge)}</span>`
+        : '';
+      return `<button type="button" class="guided-starter-pack-btn" data-guided-starter-pack="${escapeAttr(pack.id)}" aria-label="Adicionar matérias do pacote ${escapeAttr(pack.name)}"><div class="guided-starter-pack-copy"><div class="guided-starter-pack-head"><strong>${escapeHtml(pack.name)}</strong>${badgeHtml}</div><small>${escapeHtml(pack.description)}</small>${subjectsList}</div><span class="guided-starter-pack-cta">Adicionar matérias${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</span></button>`;
     };
     const recommendedHtml = selectedPath
       ? `<div class="guided-starter-packs" role="group" aria-label="Ação recomendada"><span class="guided-shortcut-title">Comece pelo edital escolhido</span><div class="study-plan-actions"><button type="button" class="btn" data-guided-action="${escapeAttr(selectedPath.action)}">${escapeHtml(selectedPath.label)}</button></div></div>`
@@ -211,9 +215,11 @@ export function renderOnboardingContent(
   const help = model.hasGoal
     ? copy.help
     : 'Sem data de prova, não dá para calcular o prazo e criar um plano semanal. Você pode abrir o app agora e informar a data depois em Planejamento.';
-  return `<div class="guided-onboarding-panel"><h3>${title}</h3><p>${help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
+  const examDate = /^\d{4}-\d{2}-\d{2}$/.test(model.examDate || '') ? model.examDate.split('-').reverse().join('/') : 'Não informada';
+  const subjectNames = (model.subjects || []).map((subject: any) => escapeHtml(subject.name)).join(', ');
+  return `<div class="guided-onboarding-panel"><h3>${title}</h3><p>${help}</p><p>Prova: <strong>${escapeHtml(examDate)}</strong> · Matérias: ${subjectNames || 'Nenhuma'}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${formatMinutes(model.weeklyPlannedMinutes || 0)}</strong><span>alocado na semana</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Distribuição semanal por tópico</h5><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
     model.canCreatePlan
-      ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>'
+      ? '<p class="confidence-note">Os minutos acima são alocações semanais por tópico. A distribuição diária divide essa carga em atividades conforme a disponibilidade.</p>'
       : model.canConfigurePlan
         ? `<div class="availability-warning"><p>Não há atividade elegível nesta proposta. ${model.planReasons
             .map((reason: any) =>
@@ -246,7 +252,7 @@ export function onboardingBlockedReason(model: Record<string, any>) {
         : id === 'plan'
           ? model.canCreatePlan || model.canExploreWithoutPlan
           : model.canAdvance;
-  return ready ? '' : BLOCKED_REASONS[id] || '';
+  return id === 'content' && model.manualDraftError ? model.manualDraftError : ready ? '' : BLOCKED_REASONS[id] || '';
 }
 export function renderOnboardingActions(model: Record<string, any>) {
   const reason = onboardingBlockedReason(model),
@@ -269,3 +275,5 @@ function renderOnboardingButtons(model: Record<string, any>) {
   const nextLabel = id === 'goal' && !model.hasGoal ? 'Continuar sem data' : 'Continuar';
   return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? '' : 'disabled'}>${nextLabel}${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline icon-inline--end' })}</button>`;
 }
+
+

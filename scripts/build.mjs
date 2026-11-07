@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const bundles = [
   { entry: 'src/app.ts', output: 'src/app.bundle.js' },
+  { entry: 'src/landing.tsx', output: 'src/landing.bundle.js' },
   { entry: 'src/domain/exams/exam-catalog-runtime.ts', output: 'src/exam-catalog.bundle.js' },
   { entry: 'src/reports/report-runtime.ts', output: 'src/report.bundle.js' },
   { entry: 'src/ui/help/help-runtime.ts', output: 'src/help.bundle.js' },
@@ -16,7 +17,7 @@ const bundles = [
 const checkOnly = process.argv.includes('--check');
 const versionPlaceholder = '__BUILD_VERSION__';
 const assetVersionPattern =
-  /((?:styles\/app\.css|styles\/tailwind\.css|src\/app\.bundle\.js)\?v=)[^"'\s]+/g;
+  /((?:styles\/app\.css|styles\/tailwind\.css|src\/(?:app|landing)\.bundle\.js)\?v=)[^"'\s]+/g;
 
 async function filesUnder(directory) {
   const absoluteDirectory = resolve(projectRoot, directory),
@@ -36,6 +37,8 @@ async function filesUnder(directory) {
 const indexPath = resolve(projectRoot, 'index.html');
 const indexSource = await readFile(indexPath, 'utf8');
 const normalizedIndex = indexSource.replace(assetVersionPattern, `$1${versionPlaceholder}`);
+const landingSource = await readFile(resolve(projectRoot, 'landing.html'), 'utf8');
+const normalizedLanding = landingSource.replace(assetVersionPattern, `$1${versionPlaceholder}`);
 const sourceFiles = [
   ...(await filesUnder('src')).filter(
     path => /\.(?:js|ts|tsx)$/.test(path) && !bundles.some(bundle => bundle.output === path)
@@ -46,6 +49,7 @@ const sourceFiles = [
   ...(await filesUnder('icons')),
   ...(await filesUnder('fonts')),
   'index.html',
+  'landing.html',
   'manifest.webmanifest',
   'package.json',
   'package-lock.json',
@@ -56,8 +60,8 @@ const versionHash = createHash('sha256');
 for (const path of sourceFiles) {
   const isTextFile = /\.(?:css|html|js|ts|tsx|json|mjs|svg|webmanifest)$/i.test(path);
   const contents =
-    path === 'index.html'
-      ? normalizedIndex
+    path === 'index.html' || path === 'landing.html'
+      ? path === 'index.html' ? normalizedIndex : normalizedLanding
       : await readFile(resolve(projectRoot, path), isTextFile ? 'utf8' : undefined);
   const stableContents = typeof contents === 'string' ? contents.replace(/\r\n/g, '\n') : contents;
   versionHash.update(path).update('\0').update(stableContents).update('\0');
@@ -139,5 +143,6 @@ for (const bundle of bundles) {
   await writeOrCheck(bundle.output, result.outputFiles[0].text);
 }
 await writeOrCheck('index.html', generatedIndex);
+await writeOrCheck('landing.html', normalizedLanding.replaceAll(versionPlaceholder, buildVersion));
 await writeOrCheck('service-worker.js', generatedServiceWorker);
 if (stale) process.exitCode = 1;

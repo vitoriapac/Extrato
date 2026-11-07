@@ -140,6 +140,9 @@ const CONTENT_PATHS = Object.freeze([
   { action: 'manual', label: 'Cadastrar manualmente' },
 ]);
 
+export const isValidOnboardingTopic = (topic: { archived?: boolean; name?: unknown }) =>
+  !topic.archived && typeof topic.name === 'string' && topic.name.trim().length > 0;
+
 export function buildOnboardingViewModel({
   examDate = null,
   hoursByDay = {},
@@ -165,7 +168,7 @@ export function buildOnboardingViewModel({
     hasAvailability = availableMinutes > 0,
     hasContent = (subjects || []).some(
       (subject: Row) =>
-        !subject.archived && (subject.topics || []).some((topic: Row) => !topic.archived)
+        !subject.archived && (subject.topics || []).some(isValidOnboardingTopic)
     ),
     hasPlan = Array.isArray(studyPlans)
       ? studyPlans.length > 0
@@ -209,18 +212,18 @@ export function buildOnboardingViewModel({
     currentDay = parseLocalDate(today);
   const activeSubjects = (subjects || []).filter(
       (subject: Row) =>
-        !subject.archived && (subject.topics || []).some((topic: Row) => !topic.archived)
+        !subject.archived && (subject.topics || []).some(isValidOnboardingTopic)
     ),
     topicCount = activeSubjects.reduce(
       (sum: number, subject: Row) =>
-        sum + subject.topics.filter((topic: Row) => !topic.archived).length,
+        sum + subject.topics.filter(isValidOnboardingTopic).length,
       0
     ),
     estimatedNeedMinutes = activeSubjects.reduce(
       (sum: number, subject: Row) =>
         sum +
         subject.topics
-          .filter((topic: Row) => !topic.archived)
+          .filter(isValidOnboardingTopic)
           .reduce(
             (total: number, topic: Row) =>
               total + Math.max(15, Number(topic.estimatedStudyMinutes) || 60),
@@ -234,7 +237,7 @@ export function buildOnboardingViewModel({
         : null;
   const subjectModels = activeSubjects.map((subject: Row) => {
     const levels: string[] = subject.topics
-        .filter((topic: Row) => !topic.archived)
+        .filter(isValidOnboardingTopic)
         .map((topic: Row) => topic.difficulty || 'Médio'),
       level = levels.includes('Difícil')
         ? 'Difícil'
@@ -342,6 +345,7 @@ export function buildOnboardingViewModel({
       : CONTENT_PATHS.map(path => ({ ...path, primary: false })),
     packsFirst: !selectedPreset,
     firstActivities,
+    weeklyPlannedMinutes: (planPreview?.items || []).reduce((sum: number, item: Row) => sum + Math.max(0, Number(item.minutes) || 0), 0),
     planPreviewState: planPreview?.state || null,
     planReasons,
     weekdays: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((label, day) => ({

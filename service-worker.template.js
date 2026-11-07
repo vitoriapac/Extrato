@@ -1,7 +1,7 @@
 const CACHE_NAME = 'studytrack-__BUILD_VERSION__';
 const APP_SHELL = [
   './',
-  './index.html',
+  './app',
   './styles/tokens.css',
   './styles/fonts.css',
   './fonts/fraunces-latin-opsz-normal.woff2',
@@ -20,6 +20,7 @@ const APP_SHELL = [
   './src/help.bundle.js?v=__BUILD_VERSION__',
   './src/demo.bundle.js?v=__BUILD_VERSION__',
   './src/pwa.js',
+  './src/landing.bundle.js?v=__BUILD_VERSION__',
   './manifest.webmanifest',
   './icons/app-icon.svg',
   './icons/icon-192.png',
@@ -32,7 +33,7 @@ self.addEventListener('install', event =>
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => cache.addAll(APP_SHELL.map(url => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   )
 );
@@ -52,7 +53,14 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin)
     return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
+    const url = new URL(event.request.url);
+    event.respondWith(fetch(event.request).catch(() => {
+      if (url.pathname === '/app/') {
+        url.pathname = '/app';
+        return Response.redirect(url.href, 308);
+      }
+      return caches.match(url.pathname === '/app' ? './app' : './');
+    }));
     return;
   }
   event.respondWith(

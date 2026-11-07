@@ -24,6 +24,7 @@ for (const [width, theme] of [
     );
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
     await activateTab(page, 'desempenho');
+    await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
     const before = await page.evaluate(async () => {
       const api = window.__EXTRATO_TEST__;
       await api.settleSaves();

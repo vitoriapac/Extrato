@@ -8,6 +8,7 @@ import {
   findQuestionsAwaitingFlashcard,
 } from '../../src/domain/notebook/error-notebook-engine.js';
 import { ErrorNotebookDueNotice } from '../../src/ui/components/ErrorNotebookDueNotice.js';
+import { buildReviewQueueSummary } from '../../src/application/reviews/build-review-queue-summary.js';
 import { ErrorNotebookView } from '../../src/ui/views/ErrorNotebookView.js';
 
 /** @returns {import('../../src/core/types.js').QuestionRecord} */
@@ -124,6 +125,20 @@ test('ErrorNotebookDueNotice não renderiza sem cartões e informa a quantidade 
   assert.ok(
     render(h(ErrorNotebookDueNotice, { dueCount: 7 })).includes('7 flashcards para revisar')
   );
+});
+
+test('resumo mantém revisões de tópico e flashcards separados sem alterar os dados', () => {
+  const topics = [{ id: 'a', date: '2026-11-04', status: 'Pendente' }, { id: 'b', date: '2026-11-08', status: 'Pendente' }, { id: 'c', date: '2026-11-05', status: 'Concluído' }, { id: 'd', date: 'inválida', status: 'Pendente' }];
+  const cards = [
+    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('pending'), nextReviewDate: '2026-11-20' },
+    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('reviewing'), nextReviewDate: '2026-11-09' },
+    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('mastered'), nextReviewDate: '2026-11-01' },
+  ];
+  const before = JSON.stringify({ topics, cards });
+  assert.deepEqual(buildReviewQueueSummary({ reviews: topics, flashcards: cards, today: '2026-11-06' }), {
+    topicsDue: 1, topicsNext: '2026-11-08', flashcardsDue: 1, flashcardsNext: '2026-11-09',
+  });
+  assert.equal(JSON.stringify({ topics, cards }), before);
 });
 
 test('ErrorNotebookView mostra as sugestões de flashcard com limite de 5 itens', () => {

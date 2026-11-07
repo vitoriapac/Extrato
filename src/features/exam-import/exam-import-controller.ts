@@ -28,7 +28,7 @@ export function createExamImportController({
       render();
     }
     if (event.target.dataset.examTopic) {
-      toggleExamTopic(state, event.target.dataset.examTopic, event.target.checked);
+      toggleExamTopic(state, event.target.dataset.examTopic, event.target.checked, getPreset());
       render();
     }
   };

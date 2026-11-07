@@ -27,7 +27,7 @@ export function renderPlannedAction(
     ? '<button type="button" class="btn" data-daily-resume>Retomar sessão</button>'
     : timer?.active
       ? '<button type="button" class="btn" title="Retome ou finalize a sessão em andamento antes de iniciar outra." disabled>Finalize a sessão atual</button>'
-      : `<button type="button" class="btn" data-daily-start="${escapeAttr(next.id)}">Iniciar estudo</button>`;
+      : `<button type="button" class="btn" data-daily-start="${escapeAttr(next.id)}">${next.status === 'partial' ? 'Continuar estudo' : 'Iniciar estudo'}</button>`;
   const matchesAction = Boolean(
     priority.action &&
     next.subjectId === priority.action.subjectId &&
@@ -45,7 +45,7 @@ export function renderPlannedAction(
       : suggestion
         ? `<p class="overview-action-suggestion">Sugestão fora do plano: ${escapeHtml(suggestion.subjectName)} · ${escapeHtml(suggestion.topicName)}${Number.isFinite(Number(suggestion.score)) ? ` (prioridade ${Math.round(Number(suggestion.score))}/100)` : ''}. <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver por quê</button></p>`
         : '';
-  return `<article class="card card--action overview-action-card${own ? ' is-in-progress' : ''}" data-decision-role="planned" data-plan-item-id="${escapeAttr(next.id)}"${suggestion?.actionId ? ` data-recommendation-action-id="${escapeAttr(suggestion.actionId)}"` : ''}><div><h3>${escapeHtml(next.subjectName || 'Disciplina')} · ${escapeHtml(next.topicName || 'Sem tópico')}</h3><p class="daily-execution-metadata"><strong>${formatMinutes(Math.ceil(next.remainingSeconds / 60))}</strong> · ${typeLabel(next.type)} · prevista no plano de hoje</p>${resumeLabel ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(resumeLabel)}</p>` : ''}${own ? '<span class="active-study-status">Em andamento</span>' : ''}</div><div class="overview-action-buttons">${button}</div>${note}${reasons.length ? `<details class="daily-execution-reasons"><summary>Por que estudar isso agora?</summary><ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul></details>` : ''}</article>`;
+  return `<article class="card card--action overview-action-card${own ? ' is-in-progress' : ''}" data-decision-role="planned" data-plan-item-id="${escapeAttr(next.id)}"${suggestion?.actionId ? ` data-recommendation-action-id="${escapeAttr(suggestion.actionId)}"` : ''}><div><h3>Sua próxima atividade: ${escapeHtml(next.subjectName || 'Disciplina')} · ${escapeHtml(next.topicName || 'Sem tópico')}</h3><p class="daily-execution-metadata"><strong>${formatMinutes(Math.ceil(next.remainingSeconds / 60))}</strong> · ${typeLabel(next.type)} · prevista no plano de hoje</p>${resumeLabel ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(resumeLabel)}</p>` : ''}${own ? '<span class="active-study-status">Em andamento</span>' : ''}</div><div class="overview-action-buttons">${button}</div>${note}${reasons.length ? `<details class="daily-execution-reasons"><summary>Por que estudar isso agora?</summary><ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul></details>` : ''}</article>`;
 }
 
 export function renderDailyExecution(
@@ -72,7 +72,7 @@ export function renderDailyExecution(
     next.type === priority.action.activityType
   );
   return `<section class="daily-execution-card" aria-labelledby="dailyExecutionTitle"><h3 id="dailyExecutionTitle">Execução de hoje</h3><div class="daily-execution-summary">
-    <div class="daily-execution-metrics"><div><strong>${formatMinutes(progress.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(Math.round(progress.studiedMinutes))}</strong><span>Realizado hoje</span></div></div>
+    <div class="daily-execution-metrics"><div><strong>${formatMinutes(progress.plannedMinutes)}</strong><span>Plano de hoje</span></div><div><strong>${formatMinutes(Math.round(progress.studiedMinutes))}</strong><span>Estudado hoje</span></div></div>
     ${progress.progress == null ? '' : `<div class="daily-execution-progress">${renderRingGauge({ value: progress.progress, label: 'Progresso das atividades planejadas', size: 44, stroke: 7, showValue: false })}<p><strong>${formatMinutes(Math.round(progress.plannedMinutes - progress.remainingMinutes))} de ${formatMinutes(progress.plannedMinutes)}</strong> do plano · ${progress.progress}%</p></div>`}
     <p class="daily-execution-completed">${progress.completedActivities} de ${model.items.length} atividade${model.items.length === 1 ? '' : 's'} concluída${model.items.length === 1 ? '' : 's'}</p>
     ${model.guidance ? `<p>${escapeHtml(model.guidance)}</p><button type="button" class="btn ghost small" data-delegated-click="navigateKpi('metas')">Abrir planejamento</button>` : ''}
@@ -86,7 +86,7 @@ export function renderDailyExecution(
     </details>`
         : ''
     }
-    ${model.needsPlanReview ? '<p class="context-note context-note--info">Há atividades geradas por uma versão anterior do plano semanal. Revise a distribuição após a mudança estratégica.</p>' : ''}
+    ${model.needsPlanReview ? '<p class="context-note context-note--info">Há atividades que não estão vinculadas ao plano semanal atual. Elas foram preservadas; revise a distribuição em Planejamento.</p>' : ''}
     ${priority.following.length ? `<details class="daily-execution-following"><summary>Depois · ${priority.following.length} ${priority.following.length === 1 ? 'atividade' : 'atividades'}</summary><ul>${rows(priority.following.slice(0, 5))}</ul>${priority.following.length > 5 ? `<details><summary>Mostrar mais</summary><ul>${rows(priority.following.slice(5))}</ul></details>` : ''}</details>` : ''}
     ${progress.pendingActivities ? `<footer class="daily-execution-footer"><span>${progress.pendingActivities} atividade${progress.pendingActivities === 1 ? '' : 's'} pendente${progress.pendingActivities === 1 ? '' : 's'}. <button type="button" class="btn ghost small" data-delegated-click="navigateKpi('hoje')">Revisar pendências</button></span></footer>` : ''}</section>`;
 }

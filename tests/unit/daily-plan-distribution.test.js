@@ -19,6 +19,22 @@ const studyPlan = {
     },
   ],
 };
+test('distribui um tópico curto e resto de bloco sem criar minutos adicionais', () => {
+  const short = { id: 'short', items: [{ id: 'a', topicId: 't1', minutes: 7 }] };
+  const result = buildDailyPlanProposal({ studyPlan: short, reserveRatio: 0, days: [{ date: '2026-11-06', availableMinutes: 10 }] });
+  assert.equal(result.plannedMinutes, 7);
+  assert.equal(result.unallocatedMinutes, 0);
+  const long = { id: 'long', items: [{ id: 'b', topicId: 't2', minutes: 65 }] };
+  const split = buildDailyPlanProposal({ studyPlan: long, reserveRatio: 0, days: [{ date: '2026-11-06', availableMinutes: 65 }] });
+  assert.equal(split.plannedMinutes, 65);
+  assert.equal(split.unallocatedMinutes, 0);
+  const plans = [];
+  let nextId = 0;
+  const input = { dailyPlans: plans, proposal: split, operationId: 'operation', now: '2026-11-06T12:00:00Z', idGenerator: prefix => `${prefix}-${++nextId}` };
+  assert.equal(applyDailyPlanProposal(input).createdItems, 2);
+  assert.equal(plans[0].items.reduce((sum, item) => sum + item.plannedMinutes, 0), 65);
+  assert.equal(applyDailyPlanProposal(input).createdItems, 0);
+});
 test('distribui atividades por dia, reserva flexibilidade e divide blocos longos', () => {
   const result = buildDailyPlanProposal({
     studyPlan,

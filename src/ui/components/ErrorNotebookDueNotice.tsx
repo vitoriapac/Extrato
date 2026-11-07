@@ -19,8 +19,9 @@ export function ErrorNotebookDueNotice({ dueCount, onOpen }: ErrorNotebookDueNot
       role="status"
       data-testid="error-notebook-due"
     >
-      <span class="text-primary">
+      <span class="text-content-primary">
         <strong>Caderno de Erros:</strong> {label}
+        <span class="block text-content-secondary">Os flashcards são revisados no Caderno de Erros; as revisões de tópicos ficam na Agenda.</span>
       </span>
       <Button variant="secondary" size="small" onClick={onOpen}>
         Revisar agora

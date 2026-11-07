@@ -7,12 +7,13 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const distRoot = resolve(projectRoot, 'dist');
 const skipCompile = process.argv.includes('--skip-compile');
 
-const ROOT_FILES = ['index.html', 'landing.html', 'manifest.webmanifest', 'service-worker.js'];
+const ROOT_FILES = ['manifest.webmanifest', 'service-worker.js'];
 
 const SRC_RUNTIME_FILES = [
   'src/theme-bootstrap.js',
   'src/pwa.js',
   'src/app.bundle.js',
+  'src/landing.bundle.js',
   'src/exam-catalog.bundle.js',
   'src/report.bundle.js',
   'src/help.bundle.js',
@@ -27,7 +28,7 @@ const STYLE_FILES = [
   'styles/print.css',
 ];
 
-const STATIC_DIRECTORIES = ['icons', 'fonts'];
+const STATIC_DIRECTORIES = ['icons', 'fonts', 'assets/landing'];
 
 const CLOUDFLARE_HEADERS = `/*
   X-Frame-Options: DENY
@@ -39,7 +40,7 @@ const CLOUDFLARE_HEADERS = `/*
   Cache-Control: public, max-age=31536000, immutable
 
 /styles/*.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: no-cache
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
@@ -83,6 +84,9 @@ export async function buildProductionDist({
     const destPath = resolve(outDir, relPath);
     await cp(srcPath, destPath);
   }
+
+  await cp(resolve(rootDir, 'index.html'), resolve(outDir, 'app.html'));
+  await cp(resolve(rootDir, 'landing.html'), resolve(outDir, 'index.html'));
 
   for (const dirName of STATIC_DIRECTORIES) {
     const srcDir = resolve(rootDir, dirName);

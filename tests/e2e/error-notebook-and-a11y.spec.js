@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { activateTab } from './helpers.js';
+import AxeBuilder from '@axe-core/playwright';
 
 async function prepare(page) {
   await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
@@ -143,6 +144,11 @@ test('Aviso de flashcards pendentes na Agenda de Revisões abre o Caderno de Err
     const state = api.getState();
     const sub = state.subjects[0];
     const top = sub?.topics?.[0];
+    state.reviewAgenda = [
+      { id: 'review-due-test', date: '2026-10-01', status: 'Pendente', subjectId: sub.id, topicId: top.id },
+      { id: 'review-future-test', date: '2026-10-06', status: 'Pendente', subjectId: sub.id, topicId: top.id },
+      { id: 'review-done-test', date: '2026-09-30', status: 'Concluído', subjectId: sub.id, topicId: top.id },
+    ];
     state.errorFlashcards = [
       {
         id: 'efc_e2e_1',
@@ -164,6 +170,24 @@ test('Aviso de flashcards pendentes na Agenda de Revisões abre o Caderno de Err
 
   // Vai para a aba Agenda de Revisões
   await activateTab(page, 'agenda');
+  const summary = page.getByRole('region', { name: 'Próximas revisões' });
+  await expect(summary).toContainText('Revisões de tópicos: 1 para hoje ou atrasadas');
+  await expect(summary).toContainText('06/10/2026');
+  await summary.getByRole('button', { name: 'Ver revisões de tópicos' }).click();
+  await expect(page.locator('#agendaBody')).toBeFocused();
+  const reviewRow = page.locator('#agendaBody [data-id="review-due-test"]');
+  const complete = reviewRow.getByRole('button', { name: /Concluir revisão/ });
+  await complete.click();
+  await expect(page.locator('#reviewRatingOverlay')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(complete).toBeFocused();
+  await complete.click();
+  await page.locator('#reviewRatingOverlay [data-review-rating="good"]').click();
+  await expect(page.locator('#reviewRatingOverlay')).toBeHidden();
+  await expect(summary).toContainText('Revisões de tópicos: 0 para hoje ou atrasadas');
+  expect(await page.evaluate(() => window.__EXTRATO_TEST__.getState().reviewAgenda.find(item => item.id === 'review-due-test').status)).toBe('Concluído');
+  await page.locator('#agendaBody').getByRole('button', { name: /Histórico de revisões concluídas/ }).click();
+  await expect(page.locator('#agendaBody [data-id="review-due-test"]')).toBeVisible();
   const notice = page.locator('#errorNotebookDueAgenda [data-testid="error-notebook-due"]');
   await expect(notice).toBeVisible();
   await expect(notice).toContainText('1 flashcard para revisar');
@@ -175,4 +199,53 @@ test('Aviso de flashcards pendentes na Agenda de Revisões abre o Caderno de Err
   const mount = page.locator('#errorNotebookMount');
   await expect(mount).toBeVisible();
   await expect(mount).toContainText('Conceito de ato discricionário vs vinculado');
+});
+
+test('resumo de revisões é acessível em 320 px nos dois temas', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await prepare(page);
+  await activateTab(page, 'agenda');
+  const summary = page.getByRole('region', { name: 'Próximas revisões' });
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(value => { document.documentElement.dataset.theme = value; }, theme);
+    await expect(summary).toBeVisible();
+    await expect(summary.getByRole('button', { name: 'Ver revisões de tópicos' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    const result = await new AxeBuilder({ page }).include('#errorNotebookDueAgenda').withRules(['color-contrast', 'button-name', 'region']).analyze();
+    expect(result.violations).toEqual([]);
+  }
+});
+
+test('revisões automáticas e manuais mantêm histórico e contagens coerentes', async ({ page }) => {
+  await prepare(page);
+  const topicId = await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__, state = api.getState();
+    state.reviewAgenda = [];
+    for (const subject of state.subjects) for (const topic of subject.topics) {
+      topic.status = 'Não iniciado';
+      topic.completedAt = null;
+    }
+    const topic = state.subjects[0].topics[0];
+    topic.status = 'Concluído';
+    topic.completedAt = '2026-09-30';
+    api.renderAll();
+    return topic.id;
+  });
+  await activateTab(page, 'agenda');
+  await page.getByRole('button', { name: 'Gerar a partir dos concluídos' }).click();
+  const generated = await page.evaluate(id => window.__EXTRATO_TEST__.getState().reviewAgenda.filter(item => item.topicId === id).map(item => item.id), topicId);
+  expect(generated.length).toBeGreaterThan(0);
+  await page.locator('#addAgendaRowBtn').click();
+  const draft = page.locator('#agendaBody tr.row-editing');
+  const manualId = await draft.getAttribute('data-id');
+  await draft.getByLabel('Tópico').fill('Revisão manual de teste');
+  await draft.getByRole('button', { name: 'Salvar alterações' }).click();
+  await expect(page.locator(`#agendaBody [data-id="${manualId}"]`)).toBeVisible();
+  await page.locator(`#agendaBody [data-id="${manualId}"]`).getByRole('button', { name: /Concluir revisão/ }).click();
+  await expect(page.locator(`#agendaBody [data-id="${manualId}"]`)).toHaveCount(0);
+  await page.locator('#agendaBody').getByRole('button', { name: /Histórico de revisões concluídas/ }).click();
+  await expect(page.locator(`#agendaBody [data-id="${manualId}"]`)).toBeVisible();
+  const records = await page.evaluate(() => window.__EXTRATO_TEST__.getState().reviewAgenda);
+  expect(records.find(item => item.id === manualId).status).toBe('Concluído');
+  expect(generated.every(id => records.some(item => item.id === id))).toBe(true);
 });

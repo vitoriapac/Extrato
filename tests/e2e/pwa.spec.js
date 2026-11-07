@@ -1,10 +1,79 @@
 import { test, expect } from '@playwright/test';
 
+test('landing separada abre /app sem alterar dados armazenados', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/landing.html');
+  await page.evaluate(() => {
+    localStorage.setItem('route-preservation-test', 'preservado');
+    localStorage.setItem('bb-premium-theme', 'dark');
+  });
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.getByRole('heading', { name: 'Saiba o que estudar hoje.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Extrato de Estudos', exact: true })).toHaveCount(0);
+  const saturday = page.locator('.chart-columns__bar').filter({ hasText: 'Sáb:' });
+  const weekTwoHeight = Number(await saturday.getAttribute('height'));
+  const weekOne = page.getByRole('button', { name: 'Semana 01' });
+  await weekOne.click();
+  await expect(weekOne).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#preview-week')).toContainText('Interpretação de texto');
+  expect(Number(await saturday.getAttribute('height'))).toBeLessThan(weekTwoHeight);
+  const wordmark = page.locator('.landing-wordmark');
+  await wordmark.scrollIntoViewIfNeeded();
+  await expect(wordmark).toHaveAttribute('data-reveal', 'shown');
+  await wordmark.hover({ position: { x: 30, y: 20 } });
+  const spotlight = wordmark.locator('.landing-wordmark-light');
+  await expect(spotlight).toHaveCSS('opacity', '1');
+  await expect.poll(() => wordmark.evaluate(node => parseFloat(node.style.getPropertyValue('--spot-x')))).toBeCloseTo(30, 0);
+  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  await expect(spotlight).toHaveCSS('display', 'none');
+  await page.getByRole('navigation', { name: 'Navegação do rodapé' }).getByRole('link', { name: 'Planos' }).click();
+  await expect(page).toHaveURL(/#precos$/);
+  const pricing = page.getByRole('region', { name: 'Planos e preços' });
+  await expect(pricing).toContainText('R$ 178,80 por ano à vista no Pix');
+  const monthly = pricing.getByRole('button', { name: 'Mensal' });
+  await monthly.press('Enter');
+  await expect(monthly).toHaveAttribute('aria-pressed', 'true');
+  await expect(pricing).toContainText('R$ 19,90');
+  await expect(pricing).not.toContainText('R$ 178,80');
+  await page.getByRole('link', { name: /Abrir aplicativo/i }).first().click();
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(page.locator('#mainContent')).toBeAttached();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  expect(await page.evaluate(() => localStorage.getItem('route-preservation-test'))).toBe('preservado');
+});
+
+test('instalação antiga que inicia na raiz é encaminhada ao aplicativo', async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = window.matchMedia.bind(window);
+    window.matchMedia = query => query === '(display-mode: standalone)'
+      ? { ...original(query), matches: true }
+      : original(query);
+  });
+  await page.goto('/landing.html?origem=instalado#hoje');
+  await expect(page).toHaveURL(/\/app\?origem=instalado#hoje$/);
+  await expect(page.locator('#mainContent')).toBeAttached();
+});
+
+test('aplicativo em /app abre offline após atualização do service worker', async ({ page, context }) => {
+  await page.goto('/app');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.locator('#mainContent')).toBeVisible();
+  await page.goto('/app/');
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(page.locator('#mainContent')).toBeVisible();
+  await context.setOffline(false);
+});
+
 test('expõe manifest instalável com ícones completos', async ({ page }) => {
   await page.goto('/');
   const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
   const manifest = await page.evaluate(async href => (await fetch(href)).json(), manifestHref);
-  expect(manifest.start_url).toBe('./');
+  expect(manifest.start_url).toBe('/app');
   expect(manifest.icons).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ sizes: '192x192', purpose: 'any' }),

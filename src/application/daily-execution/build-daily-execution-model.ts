@@ -37,7 +37,7 @@ export function buildDailyExecutionModel({
   const progress = buildDailyProgress(reconciled),
     priority = buildDailyPriority({ ...reconciled, nextBestAction, subjects, activeExamTags });
   const stalePlanItemCount = activePlan?.id
-    ? reconciled.items.filter(item => item.studyPlanId && item.studyPlanId !== activePlan.id).length
+    ? reconciled.items.filter(item => item.studyPlanId !== activePlan.id).length
     : 0;
   return {
     state: reconciled.hasPlan ? 'ready' : 'unplanned',

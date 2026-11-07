@@ -17,6 +17,22 @@ async function showSessions(page) {
   });
 }
 
+test('calendário móvel explica a rolagem e mantém lista e teclado acessíveis', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await openDemo(page);
+  await activateTab(page, 'agenda');
+  const grid = page.locator('#monthCalendar .month-grid-wrap');
+  await expect(page.locator('#calendarScrollHelp')).toContainText('visualização Lista');
+  await expect(grid).toHaveAttribute('aria-describedby', 'calendarScrollHelp');
+  await grid.focus();
+  await expect(grid).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expectNoPageOverflow(page);
+  await page.locator('.calendar-view-btn[data-calendar-view="agenda"]').click();
+  await expect(page.locator('#panel-agenda')).toHaveAttribute('data-calendar-view', 'agenda');
+  await expectNoPageOverflow(page);
+});
+
 test('históricos editoriais distinguem filtros e mantêm estudo legível com poucos e muitos dados', async ({
   page,
 }, testInfo) => {
@@ -319,6 +335,7 @@ test('cinco perfis percorrem a experiência consolidada com ação, contexto e l
     await expectNoPageOverflow(page);
     await activateTab(page, 'desempenho');
     await page.locator('[data-performance-section="overview"]').click();
+    await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
     const trajectory = page.locator('.achievement-projection');
     await expect(trajectory).toBeVisible();
     if (profile === 'beginner')

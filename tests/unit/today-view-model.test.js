@@ -47,3 +47,20 @@ test('Hoje não cobra itens concluídos, ignorados ou o dia ainda em andamento c
   assert.equal(model.recoveryMinutes, 0);
   assert.equal(model.progress, null);
 });
+
+test('tempo fora do plano não altera a parcela concluída do plano', () => {
+  const date = '2026-10-02';
+  const model = buildTodayViewModel({
+    date, availableMinutes: 120,
+    subjects: [{ id: 's', name: 'Português', topics: [{ id: 't', name: 'Texto' }] }],
+    plan: { id: 'p', date, items: [{ id: 'i', subjectId: 's', topicId: 't', type: 'study', plannedMinutes: 60 }] },
+    sessions: [
+      { id: 'a', date, subjectId: 's', topicId: 't', type: 'study', durationSeconds: 900, planItemId: 'i' },
+      { id: 'b', date, subjectId: 's', topicId: 't', type: 'study', durationSeconds: 1800 },
+    ],
+  });
+  assert.equal(model.executedMinutes, 45);
+  assert.equal(model.planCompletedMinutes, 15);
+  assert.equal(model.planRemainingMinutes, 45);
+  assert.equal(model.progress, 25);
+});

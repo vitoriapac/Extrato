@@ -65,12 +65,25 @@ test('createReviewsTabController — agrupa revisões em Atrasadas, Hoje, Próxi
 
   assert.match(html, /Atrasadas \(1\)/);
   assert.match(html, /Hoje \(1\)/);
-  assert.match(html, /Próximas \(1\)/);
-  assert.match(html, /Concluídas \(1\)/);
+  assert.match(html, /Próximas revisões \(1\)/);
+  assert.match(html, /Histórico de revisões concluídas \(1\)/);
+  assert.ok(html.indexOf('Hoje (1)') < html.indexOf('Atrasadas (1)'));
   assert.match(html, /Item r1/);
   assert.match(html, /Item r2/);
   assert.match(html, /Item r3/);
   assert.match(html, /Item r4/);
+});
+
+test('sem revisão para hoje mostra orientação e mantém concluídas recolhidas', () => {
+  const html = render(h(ReviewsTable, {
+    groups: { today: [], overdue: [], upcoming: [{ id: 'future', status: 'Pendente' }], completed: [{ id: 'done', status: 'Concluído' }] },
+    totalCount: 2, completedExpanded: false, upcomingVisibleLimit: 5, completedVisibleLimit: 5,
+    renderReadRow: item => `<tr><td>${item.id}</td></tr>`, renderEditRow: () => '',
+    renderGroupHeader: ({ title }) => `<th>${title}</th>`,
+  }));
+  assert.match(html, /Nenhuma revisão pendente para hoje/);
+  assert.match(html, /future/);
+  assert.doesNotMatch(html, />done</);
 });
 
 test('CalendarTable Preact Component — exibe estado vazio e renderiza linhas de calendário', () => {

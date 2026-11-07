@@ -13,10 +13,12 @@ async function expectAccessible(page, label, scope) {
 
 for (const [tab, label] of [
   ['dashboard', 'Visão Geral'],
+  ['hoje', 'Hoje'],
   ['disciplinas', 'Disciplinas'],
   ['metas', 'Planejamento'],
   ['agenda', 'Agenda'],
   ['questoes', 'Questões e simulados'],
+  ['desempenho', 'Desempenho'],
 ]) {
   test(`não possui violações estruturais em ${label}`, async ({ page }) => {
     await openDemo(page);
@@ -37,6 +39,19 @@ test('mantém estrutura acessível no modo móvel e no modal', async ({ page }) 
   await expect(page.locator('#modalOverlay')).toHaveClass(/show/);
   await expectAccessible(page, 'Modal');
   await expect(page.locator('#modalCancelBtn')).toBeFocused();
+});
+
+test('áreas centrais mantêm contraste e nomes acessíveis em 320 px no tema escuro', async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 320, height: 850 });
+  await openDemo(page);
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+  for (const tab of ['dashboard', 'hoje', 'disciplinas', 'metas', 'agenda', 'questoes', 'desempenho']) {
+    await activateTab(page, tab);
+    const results = await new AxeBuilder({ page }).include(`#panel-${tab}`)
+      .withRules(['color-contrast', 'button-name', 'label', 'select-name']).analyze();
+    expect(results.violations, `Aba ${tab}`).toEqual([]);
+  }
 });
 
 test('central de diagnóstico continua acessível quando expandida', async ({ page }) => {

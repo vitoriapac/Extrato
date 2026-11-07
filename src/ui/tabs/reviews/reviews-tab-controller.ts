@@ -169,6 +169,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   };
 
   let pendingReviewRatingId: string | null = null;
+  let reviewRatingOrigin: HTMLElement | null = null;
 
   function toLocalDateString(d: Date): string {
     const y = d.getFullYear();
@@ -646,6 +647,9 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       overlay.classList?.remove('show');
       overlay.setAttribute?.('aria-hidden', 'true');
     }
+    const origin = reviewRatingOrigin;
+    if (origin) queueMicrotask(() => { if (origin.isConnected) origin.focus(); });
+    reviewRatingOrigin = null;
   }
 
   function completeAgendaReview(id: string) {
@@ -661,6 +665,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     }
     pendingReviewRatingId = id;
     const doc = getDoc();
+    reviewRatingOrigin = doc?.activeElement || null;
     const overlay = doc?.getElementById('reviewRatingOverlay');
     if (overlay) {
       overlay.classList?.add('show');
@@ -681,6 +686,11 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     if (!result) return closeReviewRating();
     closeReviewRating();
     persistAndRender();
+    const list = getDoc()?.getElementById('agendaBody');
+    if (list) {
+      list.tabIndex = -1;
+      queueMicrotask(() => list.focus());
+    }
     showToast(
       `Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState?.nextReviewDate)}.`
     );

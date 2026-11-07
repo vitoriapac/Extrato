@@ -49,6 +49,7 @@ export interface StudyTimerRuntimeControllerOptions {
   getDailyExecutionItems: () => any;
   /** Current readiness score (0–100) or null; read before and after a save to show the change. */
   getReadinessValue?: () => number | null;
+  getReadinessResult?: () => Record<string, any>;
   getCurrentStudyRecommendations: () => any[];
   guidedStudyService: {
     current: () => any;
@@ -105,6 +106,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     intelligenceCandidates,
     getDailyExecutionItems,
     getReadinessValue = () => null,
+    getReadinessResult,
     getCurrentStudyRecommendations,
     guidedStudyService,
     sessionService,
@@ -612,14 +614,14 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         saveSessionBookmark(formValues.topicId!, session.endedAt);
         const dayBefore = session.date === todayISO() ? getDailyExecutionItems() : null;
         // The result compares in-memory values around the save; nothing extra is stored.
-        const readinessBefore = getReadinessValue();
+        const readinessBefore = getReadinessResult ? getReadinessResult() : getReadinessValue();
         const reviewIdsBefore = new Set((getState().reviewAgenda || []).map((item: any) => item.id));
         if (guidedStudyService.current()) guidedStudyService.complete(session);
         else sessionService.complete(session);
         persistAndRender();
         const dayAfter = dayBefore ? getDailyExecutionItems() : null;
         const outcome = {
-          readiness: { before: readinessBefore, after: getReadinessValue() },
+          readiness: { before: readinessBefore, after: getReadinessResult ? getReadinessResult() : getReadinessValue() },
           reviewDates: (getState().reviewAgenda || [])
             .filter((item: any) => !reviewIdsBefore.has(item.id) && item.status !== 'Concluído')
             .map((item: any) => item.date)
