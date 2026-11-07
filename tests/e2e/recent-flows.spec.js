@@ -92,7 +92,7 @@ test.describe('validação dos fluxos recentes', () => {
     await activateTab(page, 'hoje');
     const action = page
       .locator('#studyRecommendation')
-      .getByRole('button', { name: /Iniciar estudo/i })
+      .getByRole('button', { name: /Iniciar estudo|Estudar como atividade adicional/i })
       .first();
     await expect(action).toBeVisible({ timeout: 10_000 });
     await action.click();
@@ -144,7 +144,9 @@ test.describe('validação dos fluxos recentes', () => {
     await page.evaluate(() => window.__EXTRATO_TEST__.renderAll());
     await activateTab(page, 'dashboard');
     const overviewAction = page.locator('#overviewNextAction .overview-action-card'),
-      overviewId = await overviewAction.getAttribute('data-study-action-id');
+      overviewId =
+        (await overviewAction.getAttribute('data-study-action-id')) ??
+        (await overviewAction.getAttribute('data-recommendation-action-id'));
     await activateTab(page, 'hoje');
     await expect(
       page.locator('#studyRecommendation .study-recommendation').first()
@@ -308,6 +310,7 @@ test.describe('validação dos fluxos recentes', () => {
     await activateTab(page, 'disciplinas');
     await openExamImport(page);
     await page.getByRole('button', { name: 'Continuar' }).click();
+    await page.getByRole('button', { name: 'Selecionar tudo' }).click();
     await page.getByRole('button', { name: 'Continuar' }).click();
     await page.getByRole('button', { name: 'Importar', exact: true }).click();
     const subjects = await page.locator('.subject-block').count();
@@ -316,6 +319,7 @@ test.describe('validação dos fluxos recentes', () => {
     await activateTab(page, 'disciplinas');
     await openExamImport(page);
     await page.getByRole('button', { name: 'Continuar' }).click();
+    await page.getByRole('button', { name: 'Selecionar tudo' }).click();
     await page.getByRole('button', { name: 'Continuar' }).click();
     expect(await page.locator('.subject-block').count()).toBe(subjects);
     if (await page.getByRole('button', { name: 'Importar', exact: true }).isEnabled())

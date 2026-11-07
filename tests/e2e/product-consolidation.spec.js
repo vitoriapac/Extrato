@@ -399,6 +399,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expectNoPageOverflow(page);
 
   await activateTab(page, 'desempenho');
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   const explanation = page.locator('.readiness-change-explanation');
   await expect(explanation).toBeVisible();
   await explanation.locator(':scope > summary').click();
@@ -431,6 +432,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
       .getByRole('button', { name: 'Entenda aderência', exact: true })
   ).toBeFocused();
   await page.locator('[data-performance-section="overview"]').click();
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   await page
     .locator('.achievement-projection__details > summary')
     .filter({ hasText: 'Entender esta projeção' })

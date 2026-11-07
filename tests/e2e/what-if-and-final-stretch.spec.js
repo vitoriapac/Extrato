@@ -65,6 +65,8 @@ test('Simulador E se pode ser acionado da Projeção na aba Desempenho e respond
   // Navega para Desempenho
   await activateTab(page, 'desempenho');
 
+  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
+
   // Localiza botão de simulação
   const openWhatIfBtn = page.locator('[data-open-what-if]').first();
   await expect(openWhatIfBtn).toBeVisible();
