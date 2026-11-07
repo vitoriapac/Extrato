@@ -33,6 +33,8 @@ Regra de execução: editar HTML e CSS só com a suíte e2e parada; depois de ca
 | 3.2 | Resumo executivo repete a próxima ação | Trocar "Maior ganho" por um link para Hoje | Manter ou remover o bloco |
 | 3.3 | 9 abas + 5 subabas | Agrupar abas secundárias em "Mais"; reduzir as subabas | Quais abas ficam no primeiro nível |
 
+Decisão em 07/11/2026: 3.1, 3.2 e 3.3 confirmadas conforme as propostas; verificado que já estão implementadas (contador com link na Agenda, link para Hoje no resumo executivo, abas secundárias em "Mais").
+
 ## Verificação final
 
 1. `npm run check:types` e `npm test` sem falhas.
