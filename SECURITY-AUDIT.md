@@ -9,6 +9,14 @@
 - Conteúdo textual vindo do estado passa por `escapeHtml`/`escapeAttr` antes de ser inserido em HTML. Nos componentes declarativos em Preact (`src/ui/primitives/` e telas `.tsx`), o próprio JSX realiza o escape estrutural automático de nós de texto, mitigando riscos de XSS na fonte.
 - O Service Worker usa stale-while-revalidate para assets estáticos e prioriza a rede em navegações, com fallback offline.
 
+## Cabeçalhos HTTP
+
+Produção é servida pelo Cloudflare (`wrangler.jsonc`, assets de `dist/`). O build (`scripts/build-prod.mjs`) gera `dist/_headers` com a CSP lida do `index.html` mais `frame-ancestors 'none'` (a meta não suporta essa diretiva), `Strict-Transport-Security: max-age=31536000; includeSubDomains`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` e `Cache-Control: no-cache` para `/service-worker.js`. O `vercel.json` espelha CSP e HSTS para o outro host. O teste `tests/unit/csp-headers.test.js` falha se a CSP do cabeçalho divergir da meta (ignorando `frame-ancestors`). A landing herda a CSP pelo cabeçalho (não tem meta própria; não usa scripts nem estilos inline).
+
+## Risco residual aceito: `connect-src https:`
+
+A CSP permite conexão a qualquer origem `https:` por causa do WebDAV em servidor escolhido pela pessoa. Em caso de XSS, isso permitiria exfiltrar dados para qualquer host https. É uma decisão consciente; `http:` remoto segue bloqueado. Quando o SaaS entrar, avaliar WebDAV apenas via domínios cadastrados e restringir `connect-src`.
+
 ## Pendência de CSP
 
 Mapear os atributos `style` restantes, substituir os valores que possam usar classes ou regras de CSS e avaliar separadamente os valores dinâmicos de gráficos. Após essa migração, remover `style-src-attr 'unsafe-inline'` e validar cronômetro, gráficos, temas, modais e responsividade sob a política restrita. Até lá, a permissão permanece explicitamente necessária para os estilos inline existentes.

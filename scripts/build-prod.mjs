@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,7 +30,9 @@ const STYLE_FILES = [
 
 const STATIC_DIRECTORIES = ['icons', 'fonts', 'assets/landing'];
 
-const CLOUDFLARE_HEADERS = `/*
+const cloudflareHeaders = csp => `/*
+  Content-Security-Policy: ${csp}; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -95,7 +97,10 @@ export async function buildProductionDist({
   }
 
   await writeFile(resolve(outDir, '.nojekyll'), '', 'utf8');
-  await writeFile(resolve(outDir, '_headers'), CLOUDFLARE_HEADERS, 'utf8');
+  const indexHtml = await readFile(resolve(rootDir, 'index.html'), 'utf8');
+  const csp = indexHtml.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
+  if (!csp) throw new Error('CSP nao encontrada em index.html; _headers nao pode ser gerado.');
+  await writeFile(resolve(outDir, '_headers'), cloudflareHeaders(csp), 'utf8');
 
   const packagedFiles = await collectFilesRecursively(outDir);
   const leakedSourceFiles = packagedFiles.filter(filePath =>
