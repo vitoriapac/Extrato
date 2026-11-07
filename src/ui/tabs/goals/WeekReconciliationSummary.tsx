@@ -1,10 +1,13 @@
 import { LedgerLine } from '../../primitives/ledger-line.js';
 import type { WeekReconciliation } from './week-reconciliation.js';
 
-const fmt = (value: number) => `${Math.floor(value / 60)}h${String(Math.round(value) % 60).padStart(2, '0')}`;
+const fmt = (value: number) => {
+  const m = Math.round(value);
+  return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+};
 
 export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }) {
-  const multiple = data.multiple !== null && data.multiple > 2 ? data.multiple : null;
+  const multiple = data.multiple !== null && Math.round(data.multiple * 10) / 10 > 2 ? data.multiple : null;
   return (
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
       <p class="week-reconciliation__period">{data.periodLabel}</p>
