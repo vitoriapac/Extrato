@@ -74,3 +74,12 @@ A análise pode ser visualizada pelo card [`ShiftEnergyCard.tsx`](file:///c:/Use
 - **Edital Verticalizado com Pesos Explícitos:** O gerador injeta pesos percentuais e questões estimadas em `examBlueprint.subjects` para Caixa e Banco do Brasil, permitindo ao componente [`AllocationBalanceGrid.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/AllocationBalanceGrid.tsx) na Camada 3 do Cockpit calcular com precisão as matérias subalocadas e sobrealocadas em relação ao impacto real na prova.
 - **Roteiro do Banner da Demonstração:** O banner superior [`#demoBanner`](file:///c:/Users/vitor/Documents/Extrato/index.html) inclui atalhos diretos para as áreas centrais do roteiro: `Prioridades`, `Riscos e projeção`, `Desempenho`, `Questões & Platô`, `Revisões`, `Planejamento` e `Relatório`.
 - **Integridade de Estado:** A demonstração opera em `sessionStorage` isolado sob o Schema v30, preservando os registros reais do usuário e simulando backup recente via `lastExportAt`.
+
+## Jornada do modo demonstração
+
+- O botão **Explorar demonstração** apresenta uma prévia. A confirmação entra na Demo na Visão geral e no topo; cancelar não ativa o modo nem grava o cenário fictício.
+- O tour essencial destaca o título do plano de hoje. A orientação diz para fechar o tour antes de experimentar **Iniciar**, que abre o cronômetro vinculado à atividade.
+- No modo foco, o aviso **Dados fictícios · modo demonstração** aparece somente na Demo. O aviso fica junto ao tipo e à meta da sessão; em telas estreitas, o texto decorativo superior é ocultado para manter o botão de saída separado do conteúdo.
+- **Sair da demonstração** remove a chave `bb-premium-study-demo`, define o modo como `real` e retorna à Visão geral no topo. O estado real em `localStorage` é comparado antes da saída e depois do retorno nos testes E2E.
+
+Os contratos da jornada estão em [`tests/e2e/demo.spec.js`](../tests/e2e/demo.spec.js), com o modo real coberto em [`tests/e2e/daily-execution.spec.js`](../tests/e2e/daily-execution.spec.js) e a sincronização de visibilidade em [`tests/unit/demo-controller.test.js`](../tests/unit/demo-controller.test.js).

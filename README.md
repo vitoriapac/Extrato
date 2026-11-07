@@ -270,7 +270,9 @@ O **fechamento semanal** informa a parcela do tempo registrado em tópicos de al
 
 ## Modo demonstração
 
-A demonstração usa `sessionStorage` e um cenário fictício separado. Reiniciar ou encerrar a demo não altera a base real do navegador.
+O botão **Explorar demonstração** abre uma prévia; após a confirmação, a Demo começa na Visão geral e no topo. O cenário fictício fica em `sessionStorage`, separado dos dados reais. Ao reiniciar, a Demo restaura apenas esse cenário; ao sair, remove a sessão fictícia e volta à Visão geral, sem alterar os dados reais em `localStorage`.
+
+O tour destaca o título do plano de hoje e orienta fechar a sobreposição antes de experimentar **Iniciar**. Durante o modo foco, um aviso identifica os dados fictícios; ele permanece oculto no modo real. Consulte o [cenário da demonstração](docs/DEMO-SCENARIO.md) e seus [testes de jornada](tests/e2e/demo.spec.js).
 
 ## Atalhos
 

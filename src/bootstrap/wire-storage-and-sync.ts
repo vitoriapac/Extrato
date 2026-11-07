@@ -186,9 +186,13 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     resetMode: resetDemoMode,
     exitMode: exitDemoMode,
     confirm: deps.showConfirm,
-    reload: () => {
+    reload: (tab?: string) => {
       suppressBeforeUnloadSave = true;
       stateSyncCoordinator.appStateStore.cancelPendingSave();
+      if (tab === 'dashboard') {
+        history.replaceState(history.state, '', location.pathname + location.search);
+        window.scrollTo(0, 0);
+      }
       location.reload();
     },
     activateTab: deps.activateTab,

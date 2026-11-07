@@ -18,6 +18,7 @@ test('controlador sincroniza proteção e gerencia o ciclo da demo', () => {
   const nodes = {
       demoBanner: node(),
       enterDemoBtn: node(),
+      timerFocusDemoLabel: node(),
       demoEmptyCta: node(),
       resetDemoBtn: node(),
       exitDemoBtn: node(),
@@ -52,17 +53,19 @@ test('controlador sincroniza proteção e gerencia o ciclo da demo', () => {
       resetMode: () => calls.push('reset'),
       exitMode: () => calls.push('exit'),
       confirm: (_message, action) => action(),
-      reload: () => calls.push('reload'),
+      reload: tab => calls.push(tab ? `reload:${tab}` : 'reload'),
       activateTab: name => calls.push(name),
     });
+  nodes.timerFocusDemoLabel.hidden = true;
   controller.mount();
   assert.equal(nodes.demoBanner.hidden, false);
+  assert.equal(nodes.timerFocusDemoLabel.hidden, false);
   assert.equal(nodes.enterDemoBtn.hidden, true);
   assert.equal(target.disabled, true);
   nodes.resetDemoBtn.click();
   nodes.exitDemoBtn.click();
   target.click();
-  assert.deepEqual(calls, ['reset', 'reload', 'exit', 'reload', 'hoje']);
+  assert.deepEqual(calls, ['reset', 'reload', 'exit', 'reload:dashboard', 'hoje']);
   assert.match(storage.values.get('flash'), /restaurados/);
 });
 test('prévia da demo só carrega os dados após escolha explícita', () => {
@@ -105,6 +108,40 @@ test('prévia da demo só carrega os dados após escolha explícita', () => {
   assert.deepEqual(calls, ['enter', 'reload']);
   assert.equal(nodes.demoHeaderBadge.hidden, true);
 });
+
+test('confirmar a demonstração solicita reinicialização na visão geral', () => {
+  const enterButton = node(),
+    confirmButton = node(),
+    calls = [],
+    dialog = {
+      open: false,
+      showModal() {
+        this.open = true;
+      },
+    },
+    document = {
+      getElementById: id =>
+        ({ demoIntroDialog: dialog, enterDemoBtn: enterButton, confirmDemoIntroBtn: confirmButton })[
+          id
+        ],
+      querySelectorAll: () => [],
+    },
+    controller = createDemoController({
+      document,
+      storage: {},
+      isDemo: false,
+      getState: () => ({ subjects: [], studySessions: [] }),
+      enterMode: () => calls.push('enter'),
+      reload: tab => calls.push(`reload:${tab}`),
+    });
+
+  controller.mount();
+  enterButton.click();
+  confirmButton.click();
+
+  assert.deepEqual(calls, ['enter', 'reload:dashboard']);
+});
+
 test('demoEmptyCta oculta imediatamente ao criar disciplinas, planos ou sessões', () => {
   const nodes = {
     demoEmptyCta: node(),

@@ -33,10 +33,10 @@ export const GUIDED_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     id: 'today-execution',
     order: 2,
     tab: 'hoje',
-    selector: '.plano-hoje-card',
+    selector: '.plano-hoje-card h3',
     title: 'Execução guiada e cronômetro',
     message:
-      'Ao iniciar uma atividade, o cronômetro divide a sessão em etapas e credita os minutos diretamente no plano do dia.',
+      'Este é o plano de hoje. Feche o tour quando quiser experimentar uma atividade e abrir o cronômetro vinculado.',
     badgeLabel: '2 de 5 · Hoje',
   },
   {
@@ -76,10 +76,10 @@ export const ESSENTIAL_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     id: 'today-execution',
     order: 1,
     tab: 'hoje',
-    selector: '.plano-hoje-card',
+    selector: '.plano-hoje-card h3',
     title: 'Seu QG diário de estudo',
     message:
-      'Aqui ficam suas atividades planejadas para hoje. Ao clicar em Iniciar, o cronômetro abre em modo foco já vinculado à tarefa.',
+      'Este é o plano de hoje. Feche o tour quando quiser experimentar uma atividade e abrir o cronômetro vinculado.',
     badgeLabel: '1 de 3 · Hoje',
   },
   {

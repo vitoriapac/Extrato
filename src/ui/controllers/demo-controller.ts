@@ -22,7 +22,7 @@ export function createDemoController({
   };
   const load = () => {
     enterMode(storage);
-    reload();
+    reload('dashboard');
   };
   const enter = () => {
     const dialog = document.getElementById('demoIntroDialog');
@@ -43,16 +43,18 @@ export function createDemoController({
   const exit = () => {
     exitMode(storage, demoKey);
     storage.setItem(flashKey, 'Demonstração encerrada. Seus dados pessoais foram restaurados.');
-    reload();
+    reload('dashboard');
   };
   const sync = () => {
     const state = getState(),
       banner = document.getElementById('demoBanner'),
       badge = document.getElementById('demoHeaderBadge'),
+      focusLabel = document.getElementById('timerFocusDemoLabel'),
       enterButton = document.getElementById('enterDemoBtn'),
       emptyCta = document.getElementById('demoEmptyCta');
     if (banner) banner.hidden = !isDemo;
     if (badge) badge.hidden = !isDemo;
+    if (focusLabel) focusLabel.hidden = !isDemo;
     if (enterButton) enterButton.hidden = isDemo;
     if (emptyCta)
       emptyCta.hidden =

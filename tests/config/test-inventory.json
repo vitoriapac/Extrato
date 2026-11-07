@@ -338,7 +338,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 11,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 7,
       "observedCaseSeconds": 150,
@@ -3707,7 +3707,7 @@
         "node:assert/strict",
         "../../src/ui/controllers/demo-controller.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

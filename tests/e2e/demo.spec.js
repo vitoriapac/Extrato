@@ -45,6 +45,20 @@ test('prévia e selo da demonstração funcionam no mobile sem alterar a base an
   await expectNoPageOverflow(page);
 });
 
+test('entrada pelo CTA do rodapé abre a Demo no topo da Visão geral', async ({ page }) => {
+  await page.goto('/');
+  await activateTab(page, 'hoje');
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.locator('#enterDemoBtn').click();
+  await expect(page.locator('#demoIntroDialog')).toBeVisible();
+  await page.locator('#confirmDemoIntroBtn').click();
+
+  await expect(page.locator('#panel-dashboard')).toBeVisible();
+  expect(await page.evaluate(() => location.hash)).toBe('');
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
+  await expect(page.locator('#demoHeaderBadge')).toBeInViewport();
+});
+
 test('isola, reinicia e encerra a demonstração sem alterar o estado real', async ({ page }) => {
   await page.goto('/?test=1');
   await expect(page).toHaveTitle(/OK — Testes do Extrato/);
@@ -66,6 +80,9 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
     return serialized;
   });
   await openDemo(page);
+  const realStateDuringDemo = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('bb-premium-study-data'))
+  );
   await expect(page.locator('#demoBanner')).toBeVisible();
   await expect(page.locator('#guidedOnboarding')).toBeHidden();
   await expect(page.locator('#guidedOnboarding + #overviewExamPhase')).toHaveCount(1);
@@ -91,11 +108,19 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
     await page.evaluate(() => sessionStorage.getItem('bb-premium-study-demo'))
   );
   expect(restarted.subjects[0].name).not.toBe('Alteração fictícia');
+  await activateTab(page, 'hoje');
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.getByRole('button', { name: /Sair da demonstração/i }).click();
+  await expect(page.locator('#panel-dashboard')).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
+  await expect(page.locator('#demoBanner')).toBeHidden();
   await expect(page.getByRole('button', { name: /Explorar demonstração/i }).first()).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem('bb-premium-study-demo'))).toBeNull();
+  expect(await page.evaluate(() => sessionStorage.getItem('bb-premium-mode'))).toBe('real');
   const restored = JSON.parse(
     await page.evaluate(() => localStorage.getItem('bb-premium-study-data'))
   );
+  expect(restored).toEqual(realStateDuringDemo);
   expect(JSON.parse(realState).subjects[0].name).toBe('Registro real preservado');
   expect(restored.subjects[0].name).toBe('Registro real preservado');
   expect(restored.subjects.some(subject => subject.name === 'Alteração fictícia')).toBe(false);
@@ -128,6 +153,64 @@ test('roteiro da demonstração navega pelas áreas preservando o cenário', asy
   for (const target of ['hoje', 'dashboard', 'agenda', 'metas']) {
     await page.locator(`[data-demo-target="${target}"]`).click();
     await expect(page.locator(`#panel-${target}`)).toBeVisible();
+  }
+});
+
+test('modo foco identifica dados fictícios na Demo e permite sair do foco', async ({ page }) => {
+  await openDemo(page);
+  await activateTab(page, 'hoje');
+  await page
+    .locator('.plano-hoje-card')
+    .getByRole('button', { name: 'Iniciar', exact: true })
+    .first()
+    .click();
+
+  await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await expect(page.locator('#timerFocusDemoLabel')).toBeVisible();
+  await expect(page.locator('#studyTimerDisplay')).toBeVisible();
+  await expect(page.locator('#timerFocusToggle')).toHaveAccessibleName('Sair do modo foco');
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 720 });
+    await expect(page.locator('#timerFocusDemoLabel')).toBeInViewport();
+    await expectNoPageOverflow(page);
+  }
+  await page.locator('#timerFocusToggle').click();
+  await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+});
+
+test('tour da Demo destaca Hoje sem cobrir a ação Iniciar', async ({ page }) => {
+  await openDemo(page);
+  for (const height of [720, 900]) {
+    await page.setViewportSize({ width: 1280, height });
+    await page.getByRole('button', { name: 'Iniciar tour guiado pelo aplicativo' }).click();
+    const popover = page.locator('#guidedTourPopover');
+    await expect(popover).toContainText('1 de 3 · Hoje');
+    await expect(popover).not.toContainText(/Ao clicar em Iniciar/);
+    await expect(popover.getByRole('button', { name: 'Próxima parada' })).toBeFocused();
+    await expectNoPageOverflow(page);
+    const startButton = page
+      .locator('.plano-hoje-card')
+      .getByRole('button', { name: 'Iniciar', exact: true })
+      .first();
+    const popoverBox = await popover.boundingBox();
+    const startBox = await startButton.boundingBox();
+    expect(
+      popoverBox.x < startBox.x + startBox.width &&
+        popoverBox.x + popoverBox.width > startBox.x &&
+        popoverBox.y < startBox.y + startBox.height &&
+        popoverBox.y + popoverBox.height > startBox.y
+    ).toBe(false);
+    await expect(startButton).toBeVisible();
+    await popover.getByRole('button', { name: 'Próxima parada' }).click();
+    await popover.getByRole('button', { name: 'Parada anterior' }).click();
+    await expect(popover).toContainText('1 de 3 · Hoje');
+    await page.keyboard.press('Escape');
+    await expect(popover).toBeHidden();
+    await expect(
+      page.getByRole('button', { name: 'Iniciar tour guiado pelo aplicativo' })
+    ).toBeFocused();
+    await expectNoPageOverflow(page);
   }
 });
 

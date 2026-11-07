@@ -297,6 +297,7 @@ test('iniciar pelo Plano de hoje abre o modo foco e Esc devolve ao Hoje', async 
     .locator(`#planoHojeContent [data-delegated-click="startPlannedActivity('daily-first')"]`)
     .click();
   await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await expect(page.locator('#timerFocusDemoLabel')).toBeHidden();
   await expect(page.locator('#studyTimerDisplay')).toBeInViewport();
   await expect(page.locator('#timerPauseBtn')).toBeFocused();
   await page.keyboard.press('Escape');

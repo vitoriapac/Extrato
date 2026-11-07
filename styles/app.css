@@ -1970,6 +1970,9 @@ body.timer-focus-active{overflow:hidden}body.timer-focus-active .sticky-shell,bo
 .timer-focus-context{display:none;width:min(100%,780px);padding:0 clamp(4px,2vw,18px) 8px;text-align:center}
 .timer-focus-context[hidden]{display:none!important}
 .timer-focus-context>span{color:var(--accent);font:var(--text-micro) var(--font-body);letter-spacing:.12em}
+.timer-focus-context .timer-focus-demo-label{display:block;margin-top:8px;color:var(--accent);font:var(--text-micro) var(--font-body);letter-spacing:.08em}
+.timer-focus-context .timer-focus-demo-label[hidden]{display:none}
+@media(max-width:430px){body.timer-focus-active .timer-focus-context>span:first-child{display:none}body.timer-focus-active .timer-focus-context h3{margin-top:36px}body.timer-focus-active .timer-actions .timer-focus-toggle{top:8px;width:auto}}
 .timer-focus-context h3{margin:9px 0 4px;color:var(--heading);font:600 clamp(20px,4vw,30px)/1.2 var(--font-display);overflow-wrap:anywhere}
 .timer-focus-context p{margin:0;color:var(--ink-soft);font:12px var(--font-body)}
 .timer-focus-hint{display:block;margin-top:14px;color:var(--ink-soft);font:var(--text-micro) var(--font-body)}
