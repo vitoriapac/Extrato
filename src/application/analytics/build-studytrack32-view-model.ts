@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../core/date-utils.js';
 import { buildWeeklyCloseAdherence } from '../adherence/build-weekly-close-adherence.js';
 import { buildWeeklyAdherence } from '../adherence/build-weekly-adherence.js';
 import { buildSustainabilityModel } from '../planning-sustainability/build-sustainability-model.js';
@@ -54,14 +55,17 @@ export function buildStudyTrack32ViewModel({
     buildPostSimulationReplan,
     buildCandidates,
   } = algorithmServices;
-  const start = addDays(today, -6),
+  // Semana de segunda a domingo, a mesma do Resumo da semana em Planejamento.
+  const weekday = (parseLocalDate(today)?.getDay() ?? 1),
+    start = addDays(today, -((weekday + 6) % 7)),
+    end = addDays(start, 6),
     previousEnd = addDays(start, -1),
     previousStart = addDays(start, -7),
-    currentSessions = sessions.filter((item: any) => inRange(item, start, today)),
-    currentQuestions = questions.filter((item: any) => inRange(item, start, today)),
+    currentSessions = sessions.filter((item: any) => inRange(item, start, end)),
+    currentQuestions = questions.filter((item: any) => inRange(item, start, end)),
     previousSessions = sessions.filter((item: any) => inRange(item, previousStart, previousEnd)),
     previousQuestions = questions.filter((item: any) => inRange(item, previousStart, previousEnd)),
-    currentPlan = selectWeeklyPlans(dailyPlans, start, today),
+    currentPlan = selectWeeklyPlans(dailyPlans, start, end),
     previousPlan = selectWeeklyPlans(dailyPlans, previousStart, previousEnd);
   const questionTotals = (list: Row[]) => ({
       resolved: sum(list, item => item.resolved),
@@ -73,7 +77,7 @@ export function buildStudyTrack32ViewModel({
     executedMinutes = Math.round(sum(currentSessions, item => item.durationSeconds) / 60),
     previousExecutedMinutes = Math.round(sum(previousSessions, item => item.durationSeconds) / 60);
   const weeklyClose = buildWeeklyClose({
-    period: { start, end: today },
+    period: { start, end },
     current: { plannedMinutes: currentPlan.plannedMinutes, executedMinutes },
     previous: hasPrevious
       ? {
@@ -94,7 +98,7 @@ export function buildStudyTrack32ViewModel({
   weeklyClose.adherence = buildWeeklyCloseAdherence({
     ...(executionSource || { dailyPlans, sessions, subjects }),
     start,
-    end: today,
+    end,
     today,
     activeExamTags,
     snapshots: weeklyCloseSnapshots,
@@ -132,7 +136,7 @@ export function buildStudyTrack32ViewModel({
   weeklyClose.subjectAccuracy = buildSubjectAccuracy({
     subjects,
     questions: currentQuestions,
-    simulations: simulations.filter((item: any) => inRange(item, start, today)),
+    simulations: simulations.filter((item: any) => inRange(item, start, end)),
     blueprint,
     globalTarget: targetAccuracy,
   });
@@ -166,12 +170,12 @@ export function buildStudyTrack32ViewModel({
     candidates,
     recommendations,
     start,
-    end: today,
+    end,
   });
   weeklyClose.decisionCycle = buildWeeklyDecisionCycle({
     close: weeklyClose,
     start,
-    end: today,
+    end,
     previousStart,
     previousEnd,
     sessions,
@@ -202,7 +206,7 @@ export function buildStudyTrack32ViewModel({
       existingSimulationIds: planAdjustments.map((item: any) => item.simulationId).filter(Boolean),
     });
   return {
-    period: { start, end: today, previousStart, previousEnd },
+    period: { start, end, previousStart, previousEnd },
     activeExamTags: [...activeExamTags],
     topicPriorities: candidates.map((item: any) =>
       captureTopicPriorityProfile(item, { capturedAt: today, activeExamTags })

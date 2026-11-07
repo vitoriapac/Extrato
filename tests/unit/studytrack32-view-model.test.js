@@ -48,7 +48,9 @@ test('constrói o ciclo analítico sem DOM e com datas locais', () => {
     },
     nameResolvers: { subject: () => null, topic: () => null },
   });
-  assert.equal(model.period.start, '2026-09-03');
+  // Semana de segunda a domingo, igual ao Resumo da semana de Planejamento.
+  assert.equal(model.period.start, '2026-09-07');
+  assert.equal(model.period.end, '2026-09-13');
   assert.equal(model.weeklyClose.investment.plannedMinutes, 30);
   assert.equal(model.weeklyClose.execution.rate, 100);
 });

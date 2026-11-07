@@ -40,7 +40,7 @@ export function renderStrategicTimeline(model: Record<string, any>) {
     detail
       ? `<details class="strategic-timeline-detail"><summary>Ver detalhes da decisão</summary><dl>${detail.rows.map((row: any) => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl>${
           detail.reasons.length
-            ? `<h5>Motivos registrados</h5><ul>${detail.reasons
+            ? `<h4 class="text-sm">Motivos registrados</h4><ul>${detail.reasons
                 .slice(0, 5)
                 .map((reason: any) => `<li>${escape(reason)}</li>`)
                 .join('')}</ul>${

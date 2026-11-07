@@ -42,7 +42,7 @@ export function renderPerformanceSimulations(
     details: [
       model.trend == null
         ? 'Tendência recente sem base comparável.'
-        : `Variação recente: ${signed(model.trend)}.`,
+        : `Variação recente: ${signed(model.trend)}`,
     ],
   });
   const method =

@@ -61,7 +61,7 @@ export function renderExecutionBreakdown(model: Record<string, any>) {
     minutes(s.otherPeriodMinutes) +
     '.</li></ul><p>Tempo registrado soma essas categorias. Pendências são tempo planejado ainda sem crédito e não entram nessa soma. O crédito é limitado ao previsto por atividade; estudar fora do plano não é perder tempo de estudo.</p>' +
     (rows.length
-      ? '<h5>Atividades conciliadas no período</h5><ul>' +
+      ? '<h4 class="text-sm">Atividades conciliadas no período</h4><ul>' +
         render(rows.slice(0, 5)) +
         '</ul>' +
         (rows.length > 5

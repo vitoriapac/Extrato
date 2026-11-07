@@ -463,18 +463,15 @@
 
   /* ===== METAS ===== */
   #panel-metas{display:none}#panel-metas.active{display:block}
-  .metas-page-header{margin-bottom:var(--space-8)}#panel-metas [data-metas-section]{scroll-margin-top:calc(var(--sticky-stack-height,52px) + 70px)}
-  .metas-page-header h2{margin:var(--space-2) 0;color:var(--heading);font:600 clamp(1.75rem,3vw,2.25rem) var(--font-display)}
-  .metas-page-header p{max-width:58ch;color:var(--text-secondary)}
-  .metas-page-header nav{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-6)}
+  #panel-metas [data-metas-section]{scroll-margin-top:calc(var(--sticky-stack-height,52px) + 70px)}
   #panel-metas>.chart-card{margin-bottom:var(--space-8)}
   .metas-priority-summary{padding:var(--space-6) 0;border-top:1px solid var(--border-default)}
   .metas-priority-value{display:block;margin:var(--space-3) 0;color:var(--heading);font:600 2rem var(--font-display)}
   .metas-priority-summary>p{color:var(--text-secondary)}
   .metas-priority-summary>.ui-progress{display:block;width:min(100%,34rem);height:9px;margin:var(--space-4) 0;background:var(--surface-subtle)}
   .metas-priority-summary>.ui-progress>i{display:block;height:100%;background:var(--accent-primary)}
-  .metas-priority-summary>details,.metas-execution-history,.metas-distribution-detail{margin-top:var(--space-4)}
-  .metas-priority-summary summary,.metas-execution-history summary,.metas-distribution-detail summary{min-height:44px;cursor:pointer;color:var(--heading);font-weight:600}
+  .metas-priority-summary>details,.metas-execution-history,.metas-distribution-fold,.metas-distribution-detail{margin-top:var(--space-4)}
+  .metas-priority-summary summary,.metas-execution-history summary,.metas-distribution-fold summary,.metas-distribution-detail summary{min-height:44px;cursor:pointer;color:var(--heading);font-weight:600}
   .metas-distribution-list{display:grid;gap:var(--space-3);list-style:none;padding:0;margin:0}
   .metas-distribution-list li{display:grid;grid-template-columns:minmax(8rem,1fr) minmax(0,3fr);gap:var(--space-4);padding:var(--space-3) 0;border-bottom:1px solid var(--border-default)}
   .metas-distribution-list strong{overflow-wrap:anywhere;color:var(--heading)}
@@ -1190,6 +1187,7 @@
   .week-reconciliation__note a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
   summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link,.subject-toggle{min-height:var(--touch-target)}
   .today-progress-status a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
+  .performance-topic-link,.exam-matrix-topic,.exam-matrix-card>button{display:inline-flex;align-items:center;min-height:var(--touch-target)}
 }
 /* Toque em tela larga (tablet, celular deitado): só tamanhos de alvo, sem o layout estreito. */
 @media (pointer:coarse){
@@ -1794,6 +1792,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 /* Hierarquia: título de página (h2) > título de seção (h3) > rótulo mono do card. O h3 de seção não herda o rótulo do .chart-card. */
 .module-heading h2.module-heading__title,.ui-section-header h2.module-heading__title,.section-title{font-size:clamp(22px,2.4vw,28px)}
 .module-heading h3.module-heading__title,.ui-section-header h3.module-heading__title,.module-heading.module-heading--compact .module-heading__title{font-size:clamp(17px,1.6vw,19px);text-transform:none;letter-spacing:normal}
+/* Cabeçalho de página: o mesmo em Desempenho, Planejamento e Agenda. Sem eyebrow; ações, quando há, à direita. */
+.page-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--space-3) var(--space-6);margin:0 0 var(--space-8);padding:0 0 var(--space-4);border-bottom:1px solid var(--border-default)}
+.page-header__text{display:grid;flex:1 1 320px;gap:var(--space-2);min-width:0}
+.page-header h2{margin:0;color:var(--heading);font:600 clamp(1.75rem,3vw,2.25rem)/1.2 var(--font-display);text-wrap:balance}
+.page-header p{max-width:58ch;margin:0;color:var(--text-secondary);text-wrap:pretty}
+.page-header__actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+@media(max-width:430px){.page-header__actions{width:100%}.page-header__actions .btn{flex:1 1 auto}}
 .performance-story h3,.performance-block h3,.achievement-projection__heading h3{color:var(--heading);font-family:var(--font-display)}
 .performance-block h3,.achievement-projection__heading h3{font-size:clamp(16px,1.4vw,18px);line-height:1.3;text-transform:none;letter-spacing:normal}
 .module-heading__description{max-width:72ch;margin:0;color:var(--ink-soft);font:var(--text-md)/1.6 var(--font-body)}
@@ -2956,26 +2961,26 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 .chart-donut__slice{transition:stroke-width .2s ease,opacity .2s ease;cursor:pointer}
 .chart-donut__slice:hover{stroke-width:23;opacity:.9}
 .chart-donut__text-val{font-family:var(--font-data);font-weight:700;fill:var(--text-primary);font-size:20px}
-.chart-donut__text-sub{font-family:var(--font-body);fill:var(--text-secondary);font-size:11px}
+.chart-donut__text-sub{font-family:var(--font-body);fill:var(--text-secondary);font-size:12px}
 .chart-stacked-columns{display:block;width:100%;height:auto;overflow:visible}
 .chart-stacked-columns__grid{stroke:var(--chart-grid,var(--paper-line));stroke-dasharray:2 3}
 .chart-stacked-columns__bar{transition:opacity .2s ease;rx:2px}
 .chart-stacked-columns__bar:hover{opacity:.85}
-.chart-stacked-columns__label{font-family:var(--font-data);font-size:11px;fill:var(--text-secondary)}
+.chart-stacked-columns__label{font-family:var(--font-data);font-size:12px;fill:var(--text-secondary)}
 .chart-multiline{display:block;width:100%;height:auto;overflow:visible}
 .chart-multiline__grid{stroke:var(--chart-grid,var(--paper-line));stroke-dasharray:2 3}
 .chart-multiline__line{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .2s ease}
 .chart-multiline__point{fill:var(--surface-card);stroke-width:2;cursor:pointer;transition:r .2s ease}
 .chart-multiline__point:hover{r:5}
-.chart-multiline__label{font-family:var(--font-data);font-size:11px;fill:var(--text-secondary)}
+.chart-multiline__label{font-family:var(--font-data);font-size:12px;fill:var(--text-secondary)}
 .chart-matrix{display:block;width:100%;height:auto;overflow:visible}
 .chart-matrix__grid{stroke:var(--chart-grid,var(--paper-line))}
 .chart-matrix__threshold{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;opacity:.6}
 .chart-matrix__quadrant-bg{fill:var(--surface-card-muted);opacity:.25}
-.chart-matrix__quadrant-label{font-family:var(--font-body);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;fill:var(--text-secondary);opacity:.7}
+.chart-matrix__quadrant-label{font-family:var(--font-body);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;fill:var(--text-secondary);opacity:.7}
 .chart-matrix__bubble{opacity:.85;transition:transform .2s ease,opacity .2s ease;cursor:pointer}
 .chart-matrix__bubble:hover{opacity:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2))}
-.chart-matrix__bubble-text{font-family:var(--font-body);font-size:10px;font-weight:600;fill:var(--text-primary);pointer-events:none}
+.chart-matrix__bubble-text{font-family:var(--font-body);font-size:12px;font-weight:600;fill:var(--text-primary);pointer-events:none}
 .subject-progress-bar{display:block;flex:0 0 120px;width:120px;height:6px;background:var(--surface-subtle);border:1px solid var(--border-default);border-radius:3px;overflow:hidden}
 .subject-progress-bar>span{display:block;height:100%;background:var(--accent-primary)}
 .subject-recent-accuracy{font:var(--text-small) var(--font-body);color:var(--text-secondary);white-space:nowrap}

@@ -63,9 +63,7 @@ export function renderPerformanceSubjects(
           <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red inline-block"></span>Críticas: ${counts.critical}</span>
         </div>
       </div>
-      <div class="mt-3 overflow-x-auto">
-        ${matrixChart}
-      </div>
+      ${renderPerformanceDetails('Ver matriz em esferas', `<div class="mt-3 overflow-x-auto">${matrixChart}</div>`)}
     </section>`;
   }
 
@@ -85,5 +83,5 @@ export function renderPerformanceSubjects(
     model.activity.questions < 10
       ? `Amostra insuficiente: ${model.activity.questions} questões no período.`
       : `Precisão de ${value(model.accuracy, '%')} frente à meta de ${model.goal.target}%.`;
-  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${matrixSection}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}.`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}`;
+  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${matrixSection}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}`;
 }

@@ -61,7 +61,7 @@ export function renderPerformancePage({
       : viewState.section === 'overview'
         ? '<div class="empty-state empty-state--compact" role="status"><strong>Visão geral de Desempenho</strong><p>Selecione um período para acompanhar a preparação. Os registros desta área aparecerão aqui.</p></div>'
         : `<div class="empty-state empty-state--compact" role="status"><strong>${escapeHtml(intro.title)}</strong><p>${escapeHtml(intro.description)}</p><button type="button" class="btn ghost small" data-performance-open="${escapeAttr(intro.tab)}">${escapeHtml(intro.action)}</button></div>`);
-  return `<div class="performance-page"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h2 class="module-heading__title">Desempenho</h2><p class="module-heading__description">Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></header>
+  return `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2><p>Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></div></header>
     <nav class="performance-section-nav" aria-label="Análises de desempenho">${nav}</nav>
     ${
       viewState.section === 'exam' || viewState.section === 'history'

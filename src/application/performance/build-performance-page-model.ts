@@ -85,9 +85,15 @@ export function buildPerformancePageModel({
       today,
       period: viewState.period,
     });
+    // Mesma função e mesma precisão (1 casa) da atual; a evolução arredonda para inteiro e gerava +4,8 contra +4,6 da Visão geral.
     const previousAccuracy = range.previous
-      ? buildQuestionEvolution({ questions, today: range.previous.end, period: viewState.period })
-          .accuracy
+      ? buildPerformanceAnalysis({
+          questions,
+          simulations: [],
+          candidates: [],
+          today: range.previous.end,
+          period: viewState.period,
+        }).accuracy
       : null;
     const multiSubjectPerformance = buildMultiSubjectPerformanceModel({
       questions,

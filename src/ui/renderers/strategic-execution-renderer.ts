@@ -39,6 +39,8 @@ export function renderStrategicExecution(model: Record<string, any>, periodLabel
     summary +
     details +
     '</details></section>' +
+    // Fechada por padrão: com muitas disciplinas a lista sozinha passa de 1000 px e empurra o plano.
+    '<details class="metas-distribution-fold"><summary>Ver distribuição por disciplina</summary>' +
     renderChartFrame({
       title: 'Distribuição por disciplina',
       description:
@@ -47,6 +49,7 @@ export function renderStrategicExecution(model: Record<string, any>, periodLabel
         ? `<ul class="metas-distribution-list">${bars}</ul><details class="metas-distribution-detail"><summary>Ver tabela detalhada</summary><div class="execution-distribution"><table class="weekly-history-table"><thead><tr><th>Disciplina</th><th>Planejado</th><th>Realizado</th><th>Diferença</th></tr></thead><tbody>${rows}</tbody></table></div></details>`
         : '',
       emptyMessage: 'Registre um plano ou sessões para comparar a distribuição.',
-    })
+    }) +
+    '</details>'
   );
 }
