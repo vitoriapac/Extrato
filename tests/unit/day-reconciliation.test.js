@@ -31,3 +31,8 @@ test('negativos e NaN valem 0', () => {
   assert.equal(r.status, 'no-availability');
   assert.deepEqual(r.rows.map((x) => x.minutes), [0, 0, 0]);
 });
+
+test('Livre desconta o restante do plano quando informado (igual ao gráfico)', () => {
+  const r = buildDayReconciliation({ available: 120, planned: 60, executed: 45, remainingPlanned: 30 });
+  assert.equal(r.rows.find(x => x.key === 'free').minutes, 45);
+});

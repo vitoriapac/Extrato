@@ -44,7 +44,13 @@ export function TodayExecutionSummary({
   const validPlanned = Math.max(0, Number(plannedMinutes) || 0);
   const validExecuted = Math.max(0, Number(executedMinutes) || 0);
 
-  const reconciliation = buildDayReconciliation({ available: validAvailable, planned: validPlanned, executed: validExecuted });
+  const remainingPlanned = planRemainingMinutes ?? Math.max(0, validPlanned - validExecuted);
+  const reconciliation = buildDayReconciliation({
+    available: validAvailable,
+    planned: validPlanned,
+    executed: validExecuted,
+    remainingPlanned,
+  });
 
   const stackedParts: StackedBarPart[] = [];
   if (validExecuted > 0) {
@@ -54,7 +60,6 @@ export function TodayExecutionSummary({
       tone: 'primary',
     });
   }
-  const remainingPlanned = planRemainingMinutes ?? Math.max(0, validPlanned - validExecuted);
   if (remainingPlanned > 0) {
     stackedParts.push({
       label: 'A realizar',

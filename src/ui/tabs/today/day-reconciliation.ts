@@ -13,10 +13,12 @@ export type DayReconciliation = {
 const clean = (n: number): number => Math.max(0, Number(n) || 0);
 
 /** Concilia disponibilidade, plano e estudo do dia (minutos; sem formatação de texto). */
-export function buildDayReconciliation(input: { available: number; planned: number; executed: number }): DayReconciliation {
+export function buildDayReconciliation(input: { available: number; planned: number; executed: number; remainingPlanned?: number }): DayReconciliation {
   const available = clean(input.available);
   const planned = clean(input.planned);
   const executed = clean(input.executed);
+  // Sem remainingPlanned, o plano inteiro ou o estudado (o maior) ocupa o dia.
+  const taken = input.remainingPlanned === undefined ? Math.max(planned, executed) : executed + clean(input.remainingPlanned);
   const rows: DayReconciliationRow[] = [
     { key: 'available', label: 'Disponível', minutes: available },
     { key: 'planned', label: 'Planejado', minutes: planned },
@@ -28,6 +30,6 @@ export function buildDayReconciliation(input: { available: number; planned: numb
     rows.push({ key: 'overrun', label: 'Excedente', minutes: overrunMinutes });
     return { rows, overrunMinutes, status: 'over' };
   }
-  rows.push({ key: 'free', label: 'Livre', minutes: available - Math.max(planned, executed) > 0 ? available - Math.max(planned, executed) : 0 });
+  rows.push({ key: 'free', label: 'Livre', minutes: Math.max(0, available - taken) });
   return { rows, overrunMinutes: 0, status: 'within' };
 }
