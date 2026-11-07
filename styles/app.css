@@ -2,8 +2,6 @@
   body{
     margin:0;
     background-color:var(--paper);
-    background-image:radial-gradient(var(--paper-line) 1px,transparent 1px);
-    background-size:16px 16px;
     color:var(--ink);
     font-family:var(--font-body);
     font-size:var(--text-body);line-height:1.5;
@@ -3529,3 +3527,12 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 /* Quebras de linha: títulos equilibrados, texto corrido sem palavra órfã. */
 .overview-action-card h3,.overview-now h2,.chart-card h3{text-wrap:balance}
 .overview-action-suggestion,.overview-alert small,.chart-card p{text-wrap:pretty}
+
+/* Linha de razão: rótulo, guia pontilhada e valor. */
+.ledger-line{display:flex;align-items:baseline;gap:10px}
+.ledger-line__label small{display:block;font-size:var(--text-micro);color:var(--text-secondary)}
+.ledger-line__lead{flex:1;border-bottom:1px dotted var(--border-control);align-self:end;margin-bottom:.35em;min-width:16px}
+.ledger-line__value{font:var(--text-small) var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ledger-line--total{border-top:2px solid var(--heading);padding-top:6px}
+.ledger-line.is-negative .ledger-line__value{color:var(--status-negative)}
+.ledger-line.is-positive .ledger-line__value{color:var(--status-positive)}
