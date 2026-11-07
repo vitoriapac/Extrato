@@ -1,6 +1,6 @@
 # Extrato de Estudos — Cada estudo soma
 
-[Experimentar o Extrato de Estudos](https://vitoriapac.github.io/Extrato/)
+[Experimentar o Extrato de Estudos](https://extratoestudos.com.br)
 
 Extrato de Estudos é uma aplicação web para planejar estudos, registrar sessões, organizar revisões e transformar o histórico em recomendações explicáveis. Funciona integralmente no navegador e pode ser instalada como PWA.
 
@@ -47,13 +47,13 @@ Extrato de Estudos é uma aplicação web para planejar estudos, registrar sess�
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos, incluindo Caderno de Erros com flashcards SM-2 e pegadinhas de banca, Detector de Platô com prescrições de estudo, análise cronobiológica de turnos (Manhã pico, Tarde, Noite com fadiga) e balanço de alocação de edital.
 - Tema claro/escuro, layout responsivo, conformidade WCAG AA completa (token `--border-control` com contraste > 3:1 em inputs/selects), barra fixa contínua sem vazamento (zero gap), normalização de raios para `var(--radius)` (2px), focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
 
-## Como o StudyTrack funciona
+## Como o Extrato de Estudos funciona
 
 Quem já tem dados salvos retoma o estudo sem repetir o primeiro uso. Para começar, os três caminhos de conteúdo levam a uma prévia; importar ou gerar um plano só altera os dados depois da confirmação.
 
 ```mermaid
 flowchart TD
-    A["Abrir o StudyTrack"] --> B{"Já tem histórico?"}
+    A["Abrir o Extrato de Estudos"] --> B{"Já tem histórico?"}
     B -- Sim --> H["Retomar em Hoje"]
     B -- Não --> C["Primeiro uso: prova e disponibilidade"]
     C --> D{"Escolher conteúdo"}
@@ -152,7 +152,7 @@ Os componentes e limites entre camadas estão detalhados na [arquitetura](ARCHIT
 
 ## Uso
 
-Acesse a [demo online](https://vitoriapac.github.io/Extrato/) e selecione **Explorar demonstração** para conhecer o fluxo sem alterar seus dados. Para uso pessoal, saia da demonstração e cadastre a data da prova, a disponibilidade semanal, as disciplinas e os tópicos.
+Acesse a [demo online](https://extratoestudos.com.br) e selecione **Explorar demonstração** para conhecer o fluxo sem alterar seus dados. Para uso pessoal, saia da demonstração e cadastre a data da prova, a disponibilidade semanal, as disciplinas e os tópicos.
 
 No assistente inicial, você pode carregar um edital do catálogo, importar um arquivo JSON/CSV ou cadastrar conteúdo manualmente. Os três caminhos retornam à mesma configuração e usam a proposta real do planejamento. Se nenhuma atividade estiver elegível, a confirmação fica bloqueada até revisar o esforço, os pré-requisitos ou a disponibilidade.
 
@@ -212,7 +212,7 @@ O motor de repetição espaçada (`src/domain/notebook/error-notebook-engine.ts`
 
 ## Instalação como PWA
 
-No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
+No Chrome ou Edge, abra a versão publicada e use a opção **Instalar Extrato de Estudos** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
 
 Quando uma nova versão é publicada, o Service Worker ativa o cache atual e remove caches anteriores. O catálogo de editais é carregado sob demanda ao abrir o assistente ou o importador; abra um desses fluxos enquanto estiver online para deixá-lo disponível offline neste navegador.
 
@@ -290,7 +290,7 @@ Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós
 
 A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP.
 
-O histórico de evolução e entregas do StudyTrack foi consolidado em [Planos Concluídos](docs/PLANOS-CONCLUIDOS.md) e mapeado em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), com todas as fases anteriores 100% concluídas, testadas e integradas:
+O histórico de evolução e entregas do Extrato de Estudos foi consolidado em [Planos Concluídos](docs/PLANOS-CONCLUIDOS.md) e mapeado em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), com todas as fases anteriores 100% concluídas, testadas e integradas:
 
 1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso (Concluída):** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANOS-CONCLUIDOS.md](docs/PLANOS-CONCLUIDOS.md#2-plano-de-primeiro-uso-guiado-onboarding-20--ativação)).
 2. **Fase 2 — Inteligência Preditiva & Reta Final (Concluída):** Simulador "E se?" (_What-If Simulator_) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação (ilusão de competência).

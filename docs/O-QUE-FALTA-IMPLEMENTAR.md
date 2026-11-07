@@ -1,6 +1,6 @@
-# Mapeamento do que Falta ser Implementado — StudyTrack
+# Mapeamento do que Falta ser Implementado — Extrato de Estudos
 
-Este documento consolida o histórico de entregas e os próximos horizontes de evolução do **StudyTrack**, registrando a conclusão das 4 Fases do Plano Master de Evolução, os fechamentos de cobertura, as especificações estruturantes para a transição **SaaS Local-First** e o backlog futuro mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
+Este documento consolida o histórico de entregas e os próximos horizontes de evolução do **Extrato de Estudos**, registrando a conclusão das 4 Fases do Plano Master de Evolução, os fechamentos de cobertura, as especificações estruturantes para a transição **SaaS Local-First** e o backlog futuro mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
 
 > [!IMPORTANT]
 > **Roteiro Histórico Consolidado:** O cronograma executivo, histórico e critérios de aceite de todos os planos de desenvolvimento implementados estão unificados e preservados em **[docs/PLANOS-CONCLUIDOS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANOS-CONCLUIDOS.md)**. Todas as 4 fases do plano de evolução e as melhorias subsequentes foram **100% implementadas, testadas e integradas**.
@@ -9,7 +9,7 @@ Este documento consolida o histórico de entregas e os próximos horizontes de e
 
 ## 1. Resumo do Status Atual das Fases e Marcos Técnicos
 
-O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4** sem runtime desnecessário no cliente. A tabela abaixo resume o status de todos os marcos:
+O Extrato de Estudos opera em arquitetura moderna **TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4** sem runtime desnecessário no cliente. A tabela abaixo resume o status de todos os marcos:
 
 |    Fase / Marco     | Título                                          |  Status   | Entregas Principais                                                                                                                                                                                     |
 | :-----------------: | ----------------------------------------------- | :-------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -146,7 +146,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 
 ## 3. Próximos Horizontes de Evolução (Backlog Ativo & Futuro)
 
-O desenvolvimento futuro do StudyTrack desdobra-se em duas trilhas complementares: o avanço analítico e de experiência da aplicação local (*Local-First*) e a infraestrutura de nuvem multi-dispositivo (*SaaS*).
+O desenvolvimento futuro do Extrato de Estudos desdobra-se em duas trilhas complementares: o avanço analítico e de experiência da aplicação local (*Local-First*) e a infraestrutura de nuvem multi-dispositivo (*SaaS*).
 
 ### 3.1. Trilha Local-First: Inteligência, Experiência e Engenharia
 
