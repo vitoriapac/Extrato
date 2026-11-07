@@ -1,3 +1,4 @@
+import { buildAgendaBuckets, describeBucket } from '../../application/reviews/build-agenda-buckets.js';
 import { renderIconSvg } from '../primitives/icon.js';
 export function renderCalendarRead({
   item,
@@ -24,24 +25,15 @@ export function renderCalendarEdit({
   return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ''}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr(draft.week || '')}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${statusOptions}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${reviewOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;
 }
 
-export function renderCalendarIndicators({ items = [], today, daysUntil }: any) {
-  const total = items.length;
-  const overdueItems = items.filter(
-      (item: any) => item.date && item.date < today && item.status !== 'Concluído'
-    ),
-    overdue = overdueItems.length;
-  const calendarOverdue = overdueItems.filter((item: any) => item.origem === 'Calendário').length,
-    agendaOverdue = overdueItems.filter((item: any) => item.origem === 'Agenda de Revisões').length,
-    otherOverdue = overdue - calendarOverdue - agendaOverdue;
-  const todayCount = items.filter((item: any) => item.date === today).length;
-  const upcoming = items.filter((item: any) => {
-    const days = daysUntil(item.date);
-    return days !== null && days > 0 && days <= 7;
-  }).length;
-  return `<div class="kpi-cell"><div class="n">${total}</div><div class="l">Itens no total</div><small>Inclui concluídos</small></div>
-    <div class="kpi-cell ${overdue > 0 ? 'warn' : ''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div><small>Detalhe das atrasadas: Tarefas: ${calendarOverdue} · Revisões: ${agendaOverdue}${otherOverdue ? ' · Outras: ' + otherOverdue : ''}</small></div>
-    <div class="kpi-cell ${todayCount > 0 ? 'ok' : ''}"><div class="n">${todayCount}</div><div class="l">Hoje</div><small>Inclui concluídos</small></div>
-    <div class="kpi-cell"><div class="n">${upcoming}</div><div class="l">Próximos 7 dias</div><small>Inclui concluídos</small></div>`;
+export function renderCalendarIndicators({ items = [], today }: any) {
+  const b = buildAgendaBuckets(items, today);
+  const cell = (cls: string, bucket: typeof b.overdue, label: string, period: string, empty?: string, singular?: string) =>
+    `<div class="kpi-cell ${cls}"><div class="n">${bucket.total}</div><div class="l">${label}</div><small>${describeBucket(bucket, period, empty, singular)}</small></div>`;
+  return (
+    cell(b.overdue.total ? 'warn' : '', b.overdue, 'Vencidas', 'atrasadas', 'Nada atrasado', 'atrasada') +
+    cell(b.today.total ? 'ok' : '', b.today, 'Hoje', 'hoje') +
+    cell('', b.next7, 'Próx. 7 dias', 'nos próximos 7 dias')
+  );
 }
 
 export function renderCalendarMonth({

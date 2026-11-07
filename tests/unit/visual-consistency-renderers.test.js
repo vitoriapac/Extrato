@@ -170,7 +170,7 @@ test('tempos humanos preservam ausência e arredondam somente na apresentação'
   assert.equal(formatStudyMinutes(0), '0 min');
   assert.equal(formatStudyMinuteDelta(-90), '−1 h 30 min');
 });
-test('calendário explica origens do total de atrasos sem modificar registros', () => {
+test('calendário separa vencidas por tipo e período, ignorando concluídos, sem modificar registros', () => {
   const items = [
       { date: '2026-10-01', origem: 'Calendário' },
       { date: '2026-10-02', origem: 'Agenda de Revisões' },
@@ -178,9 +178,9 @@ test('calendário explica origens do total de atrasos sem modificar registros', 
     ],
     before = JSON.stringify(items);
   const html = renderCalendarIndicators({ items, today: '2026-10-04', daysUntil: () => null });
-  assert.match(html, /Tarefas: 1 · Revisões: 1/);
-  assert.match(html, /Inclui concluídos/);
-  assert.match(html, /Detalhe das atrasadas/);
+  assert.match(html, /1 revisão \+ 1 tarefa atrasadas/);
+  assert.match(html, /Vencidas/);
+  assert.doesNotMatch(html, /Inclui concluídos/);
   assert.equal(JSON.stringify(items), before);
 });
 

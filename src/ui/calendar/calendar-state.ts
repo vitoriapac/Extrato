@@ -9,6 +9,7 @@ export function createCalendarState(initial: any = {}) {
       type: initial.filters?.type || '',
     },
     view: initial.view || 'month',
+    viewChosen: Boolean(initial.view),
     visible: Number(initial.visible) || DEFAULT_LIST_VISIBLE_ITEMS,
     editingId: null as string | null,
     draft: null as Record<string, any> | null,
@@ -16,4 +17,10 @@ export function createCalendarState(initial: any = {}) {
     selectedId: null as string | null,
     expandedIds: new Set<string>(),
   };
+}
+
+// Abaixo de 760px a Lista é o padrão inicial; uma visão já escolhida pela usuária sempre vence.
+export function initialCalendarView(state: { view?: string; viewChosen?: boolean }, narrow: boolean) {
+  if (state.viewChosen) return state.view === 'agenda' ? 'agenda' : 'month';
+  return narrow ? 'agenda' : 'month';
 }

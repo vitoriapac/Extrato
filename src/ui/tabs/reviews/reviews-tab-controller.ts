@@ -33,6 +33,7 @@ import {
   reviewBaseDaysFromType,
 } from '../../../domain/reviews.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
+import { isOverdueItem, isTodayItem } from '../../../application/reviews/build-agenda-buckets.js';
 import { runUndoable } from '../../undoable.js';
 
 export interface ReviewsTabControllerContext {
@@ -229,8 +230,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   function getGroupedReviews(rows: ReviewItem[]) {
     const today = todayISO();
     return {
-      overdue: rows.filter(item => item.status !== 'Concluído' && item.date && item.date < today),
-      today: rows.filter(item => item.status !== 'Concluído' && item.date === today),
+      overdue: rows.filter(item => isOverdueItem(item, today)),
+      today: rows.filter(item => isTodayItem(item, today)),
       upcoming: rows.filter(
         item => item.status !== 'Concluído' && (!item.date || item.date > today)
       ),

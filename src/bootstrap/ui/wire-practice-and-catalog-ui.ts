@@ -1,3 +1,4 @@
+import { initialCalendarView } from '../../ui/calendar/calendar-state.js';
 import {
   STATUS_OPTIONS,
   STATUS_CLASS,
@@ -211,7 +212,9 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     document,
   });
   calendarTabController.bindEvents();
-  calendarTabController.setCalendarMobileView('month');
+  calendarTabController.setCalendarMobileView(
+    initialCalendarView(calendarTabController.calendarUiState, window.matchMedia('(max-width:760px)').matches)
+  );
 
   const errorNotebookController = createErrorNotebookController({
     getState,

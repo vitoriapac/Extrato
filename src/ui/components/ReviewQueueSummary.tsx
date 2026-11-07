@@ -12,7 +12,7 @@ export function ReviewQueueSummary({ summary, onTopics, onFlashcards }: {
   return (
     <section aria-label="Próximas revisões" class="border border-border-default bg-surface-card rounded-default p-3 mb-3">
       <h3 class="text-content-primary">Próximas revisões</h3>
-      <p class="text-content-secondary">Resumo geral, independente dos filtros. Tópicos e flashcards têm agendamentos separados.</p>
+      <p class="text-content-secondary">Resumo geral, independente dos filtros. Tópicos e flashcards têm agendamentos separados, e as tarefas de estudo não entram aqui.</p>
       <p>Revisões de tópicos: <strong>{summary.topicsDue}</strong> para hoje ou atrasadas · Próxima data futura: {dateLabel(summary.topicsNext)}.</p>
       <Button variant="secondary" size="touch" onClick={onTopics}>Ver revisões de tópicos</Button>
       <div data-testid="error-notebook-due">

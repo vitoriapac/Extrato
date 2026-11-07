@@ -75,6 +75,7 @@ export function createCalendarController({
     },
     setView(view: string) {
       state.view = view === 'agenda' ? 'agenda' : 'month';
+      state.viewChosen = true;
       refresh();
     },
     select(id: string | null) {
