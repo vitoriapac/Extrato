@@ -254,7 +254,7 @@ O projeto foi modernizado para TypeScript em todo o código-fonte da aplicação
 
 ## Privacidade
 
-A aplicação não possui servidor de dados próprio. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. Quando a sincronização remota opcional via WebDAV é configurada pelo usuário, o backup é cifrado localmente no navegador com AES-GCM de 256 bits (derivado por PBKDF2-SHA256) antes do envio, e nem a senha WebDAV nem a frase secreta de criptografia são salvas em disco. A versão publicada no GitHub Pages serve somente arquivos estáticos.
+A aplicação não possui servidor de dados próprio. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. Quando a sincronização remota opcional via WebDAV é configurada pelo usuário, o backup é cifrado localmente no navegador com AES-GCM de 256 bits (derivado por PBKDF2-SHA256) antes do envio, e nem a senha WebDAV nem a frase secreta de criptografia são salvas em disco (a frase exige 12 caracteres ou mais para enviar). A versão publicada no GitHub Pages serve somente arquivos estáticos.
 
 ## Escopo de concurso e precisão dos dados
 
