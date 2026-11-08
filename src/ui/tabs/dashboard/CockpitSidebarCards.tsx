@@ -73,7 +73,7 @@ export function TodayGoalCard({
               cx="32"
               cy="32"
               r="26"
-              stroke="var(--brand)"
+              stroke={percent < 60 ? 'var(--chart-series-secondary)' : 'var(--brand)'}
               stroke-width="6"
               stroke-linecap="round"
               stroke-dasharray={circumference.toFixed(2)}
@@ -156,9 +156,9 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             <div
               class={`w-full rounded-t transition-all ${
                 d.isPeak
-                  ? 'bg-accent'
+                  ? 'bg-warning-emphasis'
                   : d.isToday
-                    ? 'bg-accent'
+                    ? 'bg-brand'
                     : d.count > 0
                       ? 'bg-brand-secondary opacity-50'
                       : 'bg-surface-subtle'
@@ -213,7 +213,7 @@ export function ConsistencyMiniHeatmapCard({
                     : d.level === 1
                       ? 'bg-green opacity-40'
                       : 'bg-surface-subtle'
-            } ${d.isToday ? 'ring-2 ring-offset-1 ring-green' : ''}`}
+            } ${d.isToday ? 'ring-2 ring-offset-1 ring-amber' : ''}`}
             title={d.title}
           />
         ))}

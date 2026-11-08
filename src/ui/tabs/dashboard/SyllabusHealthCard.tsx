@@ -116,7 +116,7 @@ export function SyllabusHealthCard({
                         />
                       )}
                       <div
-                        class="absolute top-0 bottom-0 w-0.5 bg-content-primary opacity-80"
+                        class="absolute top-0 bottom-0 w-0.5 bg-warning-emphasis"
                         style={{ left: `${subject.target}%` }}
                         title={`Meta: ${subject.target}%`}
                       />

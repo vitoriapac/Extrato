@@ -53,7 +53,7 @@ export function AllocationBar({
           </div>
         </div>
         {flexMinutes > 0 && (
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-accent-emphasis bg-accent-subtle">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle">
             <Icon name="clock" size={12} stroke={2} />
             {formatMinutes(flexMinutes)} livres
           </span>

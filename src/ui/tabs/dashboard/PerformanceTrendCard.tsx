@@ -98,12 +98,12 @@ export function PerformanceTrendCard({
         </div>
 
         {/* Linha de KPIs Resumidos */}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-          <div class="p-2 rounded bg-surface-subtle border border-border-default">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
+          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
             <span class="text-xs text-content-secondary block font-medium">
               Acertos (Questões)
             </span>
-            <span class="text-sm font-semibold font-data text-content-primary">
+            <span class="text-base font-semibold font-data text-content-primary">
               {model.questionAccuracy != null ? `${formatDecimal(model.questionAccuracy)}%` : '—'}
             </span>
             <span class="text-xs text-content-secondary block truncate">
@@ -111,11 +111,11 @@ export function PerformanceTrendCard({
             </span>
           </div>
 
-          <div class="p-2 rounded bg-surface-subtle border border-border-default">
+          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
             <span class="text-xs text-content-secondary block font-medium">
               Média dos Simulados
             </span>
-            <span class="text-sm font-semibold font-data text-content-primary">
+            <span class="text-base font-semibold font-data text-content-primary">
               {model.simulationMean != null ? `${formatDecimal(model.simulationMean)}%` : '—'}
             </span>
             <span class="text-xs text-content-secondary block truncate">
@@ -125,17 +125,17 @@ export function PerformanceTrendCard({
             </span>
           </div>
 
-          <div class="p-2 rounded bg-surface-subtle border border-border-default">
+          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
             <span class="text-xs text-content-secondary block font-medium">
               Meta de Aprovação
             </span>
-            <span class="text-sm font-semibold font-data text-content-primary">
+            <span class="text-base font-semibold font-data text-amber">
               {formatDecimal(model.targetScore)}%
             </span>
             <span class="text-xs text-content-secondary block">Alvo configurado</span>
           </div>
 
-          <div class="p-2 rounded bg-surface-subtle border border-border-default flex flex-col justify-between">
+          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle flex flex-col justify-between">
             <span class="text-xs text-content-secondary block font-medium">
               Situação Atual
             </span>
@@ -161,7 +161,7 @@ export function PerformanceTrendCard({
 
         {/* Gráfico Vetorial ou Estado Inicial */}
         {!hasData ? (
-          <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md flex flex-col items-center justify-center gap-2">
+          <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-default flex flex-col items-center justify-center gap-2">
             <Icon name="chart-line" size={28} class="text-content-secondary opacity-60" />
             <p class="m-0">
               Registre questões ou simulados para acompanhar a curva de aproveitamento.
@@ -197,22 +197,23 @@ export function PerformanceTrendCard({
                 </g>
               ))}
 
-              {/* Linha da Meta de Aprovação */}
+              {/* Linha da Meta de Aprovação em destaque âmbar/laranja */}
               <line
                 x1={padLeft}
                 y1={yTarget}
                 x2={width - padRight}
                 y2={yTarget}
-                class="stroke-content-secondary"
+                stroke="var(--chart-series-secondary)"
                 stroke-dasharray="4 3"
                 stroke-width="1.5"
-                opacity="0.8"
+                opacity="0.9"
               />
               <text
                 x={width - padRight - 2}
                 y={yTarget - 4}
                 text-anchor="end"
-                class="fill-content-secondary text-xs font-data font-semibold"
+                fill="var(--chart-series-secondary)"
+                class="text-xs font-data font-semibold"
               >
                 Meta {formatDecimal(targetScore)}%
               </text>
@@ -220,18 +221,21 @@ export function PerformanceTrendCard({
               {/* Segmentos de Conexão das Questões */}
               {questionSegments}
 
-              {/* Pontos de Questões por Semana */}
+              {/* Pontos de Questões por Semana (abaixo da meta ganham destaque laranja) */}
               {points.map((p: PerformanceTrendPoint, i: number) => {
                 if (p.questionAccuracy === null) return null;
                 const cx = xFor(i);
                 const cy = yFor(p.questionAccuracy);
+                const belowTarget = p.questionAccuracy < targetScore;
                 return (
                   <circle
                     key={`q-dot-${i}`}
                     cx={cx}
                     cy={cy}
                     r="3.5"
-                    class="fill-surface-card stroke-green"
+                    fill={belowTarget ? 'var(--chart-series-secondary)' : 'var(--surface-card)'}
+                    stroke={belowTarget ? 'var(--surface-card)' : 'var(--green)'}
+                    class={`chart-point-interactive ${belowTarget ? '' : 'fill-surface-card stroke-green'}`}
                     stroke-width="2"
                   >
                     <title>{`${p.label}: ${formatDecimal(p.questionAccuracy)}% (${p.questionResolved} questões)`}</title>
@@ -239,7 +243,7 @@ export function PerformanceTrendCard({
                 );
               })}
 
-              {/* Marcadores de Simulados */}
+              {/* Marcadores de Simulados em destaque laranja */}
               {points.map((p: PerformanceTrendPoint, i: number) => {
                 if (p.simulationScore === null) return null;
                 const cx = xFor(i);
@@ -250,7 +254,9 @@ export function PerformanceTrendCard({
                       cx={cx}
                       cy={cy}
                       r="5.5"
-                      class="fill-accent stroke-surface-card"
+                      fill="var(--chart-series-secondary)"
+                      stroke="var(--surface-card)"
+                      class="chart-point-interactive"
                       stroke-width="2"
                     >
                       <title>{`${p.simulationName || 'Simulado'} (${p.label}): ${formatDecimal(p.simulationScore)}%`}</title>
@@ -285,11 +291,11 @@ export function PerformanceTrendCard({
               <span>Questões</span>
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-accent inline-block" />
-              <span>Simulados</span>
+              <span class="w-2 h-2 rounded-full bg-warning-emphasis inline-block" />
+              <span>Simulados / atenção</span>
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-3 border-b border-dashed border-content-secondary inline-block" />
+              <span class="w-3 border-b border-dashed border-amber inline-block" />
               <span>Meta ({formatDecimal(targetScore)}%)</span>
             </span>
           </div>

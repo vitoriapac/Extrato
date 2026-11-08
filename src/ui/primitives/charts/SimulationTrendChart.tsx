@@ -41,30 +41,30 @@ export function SimulationTrendChart({
       aria-label={label}
     >
       {/* Cards de KPIs Rápidos */}
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-        <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-          <span class="text-content-secondary text-xs block mb-0.5">Média Recente</span>
-          <div class="text-base font-bold font-mono text-content-primary">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-0.5">Média Recente</span>
+          <div class="text-base font-semibold font-data text-content-primary">
             {averageScore !== null ? `${averageScore}%` : '—'}
           </div>
         </div>
 
-        <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-          <span class="text-content-secondary text-xs block mb-0.5">Melhor Nota</span>
-          <div class="text-base font-bold font-mono text-success-emphasis">
+        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-0.5">Melhor Nota</span>
+          <div class="text-base font-semibold font-data text-success-emphasis">
             {bestScore !== null ? `${bestScore}%` : '—'}
           </div>
         </div>
 
-        <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-          <span class="text-content-secondary text-xs block mb-0.5">Último Simulado</span>
+        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-0.5">Último Simulado</span>
           <div class="flex items-center gap-1.5">
-            <span class="text-base font-bold font-mono text-content-primary">
+            <span class="text-base font-semibold font-data text-content-primary">
               {latestScore !== null ? `${latestScore}%` : '—'}
             </span>
             {scoreDelta !== null && (
               <span
-                class={`inline-flex items-center gap-0.5 text-xs font-mono font-medium ${
+                class={`inline-flex items-center gap-0.5 text-xs font-data font-medium ${
                   scoreDelta > 0
                     ? 'text-success-emphasis'
                     : scoreDelta < 0
@@ -86,9 +86,9 @@ export function SimulationTrendChart({
           </div>
         </div>
 
-        <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-          <span class="text-content-secondary text-xs block mb-0.5">Na Meta (≥ {targetScore}%)</span>
-          <div class="text-base font-bold font-mono text-content-primary">
+        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-0.5">Na Meta (≥ {targetScore}%)</span>
+          <div class="text-base font-semibold font-data text-amber">
             {onTargetCount} de {simulations.length}
           </div>
         </div>
@@ -130,22 +130,23 @@ export function SimulationTrendChart({
             class="text-border-default"
           />
 
-          {/* Linha de Meta Benchmark de Aprovação */}
+          {/* Linha de Meta Benchmark de Aprovação em destaque laranja */}
           <line
             x1={geom.padLeft}
             x2={geom.width - geom.padRight}
             y1={geom.targetY}
             y2={geom.targetY}
-            stroke="var(--accent, #6366f1)"
+            stroke="var(--chart-series-secondary)"
             stroke-width="1.5"
             stroke-dasharray="4 3"
-            opacity={0.8}
+            opacity={0.9}
           />
           <text
             x={geom.width - geom.padRight}
             y={geom.targetY - 4}
             text-anchor="end"
-            class="text-xs fill-accent-emphasis font-medium"
+            fill="var(--chart-series-secondary)"
+            class="text-xs font-data font-semibold"
           >
             Meta: {targetScore}%
           </text>
@@ -160,8 +161,7 @@ export function SimulationTrendChart({
             <path
               d={geom.pathD}
               fill="none"
-              stroke="currentColor"
-              class="text-content-primary"
+              stroke="var(--chart-series-primary)"
               stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -171,7 +171,7 @@ export function SimulationTrendChart({
           {/* Pontos de cada simulado */}
           {geom.points.map(pt => {
             const isTarget = pt.onTarget;
-            const ptColor = isTarget ? 'var(--color-success, #10b981)' : 'var(--color-warning, #f59e0b)';
+            const ptColor = isTarget ? 'var(--status-positive)' : 'var(--chart-series-secondary)';
 
             return (
               <g key={`sim-pt-${pt.index}`}>
@@ -179,7 +179,7 @@ export function SimulationTrendChart({
                   cx={pt.x}
                   cy={pt.y}
                   r={5}
-                  fill="var(--surface-ground, #fff)"
+                  fill="var(--surface-card)"
                   stroke={ptColor}
                   stroke-width="2.5"
                   class="cursor-pointer hover:r-6 transition-all chart-point-interactive"
@@ -222,7 +222,7 @@ export function SimulationTrendChart({
           Abaixo da meta
         </span>
         <span class="flex items-center gap-1.5">
-          <span class="w-3 h-0.5 border-t border-dashed border-accent-emphasis"></span>
+          <span class="w-3 h-0.5 border-t border-dashed border-amber"></span>
           Linha de aprovação ({targetScore}%)
         </span>
       </div>

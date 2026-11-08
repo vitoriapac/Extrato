@@ -30,7 +30,7 @@ export function TodayWeeklyRhythmCard({
   const columns: ColumnChartColumn[] = days.map((day, idx) => ({
     value: day.studiedMinutes,
     title: `${day.dayName} (${day.isToday ? 'Hoje' : day.dateISO}): ${day.studiedFormatted}`,
-    tone: day.isToday ? 'primary' : day.isPast && day.studiedMinutes > 0 ? 'soft' : 'muted',
+    tone: day.isToday ? 'attention' : day.isPast && day.studiedMinutes > 0 ? 'primary' : 'muted',
     separated: idx > 0,
   }));
 

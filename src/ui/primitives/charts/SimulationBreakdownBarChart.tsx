@@ -32,7 +32,7 @@ export function SimulationBreakdownBarChart({
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Raio-X do Simulado</span>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-medium text-accent-emphasis bg-accent-subtle">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-data font-semibold text-warning-emphasis bg-warning-subtle">
             Média da prova: {overallScore}%
           </span>
         </div>
@@ -98,9 +98,9 @@ export function SimulationBreakdownBarChart({
                   style={{ width: `${widthPct}%` }}
                   title={`${row.subjectName}: ${row.score}%`}
                 />
-                {/* Marcador vertical da média do simulado */}
+                {/* Marcador vertical da média do simulado em destaque laranja */}
                 <div
-                  class="absolute top-0 bottom-0 w-0.5 bg-content-primary/70 z-10"
+                  class="absolute top-0 bottom-0 w-0.5 bg-warning-emphasis z-10"
                   style={{ left: `${overallScore}%` }}
                   title={`Média geral: ${overallScore}%`}
                 />

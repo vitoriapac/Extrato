@@ -49,7 +49,7 @@ export function WeeklyTrendChart({
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Evolução Semanal</span>
-          <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${trendBadgeClass}`}>
+          <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${trendBadgeClass}`}>
             <Icon name={trendIcon} size={12} stroke={2.5} />
             {trendLabel}
             {trendDelta !== null && ` (${trendDelta > 0 ? '+' : ''}${trendDelta} p.p.)`}
@@ -62,11 +62,11 @@ export function WeeklyTrendChart({
             Volume
           </span>
           <span class="flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-0.5 bg-accent-emphasis"></span>
+            <span class="inline-block w-2.5 h-0.5 bg-warning-emphasis"></span>
             Precisão
           </span>
           {averageAccuracy !== null && (
-            <span class="font-mono font-medium text-content-primary pl-1 border-l border-border-subtle">
+            <span class="font-data font-semibold text-content-primary pl-1 border-l border-border-subtle">
               Média: {averageAccuracy}%
             </span>
           )}
@@ -129,12 +129,12 @@ export function WeeklyTrendChart({
             </rect>
           ))}
 
-          {/* Curva de precisão contínua */}
+          {/* Curva de precisão contínua em destaque âmbar/laranja */}
           {geom.pathD && (
             <path
               d={geom.pathD}
               fill="none"
-              stroke="var(--accent, #6366f1)"
+              stroke="var(--chart-series-secondary)"
               stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -160,8 +160,8 @@ export function WeeklyTrendChart({
                   cx={it.x}
                   cy={it.y}
                   r={4}
-                  fill="var(--surface-ground, #fff)"
-                  stroke="var(--accent, #6366f1)"
+                  fill="var(--surface-card)"
+                  stroke="var(--chart-series-secondary)"
                   stroke-width="2"
                   class="cursor-pointer hover:r-5 transition-all chart-point-interactive"
                 >

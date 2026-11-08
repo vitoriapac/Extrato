@@ -76,13 +76,16 @@ export function renderPlannedVsActualChart(
 
       const isAchieved = week.plannedMinutes > 0 && week.studiedMinutes >= week.plannedMinutes;
       const actualToneClass = isAchieved ? 'chart-bar-achieved' : 'chart-bar-actual';
+      const actualFill = isAchieved
+        ? 'var(--chart-series-primary, var(--color-primary, currentColor))'
+        : 'var(--chart-series-secondary)';
 
       return `<g class="chart-week-group" tabindex="0" role="group" aria-label="${escapeHtml(tooltip)}">
         <title>${escapeHtml(tooltip)}</title>
         <rect x="${plannedX.toFixed(1)}" y="${plannedY.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${plannedH.toFixed(1)}" rx="2" class="chart-bar-planned" fill="currentColor" fill-opacity="0.25">
           <title>Planejado: ${formatStudyMinutes(week.plannedMinutes)}</title>
         </rect>
-        <rect x="${actualX.toFixed(1)}" y="${actualY.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${actualH.toFixed(1)}" rx="2" class="${actualToneClass}" fill="var(--color-primary, currentColor)">
+        <rect x="${actualX.toFixed(1)}" y="${actualY.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${actualH.toFixed(1)}" rx="2" class="${actualToneClass}" fill="${actualFill}">
           <title>Realizado: ${formatStudyMinutes(week.studiedMinutes)}</title>
         </rect>
         <text x="${(groupX + groupWidth / 2).toFixed(1)}" y="${(height - 8).toFixed(1)}" text-anchor="middle" class="chart-axis-label" font-size="12">${escapeHtml(dateLabel.split(' ')[0])}${week.inProgress ? '*' : ''}</text>
@@ -93,7 +96,8 @@ export function renderPlannedVsActualChart(
   return `<div class="planned-actual-chart" role="region" aria-label="Gráfico semanal de planejado e realizado">
     <div class="planned-actual-chart__legend flex items-center justify-end gap-4 text-xs text-content-secondary mb-2" aria-hidden="true">
       <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-content-primary/25"></span> Planejado</span>
-      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-primary"></span> Realizado</span>
+      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-primary"></span> Realizado (na meta)</span>
+      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-warning-emphasis"></span> Em curso / abaixo</span>
     </div>
     <div class="planned-actual-chart__canvas overflow-x-auto">
       <svg viewBox="0 0 ${width} ${height}" class="w-full min-w-[540px] max-w-full" role="img" aria-label="Comparação semanal entre carga planejada e realizada">

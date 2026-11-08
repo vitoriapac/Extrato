@@ -310,22 +310,22 @@ export function ActivityHeatmap({
           </div>
 
           {/* Card de Insights Circadianos */}
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border-subtle text-xs">
-            <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-              <span class="text-content-secondary text-xs block">Horário de Maior Foco</span>
-              <strong class="text-sm font-mono text-content-primary">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-border-subtle text-xs">
+            <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+              <span class="text-content-secondary text-xs font-medium block mb-0.5">Horário de Maior Foco</span>
+              <strong class="text-base font-semibold font-data text-amber">
                 {hoursVisual.peakHour !== null ? `${String(hoursVisual.peakHour).padStart(2, '0')}:00` : '—'}
               </strong>
             </div>
-            <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-              <span class="text-content-secondary text-xs block">Dia Mais Produtivo</span>
-              <strong class="text-sm font-medium text-content-primary">
+            <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+              <span class="text-content-secondary text-xs font-medium block mb-0.5">Dia Mais Produtivo</span>
+              <strong class="text-base font-semibold text-content-primary">
                 {hoursVisual.peakWeekday || '—'}
               </strong>
             </div>
-            <div class="p-2.5 rounded-default bg-surface-ground border border-border-subtle">
-              <span class="text-content-secondary text-xs block">Tempo Total Mapeado</span>
-              <strong class="text-sm font-mono text-content-primary">
+            <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
+              <span class="text-content-secondary text-xs font-medium block mb-0.5">Tempo Total Mapeado</span>
+              <strong class="text-base font-semibold font-data text-content-primary">
                 {formatDecimal(hoursVisual.totalStudyMinutes / 60, 1)}h
               </strong>
             </div>

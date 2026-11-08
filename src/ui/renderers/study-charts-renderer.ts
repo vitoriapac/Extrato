@@ -80,7 +80,7 @@ export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatD
     .join('');
   const targetLine =
     targetSeconds > 0
-      ? `<line x1="${padL}" y1="${yFor(targetSeconds)}" x2="${W - padR}" y2="${yFor(targetSeconds)}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="5 4"><title>Meta diária: ${formatDuration(targetSeconds)}</title></line>`
+      ? `<line x1="${padL}" y1="${yFor(targetSeconds)}" x2="${W - padR}" y2="${yFor(targetSeconds)}" stroke="var(--chart-series-secondary)" stroke-width="1.5" stroke-dasharray="5 4"><title>Meta diária: ${formatDuration(targetSeconds)}</title></line>`
       : '';
   return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${targetLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`;
 }

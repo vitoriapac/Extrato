@@ -111,7 +111,7 @@ export function AllocationBalanceGrid({
                           style={{ width: `${timeWidth}%` }}
                         />
                         <div
-                          class="absolute top-0 bottom-0 w-0.5 bg-content-primary"
+                          class="absolute top-0 bottom-0 w-0.5 bg-warning-emphasis"
                           style={{ left: `${weightMarker}%` }}
                           title={`Alvo (Peso): ${row.examWeightPercent}%`}
                         />
