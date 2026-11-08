@@ -25,6 +25,7 @@ Extrato de Estudos é uma aplicação web para planejar estudos, registrar sess�
 - Índice de prontidão, projeções por faixa e análise multidimensional alocados na aba Desempenho, garantindo profundidade analítica contextual sem sobrecarregar a Visão Geral.
 - Diagnóstico de erros e alertas com motivo e ação recomendada.
 - Aba Desempenho com comparação de períodos, disciplinas, questões, simulados, prontidão e consistência; navegação contextual até o diagnóstico.
+- Resumo Rápido da Última Semana (Últimos 7 dias × Semana anterior): ao abrir a aba Desempenho, exibe uma leitura imediata em três parágrafos com linguagem simples (constância/ritmo, prática/matérias em destaque e próximos passos com indicação de abas), acompanhada de mini-gráfico comparativo SVG (Tempo de estudo, Questões feitas e Taxa de acerto) e atalhos híbridos; na aba inicial (Visão Geral / Início), apresenta uma versão enxuta de um parágrafo com atalho direto para Desempenho.
 - Aderência separa volume, crédito ao plano e execução prioritária; fechamentos congelados preservam a interpretação histórica. Meta pessoal opcional de 50–100%, com contexto de execução na Trajetória.
 - Diagnóstico consolidado por tópico ou disciplina, próxima melhor ação, prévia do plano e confirmação antes de salvar.
 - Resultado mensurável das recomendações, comparando métricas antes e depois.

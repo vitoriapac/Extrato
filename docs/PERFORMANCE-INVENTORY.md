@@ -26,6 +26,7 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 | Alinhamento Plano × Impacto no Edital | Planejamento → Resumo da semana | `buildPlanImpactAlignmentVisual`, `renderPlanImpactAlignment` | Planos da semana e relevância do edital | Planejamento: barras duplas contrastantes de esforço vs. relevância e diagnóstico de alinhamento. |
 | Capacidade Semanal e Mix Pedagógico | Planejamento → Plano até a prova | `buildWeeklyAllocationBarVisual`, `AllocationBar` | Plano semanal (confirmado e proposta) | Planejamento: barra segmentada contínua com cores das disciplinas e divisão Teoria / Questões / Revisão. |
 | Régua da Jornada e Fases até a Prova | Planejamento → Prova e ritmo | `buildPhaseRoadmapVisual`, `PhaseRoadmapTimeline` | Data da prova e cronograma de estudo | Planejamento: contagem regressiva, progresso decorrido e 4 fases pedagógicas de preparação. |
+| Resumo da Última Semana (3 parágrafos + mini-gráfico e versão de 1 parágrafo) | Desempenho → Visão geral `.performance-weekly-brief` e Visão Geral `#overviewClosingNote` | `buildWeeklyPerformanceBrief`, `renderWeeklyPerformanceBriefCard` | Janela fixa móvel dos últimos 7 dias (`[hoje - 6, hoje]`) comparada aos 7 dias anteriores (`[hoje - 13, hoje - 7]`) no concurso ativo | Desempenho abre com 3 parágrafos em linguagem acessível, mini-gráfico SVG (Tempo de estudo, Questões feitas, Taxa de acerto) e atalhos híbridos para abas/subseções; Visão Geral exibe síntese de 1 parágrafo com atalho para Desempenho. |
 
 ## Definições para os primeiros três pacotes
 
@@ -34,7 +35,7 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 - **Prontidão:** usar apenas retratos salvos no histórico. O valor atual pode aparecer separado; diferenças exigem algoritmo, pesos e fatores disponíveis compatíveis. Não recalcular retrospectivamente.
 - **Precisão:** acertos divididos por questões pessoais resolvidas no período; provas históricas importadas não entram. Sem questões, o valor é ausente.
 - **Tempo:** soma da duração das sessões do período. A diferença em relação ao período anterior só aparece quando a comparação estiver ativa.
-- **Aderência de carga:** minutos estudados divididos pelos minutos planejados válidos; sem plano, é ausente. Pode ultrapassar 100% e deve ser identificado como excedente, não truncado.
+- **Volume de carga:** minutos estudados divididos pelos minutos planejados válidos; sem plano, é ausente. Pode ultrapassar 100% e deve ser identificado como excedente, não truncado.
 - **Aderência estratégica:** créditos de sessões vinculadas a itens prioritários divididos pelos minutos prioritários planejados, conforme `buildStrategicExecution`. Sem snapshot/classificação suficiente, mostrar ausência e cobertura, nunca derivar da aderência de carga.
 - **Principais mudanças:** apenas séries observáveis e comparáveis no período; até cinco itens iniciais. Sem evidência, explicar o dado faltante.
 
