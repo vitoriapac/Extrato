@@ -33,7 +33,7 @@ function renderMiniComparisonChart(
       const currentWidth = Math.max(0, Math.min(100, metric.currentBarPct));
       const prevWidth = Math.max(0, Math.min(100, metric.previousBarPct));
       const currentBarFill =
-        metric.trend === 'down' || metric.key === 'accuracy'
+        metric.trend === 'down'
           ? 'var(--chart-series-secondary)'
           : 'var(--chart-series-primary, var(--color-primary, currentColor))';
       const prevMarkerX = ((prevWidth / 100) * 150).toFixed(1);

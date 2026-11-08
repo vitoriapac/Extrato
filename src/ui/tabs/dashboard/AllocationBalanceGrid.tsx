@@ -28,11 +28,14 @@ export function AllocationBalanceGrid({
             <Icon name="scale" size={20} />
           </div>
           <div>
-            <h3 id="allocationGridTitle" class="text-base font-semibold text-content-primary m-0">
-              Balanço: Tempo Investido vs. Peso no Edital
-            </h3>
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 id="allocationGridTitle" class="text-base font-semibold text-content-primary m-0">
+                Balanço: Tempo Investido vs. Peso no Edital
+              </h3>
+              <Badge variant="default">Janela fixa · 30 dias</Badge>
+            </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Últimos 30 dias ({totalHours.toLocaleString('pt-BR')}h) comparados com a relevância na prova
+              Últimos 30 dias ({totalHours.toLocaleString('pt-BR')}h) comparados com a relevância na prova (independente do filtro de período acima)
             </p>
           </div>
         </div>

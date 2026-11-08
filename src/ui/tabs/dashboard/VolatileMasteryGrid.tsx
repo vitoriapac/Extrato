@@ -63,7 +63,7 @@ export function VolatileMasteryGrid({
           {volatileTopics.map(item => (
             <div
               key={item.topicId}
-              class="p-3 rounded-default border border-border-subtle bg-surface-elevated hover:border-border-strong transition-all flex flex-col justify-between"
+              class="p-3 rounded-default border-t border-border-subtle bg-surface-subtle/50 flex flex-col justify-between"
             >
               <div>
                 <div class="flex items-start justify-between gap-2 mb-1.5">
@@ -81,11 +81,11 @@ export function VolatileMasteryGrid({
                 <div class="grid grid-cols-2 gap-2 p-2 rounded bg-surface-subtle text-xs mb-2">
                   <div>
                     <span class="text-xs text-content-secondary block uppercase">Logo após o estudo</span>
-                    <span class="font-bold font-mono text-green text-sm">{item.initialAccuracy}%</span>
+                    <span class="font-semibold font-mono text-green text-sm">{item.initialAccuracy}%</span>
                   </div>
                   <div class="border-l border-border-subtle pl-2">
                     <span class="text-xs text-content-secondary block uppercase">Após {item.daysBetweenAssessments} dias</span>
-                    <span class="font-bold font-mono text-red text-sm">{item.spacedAccuracy}%</span>
+                    <span class="font-semibold font-mono text-red text-sm">{item.spacedAccuracy}%</span>
                   </div>
                 </div>
 

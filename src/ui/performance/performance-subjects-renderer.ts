@@ -63,7 +63,7 @@ export function renderPerformanceSubjects(
           <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red inline-block"></span>Críticas: ${counts.critical}</span>
         </div>
       </div>
-      ${renderPerformanceDetails('Ver matriz em esferas', `<div class="mt-3 overflow-x-auto">${matrixChart}</div>`)}
+      <div class="mt-3 overflow-x-auto">${matrixChart}</div>
     </section>`;
   }
 

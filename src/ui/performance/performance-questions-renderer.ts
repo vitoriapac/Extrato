@@ -96,9 +96,9 @@ export function renderPerformanceQuestions({
         <div class="lg:col-span-2 overflow-x-auto">
           ${multiChart}
         </div>
-        <div class="bg-surface-card p-4 rounded-default border border-border-default">
+        <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <div class="mb-3">
-            <span class="text-3xl font-bold font-data text-content-primary">${msp.overallAccuracy ?? '—'}%</span>
+            <span class="text-3xl font-semibold font-data text-content-primary">${msp.overallAccuracy ?? '—'}%</span>
             <p class="text-xs text-content-secondary m-0">${msp.totalResolved} questões · ${msp.totalCorrect} acertos</p>
             <span class="text-micro font-medium uppercase tracking-wider text-content-secondary mt-1 inline-block">Média de desempenho</span>
           </div>

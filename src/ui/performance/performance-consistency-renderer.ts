@@ -62,9 +62,9 @@ export function renderPerformanceConsistency(
         <div class="lg:col-span-2 overflow-x-auto">
           ${chart}
         </div>
-        <div class="bg-surface-card p-4 rounded-default border border-border-default">
+        <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <div class="mb-3">
-            <span class="text-2xl font-bold font-data text-content-primary">${totalHours}h</span>
+            <span class="text-2xl font-semibold font-data text-content-primary">${totalHours}h</span>
             <p class="text-xs text-content-secondary m-0">Tempo total no período selecionado</p>
           </div>
           <ul class="m-0 p-0 list-none space-y-1">
@@ -102,7 +102,7 @@ export function renderPerformanceConsistency(
         <div class="flex justify-center p-3">
           ${donut}
         </div>
-        <div class="bg-surface-card p-4 rounded-default border border-border-default">
+        <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">Divisão da carga horária</h4>
           <ul class="m-0 p-0 list-none space-y-1">
             ${legend}
@@ -112,5 +112,5 @@ export function renderPerformanceConsistency(
     </section>`;
   }
 
-  return `${timelineHtml}${distributionHtml}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}${renderFocusByShift(model.focusByShift)}${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
+  return `${timelineHtml}${distributionHtml}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}<div id="shiftEnergyMount" class="mt-4">${renderFocusByShift(model.focusByShift)}</div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
 }

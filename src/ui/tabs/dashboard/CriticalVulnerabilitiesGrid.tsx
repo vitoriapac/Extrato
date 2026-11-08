@@ -73,7 +73,7 @@ export function CriticalVulnerabilitiesGrid({
           {vulnerabilities.map(item => (
             <div
               key={item.topicId}
-              class="p-3 rounded-default border border-border-subtle bg-surface-elevated hover:border-border-strong transition-all flex flex-col justify-between"
+              class="p-3 rounded-default border-t border-border-subtle bg-surface-subtle/50 flex flex-col justify-between"
             >
               <div>
                 <div class="flex items-start justify-between gap-2 mb-1.5">
@@ -90,7 +90,7 @@ export function CriticalVulnerabilitiesGrid({
 
                 <div class="flex items-center justify-between text-xs mb-1.5">
                   <span class="text-content-secondary">Domínio pessoal:</span>
-                  <span class="font-bold font-mono text-amber">
+                  <span class="font-semibold font-mono text-amber">
                     {item.mastery}%
                     <span class="text-content-tertiary font-normal ml-1">
                       (Meta: {item.target}%)

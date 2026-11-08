@@ -45,10 +45,10 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
           return (
             <div
               key={shift.shift}
-              class={`p-3.5 rounded-default border transition-all ${
+              class={`p-3.5 rounded-default border-t transition-all ${
                 shift.isPeak
-                  ? 'border-brand bg-surface-elevated ring-1 ring-brand/20'
-                  : 'border-border-subtle bg-surface-card'
+                  ? 'border-brand bg-surface-subtle/60 ring-1 ring-brand/20'
+                  : 'border-border-subtle bg-surface-subtle/30'
               }`}
             >
               <div class="flex items-center justify-between gap-1 mb-2">
@@ -82,7 +82,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
 
                 <div class="flex justify-between items-center text-content-secondary pt-1">
                   <span>Precisão em questões:</span>
-                  <span class="font-mono font-bold text-content-primary">
+                  <span class="font-mono font-semibold text-content-primary">
                     {shift.averageAccuracy !== null ? `${shift.averageAccuracy}%` : '—'}
                   </span>
                 </div>

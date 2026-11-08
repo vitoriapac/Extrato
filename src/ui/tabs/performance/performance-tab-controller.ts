@@ -126,9 +126,31 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const target = doc.getElementById('performancePage');
     if (!target) return;
 
+    const panel = doc.getElementById('panel-desempenho');
     const examHub = doc.getElementById('examIntelligenceHub');
     const parking = doc.getElementById('examIntelligenceParking');
     if (examHub && parking && examHub.parentElement !== parking) parking.append(examHub);
+
+    const readinessCard = doc.getElementById('performanceReadinessCard');
+    const decisionDetails = doc.getElementById('performanceDecisionDetails');
+    const todayAnalysisDetails = panel?.querySelector?.('.today-analysis-details') || null;
+    const gapsDetails = doc.getElementById('desempenho-gaps');
+    const progressSection = doc.getElementById('performance-progress');
+    const studyDetails = doc.getElementById('desempenho-study');
+    if (panel && typeof panel.append === 'function') {
+      for (const node of [
+        readinessCard,
+        decisionDetails,
+        todayAnalysisDetails,
+        gapsDetails,
+        progressSection,
+        studyDetails,
+      ]) {
+        if (node && node.parentElement && node.parentElement !== panel) {
+          panel.append(node);
+        }
+      }
+    }
 
     const state = deps.getState();
     const today = todayISO();
@@ -257,6 +279,22 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (examSection) {
       target.querySelector('#examIntelligenceMount')?.append(examHub!);
       if (deps.renderExamIntelligenceSection) deps.renderExamIntelligenceSection();
+    } else if (performanceViewState.section === 'overview') {
+      const readinessMount = target.querySelector('#performanceReadinessMount');
+      if (readinessMount && readinessCard) readinessMount.append(readinessCard);
+      const overviewMount = target.querySelector('#performanceOverviewSupplementalMount');
+      if (overviewMount) {
+        for (const node of [decisionDetails, todayAnalysisDetails, gapsDetails]) {
+          if (node) overviewMount.append(node);
+        }
+      }
+    } else if (performanceViewState.section === 'history') {
+      const historyMount = target.querySelector('#performanceHistorySupplementalMount');
+      if (historyMount) {
+        for (const node of [progressSection, studyDetails]) {
+          if (node) historyMount.append(node);
+        }
+      }
     }
 
     doc.getElementById('panel-desempenho')?.setAttribute?.('data-performance-view', performanceViewState.section);

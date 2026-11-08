@@ -49,7 +49,7 @@ export function renderPerformanceSection(
     case 'consistency':
       return renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml });
     case 'history':
-      return '<p class="analytics-note">Conquistas, tempo de estudo e o histórico de sessões. Não entram no cálculo de risco.</p>';
+      return '<p class="analytics-note">Conquistas, tempo de estudo e o histórico de sessões consolidados. Esses registros preservam sua memória de estudo e não alteram o cálculo de risco.</p><div id="performanceHistorySupplementalMount" class="performance-history-supplemental space-y-4 mt-3"></div>';
     default:
       return '';
   }

@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=7a2ea0c997f4">
-<link rel="stylesheet" href="styles/app.css?v=7a2ea0c997f4">
+<link rel="stylesheet" href="styles/tailwind.css?v=23dc94ef6a48">
+<link rel="stylesheet" href="styles/app.css?v=23dc94ef6a48">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -184,8 +184,8 @@
       <header class="module-heading module-heading--compact"><h3 class="module-heading__title" id="performanceReadinessTitle">Detalhamento dos fatores e calibração de projeções</h3></header>
       <div id="approvalDashboard"></div>
     </section>
-    <details class="decision-fold mt-4" id="performanceDecisionDetails" data-remember="performance-decision">
-      <summary>Decisão pedagógica: balanço, radar e retenção</summary>
+    <details class="decision-fold mt-4" id="performanceDecisionDetails" data-remember="performance-decision" open>
+      <summary>Prioridades pedagógicas: balanço de carga, vulnerabilidades e retenção</summary>
       <div class="cockpit-decision-grids space-y-4">
         <div id="cockpitAllocationMount"></div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
@@ -233,43 +233,44 @@
         <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
       </div>
     </div>
-    <details class="chart-card today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
-      <summary>Ver resumo, diagnóstico e replanejamento</summary>
+    <details class="today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
+      <summary>Diagnóstico consolidado do edital e replanejamento da semana</summary>
       <div class="today-analysis-grid">
-        <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
-        <section class="chart-card"><h3>Extrato Diagnóstico do Edital</h3><div id="diagnosisCenter"></div></section>
-        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde redistribuir o saldo de horas pendente. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
+        <section class="analytics-card executive-summary-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Resumo executivo</h3></header><div id="executiveSummary"></div></section>
+        <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Extrato Diagnóstico do Edital</h3></header><div id="diagnosisCenter"></div></section>
+        <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento da semana</h3><p class="module-heading__description">Compara execução e planejamento e sugere onde redistribuir o saldo de horas pendente. Nenhum ajuste é aplicado sem confirmação.</p></header><div id="weeklyReplan"></div></section>
       </div>
     </details>
-    <details class="chart-card desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
-      <summary>Ver lacunas, replanejamento e retenção</summary>
+    <details class="desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
+      <summary>Mapa de lacunas por tópico, retenção e ajuste pós-simulado</summary>
       <div class="today-analysis-grid">
       <section class="analytics-card" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Gravidade combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A ordem de estudo segue a prioridade da Próxima melhor ação.</p></header><div id="gapMapDashboard"></div></section>
       <section class="analytics-card" data-advanced="Replanejamento pós-simulado"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
-    <details class="overview-fold">
-      <summary>Retenção por tópico</summary>
-      <div id="topicRetentionDashboard"></div>
-      <details class="performance-details"><summary>Como a retenção é calculada?</summary><p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
-    </details>
+      <section class="performance-retention-card" aria-labelledby="performanceRetentionTitle">
+        <header class="module-heading module-heading--compact">
+          <h3 class="module-heading__title" id="performanceRetentionTitle">Retenção por tópico</h3>
+          <p class="module-heading__description">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p>
+        </header>
+        <div id="topicRetentionDashboard"></div>
+      </section>
       </div>
     </details>
-    <details class="chart-card desempenho-extra-details" id="desempenho-study" data-advanced="Estudo e sessões">
-      <summary>Ver tempo de estudo e histórico de sessões</summary>
+    <details class="desempenho-extra-details" id="desempenho-study" data-advanced="Estudo e sessões">
+      <summary>Tempo de estudo por disciplina e extrato de sessões</summary>
     <div class="chart-card">
       <h3>Tempo de estudo</h3>
-      <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
+      <div class="stat-grid mt-4 mb-0" id="studyTimeStats"></div>
       <header class="study-distribution-heading"><h3>Distribuição por disciplina</h3><div class="action-group"><button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button></div></header>
       <div id="subjectHoursBars"></div>
-      <div id="shiftEnergyMount"></div>
     </div>
 
     <div class="chart-card" id="studySessionsCard">
       <div class="section-head">
-        <h3 style="margin:0;">Extrato de Lançamentos</h3>
+        <h3 class="m-0">Extrato de Lançamentos</h3>
         <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
       </div>
       <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-filter icon-inline" aria-hidden="true"><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227"></path></svg>Filtros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></button>
-      <div class="cal-filters responsive-filters" id="studySessionsFilters" style="margin-top:14px;">
+      <div class="cal-filters responsive-filters mt-3.5" id="studySessionsFilters">
         <label for="studySessionsPeriod" class="sr-only">Período do histórico de sessões</label>
         <select class="select-control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
@@ -1042,7 +1043,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=7a2ea0c997f4"></script>
+  <script src="src/app.bundle.js?v=23dc94ef6a48"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
