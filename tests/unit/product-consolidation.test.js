@@ -139,10 +139,8 @@ test('visão geral de desempenho orienta investigação antes do histórico sem 
     formatDate: value => value,
     escapeHtml: value => String(value),
   });
-  assert.ok(html.indexOf('Resumo interpretativo') < html.indexOf('Investigar o resultado'));
-  assert.ok(html.indexOf('Investigar o resultado') < html.indexOf('Prontidão ao longo do tempo'));
-  for (const section of ['subjects', 'questions', 'simulations', 'consistency'])
-    assert.match(html, new RegExp(`data-performance-investigate="${section}"`));
+  assert.ok(html.indexOf('Resumo interpretativo') < html.indexOf('Prontidão ao longo do tempo'));
+  assert.doesNotMatch(html, /Investigar o resultado/);
   assert.match(html, /não é uma probabilidade de aprovação/);
   assert.match(html, /Sem plano no período/);
   assert.deepEqual(model, before);

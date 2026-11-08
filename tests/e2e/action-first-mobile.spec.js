@@ -43,6 +43,7 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
     page.locator('#studyRecommendation .recommendation-actions .btn').first()
   ).toBeVisible();
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await page.locator('.today-analysis-details > summary').click();
   const diagnosisActions = page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
   await expect(diagnosisActions.first()).toBeVisible();
@@ -85,6 +86,7 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
       .screenshot({ path: test.info().outputPath(`today-plan-first-${width}.png`) });
   }
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await expect(page.locator('.today-analysis-details')).not.toHaveAttribute('open', '');
   await page.locator('.today-analysis-details > summary').click();
   await expect(page.locator('#diagnosisCenter')).toBeVisible();

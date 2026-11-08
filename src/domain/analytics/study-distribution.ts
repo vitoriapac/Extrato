@@ -98,6 +98,18 @@ export function buildStudyDistributionModel({
   // Ordena por duração decrescente
   rawSlices.sort((a, b) => b.seconds - a.seconds);
 
+  // As 6 maiores ficam nomeadas; o restante vira uma fatia neutra (a paleta tem 8 cores).
+  const MAX_NAMED = 6;
+  if (rawSlices.length > MAX_NAMED + 1) {
+    const rest = rawSlices.splice(MAX_NAMED);
+    rawSlices.push({
+      subjectId: '__outras',
+      subjectName: 'Outras disciplinas',
+      colorSlot: 0,
+      seconds: rest.reduce((sum, item) => sum + item.seconds, 0),
+    });
+  }
+
   let currentRatio = 0;
   const slices: StudyDistributionSlice[] = rawSlices.map(s => {
     const ratio = s.seconds / overallSeconds;

@@ -219,7 +219,7 @@ test('hierarquia da projeção preserva resultado, meta e confiança contextual 
   const model = buildAchievementProjection(input),
     before = JSON.stringify(model),
     html = renderAchievementProjection(model, { escapeHtml });
-  assert.ok(html.indexOf('<span>Simulados comparáveis') < html.indexOf('<span>Meta de nota'));
+  assert.ok(html.indexOf('<span>Acerto em simulados comparáveis') < html.indexOf('<span>Meta de nota'));
   assert.ok(html.indexOf('achievement-projection__metrics') < html.indexOf('Veja a base em'));
   assert.match(html, /decision-explanation/);
   assert.doesNotMatch(html, /<details[^>]*decision-explanation[^>]* open/);

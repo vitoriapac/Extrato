@@ -28,6 +28,12 @@ export function PedagogicalMatrixChart({
     thresholdRetention,
   });
 
+  // Com muitas disciplinas as siglas se sobrepõem: só as 5 de menor domínio recebem rótulo; as demais seguem no tooltip.
+  const labeled = new Set(
+    [...geom.bubbles].sort((a, b) => a.mastery - b.mastery).slice(0, 5).map(b => b.id)
+  );
+  const drawOrder = [...geom.bubbles].sort((a, b) => b.r - a.r);
+
   return (
     <div class={`chart-matrix-wrap ${className}`} tabIndex={0} role="region" aria-label="Gráfico com rolagem horizontal">
       <svg
@@ -131,7 +137,7 @@ export function PedagogicalMatrixChart({
         </text>
 
         {/* Bolhas das Disciplinas */}
-        {geom.bubbles.map(b => (
+        {drawOrder.map(b => (
           <g key={`bubble-${b.id}`}>
             <circle
               class={`chart-matrix__bubble subject-fill-${b.colorSlot}`}
@@ -143,6 +149,7 @@ export function PedagogicalMatrixChart({
             >
               <title>{`${b.name} · Domínio: ${formatDecimal(b.mastery)}% · Retenção: ${formatDecimal(b.retention)}% · Estudo: ${formatDecimal(b.studyMinutes / 60)}h`}</title>
             </circle>
+            {labeled.has(b.id) && (
             <text
               class="chart-matrix__bubble-text"
               x={b.cx}
@@ -151,6 +158,7 @@ export function PedagogicalMatrixChart({
             >
               {b.name.slice(0, 3).toUpperCase()}
             </text>
+            )}
           </g>
         ))}
       </svg>

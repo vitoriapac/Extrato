@@ -15,6 +15,7 @@ async function prepareDemo(page, { width, height, theme = 'light' } = {}) {
 
 async function prepareDiagnosisScreenshot(page) {
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await page.locator('.today-analysis-details > summary').click();
   await page
     .locator('.sticky-shell, .bottom-nav, .skip-link, #demoBanner, #backToTopBtn')

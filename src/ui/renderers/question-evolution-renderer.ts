@@ -84,7 +84,7 @@ export function renderQuestionEvolution(
         'Os totais complementam as barras; não é necessário distinguir cores para consultar os resultados.',
       legend: [
         { label: 'Acertos', tone: 'primary' },
-        { label: 'Erros', tone: 'secondary' },
+        { label: 'Erros', tone: 'error' },
       ],
       chart: '<ol class="question-mix-list">' + rows + '</ol>',
     }),

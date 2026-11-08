@@ -215,7 +215,12 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
+  const openTrajectory = async () => {
+    const fold = page.locator('details.performance-details--trajectory');
+    if (!(await fold.evaluate(node => node.open))) await fold.locator(':scope > summary').click();
+  };
   await activateTab(page, 'desempenho');
+  await openTrajectory();
   const inspect = async stateName => {
     for (const [width, theme] of [
       [390, 'light'],
@@ -282,6 +287,7 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
   await expect(help).toBeFocused();
   await openDemo(page);
   await activateTab(page, 'desempenho');
+  await openTrajectory();
   await inspect('dense-demo');
 });
 
@@ -311,6 +317,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   for (const label of ['Simulados comparáveis', 'Faixa atual', 'Tendência em 30 dias'])
     await expect(metric(label)).toHaveText('—');
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await page.locator('.today-analysis-details > summary').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
   // A fresh start has no subjects, so no study action can be justified yet.
@@ -395,6 +402,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await page.locator('.today-analysis-details > summary').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
   await expect(action).toBeVisible();
@@ -412,6 +420,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expectNoPageOverflow(page);
 
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="overview"]').click();
   await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   const explanation = page.locator('.readiness-change-explanation');
   await expect(explanation).toBeVisible();

@@ -57,6 +57,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
       'Presença em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',
     evidence:
       'Só confiança moderada ou alta permite posicionar. Baixa confiança e ausência de domínio ficam separados.',
+    emptyMessage: `Os ${classified.length} tópicos ainda não têm confiança moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
     records: `<div class="incidence-quadrants">${records}</div>`,
   });
 }

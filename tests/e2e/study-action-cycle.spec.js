@@ -44,7 +44,10 @@ for (const source of ['overview', 'today', 'diagnosis'])
       page,
       source === 'overview' ? 'dashboard' : source === 'diagnosis' ? 'desempenho' : 'hoje'
     );
-    if (source === 'diagnosis') await page.locator('.today-analysis-details > summary').click();
+    if (source === 'diagnosis') {
+      await page.locator('[data-performance-section="subjects"]').click();
+      await page.locator('.today-analysis-details > summary').click();
+    }
     const action =
       source === 'overview'
         ? page.locator('#overviewNextAction .overview-action-card[data-activity-type="study"]')

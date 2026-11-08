@@ -340,8 +340,8 @@ export function pedagogicalMatrixGeometry(
     const cx = xFor(it.retention);
     const cy = yFor(it.mastery);
     const frac = Math.max(0, it.studyMinutes || 0) / maxMinutes;
-    // Raio entre 8px e 24px
-    const r = +(8 + frac * 16).toFixed(1);
+    // Raio entre 8px e 18px: com muitas disciplinas, esferas maiores se sobrepõem.
+    const r = +(8 + frac * 10).toFixed(1);
     return {
       id: it.id,
       name: it.name,

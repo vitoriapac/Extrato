@@ -2272,6 +2272,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .chart-frame__legend li{display:flex;align-items:center;gap:var(--space-2)}
 .chart-frame__swatch{width:18px;height:4px;background:var(--chart-series-primary);flex-shrink:0}
 .chart-frame__swatch--secondary{background:var(--chart-series-secondary)}
+.chart-frame__swatch--error{background:var(--red)}
 .chart-frame__swatch--target{height:0;border-top:2px dashed var(--chart-series-secondary);background:none}
 .chart-frame__plot,.chart-frame__records{min-width:0;max-width:100%}
 .chart-frame__plot>svg{width:100%;height:auto;display:block}
@@ -2283,7 +2284,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .chart-frame .question-evolution-point,.chart-frame .plan-adherence-point{stroke:var(--chart-series-primary)}
 .chart-frame .question-evolution-point:last-of-type,.chart-frame .plan-adherence-point circle:last-of-type{fill:var(--chart-series-secondary);stroke:var(--chart-series-secondary)}
 .chart-frame .simulation-goal-line,.chart-frame .plan-adherence-grid{stroke:var(--chart-series-secondary);stroke-dasharray:5 4}
-.chart-frame .question-mix-track{background:var(--chart-series-secondary)}
+.chart-frame .question-mix-track{background:var(--red)}
 .chart-frame .question-mix-track>span{background:var(--chart-series-primary)}
 
 .chart-period-controls{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:end}.chart-period-controls label{min-width:0;max-width:100%}.chart-period-controls select{max-width:100%}
@@ -2384,7 +2385,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .performance-story h3{margin:var(--space-2) 0;font-size:clamp(19px,2vw,27px)}
 .performance-story p{margin:0;line-height:1.5}.performance-story ul{margin:var(--space-3) 0 0;padding-left:var(--space-4)}.performance-story li{margin-top:var(--space-2)}
 .performance-details{border-top:1px solid var(--paper-line);min-width:0}.performance-details>summary{cursor:pointer;padding:var(--space-3) 0;color:var(--ink);font-weight:600}.performance-details__body{min-width:0}
-.performance-comparison-heading{display:flex;justify-content:space-between;align-items:start;gap:var(--space-3);flex-wrap:wrap}.performance-comparison-heading>div{flex:1 1 320px}.performance-comparison-heading label{display:grid;gap:var(--space-2)}.performance-subject-comparison .performance-table-scroll{max-height:none}.performance-subject-comparison table{min-width:780px}.performance-sample-note{color:var(--ink-muted,var(--ink));font-size:12px}
+.performance-comparison-heading{display:flex;justify-content:space-between;align-items:start;gap:var(--space-3);flex-wrap:wrap}.performance-comparison-heading>div{flex:1 1 min(320px,100%);min-width:0}.performance-subject-comparison{min-width:0}.performance-comparison-heading label{display:grid;gap:var(--space-2)}.performance-subject-comparison .performance-table-scroll{max-height:none}.performance-subject-comparison table{min-width:780px}.performance-sample-note{color:var(--ink-muted,var(--ink));font-size:12px}
 .subject-target-bulk{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);margin:var(--space-3) 0}.subject-target-bulk label{display:flex;align-items:center;gap:var(--space-2)}.subject-target-bulk input[type=number]{width:72px}.subject-target-editor table{min-width:760px}.subject-target-editor td input[type=number]{width:75px}.subject-target-editor td small{display:block;color:var(--text-secondary)}.subject-target-editor td:last-child{white-space:nowrap}.subject-target-editor td:last-child .btn{margin-right:var(--space-2)}
 .diagnosis-consolidated-list{display:grid;gap:var(--space-3)}.diagnosis-consolidated-list .consolidated-diagnosis-row{display:grid;gap:var(--space-3);padding:var(--space-4) 0;border-bottom:1px solid var(--paper-line)}.consolidated-diagnosis-row .diagnostic-row-identity small,.diagnostic-quality,.diagnostic-supporting{color:var(--text-secondary);font-size:12px}.consolidated-diagnosis-row .diagnostic-evidence{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:var(--space-2);margin:0}.consolidated-diagnosis-row .diagnostic-evidence div{min-width:0}.consolidated-diagnosis-row .diagnostic-evidence dt{color:var(--text-secondary);font-size:var(--text-micro)}.consolidated-diagnosis-row .diagnostic-evidence dd{margin:0;font-weight:600}.consolidated-diagnosis-row .diagnostic-row-action{flex-wrap:wrap}
 .consolidated-diagnosis-row .diagnostic-row-heading>.status-badge{flex:0 0 auto;white-space:nowrap}
@@ -2519,7 +2520,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 @media(max-width:700px){.onboarding-entry{grid-template-columns:minmax(0,1fr);gap:var(--space-3);padding:var(--space-3)}.onboarding-entry-cta{width:100%}}
 
 /* Desempenho agrupa uma leitura e seus indicadores por pergunta analítica. */
-#performanceSectionContent{display:grid;gap:var(--space-4);min-width:0}
+#performanceSectionContent{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-4);min-width:0}
 .performance-summary,.performance-block,.performance-details{min-width:0;background:var(--surface-card);border:1px solid var(--border-subtle)}
 .performance-summary{display:grid;gap:var(--space-4);padding:clamp(var(--space-4),2vw,var(--space-6))}
 .performance-summary .performance-story{padding:0 0 0 var(--space-3);background:transparent}
@@ -2957,14 +2958,14 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 .subject-color-swatch{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--subject-color,var(--subject-1));box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 20%,transparent)}
 /* Traço fechado só na linha da aba Disciplinas. */
 .subject-header .subject-color-swatch{width:4px;height:auto;align-self:stretch;min-height:24px;border-radius:2px;box-shadow:none}
-.subject-color-1{--subject-color:var(--subject-1)}.subject-color-2{--subject-color:var(--subject-2)}.subject-color-3{--subject-color:var(--subject-3)}.subject-color-4{--subject-color:var(--subject-4)}
+.subject-color-0{--subject-color:var(--border-control)}.subject-color-1{--subject-color:var(--subject-1)}.subject-color-2{--subject-color:var(--subject-2)}.subject-color-3{--subject-color:var(--subject-3)}.subject-color-4{--subject-color:var(--subject-4)}
 .subject-color-5{--subject-color:var(--subject-5)}.subject-color-6{--subject-color:var(--subject-6)}.subject-color-7{--subject-color:var(--subject-7)}.subject-color-8{--subject-color:var(--subject-8)}
 /* Subject color fills, strokes and backgrounds for charts */
-.subject-fill-1{fill:var(--subject-1)}.subject-fill-2{fill:var(--subject-2)}.subject-fill-3{fill:var(--subject-3)}.subject-fill-4{fill:var(--subject-4)}
+.subject-fill-0{fill:var(--border-control)}.subject-fill-1{fill:var(--subject-1)}.subject-fill-2{fill:var(--subject-2)}.subject-fill-3{fill:var(--subject-3)}.subject-fill-4{fill:var(--subject-4)}
 .subject-fill-5{fill:var(--subject-5)}.subject-fill-6{fill:var(--subject-6)}.subject-fill-7{fill:var(--subject-7)}.subject-fill-8{fill:var(--subject-8)}
-.subject-stroke-1{stroke:var(--subject-1)}.subject-stroke-2{stroke:var(--subject-2)}.subject-stroke-3{stroke:var(--subject-3)}.subject-stroke-4{stroke:var(--subject-4)}
+.subject-stroke-0{stroke:var(--border-control)}.subject-stroke-1{stroke:var(--subject-1)}.subject-stroke-2{stroke:var(--subject-2)}.subject-stroke-3{stroke:var(--subject-3)}.subject-stroke-4{stroke:var(--subject-4)}
 .subject-stroke-5{stroke:var(--subject-5)}.subject-stroke-6{stroke:var(--subject-6)}.subject-stroke-7{stroke:var(--subject-7)}.subject-stroke-8{stroke:var(--subject-8)}
-.subject-bg-1{background-color:var(--subject-1)}.subject-bg-2{background-color:var(--subject-2)}.subject-bg-3{background-color:var(--subject-3)}.subject-bg-4{background-color:var(--subject-4)}
+.subject-bg-0{background-color:var(--border-control)}.subject-bg-1{background-color:var(--subject-1)}.subject-bg-2{background-color:var(--subject-2)}.subject-bg-3{background-color:var(--subject-3)}.subject-bg-4{background-color:var(--subject-4)}
 .subject-bg-5{background-color:var(--subject-5)}.subject-bg-6{background-color:var(--subject-6)}.subject-bg-7{background-color:var(--subject-7)}.subject-bg-8{background-color:var(--subject-8)}
 /* New Visual Charts */
 .chart-donut{display:block;max-width:100%;height:auto}
@@ -2987,10 +2988,14 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 .chart-matrix{display:block;width:100%;height:auto;overflow:visible}
 /* No celular os gráficos com rótulos mantêm a largura do viewBox (rótulos de 12px reais) e rolam dentro do próprio contêiner. */
 @media(max-width:640px){.chart-multiline,.chart-stacked-columns,.chart-matrix{min-width:640px}.progress-chart-svg{min-width:640px}.radar-svg{min-width:560px}.chart-multiline-wrap,.chart-stacked-columns-wrap,.chart-matrix-wrap,.chart-scroll{overflow-x:auto}}
+.matrix-ranked{display:none;list-style:none;margin:var(--space-3) 0 0;padding:0}
+.matrix-ranked li{display:flex;flex-direction:column;gap:2px;padding:var(--space-2) 0;border-top:1px solid var(--paper-line)}
+.matrix-ranked li span:last-child{font-family:var(--font-data);font-size:12px;color:var(--text-secondary)}
+@media(max-width:640px){.matrix-chart-scroll{display:none}.matrix-ranked{display:block}}
 .chart-matrix__grid{stroke:var(--chart-grid,var(--paper-line))}
 .chart-matrix__threshold{stroke:var(--chart-series-secondary);stroke-width:1.5;stroke-dasharray:4 3;opacity:.75}
 .chart-matrix__quadrant-bg{fill:var(--surface-card-muted);opacity:.25}
-.chart-matrix__quadrant-label{font-family:var(--font-body);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;fill:var(--text-secondary)}
+.chart-matrix__quadrant-label{font-family:var(--font-body);font-size:12px;font-weight:600;fill:var(--text-secondary)}
 /* Rótulos de eixo usam o texto secundário inteiro (6,4:1 no claro): opacidade reduzida caía a 3,3:1. */
 .chart-axis-label{fill:var(--text-secondary)}
 .chart-matrix__bubble{opacity:.85;transition:transform .2s ease,opacity .2s ease;cursor:pointer}
@@ -3172,9 +3177,9 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 /* Histórico é uma subaba: conquistas, tempo de estudo e sessões só aparecem nela; a análise de risco fica nas outras. */
 #panel-desempenho:not([data-performance-view="overview"]) #performanceReadinessCard,
-#panel-desempenho:not([data-performance-view="overview"]) #performanceDecisionDetails,
-#panel-desempenho:not([data-performance-view="overview"]) .today-analysis-details:not([open]),
-#panel-desempenho:not([data-performance-view="overview"]) #desempenho-gaps,
+#panel-desempenho:not([data-performance-view="subjects"]) #performanceDecisionDetails,
+#panel-desempenho:not([data-performance-view="subjects"]) .today-analysis-details:not([open]),
+#panel-desempenho:not([data-performance-view="subjects"]) #desempenho-gaps,
 #panel-desempenho:not([data-performance-view="history"]) #performance-progress,
 #panel-desempenho:not([data-performance-view="history"]) #desempenho-study{display:none}
 

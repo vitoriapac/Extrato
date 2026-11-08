@@ -109,6 +109,13 @@ export function buildStudyTimelineModel({
     overallSeconds += dur;
   }
 
+  // Com muitas disciplinas a paleta de 8 cores não distingue as séries: as 6 maiores ficam nomeadas, o resto vira "Outras disciplinas".
+  const MAX_NAMED = 6;
+  const OTHER_ID = '__outras';
+  const ranked = [...totalPerSubject.entries()].sort((a, b) => b[1] - a[1]);
+  const named = new Set(ranked.length > MAX_NAMED + 1 ? ranked.slice(0, MAX_NAMED).map(([id]) => id) : ranked.map(([id]) => id));
+  const foldId = (id: string) => (named.has(id) ? id : OTHER_ID);
+  subjectMap.set(OTHER_ID, { name: 'Outras disciplinas', colorSlot: 0 });
   let maxDaySeconds = 0;
   const days: TimelineDay[] = [];
 
@@ -116,7 +123,9 @@ export function buildStudyTimelineModel({
     let dayTotal = 0;
     const segments: TimelineSegment[] = [];
 
-    for (const [subId, secs] of dayMap.entries()) {
+    const folded = new Map<string, number>();
+    for (const [id, secs] of dayMap.entries()) folded.set(foldId(id), (folded.get(foldId(id)) || 0) + secs);
+    for (const [subId, secs] of folded.entries()) {
       if (secs <= 0) continue;
       dayTotal += secs;
       const meta = subjectMap.get(subId) || {
@@ -150,7 +159,9 @@ export function buildStudyTimelineModel({
 
   // Resumo de disciplinas ordenado por tempo decrescente
   const subjectSummaries: TimelineSubjectSummary[] = [];
-  for (const [subId, totalSecs] of totalPerSubject.entries()) {
+  const foldedTotals = new Map<string, number>();
+  for (const [id, secs] of totalPerSubject.entries()) foldedTotals.set(foldId(id), (foldedTotals.get(foldId(id)) || 0) + secs);
+  for (const [subId, totalSecs] of foldedTotals.entries()) {
     const meta = subjectMap.get(subId) || {
       name: subId === '__sem_disciplina' ? 'Sem disciplina' : 'Outra',
       colorSlot: 1,

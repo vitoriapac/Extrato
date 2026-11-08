@@ -57,6 +57,7 @@ test('áreas centrais mantêm contraste e nomes acessíveis em 320 px no tema es
 test('central de diagnóstico continua acessível quando expandida', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await page.locator('.today-analysis-details > summary').click();
   await expectAccessible(page, 'Central de diagnóstico expandida', '#panel-hoje');
 });

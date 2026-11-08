@@ -173,9 +173,9 @@ export function renderAchievementProjection(
       ? 'Data da prova não definida'
       : `${pluralize(model.exam.daysRemaining, 'dia', 'dias')} até a prova`;
   return `<section class="performance-block achievement-projection" aria-labelledby="achievementProjectionTitle">
-    <div class="achievement-projection__heading"><div><span class="section-eyebrow">TRAJETÓRIA</span><h3 id="achievementProjectionTitle">Projeção até a prova</h3></div><span class="achievement-projection__status achievement-projection__status--${model.status}">${status}</span></div>
+    <div class="achievement-projection__heading"><div><h3 id="achievementProjectionTitle">Projeção até a prova</h3></div><span class="achievement-projection__status achievement-projection__status--${model.status}">${status}</span></div>
     <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">${context} · fase ${phaseLabels[model.exam.phase] || phaseLabels.undated}</p>
-    <div class="achievement-projection__metrics"><div><span>Simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Faixa atual</span><strong>${band ? `${pct(band.low)}–${pct(band.high)}` : '—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available ? pct(forecast.central) : '—'}</strong></div></div>
+    <div class="achievement-projection__metrics"><div><span>Acerto em simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Faixa atual</span><strong>${band ? `${pct(band.low)}–${pct(band.high)}` : '—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available ? pct(forecast.central) : '—'}</strong></div></div>
     <p class="performance-method-note">Confiança da projeção: ${confidence.toLowerCase()}. Veja a base em “Entender esta projeção”.</p>
     ${model.status === 'insufficient_data' ? renderRequirements(model, escapeHtml) : renderTrajectory(model, escapeHtml)}
     ${renderAdherenceTarget(adherenceContext, { escapeHtml })}

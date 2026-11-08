@@ -282,10 +282,11 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     } else if (performanceViewState.section === 'overview') {
       const readinessMount = target.querySelector('#performanceReadinessMount');
       if (readinessMount && readinessCard) readinessMount.append(readinessCard);
-      const overviewMount = target.querySelector('#performanceOverviewSupplementalMount');
-      if (overviewMount) {
+    } else if (performanceViewState.section === 'subjects') {
+      const subjectsMount = target.querySelector('#performanceSubjectsSupplementalMount');
+      if (subjectsMount) {
         for (const node of [decisionDetails, todayAnalysisDetails, gapsDetails]) {
-          if (node) overviewMount.append(node);
+          if (node) subjectsMount.append(node);
         }
       }
     } else if (performanceViewState.section === 'history') {

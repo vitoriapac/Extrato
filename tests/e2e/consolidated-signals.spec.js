@@ -47,6 +47,7 @@ test('diagnóstico consolida o escopo atual sem modificar planos ou registros pe
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
   await page.locator('.today-analysis-details > summary').click();
   const model = await page.evaluate(() => window.__EXTRATO_TEST__.getConsolidatedDiagnosis());
   expect(model.topics.map(item => item.topicId)).toEqual(['only-bb']);
