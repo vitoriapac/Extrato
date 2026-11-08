@@ -151,6 +151,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           scope,
           subjects: deps.examScopedSubjects ? deps.examScopedSubjects() : [],
           simulations:
+            performanceViewState.section === 'overview' ||
             performanceViewState.section === 'subjects' ||
             performanceViewState.section === 'simulations'
               ? deps.examScopedSimulations
@@ -304,7 +305,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       getViewState,
       setViewState,
       render: () => {
-        if (deps.render) deps.render('desempenho');
+        if (deps.render) deps.render('desempenho-visao');
         else renderPerformance();
       },
       activateTab: deps.activateTab || (() => {}),

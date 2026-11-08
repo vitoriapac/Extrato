@@ -1897,6 +1897,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/weekly-performance-brief.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico para o resumo de 3 parágrafos (Desempenho), 1 parágrafo (Início) e mini-gráfico comparativo dos últimos 7 dias."
+    },
+    {
       "file": "tests/unit/what-if-modal-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

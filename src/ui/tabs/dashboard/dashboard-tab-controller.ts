@@ -38,6 +38,7 @@ import { buildVolatileMasteryViewModel } from '../../../application/analytics/bu
 import { buildSyllabusHealthViewModel } from '../../../application/analytics/build-syllabus-health-view-model.js';
 import { buildPerformanceTrendViewModel } from '../../../application/analytics/build-performance-trend-view-model.js';
 import { buildCockpitSidebarViewModel } from '../../../application/analytics/build-cockpit-sidebar-view-model.js';
+import { buildWeeklyPerformanceBrief } from '../../../application/performance/build-weekly-performance-brief.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
@@ -288,12 +289,27 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       });
     }
 
+    const weeklyBrief = buildWeeklyPerformanceBrief({
+      today,
+      questions: state.questoes || [],
+      sessions: state.studySessions || [],
+      dailyPlans: state.dailyPlans || [],
+      reviews: state.reviewAgenda || [],
+      simulations: state.simulados || [],
+      subjects: state.subjects || [],
+      overdueReviewsCount: deps.revisoesAtrasadas?.(),
+    });
+
+    const periodEl = doc.getElementById('overviewWeeklyPeriod');
+    if (periodEl) {
+      periodEl.textContent = weeklyBrief.periodLabel;
+      periodEl.hidden = !hasConfigured;
+    }
+
     const note = doc.getElementById('overviewClosingNote');
     if (note) {
-      const { activeDaysCount, totalDays } = sidebarModel.consistency;
-      note.textContent =
-        activeDaysCount > 0 ? `Você estudou em ${activeDaysCount} de ${totalDays} dias nas últimas semanas.` : '';
-      note.hidden = activeDaysCount === 0;
+      note.textContent = weeklyBrief.shortParagraph;
+      note.hidden = !hasConfigured;
     }
 
     // Camada 3: Renderização do Heatmap GitHub em Largura Total

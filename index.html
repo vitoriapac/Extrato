@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=81eb71eae275">
-<link rel="stylesheet" href="styles/app.css?v=81eb71eae275">
+<link rel="stylesheet" href="styles/tailwind.css?v=7bee4308525e">
+<link rel="stylesheet" href="styles/app.css?v=7bee4308525e">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -163,11 +163,14 @@
           <div id="heatmapContainer" class="w-full"></div>
         </section>
 
-        <!-- FECHAMENTO: link para análise detalhada em Desempenho -->
+        <!-- FECHAMENTO: resumo de 1 parágrafo da última semana + link para análise detalhada em Desempenho -->
         <section class="chart-card overview-more mt-4" aria-labelledby="overviewMoreTitle">
-          <h2 id="overviewMoreTitle">Análise detalhada</h2>
-          <p id="overviewClosingNote" hidden></p>
-          <p>Consulte o balanço de horas, vulnerabilidades críticas e retenção consolidada na aba Desempenho.</p>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+            <h2 id="overviewMoreTitle">Resumo da última semana</h2>
+            <span id="overviewWeeklyPeriod" class="text-xs text-content-secondary font-medium" hidden></span>
+          </div>
+          <p id="overviewClosingNote" class="text-sm text-content-primary leading-relaxed" hidden></p>
+          <p class="text-xs text-content-secondary">Consulte a análise completa em três parágrafos, o comparativo visual da semana, vulnerabilidades e retenção na aba Desempenho.</p>
           <button class="btn ghost small" id="overviewOpenPerformance" type="button">Abrir Desempenho</button>
         </section>
       </div>
@@ -1039,7 +1042,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=81eb71eae275"></script>
+  <script src="src/app.bundle.js?v=7bee4308525e"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

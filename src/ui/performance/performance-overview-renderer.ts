@@ -13,6 +13,7 @@ import { renderReadinessChangeExplanation } from './readiness-change-explanation
 import { renderMetricCard, renderEmptyState } from '../components/presentation.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { renderPlannedVsActualChart } from './planned-actual-chart.js';
+import { renderWeeklyPerformanceBriefCard } from './weekly-performance-brief-renderer.js';
 import { renderIconSvg } from '../primitives/icon.js';
 
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
@@ -30,6 +31,7 @@ export function renderPerformanceOverview(
     formatDate,
     escapeHtml,
     escapeAttr = escapeHtml,
+    weeklyBrief = null,
     comparisonModel = null,
     readinessChange = null,
     achievementProjection = null,
@@ -50,7 +52,7 @@ export function renderPerformanceOverview(
     ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
   </section>`;
   const secondaryKpis = `<section class="performance-kpis ui-metric-group" aria-label="Prontidão e carga no período">
-    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} desde o período anterior`)}
+    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `Cálculo de agora · ${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} entre fechamentos (${shown(model.readinessPair?.previous?.score)} → ${shown(model.readinessPair?.current?.score)})`)}
     ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}
   </section>`;
   const history = renderReadinessHistory(model.history, {
@@ -78,6 +80,10 @@ export function renderPerformanceOverview(
     : 'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
   const method = `<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>`;
   const investigate = `<section class="performance-block" aria-label="Investigar o resultado"><h3>Investigar o resultado</h3><p class="analytics-note">Compare disciplinas ou consulte as evidências no mesmo período e concurso selecionados.</p><nav class="ui-filter-bar flex flex-wrap gap-2" aria-label="Detalhes da preparação"><button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-performance-investigate="subjects">${renderIconSvg('chart-dots', { size: 14, className: 'shrink-0' })}Comparar disciplinas</button><button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-performance-investigate="questions">${renderIconSvg('help-circle', { size: 14, className: 'shrink-0' })}Ver questões</button><button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-performance-investigate="simulations">${renderIconSvg('certificate', { size: 14, className: 'shrink-0' })}Ver simulados</button><button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-performance-investigate="consistency">${renderIconSvg('calendar-time', { size: 14, className: 'shrink-0' })}Ver consistência</button></nav></section>`;
-  // O veredito (Índice de Prontidão e volume de carga) abre a aba; a evolução do período vem depois.
-  return `${renderPerformanceSummary(secondaryKpis + renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${investigate}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  const weeklyBriefHtml = renderWeeklyPerformanceBriefCard(weeklyBrief || model.weeklyBrief, {
+    escapeHtml,
+    escapeAttr,
+  });
+  // O resumo rápido dos últimos 7 dias abre a aba; em seguida vem o veredito (Índice de Prontidão e volume de carga) e a evolução do período.
+  return `${weeklyBriefHtml}${renderPerformanceSummary(secondaryKpis + renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${investigate}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }

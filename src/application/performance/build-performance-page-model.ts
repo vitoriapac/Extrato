@@ -9,6 +9,7 @@ import { buildPerformanceTopicDetail } from './build-performance-topic-detail.js
 import { buildPerformanceConsistency } from './build-performance-consistency.js';
 import { buildReadinessChangeExplanation } from '../readiness/build-readiness-change-explanation.js';
 import { buildStabilityMap } from './build-stability-map.js';
+import { buildWeeklyPerformanceBrief } from './build-weekly-performance-brief.js';
 import { buildMultiSubjectPerformanceModel } from '../../domain/analytics/subject-performance-timeline.js';
 import { buildPedagogicalMatrixModel } from '../../domain/analytics/pedagogical-matrix.js';
 
@@ -40,7 +41,7 @@ export function buildPerformancePageModel({
   topicMetricsFor,
   topicProfileFor,
   topicHistoryFor,
-}: any = {}) {
+}: any = {}): Record<string, any> {
   const section = viewState.section;
   if (section === 'history') return { section };
   if (section === 'overview') {
@@ -55,9 +56,20 @@ export function buildPerformancePageModel({
       dailyPlans,
       subjects,
     });
+    const weeklyBrief = buildWeeklyPerformanceBrief({
+      today,
+      questions: scope.questions?.included || [],
+      sessions: scope.sessions?.included || [],
+      dailyPlans,
+      reviews: scope.reviews?.included || [],
+      simulations,
+      subjects,
+      subjectIdFor,
+    });
     return {
       section,
       model,
+      weeklyBrief,
       achievementProjection,
       achievementHistory,
       achievementCapacityMinutes,

@@ -53,6 +53,9 @@ export function createPerformanceController({
         if (section) {
           update({
             section: section.dataset.performanceSection || section.dataset.performanceInvestigate,
+            ...(section.dataset.performanceSubjectId
+              ? { subjectId: section.dataset.performanceSubjectId }
+              : {}),
           });
           render();
           return;
@@ -84,6 +87,32 @@ export function createPerformanceController({
           document.getElementById('performanceTopicDialog')?.close();
           activateTab(open.dataset.performanceOpen);
         }
+      });
+      // Subabas como tablist: setas, Home e End ativam a subaba vizinha e mantêm o foco nela.
+      document.getElementById('performancePage')?.addEventListener('keydown', (event: any) => {
+        const tab = event.target.closest?.('[role="tab"][data-performance-section]');
+        if (!tab || event.altKey || event.ctrlKey || event.metaKey) return;
+        const tabs = [...tab.parentElement.querySelectorAll('[role="tab"][data-performance-section]')];
+        const index = tabs.indexOf(tab);
+        const target =
+          event.key === 'ArrowRight'
+            ? tabs[(index + 1) % tabs.length]
+            : event.key === 'ArrowLeft'
+              ? tabs[(index - 1 + tabs.length) % tabs.length]
+              : event.key === 'Home'
+                ? tabs[0]
+                : event.key === 'End'
+                  ? tabs.at(-1)
+                  : null;
+        if (!target) return;
+        event.preventDefault();
+        update({ section: target.dataset.performanceSection });
+        render();
+        (
+          document.querySelector(
+            `[role="tab"][data-performance-section="${target.dataset.performanceSection}"]`
+          ) as HTMLElement | null
+        )?.focus();
       });
       document.getElementById('performancePage')?.addEventListener('submit', (event: any) => {
         if (!event.target.matches('[data-projection-scenario-form]')) return;
