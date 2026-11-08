@@ -10,12 +10,16 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   await expectNoPageOverflow(page);
   await expect(page.locator('.overview-now')).toBeVisible();
   await activateTab(page, 'desempenho');
+  // A prontidão aparece nos KPIs da Visão geral de Desempenho; o diagnóstico, na subaba Disciplinas.
+  await page.locator('[data-performance-section="overview"]').click();
+  await expectNoPageOverflow(page);
+  await expect(page.locator('.performance-kpis[aria-label="Prontidão e carga no período"]')).toBeVisible();
+  await page.locator('[data-performance-section="subjects"]').click();
   const analyses = page.locator('.today-analysis-details');
-  if ((await analyses.count()) && !(await analyses.first().evaluate(element => element.open)))
+  if (!(await analyses.first().evaluate(element => element.open)))
     await analyses.first().locator(':scope > summary').click();
   await expectNoPageOverflow(page);
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
-  await expect(page.locator('.performance-readiness')).toBeVisible();
   await openPlanningSubtab(page, 'fechamento');
   await expectNoPageOverflow(page);
   await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();

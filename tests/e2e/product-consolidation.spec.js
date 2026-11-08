@@ -303,7 +303,9 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
     window.__EXTRATO_TEST__.renderAll();
   }, createDefaultState());
   await activateTab(page, 'dashboard');
-  await expect(page.locator('#guidedOnboarding .onboarding-entry-cta')).toBeVisible();
+  // Um cartão por vez: sem etapa concluída, as boas-vindas oferecem a configuração.
+  await expect(page.locator('#overviewNextAction [data-guided-action="open"]')).toBeVisible();
+  await expect(page.locator('#guidedOnboarding')).toBeHidden();
   await activateTab(page, 'desempenho');
   const projection = page.locator('.achievement-projection');
   await expect(projection.locator('.achievement-projection__status')).toHaveText(
@@ -325,7 +327,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   await expect(action).toContainText('Reunir evidências');
   await expect(action.locator('[data-study-action-source]')).toHaveCount(0);
   await activateTab(page, 'dashboard');
-  await expect(page.locator('#guidedOnboarding .onboarding-entry-cta')).toBeVisible();
+  await expect(page.locator('#overviewNextAction [data-guided-action="open"]')).toBeVisible();
 });
 
 test('cinco perfis percorrem a experiência consolidada com ação, contexto e leitura acessível', async ({

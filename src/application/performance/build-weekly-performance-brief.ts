@@ -598,8 +598,13 @@ export function buildWeeklyPerformanceBrief({
   if (!hasActivity) {
     shortParagraph = `Nos últimos 7 dias você ainda não registrou horas de estudo ou questões${previous.studiedMinutes > 0 ? ` (na semana passada foram ${prevTimeFormatted})` : ''}. Abra a aba Desempenho para ver seu comparativo semanal ou inicie uma sessão rápida na aba Hoje.`;
   } else {
+    // Acima de 2× o planejado o número vira ruído (ex.: 1038%): o texto diz só a direção.
     const planSnippet =
-      current.planFulfillmentPct != null ? ` (${current.planFulfillmentPct}% da meta da semana)` : '';
+      current.planFulfillmentPct == null
+        ? ''
+        : current.planFulfillmentPct > 200
+          ? ' (bem acima do tempo planejado)'
+          : ` (${current.planFulfillmentPct}% do tempo planejado)`;
     const questionsSnippet =
       current.resolved > 0 && current.accuracy != null
         ? ` e acertou ${current.accuracy}% das ${pluralize(current.resolved, 'questão', 'questões')} que resolveu${previous.accuracy != null ? ` (frente a ${previous.accuracy}% na semana passada)` : ''}`

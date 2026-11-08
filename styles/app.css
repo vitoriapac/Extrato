@@ -1188,9 +1188,17 @@
 @media (pointer:coarse),(max-width:760px){
   .week-reconciliation__note a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
   summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link,.subject-toggle{min-height:var(--touch-target)}
-  .today-progress-status a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
+  .today-progress-status a{padding-block:14px}
   .performance-topic-link,.exam-matrix-topic,.exam-matrix-card>button{display:inline-flex;align-items:center;min-height:var(--touch-target)}
+  /* Links de texto seguem em linha: o alvo cresce no padding, sem deslocar o texto. */
+  .panel a.text-brand,.panel a.text-ink-soft{padding-block:14px;margin-block:-14px}
+  #examDateInput,.panel select.select-control{min-height:var(--touch-target)}
+  .brand-home::after{content:"";position:absolute;inset:-8px -4px}
 }
+.brand-home{position:relative}
+/* Primeiro uso: um cartão por vez. As boas-vindas têm a ação; a configuração reaparece ao concluir uma etapa. */
+body:has(#overviewNextAction [data-welcome-hero]) #guidedOnboarding[data-fresh="true"]{display:none}/* Links de ação nos avisos de Hoje e Planejamento: cor da marca, não o azul padrão do navegador. */
+.today-progress-status a,.week-reconciliation__note a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 /* Toque em tela larga (tablet, celular deitado): só tamanhos de alvo, sem o layout estreito. */
 @media (pointer:coarse){
   .btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn,.tab-btn{min-height:var(--touch-target)}
@@ -1199,7 +1207,7 @@
   .help-text-link{min-height:var(--touch-target)}
 }
 /* Área de toque da marca cobre a altura do cabeçalho compacto sem alterá-lo. */
-.compact-brand{position:relative}.compact-brand::after{content:"";position:absolute;inset:-10px 0}
+.compact-brand{position:relative}.compact-brand::after{content:"";position:absolute;inset:-13px 0}
 
 /* Movimento reduzido: sai o deslocamento (entrada, giro, recuo); ficam opacidade, cor e o avanço das barras, que carregam estado. */
 @keyframes fade-in{from{opacity:0}}
@@ -3506,6 +3514,44 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .today-progress-status strong {
   color: var(--heading, var(--ink));
   font-family: var(--font-data);
+}
+/* Hoje: o balanço do dia é uma faixa de consulta; a ação (Plano de hoje) fica logo abaixo. */
+.today-statement-summary {
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-3, 12px);
+}
+.today-statement-ledger {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  column-gap: var(--space-6, 24px);
+  padding: 0;
+}
+.today-statement-ledger .ledger-line--total {
+  border-top: 0;
+  padding-top: 0;
+  font-weight: 600;
+}
+.today-statement-summary .today-execution-progress,
+.today-statement-summary .today-execution-budget-track {
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+}
+.today-statement-summary .context-note,
+.today-statement-summary > .today-progress-status {
+  margin: 0;
+  padding-block: var(--space-1, 4px);
+}
+.today-statement-summary .context-note {
+  padding-inline: var(--space-3, 12px);
+}
+.today-statement-header {
+  padding-bottom: var(--space-1, 4px);
+}
+.today-statement-ledger .ledger-line__label { white-space: nowrap; }
+@media (max-width: 480px) {
+  .today-statement-ledger { column-gap: var(--space-4, 16px); }
+  .today-statement-ledger .ledger-line { gap: 6px; }
+  .today-statement-ledger .ledger-line__lead { min-width: 6px; }
+  .today-statement-summary .context-note { font-size: var(--text-small); }
 }
 
 /* Ajuste refinado de espessura de traço para a iconografia Tabler Icons */

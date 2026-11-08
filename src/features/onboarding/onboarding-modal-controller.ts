@@ -175,6 +175,8 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     }
     // Keep entry hidden as static card when modal mode is preferred
     entry.hidden = inTest ? !visible : (!visible || uiState.onboarding.open);
+    // Sem etapa concluída, as boas-vindas já oferecem a ação; o roteiro de 4 etapas vive no assistente.
+    entry.setAttribute?.('data-fresh', String(!model.completed));
     const entryInner = document.getElementById('guidedOnboardingEntry');
     if (entryInner) {
       entryInner.innerHTML = visible ? renderOnboardingEntry(model, { escapeHtml }) : '';
@@ -285,7 +287,7 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     syncModalShell();
     const focusTarget = previousFocus?.isConnected
       ? previousFocus
-      : document.querySelector<HTMLElement>('#guidedOnboarding [data-guided-action="open"]');
+      : document.querySelector<HTMLElement>('#overviewNextAction [data-guided-action="open"], #guidedOnboarding [data-guided-action="open"]');
     (focusTarget?.getClientRects?.().length
       ? focusTarget
       : document.getElementById('tab-dashboard')
@@ -594,10 +596,12 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     document
       .getElementById('guidedOnboardingClose')
       ?.addEventListener('click', () => closeGuidedOnboarding());
-    document.getElementById('guidedOnboarding')?.addEventListener('click', (event: any) => {
-      if ((event.target as HTMLElement)?.closest('[data-guided-action="open"]'))
-        openGuidedOnboarding();
-    });
+    // Boas-vindas (Visão geral) e cartão de configuração abrem o mesmo assistente.
+    for (const id of ['overviewNextAction', 'guidedOnboarding'])
+      document.getElementById(id)?.addEventListener('click', (event: any) => {
+        if ((event.target as HTMLElement)?.closest('[data-guided-action="open"]'))
+          openGuidedOnboarding();
+      });
   }
 
   return {

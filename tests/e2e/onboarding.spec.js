@@ -3,6 +3,10 @@ import AxeBuilder from '@axe-core/playwright';
 import { waitForAppReady } from './helpers/app-state.js';
 import { activateTab } from './helpers.js';
 
+// Sem etapa concluída só as boas-vindas existem; depois, o cartão de configuração. Ambos abrem o mesmo assistente.
+const OPEN_GUIDED =
+  '#overviewNextAction [data-guided-action="open"]:visible, #guidedOnboarding [data-guided-action="open"]:visible';
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/?test=1');
   await waitForAppReady(page);
@@ -91,7 +95,9 @@ test('Visão Geral mantém ação antes da configuração em todos os estados de
       Node.DOCUMENT_POSITION_FOLLOWING
   );
   expect(actionFirst).toBeTruthy();
-  await expect(page.locator('#guidedOnboarding')).toBeVisible();
+  // Um cartão por vez: sem disciplinas nem etapa concluída, só as boas-vindas aparecem.
+  await expect(page.locator('#overviewNextAction [data-welcome-hero]')).toBeVisible();
+  await expect(page.locator('#guidedOnboarding')).toBeHidden();
 });
 
 test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', async ({
@@ -105,12 +111,13 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   const welcome = page.locator('#overviewNextAction');
   await expect(welcome).toContainText('Montar meu plano de estudos');
   await expect(welcome).toContainText('Experimentar demonstração');
-  const entry = page.locator('#guidedOnboarding');
-  await expect(entry).toContainText('0 de 4 etapas');
-  await expect(entry.locator('[aria-current="step"]')).toContainText('Data da prova (opcional)');
-  await expect(entry.locator('.is-complete')).toHaveCount(0);
-  await entry.locator('[data-guided-action="open"]').click();
+  // Um cartão por vez: sem etapa concluída, o roteiro de 4 etapas vive no assistente.
+  await expect(page.locator('#guidedOnboarding')).toBeHidden();
+  await welcome.locator('[data-guided-action="open"]').click();
   const overlay = page.locator('#guidedOnboardingOverlay');
+  await expect(overlay.locator('[data-onboarding-step]')).toHaveCount(4);
+  await expect(overlay.locator('[aria-current="step"]')).toContainText('Data da prova (opcional)');
+  await expect(overlay.locator('.is-complete')).toHaveCount(0);
   await expect(overlay.locator('#guidedExamPreset')).toHaveValue('undecided');
   await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await overlay.locator('#guidedExamDate').fill('2027-03-14');
@@ -151,7 +158,7 @@ test('primeiro uso preserva escolhas e chega à prévia do plano', async ({ page
       .click();
   await expect(onboarding).toBeVisible();
   await expect(onboarding).toContainText(/Monte seu plano de estudos|Continue sua configuração/);
-  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator(OPEN_GUIDED).first().click();
   await expect(overlay).toBeVisible();
   await expect(overlay).toContainText(/Por que isso importa\?/i);
   await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
@@ -205,7 +212,7 @@ test('primeiro uso preserva escolhas e chega à prévia do plano', async ({ page
 });
 
 test('modal fecha com Escape e devolve o foco ao card', async ({ page }) => {
-  const open = page.locator('#guidedOnboarding [data-guided-action="open"]');
+  const open = page.locator(OPEN_GUIDED).first();
   await open.focus();
   await open.click();
   await expect(page.locator('#guidedOnboardingOverlay')).toBeVisible();
@@ -221,7 +228,7 @@ for (const viewport of [
 ])
   test(`modal permanece navegável em ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+    await page.locator(OPEN_GUIDED).first().click();
     const overlay = page.locator('#guidedOnboardingOverlay'),
       modal = overlay.locator('.onboarding-modal');
     await expect(overlay).toBeVisible();
@@ -268,7 +275,7 @@ for (const theme of ['light', 'dark'])
         api.setState(state);
         api.renderAll();
       }, theme);
-      await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+      await page.locator(OPEN_GUIDED).first().click();
       const overlay = page.locator('#guidedOnboardingOverlay'),
         next = () => overlay.locator('[data-guided-action="next"]');
       const assertLayering = async expectedCompleted => {
@@ -320,7 +327,7 @@ for (const theme of ['light', 'dark'])
 test('cancelar edital devolve foco e escolhas ao onboarding sem diálogos concorrentes', async ({
   page,
 }) => {
-  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator(OPEN_GUIDED).first().click();
   await page.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
@@ -344,7 +351,7 @@ test('cancelar edital devolve foco e escolhas ao onboarding sem diálogos concor
 });
 
 test('importação CSV retorna à prévia do onboarding sem sobrepor diálogos', async ({ page }) => {
-  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator(OPEN_GUIDED).first().click();
   await page.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
@@ -379,7 +386,7 @@ test('cadastro manual preserva rascunhos e adiciona matérias ao continuar', asy
     api.setState(state);
     api.renderAll();
   });
-  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator(OPEN_GUIDED).first().click();
   await page.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await page.locator('#guidedExamDate').fill('2027-03-14');
   await page.locator('#guidedOnboardingOverlay [data-guided-action="next"]').click();
@@ -423,7 +430,7 @@ test('prazo longo mantém coerência entre prévia semanal e atividade diária',
     api.renderAll();
   });
   const overlay = page.locator('#guidedOnboardingOverlay');
-  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator(OPEN_GUIDED).first().click();
   await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();
   await overlay.locator('#guidedExamDate').fill('2027-05-07');
   await overlay.locator('[data-guided-action="next"]').click();
@@ -455,7 +462,7 @@ test('sem data, explorar preserva matérias sem criar plano semanal ou diário',
     state.subjects = []; state.studyPlans = []; state.dailyPlans = [];
     api.setState(state); api.renderAll();
   });
-  await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+  await page.locator(OPEN_GUIDED).first().click();
   const overlay = page.locator('#guidedOnboardingOverlay');
   await overlay.getByRole('button', { name: 'Continuar sem data' }).click();
   await overlay.locator('[data-guided-action="next"]').click();
@@ -477,7 +484,7 @@ test('sem data, explorar preserva matérias sem criar plano semanal ou diário',
 
 test('campos da configuração possuem nomes acessíveis e retorno por teclado', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const open = page.locator('#guidedOnboarding [data-guided-action="open"]');
+  const open = page.locator(OPEN_GUIDED).first();
   await open.focus();
   await page.keyboard.press('Enter');
   const overlay = page.locator('#guidedOnboardingOverlay');
@@ -501,7 +508,7 @@ test('campos da configuração possuem nomes acessíveis e retorno por teclado',
 });
 
 test('atalhos no wizard inicial agilizam data e rotina', async ({ page }) => {
-  const open = page.locator('#guidedOnboarding [data-guided-action="open"]');
+  const open = page.locator(OPEN_GUIDED).first();
   await open.click();
   const overlay = page.locator('#guidedOnboardingOverlay');
   await expect(overlay).toBeVisible();

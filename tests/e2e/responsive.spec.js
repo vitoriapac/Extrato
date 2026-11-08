@@ -3,6 +3,11 @@ import { test, expect } from '@playwright/test';
 import { activateTab, expectNoPageOverflow, openDemo } from './helpers.js';
 import { waitForAppReady } from './helpers/app-state.js';
 
+// Sem etapa concluída só as boas-vindas existem; depois, o cartão de configuração. Ambos abrem o mesmo assistente.
+const OPEN_GUIDED =
+  '#overviewNextAction [data-guided-action="open"]:visible, #guidedOnboarding [data-guided-action="open"]:visible';
+
+
 for (const width of [375, 768, 1366, 1440, 1920])
   test(`preserva todas as áreas sem overflow global em ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -52,7 +57,7 @@ for (const width of [320, 375, 430, 768, 1440])
         document.documentElement.dataset.theme = value;
       }, theme);
       await activateTab(page, 'dashboard');
-      await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
+      await page.locator(OPEN_GUIDED).first().click();
       await expect(page.locator('#guidedOnboardingOverlay')).toBeVisible();
       await expectNoPageOverflow(page);
       const onboardingBounds = await page
