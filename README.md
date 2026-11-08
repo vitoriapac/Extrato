@@ -50,7 +50,7 @@ Extrato de Estudos é uma aplicação web para planejar estudos, registrar sess�
 
 ## Como o Extrato de Estudos funciona
 
-Quem já tem dados salvos retoma o estudo sem repetir o primeiro uso. Para começar, os três caminhos de conteúdo levam a uma prévia; importar ou gerar um plano só altera os dados depois da confirmação.
+Quem já tem dados salvos retoma o estudo sem repetir o primeiro uso. Para começar, os três caminhos de conteúdo levam a uma prévia; importar ou gerar um plano só altera os dados depois da confirmação. Na Visão Geral, o primeiro acesso mostra apenas o cartão de boas-vindas; o botão **Montar meu plano de estudos** abre o assistente com o roteiro de 4 etapas, e o cartão de configuração só aparece depois que há progresso.
 
 ```mermaid
 flowchart TD

@@ -60,6 +60,7 @@ Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e
 - Desktop: abas no topo em todas as larguras. A barra lateral acima de 1280 px foi descartada.
 - Celular (até 760 px): barra inferior com Início, Hoje, Matérias, Agenda e Mais. A altura medida fica em `--bottom-nav-height`; voltar ao topo, "Salvo" e o aviso usam esse valor.
 - Planejamento: cinco blocos recolhíveis, com Plano da semana aberto por padrão. O atalho escolhido abre o bloco sem fechar os demais e fica em `#planejamento/<semana|prova|metas|fechamento|historico>`. `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida da Visão Geral ou o bloco do Planejamento que contém o alvo; todo salto programático para dentro deles passa por ele antes de rolar.
+- Hoje: ação primeiro. A lista de atividades com Iniciar vem antes da distribuição por disciplina; o resumo do dia é uma faixa compacta (`.today-statement-ledger` em `auto-fit`). Em toque (`pointer:coarse` ou até 760 px), links e selects têm alvo mínimo de `--touch-target`.
 - Cronômetro: mora em Hoje (`#study-timer`); iniciar uma atividade do plano abre o modo foco, e sair dele volta à aba de origem.
 
 ## Preferências do navegador

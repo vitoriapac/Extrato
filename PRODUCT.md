@@ -28,7 +28,7 @@ A combinação de três coisas, juntas:
 
 - Uso diário e em sessões longas: abrir o app, ver "Hoje", estudar com o cronômetro, registrar, voltar ao plano. Fadiga visual em uso prolongado importa.
 - Ritual semanal: fechamento da semana, aderência, comparação de períodos, adaptação do plano.
-- Primeiro uso: assistente com prova e disponibilidade, depois conteúdo via edital do catálogo, arquivo JSON/CSV ou cadastro manual, sempre com prévia.
+- Primeiro uso: assistente com prova e disponibilidade, depois conteúdo via edital do catálogo, arquivo JSON/CSV ou cadastro manual, sempre com prévia. Sem etapa concluída, só o cartão de boas-vindas aparece na Visão Geral; o roteiro de 4 etapas fica dentro do assistente (modal), e depois da primeira etapa o cartão de configuração assume a mesma entrada.
 - Documentos e artefatos reais: editais do catálogo, provas históricas importadas em JSON, relatório estratégico em PDF, backup JSON.
 
 ## Capabilities and Constraints
