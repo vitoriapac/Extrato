@@ -110,5 +110,5 @@ export function renderPerformanceQuestions({
     </section>`;
   }
 
-  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}${multiLineSection}<section class="performance-block"><h3>Precisão ao longo do tempo</h3>${renderQuestionEvolution(evolution, { formatDate })}</section>${renderPerformanceDetails('Volume, erros e tópicos', volume + errors + topics)}`;
+  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}${multiLineSection}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(evolution, { formatDate })}</section>${renderPerformanceDetails('Volume, erros e tópicos', volume + errors + topics)}`;
 }

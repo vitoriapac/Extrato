@@ -52,7 +52,7 @@ export function renderPlannedVsActualChart(
   const gridHtml = gridLines
     .map(
       line =>
-        `<line x1="${left}" x2="${width - right}" y1="${line.y.toFixed(1)}" y2="${line.y.toFixed(1)}" class="chart-grid-line" stroke="currentColor" stroke-opacity="0.12" stroke-dasharray="3 3"/><text x="${left - 6}" y="${(line.y + 3.5).toFixed(1)}" text-anchor="end" class="chart-axis-label" fill="currentColor" opacity="0.6" font-size="12">${escapeHtml(line.label)}</text>`
+        `<line x1="${left}" x2="${width - right}" y1="${line.y.toFixed(1)}" y2="${line.y.toFixed(1)}" class="chart-grid-line" stroke="currentColor" stroke-opacity="0.12" stroke-dasharray="3 3"/><text x="${left - 6}" y="${(line.y + 3.5).toFixed(1)}" text-anchor="end" class="chart-axis-label" font-size="12">${escapeHtml(line.label)}</text>`
     )
     .join('');
 
@@ -85,7 +85,7 @@ export function renderPlannedVsActualChart(
         <rect x="${actualX.toFixed(1)}" y="${actualY.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${actualH.toFixed(1)}" rx="2" class="${actualToneClass}" fill="var(--color-primary, currentColor)">
           <title>Realizado: ${formatStudyMinutes(week.studiedMinutes)}</title>
         </rect>
-        <text x="${(groupX + groupWidth / 2).toFixed(1)}" y="${(height - 8).toFixed(1)}" text-anchor="middle" class="chart-axis-label" fill="currentColor" opacity="0.75" font-size="12">${escapeHtml(dateLabel.split(' ')[0])}${week.inProgress ? '*' : ''}</text>
+        <text x="${(groupX + groupWidth / 2).toFixed(1)}" y="${(height - 8).toFixed(1)}" text-anchor="middle" class="chart-axis-label" font-size="12">${escapeHtml(dateLabel.split(' ')[0])}${week.inProgress ? '*' : ''}</text>
       </g>`;
     })
     .join('');

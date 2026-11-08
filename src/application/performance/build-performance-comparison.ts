@@ -54,7 +54,7 @@ export function buildPerformanceComparison(
       (previous.resolved || 0) + (current.resolved || 0) > 0
     ),
     metric(
-      'Aderência de carga',
+      'Volume de carga',
       previous.adherence,
       current.adherence,
       'p.p.',

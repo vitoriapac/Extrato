@@ -50,7 +50,7 @@ export function renderPerformancePage({
   const nav = sections
     .map(
       ([key, label]) =>
-        `<button type="button" class="performance-section-button${viewState.section === key ? ' active' : ''}" data-performance-section="${key}" aria-pressed="${viewState.section === key}">${label}</button>`
+        `<button type="button" role="tab" id="performanceTab-${key}" class="performance-section-button${viewState.section === key ? ' active' : ''}" data-performance-section="${key}" aria-selected="${viewState.section === key}" aria-controls="performanceSectionContent" tabindex="${viewState.section === key ? 0 : -1}">${label}</button>`
     )
     .join('');
   const intro = pending[viewState.section];
@@ -62,7 +62,7 @@ export function renderPerformancePage({
         ? '<div class="empty-state empty-state--compact" role="status"><strong>Visão geral de Desempenho</strong><p>Selecione um período para acompanhar a preparação. Os registros desta área aparecerão aqui.</p></div>'
         : `<div class="empty-state empty-state--compact" role="status"><strong>${escapeHtml(intro.title)}</strong><p>${escapeHtml(intro.description)}</p><button type="button" class="btn ghost small" data-performance-open="${escapeAttr(intro.tab)}">${escapeHtml(intro.action)}</button></div>`);
   return `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2><p>Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></div></header>
-    <nav class="performance-section-nav" aria-label="Análises de desempenho">${nav}</nav>
+    <div class="performance-section-nav" role="tablist" aria-label="Análises de desempenho">${nav}</div>
     ${
       viewState.section === 'exam' || viewState.section === 'history'
         ? ''
@@ -70,5 +70,5 @@ export function renderPerformancePage({
     <label class="performance-compare"><input type="checkbox" id="performanceCompare" data-performance-compare ${viewState.comparePrevious ? 'checked' : ''} ${viewState.period === 'all' ? 'disabled' : ''}> Comparar período anterior</label><div class="performance-scope-control"><span>${activeExamCount ? `Concurso ativo · ${pluralize(activeExamCount, 'escopo', 'escopos')}` : 'Todos os concursos'}</span><button type="button" class="btn ghost small" data-performance-open="metas">Alterar concurso</button></div></div>`
     }
     <p class="performance-scope-note">${viewState.section === 'exam' ? 'Histórico de provas · ' : viewState.section === 'history' ? '' : escapeHtml(range.label) + ' · '}${activeExamCount ? 'Concurso ativo · ' + pluralize(activeExamCount, 'escopo') : 'Todos os concursos'}${viewState.section === 'exam' ? '' : range.previous ? ' · comparação: ' + escapeHtml(formatPeriodBR(range.previous.start, range.previous.end)) : ''}</p>
-    <div id="performanceSectionContent">${body}</div></div>`;
+    <div id="performanceSectionContent" role="tabpanel" aria-labelledby="performanceTab-${viewState.section}">${body}</div></div>`;
 }

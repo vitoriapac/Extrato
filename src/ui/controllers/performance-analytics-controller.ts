@@ -110,12 +110,12 @@ export function renderRadarSvg({
     })
     .join('');
 
-  return `<svg class="radar-svg" viewBox="0 0 ${width} ${height}" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;">
+  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="radar-svg" viewBox="0 0 ${width} ${height}" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;">
     ${gridRings}
     ${axes}
     ${series}
     ${labels}
-  </svg>`;
+  </svg></div>`;
 }
 
 export function renderRadarToolbarHtml(

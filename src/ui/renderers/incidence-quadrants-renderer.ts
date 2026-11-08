@@ -34,10 +34,21 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
             ? 'monitor'
             : 'evaluate',
   }));
+  const item = (row: any) =>
+    `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : Math.round(row.mastery)} · confiança ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`;
+  const list = (items: any[]) => `<ul>${items.map(item).join('')}</ul>`;
+  // Cinco por grupo, o resto sob "Mostrar mais"; a ordem é a escolhida no filtro "Ordenar por".
+  const visibleItems = 5;
   const records = groups
     .map(group => {
       const items = classified.filter(row => row.quadrant === group.key);
-      return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${items.length ? `<ul>${items.map(row => `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : Math.round(row.mastery)} · confiança ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`).join('')}</ul>` : '<p>Nenhum tópico neste grupo.</p>'}</section>`;
+      if (!items.length)
+        return `<section class="incidence-quadrant"><h5>${group.label} (0)</h5><p>Nenhum tópico neste grupo.</p></section>`;
+      // Sem evidência o grupo não orienta decisão: fica fechado, só com a contagem à vista.
+      if (group.key === 'insufficient' && items.length > visibleItems)
+        return `<section class="incidence-quadrant"><details class="performance-more"><summary>${group.label} (${items.length})</summary>${list(items)}</details></section>`;
+      const rest = items.slice(visibleItems);
+      return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${list(items.slice(0, visibleItems))}${rest.length ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary>${list(rest)}</details>` : ''}</section>`;
     })
     .join('');
   return renderChartFrame({

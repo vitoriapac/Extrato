@@ -1,4 +1,6 @@
 export const RENDER_SCOPE_SECTIONS = {
+  // Só a visão de Desempenho: trocar subaba, período ou comparação não muda dados das outras seções.
+  'desempenho-visao': new Set(['desempenho']),
   desempenho: new Set([
     'desempenho',
     'evolução do progresso',

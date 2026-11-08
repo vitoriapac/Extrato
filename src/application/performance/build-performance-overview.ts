@@ -122,7 +122,7 @@ export function buildPerformanceOverview({
       ],
       ['Questões resolvidas', 'resolved', 'questões', current!.resolved + previous.resolved > 0],
       [
-        'Aderência de carga',
+        'Volume de carga',
         'adherence',
         'p.p.',
         current!.plannedMinutes >= 60 && previous.plannedMinutes >= 60,

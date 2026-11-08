@@ -83,7 +83,7 @@ export function renderReadinessHistory(
     )
     .join('');
   const chart = rows.length
-    ? `<svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}">${grid}${lines}${dots}</svg>`
+    ? `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}">${grid}${lines}${dots}</svg></div>`
     : '';
   const records = rows.length
     ? `<ol class="simulation-trend-list readiness-history-records">${[...rows]

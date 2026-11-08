@@ -39,7 +39,7 @@ export function renderProgressChart({ data, formatDate }: any) {
         `<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(item.pct)}" r="3"><title>${formatDate(item.date)}: ${item.pct}%</title></circle>`
     )
     .join('');
-  return `<svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${gridLines}<polygon class="chart-area" points="${areaPoints}"></polygon><polyline class="chart-line" points="${points}"></polyline>${dots}${dateLabels}</svg>`;
+  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${gridLines}<polygon class="chart-area" points="${areaPoints}"></polygon><polyline class="chart-line" points="${points}"></polyline>${dots}${dateLabels}</svg></div>`;
 }
 
 export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatDuration }: any) {
@@ -82,7 +82,7 @@ export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatD
     targetSeconds > 0
       ? `<line x1="${padL}" y1="${yFor(targetSeconds)}" x2="${W - padR}" y2="${yFor(targetSeconds)}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="5 4"><title>Meta diária: ${formatDuration(targetSeconds)}</title></line>`
       : '';
-  return `<svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${targetLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg>`;
+  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${targetLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`;
 }
 
 export function renderSubjectHoursBars({

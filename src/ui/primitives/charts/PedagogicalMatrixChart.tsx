@@ -29,7 +29,7 @@ export function PedagogicalMatrixChart({
   });
 
   return (
-    <div class={`chart-matrix-wrap ${className}`}>
+    <div class={`chart-matrix-wrap ${className}`} tabIndex={0} role="region" aria-label="Gráfico com rolagem horizontal">
       <svg
         class="chart-matrix"
         viewBox={`0 0 ${geom.width} ${geom.height}`}

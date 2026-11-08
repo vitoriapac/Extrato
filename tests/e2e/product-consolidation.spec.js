@@ -437,7 +437,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expect(page.locator('#performancePeriod')).toHaveValue('90');
   await expect(
     page.locator('.performance-section-button[data-performance-section="consistency"]')
-  ).toHaveAttribute('aria-pressed', 'true');
+  ).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('.performance-scope-note')).toHaveText(scope);
   await expect(
     page

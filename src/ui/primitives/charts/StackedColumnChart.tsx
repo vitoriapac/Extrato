@@ -29,7 +29,7 @@ export function StackedColumnChart({
   const gridTicks = [0, maxH / 2, maxH];
 
   return (
-    <div class={`chart-stacked-columns-wrap ${className}`}>
+    <div class={`chart-stacked-columns-wrap ${className}`} tabIndex={0} role="region" aria-label="Gráfico com rolagem horizontal">
       <svg
         class="chart-stacked-columns"
         viewBox={`0 0 ${geom.width} ${geom.height}`}

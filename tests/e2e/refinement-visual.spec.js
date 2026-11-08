@@ -22,7 +22,7 @@ for (const { name, width, theme, columns } of [
     for (const section of sections) {
       await page.locator(`[data-performance-section="${section}"]`).click();
       await expect(page.locator(`[data-performance-section="${section}"]`)).toHaveAttribute(
-        'aria-pressed',
+        'aria-selected',
         'true'
       );
       await expectNoPageOverflow(page);
@@ -52,7 +52,7 @@ for (const { name, width, theme, columns } of [
         await page.getByRole('button', { name: 'Comparar disciplinas', exact: true }).click();
         await expect(
           page.locator('[data-performance-section="subjects"].performance-section-button')
-        ).toHaveAttribute('aria-pressed', 'true');
+        ).toHaveAttribute('aria-selected', 'true');
         await expect(page.locator('#performancePeriod')).toHaveValue(period);
         await expect(page.locator('.performance-scope-note')).toHaveText(scope);
         await page

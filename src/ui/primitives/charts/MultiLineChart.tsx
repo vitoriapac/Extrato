@@ -23,7 +23,7 @@ export function MultiLineChart({
   const yTicks = [0, 25, 50, 75, 100];
 
   return (
-    <div class={`chart-multiline-wrap ${className}`}>
+    <div class={`chart-multiline-wrap ${className}`} tabIndex={0} role="region" aria-label="Gráfico com rolagem horizontal">
       <svg
         class="chart-multiline"
         viewBox={`0 0 ${geom.width} ${geom.height}`}
