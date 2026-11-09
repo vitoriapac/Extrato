@@ -4,8 +4,7 @@ import {
   openDemo,
   expectNoPageOverflow,
   openPerformanceHistory,
-  openPlanningSubtab,
-} from './helpers.js';
+  openPlanningSubtab, openPerformanceSection } from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
@@ -319,7 +318,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   for (const label of ['Simulados comparáveis', 'Faixa atual', 'Tendência em 30 dias'])
     await expect(metric(label)).toHaveText('—');
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const action = page.locator('#diagnosisCenter .next-best-action');
   // A fresh start has no subjects, so no study action can be justified yet.
   await expect(action).toHaveAttribute('data-action-state', 'INSUFFICIENT_EVIDENCE');
@@ -355,7 +354,7 @@ test('cinco perfis percorrem a experiência consolidada com ação, contexto e l
     await expect(page.locator('#panel-hoje')).toBeVisible();
     await expectNoPageOverflow(page);
     await activateTab(page, 'desempenho');
-    await page.locator('[data-performance-section="overview"]').click();
+    await openPerformanceSection(page, 'overview');
     await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
     const trajectory = page.locator('.achievement-projection');
     await expect(trajectory).toBeVisible();
@@ -403,7 +402,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const action = page.locator('#diagnosisCenter .next-best-action');
   await expect(action).toBeVisible();
   await expect(action).toHaveAttribute(
@@ -420,16 +419,14 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expectNoPageOverflow(page);
 
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="overview"]').click();
+  await openPerformanceSection(page, 'overview');
   await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   const explanation = page.locator('.readiness-change-explanation');
   await expect(explanation).toBeVisible();
   await explanation.locator(':scope > summary').click();
   await expect(explanation).toContainText(/Prontidão|comparação/);
   for (const section of ['questions', 'simulations', 'subjects', 'consistency']) {
-    await page
-      .locator(`[data-performance-section="${section}"]`)
-      .evaluate(button => button.click());
+    await openPerformanceSection(page, section);
     await expect(page.locator('#performanceSectionContent')).not.toBeEmpty();
     await expectNoPageOverflow(page);
   }
@@ -453,7 +450,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
       .locator('.adherence-summary')
       .getByRole('button', { name: 'Entenda aderência', exact: true })
   ).toBeFocused();
-  await page.locator('[data-performance-section="overview"]').click();
+  await openPerformanceSection(page, 'overview');
   await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
   await page
     .locator('.achievement-projection__details > summary')

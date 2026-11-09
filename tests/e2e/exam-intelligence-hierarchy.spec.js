@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 
 test('saúde, incidência e divergências precedem importação', async ({ page }) => {
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="exam"]').click();
+  await openPerformanceSection(page, 'exam');
   const order = await page
     .locator('.exam-intelligence-hub')
     .evaluate(element =>
@@ -79,7 +79,7 @@ test('filtros avançados da matriz cabem no celular e preservam seleção durant
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="exam"]').click();
+  await openPerformanceSection(page, 'exam');
   const advanced = page.locator('.exam-matrix-more-filters');
   await expect(advanced).not.toHaveAttribute('open');
   await expect(page.locator('[data-exam-matrix-filter="scope"]')).toBeVisible();

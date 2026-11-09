@@ -68,9 +68,30 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
     right = 18,
     top = 16,
     bottom = 30;
-  const x = (index: number) =>
-    left + (index / (Math.max(1, points.length - 1) + 1)) * (width - left - right);
-  const y = (value: number) => top + ((100 - value) / 100) * (height - top - bottom);
+  // Sem tendência de 30 dias, os pontos ocupam a largura toda em vez de reservar espaço vazio à direita.
+  const slots = Math.max(1, points.length - 1) + (model.trajectory.forecast30?.available ? 1 : 0);
+  const x = (index: number) => left + (index / slots) * (width - left - right);
+  const band = model.projection?.calibratedSimulationBand;
+  const bandOk = Number.isFinite(band?.low) && Number.isFinite(band?.high);
+  const domain = [
+    ...points.map((point: any) => point.value),
+    model.current.targetScore,
+    model.trajectory.forecast30?.available ? model.trajectory.forecast30.central : NaN,
+    ...(bandOk ? [band.low, band.high] : []),
+  ].filter(Number.isFinite);
+  // Escala ajustada aos dados (0–100 achatava simulados entre 77% e 84%); mínimo de 20 pontos de altura.
+  const lo = Math.max(0, Math.floor((Math.min(...domain) - 8) / 10) * 10);
+  const hi = Math.min(100, Math.max(lo + 20, Math.ceil((Math.max(...domain) + 8) / 10) * 10));
+  const y = (value: number) => top + ((hi - value) / (hi - lo)) * (height - top - bottom);
+  const ticks = [lo, (lo + hi) / 2, hi]
+    .map(
+      tick =>
+        `<line x1="${left}" x2="${width - right}" y1="${y(tick)}" y2="${y(tick)}" class="achievement-trajectory__grid"/><text x="${left - 8}" y="${y(tick) + 4}" text-anchor="end">${tick}%</text>`
+    )
+    .join('');
+  const bandSvg = bandOk
+    ? `<rect x="${left}" y="${y(band.high)}" width="${width - left - right}" height="${Math.max(2, y(band.low) - y(band.high))}" class="achievement-trajectory__band"><title>Faixa estimada: ${pct(band.low)} a ${pct(band.high)}</title></rect>`
+    : '';
   const historical = points
     .map((point: any, index: any) => `${x(index).toFixed(1)},${y(point.value).toFixed(1)}`)
     .join(' ');
@@ -88,12 +109,13 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
     .join('');
   return `<div class="achievement-trajectory__scroll" tabindex="0" role="region" aria-label="Gráfico da trajetória de simulados"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico de simulados e tendência de 30 dias">
     <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal. Valores disponíveis abaixo.</desc>
-    <line x1="${left}" x2="${width - right}" y1="${y(model.current.targetScore)}" y2="${y(model.current.targetScore)}" class="achievement-trajectory__target"/>
+    ${ticks}${bandSvg}
+    <line x1="${left}" x2="${width - right}" y1="${y(model.current.targetScore)}" y2="${y(model.current.targetScore)}" class="achievement-trajectory__target"/><text x="${width - right}" y="${y(model.current.targetScore) - 6}" text-anchor="end">meta ${pct(model.current.targetScore)}</text>
     <polyline points="${historical}" class="achievement-trajectory__observed"/>${future}
     ${points.map((point: any, index: any) => `<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
-    <text x="${left}" y="${height - 7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height - 7}" text-anchor="middle">${escapeHtml(formatDateBR(last.date))}</text>
+    <text x="${left}" y="${height - 7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height - 7}" text-anchor="${forecast.available ? 'middle' : 'end'}">${escapeHtml(formatDateBR(last.date))}</text>
     ${forecast.available ? `<text x="${width - right}" y="${height - 7}" text-anchor="end">30 dias</text>` : ''}
-  </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span></div>
+  </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span>${bandOk ? `<span>▒ Faixa estimada ${pct(band.low)} a ${pct(band.high)}</span>` : ''}</div>
   <details class="limits-disclosure"><summary aria-label="Limites da projeção">Limites</summary><p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p></details>
   <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
 }

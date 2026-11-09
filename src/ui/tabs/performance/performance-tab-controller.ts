@@ -69,7 +69,24 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
   const formatDatePt = deps.formatDatePt;
   const todayISO = deps.todayISO;
 
+  // URL por subaba: "#desempenho/diagnosis" abre a subaba direto; "#desempenho" abre a Visão geral.
+  const PERFORMANCE_SECTIONS = [
+    'overview',
+    'subjects',
+    'diagnosis',
+    'questions',
+    'simulations',
+    'exam',
+    'consistency',
+    'history',
+  ];
   let performanceViewState = createPerformanceViewState();
+  const hashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
+  if (hashSection && PERFORMANCE_SECTIONS.includes(hashSection)) {
+    performanceViewState = updatePerformanceViewState(performanceViewState, {
+      section: hashSection,
+    });
+  }
   let selectedCareerClusterId: CareerClusterId | null = null;
 
   function recordProgressSnapshot(pct: number) {
@@ -314,15 +331,26 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     } else if (performanceViewState.section === 'history') {
       const historyMount = target.querySelector('#performanceHistorySupplementalMount');
       if (historyMount) {
-        for (const node of [progressSection, studyDetails]) {
+        // Extrato de sessões primeiro; as conquistas ficam abaixo dele.
+        for (const node of [studyDetails, progressSection]) {
           if (node) historyMount.append(node);
         }
       }
     }
 
-    doc.getElementById('panel-desempenho')?.setAttribute?.('data-performance-view', performanceViewState.section);
+    doc
+      .getElementById('panel-desempenho')
+      ?.setAttribute?.('data-performance-view', performanceViewState.section);
+    const win = doc.defaultView;
+    if (win && /^#desempenho(\/|$)/.test(win.location.hash)) {
+      const next =
+        performanceViewState.section === 'overview'
+          ? '#desempenho'
+          : `#desempenho/${performanceViewState.section}`;
+      if (win.location.hash !== next) win.history.replaceState(null, '', next);
+    }
     const status = doc.getElementById('performanceStatus');
-    const section = target.querySelector('.performance-section-button.active')?.textContent?.trim();
+    const section = target.querySelector('.performance-section-button.active[data-performance-section]')?.textContent?.trim();
     const statusText = section
       ? `Mostrando ${section}${examSection || performanceViewState.section === 'history' || performanceViewState.section === 'diagnosis' ? '' : ` · ${range.label}`}.`
       : '';
@@ -356,11 +384,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (careerBenchmarkMount) {
       const detected = detectCareerCluster(state);
       const activeCareerId = selectedCareerClusterId || detected;
-      const aggregates = aggregateRecentActivity(
-        state.studySessions || [],
-        state.questoes || [],
-        { todayISO: today, daysWindow: 7 }
-      );
+      const aggregates = aggregateRecentActivity(state.studySessions || [], state.questoes || [], {
+        todayISO: today,
+        daysWindow: 7,
+      });
       const comparison = calculateCareerBenchmarkComparison(aggregates, activeCareerId);
 
       mountPreact(

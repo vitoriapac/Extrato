@@ -1,4 +1,5 @@
 import { renderGlobalSearchPanel } from '../renderers/global-search-renderer.js';
+import { openPerformanceSection } from '../performance/open-performance-section.js';
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { scrollBehavior } from '../accessibility.js';
 import { subjectColorOf } from '../../domain/subjects/subject-color.js';
@@ -35,7 +36,8 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
   },
   {
     label: 'Ir para a recomendação prioritária',
-    keywords: 'começar iniciar estudo primeiro item do plano próxima ação estudar recomendação prioritária',
+    keywords:
+      'começar iniciar estudo primeiro item do plano próxima ação estudar recomendação prioritária',
     action: 'recommendation',
     icon: 'player-play',
   },
@@ -242,7 +244,10 @@ export function createSearchController(options: SearchControllerOptions) {
         panel.style.top = `${Math.min(inputRect.bottom + 6, (window.innerHeight || 600) - 80)}px`;
       } else {
         const targetWidth = Math.min(620, Math.max(inputRect.width, 500));
-        const left = Math.max(16, Math.min(inputRect.left, (window.innerWidth || 1200) - targetWidth - 16));
+        const left = Math.max(
+          16,
+          Math.min(inputRect.left, (window.innerWidth || 1200) - targetWidth - 16)
+        );
         panel.style.left = `${left}px`;
         panel.style.width = `${Math.min(targetWidth, (window.innerWidth || 1200) - 32)}px`;
         panel.style.top = `${Math.min(inputRect.bottom + 6, (window.innerHeight || 800) - 100)}px`;
@@ -293,6 +298,7 @@ export function createSearchController(options: SearchControllerOptions) {
     } else if (action === 'diagnosis') {
       // A central fica num <details> fechado em Desempenho, que o modo Essencial também esconde: abrir, liberar, rolar e focar.
       activateTab('desempenho');
+      openPerformanceSection(document, 'diagnosis');
       const center = document.getElementById('diagnosisCenter');
       const details = center?.closest('details') as HTMLDetailsElement | null;
       if (details) {

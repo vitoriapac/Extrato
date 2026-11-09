@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab } from './helpers.js';
+import { openPlanningSubtab } from './helpers.js';
 test('availability changes capture prospective capacity and legacy backups keep historical gaps', async ({
   page,
 }) => {
@@ -7,7 +7,12 @@ test('availability changes capture prospective capacity and legacy backups keep 
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
-  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
+  await page.locator('#panel-metas details').evaluateAll(folds =>
+    folds.forEach(fold => {
+      fold.open = true;
+    })
+  );
   const input = page.getByRole('spinbutton', { name: 'Disponibilidade em horas de Seg' });
   await input.fill('1');
   await input.blur();

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
+import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab, openPerformanceSection } from './helpers.js';
 test('destaca prontidão e ativa o cabeçalho compacto ao rolar', async ({ page }) => {
   await openDemo(page);
   await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');
@@ -310,7 +310,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
 test('diagnóstico separa interpretação do sinal, score e cobertura', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const diagnosis = page.locator('#diagnosisCenter');
   await expect(diagnosis.locator('.diagnostic-row').first()).toBeVisible();
   await expect(diagnosis.locator('[data-consolidated-signal]').first()).toBeVisible();
@@ -335,7 +335,7 @@ test('diagnóstico vazio orienta o cadastro sem inventar risco', async ({ page }
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const empty = page.locator('#diagnosisCenter .diagnosis-empty-state');
   await expect(empty).toContainText('O diagnóstico ainda não pode ser calculado');
   await expect(empty).toContainText('Cadastre disciplinas e tópicos');

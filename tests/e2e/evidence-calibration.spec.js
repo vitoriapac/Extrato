@@ -20,6 +20,12 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
     structuredClone(window.__EXTRATO_TEST__.getState().projectionSnapshots)
   );
   expect(initial.length).toBeGreaterThan(0);
+  await page
+    .getByText('Prontidão, trajetória e carga', { exact: true })
+    .locator('xpath=ancestor::details[1]')
+    .evaluate(fold => {
+      fold.open = true;
+    });
   await page.locator('#approvalDashboard .readiness-investigation > summary').click();
   const quality = page.locator('#approvalDashboard .evidence-quality').first();
   await quality.locator('summary').focus();
@@ -56,6 +62,12 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
   const calibration = page
     .locator('#approvalDashboard .projection-calibration-list > details')
     .first();
+  await page
+    .getByText('Prontidão, trajetória e carga', { exact: true })
+    .locator('xpath=ancestor::details[1]')
+    .evaluate(fold => {
+      fold.open = true;
+    });
   await page.locator('#approvalDashboard .readiness-investigation > summary').click();
   await calibration.locator(':scope > summary').click();
   await expect(calibration.locator('svg[role="img"]')).toBeVisible();

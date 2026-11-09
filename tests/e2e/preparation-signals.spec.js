@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 import { buildStrategicCycleFixture } from '../fixtures/strategic-cycle.js';
 test('platô e consolidação em risco explicam os dados sem modificar o plano', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
@@ -58,7 +58,7 @@ test('platô e consolidação em risco explicam os dados sem modificar o plano',
     api.renderAll();
   }, fixture);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const before = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));
   const signals = page.locator('#diagnosisCenter .preparation-signals');
   await page.locator('#diagnosisCenter .diagnosis-method-details > summary').click();

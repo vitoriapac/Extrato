@@ -12,10 +12,29 @@ export async function activateTab(page, name) {
   await page.locator(`[data-tab="${name}"]`).evaluate(button => button.click());
   await expect(page.locator(`#panel-${name}`)).toBeVisible();
 }
+// Subabas de Desempenho em dois níveis: o botão da seção só existe quando o grupo dela está ativo.
+const PERFORMANCE_GROUP = {
+  overview: 'overview',
+  subjects: 'subjects',
+  diagnosis: 'subjects',
+  questions: 'proofs',
+  simulations: 'proofs',
+  exam: 'proofs',
+  consistency: 'consistency',
+  history: 'consistency',
+};
+export async function openPerformanceSection(page, section) {
+  const button = page.locator(`[data-performance-section="${section}"]`);
+  if (!(await button.count()))
+    await page
+      .locator(`[data-performance-group="${PERFORMANCE_GROUP[section]}"]`)
+      .evaluate(element => element.click());
+  await button.evaluate(element => element.click());
+}
 // Conquistas, tempo de estudo e sessões moram na subaba Histórico de Desempenho.
 export async function openPerformanceHistory(page) {
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="history"]').evaluate(button => button.click());
+  await openPerformanceSection(page, 'history');
   await expect(page.locator('#panel-desempenho')).toHaveAttribute(
     'data-performance-view',
     'history'

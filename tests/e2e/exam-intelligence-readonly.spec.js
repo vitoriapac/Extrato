@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 
 test('impacto manual prevalece sobre o histórico na prioridade', async ({ page }) => {
   await page.goto('/?test=1');
@@ -57,7 +57,7 @@ test('impacto manual prevalece sobre o histórico na prioridade', async ({ page 
   );
   expect(after).toBe(before);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="exam"]').click();
+  await openPerformanceSection(page, 'exam');
   await expect(page.locator('#examIntelligenceSummary')).toContainText('4 de 5 provas');
   await expect(page.locator('#examIntelligenceSummary')).toContainText('Confiança moderada');
   await expectNoPageOverflow(page);

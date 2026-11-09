@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { Icon } from '../primitives/icon.js';
 import { Badge } from '../primitives/badge.js';
+import { formatDecimal } from '../../core/format-number.js';
 import {
   CAREER_BENCHMARKS,
   type CareerClusterId,
@@ -36,10 +37,10 @@ function MetricBulletBar({
         <span class="font-medium text-content-primary">{comparison.label}</span>
         <div class="flex items-center gap-1.5 font-mono">
           <span class="font-bold text-sm text-content-primary">
-            {currentValue} {unit}
+            {formatDecimal(currentValue)} {unit}
           </span>
           <span class="text-content-secondary text-xs">
-            (alvo: {targetMin}–{targetMax} {unit})
+            (alvo: {formatDecimal(targetMin)}–{formatDecimal(targetMax)} {unit})
           </span>
         </div>
       </div>

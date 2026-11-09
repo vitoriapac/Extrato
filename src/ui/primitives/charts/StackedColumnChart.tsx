@@ -27,9 +27,16 @@ export function StackedColumnChart({
   const geom = stackedColumnsGeometry(days, { width, height, minYMax });
   const maxH = geom.maxSeconds / 3600;
   const gridTicks = [0, maxH / 2, maxH];
+  // No máximo ~6 datas no eixo X: com 30 colunas os rótulos se sobrepunham.
+  const labelStep = Math.max(1, Math.ceil(geom.columns.length / 6));
 
   return (
-    <div class={`chart-stacked-columns-wrap ${className}`} tabIndex={0} role="region" aria-label="Gráfico com rolagem horizontal">
+    <div
+      class={`chart-stacked-columns-wrap ${className}`}
+      tabIndex={0}
+      role="region"
+      aria-label={`${label}, com rolagem horizontal`}
+    >
       <svg
         class="chart-stacked-columns"
         viewBox={`0 0 ${geom.width} ${geom.height}`}
@@ -61,7 +68,7 @@ export function StackedColumnChart({
         })}
 
         {/* Colunas empilhadas */}
-        {geom.columns.map(col => {
+        {geom.columns.map((col, colIndex) => {
           const [, m, d] = col.date.split('-');
           const dateLabel = `${d}/${m}`;
           return (
@@ -93,15 +100,17 @@ export function StackedColumnChart({
                 ))
               )}
 
-              {/* Rótulo da data no eixo X */}
-              <text
-                x={col.cx}
-                y={geom.height - 8}
-                class="chart-stacked-columns__label"
-                text-anchor="middle"
-              >
-                {dateLabel}
-              </text>
+              {/* Rótulo da data no eixo X (espaçado) */}
+              {(colIndex % labelStep === 0 || colIndex === geom.columns.length - 1) && (
+                <text
+                  x={col.cx}
+                  y={geom.height - 8}
+                  class="chart-stacked-columns__label"
+                  text-anchor="middle"
+                >
+                  {dateLabel}
+                </text>
+              )}
             </g>
           );
         })}

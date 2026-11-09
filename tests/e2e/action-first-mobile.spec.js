@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, overviewRecommendationId } from './helpers.js';
+import { activateTab, openDemo, overviewRecommendationId, openPerformanceSection } from './helpers.js';
 
 test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', async ({ page }) => {
   await openDemo(page);
@@ -45,7 +45,7 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
     page.locator('#studyRecommendation .recommendation-actions .btn').first()
   ).toBeVisible();
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const diagnosisActions = page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
   await expect(diagnosisActions.first()).toBeVisible();
   await expect(diagnosisActions.first()).toHaveAttribute(
@@ -87,7 +87,7 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
       .screenshot({ path: test.info().outputPath(`today-plan-first-${width}.png`) });
   }
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
   await expect(page.locator('#weeklyReplan')).toBeVisible();
 });

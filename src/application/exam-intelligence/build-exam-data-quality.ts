@@ -86,7 +86,9 @@ export function buildExamDataQuality({
     warnings.push(`${unreviewedQuestions} classificações importadas ainda não foram revisadas.`);
   if (importantTopicsWithoutHistory)
     warnings.push(
-      `${importantTopicsWithoutHistory} tópicos importantes ainda não têm questão histórica vinculada.`
+      importantTopicsWithoutHistory === 1
+        ? '1 tópico importante ainda não tem questão histórica vinculada.'
+        : `${importantTopicsWithoutHistory} tópicos importantes ainda não têm questão histórica vinculada.`
     );
   return {
     examCount: scoped.length,

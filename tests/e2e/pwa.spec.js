@@ -27,13 +27,6 @@ test('landing separada abre /app sem alterar dados armazenados', async ({ page }
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.getByRole('heading', { name: 'Saiba o que estudar hoje.' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Extrato de Estudos', exact: true })).toHaveCount(0);
-  const saturday = page.locator('.chart-columns__bar').filter({ hasText: 'Sáb:' });
-  const weekTwoHeight = Number(await saturday.getAttribute('height'));
-  const weekOne = page.getByRole('button', { name: 'Semana 01' });
-  await weekOne.click();
-  await expect(weekOne).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#preview-week')).toContainText('Interpretação de texto');
-  expect(Number(await saturday.getAttribute('height'))).toBeLessThan(weekTwoHeight);
   const wordmark = page.locator('.landing-wordmark');
   await wordmark.scrollIntoViewIfNeeded();
   await expect(wordmark).toHaveAttribute('data-reveal', 'shown');

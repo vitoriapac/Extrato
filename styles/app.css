@@ -1189,7 +1189,7 @@
   .week-reconciliation__note a{display:inline-flex;align-items:center;min-height:var(--touch-target)}
   summary,.action-menu>summary,.action-menu__items button,.subject-color-field select,.help-text-link,.subject-toggle{min-height:var(--touch-target)}
   .today-progress-status a{padding-block:14px}
-  .performance-topic-link,.exam-matrix-topic,.exam-matrix-card>button{display:inline-flex;align-items:center;min-height:var(--touch-target)}
+  .performance-topic-link,.exam-matrix-topic,.exam-matrix-card>button,[data-stability-subject]{display:inline-flex;align-items:center;min-height:var(--touch-target)}
   /* Links de texto seguem em linha: o alvo cresce no padding, sem deslocar o texto. */
   .panel a.text-brand,.panel a.text-ink-soft,.metas-planning .helper-text a{padding-block:14px;margin-block:-14px}
   #examDateInput,.panel select.select-control{min-height:var(--touch-target)}
@@ -2289,6 +2289,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .chart-frame .chart-line,.chart-frame .question-evolution-line,.chart-frame .plan-adherence-line{stroke:var(--chart-series-primary)}
 .chart-frame .chart-dot{fill:var(--chart-series-primary)}
 .chart-frame .chart-dot:last-of-type{fill:var(--chart-series-secondary)}
+.chart-frame .chart-dot--current{fill:var(--surface-card);stroke:var(--chart-series-secondary);stroke-width:2.5}.chart-frame .chart-dot--current:last-of-type{fill:var(--surface-card);stroke:var(--chart-series-secondary);stroke-width:2.5}
 .chart-frame .question-evolution-point,.chart-frame .plan-adherence-point{stroke:var(--chart-series-primary)}
 .chart-frame .question-evolution-point:last-of-type,.chart-frame .plan-adherence-point circle:last-of-type{fill:var(--chart-series-secondary);stroke:var(--chart-series-secondary)}
 .chart-frame .simulation-goal-line,.chart-frame .plan-adherence-grid{stroke:var(--chart-series-secondary);stroke-dasharray:5 4}
@@ -2370,6 +2371,9 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .performance-section-button{flex:none;min-height:var(--touch-target);border:1px solid var(--paper-line);background:var(--paper);color:var(--ink);padding:9px 13px;font:inherit;cursor:pointer}
 .performance-section-button.active{background:var(--action-primary-bg);border-color:var(--action-primary-bg);color:var(--action-primary-text)}
 .performance-section-button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.performance-subsection-nav{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-2);scrollbar-width:thin}
+.performance-subsection-nav .performance-section-button{background:transparent;font-size:.8125rem;padding:6px 12px;box-shadow:none}
+.performance-subsection-nav .performance-section-button.active{background:var(--green-bg);border-color:var(--accent);color:var(--heading);box-shadow:none}
 .performance-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-3);background:var(--paper);border:1px solid var(--paper-line)}
 .performance-page>.performance-toolbar{background:var(--surface-card);border-color:var(--border-default);padding:var(--space-4);gap:var(--space-4)}
 .performance-scope-control{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2);margin-left:auto;color:var(--text-secondary);font-size:var(--text-small)}
@@ -2421,9 +2425,10 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .achievement-projection__metrics>div{display:grid;gap:var(--space-1);min-width:0}
 .achievement-projection__metrics span,.achievement-trajectory__legend{color:var(--ink-muted,var(--ink));font-size:.82rem}
 .achievement-projection__metrics strong{font-size:clamp(1rem,2vw,1.4rem)}
-.achievement-trajectory__scroll{overflow-x:auto}
-.achievement-trajectory__scroll svg{width:100%;min-width:640px;height:auto;color:var(--ink);font-size:var(--text-micro)}
+.achievement-trajectory__scroll{overflow-x:auto;display:flex;flex-direction:row-reverse}/* row-reverse: no celular a rolagem começa no fim, onde estão o ponto atual e a tendência */
+.achievement-trajectory__scroll svg{flex:0 0 auto;width:100%;min-width:640px;max-width:760px;margin-right:auto;height:auto;color:var(--ink);font-size:var(--text-micro)}
 .achievement-trajectory__scroll svg text{fill:currentColor}
+.achievement-trajectory__grid{stroke:var(--paper-line);stroke-width:1}.achievement-trajectory__band{fill:var(--chart-series-primary);fill-opacity:.14}
 .achievement-trajectory__observed,.achievement-trajectory__future,.achievement-trajectory__target{fill:none;stroke:currentColor;stroke-width:2.5}
 .achievement-trajectory__future{stroke:var(--chart-series-secondary);stroke-dasharray:6 5}.achievement-trajectory__target{stroke:var(--chart-series-secondary);stroke-width:1.5;opacity:.75}
 .achievement-trajectory__dot{fill:var(--surface-card);stroke:currentColor;stroke-width:2}
@@ -2466,6 +2471,8 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .performance-topic-list li{align-items:baseline}.performance-topic-list li span{text-align:right;font-size:12px}
 .performance-more{margin-top:var(--space-3)}.performance-more summary{cursor:pointer;color:var(--heading);font-weight:600}
 .performance-topic-link{border:0;background:none;color:var(--heading);padding:0;text-align:left;text-decoration:underline;text-underline-offset:3px;font:inherit;font-weight:600;cursor:pointer}
+/* Alvo mínimo de 24px (WCAG 2.2) para links de tópico e disciplina em listas densas; em toque o bloco acima leva a 44px. */
+@media (pointer:fine) and (min-width:761px){.performance-topic-link,.exam-matrix-topic,[data-stability-subject]{display:inline-flex;align-items:center;min-height:24px}}
 .performance-topic-dialog{width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink)}
 .performance-topic-dialog::backdrop{background:var(--backdrop)}
 .performance-topic-dialog-inner{overflow:auto;max-height:calc(100vh - 34px);padding:var(--space-4)}
@@ -2508,7 +2515,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 @media(max-width:700px){.performance-topic-groups{grid-template-columns:1fr}.performance-changes li{flex-wrap:wrap}}
 @media(max-width:900px){.performance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.performance-kpis{grid-template-columns:1fr}.performance-table-scroll{overflow-x:auto}.performance-table-scroll table{min-width:480px}}
-@media(max-width:600px){.performance-section-nav{margin-inline:-12px;padding-inline:12px}.performance-toolbar{align-items:stretch}.performance-toolbar label{justify-content:space-between;width:100%}}
+@media(max-width:600px){.performance-section-nav,.performance-subsection-nav{margin-inline:-12px;padding-inline:12px}.performance-toolbar{align-items:stretch}.performance-toolbar label{justify-content:space-between;width:100%}}
 @media(max-width:760px){.performance-subject-previews li{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.performance-subject-previews .ui-progress,.performance-subject-previews li>small{grid-column:1/-1}.performance-scope-control{width:100%;justify-content:space-between;margin-left:0}}
 @media(max-width:430px){.consolidated-diagnosis-row .diagnostic-row-heading{flex-wrap:wrap}.consolidated-diagnosis-row .diagnostic-row-action{display:grid;justify-content:stretch}.consolidated-diagnosis-row .diagnostic-row-buttons{display:grid;grid-template-columns:minmax(0,1fr);width:100%}.consolidated-diagnosis-row .diagnostic-row-buttons .btn{width:100%}}
 .stability-map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}.stability-map-cell{min-width:0;padding:var(--space-3);border-top:3px solid var(--border-subtle);background:var(--surface-subtle,var(--paper))}.stability-map-cell--attention{border-color:var(--status-warning)}.stability-map-cell--maintain{border-color:var(--status-positive)}.stability-map-cell--intervene{border-color:var(--status-negative)}.stability-map-cell--evolving{border-color:var(--status-info)}.stability-map-cell h4{margin:0}.stability-map-cell p{margin:var(--space-2) 0;color:var(--text-secondary)}.stability-map-cell ul{list-style:none;padding:0;margin:0}.stability-map-cell li{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);padding:var(--space-2) 0;border-top:1px solid var(--border-subtle)}.stability-map-cell li button{border:0;background:none;color:inherit;text-align:left;text-decoration:underline;cursor:pointer}.stability-map-cell li small{white-space:nowrap}.phase-comparison table{min-width:540px}.phase-comparison td,.phase-comparison th{text-align:left;padding:var(--space-2);border-bottom:1px solid var(--border-subtle)}
@@ -3625,7 +3632,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 }
 
 /* Laranja secundário: destaque editorial (o que olhar primeiro). O âmbar semântico (--amber) segue só para estado. */
-.statement-eyebrow{color:var(--ink-soft)}
+.statement-eyebrow{color:var(--secondary)}
 .kpi-cell{box-shadow:inset 0 3px 0 var(--secondary)}
 .stat-cell{box-shadow:inset 0 3px 0 var(--secondary-strong)}
 .tab-btn.active{box-shadow:inset 0 -3px 0 var(--secondary)}

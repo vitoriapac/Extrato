@@ -111,20 +111,12 @@ function computeWindowStats(
   );
   const studiedMinutes = Math.round(studiedSeconds / 60);
 
-  const plannedMinutes = Math.round(
-    winPlans.reduce((sum, p) => sum + plannedMinutesForPlan(p), 0)
-  );
+  const plannedMinutes = Math.round(winPlans.reduce((sum, p) => sum + plannedMinutesForPlan(p), 0));
   const planFulfillmentPct =
     plannedMinutes > 0 ? Math.round((studiedMinutes / plannedMinutes) * 100) : null;
 
-  const resolved = winQuestions.reduce(
-    (sum, q) => sum + Math.max(0, Number(q?.resolved) || 0),
-    0
-  );
-  const correct = winQuestions.reduce(
-    (sum, q) => sum + Math.max(0, Number(q?.correct) || 0),
-    0
-  );
+  const resolved = winQuestions.reduce((sum, q) => sum + Math.max(0, Number(q?.resolved) || 0), 0);
+  const correct = winQuestions.reduce((sum, q) => sum + Math.max(0, Number(q?.correct) || 0), 0);
   const accuracy = resolved > 0 ? Math.round((correct / resolved) * 100) : null;
 
   const activeDateSet = new Set<string>();
@@ -173,7 +165,10 @@ function findSubjectHighlights(
     }
   }
 
-  const bySubject = new Map<string, { id: string; name: string; resolved: number; correct: number }>();
+  const bySubject = new Map<
+    string,
+    { id: string; name: string; resolved: number; correct: number }
+  >();
 
   for (const q of questions) {
     if (!inDateWindow(q?.date, start, end)) continue;
@@ -207,12 +202,8 @@ function findSubjectHighlights(
   const meaningful = all.filter(item => item.resolved >= 5);
   const pool = meaningful.length > 0 ? meaningful : all;
 
-  const sortedDesc = [...pool].sort(
-    (a, b) => b.accuracy - a.accuracy || b.resolved - a.resolved
-  );
-  const sortedAsc = [...pool].sort(
-    (a, b) => a.accuracy - b.accuracy || b.resolved - a.resolved
-  );
+  const sortedDesc = [...pool].sort((a, b) => b.accuracy - a.accuracy || b.resolved - a.resolved);
+  const sortedAsc = [...pool].sort((a, b) => a.accuracy - b.accuracy || b.resolved - a.resolved);
 
   const topCandidate = sortedDesc[0] || null;
   const bottomCandidate = sortedAsc[0] || null;
@@ -274,7 +265,7 @@ function buildChartMetrics(
         : 'Sem questões na semana'
       : accDiff === 0
         ? 'Manteve o percentual'
-        : `${accDiff > 0 ? '+' : '−'}${Math.abs(accDiff)}%`;
+        : `${accDiff > 0 ? '+' : '−'}${Math.abs(accDiff)} p.p.`;
 
   return [
     {
@@ -305,9 +296,7 @@ function buildChartMetrics(
       deltaFormatted: questionsDeltaFormatted,
       trend: questionsTrend,
       currentBarPct:
-        current.resolved > 0
-          ? Math.max(6, Math.round((current.resolved / maxQuestions) * 100))
-          : 0,
+        current.resolved > 0 ? Math.max(6, Math.round((current.resolved / maxQuestions) * 100)) : 0,
       previousBarPct:
         previous.resolved > 0
           ? Math.max(6, Math.round((previous.resolved / maxQuestions) * 100))

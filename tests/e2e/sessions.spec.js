@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab } from './helpers.js';
+import { activateTab, openPerformanceSection } from './helpers.js';
 
 test('registra dificuldade percebida na sessão e respeita os campos por atividade', async ({
   page,
@@ -107,7 +107,7 @@ test('sessão de simulado encaminha ao cadastro próprio do simulado', async ({ 
   await row.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
   await expect(page.locator('#simuladosBody')).toContainText('Simulado da jornada');
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="simulations"]').click();
+  await openPerformanceSection(page, 'simulations');
   await expect(page.locator('#performanceSectionContent')).toContainText('70%');
   await expect(page.locator('#performanceSectionContent')).toContainText('Simulado da jornada');
 });

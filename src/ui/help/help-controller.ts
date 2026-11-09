@@ -1,3 +1,4 @@
+import { openPerformanceSection } from '../performance/open-performance-section.js';
 import {
   normalizeHelpText as normalize,
   matchesHelpSearch,
@@ -308,8 +309,7 @@ export function createHelpController({
     const destination = DESTINATIONS[key];
     if (!destination) return;
     activateTab(destination.tab);
-    if (destination.section)
-      document.querySelector(`[data-performance-section="${destination.section}"]`)?.click();
+    if (destination.section) openPerformanceSection(document, destination.section);
     window.requestAnimationFrame(() => {
       const target =
         document.querySelector(destination.selector) ||

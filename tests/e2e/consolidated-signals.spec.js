@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab } from './helpers.js';
+import { activateTab, openPerformanceSection } from './helpers.js';
 
 test('diagnóstico consolida o escopo atual sem modificar planos ou registros pessoais', async ({
   page,
@@ -47,7 +47,7 @@ test('diagnóstico consolida o escopo atual sem modificar planos ou registros pe
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   const model = await page.evaluate(() => window.__EXTRATO_TEST__.getConsolidatedDiagnosis());
   expect(model.topics.map(item => item.topicId)).toEqual(['only-bb']);
   expect(model.summary.topics.controlled).toBe(0);

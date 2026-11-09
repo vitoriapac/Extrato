@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, openExamImport, overviewRecommendationId, openPlanningSubtab } from './helpers.js';
+import { activateTab, openDemo, openExamImport, overviewRecommendationId, openPlanningSubtab, openPerformanceSection } from './helpers.js';
 
 test.describe('validação dos fluxos recentes', () => {
   test('matriz, cenários e fechamento aparecem no planejamento da demo', async ({ page }) => {
@@ -197,7 +197,7 @@ test.describe('validação dos fluxos recentes', () => {
   }) => {
     await openDemo(page);
     await activateTab(page, 'desempenho');
-    await page.locator('[data-performance-section="diagnosis"]').click();
+    await openPerformanceSection(page, 'diagnosis');
     // Na demonstração, as ações de estudo vêm de conteúdos sem evidência, agrupados num bloco recolhido.
     const insufficient = page.locator('#diagnosisCenter .diagnosis-insufficient > summary');
     if (await insufficient.count()) await insufficient.click();
@@ -242,7 +242,7 @@ test.describe('validação dos fluxos recentes', () => {
     expect(saved.completed).toBe(true);
     expect(saved.resultingSessionId).toBe(saved.sessionId);
     await activateTab(page, 'desempenho');
-    await page.locator('[data-performance-section="diagnosis"]').click();
+    await openPerformanceSection(page, 'diagnosis');
     await expect(page.locator('#diagnosisCenter')).toBeVisible();
     await activateTab(page, 'dashboard');
     const overviewId = await overviewRecommendationId(page);

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo } from './helpers.js';
+import { activateTab, openDemo, openPerformanceSection } from './helpers.js';
 
 test('quem começa sem dados entra no modo Essencial: análises a um clique e dicas dos termos (F10)', async ({
   page,
@@ -8,10 +8,10 @@ test('quem começa sem dados entra no modo Essencial: análises a um clique e di
   await expect(page.locator('html')).toHaveAttribute('data-essential', 'on');
   await expect(page.locator('#essentialToggleBtn')).toHaveAttribute('aria-pressed', 'true');
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
+  await openPerformanceSection(page, 'subjects');
   await expect(page.locator('.today-analysis-details')).toBeHidden();
   // O Diagnóstico é uma subaba: abrir a subaba já é a escolha de ver o bloco, sem botão "Mostrar".
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   await expect(page.locator('.today-analysis-details')).toBeVisible();
   await activateTab(page, 'dashboard');
   const hint = page.getByRole('button', { name: 'O que é Índice de prontidão?' });

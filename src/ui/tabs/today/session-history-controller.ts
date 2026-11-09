@@ -7,6 +7,7 @@
  * Camada: UI Controller / Tab Controller.
  */
 
+import { openPerformanceSection } from '../../performance/open-performance-section.js';
 import { filterStudySessions, groupStudySessionsByDate } from '../../session-history.js';
 import {
   buildSessionHistoryPresentation,
@@ -243,7 +244,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     // O histórico mora na subaba Histórico de Desempenho: abre a aba e a subaba antes de rolar.
     const doc = getDoc();
     (doc as any)?.querySelector('.tab-btn[data-tab="desempenho"]')?.click();
-    (doc as any)?.querySelector('[data-performance-section="history"]')?.click();
+    if (doc) openPerformanceSection(doc, 'history');
     doc?.getElementById('studySessionsCard')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
     opts.onFilterChange?.();
   }

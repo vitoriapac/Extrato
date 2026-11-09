@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, openDemo, openPlanningSubtab } from './helpers.js';
+import { activateTab, openDemo, openPlanningSubtab, openPerformanceSection } from './helpers.js';
 
 test.describe.configure({ timeout: 60_000 });
 
@@ -57,7 +57,7 @@ test('áreas centrais mantêm contraste e nomes acessíveis em 320 px no tema es
 test('central de diagnóstico continua acessível quando expandida', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   await expectAccessible(page, 'Central de diagnóstico expandida', '#panel-hoje');
 });
 

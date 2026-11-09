@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo, openPlanningAdjust } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningAdjust, openPerformanceSection } from './helpers.js';
 
 const sections = ['overview', 'subjects', 'questions', 'simulations', 'exam', 'consistency'];
 const screenshotOptions = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.08 };
@@ -20,7 +20,7 @@ for (const { name, width, theme, columns } of [
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
     await activateTab(page, 'desempenho');
     for (const section of sections) {
-      await page.locator(`[data-performance-section="${section}"]`).click();
+      await openPerformanceSection(page, section);
       await expect(page.locator(`[data-performance-section="${section}"]`)).toHaveAttribute(
         'aria-selected',
         'true'
@@ -157,12 +157,12 @@ test('Desempenho mantém orientação dentro dos cards quando não há dados', a
   });
   await activateTab(page, 'desempenho');
   for (const section of ['questions', 'simulations']) {
-    await page.locator(`[data-performance-section="${section}"]`).click();
+    await openPerformanceSection(page, section);
     await expect(page.locator('#performanceSectionContent > .empty-state')).toBeVisible();
     await expect(page.locator('#performanceSectionContent > .empty-state')).not.toHaveText(
       'Sem dados.'
     );
   }
-  await page.locator('[data-performance-section="consistency"]').click();
+  await openPerformanceSection(page, 'consistency');
   await expect(page.locator('#performanceSectionContent')).toContainText('0 dias com estudo');
 });

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openPlanningAdjust } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningAdjust, openPerformanceSection } from './helpers.js';
 import { buildVisualDensityFixture } from '../fixtures/visual-density.js';
 
 const state = buildVisualDensityFixture();
@@ -61,7 +61,7 @@ test('cabeçalhos analíticos com dados densos em desktop', async ({ page }) => 
   }, state);
   await expect(page.locator('#statSubjects')).toHaveText(String(state.subjects.length));
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
+  await openPerformanceSection(page, 'subjects');
   await expect(page.locator('#desempenho-gaps .analytics-card > .module-heading')).toHaveCount(2);
   await activateTab(page, 'metas');
   await expect(

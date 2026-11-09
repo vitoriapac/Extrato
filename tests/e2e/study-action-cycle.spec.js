@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, overviewRecommendationId } from './helpers.js';
+import { activateTab, overviewRecommendationId, openPerformanceSection } from './helpers.js';
 
 async function prepareStudyCase(page) {
   await page.goto('/?test=1');
@@ -45,7 +45,7 @@ for (const source of ['overview', 'today', 'diagnosis'])
       source === 'overview' ? 'dashboard' : source === 'diagnosis' ? 'desempenho' : 'hoje'
     );
     if (source === 'diagnosis') {
-      await page.locator('[data-performance-section="diagnosis"]').click();
+      await openPerformanceSection(page, 'diagnosis');
     }
     const action =
       source === 'overview'

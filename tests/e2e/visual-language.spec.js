@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 import { renderExamDataQuality } from '../../src/ui/renderers/exam-data-quality-renderer.js';
 import { renderStrategicFocusHistory } from '../../src/ui/renderers/studytrack32-renderer.js';
 
@@ -54,7 +54,7 @@ for (const { width, theme } of [
     for (const tip of await tips.all()) await expect(tip).toBeVisible();
     await expectNoPageOverflow(page);
     await activateTab(page, 'desempenho');
-    await page.locator('[data-performance-section="exam"]').click();
+    await openPerformanceSection(page, 'exam');
     await expect(page.locator('.exam-intelligence-hub > .module-heading')).toBeVisible();
     await page.locator('#examDataQuality').evaluate(
       (element, html) => {
@@ -78,6 +78,14 @@ for (const { width, theme } of [
     );
     await expectNoPageOverflow(page);
     await activateTab(page, 'metas');
+    // Planejamento não renderiza mais nota informativa por padrão: injeta a variante para checar o estilo.
+    await page.locator('#panel-metas').evaluate(panel => {
+      const note = document.createElement('p');
+      note.className = 'context-note context-note--info';
+      note.setAttribute('role', 'note');
+      note.textContent = 'Nota informativa de exemplo para validar a linguagem visual.';
+      panel.prepend(note);
+    });
     await expect(page.locator('#panel-metas .context-note--info')).toBeVisible();
     await expectNoPageOverflow(page);
     await activateTab(page, 'dashboard');

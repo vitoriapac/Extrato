@@ -61,10 +61,10 @@ export function renderMiniComparisonChart(
 
   return `<aside class="weekly-brief-chart bg-surface-subtle/50 border border-border-subtle rounded-default p-3.5 space-y-3" aria-label="Comparativo visual com a semana passada">
     <div class="flex items-center justify-between gap-2 border-b border-border-subtle pb-2">
-      <h4 class="text-xs font-semibold text-content-primary m-0">Últimos 7 dias × semana anterior</h4>
+      <p class="text-xs font-semibold text-content-primary m-0">Últimos 7 dias × semana anterior</p>
       <div class="flex items-center gap-2 text-xs text-content-secondary" aria-hidden="true">
         <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-primary"></span>Atual</span>
-        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-warning-emphasis"></span>Destaque</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-warning-emphasis"></span>Em queda</span>
         <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-content-primary/25"></span>Anterior</span>
       </div>
     </div>

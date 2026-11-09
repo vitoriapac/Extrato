@@ -3,7 +3,7 @@ import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { addLocalDays } from '../../src/core/date-utils.js';
 import { freezePlanExecution } from '../../src/domain/planning/plan-execution-snapshot.js';
 import { recordPlanningCapacity } from '../../src/domain/planning/capacity-history.js';
-import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab, openPerformanceSection } from './helpers.js';
 import AxeBuilder from '@axe-core/playwright';
 import { withPixelAlignedCapture } from './helpers/visual-capture.js';
 
@@ -150,7 +150,7 @@ for (const [width, theme] of [
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
     const realBefore = await page.evaluate(() => localStorage.getItem('bb-premium-study-data'));
     await activateTab(page, 'desempenho');
-    await page.locator('[data-performance-section="consistency"]').click();
+    await openPerformanceSection(page, 'consistency');
     await expect(page.locator('.adherence-change')).toContainText('O que mudou?');
     await expectNoPageOverflow(page);
     await activateTab(page, 'metas');

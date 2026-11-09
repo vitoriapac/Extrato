@@ -215,11 +215,11 @@ Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com
 - **Sálvia Claro** (`brand-on-header`, `#A8D3B8`): só sobre musgo — eyebrow do extrato, aba ativa, valores do KPI, seleção, toast.
 - **Laranja Destaque** (`secondary`, `#E9953F`; no escuro igual): a cor de destaque editorial, a segunda voz da marca depois do musgo. Marca o que o olhar deve achar primeiro. Seus papéis:
   - `secondary` (`#E9953F`): preenchimentos e faixas — botão de ação principal do "Agora" (texto `on-secondary`, 7,2:1), faixa de 3px no topo das células de KPI, sublinhado da aba ativa, eyebrow do cabeçalho (4,9:1 sobre musgo). Hover: `secondary-hover`.
-  - `secondary-strong` (`#D9701A` claro, `#F0A55A` escuro): gráficos e linhas sobre papel (3,3:1) — barra de progresso (`.ui-progress`), série secundária dos gráficos, barra de título de seção, faixa das células de estatística, topo do card "Agora" e `.card--secondary`.
-  - `secondary-text` (`#A8480A` claro, `#F0A55A` escuro): texto sobre papel ou `secondary-bg` (5,7:1 e 5,0:1) — eyebrows e títulos de seção da Visão geral.
+  - `secondary-strong` (`#D9701A` claro, `#F0A55A` escuro): gráficos e linhas sobre papel (3,3:1) — barra de progresso (`.ui-progress`), série secundária dos gráficos, barra de título de seção, faixa das células de estatística e `.card--secondary`. O card "Agora" não tem mais faixa laranja de 3px no topo.
+  - `secondary-text` (`#A8480A` claro, `#F0A55A` escuro): texto laranja pontual sobre papel ou `secondary-bg` (5,7:1 e 5,0:1). Eyebrows e títulos de seção sobre papel não usam laranja: ficam em `ink-soft`.
   - `secondary-bg` (`#FBEBDA` claro, `#2E2112` escuro): fundo de selo `.status-badge--highlight`.
   Componentes: `.btn.secondary`, `.card--secondary`, `.status-badge--highlight`.
-  Presença contínua (sempre em `secondary-text`/`secondary-strong`, nunca em texto longo): eyebrows (`.module-heading__eyebrow`, rótulos de meta), barra antes dos títulos de card e de seção, preenchimento das barras de progresso (metas, plano, diagnóstico, foco semanal, conquistas, cronômetro), semana atual no gráfico de ritmo, cabeçalho de tabela (`2px`), sublinhado das sub-abas ativas e sublinhado dos botões terciários.
+  Presença contínua (sempre em `secondary-text`/`secondary-strong`, nunca em texto longo; eyebrows e rótulos de meta sobre papel ficam em `ink-soft`): barra antes dos títulos de card e de seção, preenchimento das barras de progresso (metas, plano, diagnóstico, foco semanal, conquistas, cronômetro), semana atual no gráfico de ritmo, cabeçalho de tabela (`2px`), sublinhado das sub-abas ativas e sublinhado dos botões terciários.
 - **Âmbar Saldo** (`attention`, `#E9953F`): continua o tom do saldo da prontidão, da contagem regressiva e da barra até a prova, mas agora é só um alias semântico de estado.
 
 ### Tertiary (semânticos)
@@ -255,7 +255,7 @@ O contraste contra a página vai de 4,7:1 a 6,6:1 no claro e de 6,9:1 a 9,8:1 no
 
 **A Regra do Sálvia sobre Musgo.** `brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.
 
-**A Regra do Laranja.** O laranja destaca, não decora: no máximo um preenchimento sólido (`secondary`) por tela, na ação que o aluno deve tomar agora; o restante são faixas, sublinhados, progresso e eyebrows. Texto laranja sobre papel é sempre `secondary-text`, nunca `secondary`. Contagem de elementos laranja alta num mesmo bloco dilui o destaque.
+**A Regra do Laranja.** O laranja destaca, não decora: no máximo um preenchimento sólido (`secondary`) por tela, na ação que o aluno deve tomar agora; o restante são faixas, sublinhados e progresso; eyebrows sobre papel usam `ink-soft`, e só o eyebrow do cabeçalho, sobre musgo, é laranja. Texto laranja sobre papel é sempre `secondary-text`, nunca `secondary`. Contagem de elementos laranja alta num mesmo bloco dilui o destaque.
 
 **A Regra do Âmbar.** O âmbar semântico (`amber` sobre `amber-bg`, `attention`) só marca estado de atenção: prontidão, prazo, atraso, e sempre acompanha rótulo textual. Laranja de destaque e âmbar de estado compartilham o matiz; o que os separa é o papel. Selo ou faixa com texto "atenção/atraso" usa `amber`; elemento sem estado usa `secondary`.
 
@@ -290,13 +290,13 @@ Pesos permitidos: 400, 500, 600. O 700 existe como token mas não é a voz do si
 
 Coluna única centralizada de até 1280px, com gutter fluido `clamp(16px, 2.5vw, 32px)` e respiro inferior de 80px. Escala de espaço em 4px: 4, 8, 12, 16, 20, 24, 32, 48, 64 (`--space-1` a `--space-16`), com aliases semânticos: ação 12px, conteúdo→ação 24px, bloco 32px, seção 48px.
 
-O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, com a sequência de dias (chama) quando ela existe. Abas no topo em todas as larguras do desktop (uma barra lateral acima de 1280px foi testada e descartada); entre 761px e 1050px o respiro lateral da aba cai de 12px para 8px para as oito caberem sem cortar "Instruções". Abaixo de 760px viram navegação inferior com Início, Hoje, Matérias, Agenda e Mais; voltar ao topo e o aviso de salvamento ficam acima dela, medidos por `--bottom-nav-height`. Controles têm 36px de altura com ponteiro fino e 44px em toque (`pointer: coarse` ou abaixo de 760px); as subabas de Desempenho e os resumos de disclosure ficam sempre em 44px. Breakpoints principais: 760px (mobile/desktop), 900px e 1100px (densidade de grades), 430px e 375px (ajustes finos). Tudo funciona a partir de 320px sem rolagem horizontal global; listas, diagnósticos e formulários empilham antes de encolher a área de toque.
+O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, com a sequência de dias (chama) quando ela existe. Abas no topo em todas as larguras do desktop (uma barra lateral acima de 1280px foi testada e descartada); entre 761px e 1050px o respiro lateral da aba cai de 12px para 8px para as oito caberem sem cortar "Instruções". Abaixo de 760px viram navegação inferior com Início, Desempenho, Hoje, Matérias e Mais (Agenda, Questões e Simulados, Planejamento e Instruções ficam em Mais); voltar ao topo e o aviso de salvamento ficam acima dela, medidos por `--bottom-nav-height`. Controles têm 36px de altura com ponteiro fino e 44px em toque (`pointer: coarse` ou abaixo de 760px); as subabas de Desempenho e os resumos de disclosure ficam sempre em 44px. Breakpoints principais: 760px (mobile/desktop), 900px e 1100px (densidade de grades), 430px e 375px (ajustes finos). Tudo funciona a partir de 320px sem rolagem horizontal global; listas, diagnósticos e formulários empilham antes de encolher a área de toque.
 
 Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 
-As oito abas têm papéis separados (Início, Hoje, Disciplinas, Agenda, Questões, Planejamento, Desempenho e Instruções):
+As oito abas, na ordem do app (Início, Desempenho, Hoje, Disciplinas, Agenda, Questões e Simulados, Planejamento e Instruções), têm papéis separados:
 - **Visão geral** é o resumo visual: Próxima ação com Atenção, Saúde do Edital ao lado da tendência e da coluna de apoio (meta e plano de hoje, revisões, 28 dias), e um fecho que leva a Desempenho. A análise detalhada não mora aqui.
-- **Desempenho** abre no veredito (Índice de Prontidão e projeção). Subabas: Visão geral, Disciplinas, Questões, Simulados, Inteligência da prova, Consistência e Histórico. A camada de decisão (balanço, radar, retenção) fica numa dobra (`details.decision-fold`) lembrada pelo navegador; conquistas, tempo de estudo e sessões só aparecem em Histórico.
+- **Desempenho** abre no veredito (Índice de Prontidão e projeção). Subabas: Visão geral, Disciplinas, Diagnóstico, Questões, Simulados, Inteligência da prova, Consistência e Histórico. A camada de decisão (balanço, radar, retenção) fica numa dobra (`details.decision-fold`) lembrada pelo navegador; conquistas, tempo de estudo e sessões só aparecem em Histórico.
 - **Agenda** é uma aba só, com duas seções: "Tarefas de estudo" (visões Mês e Lista) e "Revisões espaçadas", com filtros de disciplina, status e mês compartilhados e uma lista única de atrasadas. `#calendario` continua como alias.
 
 Seções recolhíveis (`details[data-remember]`) ficam abertas no desktop e fechadas no celular quando têm `data-default-open="wide"`, e fechadas sempre quando não têm; a escolha é lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
@@ -363,7 +363,7 @@ Três níveis, um primário por card: o primário é a próxima ação; o tonal 
 ### Navigation
 - **Abas:** Sans 500 13px sem caixa-alta, fundo ardósia, texto tinta-suave; ativa em musgo com texto Sálvia Claro; hover em `tab-hover-bg`.
 - **Navegação de seções (Visão Geral):** barra fixa em papel com links Sans 12px; hover/foco ganham fundo ardósia e contorno sálvia de 1px.
-- **Mobile (<760px):** navegação inferior fixa com Início, Hoje, Matérias, Agenda e menu "Mais"; a busca vira uma lupa que abre a paleta de comandos.
+- **Mobile (<760px):** navegação inferior fixa com Início, Desempenho, Hoje, Matérias e menu "Mais"; a busca vira uma lupa que abre a paleta de comandos.
 - **Atalhos dos blocos (Planejamento):** mesma barra de seções, com botões; o último escolhido fica marcado com `aria-current` (fundo ardósia e sublinhado sálvia); setas, Home e End passam de um atalho ao outro.
 
 ### Cabeçalho do Extrato (signature)

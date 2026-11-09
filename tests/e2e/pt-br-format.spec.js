@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo } from './helpers.js';
+import { activateTab, openDemo, openPerformanceSection } from './helpers.js';
 
 // Rendered copy must use pt-BR formats: comma decimals, DD/MM/AAAA dates and no seconds in timestamps.
 const PATTERNS = [
@@ -26,15 +26,10 @@ test('textos da demo usam números, datas e horários no formato brasileiro', as
     await activateTab(page, tab);
     const sections =
       tab === 'desempenho'
-        ? await page
-            .locator('[data-performance-section]')
-            .evaluateAll(nodes => nodes.map(node => node.dataset.performanceSection))
+        ? ['overview', 'subjects', 'diagnosis', 'questions', 'simulations', 'exam', 'consistency', 'history']
         : [null];
     for (const section of sections) {
-      if (section)
-        await page
-          .locator(`[data-performance-section="${section}"]`)
-          .evaluate(button => button.click());
+      if (section) await openPerformanceSection(page, section);
       const text = await page.locator(`#panel-${tab}`).evaluate(panel => {
         panel.querySelectorAll('details').forEach(node => {
           node.open = true;

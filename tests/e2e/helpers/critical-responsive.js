@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from '../helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab, openPerformanceSection } from '../helpers.js';
 
 export async function assertCriticalResponsive(page, { width, theme }) {
   await page.setViewportSize({ width, height: 900 });
@@ -11,10 +11,10 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   await expect(page.locator('.overview-now')).toBeVisible();
   await activateTab(page, 'desempenho');
   // A prontidão aparece nos KPIs da Visão geral de Desempenho; o diagnóstico, na subaba Disciplinas.
-  await page.locator('[data-performance-section="overview"]').click();
+  await openPerformanceSection(page, 'overview');
   await expectNoPageOverflow(page);
   await expect(page.locator('.performance-kpis[aria-label="Prontidão e carga no período"]')).toBeVisible();
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   await expectNoPageOverflow(page);
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
   await openPlanningSubtab(page, 'fechamento');

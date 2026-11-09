@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { renderInsightCard, renderTrendIndicator } from '../components/analytical-presentation.js';
 type Row = Record<string, any>;
 const labels: Record<string, string> = {
@@ -15,8 +15,20 @@ const shown = (row: Row, value: number | null | undefined) =>
       : row.unit === 'questões'
         ? String(value)
         : `${formatDecimal(value)}%`;
+// Minutos viram h/min (como em "Valor atual"); demais unidades usam o mesmo sinal tipográfico do app.
+const signedDuration = (minutes: number) => {
+  const total = Math.round(Math.abs(minutes));
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  const text = hours ? (rest ? `${hours}h ${rest}min` : `${hours}h`) : `${rest}min`;
+  return `${minutes > 0 ? '+' : minutes < 0 ? '−' : ''}${text}`;
+};
 const delta = (row: Row) =>
-  row.delta == null ? '—' : `${row.delta > 0 ? '+' : ''}${formatDecimal(row.delta)} ${row.unit}`;
+  row.delta == null
+    ? '—'
+    : row.unit === 'min'
+      ? signedDuration(row.delta)
+      : `${formatDelta(row.delta)} ${row.unit}`;
 
 export function renderPerformanceComparison(model: Row, { escapeHtml }: any = {}) {
   if (model.state === 'disabled')

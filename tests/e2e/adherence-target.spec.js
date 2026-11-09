@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
 
 test('meta opcional persiste sem alterar históricos, aceita legado e contextualiza a trajetória', async ({
   page,
@@ -19,7 +19,10 @@ test('meta opcional persiste sem alterar históricos, aceita legado e contextual
       plans: state.dailyPlans,
     };
   });
-  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'semana');
+  await page.locator('#metasAdjust').evaluate(fold => {
+    fold.open = true;
+  });
   const target = page.getByRole('spinbutton', { name: 'Meta semanal de aderência' });
   await target.fill('70');
   await target.blur();
@@ -54,6 +57,9 @@ test('meta opcional persiste sem alterar históricos, aceita legado e contextual
   await page.clock.runFor(1000);
   await page.evaluate(() => window.__EXTRATO_TEST__.settleSaves());
   // Test mode intentionally bypasses storage bootstrap; reload through the real entry point.
-  await page.goto('/#metas');
+  await page.goto('/#planejamento/semana');
+  await page.locator('#metasAdjust').evaluate(fold => {
+    fold.open = true;
+  });
   await expect(page.getByRole('button', { name: 'Ativar meta de aderência' })).toBeVisible();
 });

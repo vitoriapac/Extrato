@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo } from './helpers.js';
+import { activateTab, openDemo, openPerformanceSection } from './helpers.js';
 
 const screenshotOptions = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.08 };
 // Keep pixel-exact baselines aligned with the host OS used to render the fonts.
@@ -15,7 +15,7 @@ async function prepareDemo(page, { width, height, theme = 'light' } = {}) {
 
 async function prepareDiagnosisScreenshot(page) {
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="diagnosis"]').click();
+  await openPerformanceSection(page, 'diagnosis');
   await page
     .locator('.sticky-shell, .bottom-nav, .skip-link, #demoBanner, #backToTopBtn')
     .evaluateAll(elements => elements.forEach(element => element.remove()));

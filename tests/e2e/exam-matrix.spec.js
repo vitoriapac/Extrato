@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 
 test('matriz histórica filtra concurso e detalha o tópico em mobile', async ({ page }) => {
   await page.goto('/?test=1');
@@ -79,7 +79,7 @@ test('matriz histórica filtra concurso e detalha o tópico em mobile', async ({
     api.renderAll();
   });
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="exam"]').click();
+  await openPerformanceSection(page, 'exam');
   await expect(page.locator('#examHistoricalMatrix')).toContainText('2 provas completas');
   await page.locator('[data-exam-matrix-mode="history"]').click();
   await expect(page.locator('.exam-matrix-table')).toContainText('0 questões');

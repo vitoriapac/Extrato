@@ -58,11 +58,25 @@ export function renderReadinessHistory(
     bottom = 27,
     plotWidth = width - left - right,
     plotHeight = height - top - bottom;
+  const currentScore =
+    rows.length && Number.isFinite(Number(model.current?.score))
+      ? Number(model.current!.score)
+      : null;
+  const slots = rows.length + (currentScore === null ? 0 : 1);
+  const scores = [
+    ...rows.map(item => Number(item.score)),
+    ...(currentScore === null ? [] : [currentScore]),
+  ];
+  // Escala ajustada aos dados (0–100 achatava fechamentos entre 50 e 60); mínimo de 20 pontos de altura.
+  const lo = scores.length ? Math.max(0, Math.floor((Math.min(...scores) - 8) / 10) * 10) : 0;
+  const hi = scores.length
+    ? Math.min(100, Math.max(lo + 20, Math.ceil((Math.max(...scores) + 8) / 10) * 10))
+    : 100;
   const x = (index: number) =>
-    left + (rows.length === 1 ? plotWidth / 2 : (index * plotWidth) / (rows.length - 1));
+    left + (slots === 1 ? plotWidth / 2 : (index * plotWidth) / (slots - 1));
   const y = (score: number) =>
-    top + plotHeight - (Math.max(0, Math.min(100, Number(score))) / 100) * plotHeight;
-  const grid = [0, 25, 50, 75, 100]
+    top + plotHeight - ((Math.max(lo, Math.min(hi, Number(score))) - lo) / (hi - lo)) * plotHeight;
+  const grid = [lo, (lo + hi) / 2, hi]
     .map(
       score =>
         `<line class="chart-grid" x1="${left}" y1="${y(score)}" x2="${width - right}" y2="${y(score)}"></line><text x="1" y="${y(score) + 3}">${score}</text>`
@@ -82,8 +96,15 @@ export function renderReadinessHistory(
         `<circle class="chart-dot" cx="${x(index)}" cy="${y(item.score)}" r="4">${renderChartTooltip(formatDate(item.date) + ': ' + item.score + '/100 · algoritmo ' + (item.algorithmVersion ?? 'não informado') + ' · ' + (item.reason || 'Fechamento semanal'))}</circle>`
     )
     .join('');
+  const currentDot =
+    currentScore === null
+      ? ''
+      : `<circle class="chart-dot chart-dot--current" cx="${x(rows.length)}" cy="${y(currentScore)}" r="4.5">${renderChartTooltip('Cálculo atual: ' + currentScore + '/100 · não é um fechamento salvo')}</circle>`;
+  const axisDates = rows.length
+    ? `<text x="${left}" y="${height - 7}">${escapeHtml(formatDate(rows[0].date))}</text><text x="${x(slots - 1)}" y="${height - 7}" text-anchor="end">${currentScore === null ? escapeHtml(formatDate(rows.at(-1)!.date)) : 'atual'}</text>`
+    : '';
   const chart = rows.length
-    ? `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}">${grid}${lines}${dots}</svg></div>`
+    ? `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico do Índice de Prontidão, com rolagem horizontal"><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}">${grid}${lines}${dots}${currentDot}${axisDates}</svg></div>`
     : '';
   const records = rows.length
     ? `<ol class="simulation-trend-list readiness-history-records">${[...rows]
@@ -112,7 +133,10 @@ export function renderReadinessHistory(
             ? ' · ' + pluralize(model.versionChanges, 'mudança') + ' de algoritmo'
             : '')
         : 'O histórico é separado por concurso. O valor atual não é salvo a cada atualização da tela.',
-      legend: [{ label: 'Prontidão nos fechamentos', tone: 'primary' }],
+      legend: [
+        { label: 'Prontidão nos fechamentos', tone: 'primary' },
+        ...(currentScore === null ? [] : [{ label: 'Cálculo atual', tone: 'secondary' }]),
+      ],
       chart,
       records,
       emptyMessage:

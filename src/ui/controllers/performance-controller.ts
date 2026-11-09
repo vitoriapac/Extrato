@@ -47,6 +47,12 @@ export function createPerformanceController({
           applyRecovery((recoveryApply as any).dataset.recoverySignature);
           return;
         }
+        const group = event.target.closest('[data-performance-group]');
+        if (group) {
+          update({ section: group.dataset.performanceGroupTarget });
+          render();
+          return;
+        }
         const section = event.target.closest(
           '[data-performance-section],[data-performance-investigate]'
         );
@@ -90,9 +96,11 @@ export function createPerformanceController({
       });
       // Subabas como tablist: setas, Home e End ativam a subaba vizinha e mantêm o foco nela.
       document.getElementById('performancePage')?.addEventListener('keydown', (event: any) => {
-        const tab = event.target.closest?.('[role="tab"][data-performance-section]');
+        const tabSelector =
+          '[role="tab"][data-performance-section],[role="tab"][data-performance-group]';
+        const tab = event.target.closest?.(tabSelector);
         if (!tab || event.altKey || event.ctrlKey || event.metaKey) return;
-        const tabs = [...tab.parentElement.querySelectorAll('[role="tab"][data-performance-section]')];
+        const tabs = [...tab.parentElement.querySelectorAll(tabSelector)];
         const index = tabs.indexOf(tab);
         const target =
           event.key === 'ArrowRight'
@@ -106,11 +114,16 @@ export function createPerformanceController({
                   : null;
         if (!target) return;
         event.preventDefault();
-        update({ section: target.dataset.performanceSection });
+        const group = target.dataset.performanceGroup;
+        update({
+          section: target.dataset.performanceSection || target.dataset.performanceGroupTarget,
+        });
         render();
         (
           document.querySelector(
-            `[role="tab"][data-performance-section="${target.dataset.performanceSection}"]`
+            group
+              ? `[role="tab"][data-performance-group="${group}"]`
+              : `[role="tab"][data-performance-section="${target.dataset.performanceSection}"]`
           ) as HTMLElement | null
         )?.focus();
       });

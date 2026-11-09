@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T21:18:07.412Z",
+  "generatedAt": "2026-11-09T20:55:06.020Z",
   "title": "Design System: StudyTrack — Extrato de Estudos",
   "extensions": {
     "colorMeta": {
@@ -334,13 +334,23 @@
     ],
     "rules": [
       {
+        "name": "A Regra da Disciplina sem Alarme",
+        "body": "A paleta das disciplinas não tem âmbar nem vermelho: cor de disciplina identifica, nunca avisa.",
+        "section": "colors"
+      },
+      {
         "name": "A Regra do Sálvia sobre Musgo",
         "body": "`brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.",
         "section": "colors"
       },
       {
+        "name": "A Regra do Laranja",
+        "body": "O laranja destaca, não decora: no máximo um preenchimento sólido (`secondary`) por tela, na ação que o aluno deve tomar agora; o restante são faixas, sublinhados e progresso; eyebrows sobre papel usam `ink-soft`, e só o eyebrow do cabeçalho, sobre musgo, é laranja. Texto laranja sobre papel é sempre `secondary-text`, nunca `secondary`. Contagem de elementos laranja alta num mesmo bloco dilui o destaque.",
+        "section": "colors"
+      },
+      {
         "name": "A Regra do Âmbar",
-        "body": "O âmbar (`attention`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.",
+        "body": "O âmbar semântico (`amber` sobre `amber-bg`, `attention`) só marca estado de atenção: prontidão, prazo, atraso, e sempre acompanha rótulo textual. Laranja de destaque e âmbar de estado compartilham o matiz; o que os separa é o papel. Selo ou faixa com texto \"atenção/atraso\" usa `amber`; elemento sem estado usa `secondary`.",
         "section": "colors"
       },
       {
@@ -357,6 +367,11 @@
         "name": "A Regra do Card como Agrupamento",
         "body": "Um card agrupa um assunto. Dentro dele, use linhas, espaço e tipo; nunca aninhe cards para criar hierarquia.",
         "section": "layout"
+      },
+      {
+        "name": "A Regra do Painel Inferior",
+        "body": "No celular, um formulário curto e frequente (registrar questões) abre como painel preso à base da tela, por cima da barra inferior, com a mesma sombra de menu flutuante para cima.",
+        "section": "elevation"
       },
       {
         "name": "A Regra do Papel Plano",

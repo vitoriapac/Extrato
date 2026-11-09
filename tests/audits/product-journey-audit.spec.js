@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab } from '../e2e/helpers.js';
+import { activateTab, openPerformanceSection } from '../e2e/helpers.js';
 import { AUDIT_TODAY, AUDIT_PROFILES, buildJourneyProfile } from './product-journey-profiles.js';
 
 for (const profile of AUDIT_PROFILES)
@@ -140,7 +140,7 @@ for (const profile of AUDIT_PROFILES)
     await activateTab(page, 'desempenho');
     await capture('performance', '#performancePage');
     await activateTab(page, 'desempenho');
-    await page.locator('[data-performance-section="diagnosis"]').click();
+    await openPerformanceSection(page, 'diagnosis');
     await capture('diagnosis', '#diagnosisCenter');
     await capture('replanning', '#weeklyReplan');
     await activateTab(page, 'dashboard');

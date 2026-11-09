@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow, openPlanningAdjust } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningAdjust, openPerformanceSection } from './helpers.js';
 
 test('grouped goals preserve topic targets and separate hours, routine and accuracy', async ({
   page,
@@ -41,7 +41,7 @@ test('grouped goals preserve topic targets and separate hours, routine and accur
   ).toEqual([]);
   await expectNoPageOverflow(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="consistency"]').click();
+  await openPerformanceSection(page, 'consistency');
   await expect(page.locator('.adherence-change')).toContainText('O que mudou?');
   await expect(page.locator('.adherence-change')).toContainText('Ainda não há dois períodos');
 });

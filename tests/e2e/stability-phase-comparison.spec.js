@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
+import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab, openPerformanceSection } from './helpers.js';
 
 test('Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso', async ({
   page,
@@ -8,7 +8,7 @@ test('Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso', 
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').evaluate(button => button.click());
+  await openPerformanceSection(page, 'subjects');
   const map = page.locator('.stability-map');
   await expect(map).toBeVisible();
   await expect(map.locator('.stability-map-cell')).toHaveCount(4);

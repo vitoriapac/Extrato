@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningSubtab, openPerformanceSection } from './helpers.js';
 import { buildStrategicCycleFixture, STRATEGIC_CYCLE_TODAY } from '../fixtures/strategic-cycle.js';
 
 async function prepare(page) {
@@ -49,7 +49,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   expect(critical.mastery).toBeLessThan(mastered.mastery);
   expect(critical.score).toBeGreaterThan(mastered.score);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="exam"]').click();
+  await openPerformanceSection(page, 'exam');
   await expect(page.locator('#examHistoricalMatrix')).toContainText(
     'Alta incidência · desenvolver domínio'
   );
@@ -237,7 +237,7 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
   test.setTimeout(120_000);
   const before = await prepare(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
+  await openPerformanceSection(page, 'subjects');
   await expect(page.locator('.performance-subject-comparison')).toContainText(
     'Matemática Financeira'
   );
@@ -334,7 +334,7 @@ test('reversão, cooldown, escopo e falta de dados preservam o histórico em mob
   await caixa.locator('..').click();
   await bb.locator('..').click();
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="exam"]').click();
+  await openPerformanceSection(page, 'exam');
   await expect(page.locator('#examHistoricalMatrix')).toContainText('1 prova completa');
   await expect(page.locator('#examHistoricalMatrix')).toContainText(
     'Evidência insuficiente para posicionar'
