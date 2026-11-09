@@ -59,6 +59,8 @@ export interface WeeklyPerformanceBriefViewModel {
   shortParagraph: string;
   detailedParagraphs: [string, string, string];
   chartMetrics: [WeeklyBriefChartMetric, WeeklyBriefChartMetric, WeeklyBriefChartMetric];
+  /** Aderência ao plano, só quando a semana teve plano; a Visão geral a soma às três métricas. */
+  adherenceMetric: WeeklyBriefChartMetric | null;
   links: WeeklyBriefLink[];
 }
 
@@ -324,6 +326,35 @@ function buildChartMetrics(
       previousBarPct: prevAcc != null && prevAcc > 0 ? Math.max(6, Math.min(100, prevAcc)) : 0,
     },
   ];
+}
+
+function buildAdherenceMetric(
+  current: WeeklyWindowStats,
+  previous: WeeklyWindowStats
+): WeeklyBriefChartMetric | null {
+  const now = current.planFulfillmentPct;
+  if (now == null) return null;
+  const before = previous.planFulfillmentPct;
+  const diff = before != null ? now - before : null;
+  const bar = (value: number | null) =>
+    value != null && value > 0 ? Math.max(6, Math.min(100, value)) : 0;
+  return {
+    key: 'accuracy',
+    label: 'Aderência ao plano',
+    currentValue: now,
+    previousValue: before ?? 0,
+    currentFormatted: `${now}%`,
+    previousFormatted: before != null ? `${before}%` : '—',
+    deltaFormatted:
+      diff == null
+        ? 'Sem plano na semana anterior'
+        : diff === 0
+          ? 'Manteve o percentual'
+          : `${diff > 0 ? '+' : '−'}${Math.abs(diff)} p.p.`,
+    trend: diff == null ? 'stable' : diff >= 5 ? 'up' : diff <= -5 ? 'down' : 'stable',
+    currentBarPct: bar(now),
+    previousBarPct: bar(before),
+  };
 }
 
 export function buildWeeklyPerformanceBrief({
@@ -598,17 +629,11 @@ export function buildWeeklyPerformanceBrief({
   if (!hasActivity) {
     shortParagraph = `Nos últimos 7 dias você ainda não registrou horas de estudo ou questões${previous.studiedMinutes > 0 ? ` (na semana passada foram ${prevTimeFormatted})` : ''}. Abra a aba Desempenho para ver seu comparativo semanal ou inicie uma sessão rápida na aba Hoje.`;
   } else {
-    // Acima de 2× o planejado o número vira ruído (ex.: 1038%): o texto diz só a direção.
-    const planSnippet =
-      current.planFulfillmentPct == null
-        ? ''
-        : current.planFulfillmentPct > 200
-          ? ' (bem acima do tempo planejado)'
-          : ` (${current.planFulfillmentPct}% do tempo planejado)`;
+    // Tempo, questões, acerto e aderência ficam no comparativo ao lado; o texto só interpreta.
     const questionsSnippet =
       current.resolved > 0 && current.accuracy != null
-        ? ` e acertou ${current.accuracy}% das ${pluralize(current.resolved, 'questão', 'questões')} que resolveu${previous.accuracy != null ? ` (frente a ${previous.accuracy}% na semana passada)` : ''}`
-        : ', ainda sem questões registradas no período';
+        ? ''
+        : ' e ainda não registrou questões no período';
     let tailSnippet = '.';
     if (weakestSubject && overdueReviews > 0) {
       tailSnippet = `, com ponto de atenção em ${weakestSubject.name} (${weakestSubject.accuracy}%) e ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
@@ -619,7 +644,7 @@ export function buildWeeklyPerformanceBrief({
     } else if (overdueReviews > 0) {
       tailSnippet = `, restando ${pluralize(overdueReviews, 'revisão atrasada', 'revisões atrasadas')} para colocar em dia na Agenda.`;
     }
-    shortParagraph = `Nos últimos 7 dias, você estudou ${timeFormatted} em ${pluralize(current.activeDays, 'dia ativo', 'dias ativos')}${planSnippet}${questionsSnippet}${tailSnippet}`;
+    shortParagraph = `Nos últimos 7 dias, você estudou em ${pluralize(current.activeDays, 'dia', 'dias')}${questionsSnippet}${tailSnippet}`;
   }
 
   const tone: 'positive' | 'attention' | 'neutral' = !hasActivity
@@ -643,6 +668,7 @@ export function buildWeeklyPerformanceBrief({
     shortParagraph,
     detailedParagraphs: [p1, p2, p3],
     chartMetrics: buildChartMetrics(current, previous),
+    adherenceMetric: buildAdherenceMetric(current, previous),
     links,
   };
 }

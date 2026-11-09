@@ -20,8 +20,8 @@ test('buildWeeklyPerformanceBrief — gera 3 parágrafos detalhados, 1 parágraf
       { date: '2026-10-28', durationSeconds: 3600 },
     ],
     dailyPlans: [
-      { date: '2026-11-02', items: [{ estimatedMinutes: 180 }] },
-      { date: '2026-11-05', items: [{ estimatedMinutes: 180 }] },
+      { date: '2026-11-02', items: [{ plannedMinutes: 180 }] },
+      { date: '2026-11-05', items: [{ plannedMinutes: 180 }] },
     ],
     questions: [
       { date: '2026-11-03', subjectId: 's1', resolved: 40, correct: 34 }, // 85%
@@ -59,8 +59,10 @@ test('buildWeeklyPerformanceBrief — gera 3 parágrafos detalhados, 1 parágraf
   assert.match(brief.detailedParagraphs[2], /Agenda/);
 
   // 1 parágrafo curto para a aba Visão Geral (Dashboard)
-  assert.match(brief.shortParagraph, /Nos últimos 7 dias, você estudou 5h em 5 dias ativos/);
+  assert.match(brief.shortParagraph, /Nos últimos 7 dias, você estudou em 5 dias/);
   assert.match(brief.shortParagraph, /Direito Constitucional/);
+  // Tempo, acerto e plano ficam no comparativo visual, não no texto.
+  assert.doesNotMatch(brief.shortParagraph, /5h|% do tempo planejado|semana passada/);
 
   // Mini-gráfico comparativo
   assert.equal(brief.chartMetrics.length, 3);
@@ -70,6 +72,11 @@ test('buildWeeklyPerformanceBrief — gera 3 parágrafos detalhados, 1 parágraf
   assert.equal(brief.chartMetrics[1].trend, 'up');
   assert.equal(brief.chartMetrics[2].label, 'Taxa de acerto');
   assert.equal(brief.chartMetrics[2].trend, 'up');
+  // Aderência ao plano (Visão geral): 5h de 6h planejadas; sem plano na semana anterior.
+  assert.equal(brief.adherenceMetric.label, 'Aderência ao plano');
+  assert.equal(brief.adherenceMetric.currentFormatted, '83%');
+  assert.equal(brief.adherenceMetric.deltaFormatted, 'Sem plano na semana anterior');
+  assert.equal(brief.adherenceMetric.trend, 'stable');
 
   // Atalhos híbridos (seção interna + outras abas)
   assert.ok(brief.links.some(l => l.kind === 'section' && l.target === 'subjects'));

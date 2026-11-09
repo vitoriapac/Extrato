@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=3d605d230a69">
-<link rel="stylesheet" href="styles/app.css?v=3d605d230a69">
+<link rel="stylesheet" href="styles/tailwind.css?v=117d98006651">
+<link rel="stylesheet" href="styles/app.css?v=117d98006651">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -157,6 +157,7 @@
         <h2 class="overview-band">Onde estou</h2>
         <section class="overview-standing" id="overviewStanding" aria-label="Onde estou em relação à prova" hidden></section>
         <h2 class="overview-band">Como venho indo</h2>
+        <div class="overview-week">
         <section class="chart-card overview-more" aria-labelledby="overviewMoreTitle">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
             <h2 id="overviewMoreTitle">Resumo da última semana</h2>
@@ -166,6 +167,8 @@
           <p class="text-xs text-content-secondary">Consulte a análise completa em três parágrafos, o comparativo visual da semana, vulnerabilidades e retenção na aba Desempenho.</p>
           <button class="btn ghost small" id="overviewOpenPerformance" type="button">Abrir Desempenho</button>
         </section>
+        <div id="overviewWeekCompare" hidden></div>
+        </div>
         <section class="chart-card overview-consistency" aria-labelledby="overviewConsistencyTitle">
           <div class="overview-consistency__head"><h3 class="module-heading__title" id="overviewConsistencyTitle">Constância</h3><p class="consistency-legend" aria-hidden="true"><span>Menos</span><i class="consistency-strip__day"></i><i class="consistency-strip__day level-1"></i><i class="consistency-strip__day level-2"></i><i class="consistency-strip__day level-3"></i><span>Mais</span></p></div>
           <div id="overviewConsistency"></div>
@@ -1056,7 +1059,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=3d605d230a69"></script>
+  <script src="src/app.bundle.js?v=117d98006651"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

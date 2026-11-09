@@ -11,7 +11,7 @@ export interface RenderWeeklyPerformanceBriefOptions {
   escapeAttr?: (value: any) => string;
 }
 
-function renderMiniComparisonChart(
+export function renderMiniComparisonChart(
   metrics: WeeklyBriefChartMetric[],
   escapeHtml: (value: any) => string
 ): string {

@@ -3710,3 +3710,7 @@ table.log thead th,.ui-data-table th{border-bottom:2px solid var(--secondary-str
 /* A faixa compacta entra no fluxo da barra fixa ao rolar; a margem negativa devolve a altura para o conteúdo não pular.
    Fora da Visão geral a faixa já ocupa seu lugar o tempo todo, então a compensação não vale. */
 body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-compact{margin-bottom:calc(-1 * var(--compact-header-height,0px))}
+
+/* Resumo da semana e comparativo visual lado a lado; empilham quando a largura não comporta duas colunas. */
+.overview-week{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:var(--space-4);align-items:stretch}
+.overview-week>[hidden]{display:none}

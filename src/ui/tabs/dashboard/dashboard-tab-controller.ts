@@ -58,6 +58,7 @@ import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
 import { buildOverviewStanding } from '../../../application/analytics/build-overview-standing.js';
+import { renderMiniComparisonChart } from '../../performance/weekly-performance-brief-renderer.js';
 import { renderOverviewEvidence, renderOverviewStanding } from '../../renderers/overview-standing-renderer.js';
 
 export interface DashboardTabControllerDeps {
@@ -306,6 +307,26 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       subjects: state.subjects || [],
       overdueReviewsCount: deps.revisoesAtrasadas?.(),
     });
+
+    // Comparativo visual ao lado do resumo: o texto interpreta, o gráfico traz os números.
+    const compareMount = doc.getElementById('overviewWeekCompare');
+    if (compareMount) {
+      const hasWeek =
+        weeklyBrief.hasActivity ||
+        weeklyBrief.previous.studiedMinutes > 0 ||
+        weeklyBrief.previous.resolved > 0;
+      compareMount.hidden = !hasConfigured || !hasWeek;
+      compareMount.innerHTML =
+        hasConfigured && hasWeek
+          ? renderMiniComparisonChart(
+              [
+                ...weeklyBrief.chartMetrics,
+                ...(weeklyBrief.adherenceMetric ? [weeklyBrief.adherenceMetric] : []),
+              ],
+              escapeHtml
+            )
+          : '';
+    }
 
     const periodEl = doc.getElementById('overviewWeeklyPeriod');
     if (periodEl) {
