@@ -186,6 +186,7 @@ Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes
 
 - **Fundos:** `bg-surface-page`, `bg-surface-card`, `bg-surface-card-muted`, `bg-surface-primary`, `bg-brand`, `bg-paper`, `bg-surface-subtle`, `bg-surface-highlight`.
 - **Textos:** `text-primary`, `text-secondary`, `text-muted`, `text-on-brand`, `text-green`, `text-amber`, `text-red`.
+- **Laranja secundário (CSS):** tokens `--secondary`, `--secondary-strong`, `--secondary-text`, `--secondary-bg`, `--secondary-hover`, `--on-secondary` em `styles/tokens.css`; classes `.btn.secondary`, `.card--secondary`, `.status-badge--highlight`. Usar um único `.btn.secondary` por tela. Regras em `DESIGN.md` (Regra do Laranja).
 - **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default` (raio de card), `rounded` (raio de controle).
 - **Tipografia:** `font-body` (IBM Plex Sans), `font-display` (Fraunces), `font-data` (IBM Plex Mono).
 

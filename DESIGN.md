@@ -6,6 +6,12 @@ colors:
   brand-secondary: "#2F5D4E"
   accent: "#2F5D4E"
   attention: "#E9953F"
+  secondary: "#E9953F"
+  secondary-strong: "#D9701A"
+  secondary-text: "#A8480A"
+  secondary-bg: "#FBEBDA"
+  secondary-hover: "#F2A862"
+  on-secondary: "#2A1704"
   brand-on-header: "#A8D3B8"
   paper: "#F4F6F4"
   paper-line: "#D5DDD6"
@@ -207,7 +213,13 @@ Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com
 ### Secondary
 - **Sálvia Escuro** (`accent`, `#2F5D4E`): borda de ênfase, faixa de `card--action`, anel de foco, pontos de gráfico.
 - **Sálvia Claro** (`brand-on-header`, `#A8D3B8`): só sobre musgo — eyebrow do extrato, aba ativa, valores do KPI, seleção, toast.
-- **Âmbar Saldo** (`attention`, `#E9953F`): só para atenção — saldo da prontidão, contagem regressiva e barra de progresso até a prova.
+- **Laranja Destaque** (`secondary`, `#E9953F`; no escuro igual): a cor de destaque editorial, a segunda voz da marca depois do musgo. Marca o que o olhar deve achar primeiro. Seus papéis:
+  - `secondary` (`#E9953F`): preenchimentos e faixas — botão de ação principal do "Agora" (texto `on-secondary`, 7,2:1), faixa de 3px no topo das células de KPI, sublinhado da aba ativa, eyebrow do cabeçalho (4,9:1 sobre musgo). Hover: `secondary-hover`.
+  - `secondary-strong` (`#D9701A` claro, `#F0A55A` escuro): gráficos e linhas sobre papel (3,3:1) — barra de progresso (`.ui-progress`), série secundária dos gráficos, barra de título de seção, faixa das células de estatística, topo do card "Agora" e `.card--secondary`.
+  - `secondary-text` (`#A8480A` claro, `#F0A55A` escuro): texto sobre papel ou `secondary-bg` (5,7:1 e 5,0:1) — eyebrows e títulos de seção da Visão geral.
+  - `secondary-bg` (`#FBEBDA` claro, `#2E2112` escuro): fundo de selo `.status-badge--highlight`.
+  Componentes: `.btn.secondary`, `.card--secondary`, `.status-badge--highlight`.
+- **Âmbar Saldo** (`attention`, `#E9953F`): continua o tom do saldo da prontidão, da contagem regressiva e da barra até a prova, mas agora é só um alias semântico de estado.
 
 ### Tertiary (semânticos)
 - **Verde Conta** (`green` sobre `green-bg`): positivo, meta atingida.
@@ -223,7 +235,7 @@ Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com
 - **Tinta** (`ink`) e **Tinta Suave** (`ink-soft`): texto principal e secundário.
 - **Destaque** (`highlight-bg`): fundo de `card--attention`.
 
-Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): musgo `#0C1411`, papel `#111A17`, card `#16211D`, tinta `#E3EAE4`, sálvia `#8CC5A2`, título `#EEF3EE`, semânticos clareados (verde `#6FBF93`, âmbar `#E9953F`, vermelho `#E58A78`). Componentes usam apenas os aliases de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`, `--action-*`). Séries de gráfico: `--chart-series-primary` (sálvia), `--chart-series-secondary` (âmbar), `--chart-series-target` (tinta suave).
+Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): musgo `#0C1411`, papel `#111A17`, card `#16211D`, tinta `#E3EAE4`, sálvia `#8CC5A2`, título `#EEF3EE`, semânticos clareados (verde `#6FBF93`, âmbar `#E9953F`, vermelho `#E58A78`). Componentes usam apenas os aliases de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`, `--action-*`). Séries de gráfico: `--chart-series-primary` (sálvia), `--chart-series-secondary` (`secondary-strong`, laranja), `--chart-series-target` (tinta suave).
 
 Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-primary-hover`): musgo com texto papel no claro; no escuro, sálvia claro `#A8D3B8` com texto `#0C1411` (hover `#C2E3CD`), porque um botão musgo some sobre card musgo. Ação tonal (`--action-tonal-*`): `green-bg` com texto título no claro (9,7:1), `#2A4636` com `#A8D3B8` no escuro (6,3:1). Contorno de `.btn.ghost`: `--action-outline` (título no claro, `ink-soft` no escuro). Backdrop de modais: `--backdrop` (musgo a 65%).
 
@@ -242,7 +254,9 @@ O contraste contra a página vai de 4,7:1 a 6,6:1 no claro e de 6,9:1 a 9,8:1 no
 
 **A Regra do Sálvia sobre Musgo.** `brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.
 
-**A Regra do Âmbar.** O âmbar (`attention`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.
+**A Regra do Laranja.** O laranja destaca, não decora: no máximo um preenchimento sólido (`secondary`) por tela, na ação que o aluno deve tomar agora; o restante são faixas, sublinhados, progresso e eyebrows. Texto laranja sobre papel é sempre `secondary-text`, nunca `secondary`. Contagem de elementos laranja alta num mesmo bloco dilui o destaque.
+
+**A Regra do Âmbar.** O âmbar semântico (`amber` sobre `amber-bg`, `attention`) só marca estado de atenção: prontidão, prazo, atraso, e sempre acompanha rótulo textual. Laranja de destaque e âmbar de estado compartilham o matiz; o que os separa é o papel. Selo ou faixa com texto "atenção/atraso" usa `amber`; elemento sem estado usa `secondary`.
 
 **A Regra do Significado.** Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.
 

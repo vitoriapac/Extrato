@@ -3620,3 +3620,21 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
   .btn,.action-menu>summary,summary.btn{min-height:var(--touch-target)}
   .btn,.action-menu>summary{min-width:var(--touch-target)}
 }
+
+/* Laranja secundário: destaque editorial (o que olhar primeiro). O âmbar semântico (--amber) segue só para estado. */
+.statement-eyebrow{color:var(--secondary)}
+.kpi-cell{box-shadow:inset 0 3px 0 var(--secondary)}
+.stat-cell{box-shadow:inset 0 3px 0 var(--secondary-strong)}
+.tab-btn.active{box-shadow:inset 0 -3px 0 var(--secondary)}
+.section-title::before{content:"";display:inline-block;width:4px;height:.9em;margin-right:var(--space-2);background:var(--secondary-strong);vertical-align:-.1em}
+.overview-eyebrow,.overview-section-heading{color:var(--secondary-text)}
+.overview-section-heading::after{background:color-mix(in srgb,var(--secondary-strong) 35%,var(--paper-line))}
+.overview-now-action{border-top:3px solid var(--secondary-strong)}
+.overview-action-buttons>.btn:not(.ghost):not(.tonal):not(:disabled){background:var(--secondary);color:var(--on-secondary);font-weight:var(--font-weight-semibold)}
+.overview-action-buttons>.btn:not(.ghost):not(.tonal):not(:disabled):hover{background:var(--secondary-hover)}
+.btn.secondary{background:var(--secondary);color:var(--on-secondary)}
+.btn.secondary:hover{background:var(--secondary-hover)}
+.ui-progress::-webkit-progress-value{background:var(--secondary-strong)}
+.ui-progress::-moz-progress-bar{background:var(--secondary-strong)}
+.card--secondary{border-color:var(--secondary-strong);border-top-width:3px}
+.status-badge--highlight{background:var(--secondary-bg);color:var(--secondary-text)}
