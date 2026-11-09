@@ -38,7 +38,7 @@ export function buildPeriodComparisonInsights(
   if (confidence === 'moderate' && delta != null) {
     if (questionDelta === 0 && minutesDelta > 0)
       combinedMessage = 'Você estudou mais tempo sem aumentar o volume de questões.';
-    else if (questionDelta > 0 && delta > 0) combinedMessage = 'Volume e desempenho melhoraram.';
+    else if (questionDelta > 0 && delta > 0) combinedMessage = 'Volume de questões e taxa de acerto melhoraram.';
     else if (questionDelta > 0 && delta < 0)
       combinedMessage = 'Você aumentou o volume, mas perdeu precisão.';
     else if (minutesDelta > 0 && delta < 0)

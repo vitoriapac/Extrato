@@ -83,6 +83,7 @@ export function createReportController({
         diagnosis: diagnosisData,
         forecast: forecastData,
         period: periodData,
+        planNumber: byId('planNumber')?.textContent?.trim() || '',
         candidates,
       });
       return printReport({ document, window, report, render: renderReport });
@@ -101,6 +102,7 @@ export function createReportController({
         diagnosis: diagnosisData,
         forecast: forecastData,
         period: periodData,
+        planNumber: byId('planNumber')?.textContent?.trim() || '',
         candidates,
       });
       return activePrint({ document, window, report, render: activeRender });

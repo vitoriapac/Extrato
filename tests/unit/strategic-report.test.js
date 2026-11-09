@@ -198,3 +198,23 @@ test('relatório distingue prova sem data e informa a orientação da fase', () 
   assert.match(renderStrategicReport(report), /Prova sem data/);
   assert.match(renderStrategicReport(report), /Defina a data da prova/);
 });
+
+test('relatório rotula erro naoSabia, usa o número do plano e não imprime projeção indisponível', () => {
+  const state = {
+    examDate: '2026-12-01',
+    subjects: [{ id: 's', name: 'Direito', topics: [{ id: 't', status: 'Concluído' }] }],
+    questoes: [{ date: '2026-09-02', subjectId: 's', resolved: 10, correct: 5, errorBreakdown: { naoSabia: 3 } }],
+  };
+  const report = buildStrategicReport({
+    state,
+    generatedAt: '2026-09-02T12:00:00.000Z',
+    planNumber: '2026-001',
+    forecast: { forecast30: { available: false, reason: 'Sem checagem retrospectiva.' } },
+    period: { preset: '30' },
+  });
+  const html = renderStrategicReport(report);
+  assert.match(html, /Não sabia/);
+  assert.doesNotMatch(html, /naoSabia|undefined/);
+  assert.match(html, /<strong>2026-001<\/strong>/);
+  assert.match(html, /Sem checagem retrospectiva\./);
+});

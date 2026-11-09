@@ -17,7 +17,7 @@ test('resume aumento de volume e acerto apenas com amostra comparável', () => {
   });
   assert.equal(model.confidence, 'moderate');
   assert.equal(model.combinedState, 'available');
-  assert.equal(model.combinedMessage, 'Volume e desempenho melhoraram.');
+  assert.equal(model.combinedMessage, 'Volume de questões e taxa de acerto melhoraram.');
 });
 
 test('explica aumento de tempo com queda no acerto sem alegar causalidade', () => {

@@ -44,6 +44,7 @@ export function buildStrategicReport({
   readiness = null,
   diagnosis = null,
   forecast = null,
+  planNumber = '',
   period,
   candidates = [],
 }: any = {}) {
@@ -249,6 +250,7 @@ export function buildStrategicReport({
       calculation: 'Cálculo',
       inattention: 'Desatenção',
       guess: 'Chute',
+      naoSabia: 'Não sabia',
       nao_sabia: 'Não sabia',
       esqueci: 'Esqueci',
       interpretacao: 'Interpretação',
@@ -458,7 +460,7 @@ export function buildStrategicReport({
         : ['Todo o conteúdo'],
       catalogVersion: CATALOG_VERSION,
     },
-    planNumber: state.planNumber || activePlan?.number || 'Não informado',
+    planNumber: planNumber || state.planNumber || activePlan?.number || 'Não informado',
     overview: {
       subjects: subjects.length,
       topics: topics.length,

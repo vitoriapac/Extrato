@@ -28,10 +28,15 @@ const comparisonValue = (key: string, value: any) =>
       : key === 'accuracy'
         ? `${value}%`
         : String(value);
-const bars = (items: any[], getValue: (item: any) => number, getLabel: (item: any) => string) => {
+const bars = (
+  items: any[],
+  getValue: (item: any) => number,
+  getLabel: (item: any) => string,
+  unit = ''
+) => {
   const max = Math.max(1, ...items.map(getValue));
   return items.length
-    ? `<div class="report-bars">${items.map((item: any) => `<div><span>${escape(getLabel(item))}</span><i><b style="width:${Math.round((getValue(item) / max) * 100)}%"></b></i><strong>${escape(getValue(item))}</strong></div>`).join('')}</div>`
+    ? `<div class="report-bars">${items.map((item: any) => `<div><span>${escape(getLabel(item))}</span><i><b style="width:${Math.round((getValue(item) / max) * 100)}%"></b></i><strong>${escape(getValue(item))}${unit}</strong></div>`).join('')}</div>`
     : '<p>Sem dados no período.</p>';
 };
 function renderAdaptiveReport(report: Record<string, any>) {
@@ -55,7 +60,7 @@ function renderAdaptiveReport(report: Record<string, any>) {
 function renderRecommendationReport(report: Record<string, any>) {
   const lifecycle = report.recommendationLifecycle || {},
     outcomes = report.recommendationOutcomes?.total || {};
-  return `<section><h2>Recomendações</h2><div class="report-kpis"><div><strong>${lifecycle.generated || 0}</strong><span>Geradas</span></div><div><strong>${lifecycle.executed || 0}</strong><span>Executadas</span></div><div><strong>${lifecycle.pending || 0}</strong><span>Pendentes</span></div><div><strong>${lifecycle.expired || 0}</strong><span>Expiradas</span></div></div><p>Resultados posteriores das ações aceitas no período: ${outcomes.improved || 0} com melhora, ${outcomes.stable || 0} estáveis, ${outcomes.declined || 0} com piora e ${outcomes.insufficient || 0} com dados insuficientes.</p><small>As medições posteriores não demonstram que a recomendação causou a mudança.</small></section>`;
+  return `<section><h2>Recomendações</h2><div class="report-kpis report-kpis--five"><div><strong>${lifecycle.generated || 0}</strong><span>Geradas</span></div><div><strong>${lifecycle.executed || 0}</strong><span>Executadas</span></div><div><strong>${lifecycle.pending || 0}</strong><span>Pendentes</span></div><div><strong>${lifecycle.dismissed || 0}</strong><span>Descartadas</span></div><div><strong>${lifecycle.expired || 0}</strong><span>Expiradas</span></div></div><p>Resultados posteriores das ações aceitas no período: ${outcomes.improved || 0} com melhora, ${outcomes.stable || 0} estáveis, ${outcomes.declined || 0} com piora e ${outcomes.insufficient || 0} com dados insuficientes.</p><small>As medições posteriores não demonstram que a recomendação causou a mudança.</small></section>`;
 }
 function renderExamIntelligenceReport(model: any = {}) {
   const confidence =
@@ -97,7 +102,7 @@ export function renderStrategicReport(report: Record<string, any>) {
     forecast = report.forecast?.forecast30,
     list = (items: any[], formatter: (item: any) => string, empty: string) =>
       items.length ? items.map(formatter).join('') : `<li>${empty}</li>`;
-  return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString('pt-BR'))}${report.isDemo ? ' · DADOS FICTÍCIOS' : ''}</p><p><strong>Concursos ativos:</strong> ${escape((report.exam?.activeLabels || ['Todo o conteúdo']).join(' · '))} · catálogo ${escape(report.exam?.catalogVersion || 'não informado')}</p></header><div class="report-page-meta">${report.isDemo ? 'DEMONSTRAÇÃO · ' : ''}${escape(report.period.label)}</div>
+  return `<header><p class="report-kicker">EXTRATO DE ESTUDOS</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString('pt-BR'))}${report.isDemo ? ' · DADOS FICTÍCIOS' : ''}</p><p><strong>Concursos ativos:</strong> ${escape((report.exam?.activeLabels || ['Todo o conteúdo']).join(' · '))} · catálogo ${escape(report.exam?.catalogVersion || 'não informado')}</p></header><div class="report-page-meta">${report.isDemo ? 'DEMONSTRAÇÃO · ' : ''}${escape(report.period.label)}</div>
 <section><h2>Resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · ${escape(report.exam.phase?.label || 'Prova sem data')}${report.exam.daysToExam == null ? '' : ` · ${report.exam.daysToExam} dias restantes`} · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + '%')}</strong> · Plano: <strong>${escape(report.planNumber)}</strong></p><p>${escape(report.exam.phase?.strategy || 'Defina a data da prova para ajustar o foco do estudo.')}</p><div class="report-kpis"><div><strong>${value(readiness == null ? null : Math.round(readiness) + '/100')}</strong><span>Índice de prontidão</span></div><div><strong>${escape(report.readiness?.confidenceLabel || 'Baixa')}</strong><span>Confiança</span></div><div><strong>${report.overview.contentPercent}%</strong><span>Conteúdo concluído</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>${report.exam.activeTags.length ? 'Tempo atribuído ao edital' : 'Tempo estudado'}</span></div></div>${report.exam.activeTags.length && report.overview.unscopedStudySeconds ? `<p><strong>${duration(report.overview.unscopedStudySeconds)}</strong> adicionais não foram atribuídos ao edital porque não possuem tópico elegível identificado.</p>` : ''}</section>
 ${renderReadinessHistoryReport(report.readinessHistory)}
 ${renderExamIntelligenceReport(report.examIntelligence)}
@@ -117,15 +122,17 @@ ${renderWeeklyAuditReport(report.weeklyAudit)}
 <section><h2>Evolução e distribuição por disciplina</h2>${bars(
     report.bySubject,
     (item: Record<string, any>) => Math.round(item.studySeconds / 60),
-    (item: Record<string, any>) => item.name
+    (item: Record<string, any>) => item.name,
+    ' min'
   )}<table><thead><tr><th>Disciplina</th><th>Conteúdo</th><th>Questões</th><th>Acerto</th><th>Sem tópico</th></tr></thead><tbody>${report.bySubject.map((item: any) => `<tr><td>${escape(item.name)}</td><td>${item.completed}/${item.total}</td><td>${item.questions}</td><td>${value(item.accuracy == null ? null : item.accuracy + '%')}</td><td>${item.unscopedStudySeconds || item.unscopedQuestions ? `${duration(item.unscopedStudySeconds)} · ${item.unscopedQuestions} questões` : '—'}</td></tr>`).join('')}</tbody></table></section>
-<section class="report-columns"><div><h2>Simulados</h2><ul>${list(report.simulations, (item: Record<string, any>) => `<li><strong>${escape(item.name)} · ${value(item.score == null ? null : item.score + '%')}</strong><span>${date(item.date)}</span></li>`, 'Nenhum simulado no período.')}</ul></div><div><h2>Retenção e revisões</h2><p>${report.overview.completedReviews} concluídas · ${report.overview.pendingReviews} pendentes.</p><p>${forecast ? `Projeção em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).` : 'Projeção ainda sem amostra suficiente.'}</p>${report.forecast?.scenarios?.available ? `<ul>${report.forecast.scenarios.scenarios.map((item: any) => `<li><strong>${escape(item.label)}: ${item.low}–${item.high}%</strong><span>Simulação de capacidade</span></li>`).join('')}</ul>` : ''}</div></section>
+<section class="report-columns"><div><h2>Simulados</h2><ul>${list(report.simulations, (item: Record<string, any>) => `<li><strong>${escape(item.name)} · ${value(item.score == null ? null : item.score + '%')}</strong><span>${date(item.date)}</span></li>`, 'Nenhum simulado no período.')}</ul></div><div><h2>Retenção e revisões</h2><p>${report.overview.completedReviews} concluídas · ${report.overview.pendingReviews} pendentes.</p><p>${forecast?.available !== false && [forecast?.low, forecast?.high, forecast?.central].every(Number.isFinite) ? `Projeção em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).` : escape(forecast?.reason || 'Projeção ainda sem amostra suficiente.')}</p>${report.forecast?.scenarios?.available ? `<ul>${report.forecast.scenarios.scenarios.map((item: any) => `<li><strong>${escape(item.label)}: ${item.low}–${item.high}%</strong><span>Simulação de capacidade</span></li>`).join('')}</ul>` : ''}</div></section>
 <section class="report-columns"><div><h2>Diagnóstico</h2><p>Nível geral da evidência: ${escape(report.methodology.evidence)}.</p><ul>${list(report.risks, (item: Record<string, any>) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.reason || 'Requer atenção')}${item.evidence?.evidenceLabel ? ` · evidência ${escape(item.evidence.evidenceLabel)}` : ''}</span></li>`, 'Nenhum gargalo relevante.')}</ul></div><div><h2>Oportunidades</h2><ul>${list(report.opportunities, (item: Record<string, any>) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>Retorno ${value(item.opportunityScore)}/100</span></li>`, 'Nenhuma oportunidade calculada.')}</ul></div></section>
 <section><h2>Prioridades do próximo período</h2><ol>${list(report.priorities, (item: Record<string, any>) => `<li>${escape(item.subjectName)} — ${escape(item.topicName)}${item.recommendedAction || item.action ? `<span>${escape(item.recommendedAction || item.action)}</span>` : ''}</li>`, 'Mantenha o plano atual e gere novas evidências.')}</ol></section>
 <section><h2>Foco recomendado</h2>${bars(
     report.focus,
     (item: Record<string, any>) => item.minutes,
-    (item: Record<string, any>) => `${item.subjectName} · ${item.percentage}%`
+    (item: Record<string, any>) => `${item.subjectName} · ${item.percentage}%`,
+    ' min'
   )}</section>
 <section><h2>Simulado mais recente</h2>${report.latestSimulation ? `<p><strong>${escape(report.latestSimulation.name)}</strong> · ${date(report.latestSimulation.date)}</p><ul>${list(report.latestSimulation.breakdown, (item: Record<string, any>) => `<li><strong>${escape(item.subjectName)}</strong><span>${item.correct} acertos / ${item.total} questões · ${value(item.accuracy == null ? null : item.accuracy + '%')}</span></li>`, 'Sem detalhamento por disciplina.')}</ul>` : '<p>Nenhum simulado no período.</p>'}</section>
 <section><h2>Questões resolvidas pelo estudante e erros</h2><p>${report.overview.resolved} questões respondidas no período. Estes registros medem o desempenho pessoal e são separados das ${report.examIntelligence?.questionCount || 0} questões históricas usadas para estudar a incidência da prova.</p><p>${report.errors.length ? report.errors.map((item: any) => `${escape(item.label)}: ${item.count}`).join(' · ') : 'Nenhuma categoria de erro no período.'}</p>${report.errorDiagnosis ? `<p><strong>Diagnóstico:</strong> ${escape(report.errorDiagnosis.message)}<br><strong>Ação:</strong> ${escape(report.errorDiagnosis.action)}</p>` : ''}</section>
