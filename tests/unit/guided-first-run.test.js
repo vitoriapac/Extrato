@@ -245,8 +245,9 @@ test('ESSENTIAL_TOUR_STEPS — gerencia 3 paradas focadas no primeiro uso do est
   assert.equal(step2.currentStep?.tab, 'dashboard');
 
   const step3 = nextTourStep(step2);
-  assert.equal(step3.currentStep?.id, 'questions-hub');
-  assert.equal(step3.currentStep?.tab, 'questoes');
+  assert.equal(step3.currentStep?.tab, 'desempenho');
+  assert.match(step3.currentStep?.message, /evolução/);
+  assert.equal(step3.currentStep?.id, 'performance-overview');
   assert.equal(step3.isLast, true);
 
   const done = nextTourStep(step3);

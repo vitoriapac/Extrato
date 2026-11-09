@@ -1,5 +1,9 @@
 # Superfícies e plataformas de regressão visual
 
+## Revisão dirigida — resumo de Desempenho
+
+Na revisão da hierarquia do resumo, as quatro referências Windows de Desempenho foram comparadas com as imagens atuais e seus diffs. A conclusão passou para antes dos indicadores; valores, evidências e ressalva sobre probabilidade de aprovação permaneceram. No celular, a captura anterior incluía o cabeçalho fixo sobre o conteúdo. A captura dirigida agora oculta temporariamente elementos flutuantes e aumenta a altura da janela para registrar o resumo inteiro, restaurando ambos em seguida. As quatro imagens foram substituídas individualmente após inspeção; a tolerância continua em 0,08.
+
 ## Plataforma oficial de comparação de pixels
 
 Trajetória e Execução de hoje usam o [helper de captura](../tests/e2e/helpers/visual-capture.js) para alinhar temporariamente a origem do recorte ao pixel. Ele mantém dimensões e conteúdo, restaura o estilo após a asserção e não amplia a tolerância. Isso evita que coordenadas fracionárias acrescentem uma linha à imagem. A normalização do recorte em 320 px da trajetória e as três referências de Hoje com microcopy revisada foram inspecionadas junto aos seus diffs antes da atualização.

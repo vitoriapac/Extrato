@@ -77,7 +77,7 @@ export const ESSENTIAL_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     order: 1,
     tab: 'hoje',
     selector: '.plano-hoje-card h3',
-    title: 'Seu QG diário de estudo',
+    title: 'Comece pelo plano de hoje',
     message:
       'Este é o plano de hoje. Feche o tour quando quiser experimentar uma atividade e abrir o cronômetro vinculado.',
     badgeLabel: '1 de 3 · Hoje',
@@ -87,20 +87,20 @@ export const ESSENTIAL_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     order: 2,
     tab: 'dashboard',
     selector: '#overviewNextAction',
-    title: 'Sua bússola estratégica',
+    title: 'Veja a próxima ação',
     message:
-      'Em qualquer momento de dúvida, o algoritmo cruza peso do edital, lacunas e revisões para apontar uma única recomendação clara.',
+      'A Visão geral resume a próxima ação e os pontos de atenção da sua preparação.',
     badgeLabel: '2 de 3 · Visão Geral',
   },
   {
-    id: 'questions-hub',
+    id: 'performance-overview',
     order: 3,
-    tab: 'questoes',
-    selector: '#panel-questoes .section-head',
-    title: 'Onde o diagnóstico acontece',
+    tab: 'desempenho',
+    selector: '#performancePage, #panel-desempenho',
+    title: 'Entenda sua evolução',
     message:
-      'Registre suas baterias ou importe relatórios do QConcursos/Tec Concursos. É aqui que o Extrato de Estudos aprende onde você erra para calibrar suas revisões.',
-    badgeLabel: '3 de 3 · Questões',
+      'Em Desempenho, acompanhe sua evolução, compare períodos e consulte as evidências disponíveis.',
+    badgeLabel: '3 de 3 · Desempenho',
   },
 ]);
 

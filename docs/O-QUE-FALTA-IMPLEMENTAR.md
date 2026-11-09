@@ -69,7 +69,7 @@ O Extrato de Estudos opera em arquitetura moderna **TypeScript (`strict: true`),
   - **Starter Packs de 1 Clique:** Templates pré-configurados de matérias fundamentais para Área Administrativa, Carreiras Policiais e Área Fiscal & Controle ([`src/domain/onboarding/starter-packs.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/starter-packs.ts)).
   - **Calibrador Anti-Sobrecarga:** Detecção preventiva de rotinas exaustivas (>35h/sem ou 7 dias contínuos) e atalho `[🏖️ Folga aos Domingos]` ([`src/domain/onboarding/routine-sustainability.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/routine-sustainability.ts)).
   - **Sessão de Aquecimento (15 min):** Componente [`FirstStepsMission.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/FirstStepsMission.tsx) reativo na aba Hoje com ação rápida `[⚡ Aquecimento (15 min)]` para superar a inércia do primeiro dia disparando o cronômetro para a 1ª atividade planejada.
-  - **Tour Essencial de 3 Paradas:** Roteiro cognitivamente leve (Hoje → Visão Geral → Questões) e pedagogia de estudo sem culpa ([`src/domain/onboarding/guided-tour-steps.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/guided-tour-steps.ts)).
+  - **Tour Essencial de 3 Paradas:** Roteiro cognitivamente leve (Hoje → Visão Geral → Desempenho) e pedagogia de estudo sem culpa ([`src/domain/onboarding/guided-tour-steps.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/guided-tour-steps.ts)).
 
 ### 2.2. Fase 2: Inteligência Preditiva, Modo Reta Final & Explicabilidade
 

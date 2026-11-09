@@ -1,5 +1,21 @@
 import { test, expect } from '@playwright/test';
 
+test('landing apresenta recortes da demonstração e acesso ao aplicativo', async ({ page }) => {
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/landing.html');
+    await expect(page.getByRole('heading', { name: 'Saiba o que estudar hoje.' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Começar grátis/ }).first()).toHaveAttribute('href', '/app');
+    await expect(page.getByText('Dados fictícios da demonstração').first()).toBeVisible();
+    for (const image of await page.locator('img[src*="/assets/landing/demo-"]').all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toBeVisible();
+      expect(await image.evaluate(el => el.complete && el.naturalWidth > 0)).toBeTruthy();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+  }
+});
+
 test('landing separada abre /app sem alterar dados armazenados', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/landing.html');

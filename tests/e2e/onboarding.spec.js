@@ -632,7 +632,7 @@ test('tour guiado interativo percorre as 3 paradas essenciais e conclui com suce
 
   // Parada 1: Hoje
   await expect(tourPopover).toContainText('1 de 3 · Hoje');
-  await expect(tourPopover).toContainText('Seu QG diário de estudo');
+  await expect(tourPopover).toContainText('Comece pelo plano de hoje');
   await expect(page.locator('#panel-hoje')).toBeVisible();
   await expect(page.locator('.plano-hoje-card h3.is-tour-highlighted')).toHaveCount(1);
 
@@ -641,13 +641,13 @@ test('tour guiado interativo percorre as 3 paradas essenciais e conclui com suce
   await nextBtn.click();
   await expect(page.locator('#panel-dashboard')).toBeVisible();
   await expect(tourPopover).toContainText('2 de 3 · Visão Geral');
-  await expect(tourPopover).toContainText('Sua bússola estratégica');
+  await expect(tourPopover).toContainText('Veja a próxima ação');
 
-  // Avança para Parada 3: Questões
+  // Avança para Parada 3: Desempenho
   await nextBtn.click();
-  await expect(page.locator('#panel-questoes')).toBeVisible();
-  await expect(tourPopover).toContainText('3 de 3 · Questões');
-  await expect(tourPopover).toContainText('Onde o diagnóstico acontece');
+  await expect(page.locator('#panel-desempenho')).toBeVisible();
+  await expect(tourPopover).toContainText('3 de 3 · Desempenho');
+  await expect(tourPopover).toContainText('Entenda sua evolução');
   await expect(nextBtn).toContainText('Concluir');
 
   // Concluir tour
@@ -706,9 +706,9 @@ test('tour guiado atende critérios de acessibilidade e sem overflow em tela com
   // Navegação para trás por teclado (ArrowLeft)
   const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
   await nextBtn.click();
-  await expect(tourPopover).toContainText('Sua bússola estratégica');
+  await expect(tourPopover).toContainText('Veja a próxima ação');
   await page.keyboard.press('ArrowLeft');
-  await expect(tourPopover).toContainText('Seu QG diário de estudo');
+  await expect(tourPopover).toContainText('Comece pelo plano de hoje');
 
   // Encerramento por Escape restaura foco
   await page.keyboard.press('Escape');
@@ -726,7 +726,7 @@ test('gatilhos de entrada do tour iniciam o fluxo a partir de Instruções e Mod
 
   const tourPopover = page.locator('#guidedTourPopover');
   await expect(tourPopover).toBeVisible();
-  await expect(tourPopover).toContainText('Seu QG diário de estudo');
+  await expect(tourPopover).toContainText('Comece pelo plano de hoje');
   await page.keyboard.press('Escape');
   await expect(tourPopover).toBeHidden();
 
@@ -740,7 +740,7 @@ test('gatilhos de entrada do tour iniciam o fluxo a partir de Instruções e Mod
   await demoTourBtn.click();
 
   await expect(tourPopover).toBeVisible();
-  await expect(tourPopover).toContainText('Seu QG diário de estudo');
+  await expect(tourPopover).toContainText('Comece pelo plano de hoje');
   await page.keyboard.press('Escape');
   await expect(tourPopover).toBeHidden();
 });

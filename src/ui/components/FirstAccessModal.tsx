@@ -105,8 +105,7 @@ export function FirstAccessModal({
                   Experimentar demonstração interativa
                 </h4>
                 <p className="text-xs text-content-secondary m-0 leading-relaxed">
-                  Explore o aplicativo com matérias, histórico simulado, radar de lacunas
-                  e métricas reais pré-carregadas.
+                  Explore o aplicativo com dados fictícios. Seus registros pessoais permanecem preservados.
                 </p>
               </div>
             </div>

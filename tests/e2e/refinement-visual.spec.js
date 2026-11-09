@@ -44,12 +44,11 @@ for (const { name, width, theme, columns } of [
                 Node.DOCUMENT_POSITION_FOLLOWING
             )
         ).toBeTruthy();
-        await expect(
-          page.getByRole('navigation', { name: 'Detalhes da preparação' })
-        ).toBeVisible();
+        const analyses = page.getByRole('tablist', { name: 'Análises de desempenho' });
+        await expect(analyses).toBeVisible();
         const period = await page.locator('#performancePeriod').inputValue();
         const scope = await page.locator('.performance-scope-note').textContent();
-        await page.getByRole('button', { name: 'Comparar disciplinas', exact: true }).click();
+        await analyses.getByRole('tab', { name: 'Disciplinas', exact: true }).click();
         await expect(
           page.locator('[data-performance-section="subjects"].performance-section-button')
         ).toHaveAttribute('aria-selected', 'true');
@@ -59,10 +58,25 @@ for (const { name, width, theme, columns } of [
           .locator('.performance-section-button[data-performance-section="overview"]')
           .click();
       }
-      if (section === 'overview' && process.platform === 'win32')
-        await expect(
-          page.locator('#performanceSectionContent .performance-summary')
-        ).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`), screenshotOptions);
+      if (section === 'overview' && process.platform === 'win32') {
+        await page.setViewportSize({ width, height: 1200 });
+        const overlays = page.locator('.demo-banner,.sticky-shell,.skip-link,#backToTopBtn');
+        const previous = await overlays.evaluateAll(nodes => nodes.map(node => {
+          const opacity = node.style.opacity;
+          node.style.opacity = '0';
+          return opacity;
+        }));
+        try {
+          await expect(
+            page.locator('#performanceSectionContent .performance-summary')
+          ).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`), screenshotOptions);
+        } finally {
+          await overlays.evaluateAll((nodes, values) => nodes.forEach((node, index) => {
+            node.style.opacity = values[index];
+          }), previous);
+          await page.setViewportSize({ width, height: 900 });
+        }
+      }
     }
     await activateTab(page, 'metas');
     await openPlanningAdjust(page);
