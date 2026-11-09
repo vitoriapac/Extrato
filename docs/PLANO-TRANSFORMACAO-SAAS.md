@@ -753,4 +753,259 @@ O acesso ao Painel Admin é protegido em duas camadas (*Defense in Depth*):
    - A função PostgreSQL `public.is_admin(p_user_id)` valida criptograficamente se o `user_id` correspondente ao JWT (`auth.jwt()->>'sub'`) possui `role = 'admin'` na tabela `public.profiles`.
    - Se um usuário comum ou invasor tentar forçar requisições com `?admin=1`, as chamadas de API do Supabase retornarão status **HTTP 403 Forbidden**, garantindo total inviolabilidade dos dados dos estudantes e das operações financeiras.
 
+---
+
+## 7. Infraestrutura de Produção, DNS, Custom Domain e Entregabilidade
+
+Para garantir alta disponibilidade, latência mínima no Brasil e conformidade com as restrições de navegadores modernos (Safari/iOS), a infraestrutura de produção segue uma topologia de borda global (*Edge Network*).
+
+```mermaid
+flowchart TD
+    subgraph Internet["Tráfego Público e DNS Seguro"]
+        CLIENT_MOBILE["iPhone / Safari / Android"]
+        CLIENT_DESKTOP["Chrome / Edge / Firefox"]
+        DNS_CF["Cloudflare DNS (Proxy Laranja / DNSSEC)"]
+    end
+
+    subgraph EdgeHosts["Infraestrutura de Hospedagem"]
+        CF_PAGES["Cloudflare Pages (App Shell & Assets / dist)"]
+        CLERK_CUSTOM["auth.extratoestudos.com.br (Clerk Custom Domain)"]
+        RESEND_DNS["notificacoes.extratoestudos.com.br (Resend SPF/DKIM/DMARC)"]
+    end
+
+    subgraph BackendCluster["Supabase Cloud (Região sa-east-1 / SP)"]
+        SUPA_EDGE["Supabase Edge Functions (Deno Runtime)"]
+        SUPA_DB[("PostgreSQL com RLS + PITR")]
+    end
+
+    CLIENT_MOBILE --> DNS_CF
+    CLIENT_DESKTOP --> DNS_CF
+    DNS_CF --> CF_PAGES
+    DNS_CF --> CLERK_CUSTOM
+    DNS_CF --> RESEND_DNS
+    CF_PAGES -.->|API & Sync| SUPA_EDGE
+    SUPA_EDGE --> SUPA_DB
+```
+
+### 7.1. Configuração do Domínio e Apontamentos DNS (Cloudflare / Registro.br)
+
+1. **Domínio Primário:** `extratoestudos.com.br` registrado no Registro.br e delegado aos nameservers do Cloudflare.
+2. **Apontamentos DNS Essenciais no Cloudflare:**
+   - `CNAME @`: Aponta para o projeto no Cloudflare Pages (ex: `extrato-de-estudos.pages.dev`) com Proxy ativado (*Proxied*).
+   - `CNAME www`: Aponta para `@` com regra de redirecionamento 301 para o ápice (`https://extratoestudos.com.br`).
+3. **Parâmetros de Segurança SSL/TLS:**
+   - **Modo de Criptografia:** *Full (Strict)* — exige certificado válido de ponta a ponta.
+   - **Always Use HTTPS:** Ativo (redireciona qualquer chamada HTTP para HTTPS).
+   - **HSTS (HTTP Strict Transport Security):** Ativo com `max-age=31536000` (1 ano), `includeSubdomains` e `preload`.
+   - **TLS Mínimo:** TLS 1.3 (e TLS 1.2 como fallback restrito).
+   - **Cabeçalhos de Segurança:** Injetados automaticamente via `_headers` (Cloudflare) e [`vercel.json`](file:///c:/Users/vitor/Documents/Extrato/vercel.json), incluindo `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin` e `Permissions-Policy`.
+
+### 7.2. Custom Domain no Clerk (Resolução de ITP e Cookies no Safari/iOS)
+
+> [!CRITICAL]
+> **O Desafio do Safari/iOS (Apple WebKit ITP):** O mecanismo *Intelligent Tracking Prevention* do iOS e Safari bloqueia cookies de terceiros em domínios diferentes do aplicativo (ex: `*.clerk.accounts.dev`). Se o Extrato de Estudos rodar em `extratoestudos.com.br` e o Clerk autenticar em um subdomínio compartilhado, usuários de iPhone serão deslogados a cada 24 horas ou encontrarão erros de login silenciosos.
+
+#### Solução: Ativação de Domínio Próprio de Autenticação (*First-Party Cookies*)
+1. No [Clerk Dashboard](https://dashboard.clerk.com), acesse **Configure > Domains**.
+2. Adicione o domínio personalizado: `auth.extratoestudos.com.br`.
+3. O Clerk gerará registros DNS do tipo `CNAME`:
+   - `auth.extratoestudos.com.br` -> `frontend-api.clerk.services`
+   - Registros de verificação SSL (ACME challenge do Let's Encrypt gerenciados pelo Clerk).
+4. No Cloudflare DNS:
+   - Crie o registro `CNAME auth` apontando para o destino informado, **obrigatoriamente com o Proxy desativado (DNS-Only / Nuvem Cinza)** durante a emissão do certificado.
+5. Com isso, os tokens de sessão trafegam exclusivamente como cookies *First-Party* sob o mesmo domínio pai (`.extratoestudos.com.br`), garantindo persistência ininterrupta no iPhone, iPad e macOS.
+
+### 7.3. Entregabilidade de E-mails Transacionais (SPF, DKIM, DMARC no Resend)
+
+Para garantir que recibos Pro, instruções de PIX "Pague no Celular" e avisos contratuais cheguem com 100% de confiabilidade na Caixa de Entrada (e não no Lixo Eletrônico/Spam do Gmail e Outlook):
+
+1. **Domínio no Resend:** Cadastrar `extratoestudos.com.br` (ou subdomínio transacional `notificacoes.extratoestudos.com.br`) em [resend.com/domains](https://resend.com/domains).
+2. **Configuração de Registros DNS no Cloudflare:**
+   - **SPF (`TXT`):**
+     - Nome: `@` (ou subdomínio)
+     - Conteúdo: `v=spf1 include:amazonses.com ~all`
+   - **DKIM (`CNAME` triplo):**
+     - Insira os 3 registros CNAME gerados pelo Resend (chaves criptográficas de 2048 bits para assinatura das mensagens).
+   - **DMARC (`TXT`):**
+     - Nome: `_dmarc`
+     - Conteúdo: `v=DMARC1; p=reject; rua=mailto:dmarc-reports@extratoestudos.com.br; pct=100; adkim=s; aspf=s;`
+3. **Validação de Reputação:** Enviar e-mail de prova para ferramentas como [Mail-Tester](https://www.mail-tester.com) garantindo score de conformidade de **10/10** antes de abrir para o público.
+
+---
+
+## 8. Gestão Fiscal (NFS-e), Observabilidade, Backups & DRP
+
+### 8.1. Emissão de Notas Fiscais Eletrônicas de Serviço (NFS-e) no Brasil
+
+A legislação tributária brasileira exige a emissão de documento fiscal para toda transação onerosa realizada por consumidor pessoa física ou jurídica:
+
+- **Enquadramento Tributário Recomendado:**
+  - **CNAE Principal:** `6203-1/00` (Desenvolvimento e licenciamento de programas de computador não-customizáveis).
+  - **Item da Lista de Serviços (LC 116/2003):** Subitem `1.03` ou `1.05` (Licenciamento ou cessão de direito de uso de programas de computação).
+  - **Regime Tributário:** Simples Nacional (Anexo III com Fator R ou Anexo V) ou MEI no início conforme faturamento.
+- **Régua Operacional de Emissão:**
+  - **Fase Inicial de Validação (até 50 assinantes/mês):**
+    - A emissão ocorre de forma consolidada ou por lote diretamente no portal da Prefeitura Municipal ou Emissor Nacional da NFS-e.
+    - O operador utiliza o botão de **Exportar Relatório Fiscal (CSV)** no Painel Admin (`/?admin=1`), que extrai `taxId` (CPF), `email`, `display_name`, data do pedido e valor líquido das assinaturas pagas.
+  - **Fase de Escala Automatizada (acima de 50 assinantes/mês):**
+    - Integração de serviço de mensageria fiscal via API REST (**Focus NFe**, **eNotas** ou **PlugNotas**).
+    - A Edge Function `abacatepay-webhook` (ao processar `billing.paid` com sucesso) dispara requisição idempotente para o emissor fiscal gerando a NFS-e e enviando o link do PDF/XML automaticamente para o aluno via Resend.
+- **Tratamento do Direito de Arrependimento de 7 Dias (Art. 49 CDC):**
+  - Caso o aluno solicite estorno e cancelamento dentro dos 7 dias legais, o estorno é processado pelo Painel Admin (`refunded`) e a NFS-e é cancelada diretamente no emissor fiscal dentro do prazo municipal regulamentar.
+
+### 8.2. Observabilidade, Monitoramento de Falhas e Telemetria em Produção
+
+A plataforma prioriza estabilidade e tempo de resposta sem coletar telemetria invasiva (*Privacy-First*):
+
+1. **Captura de Erros no Frontend (Client-Side Telemetry):**
+   - Integração com **Sentry** (ou Cloudflare Web Analytics / GlitchTip) inicializada apenas se configurado `window.APP_CONFIG.SENTRY_DSN`.
+   - Regra estrita de privacidade: sanitização obrigatória de dados pessoais (zero envio de senhas, termos de estudo ou conteúdo do usuário — apenas stacktraces técnicos e navegadores).
+2. **Monitoramento de Saúde dos Endpoints Vitais (Uptime Monitor):**
+   - Configurar ferramenta externa (Better Uptime ou UptimeRobot) com checagem a cada **60 segundos**:
+     - `GET https://extratoestudos.com.br/` (Valida entrega do app shell e CDN).
+     - `GET https://<seu-projeto>.supabase.co/functions/v1/abacatepay-webhook` (Valida execução do runtime das Edge Functions).
+3. **Alertas de Falha de Pagamento em Tempo Real:**
+   - Se o webhook da AbacatePay registrar 3 falhas consecutivas de conciliação de pedidos, uma notificação de emergência é enviada imediatamente para um canal privado de plantão no Telegram ou Discord.
+
+### 8.3. Política de Backup, Recuperação de Desastres (DRP) e RTO/RPO
+
+A segurança dos dados é assegurada pela natureza híbrida da arquitetura:
+
+1. **Camada em Nuvem (Supabase PostgreSQL):**
+   - **Snapshots Diários Automatizados:** Retenção contínua dos últimos 30 dias.
+   - **Point-in-Time Recovery (PITR):** Permite restaurar o banco de dados exatamente no estado de qualquer segundo nos últimos 7 dias em caso de falha de script ou corrupção de migração.
+   - **Cold Backup Semanal:** Script automatizado que executa dump da tabela `billing_orders`, `profiles` e `admin_audit_logs` gravando em bucket de armazenamento frio independente (Cloudflare R2 ou AWS S3).
+2. **Metas de Continuidade de Negócio:**
+   - **RTO (Recovery Time Objective):** Tempo máximo de **< 2 horas** para restabelecer a infraestrutura de backend em caso de catástrofe no datacenter da região.
+   - **RPO (Recovery Point Objective):** Perda máxima tolerável de **< 15 minutos** de dados transacionais.
+3. **A Garantia de Resiliência Local-First:**
+   - Se o provedor de nuvem sofrer uma queda de 24 horas, **nenhum estudante tem seus estudos interrompidos**. A aplicação web e o PWA continuam abrindo, registrando horas no cronômetro, calculando diagnósticos, resolvendo questões e salvando no `IndexedDB` local. Assim que a nuvem restabelecer a conexão, o [`cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) descarrega a fila offline de forma transparente.
+
+---
+
+## 9. SEO Técnico, OpenGraph e Ativos PWA de Produção
+
+Para maximizar a conversão orgânica e garantir apresentação profissional ao compartilhar links nas redes sociais e aplicativos de mensagens:
+
+### 9.1. Tags Open Graph e Meta Tags Sociais
+
+No cabeçalho do `index.html` e `landing.html`:
+```html
+<!-- Metadados de Indexação e Compartilhamento Social -->
+<title>Extrato de Estudos — Cada estudo soma | O Extrato Bancário da Aprovação</title>
+<meta name="description" content="A ferramenta definitiva para concurseiros: planejamento adaptativo, caderno de erros SM-2, cronômetro de foco e auditoria completa de rendimento.">
+<link rel="canonical" href="https://extratoestudos.com.br/">
+
+<!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://extratoestudos.com.br/">
+<meta property="og:title" content="Extrato de Estudos — Cada estudo soma">
+<meta property="og:description" content="Organize suas matérias, diagnostique suas falhas com o Caderno de Erros SM-2 e audite cada minuto até a aprovação.">
+<meta property="og:image" content="https://extratoestudos.com.br/assets/og-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Extrato de Estudos">
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Extrato de Estudos — O Extrato Bancário da Aprovação">
+<meta name="twitter:description" content="Planejamento de estudos adaptativo, métricas auditáveis e foco absoluto para concursos públicos.">
+<meta name="twitter:image" content="https://extratoestudos.com.br/assets/og-preview.png">
+```
+
+### 9.2. Indexação de Mecanismos de Busca (SEO Orgânico)
+
+1. **`robots.txt`:**
+   ```txt
+   User-agent: *
+   Allow: /
+   Allow: /landing.html
+   Allow: /?legal=terms
+   Allow: /?legal=privacy
+   Sitemap: https://extratoestudos.com.br/sitemap.xml
+   ```
+2. **`sitemap.xml`:**
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+     <url>
+       <loc>https://extratoestudos.com.br/</loc>
+       <changefreq>daily</changefreq>
+       <priority>1.0</priority>
+     </url>
+     <url>
+       <loc>https://extratoestudos.com.br/landing.html</loc>
+       <changefreq>weekly</changefreq>
+       <priority>0.8</priority>
+     </url>
+   </urlset>
+   ```
+
+### 9.3. Manifesto PWA e Ícones em Alta Resolução
+
+Garantir que o arquivo `manifest.webmanifest` declare:
+- `name`: "Extrato de Estudos — Cada estudo soma"
+- `short_name`: "Extrato"
+- `theme_color`: `#14221a` (alinhado aos tokens semânticos de fundo escuro do design system)
+- `background_color`: `#0c1510`
+- `display`: `standalone`
+- `start_url`: `/`
+- `icons`: Ícones SVG vetoriais e PNGs nos tamanhos `192x192`, `512x512` e `maskable` para renderização perfeita na gaveta de aplicativos do Android e na tela de início do iOS.
+
+---
+
+## 10. Checklist e Runbook Operacional de Lançamento (Go-Live D-Day)
+
+Este roteiro operacional detalha a sequência cronológica exata que deve ser executada nas 72 horas que antecedem a liberação pública da plataforma.
+
+```mermaid
+flowchart LR
+    D7["D-7: Validação e Staging"] --> D3["D-3: DNS, Domínio e E-mail"]
+    D3 --> D1["D-1: Secrets de Produção"]
+    D1 --> D0["D-Zero: Smoke Test R$ 1 e Abertura"]
+```
+
+### 10.1. D-7: Validação de Qualidade e Congelamento de Código
+- [ ] Executar suíte de testes em velocidade máxima: `npm run test:fast` (< 60s).
+- [ ] Executar checagem estática de tipos: `npm run check:types` e `npm run check:types:tests` (zero erros).
+- [ ] Auditar integridade da suíte: `node scripts/audit-test-suite.mjs` e `node scripts/check-test-tiers.mjs`.
+- [ ] Gerar empacotamento fechado minificado: `npm run build:prod` e inspecionar a pasta `dist/` (certificando-se de que nenhum arquivo `.ts`/`.tsx` ou `.map` sensível foi vazado).
+
+### 10.2. D-3: Infraestrutura, Domínio e Entregabilidade
+- [ ] Domínio `extratoestudos.com.br` ativo na Cloudflare com SSL *Full (Strict)*.
+- [ ] Custom Domain `auth.extratoestudos.com.br` verificado e com certificado ativo no Clerk.
+- [ ] Registros SPF, DKIM e DMARC validados no Resend com pontuação 10/10 no Mail-Tester.
+- [ ] Monitor de Uptime configurado no Better Uptime para alertar incidentes em canal de plantão.
+- [ ] E-mail oficial de encarregado LGPD (`dpo@extratoestudos.com.br`) e de suporte (`suporte@extratoestudos.com.br`) encaminhados para a caixa da equipe.
+
+### 10.3. D-1: Virada de Chaves de Produção (*Secrets Switch*)
+- [ ] No painel da AbacatePay: gerar chaves no ambiente de **Produção** (`aba_live_...`).
+- [ ] No painel do Clerk: copiar chaves públicas de produção (`pk_live_...`) e secret key (`sk_live_...`).
+- [ ] Configurar secrets das Edge Functions no Supabase de produção:
+  ```bash
+  supabase secrets set \
+    CLERK_PUBLISHABLE_KEY="pk_live_..." \
+    CLERK_SECRET_KEY="sk_live_..." \
+    ABACATEPAY_API_KEY="aba_live_..." \
+    ABACATEPAY_WEBHOOK_SECRET="<secret-do-webhook-producao>"
+  ```
+- [ ] Publicar as 4 Edge Functions finais:
+  ```bash
+  supabase functions deploy state-sync --no-verify-jwt
+  supabase functions deploy abacatepay-checkout --no-verify-jwt
+  supabase functions deploy abacatepay-webhook --no-verify-jwt
+  supabase functions deploy admin-api --no-verify-jwt
+  ```
+- [ ] Configurar a URL de produção do webhook no painel da AbacatePay:
+  `https://<seu-projeto>.supabase.co/functions/v1/abacatepay-webhook`
+
+### 10.4. D-Zero: Smoke Test Financeiro Real & Abertura ao Público
+- [ ] **Passo 1 (Compra Real via PIX):** Acesse a aplicação em produção, autentique uma conta real com o Clerk, abra o modal de planos, selecione PIX e pague o QR Code real com um banco brasileiro.
+- [ ] **Passo 2 (Confirmação Atômica de Pro):** Verifique se o selo `<Icon name="cloud-check" />` acendeu no cabeçalho imediatamente após a compensação, sem necessidade de recarregar a página.
+- [ ] **Passo 3 (Auditoria do Pedido):** Acesse `/?admin=1`, verifique se o pedido aparece com status `PAID` e valor líquido correto no Cockpit de MRR.
+- [ ] **Passo 4 (Teste de Reembolso do CDC Art. 49):** No painel admin, teste o botão de estorno para certificar-se de que a chamada de cancelamento/estorno junto à AbacatePay devolve o valor e rebaixa a conta para `free` harmoniosamente.
+- [ ] **Passo 5 (Promoção dos Administradores Oficiais):** Atribua `role: "admin"` aos e-mails da diretoria/operação via Clerk Dashboard.
+- [ ] **Passo 6 (Lançamento Oficial):** Abrir tráfego, publicar anúncios, notificar a lista de espera e liberar o link oficial [extratoestudos.com.br](https://extratoestudos.com.br).
+
+
 

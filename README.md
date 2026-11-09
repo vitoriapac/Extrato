@@ -67,7 +67,7 @@ O Extrato de Estudos suporta navegação direta e atalhos por query parameters n
 | `/?landing=1` | **Landing Page de Conversão** | Apresentação de produto, comparativo de planos e garantia de 7 dias. |
 | `/?firstAccess=1` | **Boas-Vindas e Primeiro Acesso** | Assistente guiado de montagem de plano e metas semanais. |
 
-Para instruções completas sobre promoção de papéis de administrador (`admin`) e conexão com Clerk e Supabase, consulte o [Manual Prático de Conexão SaaS](docs/PLANO-TRANSFORMACAO-SAAS.md#65-acesso-ao-painel-de-administração-e-deep-linking-via-url).
+Para instruções completas sobre promoção de papéis de administrador (`admin`), conexão com Clerk/Supabase, infraestrutura de produção, emissão fiscal e o roteiro de Go-Live, consulte o [Manual Prático de Conexão e Lançamento SaaS](docs/PLANO-TRANSFORMACAO-SAAS.md).
 
 ## Como o Extrato de Estudos funciona
 
