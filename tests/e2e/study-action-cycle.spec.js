@@ -45,8 +45,7 @@ for (const source of ['overview', 'today', 'diagnosis'])
       source === 'overview' ? 'dashboard' : source === 'diagnosis' ? 'desempenho' : 'hoje'
     );
     if (source === 'diagnosis') {
-      await page.locator('[data-performance-section="subjects"]').click();
-      await page.locator('.today-analysis-details > summary').click();
+      await page.locator('[data-performance-section="diagnosis"]').click();
     }
     const action =
       source === 'overview'

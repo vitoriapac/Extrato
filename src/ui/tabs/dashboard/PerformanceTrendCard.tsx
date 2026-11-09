@@ -97,67 +97,23 @@ export function PerformanceTrendCard({
           )}
         </div>
 
-        {/* Linha de KPIs Resumidos */}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
-          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-            <span class="text-xs text-content-secondary block font-medium">
-              Acertos (Questões)
-            </span>
-            <span class="text-base font-semibold font-data text-content-primary">
-              {model.questionAccuracy != null ? `${formatDecimal(model.questionAccuracy)}%` : '—'}
-            </span>
-            <span class="text-xs text-content-secondary block truncate">
-              {model.totalResolved > 0 ? `${model.totalResolved} resolvidas` : 'Sem registros'}
-            </span>
-          </div>
-
-          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-            <span class="text-xs text-content-secondary block font-medium">
-              Média dos Simulados
-            </span>
-            <span class="text-base font-semibold font-data text-content-primary">
-              {model.simulationMean != null ? `${formatDecimal(model.simulationMean)}%` : '—'}
-            </span>
-            <span class="text-xs text-content-secondary block truncate">
-              {model.simulationCount > 0
-                ? `${model.simulationCount} realizados`
-                : 'Nenhum simulado'}
-            </span>
-          </div>
-
-          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-            <span class="text-xs text-content-secondary block font-medium">
-              Meta de Aprovação
-            </span>
-            <span class="text-base font-semibold font-data text-amber">
-              {formatDecimal(model.targetScore)}%
-            </span>
-            <span class="text-xs text-content-secondary block">Alvo configurado</span>
-          </div>
-
-          <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle flex flex-col justify-between">
-            <span class="text-xs text-content-secondary block font-medium">
-              Situação Atual
-            </span>
-            <div>
-              {model.status === 'ok' && (
-                <span class="text-xs px-1.5 py-0.5 rounded font-data bg-green-subtle text-green font-semibold inline-block">
-                  Na meta {model.gap != null && model.gap > 0 ? `(+${formatDecimal(model.gap)}%)` : ''}
-                </span>
-              )}
-              {model.status === 'attention' && (
-                <span class="text-xs px-1.5 py-0.5 rounded font-data bg-amber-subtle text-amber font-semibold inline-block">
-                  Abaixo {model.gap != null ? `(${formatDecimal(model.gap)}%)` : ''}
-                </span>
-              )}
-              {model.status === 'insufficient' && (
-                <span class="text-xs px-1.5 py-0.5 rounded font-data bg-surface-card text-content-secondary font-medium inline-block border border-border-default">
-                  Dados iniciais
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Uma frase no lugar dos quatro KPIs: os números por disciplina já estão em Saúde do edital. */}
+        <p class="text-xs text-content-secondary m-0 mb-3" data-testid="performance-trend-summary">
+          {model.questionAccuracy != null
+            ? `${formatDecimal(model.questionAccuracy)}% de acerto em ${model.totalResolved} questões`
+            : 'Sem questões registradas'}
+          {model.simulationCount > 0
+            ? ` · média de ${formatDecimal(model.simulationMean)}% em ${model.simulationCount} simulados`
+            : ' · nenhum simulado'}
+          {` · meta ${formatDecimal(model.targetScore)}%`}
+          {model.status === 'ok' && model.gap != null && model.gap > 0
+            ? ` · na meta (+${formatDecimal(model.gap)} p.p.)`
+            : ''}
+          {model.status === 'attention' && model.gap != null
+            ? ` · abaixo (${formatDecimal(model.gap)} p.p.)`
+            : ''}
+          {model.status === 'insufficient' ? ' · dados iniciais' : ''}
+        </p>
 
         {/* Gráfico Vetorial ou Estado Inicial */}
         {!hasData ? (

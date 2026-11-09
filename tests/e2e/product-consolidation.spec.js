@@ -319,8 +319,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   for (const label of ['Simulados comparáveis', 'Faixa atual', 'Tendência em 30 dias'])
     await expect(metric(label)).toHaveText('—');
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
-  await page.locator('.today-analysis-details > summary').click();
+  await page.locator('[data-performance-section="diagnosis"]').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
   // A fresh start has no subjects, so no study action can be justified yet.
   await expect(action).toHaveAttribute('data-action-state', 'INSUFFICIENT_EVIDENCE');
@@ -404,8 +403,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
-  await page.locator('.today-analysis-details > summary').click();
+  await page.locator('[data-performance-section="diagnosis"]').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
   await expect(action).toBeVisible();
   await expect(action).toHaveAttribute(

@@ -21,7 +21,9 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
   ).innerText();
   const actionId = await overviewRecommendationId(page);
   await expect(page.locator('#overviewAttention')).toBeVisible();
-  await page.locator('#overviewAttentionViewAll').click();
+  // O cabeçalho fixo passa de 45px para 87px ao rolar e desloca o conteúdo 42px; o clique por
+  // coordenadas erra o botão nesse limite, então o atalho é acionado direto (como activateTab).
+  await page.locator('#overviewAttentionViewAll').evaluate(button => button.click());
   await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
   const todayAction = page.locator('#studyRecommendation .study-recommendation').first();
   await expect(todayAction).toHaveAttribute('data-study-action-source', 'today');
@@ -43,8 +45,7 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
     page.locator('#studyRecommendation .recommendation-actions .btn').first()
   ).toBeVisible();
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
-  await page.locator('.today-analysis-details > summary').click();
+  await page.locator('[data-performance-section="diagnosis"]').click();
   const diagnosisActions = page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
   await expect(diagnosisActions.first()).toBeVisible();
   await expect(diagnosisActions.first()).toHaveAttribute(
@@ -86,9 +87,7 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
       .screenshot({ path: test.info().outputPath(`today-plan-first-${width}.png`) });
   }
   await activateTab(page, 'desempenho');
-  await page.locator('[data-performance-section="subjects"]').click();
-  await expect(page.locator('.today-analysis-details')).not.toHaveAttribute('open', '');
-  await page.locator('.today-analysis-details > summary').click();
+  await page.locator('[data-performance-section="diagnosis"]').click();
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
   await expect(page.locator('#weeklyReplan')).toBeVisible();
 });

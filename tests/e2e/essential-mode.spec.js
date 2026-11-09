@@ -10,7 +10,8 @@ test('quem começa sem dados entra no modo Essencial: análises a um clique e di
   await activateTab(page, 'desempenho');
   await page.locator('[data-performance-section="subjects"]').click();
   await expect(page.locator('.today-analysis-details')).toBeHidden();
-  await page.getByRole('button', { name: 'Mostrar Resumo, diagnóstico e replanejamento' }).click();
+  // O Diagnóstico é uma subaba: abrir a subaba já é a escolha de ver o bloco, sem botão "Mostrar".
+  await page.locator('[data-performance-section="diagnosis"]').click();
   await expect(page.locator('.today-analysis-details')).toBeVisible();
   await activateTab(page, 'dashboard');
   const hint = page.getByRole('button', { name: 'O que é Índice de prontidão?' });

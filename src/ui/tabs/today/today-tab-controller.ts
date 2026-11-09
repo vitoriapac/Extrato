@@ -18,10 +18,6 @@ import { buildTodayViewModel, canGenerateAutomaticTodayPlan } from '../../../app
 import { buildNextBestAction } from '../../../application/diagnostics/build-next-best-action.js';
 import { createDailyExecutionController } from '../../controllers/daily-execution-controller.js';
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
-import {
-  buildConsistencyStrip,
-  renderConsistencyStrip,
-} from '../../renderers/consistency-strip-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
@@ -696,16 +692,6 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     });
     renderTodayExecutionSummary(todayModel);
     renderWeeklyRhythmCard();
-    const consistency = doc.getElementById('todayConsistency');
-    if (consistency)
-      consistency.innerHTML = renderConsistencyStrip(
-        buildConsistencyStrip({
-          sessions: state.studySessions || [],
-          questions: state.questoes || [],
-          today: todayISO(),
-        }),
-        { formatDate: formatDatePt }
-      );
     renderFirstStepsMissionCard();
     renderRealWeekBanner();
 

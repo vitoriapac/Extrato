@@ -1,6 +1,10 @@
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
+import {
+  buildConsistencyStrip,
+  renderConsistencyStrip,
+} from '../../renderers/consistency-strip-renderer.js';
 import { QuickStatsGrid, type QuickStatsData } from './QuickStatsGrid.js';
 import { SubjectProgressList, type SubjectProgressItem } from './SubjectProgressList.js';
 import { UpcomingReviewsList, type UpcomingReviewItem } from './UpcomingReviewsList.js';
@@ -53,6 +57,8 @@ import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
 import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
+import { buildOverviewStanding } from '../../../application/analytics/build-overview-standing.js';
+import { renderOverviewEvidence, renderOverviewStanding } from '../../renderers/overview-standing-renderer.js';
 
 export interface DashboardTabControllerDeps {
   document?: any;
@@ -69,6 +75,7 @@ export interface DashboardTabControllerDeps {
   escapeAttr?: (text: any) => string;
   recentPerformance?: () => { current?: { accuracy: number | null } | null } | any;
   projectPerformance?: () => { central?: number | null } | any;
+  examMatrixRows?: () => any[];
   revisoesAtrasadas?: () => number;
   getRevisoesUnificadas?: () => any[];
   metaHoursToday?: () => number;
@@ -312,8 +319,47 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       note.hidden = !hasConfigured;
     }
 
-    // Camada 3: Renderização do Heatmap GitHub em Largura Total
+    const standingMount = doc.getElementById('overviewStanding');
+    const evidenceMount = doc.getElementById('overviewEvidence');
+    if (standingMount || evidenceMount) {
+      if (standingMount) standingMount.hidden = !hasConfigured;
+      if (evidenceMount) evidenceMount.hidden = !hasConfigured;
+      if (hasConfigured) {
+        let readiness: any = null;
+        try {
+          readiness =
+            deps.readinessResult && deps.computeApprovalMetrics
+              ? deps.readinessResult(deps.computeApprovalMetrics())
+              : null;
+        } catch {
+          readiness = null;
+        }
+        const standing = buildOverviewStanding({
+          calibration: deps.projectPerformance?.()?.calibration,
+          matrixRows: deps.examMatrixRows ? deps.examMatrixRows() : [],
+          readiness,
+        });
+        if (standingMount)
+          standingMount.innerHTML = renderOverviewStanding(standing, {
+            escapeHtml,
+            formatDate: formatDatePt,
+          });
+        // A evidência fica na coluna de Atenção, abaixo da Carga de revisões.
+        if (evidenceMount) evidenceMount.innerHTML = renderOverviewEvidence(standing.evidence);
+      }
+    }
+    // O mural histórico mora em Desempenho > Consistência; a Visão geral mostra só as últimas 4 semanas.
     renderHeatmap();
+    const consistencyMount = doc.getElementById('overviewConsistency');
+    if (consistencyMount)
+      consistencyMount.innerHTML = renderConsistencyStrip(
+        buildConsistencyStrip({
+          sessions: state.studySessions || [],
+          questions: state.questoes || [],
+          today,
+        }),
+        { formatDate: formatDatePt }
+      );
 
     // 1. Balanço de Alocação de Tempo vs. Peso no Edital
     const allocMount = doc.getElementById('cockpitAllocationMount');
@@ -748,6 +794,12 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const state = deps.getState ? deps.getState() : {};
     const phaseDays =
       state.examDate && deps.diasParaRevisao ? deps.diasParaRevisao(state.examDate) : null;
+    const phaseChip = doc.getElementById('examPhaseChip');
+    if (phaseChip) {
+      const phase = resolveExamPhase(phaseDays);
+      phaseChip.textContent = state.examDate && phase?.label ? `Fase: ${phase.label}` : '';
+      phaseChip.hidden = !phaseChip.textContent;
+    }
     const phaseContainer = doc.getElementById('overviewExamPhase');
     if (phaseContainer) {
       phaseContainer.innerHTML = renderExamPhaseCompact(resolveExamPhase(phaseDays), {

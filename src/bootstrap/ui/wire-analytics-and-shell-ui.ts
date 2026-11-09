@@ -265,6 +265,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     escapeAttr,
     recentPerformance: approvalReadinessService.recentPerformance,
     projectPerformance: approvalReadinessService.projectPerformance,
+    examMatrixRows: () => deps.examMatrixRows?.() ?? [],
     revisoesAtrasadas: studyCandidateService.revisoesAtrasadas,
     getRevisoesUnificadas: studyMetricsSelectors.getRevisoesUnificadas,
     metaHoursToday: analytics.goalsBlueprintService.metaHoursToday,

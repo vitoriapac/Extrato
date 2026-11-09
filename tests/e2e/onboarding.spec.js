@@ -123,7 +123,8 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await overlay.locator('#guidedExamDate').fill('2027-03-14');
   await overlay.locator('[data-guided-action="next"]').click();
   await overlay.locator('[data-guided-action="next"]').click();
-  await expect(overlay.locator('[data-guided-starter-pack]')).toHaveCount(3);
+  // Um botão por pacote em STARTER_PACKS (hoje 7).
+  await expect(overlay.locator('[data-guided-starter-pack]')).toHaveCount(7);
   await context.close();
 });
 
@@ -140,7 +141,10 @@ test('modal de boas-vindas do primeiro acesso abre com firstAccess=1 e bifurca p
   await expect(modal).toContainText('Boas-vindas ao Extrato de Estudos');
   await expect(modal).toContainText('Montar meu plano guiado');
   await expect(modal).toContainText('Experimentar demonstração interativa');
-  await expect(modal).toContainText('Configurar manualmente ou explorar livremente');
+  // A frase é o nome acessível do botão "Configurar manualmente", não texto visível.
+  await expect(
+    modal.getByRole('button', { name: 'Configurar manualmente ou explorar livremente' })
+  ).toBeVisible();
 
   // Opção: dispensar e configurar manualmente
   await modal.getByRole('button', { name: /Configurar manualmente/i }).click();

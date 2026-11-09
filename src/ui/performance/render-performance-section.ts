@@ -47,7 +47,9 @@ export function renderPerformanceSection(
         pedagogicalMatrix: pageModel.pedagogicalMatrix,
       });
     case 'consistency':
-      return renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml });
+      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml })}<div id="performanceConsistencyMuralMount" class="mt-4"></div>`;
+    case 'diagnosis':
+      return '<div id="performanceDiagnosisMount" class="space-y-4"></div>';
     case 'history':
       return '<p class="analytics-note">Conquistas, tempo de estudo e o histórico de sessões consolidados. Esses registros preservam sua memória de estudo e não alteram o cálculo de risco.</p><div id="performanceHistorySupplementalMount" class="performance-history-supplemental space-y-4 mt-3"></div>';
     default:

@@ -43,7 +43,7 @@ export function buildPerformancePageModel({
   topicHistoryFor,
 }: any = {}): Record<string, any> {
   const section = viewState.section;
-  if (section === 'history') return { section };
+  if (section === 'history' || section === 'diagnosis') return { section };
   if (section === 'overview') {
     const model = buildPerformanceOverview({
       range,

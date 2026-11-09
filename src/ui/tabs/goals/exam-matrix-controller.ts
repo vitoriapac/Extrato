@@ -57,13 +57,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
   let examClassificationPage = 0;
   let examClassificationPreviousFocus: HTMLElement | null = null;
 
-  function renderHistoricalExamMatrix() {
-    const container = ctx.document.getElementById('examHistoricalMatrix');
-    if (!container) return;
-    const advancedWasOpen = container.querySelector<HTMLDetailsElement>(
-      '.exam-matrix-more-filters'
-    )?.open;
-
+  function buildCurrentModel(filters: Record<string, any>) {
     const personal = new Map<string, { total: number; correct: number }>();
     for (const record of ctx.examEvidenceContext().questions.included) {
       const entry = personal.get(record.topicId) || { total: 0, correct: 0 };
@@ -93,8 +87,8 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     );
 
     const auditMatchesScope =
-      examMatrixFilters.scope === 'active' &&
-      ['board', 'year', 'role'].every(key => examMatrixFilters[key] === 'all');
+      filters.scope === 'active' &&
+      ['board', 'year', 'role'].every(key => filters[key] === 'all');
     const state = ctx.getState();
     const auditByTopic = auditMatchesScope
       ? Object.fromEntries(
@@ -107,15 +101,25 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
         )
       : {};
 
-    const model = buildExamMatrix({
+    return buildExamMatrix({
       topics: ctx.activeTopics(),
       exams: state.exams,
       examQuestions: state.examQuestions,
       activeExamTags: state.examBlueprint?.activeExamTags || [],
-      filters: examMatrixFilters,
+      filters,
       metricsByTopic,
       auditByTopic,
     });
+  }
+
+  function renderHistoricalExamMatrix() {
+    const container = ctx.document.getElementById('examHistoricalMatrix');
+    if (!container) return;
+    const advancedWasOpen = container.querySelector<HTMLDetailsElement>(
+      '.exam-matrix-more-filters'
+    )?.open;
+
+    const model = buildCurrentModel(examMatrixFilters);
 
     if (!model.rows.some((row: any) => row.topicId === selectedExamMatrixTopicId))
       selectedExamMatrixTopicId = null;
@@ -524,6 +528,18 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     toggleActiveExamTag,
     bindEvents,
     getFilters: () => ({ ...examMatrixFilters }),
+    // Linhas com os filtros padrão (concurso ativo), para a Visão geral; não altera os filtros da tela.
+    currentRows: () =>
+      buildCurrentModel({
+        scope: 'active',
+        board: 'all',
+        year: 'all',
+        role: 'all',
+        subject: 'all',
+        search: '',
+        sort: 'incidence',
+        mode: 'quadrants',
+      }).rows,
     getSelectedTopicId: () => selectedExamMatrixTopicId,
   };
 }

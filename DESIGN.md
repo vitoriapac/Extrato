@@ -219,6 +219,7 @@ Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com
   - `secondary-text` (`#A8480A` claro, `#F0A55A` escuro): texto sobre papel ou `secondary-bg` (5,7:1 e 5,0:1) — eyebrows e títulos de seção da Visão geral.
   - `secondary-bg` (`#FBEBDA` claro, `#2E2112` escuro): fundo de selo `.status-badge--highlight`.
   Componentes: `.btn.secondary`, `.card--secondary`, `.status-badge--highlight`.
+  Presença contínua (sempre em `secondary-text`/`secondary-strong`, nunca em texto longo): eyebrows (`.module-heading__eyebrow`, rótulos de meta), barra antes dos títulos de card e de seção, preenchimento das barras de progresso (metas, plano, diagnóstico, foco semanal, conquistas, cronômetro), semana atual no gráfico de ritmo, cabeçalho de tabela (`2px`), sublinhado das sub-abas ativas e sublinhado dos botões terciários.
 - **Âmbar Saldo** (`attention`, `#E9953F`): continua o tom do saldo da prontidão, da contagem regressiva e da barra até a prova, mas agora é só um alias semântico de estado.
 
 ### Tertiary (semânticos)

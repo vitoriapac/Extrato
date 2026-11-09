@@ -3,6 +3,7 @@ import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 export const PERFORMANCE_SECTIONS = Object.freeze([
   'overview',
   'subjects',
+  'diagnosis',
   'questions',
   'simulations',
   'exam',

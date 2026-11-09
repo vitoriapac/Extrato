@@ -282,6 +282,7 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
 
     if (overlay && openBtn) {
       listen(openBtn, 'click', openModal);
+      listen(ctx.document.getElementById('openDataManagementHeaderBtn'), 'click', openModal);
     }
     if (overlay && closeBtn) {
       listen(closeBtn, 'click', closeModal);

@@ -93,7 +93,7 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
       if (destination === 'hoje')
         setPerformanceViewState(
           updatePerformanceViewState(getPerformanceViewState(), {
-            section: 'overview',
+            section: 'diagnosis',
             subjectId,
             topicId,
           })
@@ -111,8 +111,6 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
       activateTab(destination === 'hoje' ? 'desempenho' : destination!);
       requestAnimationFrame(() => {
         if (destination === 'hoje') {
-          const panel = document.getElementById('panel-desempenho');
-          if (panel) panel.dataset.performanceView = 'overview';
           const details = document.querySelector<HTMLElement>('.today-analysis-details');
           details?.setAttribute('open', '');
           revealAdvanced(details, false);

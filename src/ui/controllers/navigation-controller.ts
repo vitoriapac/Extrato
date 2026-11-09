@@ -43,7 +43,7 @@ export function createNavigationController({
   const moreButton = document.getElementById('moreTabButton'),
     moreMenu = document.getElementById('mobileMoreMenu');
   const syncMore = (tabName: string) => {
-    const secondary = ['desempenho', 'agenda', 'questoes', 'metas', 'instrucoes'].includes(tabName);
+    const secondary = ['agenda', 'questoes', 'metas', 'instrucoes'].includes(tabName);
     moreButton?.classList.toggle('active', secondary);
     moreMenu?.querySelectorAll('[data-more-tab]').forEach((item: any) => {
       const active = item.dataset.moreTab === tabName;

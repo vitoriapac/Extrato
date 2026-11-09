@@ -157,6 +157,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
 
   analyticsUi = wireAnalyticsAndShellUi({
     ...deps,
+    examMatrixRows: () => planningUi.examMatrixController.currentRows(),
     activeTabName,
     activateTab,
     renderAgenda: () => practiceUi.reviewsTabController.renderAgenda(),

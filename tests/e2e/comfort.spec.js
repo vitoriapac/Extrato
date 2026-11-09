@@ -49,11 +49,11 @@ test('redistribuir atrasadas mostra prévia sem salvar, confirma e permite desfa
   await expect.poll(() => agendaDates(page)).toEqual(before);
 });
 
-test('Hoje mostra a constância de 4 semanas e a densidade compacta fica lembrada', async ({ page }) => {
+test('Visão geral mostra a constância de 4 semanas e a densidade compacta fica lembrada', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
-  await activateTab(page, 'hoje');
-  const strip = page.locator('#todayConsistency');
+  await activateTab(page, 'dashboard');
+  const strip = page.locator('#overviewConsistency');
   await expect(strip.getByRole('img', { name: /^Constância: \d+ de 28 dias com estudo$/ })).toBeVisible();
   await expect(strip.locator('.consistency-strip__day')).toHaveCount(28);
   await expectNoPageOverflow(page);

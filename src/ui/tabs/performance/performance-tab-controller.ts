@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { revealAdvanced } from '../../essential-mode.js';
 import { mountPreact } from '../../preact-mount.js';
 import {
   createPerformanceViewState,
@@ -145,8 +146,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const gapsDetails = doc.getElementById('desempenho-gaps');
     const progressSection = doc.getElementById('performance-progress');
     const studyDetails = doc.getElementById('desempenho-study');
+    const consistencyMural = doc.getElementById('performanceConsistencyMural');
     if (panel && typeof panel.append === 'function') {
       for (const node of [
+        consistencyMural,
         readinessCard,
         decisionDetails,
         todayAnalysisDetails,
@@ -293,10 +296,21 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     } else if (performanceViewState.section === 'subjects') {
       const subjectsMount = target.querySelector('#performanceSubjectsSupplementalMount');
       if (subjectsMount) {
-        for (const node of [decisionDetails, todayAnalysisDetails, gapsDetails]) {
+        for (const node of [decisionDetails, gapsDetails]) {
           if (node) subjectsMount.append(node);
         }
       }
+    } else if (performanceViewState.section === 'diagnosis') {
+      const diagnosisMount = target.querySelector('#performanceDiagnosisMount');
+      if (diagnosisMount && todayAnalysisDetails) {
+        // A subaba já é o disclosure: o bloco fica aberto e o resumo é ocultado por CSS.
+        todayAnalysisDetails.setAttribute('open', '');
+        revealAdvanced(todayAnalysisDetails as HTMLElement, false);
+        diagnosisMount.append(todayAnalysisDetails);
+      }
+    } else if (performanceViewState.section === 'consistency') {
+      const muralMount = target.querySelector('#performanceConsistencyMuralMount');
+      if (muralMount && consistencyMural) muralMount.append(consistencyMural);
     } else if (performanceViewState.section === 'history') {
       const historyMount = target.querySelector('#performanceHistorySupplementalMount');
       if (historyMount) {
@@ -310,7 +324,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const status = doc.getElementById('performanceStatus');
     const section = target.querySelector('.performance-section-button.active')?.textContent?.trim();
     const statusText = section
-      ? `Mostrando ${section}${examSection || performanceViewState.section === 'history' ? '' : ` · ${range.label}`}.`
+      ? `Mostrando ${section}${examSection || performanceViewState.section === 'history' || performanceViewState.section === 'diagnosis' ? '' : ` · ${range.label}`}.`
       : '';
     if (status && status.textContent !== statusText) status.textContent = statusText;
 

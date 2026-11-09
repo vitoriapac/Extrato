@@ -185,6 +185,12 @@ export function createShellUiController(options: ShellUiControllerOptions) {
         banner && !banner.hidden && getComputedStyle(banner).position === 'sticky'
           ? Math.ceil(banner.getBoundingClientRect().height)
           : 0;
+      // Altura da faixa compacta: ao aparecer, ela é compensada em CSS para o conteúdo não descer.
+      const compactHeight = Math.ceil(
+        document.querySelector('.compact-header')?.getBoundingClientRect().height || 0
+      );
+      if (compactHeight)
+        document.documentElement.style.setProperty('--compact-header-height', `${compactHeight}px`);
       document.documentElement.style.setProperty('--demo-banner-height', `${bannerHeight}px`);
       document.documentElement.style.setProperty(
         '--sticky-stack-height',
