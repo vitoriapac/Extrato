@@ -46,7 +46,7 @@ export function renderStrategicExecution(model: Record<string, any>, periodLabel
       description:
         'Compare o tempo planejado com o estudo registrado. O realizado inclui estudo fora do plano.',
       chart: bars
-        ? `<ul class="metas-distribution-list">${bars}</ul><details class="metas-distribution-detail"><summary>Ver tabela detalhada</summary><div class="execution-distribution"><table class="weekly-history-table"><thead><tr><th>Disciplina</th><th>Planejado</th><th>Realizado</th><th>Diferença</th></tr></thead><tbody>${rows}</tbody></table></div></details>`
+        ? `<ul class="metas-distribution-list">${bars}</ul><details class="metas-distribution-detail"><summary>Ver tabela detalhada</summary><div class="execution-distribution" tabindex="0" role="region" aria-label="Distribuição por disciplina; use as setas para percorrer as colunas"><table class="weekly-history-table"><thead><tr><th>Disciplina</th><th>Planejado</th><th>Realizado</th><th>Diferença</th></tr></thead><tbody>${rows}</tbody></table></div></details>`
         : '',
       emptyMessage: 'Registre um plano ou sessões para comparar a distribuição.',
     }) +

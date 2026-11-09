@@ -3,6 +3,7 @@ import {
   FREE_TIER_LIMITS,
   PRICING_PLANS,
   type BillingCycle,
+  type PaymentMethod,
 } from '../../domain/billing/entitlements.js';
 import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
@@ -15,7 +16,8 @@ export interface PaywallModalProps {
   featureTitle?: string;
   featureDescription?: string;
   defaultCycle?: BillingCycle;
-  onSelectCheckout: (cycle: BillingCycle) => void;
+  defaultPaymentMethod?: PaymentMethod;
+  onSelectCheckout: (cycle: BillingCycle, paymentMethod?: PaymentMethod, installments?: number) => void;
   onExploreDemo?: () => void;
   isSubmitting?: boolean;
   errorMessage?: string | null;
@@ -50,21 +52,39 @@ export function PaywallModal({
   featureTitle,
   featureDescription,
   defaultCycle = 'annual',
+  defaultPaymentMethod = 'pix',
   onSelectCheckout,
   onExploreDemo,
   isSubmitting = false,
   errorMessage = null,
 }: PaywallModalProps) {
   const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(defaultCycle);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(defaultPaymentMethod);
+  const [selectedInstallments, setSelectedInstallments] = useState<number>(12);
+
   const selectedPlan = PRICING_PLANS[selectedCycle];
+  const isAnnual = selectedCycle === 'annual';
+  const isCard = paymentMethod === 'card';
+
+  const installmentOption = isAnnual && isCard
+    ? selectedPlan.installments.find(opt => opt.installments === selectedInstallments) || selectedPlan.installments[selectedPlan.installments.length - 1]
+    : null;
+
+  function handleCheckout() {
+    onSelectCheckout(
+      selectedCycle,
+      paymentMethod,
+      isAnnual && isCard ? selectedInstallments : 1
+    );
+  }
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title="StudyTrack Pro — Acelere sua Aprovação"
+      title="Extrato de Estudos Pro — Acelere sua Aprovação"
       maxWidth="lg"
-      aria-label="Conhecer o Plano StudyTrack Pro"
+      aria-label="Conhecer o Plano Extrato de Estudos Pro"
     >
       <div class="flex flex-col gap-4 text-text">
         {featureTitle && (
@@ -82,9 +102,10 @@ export function PaywallModal({
           </div>
         )}
 
+        {/* Seletor de Ciclo de Assinatura */}
         <div
           role="group"
-          aria-label="Escolha o ciclo de assinatura"
+          aria-label="Escolha a periodicidade da assinatura"
           class="grid grid-cols-1 sm:grid-cols-2 gap-3"
         >
           {(['annual', 'monthly'] as const).map(cycle => {
@@ -122,6 +143,81 @@ export function PaywallModal({
           })}
         </div>
 
+        {/* Seletor de Forma de Pagamento (PIX vs Cartão) */}
+        <div class="p-3.5 rounded-default border border-border-default bg-surface-card flex flex-col gap-3">
+          <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
+            Forma de Pagamento
+          </span>
+
+          <div
+            role="group"
+            aria-label="Forma de pagamento"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"
+          >
+            {/* Botão PIX */}
+            <button
+              type="button"
+              aria-pressed={paymentMethod === 'pix'}
+              onClick={() => setPaymentMethod('pix')}
+              class={`text-left p-3 rounded border cursor-pointer transition-colors flex items-start gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
+                paymentMethod === 'pix'
+                  ? 'border-accent bg-surface-elevated'
+                  : 'border-border-default bg-surface-subtle hover:bg-surface-page'
+              }`}
+            >
+              <Icon name="bolt" size={18} class="text-accent shrink-0 mt-0.5" />
+              <div class="flex flex-col gap-0.5">
+                <span class="text-xs font-semibold text-text">PIX Instantâneo</span>
+                <span class="text-[11px] text-secondary">
+                  Liberação imediata via AbacatePay com QR Code e Copia e Cola
+                </span>
+              </div>
+            </button>
+
+            {/* Botão Cartão */}
+            <button
+              type="button"
+              aria-pressed={paymentMethod === 'card'}
+              onClick={() => setPaymentMethod('card')}
+              class={`text-left p-3 rounded border cursor-pointer transition-colors flex items-start gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
+                paymentMethod === 'card'
+                  ? 'border-accent bg-surface-elevated'
+                  : 'border-border-default bg-surface-subtle hover:bg-surface-page'
+              }`}
+            >
+              <Icon name="credit-card" size={18} class="text-accent shrink-0 mt-0.5" />
+              <div class="flex flex-col gap-0.5">
+                <span class="text-xs font-semibold text-text">Cartão de Crédito</span>
+                <span class="text-[11px] text-secondary">
+                  {isAnnual ? 'Em até 12x sem juros (R$ 14,90/mês)' : 'Renovação mensal automática sem interrupção'}
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* Opções de Parcelamento no Cartão (Plano Anual) */}
+          {isCard && isAnnual && (
+            <div class="pt-2 border-t border-border-default flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <label for="cardInstallmentsSelect" class="text-xs font-medium text-text">
+                Número de parcelas no cartão:
+              </label>
+              <select
+                id="cardInstallmentsSelect"
+                value={selectedInstallments}
+                onChange={e => setSelectedInstallments(Number((e.target as HTMLSelectElement).value))}
+                class="min-h-[36px] px-3 py-1.5 text-xs rounded border border-border-default bg-surface-page text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                {selectedPlan.installments.map(opt => (
+                  <option key={opt.installments} value={opt.installments}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Destaques do Plano Pro */}
         <div class="rounded-default border border-border-default bg-surface-subtle p-3.5 flex flex-col gap-2.5">
           <div class="flex flex-wrap items-center justify-between gap-1">
             <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
@@ -154,16 +250,33 @@ export function PaywallModal({
             <div class="flex flex-col gap-0.5">
               <span>{errorMessage}</span>
               <span class="text-secondary">
-                Verifique sua conexão e tente gerar o código PIX novamente. Seus dados locais permanecem salvos.
+                Verifique sua conexão e tente novamente. Seus dados locais permanecem intactos.
               </span>
             </div>
           </div>
         )}
 
+        {/* Aviso de Conformidade Legal e CDC */}
+        <p class="text-[11px] text-muted text-center leading-relaxed m-0">
+          Ao prosseguir, você concorda com os{' '}
+          <a href="/?legal=terms" target="_blank" rel="noopener noreferrer" class="underline hover:text-text">
+            Termos de Uso
+          </a>{' '}
+          e a{' '}
+          <a href="/?legal=privacy" target="_blank" rel="noopener noreferrer" class="underline hover:text-text">
+            Política de Privacidade (LGPD)
+          </a>
+          . Garantia de arrependimento em até 7 dias (Art. 49 do CDC).
+        </p>
+
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-border-default">
           <div class="flex items-center gap-1.5 text-xs text-secondary">
             <Icon name="shield-check" size={16} class="text-accent shrink-0" />
-            <span>Liberação instantânea via PIX (AbacatePay) · Seus dados locais preservados</span>
+            <span>
+              {paymentMethod === 'pix'
+                ? 'Liberação instantânea no PIX · Seus dados locais preservados'
+                : 'Ambiente seguro tokenizado · Seus dados locais preservados'}
+            </span>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
             {onExploreDemo && (
@@ -176,11 +289,15 @@ export function PaywallModal({
               size="default"
               iconLeft="bolt"
               disabled={isSubmitting}
-              onClick={() => onSelectCheckout(selectedCycle)}
+              onClick={handleCheckout}
             >
               {isSubmitting
-                ? 'Gerando PIX...'
-                : `Assinar por ${selectedPlan.priceFormatted} no PIX`}
+                ? 'Processando...'
+                : paymentMethod === 'pix'
+                  ? `Assinar por ${selectedPlan.priceFormatted} no PIX`
+                  : isAnnual && installmentOption
+                    ? `Assinar em ${installmentOption.label}`
+                    : `Assinar por ${selectedPlan.priceFormatted}/mês no Cartão`}
             </Button>
           </div>
         </div>

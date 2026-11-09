@@ -38,7 +38,16 @@ O Extrato de Estudos opera em arquitetura moderna **TypeScript (`strict: true`),
 | **Gráficos Visuais de Questões e Simulados** | Modernização Visual e Cores de Disciplinas na Prática | Concluída | Tendência semanal contínua com colunas de volume (`WeeklyTrendChart`), Pareto de causas de falhas 80/20 (`ErrorParetoChart`), evolução de notas de simulados vs meta (`SimulationTrendChart`), raio-x de matérias no detalhe do simulado (`SimulationBreakdownBarChart`), e swatches coloridos nas tabelas de questões e simulados. Fast Gate com 1.315 testes passando em 76.91s. |
 | **Command Palette & Busca Global** | Modernização da Busca Global no Padrão Command Palette | Concluída | Diálogo flutuante centralizado com backdrop blur, ícones Tabler para comandos (`layout-dashboard`, `player-play`, `clock`, `books`, etc.), swatches de disciplinas nos tópicos (`subject-bg-X`), navegação completa por teclado (`Ctrl+K`, setas, `Enter`, `Esc`) e rodapé acessível. Fast Gate com 1.317 testes em 58.33s e 14/14 testes E2E verdes. |
 | **Activity Heatmap EasyUI** | Modernização do Mapa de Calor com Modos Calendário e Horários 24h | Concluída | Componente estilo EasyUI (`Surajmaurya1/easyui/activity-heatmap`) em Preact 11 nativo, com modo Calendário Contínuo (meses e semanas alinhados, 5 níveis de intensidade e hover escalado) e modo Horários do Dia (matriz 7x24 para hábitos de estudo e cards de horários de pico e dias mais produtivos). Fast Gate com 1.323 testes em 53.99s. |
-| **Micro-Transições Amicro** | Animações Fluidas, Easing Spring e Interatividade nos Gráficos | Concluída | Micro-transições inspiradas no Amicro (`--ease-amicro: cubic-bezier(0.16, 1, 0.3, 1)`), elevação suave de cards (`.chart-card-interactive`), barras e pontos SVG magnéticos (`.chart-bar-interactive`, `.chart-point-interactive`) e suporte estrito a `prefers-reduced-motion`. Fast Gate com 1.327 testes em 62.56s. |
+| **SaaS Fase 1** | Autenticação, Avatar do Usuário e Sessão com Clerk | Concluída | Adaptador Clerk (`saas-auth-service.ts`), cache offline-first de perfil em `localStorage`, `ClerkUserAvatarButton.tsx` no header e resolução de conflitos de merge de conta (`AccountMergeConflictModal.tsx`). |
+| **SaaS Fase 2** | Controle de Planos e Feature Gates (Entitlements) | Concluída | Regras puras em `entitlements.ts`, tolerância de 3 dias no cartão (`past_due`), cálculo de parcelamento em até 12x de R$ 14,90 e modal declarativo híbrido `PaywallModal.tsx`. |
+| **SaaS Fase 3** | Sincronização Automática Local-Nuvem (Cloud Sync) | Concluída | `cloud-saas-provider.ts` com push debounced (3s), fila offline com retomada em `online`, reconciliação em `visibilitychange`, criptografia ponta a ponta (E2EE AES-GCM) e selo `CloudSyncBadge.tsx`. |
+| **SaaS Fase 4** | Pagamentos Híbridos (PIX + Cartão) e Webhooks | Concluída | Checkout híbrido com suporte a parcelas e cartão, webhook completo (`paid`, `past_due`, `canceled`, `refunded`) e autoatendimento do assinante em `AuthAccountModal.tsx`. |
+| **SaaS Fase 5** | Catálogo Dinâmico de Editais na Nuvem | Concluída | Tabela `exam_catalog_templates` com RLS, `cloud-catalog-service.ts` com cache offline, seeds de editais (Bancária, Fiscal, Tribunais, Policial, Administrativa, OAB, ENEM) e `CloudExamCatalogModal.tsx`. |
+| **SaaS Fase 8** | Painel de Administração e Backoffice SaaS | Concluída | `AdminDashboardView.tsx`, `admin-service.ts`, métricas em `admin-metrics.ts` (MRR, Receita Líquida, Churn), Radar de Retenção (tolerância cartão e PIX 7d), CRM de Alunos, estornos CDC e trilha de auditoria (`admin_audit_logs`). |
+| **SaaS Fase 9** | Termos de Uso, Privacidade & Conformidade Legal LGPD/CDC | Concluída | `legal-documents.ts` (v2026-11-v1), Obrigação de Meio, Direito de Arrependimento de 7 dias (Art. 49 CDC), Garantia de Não-Sequestro de Dados, `LegalComplianceView.tsx`, painel de autoatendimento Art. 18 LGPD e links de conversão. |
+| **SaaS Fase 6** | Módulo B2B para Mentorias (`Painel do Mentor`) | *Planejada* | Convite por link de vínculo, painel consolidado da turma com ordenação por risco de abandono e injeção de metas/editais verticalizados pelo mentor. |
+| **SaaS Fase 7** | Go-To-Market, Landing Page Conversiva e Empacotamento Mobile | *Planejada* | Empacotamento Android/iOS via Capacitor ou Bubblewrap (TWA) e expansão da landing page. |
+| **SaaS Fase 10** | E-mails Transacionais e Retenção (`Resend` + `Clerk`) | *Planejada* | Templates transacionais (`email-templates.ts`), cliente Edge Function com `Idempotency-Key` e réguas preventivas de renovação PIX/Cartão. |
 
 ---
 
@@ -196,25 +205,35 @@ flowchart TD
     PWA -.-> MOBILE
 ```
 
-#### A. Setup do Backend Supabase (Auth & PostgreSQL RLS)
+#### A. Setup do Backend Supabase, Auth Clerk & PostgreSQL RLS [CONCLUÍDO]
 
-- Provisionar banco PostgreSQL no Supabase com as tabelas `profiles`, `user_study_states` e `user_state_snapshots`.
-- Configurar políticas de segurança em nível de linha (**Row Level Security - RLS**) garantindo que cada usuário só acesse e modifique seu próprio estado.
-- Autenticação por Magic Link (e-mail sem senha) e Login Social (Google OAuth).
+- Banco PostgreSQL no Supabase com tabelas `profiles`, `user_study_states`, `user_state_snapshots`, `billing_orders`, `exam_catalog_templates` e `admin_audit_logs`.
+- Políticas de segurança em nível de linha (**Row Level Security - RLS**) garantindo que cada usuário acesse exclusivamente seu próprio estado.
+- Autenticação avançada via **Clerk** (Google, Apple, e-mail/senha, Passkeys, foto/avatar integrado e cache de perfil offline-first).
 
-#### B. Integração do Gateway de Pagamento (PIX e Cartão)
+#### B. Integração do Gateway de Pagamento Híbrido (PIX e Cartão de Crédito) [CONCLUÍDO]
 
-- Edge Function `create-checkout` para geração de cobrança PIX imediata ou assinatura por cartão de crédito.
-- Edge Function `webhook` para recepção de eventos de pagamento confirmando o plano `pro` e atualizando os entitlements em tempo real.
+- Edge Function `abacatepay-checkout` com suporte a PIX pré-pago (31 ou 366 dias) e Cartão de Crédito recorrente/parcelado em até 12x.
+- Edge Function `abacatepay-webhook` para recepção de eventos (`paid`, `past_due`, `canceled`, `refunded`), com janela de tolerância de 3 dias no cartão e autoatendimento em `AuthAccountModal.tsx`.
 
-#### C. Catálogo Dinâmico de Editais na Nuvem
+#### C. Catálogo Dinâmico de Editais na Nuvem [CONCLUÍDO]
 
-- API remota de editais verticalizados pré-estruturados (carreiras fiscais, tribunais, policiais, bancárias e ENEM/OAB).
-- Download e merge de editais com 1 clique para assinantes Pro diretamente via `exam-import-service.ts`.
+- Tabela `exam_catalog_templates` e serviço `cloud-catalog-service.ts` com cache local offline em `localStorage`.
+- Editais oficiais curados (Caixa, Banco do Brasil, Receita Federal, TJ-SP, PF, INSS, OAB, ENEM) e modal de importação `CloudExamCatalogModal.tsx`.
 
-#### D. Empacotamento Mobile (Capacitor / TWA)
+#### D. Painel de Administração, Backoffice & Conformidade Legal [CONCLUÍDO]
 
-- Publicação de aplicativo nativo Android (Google Play) e iOS (App Store) empacotando os artefatos estáticos gerados por `npm run build`.
+- Painel administrativo `AdminDashboardView.tsx` com Cockpit de Receita (MRR, Net Revenue, Churn), Radar de Retenção duplo, CRM de Alunos, estornos CDC e trilha de auditoria `admin_audit_logs`.
+- Central de Conformidade Legal `LegalComplianceView.tsx`, Termos de Uso com Obrigação de Meio e Garantia de Não-Sequestro de Dados, Política de Privacidade e autoatendimento para o Art. 18 da LGPD.
+
+#### E. Próximos Passos Restantes a Implementar
+
+1. **Fase 6: Módulo B2B para Mentorias (`Painel do Mentor`):**
+   - Vínculo mentor-aluno por link de compartilhamento de extrato, painel da turma ordenado por risco de abandono e publicação de edital customizado para os alunos.
+2. **Fase 7: Empacotamento Mobile (Capacitor / TWA) & GTM:**
+   - Publicação de aplicativo nativo Android (Google Play) e iOS (App Store) empacotando os artefatos estáticos gerados por `npm run build`.
+3. **Fase 10: Arquitetura de E-mails Transacionais (`Resend` + `Clerk`):**
+   - Templates transacionais (`email-templates.ts`), cliente Edge Function com `Idempotency-Key` e réguas preventivas de renovação PIX/Cartão.
 
 ---
 
@@ -223,6 +242,6 @@ flowchart TD
 Todas as alterações preservam os seguintes critérios inegociáveis:
 
 1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
-2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
-3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 1.277 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 43.88 segundos (meta < 120s).
+2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores em `styles/tokens.css` (Zero Emojis Unicode, estritamente Tabler Icons).
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando **1.457 testes unitários** em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 70–96 segundos (meta < 120s).
 4. **CI Integrado:** GitHub Actions 100% verde em todos os jobs (`changes`, `experience`, `visual-windows`, `validation 1/4` a `4/4`).

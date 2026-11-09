@@ -219,10 +219,10 @@ test('renderActivityHeatmap com controls traz título, período e filtros dentro
 
 test('renderActivityHeatmap resume o período: dias ativos, maior sequência e dia mais ativo', () => {
   // 2026-10-26 é segunda: ativos seg, ter, qua (sequência 3), pausa na quinta, ativo na sexta e na segunda seguinte.
-  const cells = [
+  const cells = /** @type {Array<[string, number]>} */ ([
     ['2026-10-26', 3], ['2026-10-27', 1], ['2026-10-28', 2], ['2026-10-29', 0], ['2026-10-30', 4],
     ['2026-10-31', 0], ['2026-11-01', 0], ['2026-11-02', 2],
-  ].map(([date, level]) => ({ date, value: level * 1800, level }));
+  ]).map(([date, level]) => ({ date, value: level * 1800, level }));
   const calendarVisual = buildActivityCalendarHeatmapVisual({ cells, tooltipForSummary: s => s.date });
   const html = renderActivityHeatmap({ mode: 'calendar', calendarVisual });
 

@@ -1,5 +1,5 @@
 -- =============================================================================
--- StudyTrack SaaS — Schema Inicial PostgreSQL + Row Level Security (Supabase)
+-- Extrato de Estudos SaaS — Schema Inicial PostgreSQL + Row Level Security (Supabase)
 -- =============================================================================
 
 -- 1. Tabela de Perfis e Controle de Assinatura

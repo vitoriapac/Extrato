@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningAdjust } from './helpers.js';
 import { buildVisualDensityFixture } from '../fixtures/visual-density.js';
 
 const state = buildVisualDensityFixture();
@@ -74,6 +74,7 @@ test('cabeçalhos analíticos com dados densos em desktop', async ({ page }) => 
     page.locator('#panel-questoes > .module-heading, #questionsMainContainer > .module-heading')
   ).toHaveCount(2);
   await activateTab(page, 'metas');
+  await openPlanningAdjust(page);
   await expect(page.locator('#metasCapacity > .module-heading')).toBeVisible();
   await expect(page.locator('#metasPlanning > .module-heading')).toBeVisible();
   await expect(page.locator('#panel-metas .exam-intelligence-hub')).toHaveCount(0);

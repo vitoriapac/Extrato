@@ -14,7 +14,7 @@ test('minutos fracionários arredondam antes de virar horas (119,7 min = 2h00)',
   assert.doesNotMatch(out, /1h00/);
 });
 
-test('frase "plano curto" usa o múltiplo exibido (2,04 não mostra; 2,06 mostra)', () => {
-  assert.doesNotMatch(html(100, 204), /O plano está curto/);
-  assert.match(html(100, 206), /O plano está curto/);
+test('aviso de plano curto usa o múltiplo exibido (2,04 não mostra; 2,06 mostra)', () => {
+  assert.doesNotMatch(html(100, 204), /tempo distribuído nos dias/);
+  assert.match(html(100, 206), /tempo distribuído nos dias/);
 });

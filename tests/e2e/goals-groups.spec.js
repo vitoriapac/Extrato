@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPlanningAdjust } from './helpers.js';
 
 test('grouped goals preserve topic targets and separate hours, routine and accuracy', async ({
   page,
@@ -10,6 +10,7 @@ test('grouped goals preserve topic targets and separate hours, routine and accur
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
   await activateTab(page, 'metas');
+  await openPlanningAdjust(page);
   const groups = page.locator('#metasContainer');
   for (const name of ['Volume', 'Rotina', 'Resultado'])
     await expect(groups.getByRole('heading', { name, exact: true })).toBeVisible();

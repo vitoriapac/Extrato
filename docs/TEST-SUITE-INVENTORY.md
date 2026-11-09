@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-295 arquivos Node e 69 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+314 arquivos Node e 70 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -50,6 +50,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/legacy-backup.spec.js | browser | Backup | critical | 2.9 | journey | none |
 | tests/e2e/navigation-hash.spec.js | browser | Aplicação | functional | — | journey | none |
 | tests/e2e/onboarding.spec.js | browser | Onboarding | functional | 60.1 | journey, viewport | none |
+| tests/e2e/performance-tablist.spec.js | browser | Desempenho | functional | — | journey, demo | none |
 | tests/e2e/planning-subtabs.spec.js | browser | Planejamento | critical | — | journey, demo, viewport | none |
 | tests/e2e/planning-sustainability.spec.js | browser | Sustentabilidade | critical | 168.8 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/planning.spec.js | browser | Planejamento | critical | 63.5 | journey, demo, viewport | none |
@@ -91,6 +92,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/weekly-focus-visual.spec.js | browser | Visual | visual | 8.3 | journey, viewport | none |
 | tests/e2e/what-if-and-final-stretch.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/unit/a11y-announcements.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/abacatepay-webhook-logic.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/achievement-projection-history.test.js | node | Trajetória | critical | — | contract | none |
 | tests/unit/achievement-projection.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/achievement-renderer.test.js | node | Aplicação | functional | — | contract | none |
@@ -103,6 +105,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/adherence-model.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/adherence-presentation.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/adherence-target.test.js | node | Aderência | critical | — | contract | none |
+| tests/unit/admin-backoffice.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/alert-lifecycle.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/allocation-balance-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/amicro-chart-transitions.test.js | node | Aplicação | functional | — | contract | none |
@@ -124,8 +127,10 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/calendar-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |
 | tests/unit/chart-primitives.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/clerk-saas-auth.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/clock-timezone.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/close-comparison.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/cloud-catalog-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cloud-saas-provider.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cockpit-sidebar-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cognitive-profile.test.js | node | Aplicação | functional | — | contract | none |
@@ -133,11 +138,13 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/consolidated-signals.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/critical-vulnerabilities-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/crypto-utils.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/csp-headers.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/daily-execution.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/daily-plan-distribution.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/daily-session-reconciliation.test.js | node | Sessões | critical | — | contract | none |
 | tests/unit/dashboard-components.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/date-utils.test.js | node | Datas | critical | — | contract | none |
+| tests/unit/day-reconciliation.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-debug-renderer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-report.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-scenarios.test.js | node | Aplicação | critical | — | contract | none |
@@ -154,7 +161,9 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/density-preference.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnosis-center.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnostics-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/edge-request-validation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/editable-collection-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/ensure-state-defaults-collapsed.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/entitlements.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-analysis.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-boundary-controller.test.js | node | Aplicação | functional | — | contract | none |
@@ -209,10 +218,14 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/help-retention-simulator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-topic-metadata.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/historical-adherence-integrity.test.js | node | Aderência | critical | — | contract | none |
+| tests/unit/id-injection.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/import-exam-json.test.js | node | Inteligência da prova | critical | — | contract | none |
+| tests/unit/incidence-quadrants-paging.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/intelligence-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/intelligent-alerts.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/keyboard-shortcuts.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/ledger-line.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/legal-compliance.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/list-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/load-persisted-state.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/master-renderer.test.js | node | Aplicação | functional | — | contract | none |
@@ -228,6 +241,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/opportunity-cost-analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/overview-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/performance-accuracy-delta.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-analytics-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-charts.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-forecast.test.js | node | Desempenho | functional | — | contract | none |
@@ -259,6 +273,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/question-analytics-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/question-import-normalizer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/question-import-service.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/question-weak-topics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/questions-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/questions-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/raw-syllabus-parser.test.js | node | Aplicação | functional | — | contract | none |
@@ -287,6 +302,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/result-goals-and-period-comparison.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/review-health.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-load.test.js | node | Revisões | functional | — | contract | none |
+| tests/unit/review-queue-summary.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-redistribution.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-service.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-view-model.test.js | node | Revisões | functional | — | contract | none |
@@ -374,6 +390,8 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/visual-consistency-renderers.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/volatile-mastery-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/volatile-mastery.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/week-reconciliation-summary.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/week-reconciliation.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/weekly-adherence.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/weekly-availability.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/weekly-close-actions.test.js | node | Fechamento | functional | — | contract | none |
@@ -382,9 +400,11 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/weekly-close-modal-controller.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-record-renderer.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-snapshot.test.js | node | Fechamento | critical | — | contract | none |
+| tests/unit/weekly-performance-brief.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/wire-dependencies.test.js | node | Aplicação | functional | — | contract, demo | none |
+| tests/unit/xss-escape.test.js | node | Aplicação | functional | — | contract | none |
 
 ## Sobreposições a investigar
 

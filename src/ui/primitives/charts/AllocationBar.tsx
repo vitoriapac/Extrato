@@ -18,6 +18,22 @@ function formatMinutes(mins: number): string {
   return `${m}m`;
 }
 
+const VISIBLE_CHIPS = 5;
+
+function chip(s: WeeklyAllocationBarVisualModel['subjects'][number]): JSX.Element {
+  return (
+    <div
+      key={s.subjectId}
+      class="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
+    >
+      <span class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`} aria-hidden="true" />
+      <span class="font-medium truncate max-w-[120px]">{s.subjectName}</span>
+      <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
+      <span class="text-content-secondary text-xs">({formatDecimal(s.percentage)}%)</span>
+    </div>
+  );
+}
+
 export function AllocationBar({
   visual,
   weeklyCapacityMinutes = 0,
@@ -48,8 +64,8 @@ export function AllocationBar({
         <div>
           <span class="font-semibold text-content-primary">Capacidade Semanal Alocada</span>
           <div class="text-xs text-content-secondary">
-            {formatMinutes(totalWeeklyMinutes)} planejados
-            {weeklyCapacityMinutes > 0 && ` de ${formatMinutes(weeklyCapacityMinutes)} de meta`}
+            {formatMinutes(totalWeeklyMinutes)} divididos entre as disciplinas
+            {weeklyCapacityMinutes > 0 && ` · meta semanal de ${formatMinutes(weeklyCapacityMinutes)}`}
           </div>
         </div>
         {flexMinutes > 0 && (
@@ -90,29 +106,22 @@ export function AllocationBar({
       </div>
 
       {/* Fatias das disciplinas (Badges com cores oficiais) */}
-      <div class="flex flex-wrap gap-2 pt-1">
-        {subjects.map(s => (
-          <div
-            key={s.subjectId}
-            class="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
-          >
-            <span
-              class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`}
-              aria-hidden="true"
-            />
-            <span class="font-medium truncate max-w-[120px]">{s.subjectName}</span>
-            <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
-            <span class="text-content-secondary text-xs">({formatDecimal(s.percentage)}%)</span>
-          </div>
-        ))}
-      </div>
+      <div class="flex flex-wrap gap-2 pt-1">{subjects.slice(0, VISIBLE_CHIPS).map(chip)}</div>
+      {subjects.length > VISIBLE_CHIPS && (
+        <details class="allocation-more">
+          <summary class="text-xs font-medium text-content-secondary cursor-pointer">
+            Mostrar mais · +{subjects.length - VISIBLE_CHIPS}
+          </summary>
+          <div class="flex flex-wrap gap-2 pt-2">{subjects.slice(VISIBLE_CHIPS).map(chip)}</div>
+        </details>
+      )}
 
       {/* Mix de Atividades da Semana (Teoria × Questões × Revisão) */}
       {mix.totalMinutes > 0 && (
         <div class="pt-2 border-t border-border-subtle">
           <div class="flex items-center justify-between text-xs font-medium text-content-secondary mb-2">
-            <span>Mix Pedagógico Previsto</span>
-            <span>{formatDecimal(mix.theoryPercentage)}% T • {formatDecimal(mix.questionsPercentage)}% Q • {formatDecimal(mix.reviewsPercentage)}% R</span>
+            <span>Divisão por tipo de estudo</span>
+            <span>{formatDecimal(mix.theoryPercentage)}% teoria · {formatDecimal(mix.questionsPercentage)}% questões · {formatDecimal(mix.reviewsPercentage)}% revisões</span>
           </div>
           <div class="h-1.5 w-full bg-surface-sunken rounded-full overflow-hidden flex">
             {mix.theoryPercentage > 0 && (

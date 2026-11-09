@@ -21,11 +21,15 @@ test('CORS: só ecoa origem da lista, sempre com Vary', () => {
 
 test('push: caso feliz e defaults', () => {
   const r = parsePushBody({ stateJson: { schemaVersion: 3, a: [1] } }, NOW);
+  assert.ok(!('error' in r));
   assert.equal(r.schemaVersion, 3);
   assert.equal(r.clientUpdatedAt, NOW.toISOString());
   const r2 = parsePushBody({ stateJson: { a: 1 }, schemaVersion: 2, clientUpdatedAt: '2026-11-07T10:00:00Z' }, NOW);
+  assert.ok(!('error' in r2));
   assert.equal(r2.clientUpdatedAt, '2026-11-07T10:00:00.000Z');
-  assert.equal(parsePushBody({ stateJson: {} }, NOW).schemaVersion, 1);
+  const r3 = parsePushBody({ stateJson: {} }, NOW);
+  assert.ok(!('error' in r3));
+  assert.equal(r3.schemaVersion, 1);
 });
 
 test('push: rejeita forma inválida', () => {

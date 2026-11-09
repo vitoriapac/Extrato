@@ -232,7 +232,7 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: 'Se eu cancelar o Plano Pro no futuro, perco acesso ao meu histórico de estudos?',
     answer:
-      'Jamais. Como o StudyTrack tem arquitetura Local-First, seus dados continuam salvos no seu dispositivo e você pode exportar backups completos em JSON a qualquer momento.',
+      'Jamais. Como o Extrato de Estudos tem arquitetura Local-First, seus dados continuam salvos no seu dispositivo e você pode exportar backups completos em JSON a qualquer momento.',
   },
 ];
 
@@ -261,10 +261,10 @@ export function SalesLandingPage({
         <div class="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <span class="font-display font-semibold text-lg tracking-tight text-text">
-              StudyTrack
+              Extrato de Estudos
             </span>
             <span class="hidden sm:inline-block text-xs font-data text-secondary border-l border-border-default pl-3">
-              EXTRATO DE ESTUDOS
+              CADA ESTUDO SOMA
             </span>
           </div>
 
@@ -342,7 +342,7 @@ export function SalesLandingPage({
               </h1>
 
               <p class="text-base text-secondary leading-relaxed m-0 max-w-[65ch]">
-                O StudyTrack combina o peso do seu edital com o que você já estudou para sugerir a
+                O Extrato de Estudos combina o peso do seu edital com o que você já estudou para sugerir a
                 próxima ação e explicar quais dados levaram à recomendação.
               </p>
 
@@ -597,7 +597,7 @@ export function SalesLandingPage({
                   Planilhas e Cronogramas Fixos
                 </div>
                 <div class="p-3.5 md:col-span-5 border-t md:border-t-0 md:border-l border-border-default text-text">
-                  Extrato Auditável StudyTrack
+                  Extrato de Estudos Auditável
                 </div>
               </div>
 
@@ -834,7 +834,7 @@ export function SalesLandingPage({
                   onClick={() => onSelectProPlan(selectedCycle)}
                   className="w-full"
                 >
-                  Assinar StudyTrack Pro por {activeOffer.priceFormatted} no PIX
+                  Assinar Extrato de Estudos Pro por {activeOffer.priceFormatted} no PIX
                 </Button>
               </article>
             </div>
@@ -893,10 +893,22 @@ export function SalesLandingPage({
       <footer class="border-t border-border-default bg-surface-card py-8">
         <div class="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-secondary">
           <div class="flex items-center gap-2">
-            <strong class="font-display text-text">StudyTrack — Extrato de Estudos</strong>
+            <strong class="font-display text-text">Extrato de Estudos</strong>
             <span>· Copyright (c) 2026 Vitória Pac. Todos os direitos reservados.</span>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <a
+              href="/?legal=terms"
+              class="underline text-secondary hover:text-text p-1 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              Termos de Uso
+            </a>
+            <a
+              href="/?legal=privacy"
+              class="underline text-secondary hover:text-text p-1 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              Privacidade & LGPD
+            </a>
             <button
               type="button"
               onClick={onStartLiveDemo}

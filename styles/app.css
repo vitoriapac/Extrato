@@ -1191,7 +1191,7 @@
   .today-progress-status a{padding-block:14px}
   .performance-topic-link,.exam-matrix-topic,.exam-matrix-card>button{display:inline-flex;align-items:center;min-height:var(--touch-target)}
   /* Links de texto seguem em linha: o alvo cresce no padding, sem deslocar o texto. */
-  .panel a.text-brand,.panel a.text-ink-soft{padding-block:14px;margin-block:-14px}
+  .panel a.text-brand,.panel a.text-ink-soft,.metas-planning .helper-text a{padding-block:14px;margin-block:-14px}
   #examDateInput,.panel select.select-control{min-height:var(--touch-target)}
   .brand-home::after{content:"";position:absolute;inset:-8px -4px}
 }
@@ -3603,3 +3603,12 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 /* Títulos da calibração: eram h4, viraram h3 por hierarquia; anulam o estilo de `.chart-card h3` (caixa-alta, espaçamento, cinza) e mantêm tamanho, margem e cor do h4. */
 #recommendationCalibrationDetails>section>h3{margin:1.33em 0;font-size:1em;text-transform:none;letter-spacing:normal;color:inherit}
+
+/* Plano da semana: o resumo e a proposta ficam à vista; metas e disponibilidade são ajustes sob demanda. */
+.metas-adjust{margin:0 0 var(--space-4)}
+.metas-adjust>summary{min-height:var(--touch-target,44px);display:flex;align-items:center}
+.metas-adjust[open]>summary{margin-bottom:14px}
+.metas-planning .helper-text a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+
+/* Lista longa de disciplinas na alocação: 5 visíveis, o resto sob demanda. */
+.allocation-more > summary { min-height: var(--touch-target, 44px); display: flex; align-items: center; }

@@ -1,13 +1,20 @@
 /**
  * Supabase Edge Function: abacatepay-webhook
  *
- * Recebe `billing.paid` da AbacatePay. O segredo vem só do header `x-webhook-secret`
- * (comparação em tempo constante). Plano e valor vêm do pedido em `billing_orders`,
- * nunca do payload; a liquidação é atômica e idempotente (RPC `settle_billing_order`).
+ * Recebe eventos de ciclo de vida da AbacatePay (PIX e Cartão de Crédito).
+ * - billing.paid: Liquida o pedido atomicamente via RPC settle_billing_order
+ * - billing.overdue / invoice.payment_failed: Marca 'past_due' (inicia tolerância de 3 dias)
+ * - subscription.canceled: Marca 'canceled'
+ * - billing.refunded / charge.disputed: Marca 'REFUNDED' e revoga o tier Pro
  */
 
 import { createClient } from '../_shared/supabase.ts';
-import { checkOrder, MAX_BODY_BYTES, parseBillingPaid, safeEqual } from '../_shared/webhook-logic.ts';
+import {
+  checkOrder,
+  MAX_BODY_BYTES,
+  parseBillingWebhookEvent,
+  safeEqual,
+} from '../_shared/webhook-logic.ts';
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
@@ -31,7 +38,7 @@ Deno.serve(async (req: Request) => {
     return Response.json({ error: 'JSON inválido.' }, { status: 400 });
   }
 
-  const event = parseBillingPaid(payload);
+  const event = parseBillingWebhookEvent(payload);
   if (!event) return Response.json({ received: true, ignored: true });
 
   const supabaseAdmin = createClient(
@@ -41,27 +48,105 @@ Deno.serve(async (req: Request) => {
 
   const { data: order, error: orderError } = await supabaseAdmin
     .from('billing_orders')
-    .select('id, status, amount_cents')
+    .select('id, user_id, status, amount_cents, plan_id')
     .eq('provider_billing_id', event.billingId)
     .maybeSingle();
+
   if (orderError) {
     console.error('webhook: falha ao buscar pedido', orderError.message);
     return Response.json({ error: 'Falha interna.' }, { status: 500 });
   }
 
-  const check = checkOrder(order, event.paidCents);
-  if (check !== 'ok') {
-    // 200 para o provedor não reenviar; already_paid é replay idempotente.
-    if (check !== 'already_paid') console.warn('webhook ignorado:', check, event.billingId);
-    return Response.json({ received: true, ignored: true });
+  if (event.type === 'paid') {
+    const check = checkOrder(order, event.paidCents);
+    if (check !== 'ok') {
+      if (check !== 'already_paid') console.warn('webhook ignorado:', check, event.billingId);
+      return Response.json({ received: true, ignored: true });
+    }
+
+    // Atualiza metadados do pagamento em billing_orders
+    await supabaseAdmin
+      .from('billing_orders')
+      .update({
+        fee_cents: event.feeCents || 0,
+        payment_method: event.paymentMethod,
+      })
+      .eq('id', order!.id);
+
+    const { error: settleError } = await supabaseAdmin.rpc('settle_billing_order', {
+      p_order_id: order!.id,
+    });
+    if (settleError) {
+      console.error('webhook: falha ao liquidar pedido', settleError.message);
+      return Response.json({ error: 'Falha interna.' }, { status: 500 });
+    }
+
+    // Se pago com cartão, grava marca e últimos 4 dígitos no perfil
+    if (event.paymentMethod === 'card' && order?.user_id) {
+      await supabaseAdmin
+        .from('profiles')
+        .update({
+          payment_method: 'card',
+          auto_renew: true,
+          card_brand: event.cardBrand || null,
+          card_last4: event.cardLast4 || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', order.user_id);
+    }
+
+    return Response.json({ received: true });
   }
 
-  const { error: settleError } = await supabaseAdmin.rpc('settle_billing_order', {
-    p_order_id: order!.id,
-  });
-  if (settleError) {
-    console.error('webhook: falha ao liquidar pedido', settleError.message);
-    return Response.json({ error: 'Falha interna.' }, { status: 500 });
+  if (event.type === 'past_due' && order?.user_id) {
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_status: 'past_due',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', order.user_id);
+
+    await supabaseAdmin
+      .from('billing_orders')
+      .update({
+        failure_reason: event.failureReason || 'Cobrança não autorizada',
+      })
+      .eq('id', order.id);
+
+    return Response.json({ received: true, status: 'past_due' });
+  }
+
+  if (event.type === 'refunded' && order?.user_id) {
+    await supabaseAdmin
+      .from('billing_orders')
+      .update({ status: 'REFUNDED' })
+      .eq('id', order.id);
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        plan_tier: 'free',
+        subscription_status: 'canceled',
+        auto_renew: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', order.user_id);
+
+    return Response.json({ received: true, status: 'refunded' });
+  }
+
+  if (event.type === 'canceled' && order?.user_id) {
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        auto_renew: false,
+        cancel_at_period_end: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', order.user_id);
+
+    return Response.json({ received: true, status: 'canceled' });
   }
 
   return Response.json({ received: true });

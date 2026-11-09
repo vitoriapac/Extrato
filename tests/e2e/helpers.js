@@ -58,6 +58,13 @@ export async function expectNoPageOverflow(page) {
   }
 }
 // Planejamento shows one sub-tab at a time (F1): semana, prova, metas, fechamento or historico.
+// Metas ativas e Disponibilidade ficam num bloco recolhido dentro de Plano da semana.
+export async function openPlanningAdjust(page) {
+  const fold = page.locator('#metasAdjust');
+  if (!(await fold.evaluate(node => node.open))) await fold.locator(':scope > summary').click();
+  await expect(page.locator('#metasActiveGoals')).toBeVisible();
+}
+
 export async function openPlanningSubtab(page, key) {
   await activateTab(page, 'metas');
   await page.locator(`#metasTab-${key}`).evaluate(button => button.click());

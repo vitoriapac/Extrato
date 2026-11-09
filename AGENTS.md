@@ -1,4 +1,4 @@
-# StudyTrack — Governança, Engenharia e Estratégia de Testes
+# Extrato de Estudos — Governança, Engenharia e Estratégia de Testes
 
 As instruções explícitas do usuário prevalecem sobre esta política. Consulte [a estratégia de testes](docs/TEST-STRATEGY.md), [o inventário](docs/TEST-SUITE-INVENTORY.md) e [a política visual](docs/VISUAL-TEST-POLICY.md).
 

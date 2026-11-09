@@ -118,6 +118,22 @@ const iconList = [
   'baseline-density-medium',
   'baseline-density-small',
   'minus',
+  // Autenticação, Usuário, Sessões e Avatar (Fase 1 SaaS com Clerk)
+  'user',
+  'user-circle',
+  'users',
+  'login',
+  'devices',
+  'shield',
+  'shield-check',
+  'crown',
+  'external-link',
+  'dots-vertical',
+  'photo',
+  'credit-card',
+  // Sincronização em Nuvem (Fase 3 SaaS)
+  'cloud-check',
+  'cloud-off',
 ];
 
 const rawData = await readFile(tablerNodesPath, 'utf8');

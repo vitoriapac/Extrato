@@ -88,9 +88,9 @@ test('configuração por disciplina começa recolhida e mantém herança nula', 
   await openPlanningSubtab(page, 'prova');
   const disclosure = page.locator('#examBlueprintConfig .exam-subject-config').first();
   await expect(disclosure).not.toHaveAttribute('open', '');
-  await expect(disclosure.locator('summary')).toContainText('Herdar domínio 80% (geral)');
+  await expect(disclosure.locator('summary')).toContainText('Domínio: meta geral de 80%');
   await disclosure.locator('summary').click();
-  await expect(disclosure.locator('input[placeholder="Herdar 80% (geral)"]')).toBeVisible();
+  await expect(disclosure.locator('input[placeholder="Meta geral: 80%"]')).toBeVisible();
   await page.locator('#examBlueprintConfig .exam-general-config > summary').click();
   const target = page
     .locator('#examBlueprintConfig .exam-blueprint-main label')
@@ -100,7 +100,7 @@ test('configuração por disciplina começa recolhida e mantém herança nula', 
   await target.press('Tab');
   await expect(
     page.locator('#examBlueprintConfig .exam-subject-config').first().locator('summary')
-  ).toContainText('Herdar domínio 85% (geral)');
+  ).toContainText('Domínio: meta geral de 85%');
   expect(
     await page.evaluate(
       () => window.__EXTRATO_TEST__.getState().examBlueprint.subjects[0].masteryTarget

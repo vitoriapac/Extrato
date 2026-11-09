@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningAdjust } from './helpers.js';
 
 const sections = ['overview', 'subjects', 'questions', 'simulations', 'exam', 'consistency'];
 const screenshotOptions = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.08 };
@@ -65,6 +65,7 @@ for (const { name, width, theme, columns } of [
         ).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`), screenshotOptions);
     }
     await activateTab(page, 'metas');
+    await openPlanningAdjust(page);
     expect(
       await page
         .locator('#metasActiveGoals')

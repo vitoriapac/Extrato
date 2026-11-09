@@ -12,12 +12,12 @@ import { createClient } from '../_shared/supabase.ts';
 const PLAN_CATALOG = {
   pro_monthly: {
     externalId: 'studytrack_pro_monthly',
-    name: 'StudyTrack Pro — Assinatura Mensal (31 dias)',
+    name: 'Extrato de Estudos Pro — Assinatura Mensal (31 dias)',
     priceCents: 1990,
   },
   pro_annual: {
     externalId: 'studytrack_pro_annual',
-    name: 'StudyTrack Pro — Assinatura Anual (366 dias)',
+    name: 'Extrato de Estudos Pro — Assinatura Anual (366 dias)',
     priceCents: 17880,
   },
 } as const;
@@ -68,6 +68,11 @@ Deno.serve(async (req: Request) => {
   }
   const planKey = body?.planId === 'pro_monthly' ? 'pro_monthly' : 'pro_annual';
   const plan = PLAN_CATALOG[planKey];
+  const paymentMethod: 'pix' | 'card' = body?.paymentMethod === 'card' ? 'card' : 'pix';
+  const installments =
+    paymentMethod === 'card' && planKey === 'pro_annual'
+      ? Math.min(12, Math.max(1, Number(body?.installments) || 12))
+      : 1;
 
   const customer = parseCustomer(body?.customer);
   if ('error' in customer) return fail(customer.error, 400);
@@ -99,8 +104,8 @@ Deno.serve(async (req: Request) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      frequency: 'ONE_TIME',
-      methods: ['PIX'],
+      frequency: paymentMethod === 'card' && planKey === 'pro_monthly' ? 'MONTHLY' : 'ONE_TIME',
+      methods: paymentMethod === 'card' ? ['CARD'] : ['PIX'],
       products: [
         {
           externalId: plan.externalId,
@@ -110,7 +115,7 @@ Deno.serve(async (req: Request) => {
         },
       ],
       returnUrl: appBaseUrl,
-      completionUrl: `${appBaseUrl}?checkout=success&plan=${planKey}`,
+      completionUrl: `${appBaseUrl}?checkout=success&plan=${planKey}&method=${paymentMethod}`,
       customer: {
         email: customer.email || user.email,
         name: customer.name,
@@ -120,6 +125,8 @@ Deno.serve(async (req: Request) => {
       metadata: {
         userId: user.id,
         planId: planKey,
+        paymentMethod,
+        installments,
       },
     }),
   });
@@ -140,6 +147,8 @@ Deno.serve(async (req: Request) => {
     user_id: user.id,
     provider_billing_id: billingData.id,
     plan_id: planKey,
+    payment_method: paymentMethod,
+    installments,
     amount_cents: plan.priceCents,
     status: 'PENDING',
     checkout_url: billingData.url,
@@ -150,7 +159,12 @@ Deno.serve(async (req: Request) => {
   }
 
   return Response.json(
-    { billingId: billingData.id, checkoutUrl: billingData.url },
+    {
+      billingId: billingData.id,
+      checkoutUrl: billingData.url,
+      paymentMethod,
+      installments,
+    },
     { headers: CORS_HEADERS }
   );
 });

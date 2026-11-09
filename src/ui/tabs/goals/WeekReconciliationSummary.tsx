@@ -12,13 +12,14 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
       <p class="week-reconciliation__period">{data.periodLabel}</p>
       <LedgerLine label="Capacidade" value={fmt(data.capacityMin)} />
-      <LedgerLine label="Planejado nos dias" value={fmt(data.plannedMin)} />
+      <LedgerLine label="Distribuído nos dias" value={fmt(data.plannedMin)} />
       <LedgerLine label="Estudo fora do plano" value={fmt(data.offPlanMin)} tone={data.offPlanMin > 0 ? 'positive' : 'neutral'} />
       <LedgerLine label="Realizado" value={fmt(data.studiedMin)} total />
       {multiple !== null && (
         <p class="week-reconciliation__note">
-          Você estudou {multiple.toFixed(1).replace('.', ',')}× o planejado. O plano está curto.{' '}
-          <a href="#metasPlanning">Distribuir a capacidade</a>
+          Você estudou {multiple.toFixed(1).replace('.', ',')}× o tempo distribuído nos dias: só {fmt(data.plannedMin)} dos{' '}
+          {fmt(data.capacityMin)} de capacidade têm tarefa marcada.{' '}
+          <a href="#metasPlanning">Distribuir a semana nos dias</a>
         </p>
       )}
     </section>

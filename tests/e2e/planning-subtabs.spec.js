@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openDemo, activateTab } from './helpers.js';
+import { openDemo, activateTab, openPlanningAdjust } from './helpers.js';
 
 test('Planejamento agrupa as seções em blocos recolhíveis e o link profundo abre o certo', async ({
   page,
@@ -36,6 +36,7 @@ test('No celular, a lista de seções abre o bloco e saltos revelam a seção re
   await expect(page.locator('#examBlueprintConfig')).toBeVisible();
   await page.locator('#metasSubtabSelect').selectOption('semana');
   await expect(page.locator('#metasPlanning')).toBeVisible();
+  await openPlanningAdjust(page);
   // Um link dentro de um bloco que aponta para outro abre o destino.
   await page.locator('a[href="#subjectAccuracyGoals"]').first().click();
   await expect(page.locator('#subjectAccuracyGoals')).toBeVisible();

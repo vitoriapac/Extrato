@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
 
   if (!isPaidActive) {
     return Response.json(
-      { error: 'Sincronização na nuvem requer assinatura StudyTrack Pro ativa.' },
+      { error: 'Sincronização na nuvem requer assinatura Extrato de Estudos Pro ativa.' },
       { status: 403, headers: CORS_HEADERS }
     );
   }

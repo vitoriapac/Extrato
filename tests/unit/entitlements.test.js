@@ -5,6 +5,10 @@ import { renderToString } from 'preact-render-to-string';
 import {
   FREE_TIER_LIMITS,
   PRICING_PLANS,
+  calculateCardInstallments,
+  checkSubjectLimit,
+  checkExamLimit,
+  checkFlashcardLimit,
   partitionOnboardingSubjectsByEntitlement,
   resolveEntitlements,
 } from '../../src/domain/billing/entitlements.js';
@@ -76,9 +80,26 @@ test('resolveEntitlements — assinatura expirada ou cancelada faz fallback segu
   });
 
   assert.equal(result.tier, 'free');
+  assert.equal(result.isInGracePeriod, false);
   assert.equal(result.canCloudSync, false);
   assert.equal(result.canUseWhatIfSimulator, false);
   assert.equal(result.maxActiveSubjects, 8);
+});
+
+test('resolveEntitlements — past_due dentro da tolerância de 3 dias concede grace period com Pro ativo', () => {
+  // Venceu há 1 dia (dentro dos 3 dias de tolerância)
+  const oneDayAgo = new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString();
+  const result = resolveEntitlements({
+    planTier: 'pro',
+    subscriptionStatus: 'past_due',
+    subscriptionPeriodEnd: oneDayAgo,
+  });
+
+  assert.equal(result.tier, 'pro');
+  assert.equal(result.isInGracePeriod, true);
+  assert.equal(result.canCloudSync, true);
+  assert.equal(result.canUseWhatIfSimulator, true);
+  assert.equal(result.maxActiveSubjects, 100);
 });
 
 test('resolveEntitlements — tier mentor ativa flag isMentor', () => {
@@ -151,7 +172,7 @@ test('createSaaSAuthService — valida Magic Link, gera URL Google OAuth e dispa
     config: {
       supabaseUrl: 'https://exemplo.supabase.co',
       supabaseAnonKey: 'anon-key-123',
-      redirectTo: 'https://app.studytrack.com.br',
+      redirectTo: 'https://app.extratodeestudos.com.br',
     },
     fetchImpl: fakeFetch,
   });
@@ -185,6 +206,8 @@ test('PaywallModal e AuthAccountModal — renderizam sem emojis e com preços/li
     })
   );
 
+  assert.ok(paywallHtml.includes('Extrato de Estudos Pro'));
+  assert.ok(!paywallHtml.includes('StudyTrack'));
   assert.ok(paywallHtml.includes('R$ 14,90'));
   assert.ok(paywallHtml.includes('R$ 178,80'));
   assert.ok(paywallHtml.includes('R$ 19,90'));
@@ -210,6 +233,8 @@ test('PaywallModal e AuthAccountModal — renderizam sem emojis e com preços/li
     })
   );
 
+  assert.ok(landingHtml.includes('Extrato de Estudos'));
+  assert.ok(!landingHtml.includes('StudyTrack'));
   assert.ok(landingHtml.includes('Saiba o que estudar hoje'));
   assert.ok(landingHtml.includes('R$ 14,90'));
   assert.ok(landingHtml.includes('R$ 19,90'));
@@ -218,4 +243,82 @@ test('PaywallModal e AuthAccountModal — renderizam sem emojis e com preços/li
   assert.ok(!landingHtml.includes('DISC-01'));
   assert.ok(!landingHtml.includes('MOTOR 01'));
   assert.ok(!/\p{Extended_Pictographic}/u.test(landingHtml));
+});
+
+test('calculateCardInstallments e limit checks — valida parcelamento e regras de barreira', () => {
+  const installments = calculateCardInstallments(17880, 12);
+  assert.equal(installments.length, 12);
+  assert.equal(installments[0].installments, 1);
+  assert.equal(installments[0].installmentFormatted, 'R$ 178,80');
+  assert.equal(installments[11].installments, 12);
+  assert.equal(installments[11].installmentFormatted, 'R$ 14,90');
+
+  const freeEntitlements = resolveEntitlements(null);
+  const subjectCheckFree = checkSubjectLimit(7, freeEntitlements);
+  assert.equal(subjectCheckFree.allowed, true);
+  assert.equal(subjectCheckFree.remaining, 1);
+
+  const subjectCheckLimitReached = checkSubjectLimit(8, freeEntitlements);
+  assert.equal(subjectCheckLimitReached.allowed, false);
+  assert.equal(subjectCheckLimitReached.remaining, 0);
+
+  const examCheck = checkExamLimit(1, freeEntitlements);
+  assert.equal(examCheck.allowed, false);
+
+  const flashcardCheck = checkFlashcardLimit(30, freeEntitlements);
+  assert.equal(flashcardCheck.allowed, false);
+
+  // PaywallModal com Cartão de Crédito
+  const paywallCardHtml = renderToString(
+    h(PaywallModal, {
+      open: true,
+      onClose: () => {},
+      featureTitle: 'Importador de Edital em PDF',
+      defaultCycle: 'annual',
+      defaultPaymentMethod: 'card',
+      onSelectCheckout: () => {},
+    })
+  );
+
+  assert.ok(paywallCardHtml.includes('Cartão de Crédito'));
+  assert.ok(paywallCardHtml.includes('PIX Instantâneo'));
+  assert.ok(paywallCardHtml.includes('cardInstallmentsSelect'));
+  assert.ok(paywallCardHtml.includes('12x de R$ 14,90 sem juros'));
+  assert.ok(!/\p{Extended_Pictographic}/u.test(paywallCardHtml));
+});
+
+test('AuthAccountModal — autoatendimento de assinatura com cartão e grace period', () => {
+  let changeMethodClicked = false;
+  let cancelAutoRenewClicked = false;
+
+  const authAccountHtml = renderToString(
+    h(AuthAccountModal, {
+      open: true,
+      onClose: () => {},
+      userEmail: 'assinante.pro@exemplo.com.br',
+      displayName: 'Vitória Pac',
+      planTier: 'pro',
+      paymentMethod: 'card',
+      cardBrand: 'visa',
+      cardLast4: '4242',
+      autoRenew: true,
+      isInGracePeriod: true,
+      subscriptionPeriodEnd: '2026-12-15T00:00:00Z',
+      onRequestMagicLink: async () => ({ success: true }),
+      onChangePaymentMethod: () => {
+        changeMethodClicked = true;
+      },
+      onCancelAutoRenew: () => {
+        cancelAutoRenewClicked = true;
+      },
+    })
+  );
+
+  assert.ok(authAccountHtml.includes('Período de tolerância ativo'));
+  assert.ok(authAccountHtml.includes('Regularizar pagamento agora'));
+  assert.ok(authAccountHtml.includes('Cartão de Crédito VISA (final •••• 4242)'));
+  assert.ok(authAccountHtml.includes('Renovação automática ativa'));
+  assert.ok(authAccountHtml.includes('Trocar método'));
+  assert.ok(authAccountHtml.includes('Cancelar renovação'));
+  assert.ok(!/\p{Extended_Pictographic}/u.test(authAccountHtml));
 });

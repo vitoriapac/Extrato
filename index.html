@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=a677e652a7ab">
-<link rel="stylesheet" href="styles/app.css?v=a677e652a7ab">
+<link rel="stylesheet" href="styles/tailwind.css?v=13e28bf35c73">
+<link rel="stylesheet" href="styles/app.css?v=13e28bf35c73">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -685,11 +685,13 @@
       <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
     </section>
 
-    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância do edital e sua necessidade pedagógica.</p></header><aside class="context-note context-note--info"><strong>Informação</strong><p>A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação. <a href="#instrucoes" class="text-brand hover:underline inline-flex items-center gap-0.5 text-xs font-medium ml-1">Como calculamos a confiança da evidência &rarr;</a></p></aside><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
+    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância do edital e sua necessidade pedagógica.</p></header><p class="helper-text">Nada é salvo nem entra no calendário sem a sua confirmação. <a href="#instrucoes">Como calculamos a confiança &rarr;</a></p><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
 
+    <details class="decision-fold metas-adjust" id="metasAdjust" data-remember="planning-week-adjust"><summary>Ajustar metas e disponibilidade</summary>
     <section class="chart-card card--default metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Metas de rendimento e volume semanal desejado. Ajuste os valores conforme a sua fase de estudo.</p></header><div id="metasContainer"></div></section>
 
     <section class="chart-card card--default metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo você tem disponível em cada dia. Esse total é a base que abastece o cálculo de horas de cada disciplina.</p></header><div id="weeklyHoursGoals"></div></section>
+    </details>
 
 
 
@@ -1043,7 +1045,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=a677e652a7ab"></script>
+  <script src="src/app.bundle.js?v=13e28bf35c73"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
