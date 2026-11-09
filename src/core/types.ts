@@ -15,6 +15,7 @@ export interface TopicBookmark {
   readonly currentUnit: number | null;
   readonly totalUnits: number | null;
   readonly positionText: string;
+  readonly customPracticeUrl?: string;
   readonly updatedAt: string;
 }
 
@@ -47,6 +48,7 @@ export interface Topic {
   fieldOrigins?: Record<string, string>;
   bookmark?: TopicBookmark | null;
   stageChecklist?: TopicStageChecklist | null;
+  customPracticeUrl?: string;
   examTags?: string[];
   examMetrics?: Record<string, ExamMetric>;
   examImportanceEstimates?: Record<string, number>;
@@ -137,6 +139,9 @@ export interface StudySession {
   questionsResolved?: number;
   focusLevel?: 'deep' | 'normal' | 'distracted';
   energyLevel?: 'high' | 'normal' | 'low';
+  pagesRead?: number;
+  videoBlocksCompleted?: number;
+  endUnit?: number | null;
 }
 
 export interface ReadinessSnapshot {

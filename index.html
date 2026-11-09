@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=22733544afa1">
-<link rel="stylesheet" href="styles/app.css?v=22733544afa1">
+<link rel="stylesheet" href="styles/tailwind.css?v=7e0f1a934125">
+<link rel="stylesheet" href="styles/app.css?v=7e0f1a934125">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -325,6 +325,7 @@
     <h2 class="section-title today-title">Hoje · Execução Diária</h2>
 
     <div id="firstStepsMissionSlot"></div>
+    <div id="todayRealWeekBannerSlot"></div>
 
     <div class="today-layout-grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
       <!-- COLUNA PRINCIPAL DE EXECUÇÃO (8 cols) -->
@@ -956,6 +957,14 @@
         </div>
         <small>Os erros são calculados pela diferença entre questões e acertos.</small>
       </section>
+      <section class="session-activity-fields" data-session-fields="study" hidden aria-labelledby="sessionTheoryProgressTitle">
+        <h4 id="sessionTheoryProgressTitle">Avanço teórico (opcional)</h4>
+        <div class="session-question-fields">
+          <label>Páginas lidas<input class="session-detail-control" type="number" id="sessionModalPagesRead" aria-label="Páginas lidas nesta sessão" placeholder="Quantidade" min="0" inputmode="numeric"></label>
+          <label>Blocos de aula<input class="session-detail-control" type="number" id="sessionModalVideoBlocks" aria-label="Blocos de videoaula assistidos" placeholder="Quantidade" min="0" inputmode="numeric"></label>
+        </div>
+        <small>Acompanhe seu avanço em leitura de PDFs e blocos de videoaula.</small>
+      </section>
       <section class="session-activity-fields" data-session-fields="study questions" hidden aria-labelledby="sessionDifficultyTitle">
         <h4 id="sessionDifficultyTitle">Percepção do esforço</h4>
         <label>Dificuldade percebida
@@ -1046,7 +1055,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=22733544afa1"></script>
+  <script src="src/app.bundle.js?v=7e0f1a934125"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

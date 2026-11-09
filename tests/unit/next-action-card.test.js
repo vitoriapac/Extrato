@@ -114,6 +114,8 @@ test('NextActionCard — renderiza card estruturado respondendo às 6 perguntas 
   // 2. Por que estudar?
   assert.ok(html.includes('Por que estudar isso agora?'));
   assert.ok(html.includes('Desempenho recente em 58% (Meta: 80%)'));
+  assert.ok(html.indexOf('Desempenho recente em 58% (Meta: 80%)') < html.indexOf('data-daily-start='));
+  assert.ok(html.indexOf('Desempenho recente em 58% (Meta: 80%)') < html.indexOf('<details'));
   assert.ok(html.includes('Alta relevância no edital'));
 
   // 3. Quanto tempo?
@@ -175,4 +177,52 @@ test('NextActionCard — renderiza estado de sessão ativa em andamento com bot�
   assert.ok(html.includes('Em andamento · Sessão ativa'));
   assert.ok(html.includes('data-delegated-click="openStudyTimerFocus()"'));
   assert.ok(html.includes('Retomar sessão'));
+});
+
+test('NextActionCard — renderiza atalhos diretos para TEC Concursos e QConcursos quando practiceLinks está presente', () => {
+  const props = {
+    model: {
+      what: {
+        subjectName: 'Direito Administrativo',
+        topicName: 'Poder de Polícia',
+      },
+      why: {
+        primaryReason: 'Tópico de alta incidência',
+      },
+      duration: {
+        minutesFormatted: '30 min',
+      },
+      importance: {
+        priorityScore: 90,
+      },
+      evidence: {
+        masteryLabel: 'Domínio 60/100',
+      },
+      nextStep: {
+        activityType: 'study',
+        actionLabel: 'Estudo guiado',
+        buttonText: 'Iniciar estudo',
+        buttonAction: {
+          type: 'daily-start',
+          planItemId: 'p-1',
+        },
+      },
+      practiceLinks: {
+        tecUrl: 'https://www.tecconcursos.com.br/questoes/cadernos?q=Poder%20de%20Pol%C3%ADcia',
+        qcUrl: 'https://www.qconcursos.com/questoes-de-concursos/questoes?q=Poder%20de%20Pol%C3%ADcia',
+        customUrl: 'https://www.tecconcursos.com.br/questoes/cadernos/proprio/999',
+        isCustom: true,
+      },
+    },
+  };
+
+  const html = render(h(NextActionCard, props));
+
+  assert.ok(html.includes('practice-action-links'));
+  assert.ok(html.includes('Questões no TEC'));
+  assert.ok(html.includes('https://www.tecconcursos.com.br/questoes/cadernos?q=Poder%20de%20Pol%C3%ADcia'));
+  assert.ok(html.includes('QConcursos'));
+  assert.ok(html.includes('https://www.qconcursos.com/questoes-de-concursos/questoes?q=Poder%20de%20Pol%C3%ADcia'));
+  assert.ok(html.includes('Caderno'));
+  assert.ok(html.includes('https://www.tecconcursos.com.br/questoes/cadernos/proprio/999'));
 });

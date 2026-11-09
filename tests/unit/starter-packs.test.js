@@ -4,12 +4,31 @@ import { STARTER_PACKS, findStarterPackById } from '../../src/domain/onboarding/
 
 test('STARTER_PACKS — expõe pacotes válidos e congelados', () => {
   assert.ok(Array.isArray(STARTER_PACKS));
-  assert.ok(STARTER_PACKS.length >= 3);
+  assert.ok(STARTER_PACKS.length >= 7);
 
   const adminPack = findStarterPackById('admin_general');
   assert.ok(adminPack);
   assert.equal(adminPack.name, 'Área Administrativa Geral');
   assert.ok(adminPack.subjects.length >= 4);
+
+  const tribunaisPack = findStarterPackById('tribunais_general');
+  assert.ok(tribunaisPack);
+  assert.equal(tribunaisPack.badge, 'Judiciário');
+  assert.ok(tribunaisPack.subjects.length >= 5);
+
+  const inssPack = findStarterPackById('inss_tecnico');
+  assert.ok(inssPack);
+  assert.equal(inssPack.badge, 'Previdenciário');
+  assert.ok(inssPack.subjects.length >= 6);
+
+  const bancariaPack = findStarterPackById('bancaria_general');
+  assert.ok(bancariaPack);
+  assert.equal(bancariaPack.badge, 'Bancário');
+
+  const pfPack = findStarterPackById('policia_federal');
+  assert.ok(pfPack);
+  assert.equal(pfPack.badge, 'Polícia Federal');
+  assert.ok(pfPack.subjects.length >= 6);
 
   for (const pack of STARTER_PACKS) {
     assert.ok(pack.id);

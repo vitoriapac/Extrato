@@ -47,6 +47,7 @@ import { renderPlannedAction } from '../../renderers/daily-execution-renderer.js
 import { createDashboardTabController } from '../dashboard/dashboard-tab-controller.js';
 import { buildStudyStrategy } from '../../../domain/recommendations/study-strategy.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
+import { buildPracticeLinks } from '../../../domain/questions/practice-link-generator.js';
 
 export interface StudyRecommendationControllerDeps {
   document: any;
@@ -347,6 +348,21 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         ? 'Finalize a sessão atual'
         : label;
 
+    const topicObj = getTopicById(item.topicId);
+    const customPracticeUrl =
+      topicObj?.topic?.customPracticeUrl ||
+      topicObj?.topic?.bookmark?.customPracticeUrl ||
+      (topicObj?.topic?.link &&
+      (topicObj.topic.link.includes('tecconcursos') || topicObj.topic.link.includes('qconcursos'))
+        ? topicObj.topic.link
+        : undefined);
+
+    const practiceLinks = buildPracticeLinks({
+      topicName: item.topicName,
+      subjectName: item.subjectName,
+      customUrl: customPracticeUrl,
+    });
+
     dashboardController.mountNextActionCard(container, {
       model: {
         what: {
@@ -386,7 +402,9 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         },
         bookmark: getTopicById(item.topicId)?.topic.bookmark,
         resumeLabel: topicResumeLabel(item.topicId),
+        practiceLinks,
       },
+      practiceLinks,
       isInProgress: inProgress,
       activeTimerNoticeHtml: renderActiveStudyTimerNotice(item),
       explanationHtml: renderRecommendationExplanation(
@@ -921,15 +939,15 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     )[0];
     const preview = replanController.view();
     if (!preview) {
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes!)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes!)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn ghost" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes!)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes!)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">${renderIconSvg('refresh', { size: 14, className: 'icon-inline' })} Recalibrar Semana Real</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
       return;
     }
     if (preview.state === 'balanced') {
       container.innerHTML =
-        '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
+        '<div class="upcoming-empty">Sua semana está em equilíbrio. Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions">${preview.allocations.length ? '<button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button>' : ''}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length ? 'Cancelar' : 'Fechar'}</button></div>`;
+    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions">${preview.allocations.length ? '<button class="btn" data-delegated-click="confirmReplan()"><svg class="icon icon-tabler icon-tabler-check icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10 -10"></path></svg>Confirmar redistribuição da semana real</button>' : ''}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length ? 'Cancelar' : 'Fechar'}</button></div>`;
   }
 
   return {

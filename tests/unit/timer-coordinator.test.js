@@ -108,6 +108,8 @@ test('buildCompletedSessionRecord — constrói objeto imutável da sessão de e
     focusLevel: 'high',
     energyLevel: 'medium',
     notes: 'Estudo muito produtivo',
+    pagesRead: 25,
+    videoBlocksCompleted: 2,
   };
 
   const record = buildCompletedSessionRecord({
@@ -127,6 +129,8 @@ test('buildCompletedSessionRecord — constrói objeto imutável da sessão de e
   assert.equal(record.durationSeconds, 1500);
   assert.equal(record.questionsResolved, 10);
   assert.equal(record.correctAnswers, 8);
+  assert.equal(record.pagesRead, 25);
+  assert.equal(record.videoBlocksCompleted, 2);
   assert.equal(record.planItemId, 'item-1');
 });
 

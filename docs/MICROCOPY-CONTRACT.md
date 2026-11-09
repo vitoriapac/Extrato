@@ -23,4 +23,17 @@ Esta revisão altera apresentação. Os indicadores, dados persistidos e condiç
 
 Notas metodológicas ou repetidas (critério de quadrantes, leitura de gráfico, decomposição de fatores, registros congelados, efeito automático ausente) ficam num `<details class="limits-disclosure">` fechado com o resumo "Limites". Continuam visíveis junto ao resultado: evidência insuficiente, efeito de prévias e confirmações, ausência de garantia de resultado e ausência de atribuição de causa.
 
+## Diretrizes de Tom Acolhedor e Semana Real (Pedagogia Anti-Culpa)
+
+Inspirado na filosofia do Leruma (*"O plano de estudos que aguenta a sua semana real. Feito para a semana que não sai como planejada"*), o Extrato de Estudos adota uma postura de parceria acolhedora e resolutiva, eliminando a linguagem acusatória que gera ansiedade e paralisia no estudante:
+
+| Linguagem Punitiva / Alheia (Evitar) | Linguagem Pedagógica e Resolutiva (Adotar) | Contexto e Justificativa |
+|---|---|---|
+| "Dívida de revisão" | "Revisões para regularizar" | Elimina conotação financeira/punitiva; foca na ação de retenção. |
+| "Crítico" / "Atraso crítico" | "Atenção prioritária" / "Lacuna prioritária" | Orienta o esforço sem gerar pânico ou desespero cognitivo. |
+| "Piorando" | "Em ajuste recente" | Reconhece a variabilidade natural de simulados e baterias difíceis. |
+| "Cobertura insuficiente" | "Cobertura a expandir" | Termo afirmativo e construtivo, indicando o próximo passo. |
+| "Você não bateu a meta" | "Sua semana não saiu como planejada? Tudo bem." | Acolhe a realidade de imprevistos e oferece ações imediatas (resgate em 30 min ou recalibração). |
+| "Replanejar atrasos" | "Recalibrar Semana Real" | Replanejar é um ato estratégico normal, não uma admissão de culpa ou fracasso. |
+
 Referências: [hierarquia](INFORMATION-HIERARCHY-CONTRACT.md), [propriedade das informações](INFORMATION-OWNERSHIP.md) e [auditoria das jornadas](PRODUCT-JOURNEY-AUDIT.md).

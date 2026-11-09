@@ -162,9 +162,13 @@ test('createSessionModalController — bindEvents propaga ações aos manipulado
   assert.equal(savedValues.durationMinutes, null);
 
   mockDoc.getElementById('sessionModalDurationMinutes').value = '45';
+  mockDoc.getElementById('sessionModalPagesRead').value = '18';
+  mockDoc.getElementById('sessionModalVideoBlocks').value = '3';
   mockDoc.getElementById('sessionModalDurationMinutes').dispatchEvent('input');
   assert.equal(mockDoc.getElementById('sessionModalDuration').textContent, '2700s');
 
   mockDoc.getElementById('sessionModalSaveBtn').dispatchEvent('click');
   assert.equal(savedValues.durationMinutes, 45);
+  assert.equal(savedValues.pagesRead, 18);
+  assert.equal(savedValues.videoBlocksCompleted, 3);
 });

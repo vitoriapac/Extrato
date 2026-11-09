@@ -70,3 +70,22 @@ test('preserva origem, tipo e dificuldade percebida somente quando válidos', ()
   assert.equal(legacy.focusLevel, null);
   assert.equal(legacy.energyLevel, null);
 });
+
+test('normaliza pagesRead, videoBlocksCompleted e endUnit quando informados', () => {
+  const result = normalizeStudySession({
+    id: 's2',
+    date: '2026-11-09',
+    durationSeconds: 1800,
+    pagesRead: '24',
+    videoBlocksCompleted: 2,
+    endUnit: '58',
+  });
+  assert.equal(result.pagesRead, 24);
+  assert.equal(result.videoBlocksCompleted, 2);
+  assert.equal(result.endUnit, 58);
+
+  const without = normalizeStudySession({ id: 's3', date: '2026-11-09' });
+  assert.equal(without.pagesRead, undefined);
+  assert.equal(without.videoBlocksCompleted, undefined);
+  assert.equal(without.endUnit, undefined);
+});

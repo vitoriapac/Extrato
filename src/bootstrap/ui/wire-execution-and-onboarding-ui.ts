@@ -11,6 +11,8 @@ import { createTodayTabController } from '../../ui/tabs/today/today-tab-controll
 import { createStudyRecommendationController } from '../../ui/tabs/today/study-recommendation-controller.js';
 import { createOnboardingModalController } from '../../features/onboarding/onboarding-modal-controller.js';
 import { createFirstAccessModalController } from '../../ui/controllers/first-access-modal-controller.js';
+import { createRecoveryMissionController } from '../../ui/controllers/recovery-mission-controller.js';
+import type { OverdueReviewItem } from '../../domain/recovery/recovery-mission-engine.js';
 import { createSessionHistoryController } from '../../ui/tabs/today/session-history-controller.js';
 
 export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
@@ -230,6 +232,18 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     segundosEstudadosHoje: studyMetricsSelectors.segundosEstudadosHoje,
     diasParaRevisao,
     startOfWeek,
+    onOpenRecoveryMission: () => recoveryMissionController?.open(),
+    onRecalibrateWeek: () => {
+      studyRecommendationController?.calculateReplanPreview();
+      activateTab('desempenho');
+      setTimeout(() => {
+        const el = document.getElementById('weeklyReplan');
+        if (el) {
+          el.closest('details')?.setAttribute('open', 'true');
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    },
   });
   todayTabController.bindEvents();
 
@@ -365,7 +379,83 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
         (document.getElementById('enterDemoHeroBtn') as HTMLElement | null);
       enterBtn?.click();
     },
+    onPasteSyllabus: () => {
+      activateTab('disciplinas');
+      setTimeout(() => {
+        const buttons = (document.querySelectorAll ? Array.from(document.querySelectorAll('button')) : []) as any[];
+        const pasteBtn = buttons.find(b => b?.textContent?.includes('Colar Edital'));
+        pasteBtn?.click?.();
+      }, 60);
+    },
   });
+
+  const getRecoveryMissionMount = () => {
+    let mount = document.getElementById('recoveryMissionModalMount');
+    if (!mount) {
+      mount = document.createElement('div');
+      mount.id = 'recoveryMissionModalMount';
+      document.body?.appendChild?.(mount);
+    }
+    return mount;
+  };
+
+  const getOverdueReviewsForMission = (): OverdueReviewItem[] => {
+    const today = todayISO();
+    const unificadas = studyMetricsSelectors.getRevisoesUnificadas() || [];
+    return unificadas
+      .filter((item: any) => item.date && item.date < today && item.status !== 'Concluído')
+      .map((item: any) => {
+        const topicId = item.topicId || item.topicRef;
+        const topicName = item.label ? item.label.split('·')[0].trim() : 'Tópico';
+        return {
+          id: item.id,
+          origin: item.origem || 'Agenda de Revisões',
+          date: item.date,
+          subjectId: item.subjectId,
+          subjectName: item.subject || 'Disciplina',
+          topicId,
+          topicName,
+          daysOverdue: Math.abs(diasParaRevisao(item.date) || 1),
+        };
+      });
+  };
+
+  const recoveryMissionController = createRecoveryMissionController({
+    getContainer: getRecoveryMissionMount,
+    getOverdueReviews: getOverdueReviewsForMission,
+    onCompleteReview: (reviewId: string, origin: string) => {
+      if (origin === 'Agenda de Revisões') {
+        completeAgendaReview(reviewId);
+      } else {
+        const item = (getState().calendar || []).find((x: any) => x.id === reviewId);
+        if (item && item.status !== 'Concluído') {
+          item.status = 'Concluído';
+          item.updatedAt = nowISO();
+        }
+      }
+      persistAndRender();
+      showToast('Revisão resgatada e concluída com sucesso!');
+    },
+    onMissionFinished: () => {
+      persistAndRender();
+      todayTabController?.renderPlanoHoje?.();
+    },
+  });
+
+  document.addEventListener?.('click', (event: any) => {
+    const target = event.target as HTMLElement | null;
+    const btn =
+      target?.closest?.('[data-action="open-recovery-mission"]') ||
+      target?.closest?.('button[data-delegated-click*="openRecoveryMission"]');
+    if (btn) {
+      event.preventDefault?.();
+      recoveryMissionController.open();
+    }
+  });
+
+  if (window) {
+    (window as any).__EXTRATO_RECOVERY_MISSION__ = recoveryMissionController;
+  }
 
   return {
     timerUiController,
@@ -373,6 +463,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     whatIfController,
     firstAccessModalController,
     todayTabController,
+    recoveryMissionController,
     studyRecommendationController,
     onboardingModalController,
     sessionHistoryController,

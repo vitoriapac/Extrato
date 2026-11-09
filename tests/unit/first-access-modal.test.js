@@ -34,3 +34,17 @@ test('FirstAccessModal — renderiza opções de plano guiado e demonstração q
   assert.match(html, /Configurar manualmente ou explorar livremente/);
   assert.match(html, /Recomendado/);
 });
+
+test('FirstAccessModal — renderiza botão de colar edital PDF quando callback fornecido', () => {
+  const html = render(
+    h(FirstAccessModal, {
+      open: true,
+      onClose: () => {},
+      onStartGuidedPlan: () => {},
+      onStartDemo: () => {},
+      onPasteSyllabus: () => {},
+    })
+  );
+
+  assert.match(html, /Colar edital \(PDF\)/);
+});

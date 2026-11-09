@@ -14,6 +14,7 @@ export interface TodayGoalsCardProps {
   metaHorasFormatado: string;
   pctTempo: number;
   todayDayOfWeek: number;
+  paginasHoje?: number;
 }
 
 export function TodayGoalsCard({
@@ -29,6 +30,7 @@ export function TodayGoalsCard({
   metaHorasFormatado,
   pctTempo,
   todayDayOfWeek,
+  paginasHoje = 0,
 }: TodayGoalsCardProps): JSX.Element {
   const tempoMinutos = Math.round(tempoHojeSegundos / 60);
   const metaTempoMinutos = Math.round(metaHorasHoje * 60);
@@ -91,6 +93,11 @@ export function TodayGoalsCard({
             <div class="meta-hoje-time-target">
               de {metaHorasFormatado} · {pctTempo}%
             </div>
+            {paginasHoje > 0 && (
+              <div class="text-xs text-secondary mt-0.5 font-medium">
+                {paginasHoje} {paginasHoje === 1 ? 'página lida' : 'páginas lidas'}
+              </div>
+            )}
           </div>
           <label class="meta-hoje-time-goal">
             <span>Meta</span>

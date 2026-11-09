@@ -198,6 +198,8 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         status: t.status,
         stageChecklist: t.stageChecklist || null,
         bookmark: t.bookmark || null,
+        link: t.link || '',
+        customPracticeUrl: t.customPracticeUrl || '',
       })),
     }));
 

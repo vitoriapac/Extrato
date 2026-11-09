@@ -479,7 +479,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     // A lista completa mora na Agenda; Hoje e Calendário mostram só a contagem com o caminho até ela.
     if (elId !== 'calAtrasadas') {
       ul.innerHTML = items.length
-        ? `<li class="overdue-summary"><strong>${items.length} ${items.length === 1 ? 'revisão atrasada' : 'revisões atrasadas'}</strong><span>${overdueOrigin(items)}</span><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></li>`
+        ? `<li class="overdue-summary"><strong>${items.length} ${items.length === 1 ? 'revisão atrasada' : 'revisões atrasadas'}</strong><span>${overdueOrigin(items)}</span><div class="flex items-center gap-2 mt-2"><button type="button" class="btn small" data-action="open-recovery-mission">Resgatar em 30 min</button><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></div></li>`
         : '<li class="upcoming-empty">Nenhuma revisão atrasada.</li>';
       return;
     }
@@ -504,7 +504,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     }
 
     ul.innerHTML =
-      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${overdueOrigin(items)}${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` +
+      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${overdueOrigin(items)}${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small" style="margin-top:8px;width:100%" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
       visible
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);

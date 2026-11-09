@@ -9,6 +9,7 @@ export interface FirstAccessModalProps {
   onStartDemo: () => void;
   onExploreManually?: () => void;
   onOpenSalesLanding?: () => void;
+  onPasteSyllabus?: () => void;
 }
 
 export function FirstAccessModal({
@@ -18,6 +19,7 @@ export function FirstAccessModal({
   onStartDemo,
   onExploreManually,
   onOpenSalesLanding,
+  onPasteSyllabus,
 }: FirstAccessModalProps) {
   if (!open) return null;
 
@@ -34,6 +36,11 @@ export function FirstAccessModal({
   const handleExploreManually = () => {
     onClose();
     onExploreManually?.();
+  };
+
+  const handlePasteSyllabus = () => {
+    onClose();
+    onPasteSyllabus?.();
   };
 
   return (
@@ -117,14 +124,27 @@ export function FirstAccessModal({
 
         {/* Rodapé: Opção Manual e Página de Apresentação */}
         <footer className="pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={handleExploreManually}
-            className="text-xs text-content-secondary hover:text-content-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs"
-            aria-label="Configurar manualmente ou explorar livremente"
-          >
-            Configurar manualmente ou explorar livremente
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleExploreManually}
+              className="text-xs text-content-secondary hover:text-content-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs"
+              aria-label="Configurar manualmente ou explorar livremente"
+            >
+              Configurar manualmente
+            </button>
+            {onPasteSyllabus && (
+              <button
+                type="button"
+                onClick={handlePasteSyllabus}
+                className="text-xs text-content-secondary hover:text-content-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs inline-flex items-center gap-1"
+                aria-label="Colar conteúdo do edital em PDF"
+              >
+                <Icon name="file-text" size={12} class="shrink-0" />
+                <span>Colar edital (PDF)</span>
+              </button>
+            )}
+          </div>
           {onOpenSalesLanding && (
             <button
               type="button"

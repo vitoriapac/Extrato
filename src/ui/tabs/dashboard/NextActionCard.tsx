@@ -41,10 +41,22 @@ export interface NextActionSixQuestions {
   };
   bookmark?: TopicBookmark | null | any;
   resumeLabel?: string;
+  practiceLinks?: {
+    tecUrl: string;
+    qcUrl: string;
+    customUrl?: string | null;
+    isCustom?: boolean;
+  } | null;
 }
 
 export interface NextActionCardProps {
   model: NextActionSixQuestions | null;
+  practiceLinks?: {
+    tecUrl: string;
+    qcUrl: string;
+    customUrl?: string | null;
+    isCustom?: boolean;
+  } | null;
   emptyState?: {
     message?: string;
     timerHref?: string | null;
@@ -65,6 +77,7 @@ export interface NextActionCardProps {
 export function NextActionCard({
   model,
   emptyState,
+  practiceLinks,
   isInProgress = false,
   activeTimerNoticeHtml = '',
   suggestionNoticeHtml = '',
@@ -246,6 +259,7 @@ export function NextActionCard({
           <h3>
             {what.subjectName} · {what.topicName}
           </h3>
+          {why.primaryReason && <p className="overview-action-reason">{why.primaryReason}</p>}
 
           {/* Metadados: 3. Quanto tempo? + 4. Importância + Tipo */}
           <p className="daily-execution-metadata">
@@ -276,20 +290,65 @@ export function NextActionCard({
           )}
 
           {isInProgress && <span className="active-study-status">Em andamento · Sessão ativa</span>}
+          {nextStep.buttonAction.type === 'blocked' && <p>{nextStep.buttonAction.reason}</p>}
         </div>
 
-        {/* 6. O que devo fazer a seguir? (Botão de ação principal) */}
-        <div className="overview-action-buttons">{renderActionButton()}</div>
+        {/* 6. O que devo fazer a seguir? (Botão de ação principal e atalhos de questões) */}
+        <div className="overview-action-buttons flex flex-wrap items-center gap-2">
+          {renderActionButton()}
+          {(practiceLinks || model.practiceLinks) && (
+            <div
+              className="practice-action-links inline-flex items-center gap-1.5"
+              role="group"
+              aria-label="Atalhos para resolução de questões"
+            >
+              <a
+                href={(practiceLinks || model.practiceLinks)!.tecUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn--subtle text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-primary transition-colors no-underline font-medium"
+                title={`Resolver questões de ${what.topicName} no TEC Concursos`}
+                aria-label={`Resolver questões de ${what.topicName} no TEC Concursos (abre em nova aba)`}
+              >
+                <Icon name="external-link" size={13} class="shrink-0 text-secondary" />
+                <span>Questões no TEC</span>
+              </a>
+              <a
+                href={(practiceLinks || model.practiceLinks)!.qcUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn--subtle text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-secondary hover:text-primary transition-colors no-underline"
+                title={`Resolver questões de ${what.topicName} no QConcursos`}
+                aria-label={`Resolver questões de ${what.topicName} no QConcursos (abre em nova aba)`}
+              >
+                <Icon name="external-link" size={13} class="shrink-0 text-muted" />
+                <span>QConcursos</span>
+              </a>
+              {(practiceLinks || model.practiceLinks)!.customUrl && (
+                <a
+                  href={(practiceLinks || model.practiceLinks)!.customUrl!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn--subtle text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-accent font-medium transition-colors no-underline"
+                  title="Abrir caderno personalizado do tópico"
+                  aria-label={`Abrir caderno personalizado de ${what.topicName} (abre em nova aba)`}
+                >
+                  <Icon name="bookmark" size={13} class="shrink-0 text-accent" />
+                  <span>Caderno</span>
+                </a>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Sugestão contextual (fora do plano ou alternativa) */}
         {suggestionNoticeHtml && <div dangerouslySetInnerHTML={{ __html: suggestionNoticeHtml }} />}
 
         {/* 2. Por que devo estudar isso? (Racional estruturado) */}
-        {(why.primaryReason || (why.additionalReasons && why.additionalReasons.length > 0)) && (
+        {Boolean(why.additionalReasons?.length) && (
           <details className="daily-execution-reasons mt-2">
             <summary>Por que estudar isso agora?</summary>
             <ul>
-              {why.primaryReason && <li>{why.primaryReason}</li>}
               {(why.additionalReasons || []).map((reason, idx) => (
                 <li key={idx}>{reason}</li>
               ))}

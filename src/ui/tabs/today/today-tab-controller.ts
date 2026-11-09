@@ -13,6 +13,7 @@ import {
 } from '../../../application/onboarding/build-first-steps-mission.js';
 import { buildFinalStretchBanner } from '../../../domain/planning/final-stretch-policy.js';
 import { FinalStretchBanner } from '../../components/FinalStretchBanner.js';
+import { RealWeekBanner, type RealWeekBannerProps } from '../../components/RealWeekBanner.js';
 import { buildTodayViewModel, canGenerateAutomaticTodayPlan } from '../../../application/planning/build-today-view-model.js';
 import { buildNextBestAction } from '../../../application/diagnostics/build-next-best-action.js';
 import { createDailyExecutionController } from '../../controllers/daily-execution-controller.js';
@@ -36,7 +37,7 @@ export interface TodayTabControllerContext {
   onRestoreFirstSteps?: () => void;
   onStartTour?: () => void;
   onExecuteFirstStepsMission?: (action: string) => void;
-  document?: Document;
+  document?: Document | any;
   getState?: () => any;
   getUiState?: () => any;
   isDemoMode?: () => boolean;
@@ -70,6 +71,8 @@ export interface TodayTabControllerContext {
   segundosEstudadosHoje?: () => number;
   diasParaRevisao?: (date: string) => number | null;
   startOfWeek?: (iso: string) => string;
+  onOpenRecoveryMission?: () => void;
+  onRecalibrateWeek?: () => void;
 }
 
 export function createTodayTabController(ctx: TodayTabControllerContext) {
@@ -476,6 +479,140 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     );
   }
 
+  function renderRealWeekBannerHtml(props: RealWeekBannerProps): string {
+    return render(h(RealWeekBanner, props));
+  }
+
+  function mountRealWeekBanner(container: Element, props: RealWeekBannerProps): void {
+    mountPreact(h(RealWeekBanner, props), container);
+  }
+
+  let demoRealWeekBannerDismissed = false;
+
+  function isRealWeekBannerDismissed(): boolean {
+    if (isDemoMode()) return demoRealWeekBannerDismissed;
+    try {
+      return (
+        typeof sessionStorage !== 'undefined' &&
+        Boolean(sessionStorage.getItem('extrato_real_week_banner_dismissed'))
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function dismissRealWeekBanner(): void {
+    if (isDemoMode()) {
+      demoRealWeekBannerDismissed = true;
+    } else {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('extrato_real_week_banner_dismissed', '1');
+        }
+      } catch {}
+    }
+    renderRealWeekBanner();
+  }
+
+  function restoreRealWeekBanner(): void {
+    if (isDemoMode()) {
+      demoRealWeekBannerDismissed = false;
+    } else {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem('extrato_real_week_banner_dismissed');
+        }
+      } catch {}
+    }
+    renderRealWeekBanner();
+  }
+
+  function renderRealWeekBanner(): void {
+    if (!doc) return;
+    let slot = doc.getElementById('todayRealWeekBannerSlot');
+    const summary = doc.getElementById('todayExecutionSummary');
+    if (!slot) {
+      if (summary) {
+        slot = doc.createElement('div');
+        slot.id = 'todayRealWeekBannerSlot';
+      }
+    }
+    if (!slot) return;
+    if (summary?.parentNode && slot.nextSibling !== summary) {
+      summary.parentNode.insertBefore(slot, summary);
+    }
+
+    if (isRealWeekBannerDismissed()) {
+      unmountPreact(slot);
+      slot.replaceChildren();
+      return;
+    }
+
+    const state = getState();
+    const today = todayISO();
+    const overdueCount = getRevisoesUnificadas().filter(
+      (r: any) => r.date && r.date < today && r.status !== 'Concluído'
+    ).length;
+
+    const startWeek = startOfWeek(today);
+    const pastPlans = (state.dailyPlans || []).filter(
+      (p: any) => p.date >= startWeek && p.date < today
+    );
+    const plannedPastMinutes = pastPlans.reduce(
+      (sum: number, p: any) =>
+        sum +
+        (p.items || [])
+          .filter((it: any) => !['skipped', 'replaced', 'deferred', 'discarded'].includes(it.status))
+          .reduce((t: number, it: any) => t + (Number(it.plannedMinutes) || 0), 0),
+      0
+    );
+    const executedPastMinutes = (state.studySessions || [])
+      .filter((s: any) => s.date >= startWeek && s.date < today)
+      .reduce((sum: number, s: any) => sum + (Number(s.durationSeconds) || 0) / 60, 0);
+
+    const deficitMinutes = Math.max(0, Math.round(plannedPastMinutes - executedPastMinutes));
+
+    if (overdueCount === 0 && deficitMinutes === 0) {
+      unmountPreact(slot);
+      slot.replaceChildren();
+      return;
+    }
+
+    const bannerProps: RealWeekBannerProps = {
+      overdueCount,
+      deficitMinutes,
+      onOpenRecoveryMission: () => {
+        if (ctx.onOpenRecoveryMission) {
+          ctx.onOpenRecoveryMission();
+        } else {
+          const btn = doc.querySelector?.('[data-action="open-recovery-mission"]') as HTMLElement | null;
+          btn?.click();
+        }
+      },
+      onRecalibrateWeek: () => {
+        if (ctx.onRecalibrateWeek) {
+          ctx.onRecalibrateWeek();
+        } else {
+          _activateTab('desempenho');
+          setTimeout(() => {
+            const el = doc.getElementById('weeklyReplan');
+            if (el) {
+              el.closest('details')?.setAttribute('open', 'true');
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 80);
+        }
+      },
+      onDismiss: dismissRealWeekBanner,
+    };
+
+    if (typeof document !== 'undefined') {
+      mountRealWeekBanner(slot, bannerProps);
+    } else {
+      slot.innerHTML = renderRealWeekBannerHtml(bannerProps);
+    }
+  }
+
   const dailyExecutionController = createDailyExecutionController({
     getContext: () => {
       const state = getState();
@@ -570,6 +707,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         { formatDate: formatDatePt }
       );
     renderFirstStepsMissionCard();
+    renderRealWeekBanner();
 
     if (!plan && priorities.length === 0) {
       container.innerHTML =
@@ -744,6 +882,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
     const revisoesHoje = getRevisoesUnificadas().filter((r: any) => r.date === today);
     const revisoesConcluidasHoje = revisoesHoje.filter((r: any) => r.status === 'Concluído').length;
+    const paginasHoje = (state.studySessions || [])
+      .filter((s: any) => s.date === today)
+      .reduce((sum: number, s: any) => sum + (Number(s.pagesRead) || 0), 0);
     const tempoHoje = segundosEstudadosHoje();
     const metaTempo = metaHoursToday() * 3600;
     const pctTempo = metaTempo > 0 ? Math.round((tempoHoje / metaTempo) * 100) : 0;
@@ -762,6 +903,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       metaHorasFormatado: formatHoras(metaHoursToday()),
       pctTempo,
       todayDayOfWeek,
+      paginasHoje,
     });
   }
 
@@ -866,6 +1008,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     restoreFirstSteps,
     renderFirstStepsMissionCard,
     renderFinalStretchBanner,
+    renderRealWeekBannerHtml,
+    mountRealWeekBanner,
+    renderRealWeekBanner,
+    isRealWeekBannerDismissed,
+    dismissRealWeekBanner,
+    restoreRealWeekBanner,
     dailyExecutionController,
     renderDailyExecutionCard,
     renderPlanoHoje,

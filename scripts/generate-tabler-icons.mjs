@@ -134,6 +134,8 @@ const iconList = [
   // Sincronização em Nuvem (Fase 3 SaaS)
   'cloud-check',
   'cloud-off',
+  // Acolhimento e Empatia (Fase 6)
+  'heart-handshake',
 ];
 
 const rawData = await readFile(tablerNodesPath, 'utf8');

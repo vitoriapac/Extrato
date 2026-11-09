@@ -1,4 +1,6 @@
 import type { JSX } from 'preact';
+import { Button } from '../../primitives/button.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface TodayAgendaItem {
   id: string;
@@ -14,6 +16,7 @@ export interface TodayAgendaSectionsProps {
   overdueReviews: TodayAgendaItem[];
   plannedSimulations: TodayAgendaItem[];
   goalsHtml: string;
+  onOpenRecoveryMission?: () => void;
 }
 
 export function TodayAgendaSections({
@@ -21,6 +24,7 @@ export function TodayAgendaSections({
   overdueReviews,
   plannedSimulations,
   goalsHtml,
+  onOpenRecoveryMission,
 }: TodayAgendaSectionsProps): JSX.Element {
   const renderList = (items: TodayAgendaItem[], emptyMsg: string) => {
     if (items.length === 0) {
@@ -52,7 +56,21 @@ export function TodayAgendaSections({
       </section>
 
       <section>
-        <h4>Revisões atrasadas</h4>
+        <div class="flex items-center justify-between gap-2 mb-1.5">
+          <h4 class="m-0">Revisões atrasadas</h4>
+          {onOpenRecoveryMission && overdueReviews.length > 0 && (
+            <Button
+              variant="secondary"
+              size="small"
+              className="inline-flex items-center gap-1.5 text-xs text-brand font-medium hover:border-brand"
+              onClick={onOpenRecoveryMission}
+              aria-label="Abrir missão de recuperação de revisões atrasadas"
+            >
+              <Icon name="bolt" size={14} class="shrink-0" />
+              <span>Resgatar Atrasos</span>
+            </Button>
+          )}
+        </div>
         <ul class="upcoming-list" id="hojeAtrasadas">
           {renderList(overdueReviews, 'Nenhuma revisão atrasada pendente.')}
         </ul>

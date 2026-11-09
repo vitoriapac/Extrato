@@ -144,6 +144,9 @@ export interface BuildSessionRecordInput {
     focusLevel: string | null;
     energyLevel: string | null;
     notes: string;
+    pagesRead?: number | null;
+    videoBlocksCompleted?: number | null;
+    endUnit?: number | null;
   };
   nowISO: () => string;
   localDateFromTimestamp: (ts?: string | number | null) => string | null;
@@ -183,6 +186,12 @@ export function buildCompletedSessionRecord(input: BuildSessionRecordInput) {
     perceivedDifficulty: formValues.perceivedDifficulty,
     focusLevel: formValues.focusLevel,
     energyLevel: formValues.energyLevel,
+    pagesRead: formValues.pagesRead != null && formValues.pagesRead > 0 ? formValues.pagesRead : undefined,
+    videoBlocksCompleted:
+      formValues.videoBlocksCompleted != null && formValues.videoBlocksCompleted > 0
+        ? formValues.videoBlocksCompleted
+        : undefined,
+    endUnit: formValues.endUnit != null && formValues.endUnit > 0 ? formValues.endUnit : undefined,
     notes: formValues.notes,
     planItemId: activeTimer.planItemId || null,
     recommendationId: activeTimer.recommendationId || null,

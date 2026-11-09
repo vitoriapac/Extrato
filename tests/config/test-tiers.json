@@ -452,16 +452,6 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/admin-backoffice.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
-      "file": "tests/unit/legal-compliance.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
       "file": "tests/unit/achievement-projection-history.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -518,6 +508,11 @@
     },
     {
       "file": "tests/unit/adherence-target.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/admin-backoffice.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
@@ -615,6 +610,16 @@
       "file": "tests/unit/calendar-tab-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba de calendário."
+    },
+    {
+      "file": "tests/unit/career-benchmark-card.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componente Preact declarativo de comparativo de ritmo com aprovados por carreira."
+    },
+    {
+      "file": "tests/unit/career-benchmarks.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node puro e determinístico; benchmarks de aprovados por carreira e agregação de ritmo recente."
     },
     {
       "file": "tests/unit/capacity-review-preview.test.js",
@@ -1117,6 +1122,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/legal-compliance.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/list-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1337,6 +1347,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/practice-link-generator.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node puro e barato; normalização de nomes de tópicos de concurso e geração de URLs de questões."
+    },
+    {
       "file": "tests/unit/question-analytics-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s)."
@@ -1425,6 +1440,26 @@
       "file": "tests/unit/recovery-dense-scenarios.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/real-week-banner.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componente Preact de acolhimento e microcopy empática da Semana Real."
+    },
+    {
+      "file": "tests/unit/recovery-mission-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; ciclo de vida do controller do modal de missão de recuperação."
+    },
+    {
+      "file": "tests/unit/recovery-mission-engine.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; dimensionamento e ordenação de urgência de blocos da missão de recuperação."
+    },
+    {
+      "file": "tests/unit/recovery-mission-modal.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; renderização declarativa do modal de missão de recuperação."
     },
     {
       "file": "tests/unit/recovery-plan.test.js",

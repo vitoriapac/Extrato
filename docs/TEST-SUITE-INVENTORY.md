@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-314 arquivos Node e 70 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+321 arquivos Node e 70 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -58,7 +58,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/product-consolidation.spec.js | browser | Aplicação | functional | 23.9 | journey, demo, viewport | none |
 | tests/e2e/progressive-list.spec.js | browser | Aplicação | functional | 5.6 | journey, viewport | none |
 | tests/e2e/pt-br-format.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
-| tests/e2e/pwa.spec.js | browser | Aplicação | functional | 9.5 | journey | none |
+| tests/e2e/pwa.spec.js | browser | Aplicação | functional | 9.5 | journey, viewport | none |
 | tests/e2e/quick-flows.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/recent-flows.spec.js | browser | Aplicação | functional | 144.4 | journey, demo, viewport | none |
 | tests/e2e/recommendation-outcome.spec.js | browser | Recomendações | functional | 19.5 | journey, demo | none |
@@ -126,6 +126,8 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/calendar-load.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |
+| tests/unit/career-benchmark-card.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/career-benchmarks.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/chart-primitives.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/clerk-saas-auth.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/clock-timezone.test.js | node | Datas | critical | — | contract | none |
@@ -259,6 +261,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/plateau-detector-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/plateau-detector.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/post-simulation-replan.test.js | node | Planejamento | critical | — | contract | none |
+| tests/unit/practice-link-generator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/practice-visual-charts.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/preact-mount.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/preparation-signals.test.js | node | Aplicação | functional | — | contract | none |
@@ -277,6 +280,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/questions-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/questions-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/raw-syllabus-parser.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/real-week-banner.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recommend-study.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-action.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-calibration.test.js | node | Recomendações | functional | — | contract | none |
@@ -288,6 +292,9 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/recommendations-controller.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/record-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recovery-dense-scenarios.test.js | node | Recuperação | critical | — | contract, demo | none |
+| tests/unit/recovery-mission-controller.test.js | node | Recuperação | critical | — | contract | none |
+| tests/unit/recovery-mission-engine.test.js | node | Recuperação | critical | — | contract | none |
+| tests/unit/recovery-mission-modal.test.js | node | Recuperação | critical | — | contract | none |
 | tests/unit/recovery-plan.test.js | node | Recuperação | critical | — | contract, demo | none |
 | tests/unit/recovery-renderer.test.js | node | Recuperação | critical | — | contract | none |
 | tests/unit/recovery-transaction.test.js | node | Recuperação | critical | — | contract | none |

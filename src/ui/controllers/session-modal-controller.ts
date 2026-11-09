@@ -42,6 +42,9 @@ export interface SessionFormValues {
   energyLevel: string | null;
   notes: string;
   durationMinutes?: number | null;
+  pagesRead?: number | null;
+  videoBlocksCompleted?: number | null;
+  endUnit?: number | null;
 }
 
 export interface SessionModalEventHandlers {
@@ -176,6 +179,16 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     const correctInput = document.getElementById('sessionModalCorrect') as HTMLInputElement | null;
     if (correctInput) correctInput.value = '';
 
+    const pagesInput = document.getElementById(
+      'sessionModalPagesRead'
+    ) as HTMLInputElement | null;
+    if (pagesInput) pagesInput.value = '';
+
+    const videoInput = document.getElementById(
+      'sessionModalVideoBlocks'
+    ) as HTMLInputElement | null;
+    if (videoInput) videoInput.value = '';
+
     const retSel = document.getElementById('sessionModalRetention') as HTMLSelectElement | null;
     if (retSel) retSel.value = '';
 
@@ -237,6 +250,24 @@ export function createSessionModalController(opts: SessionModalControllerOptions
         ? Math.min(720, Math.round(rawDurationMinutes))
         : null;
 
+    const rawPagesRead = Number(
+      (document.getElementById('sessionModalPagesRead') as HTMLInputElement | null)?.value
+    );
+    const pagesRead =
+      Number.isFinite(rawPagesRead) && rawPagesRead > 0 ? Math.floor(rawPagesRead) : null;
+
+    const rawVideoBlocks = Number(
+      (document.getElementById('sessionModalVideoBlocks') as HTMLInputElement | null)?.value
+    );
+    const videoBlocksCompleted =
+      Number.isFinite(rawVideoBlocks) && rawVideoBlocks > 0 ? Math.floor(rawVideoBlocks) : null;
+
+    const rawEndUnit = Number(
+      (document.getElementById('sessionBookmarkCurrent') as HTMLInputElement | null)?.value
+    );
+    const endUnit =
+      Number.isFinite(rawEndUnit) && rawEndUnit > 0 ? Math.floor(rawEndUnit) : null;
+
     return {
       subjectId,
       topicId,
@@ -249,6 +280,9 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       energyLevel,
       notes,
       durationMinutes,
+      pagesRead,
+      videoBlocksCompleted,
+      endUnit,
     };
   }
 

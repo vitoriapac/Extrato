@@ -35,6 +35,19 @@ test('bookmark válido é normalizado e congelado', () => {
   assert.ok(Object.isFrozen(bookmark));
 });
 
+test('bookmark preserva customPracticeUrl quando presente', () => {
+  const url = 'https://www.tecconcursos.com.br/questoes/cadernos/proprio/123';
+  const bookmark = normalizeTopicBookmark(
+    {
+      resourceType: 'other',
+      label: 'Caderno TEC',
+      customPracticeUrl: `  ${url}  `,
+    },
+    { now }
+  );
+  assert.equal(bookmark?.customPracticeUrl, url);
+});
+
 test('valores inválidos viram padrões seguros', () => {
   assert.equal(
     normalizeTopicBookmark({ resourceType: 'x', positionText: 'cap. 2' }, { now }).resourceType,

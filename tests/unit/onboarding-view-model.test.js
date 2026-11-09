@@ -82,3 +82,11 @@ test('onboarding usa a ordem e as alocações do plano real na prévia', () => {
   ]);
   assert.equal(model.planPreviewState, 'ready');
 });
+
+test('onboarding expõe caminhos de conteúdo incluindo colar edital PDF', () => {
+  const model = buildOnboardingViewModel({ subjects: [] });
+  assert.ok(Array.isArray(model.contentPaths));
+  const pasteAction = model.contentPaths.find(p => p.action === 'paste-syllabus');
+  assert.ok(pasteAction);
+  assert.equal(pasteAction.label, 'Colar texto do edital (PDF)');
+});

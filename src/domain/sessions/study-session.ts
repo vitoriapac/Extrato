@@ -87,6 +87,12 @@ export function normalizeStudySession(
       : null,
     focusLevel: FOCUS_LEVEL_VALUES.includes(input.focusLevel) ? input.focusLevel : null,
     energyLevel: ENERGY_LEVEL_VALUES.includes(input.energyLevel) ? input.energyLevel : null,
+    pagesRead: input.pagesRead != null ? nonNegativeInteger(input.pagesRead) : undefined,
+    videoBlocksCompleted:
+      input.videoBlocksCompleted != null
+        ? nonNegativeInteger(input.videoBlocksCompleted)
+        : undefined,
+    endUnit: input.endUnit != null ? nonNegativeInteger(input.endUnit) : undefined,
     notes: typeof input.notes === 'string' ? input.notes : '',
   };
 }

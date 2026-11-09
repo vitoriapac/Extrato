@@ -42,6 +42,35 @@ test('VerticalizedSyllabusView — renderiza tabela de disciplinas com etapas de
   assert.match(html, /Questões/);
   assert.match(html, /Estudar/);
   assert.match(html, /Colar Edital \(PDF\)/);
+  assert.match(html, /tecconcursos\.com\.br\/questoes\/cadernos/);
+  assert.match(html, /qconcursos\.com\/questoes-de-concursos\/questoes/);
+});
+
+test('VerticalizedSyllabusView — renderiza link de caderno personalizado quando customPracticeUrl é configurada', () => {
+  const customNotebookUrl = 'https://www.tecconcursos.com.br/questoes/cadernos/proprio/8888';
+  const subjects = [
+    {
+      id: 's2',
+      name: 'Direito Administrativo',
+      topics: [
+        {
+          id: 't2',
+          name: 'Atos Administrativos',
+          customPracticeUrl: customNotebookUrl,
+        },
+      ],
+    },
+  ];
+
+  const html = render(
+    h(VerticalizedSyllabusView, {
+      subjects,
+    })
+  );
+
+  assert.match(html, /Caderno/);
+  assert.ok(html.includes(customNotebookUrl));
+  assert.match(html, /QC/);
 });
 
 test('VerticalizedSyllabusView — renderiza estado vazio quando não há tópicos', () => {

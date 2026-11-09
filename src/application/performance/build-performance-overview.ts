@@ -27,6 +27,8 @@ const period = (range: Range, questions: Row[], sessions: Row[], plans: Row[]) =
     0
   );
   const studiedMinutes = round(sum(s, 'durationSeconds') / 60);
+  const pagesRead = sum(s, 'pagesRead');
+  const videoBlocksCompleted = sum(s, 'videoBlocksCompleted');
   return {
     resolved,
     correct,
@@ -35,6 +37,8 @@ const period = (range: Range, questions: Row[], sessions: Row[], plans: Row[]) =
     plannedMinutes,
     adherence: plannedMinutes ? round((studiedMinutes / plannedMinutes) * 100) : null,
     sessionCount: s.length,
+    pagesRead,
+    videoBlocksCompleted,
   };
 };
 const delta = (current: number | null, previous: number | null) =>

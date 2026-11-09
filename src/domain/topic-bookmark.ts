@@ -30,11 +30,12 @@ export function normalizeTopicBookmark(
     : 'other';
   const label = text(source.label, 120),
     positionText = text(source.positionText, 60),
-    currentUnit = unit(source.currentUnit);
+    currentUnit = unit(source.currentUnit),
+    customPracticeUrl = text(source.customPracticeUrl, 2000);
   let totalUnits = unit(source.totalUnits);
   if (totalUnits != null && (currentUnit == null || totalUnits < currentUnit || totalUnits === 0))
     totalUnits = null;
-  if (currentUnit == null && !positionText && !label) return null;
+  if (currentUnit == null && !positionText && !label && !customPracticeUrl) return null;
   const updatedAt =
     typeof source.updatedAt === 'string' && source.updatedAt ? source.updatedAt : now();
   return Object.freeze({
@@ -43,6 +44,7 @@ export function normalizeTopicBookmark(
     currentUnit,
     totalUnits,
     positionText,
+    ...(customPracticeUrl ? { customPracticeUrl } : {}),
     updatedAt,
   });
 }

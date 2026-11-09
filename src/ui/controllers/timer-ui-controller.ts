@@ -121,6 +121,16 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
       ])
     );
 
+    const rawPagesRead = Number(
+      document.getElementById('sessionModalPagesRead')?.value
+    );
+    if (!fieldValues.currentUnit && found.topic?.bookmark?.currentUnit != null && rawPagesRead > 0) {
+      fieldValues.currentUnit = String(found.topic.bookmark.currentUnit + rawPagesRead);
+      if (!fieldValues.resourceType) {
+        fieldValues.resourceType = found.topic.bookmark.resourceType || 'pdf';
+      }
+    }
+
     const { shouldUpdate, nextBookmark } = resolveSessionBookmark({
       topicId,
       endedAt,

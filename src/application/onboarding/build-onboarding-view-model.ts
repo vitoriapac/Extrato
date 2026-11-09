@@ -136,6 +136,7 @@ export function calculatePlanFeasibility({
 
 const CONTENT_PATHS = Object.freeze([
   { action: 'import', label: 'Carregar edital do catálogo', primary: true },
+  { action: 'paste-syllabus', label: 'Colar texto do edital (PDF)' },
   { action: 'structured', label: 'Importar JSON ou CSV' },
   { action: 'manual', label: 'Cadastrar manualmente' },
 ]);

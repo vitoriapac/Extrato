@@ -31,6 +31,7 @@ export interface FirstAccessModalControllerContext {
   isTestMode: () => boolean;
   onStartGuidedPlan: () => void;
   onStartDemo: () => void;
+  onPasteSyllabus?: () => void;
   storage?: {
     getItem: (key: string) => string | null;
     setItem: (key: string, val: string) => void;
@@ -197,6 +198,13 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
           markFirstAccessDismissed(context.storage);
           close();
         },
+        onPasteSyllabus: context.onPasteSyllabus
+          ? () => {
+              markFirstAccessDismissed(context.storage);
+              close();
+              context.onPasteSyllabus?.();
+            }
+          : undefined,
         onOpenSalesLanding: () => {
           const win = context.window || (typeof window !== 'undefined' ? window : null);
           win?.location?.assign('/');

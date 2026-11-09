@@ -1,4 +1,7 @@
 import { renderRingGauge } from '../primitives/charts/charts.js';
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+import { PlannedActionCard } from '../tabs/dashboard/PlannedActionCard.js';
 
 const TYPE_LABELS: Record<string, any> = {
   study: 'Teoria',
@@ -13,8 +16,6 @@ export function renderPlannedAction(
   priority: Record<string, any>,
   {
     suggestion = null,
-    escapeHtml,
-    escapeAttr = escapeHtml,
     formatMinutes,
     timer = null,
     resumeLabel = '',
@@ -23,11 +24,6 @@ export function renderPlannedAction(
   const next = priority?.nextItem;
   if (!next) return '';
   const own = Boolean(timer?.active && timer.planItemId === next.id);
-  const button = own
-    ? '<button type="button" class="btn" data-daily-resume>Retomar sessão</button>'
-    : timer?.active
-      ? '<button type="button" class="btn" title="Retome ou finalize a sessão em andamento antes de iniciar outra." disabled>Finalize a sessão atual</button>'
-      : `<button type="button" class="btn" data-daily-start="${escapeAttr(next.id)}">${next.status === 'partial' ? 'Continuar estudo' : 'Iniciar estudo'}</button>`;
   const matchesAction = Boolean(
     priority.action &&
     next.subjectId === priority.action.subjectId &&
@@ -39,13 +35,12 @@ export function renderPlannedAction(
   ].slice(0, 3);
   const aligned =
     suggestion && suggestion.subjectId === next.subjectId && suggestion.topicId === next.topicId;
-  const note =
-    matchesAction || aligned
-      ? '<p class="overview-action-suggestion">Prioridade principal prevista no plano.</p>'
-      : suggestion
-        ? `<p class="overview-action-suggestion">Sugestão fora do plano: ${escapeHtml(suggestion.subjectName)} · ${escapeHtml(suggestion.topicName)}${Number.isFinite(Number(suggestion.score)) ? ` (prioridade ${Math.round(Number(suggestion.score))}/100)` : ''}. <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver por quê</button></p>`
-        : '';
-  return `<article class="card card--action overview-action-card${own ? ' is-in-progress' : ''}" data-decision-role="planned" data-plan-item-id="${escapeAttr(next.id)}"${suggestion?.actionId ? ` data-recommendation-action-id="${escapeAttr(suggestion.actionId)}"` : ''}><div><h3>${escapeHtml(next.subjectName || 'Disciplina')} · ${escapeHtml(next.topicName || 'Sem tópico')}</h3><p class="daily-execution-metadata"><strong>${formatMinutes(Math.ceil(next.remainingSeconds / 60))}</strong> · ${typeLabel(next.type)} · prevista no plano de hoje</p>${resumeLabel ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(resumeLabel)}</p>` : ''}${own ? '<span class="active-study-status">Em andamento</span>' : ''}</div><div class="overview-action-buttons">${button}</div>${note}${reasons.length ? `<details class="daily-execution-reasons"><summary>Por que estudar isso agora?</summary><ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul></details>` : ''}</article>`;
+  return render(h(PlannedActionCard, {
+    next, own, blocked: Boolean(timer?.active && !own),
+    minutes: formatMinutes(Math.ceil(next.remainingSeconds / 60)),
+    typeLabel: typeLabel(next.type), reasons, suggestion,
+    aligned: Boolean(aligned), matchesAction, resumeLabel,
+  }));
 }
 
 export function renderDailyExecution(

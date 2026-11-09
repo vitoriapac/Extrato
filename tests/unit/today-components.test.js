@@ -196,6 +196,16 @@ test('revisões sem previsão não anunciam uma meta artificial', () => {
   assert.doesNotMatch(html, /Revisões de hoje concluídas: [^"<]*meta 1/);
 });
 
+test('TodayGoalsCard — renderiza páginas lidas quando informado', () => {
+  const html = render(h(TodayGoalsCard, {
+    topicosHoje: 1, metaTopicosHoje: 2, questoesHoje: 10, metaQuestoesHoje: 20,
+    revisoesConcluidasHoje: 1, totalRevisoesHoje: 1, tempoHojeSegundos: 3600,
+    tempoHojeFormatado: '1h', metaHorasHoje: 2, metaHorasFormatado: '2h',
+    pctTempo: 50, todayDayOfWeek: 1, paginasHoje: 35,
+  }));
+  assert.match(html, /35 páginas lidas/);
+});
+
 test('createTodayTabController — renderTodayGoalsHtml gera marcação acessível', () => {
   const controller = createTodayTabController({
     formatPlanMinutes: mins => `${mins}m`,
@@ -280,3 +290,47 @@ test('sem progresso calculado (progressPercent nulo) não gera conciliação nem
   }));
   assert.doesNotMatch(html, /Excedente|Disponível/);
 });
+
+test('TodayTabController — coordena renderRealWeekBanner e permite dispensar por sessão', () => {
+  const elements = {
+    todayRealWeekBannerSlot: { innerHTML: '', replaceChildren() { this.innerHTML = ''; } },
+    todayExecutionSummary: { innerHTML: '' },
+  };
+  const doc = {
+    getElementById: id => elements[id] || null,
+    createElement: id => ({ id, innerHTML: '', replaceChildren() {} }),
+  };
+  const state = {
+    dailyPlans: [
+      { date: '2026-11-02', items: [{ id: 'p1', plannedMinutes: 60, status: 'planned' }] },
+    ],
+    studySessions: [],
+  };
+  const controller = createTodayTabController({
+    document: doc,
+    getState: () => state,
+    todayISO: () => '2026-11-06',
+    startOfWeek: () => '2026-11-02',
+    isDemoMode: () => true,
+    getRevisoesUnificadas: () => [
+      { id: 'r1', date: '2026-11-04', status: 'Pendente' },
+      { id: 'r2', date: '2026-11-05', status: 'Pendente' },
+    ],
+    formatPlanMinutes: mins => `${mins}m`,
+    formatDatePt: () => '06/11/2026',
+  });
+
+  assert.equal(controller.isRealWeekBannerDismissed(), false);
+  controller.renderRealWeekBanner();
+  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Semana Real/);
+  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Sua semana não saiu como planejada/);
+
+  controller.dismissRealWeekBanner();
+  assert.equal(controller.isRealWeekBannerDismissed(), true);
+  assert.equal(elements.todayRealWeekBannerSlot.innerHTML, '');
+
+  controller.restoreRealWeekBanner();
+  assert.equal(controller.isRealWeekBannerDismissed(), false);
+  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Semana Real/);
+});
+

@@ -186,7 +186,8 @@ test('renderer distingue progresso parcial de atividade concluída', () => {
   assert.match(html, /role="img" aria-label="Progresso das atividades planejadas: 50 de 100"/);
   assert.match(html, /0 de 1 atividade concluída/);
   const action = planned(buildDailyExecutionModel(input));
-  assert.match(action, /Por que estudar isso agora/);
+  assert.match(action, /Lacuna prioritária/);
+  assert.ok(action.indexOf('Lacuna prioritária') < action.indexOf('data-daily-start'));
   assert.match(action, /Prioridade principal prevista no plano/);
   assert.doesNotMatch(html, /data-daily-start/);
 });
@@ -222,7 +223,17 @@ test('ação planejada diferencia cronômetro da tarefa atual e de outra ativida
   assert.match(planned(model, { timer: { active: true, planItemId: 'i' } }), /data-daily-resume/);
   const blocked = planned(model, { timer: { active: true, planItemId: 'other' } });
   assert.match(blocked, /disabled>Finalize a sessão atual/);
+  assert.match(blocked, /<p>Retome ou finalize a sessão em andamento antes de iniciar outra\.<\/p>/);
   assert.doesNotMatch(blocked, /data-daily-start/);
+});
+test('ação planejada escapa texto e atributos recebidos do plano', () => {
+  const model = buildDailyExecutionModel(fixture());
+  model.priority.nextItem.topicName = '<script>alert(1)</script>';
+  model.priority.nextItem.id = 'item" onmouseover="alert(1)';
+  const html = planned(model);
+  assert.match(html, /&lt;script>alert\(1\)&lt;\/script>/);
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /item&quot; onmouseover=&quot;alert\(1\)/);
 });
 test('renderer orienta plano sem conteúdo elegível e preserva detalhes limitados', () => {
   const input = fixture();
@@ -245,8 +256,7 @@ test('hierarquia operacional separa progresso da ação e mantém CTA único', (
   assert.match(progress, /daily-execution-progress/);
   assert.doesNotMatch(progress, /data-daily-start=/);
   assert.equal((html.match(/data-daily-start=/g) || []).length, 1);
-  assert.match(html, /<details class="daily-execution-reasons">/);
-  assert.doesNotMatch(html, /<details class="daily-execution-reasons" open/);
+  assert.ok(html.indexOf('Lacuna prioritária') < html.indexOf('data-daily-start'));
 });
 
 test('contexto excepcional recolhe detalhes, preserva alertas e não duplica recomendação', () => {

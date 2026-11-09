@@ -19,6 +19,7 @@ import {
   renderOnboardingActions,
   onboardingBlockedReason,
 } from './onboarding-renderer.js';
+import { parseRawSyllabusText } from '../../application/subjects/raw-syllabus-parser.js';
 
 export interface DocumentLike {
   getElementById(id: string): any;
@@ -72,6 +73,7 @@ export interface OnboardingModalControllerDependencies {
 export function createOnboardingModalController(deps: OnboardingModalControllerDependencies) {
   let manualDrafts: ManualSubjectDraft[] = [];
   let manualOpen = false;
+  let pasteSyllabusOpen = false;
   const {
     document,
     getState,
@@ -213,6 +215,21 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
           },
         }), mount);
         renderManual();
+      }
+      if (model.current.id === 'content' && pasteSyllabusOpen) {
+        const mount = document.createElement('div');
+        mount.className = 'guided-paste-syllabus-box grid gap-3 border-t border-border-default pt-3 mt-3';
+        mount.innerHTML = `
+          <label for="guidedPasteSyllabusText" class="font-medium text-sm text-content-primary">
+            Cole o texto do edital copiado do PDF:
+          </label>
+          <textarea id="guidedPasteSyllabusText" rows="6" class="w-full text-xs p-2.5 rounded-default border border-border-default bg-surface-card text-content-primary font-mono focus:border-brand focus:ring-1 focus:ring-brand" placeholder="Exemplo:&#10;LÍNGUA PORTUGUESA:&#10;1. Compreensão de texto.&#10;2. Ortografia.&#10;DIREITO CONSTITUCIONAL:&#10;1. Direitos Fundamentais..."></textarea>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="btn small" data-guided-action="parse-syllabus-submit">Interpretar e Carregar</button>
+            <button type="button" class="btn ghost small" data-guided-action="parse-syllabus-cancel">Cancelar</button>
+          </div>
+        `;
+        contentEl.appendChild(mount);
       }
     }
     const helpEl = document.getElementById('guidedOnboardingHelp');
@@ -510,6 +527,40 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     }
     if (action === 'import' && deps.openExamImport) {
       deps.openExamImport(getUiState().onboarding.presetId, 'onboarding');
+    }
+    if (action === 'paste-syllabus') {
+      pasteSyllabusOpen = true;
+      manualOpen = false;
+      renderGuidedOnboarding();
+      document.getElementById('guidedPasteSyllabusText')?.focus();
+      return;
+    }
+    if (action === 'parse-syllabus-submit') {
+      const textarea = document.getElementById('guidedPasteSyllabusText') as HTMLTextAreaElement | null;
+      const text = textarea?.value || '';
+      if (!text.trim()) {
+        showToast('Cole o texto do edital antes de interpretar.');
+        return;
+      }
+      const parsed = parseRawSyllabusText(text);
+      if (!parsed.subjects.length) {
+        showToast('Nenhuma disciplina identificada. Verifique se os títulos de matérias estão no texto.');
+        return;
+      }
+      manualDrafts = parsed.subjects.map(s => ({
+        name: s.name,
+        topics: s.topics.map(t => t.name),
+      }));
+      pasteSyllabusOpen = false;
+      manualOpen = true;
+      renderGuidedOnboarding();
+      showToast(`${parsed.totalSubjects} disciplinas e ${parsed.totalTopics} tópicos extraídos! Revise abaixo.`);
+      return;
+    }
+    if (action === 'parse-syllabus-cancel') {
+      pasteSyllabusOpen = false;
+      renderGuidedOnboarding();
+      return;
     }
     if (action === 'structured' && deps.onStructuredImport) {
       deps.onStructuredImport();

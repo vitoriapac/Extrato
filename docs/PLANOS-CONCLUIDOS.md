@@ -61,6 +61,14 @@ flowchart TD
         P8B --> P8C["Enriquecimento do Modo Demonstração"]
     end
 
+    subgraph P9 ["9. Melhorias da Concorrência (Fases 1–6)"]
+        P9A["Starter Packs & Colar Edital PDF"] --> P9B["Missão de Resgate de Atrasos (30-90m)"]
+        P9B --> P9C["Atalhos TEC/QC & Cadernos"]
+        P9C --> P9D["Benchmarks Privados por Carreira"]
+        P9D --> P9E["Tracking de Páginas Lidas & Vídeos"]
+        P9E --> P9F["Acolhimento da Semana Real"]
+    end
+
     P1 --> P3
     P2 --> P3
     P3 --> P4
@@ -68,6 +76,7 @@ flowchart TD
     P4 --> P6
     P6 --> P7
     P7 --> P8
+    P8 --> P9
 ```
 
 | Plano | Foco Principal | Status | Entregáveis Centrais |
@@ -84,6 +93,7 @@ flowchart TD
 | **10. Refinamento de Usabilidade & Experiência do Iniciante** | Resolução dos 10 pontos de atrito identificados em teste de usuário principiante | ✅ 100% Concluído | Toast mobile posicionado no rodapé; ocultação dinâmica do CTA Demo com dados; remoção de moldura duplicada no Welcome Hero; alinhamento de sugestão opcional na aba Hoje; flexibilização e edição manual de minutos no modal de sessão; calibração do Índice de Prontidão (eliminação de falsa precisão inicial); filtro de concursos contextual; auto-foco na criação de tópicos; conformidade Tabler Icons (`Icon name="refresh"`) na Agenda e toast orientador; remoção de badge de alerta no tour guiado e scroll com compensação sticky; auto-seleção de tópicos e disparo direto na primeira bateria de questões. 1.208 testes unitários verdes em fuso duplo e E2Es direcionados aprovados. |
 | **11. Modernização Visual e Cockpit Panorâmico** | Cockpit em 3 Camadas Temáticas, Gráfico de Tendência, Detector de Platô e Turnos | ✅ 100% Concluído | Visão Geral estruturada em 3 Camadas (Operação do Dia 8+4 cols, Rendimento & Edital 6+6 cols com simetria vertical de 476px e Decisão Pedagógica com Balanço de Alocação); Detector de Platô em Questões & Simulados; Análise Cronobiológica de Energia em Desempenho; realocação cirúrgica de grids de KPIs; modal de primeiro acesso (`FirstAccessModal.tsx`); ESLint 9 Flat Config. 1.256 testes unitários verdes. |
 | **12. Enriquecimento do Modo Demonstração** | Atualização dos Dados Fictícios com as Novas Capacidades Analíticas | ✅ 100% Concluído | Builder determinístico do Caderno de Erros (`error-notebook.ts`) com 17 flashcards SM-2 (11 pendentes hoje e 6 dominados) e pegadinhas de bancas (Cesgranrio/Cespe); Calibração de 2 tópicos em platô na janela móvel de 28 dias com prescrições ativas de *Recall Ativo* e *Revisão de Pré-requisitos*; Distribuição das 200 sessões em turnos (Manhã pico, Tarde, Noite com alerta de fadiga); Pesos explícitos no edital verticalizado para balanço de alocação; Navegação do tour expandida no banner (`Desempenho` e `Questões & Platô`) e compatibilidade total com Schema v30 (`lastExportAt`). 1.277 testes unitários verdes e 8/8 testes E2E aprovados. |
+| **13. Melhorias da Concorrência (Leruma, Bizzu e Estudei)** | Starter Packs, Colar Edital PDF, Missão de Resgate, Atalhos Questões, Benchmarks de Carreira, Tracking de Páginas e Semana Real | ✅ 100% Concluído | 5 Starter Packs de 1 clique, importador de edital colado por texto/PDF, Missão de Recuperação de Atrasos (30/45/60/90m), atalhos 1-clique para TEC/QC/Caderno no NextActionCard e Edital Verticalizado, benchmarks estatísticos de aprovação privados na aba Desempenho, tracking de páginas lidas e blocos de vídeo com avanço automático de bookmarks, e acolhimento da Semana Real com RealWeekBanner e vocabulário sem culpa. 1.494 testes unitários verdes em ~24s. |
 
 ---
 
@@ -858,17 +868,49 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 
 ---
 
-## 24. Rastreabilidade de Arquitetura e Governança
+## 24. Plano de Melhorias da Concorrência — Leruma, Bizzu e Estudei (Fases 1 a 6)
+
+- **Objetivo Concluído:** Incorporar ao Extrato de Estudos as melhores práticas e diferenciais competitivos identificados no benchmark de mercado ([Leruma](https://www.leruma.com.br/), [Bizzu](https://bizzu.ai/) e [Estudei](https://estudei.com.br/)), aprimorando onboarding, resgate de atrasos, integração com bancos de questões, inteligência comparativa e acolhimento emocional, em conformidade integral com a política de modularização do `AGENTS.md` (zero novas funções no `app.ts`, zero emojis e Preact 11 com Tailwind v4).
+- **Entregas Realizadas:**
+  - **Fase 1 (Onboarding sem Fricção & Starter Packs):**
+    - 5 Starter packs pré-configurados em 1 clique (`src/domain/onboarding/starter-packs.ts`): Bancária (BB e Caixa), INSS, Policial (PF/PRF) e Fiscal & Controle.
+    - Importador de edital por texto colado / PDF (`raw-syllabus-parser.ts` integrado a `FirstAccessModal.tsx` e `onboarding-modal-controller.ts`) com extração e parsing automático de tópicos numerados.
+  - **Fase 2 (Missão de Resgate de Atrasos):**
+    - Mecanismo algorítmico puro de dimensionamento (`src/domain/recovery/recovery-mission-engine.ts`) com 4 blocos de tempo: 30, 45, 60 e 90 minutos.
+    - Ordenação de urgência baseada em dias de atraso, peso no edital e risco de consolidação.
+    - Modal reativo Preact 11 (`src/ui/components/RecoveryMissionModal.tsx`) e controlador desacoplado (`recovery-mission-controller.ts`) com conclusão e avanço instantâneo de revisões.
+  - **Fase 3 (Atalhos Diretos para Questões):**
+    - Gerador determinístico de links de questões (`src/domain/questions/practice-link-generator.ts`) com suporte nativo ao TEC Concursos, QConcursos e cadernos customizados do aluno (`customPracticeUrl`).
+    - Botões integrados com ícones Tabler SVG no card de Próxima Ação (`NextActionCard.tsx`) e em cada linha do Edital Verticalizado (`VerticalizedSyllabusView.tsx`).
+  - **Fase 4 (Benchmarks Estatísticos de Aprovação):**
+    - Motor analítico puro e determinístico (`src/domain/analytics/career-benchmarks.ts`) com dados de referência de aprovados em 5 clusters de carreira (Fiscal/Controle, Policial, Tribunais/Jurídica, Bancária/Administrativa e Geral).
+    - Componente comparativo visual (`src/ui/components/CareerBenchmarkCard.tsx`) na aba Desempenho com réguas BulletBar (horas semanais, questões resolvidas e acerto) e mix de estudo segmentado, 100% privado e executado no cliente.
+  - **Fase 5 (Tracking de Páginas Lidas & Vídeo-aulas):**
+    - Extensão do modelo `StudySession` (`pagesRead`, `videoBlocksCompleted`, `endUnit`), formulário opcional no modal de conclusão de estudo (`session-modal-controller.ts`), avanço automático de `TopicBookmark.currentUnit` e exibição de KPIs nos cards da aba Hoje e Desempenho.
+  - **Fase 6 (Microcopy Empática & Acolhimento da Semana Real):**
+    - Componente Preact 11 `RealWeekBanner.tsx` montado dinamicamente no topo da aba Hoje quando há atrasos ou déficit semanal, com ações imediatas `[Resgatar em 30 min]` e `[Recalibrar Semana]`.
+    - Revisão de vocabulário diagnóstico (`diagnostic-vocabulary.ts` e `recovery-review-debt-renderer.ts`): eliminação de termos punitivos ("Crítico" → "Atenção prioritária", "Dívida de revisão" → "Revisões para regularizar", "Piorando" → "Em ajuste recente").
+    - Replanejamento semanal humanizado com card acolhedor `heart-handshake` e confirmação sem culpa.
+- **Validação e Qualidade:**
+  - Fast Gate (`npm run test:fast`): **71.14s** com **1.494 testes unitários passando** (100% verde em UTC e America/Sao_Paulo).
+  - Tipagem Estática: 0 erros no TypeScript (`npm run check:types` e `npm run check:types:tests`).
+  - Inventário: 391 arquivos auditados e classificados em `tests/config/test-tiers.json`.
+  - Zero emojis Unicode em qualquer template HTML/JSX; uso estrito de ícones Tabler SVG via `<Icon />`.
+
+---
+
+## 25. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
+- **Plano de Melhorias da Concorrência:** [plano-melhorias-concorrencia.md](file:///C:/Users/vitor/.gemini/antigravity/brain/9c8ae408-da3b-4423-b26d-80ffef2700fd/plano-melhorias-concorrencia.md)
 - **Plano Diretor de Modernização Visual:** [docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 - **Cenário da Demonstração:** [docs/DEMO-SCENARIO.md](file:///c:/Users/vitor/Documents/Extrato/docs/DEMO-SCENARIO.md)
 - **Plano Diretor de Modularização:** [docs/PLANO-MODULARIZACAO-APP.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODULARIZACAO-APP.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (358 arquivos auditados, 1.277 testes unitários verdes em ~48s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (391 arquivos auditados, 1.494 testes unitários verdes em ~24s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

@@ -8,6 +8,7 @@ import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
 import { Icon } from '../primitives/icon.js';
+import { buildPracticeLinks } from '../../domain/questions/practice-link-generator.js';
 
 export interface VerticalizedTopicItem {
   id: string;
@@ -15,6 +16,8 @@ export interface VerticalizedTopicItem {
   status?: TopicStatus | string;
   stageChecklist?: TopicStageChecklist | null;
   bookmark?: TopicBookmark | null;
+  link?: string;
+  customPracticeUrl?: string;
 }
 
 export interface VerticalizedSubjectItem {
@@ -133,6 +136,18 @@ export function VerticalizedSyllabusView({
             <div class="divide-y divide-border-subtle">
               {subject.topics.map((topic, index) => {
                 const checklist = topic.stageChecklist || {};
+                const customUrl =
+                  topic.customPracticeUrl ||
+                  topic.bookmark?.customPracticeUrl ||
+                  (topic.link &&
+                  (topic.link.includes('tecconcursos') || topic.link.includes('qconcursos'))
+                    ? topic.link
+                    : undefined);
+                const practiceLinks = buildPracticeLinks({
+                  topicName: topic.name,
+                  subjectName: subject.name,
+                  customUrl,
+                });
                 return (
                   <div
                     key={topic.id}
@@ -231,7 +246,7 @@ export function VerticalizedSyllabusView({
                         <span>Questões</span>
                       </label>
 
-                      {/* Status / Ação */}
+                      {/* Status / Ações */}
                       <div class="flex items-center gap-2 pl-2 border-l border-border-subtle">
                         {topic.status === 'Concluído' ? (
                           <Badge variant="success">Dominado</Badge>
@@ -239,9 +254,45 @@ export function VerticalizedSyllabusView({
                           <Badge variant="default">Em estudo</Badge>
                         )}
 
+                        {/* Grupo de Questões TEC / QC */}
+                        <div
+                          class="inline-flex items-center rounded border border-border-default bg-surface-card overflow-hidden shadow-2xs"
+                          role="group"
+                          aria-label={`Praticar questões de ${topic.name}`}
+                        >
+                          <a
+                            href={practiceLinks.primaryUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="px-2 py-1 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-subtle inline-flex items-center gap-1 no-underline transition-colors"
+                            title={
+                              practiceLinks.isCustom
+                                ? 'Abrir caderno personalizado configurado'
+                                : `Abrir caderno de ${topic.name} no TEC Concursos`
+                            }
+                            aria-label={`Praticar questões de ${topic.name} no ${
+                              practiceLinks.isCustom ? 'caderno personalizado' : 'TEC Concursos'
+                            } (abre em nova aba)`}
+                          >
+                            <Icon name="external-link" size={12} class="shrink-0 text-secondary" />
+                            <span>{practiceLinks.isCustom ? 'Caderno' : 'TEC'}</span>
+                          </a>
+                          <span class="w-[1px] h-3 bg-border-subtle" />
+                          <a
+                            href={practiceLinks.qcUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="px-1.5 py-1 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-subtle inline-flex items-center no-underline transition-colors"
+                            title={`Abrir questões de ${topic.name} no QConcursos`}
+                            aria-label={`Praticar questões de ${topic.name} no QConcursos (abre em nova aba)`}
+                          >
+                            <span>QC</span>
+                          </a>
+                        </div>
+
                         <button
                           type="button"
-                          class="px-2.5 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary inline-flex items-center gap-1"
+                          class="px-2.5 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary inline-flex items-center gap-1 cursor-pointer"
                           onClick={() => onStartStudy?.(subject.id, topic.id)}
                           aria-label={`Iniciar estudo de ${topic.name}`}
                         >

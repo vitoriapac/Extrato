@@ -1,4 +1,6 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { renderIconSvg } from '../../ui/primitives/icon.js';
+
 export function renderReplanProposal(
   model: Record<string, any>,
   {
@@ -32,5 +34,18 @@ export function renderReplanProposal(
         `<div class="replan-capacity-row"><strong>${formatDate(day.date)}</strong><span>${formatMinutes(day.allocatedMinutes)} usados · ${formatMinutes(day.remainingMinutes)} livres de ${formatMinutes(day.availableMinutes)}</span></div>`
     )
     .join('');
-  return `<div class="study-plan-summary"><div><strong>${formatMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatMinutes(model.deficitMinutes)}</strong><span>A redistribuir</span></div><div><strong>${formatMinutes(model.redistributedMinutes)}</strong><span>Redistribuídas</span></div></div><section class="replan-detail"><h4>Movimentações propostas</h4>${allocationRows || '<div class="upcoming-empty">Nenhuma atividade coube nos próximos dias.</div>'}</section>${retainedRows ? `<section class="replan-detail"><h4>Excedente mantido para decisão posterior</h4>${retainedRows}</section>` : ''}<details class="replan-capacity"><summary>Conferir capacidade por dia</summary>${capacityRows || '<p>Nenhum dia futuro disponível nesta semana.</p>'}</details>${model.discardedMinutes ? `<div class="replan-group is-warning"><strong>Sem capacidade disponível</strong><span>${formatMinutes(model.discardedMinutes)} não cabem sem ultrapassar seus horários.</span></div>` : ''}`;
+
+  const empathyHeader = `
+    <div class="replan-empathy-header mb-3 p-3 rounded-lg bg-surface-subtle border border-border-default flex items-start gap-3">
+      <div class="p-1.5 rounded bg-brand/10 text-brand shrink-0">
+        ${renderIconSvg('heart-handshake', { size: 18 })}
+      </div>
+      <div>
+        <h4 class="text-xs font-semibold text-content-primary m-0">Sua semana mudou? Reajuste sua capacidade sem culpa nem perda de histórico</h4>
+        <p class="text-xs text-content-secondary mt-0.5 mb-0">Imprevistos acontecem. O plano redistribui o saldo de horas pendente respeitando seus limites diários futuros.</p>
+      </div>
+    </div>
+  `;
+
+  return `${empathyHeader}<div class="study-plan-summary"><div><strong>${formatMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatMinutes(model.deficitMinutes)}</strong><span>A redistribuir</span></div><div><strong>${formatMinutes(model.redistributedMinutes)}</strong><span>Redistribuídas</span></div></div><section class="replan-detail"><h4>Movimentações propostas</h4>${allocationRows || '<div class="upcoming-empty">Nenhuma atividade coube nos próximos dias.</div>'}</section>${retainedRows ? `<section class="replan-detail"><h4>Excedente mantido para decisão posterior</h4>${retainedRows}</section>` : ''}<details class="replan-capacity"><summary>Conferir capacidade por dia</summary>${capacityRows || '<p>Nenhum dia futuro disponível nesta semana.</p>'}</details>${model.discardedMinutes ? `<div class="replan-group is-warning"><strong>Sem capacidade disponível</strong><span>${formatMinutes(model.discardedMinutes)} não cabem sem ultrapassar seus horários.</span></div>` : ''}`;
 }

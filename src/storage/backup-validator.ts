@@ -110,6 +110,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       if (
         !textOk(topic.name, 500) ||
         !textOk(topic.link || '', 2000) ||
+        !textOk(topic.customPracticeUrl || '', 2000) ||
         !textOk(topic.notes || '', 20000)
       )
         return fail('Um tópico excede os limites de texto permitidos.');
@@ -243,6 +244,8 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       !isFiniteNonNegative(item.correctAnswers) ||
       Number(item.correctAnswers) > Number(item.questionsResolved) ||
       !['study', 'review', 'questions', 'simulation'].includes(item.type) ||
+      (item.pagesRead != null && !isFiniteNonNegative(item.pagesRead)) ||
+      (item.videoBlocksCompleted != null && !isFiniteNonNegative(item.videoBlocksCompleted)) ||
       !textOk(item.notes || '', 20000)
     )
       return fail('Uma sessão de estudo possui dados inválidos.');

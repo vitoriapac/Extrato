@@ -1,7 +1,7 @@
 // Presentation adapters only: persisted identifiers and analytical thresholds stay intact.
 export const DIAGNOSTIC_VOCABULARY = Object.freeze({
   severity: Object.freeze({
-    critical: 'Crítico',
+    critical: 'Atenção prioritária',
     important: 'Importante',
     monitor: 'Monitorar',
     controlled: 'Sob controle',
@@ -16,7 +16,7 @@ export const DIAGNOSTIC_VOCABULARY = Object.freeze({
   trend: Object.freeze({
     improving: 'Melhorando',
     stable: 'Estável',
-    worsening: 'Piorando',
+    worsening: 'Em ajuste recente',
     insufficient: 'Dados insuficientes',
   }),
   outcome: Object.freeze({
@@ -32,7 +32,7 @@ export const DIAGNOSTIC_SIGNAL_LABELS = Object.freeze({
   'critical-gap': 'Lacuna prioritária',
   plateau: 'Possível platô',
   'priority-review': 'Revisão prioritária',
-  'critical-coverage': 'Cobertura insuficiente',
+  'critical-coverage': 'Cobertura a expandir',
   'high-priority': 'Prioridade alta',
   'collect-evidence': 'Coletar mais evidências',
   recovery: 'Recuperação consistente',
@@ -59,6 +59,8 @@ export function normalizeSeverity(value: unknown) {
       critical: 'critical',
       critico: 'critical',
       critica: 'critical',
+      'atencao prioritaria': 'critical',
+      'prioridade imediata': 'critical',
       high: 'important',
       important: 'important',
       importante: 'important',

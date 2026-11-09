@@ -13,6 +13,13 @@ import { createPerformanceAnalyticsController } from '../../controllers/performa
 import { renderProgressChart as renderProgressChartView } from '../../renderers/study-charts-renderer.js';
 import { ShiftEnergyCard } from './ShiftEnergyCard.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
+import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
+import {
+  detectCareerCluster,
+  aggregateRecentActivity,
+  calculateCareerBenchmarkComparison,
+  type CareerClusterId,
+} from '../../../domain/analytics/career-benchmarks.js';
 
 export interface PerformanceTabControllerDeps {
   document?: any;
@@ -62,6 +69,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
   const todayISO = deps.todayISO;
 
   let performanceViewState = createPerformanceViewState();
+  let selectedCareerClusterId: CareerClusterId | null = null;
 
   function recordProgressSnapshot(pct: number) {
     const state = deps.getState();
@@ -326,6 +334,32 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         sessions: state.studySessions || [],
       });
       mountPreact(h(ShiftEnergyCard, { model: shiftModel }), shiftEnergyMount);
+    }
+
+    const careerBenchmarkMount =
+      target.querySelector('#performanceCareerBenchmarkMount') ||
+      doc.getElementById('performanceCareerBenchmarkMount');
+    if (careerBenchmarkMount) {
+      const detected = detectCareerCluster(state);
+      const activeCareerId = selectedCareerClusterId || detected;
+      const aggregates = aggregateRecentActivity(
+        state.studySessions || [],
+        state.questoes || [],
+        { todayISO: today, daysWindow: 7 }
+      );
+      const comparison = calculateCareerBenchmarkComparison(aggregates, activeCareerId);
+
+      mountPreact(
+        h(CareerBenchmarkCard, {
+          comparison,
+          selectedCareerId: activeCareerId,
+          onSelectCareer: (newId: CareerClusterId) => {
+            selectedCareerClusterId = newId;
+            renderPerformance();
+          },
+        }),
+        careerBenchmarkMount
+      );
     }
   }
 
