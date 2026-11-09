@@ -62,17 +62,17 @@ export function FirstAccessModal({
         {/* Opções de Início */}
         <div className="grid grid-cols-1 gap-3.5 pt-1">
           {/* Opção 1: Montar plano guiado (Recomendado) */}
-          <article className="relative rounded-default border-2 border-brand/50 bg-brand/5 p-4 transition-colors hover:border-brand flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-full bg-brand/10 text-brand shrink-0 mt-0.5">
+          <article className="relative rounded-default border-2 border-accent/50 bg-accent/5 p-4 transition-colors hover:border-accent flex flex-col items-stretch gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3.5">
+              <div className="p-2.5 rounded-full bg-accent/10 text-accent shrink-0 mt-0.5">
                 <Icon name="rocket" size={22} class="shrink-0" />
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 space-y-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <h4 className="text-base font-semibold text-content-primary m-0">
                     Montar meu plano guiado
                   </h4>
-                  <span className="text-xs font-bold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full">
+                  <span className="status-badge status-badge--highlight font-bold uppercase tracking-wide">
                     Recomendado
                   </span>
                 </div>
@@ -87,7 +87,7 @@ export function FirstAccessModal({
               size="small"
               onClick={handleStartPlan}
               aria-label="Iniciar assistente para montar plano guiado"
-              className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-1.5 font-medium"
+              className="w-full shrink-0 inline-flex items-center justify-center gap-1.5 font-medium"
             >
               <span>Começar agora</span>
               <Icon name="arrow-right" size={14} class="shrink-0" />
@@ -95,12 +95,12 @@ export function FirstAccessModal({
           </article>
 
           {/* Opção 2: Demonstração Interativa */}
-          <article className="rounded-default border border-border-default bg-surface-card p-4 transition-colors hover:border-border-hover flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
+          <article className="rounded-default border border-border-default bg-surface-card p-4 transition-colors hover:border-border-hover flex flex-col items-stretch gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3.5">
               <div className="p-2.5 rounded-full bg-surface-subtle text-content-secondary shrink-0 mt-0.5">
                 <Icon name="player-play" size={20} class="shrink-0" />
               </div>
-              <div className="space-y-1">
+              <div className="min-w-0 space-y-1">
                 <h4 className="text-base font-semibold text-content-primary m-0">
                   Experimentar demonstração interativa
                 </h4>
@@ -114,7 +114,7 @@ export function FirstAccessModal({
               size="small"
               onClick={handleStartDemo}
               aria-label="Explorar demonstração com dados fictícios"
-              className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-1.5"
+              className="w-full shrink-0 inline-flex items-center justify-center gap-1.5"
             >
               <span>Explorar demonstração</span>
             </Button>
@@ -127,7 +127,7 @@ export function FirstAccessModal({
             <button
               type="button"
               onClick={handleExploreManually}
-              className="text-xs text-content-secondary hover:text-content-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs"
+              className="btn tertiary text-xs"
               aria-label="Configurar manualmente ou explorar livremente"
             >
               Configurar manualmente
@@ -136,7 +136,7 @@ export function FirstAccessModal({
               <button
                 type="button"
                 onClick={handlePasteSyllabus}
-                className="text-xs text-content-secondary hover:text-content-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs inline-flex items-center gap-1"
+                className="btn tertiary text-xs"
                 aria-label="Colar conteúdo do edital em PDF"
               >
                 <Icon name="file-text" size={12} class="shrink-0" />
@@ -148,7 +148,7 @@ export function FirstAccessModal({
             <button
               type="button"
               onClick={onOpenSalesLanding}
-              className="text-xs font-medium text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-xs"
+              className="btn tertiary text-xs"
               aria-label="Ver apresentação completa e planos Free e Pro"
             >
               Ver apresentação e planos (Free / Pro)

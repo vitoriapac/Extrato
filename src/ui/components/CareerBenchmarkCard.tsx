@@ -55,7 +55,7 @@ function MetricBulletBar({
       >
         {/* Zona Alvo Recomendada (Faixa Competitiva) */}
         <div
-          class="absolute top-0 bottom-0 bg-brand/15 border-x border-brand/30"
+          class="absolute top-0 bottom-0 bg-accent/15 border-x border-accent/30"
           style={{ left: `${targetMinPct}%`, width: `${targetWidthPct}%` }}
           title={`Faixa competitiva: ${targetMin} a ${targetMax} ${unit}`}
         />
@@ -195,7 +195,7 @@ export function CareerBenchmarkCard({
           aria-label={`Mix medido: ${measuredMix.theoryPercent}% teoria, ${measuredMix.questionsPercent}% questões, ${measuredMix.reviewPercent}% revisão`}
         >
           <div
-            class="h-full bg-brand transition-all"
+            class="h-full bg-accent transition-all"
             style={{ width: `${measuredMix.theoryPercent}%` }}
             title={`Teoria: ${measuredMix.theoryPercent}%`}
           />
@@ -215,7 +215,7 @@ export function CareerBenchmarkCard({
         <div class="flex items-center justify-between text-[11px] text-content-secondary pt-0.5">
           <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-brand" />
+              <span class="w-2 h-2 rounded-full bg-accent" />
               <span>Teoria: <strong>{measuredMix.theoryPercent}%</strong></span>
             </span>
             <span class="inline-flex items-center gap-1">
@@ -223,7 +223,7 @@ export function CareerBenchmarkCard({
               <span>Questões: <strong>{measuredMix.questionsPercent}%</strong></span>
             </span>
             <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-brand-secondary" />
+              <span class="w-2 h-2 rounded-full bg-accent-secondary" />
               <span>Revisão: <strong>{measuredMix.reviewPercent}%</strong></span>
             </span>
           </div>

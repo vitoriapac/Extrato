@@ -24,12 +24,12 @@ export function RealWeekBanner({
 
   return (
     <aside
-      class="mb-4 p-4 rounded-default border border-brand/30 bg-surface-elevated shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+      class="mb-4 p-4 rounded-default border border-accent/30 bg-surface-elevated shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
       role="region"
       aria-label="Acolhimento da Semana Real"
     >
       <div class="flex items-start gap-3.5">
-        <div class="p-2 rounded-default bg-brand/10 text-brand shrink-0 mt-0.5">
+        <div class="p-2 rounded-default bg-accent/10 text-accent shrink-0 mt-0.5">
           <Icon name="heart-handshake" size={20} class="shrink-0" />
         </div>
         <div class="space-y-1">
@@ -37,7 +37,7 @@ export function RealWeekBanner({
             <h4 class="font-semibold text-sm text-content-primary m-0 tracking-tight">
               Sua semana não saiu como planejada? Tudo bem.
             </h4>
-            <span class="text-xs px-2 py-0.5 rounded font-medium bg-brand/10 text-brand">
+            <span class="text-xs px-2 py-0.5 rounded font-medium bg-accent/10 text-accent">
               Semana Real
             </span>
           </div>
