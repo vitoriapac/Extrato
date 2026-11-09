@@ -168,7 +168,7 @@ export function PaywallModal({
               <Icon name="bolt" size={18} class="text-accent shrink-0 mt-0.5" />
               <div class="flex flex-col gap-0.5">
                 <span class="text-xs font-semibold text-text">PIX Instantâneo</span>
-                <span class="text-[11px] text-secondary">
+                <span class="text-xs text-secondary">
                   Liberação imediata via AbacatePay com QR Code e Copia e Cola
                 </span>
               </div>
@@ -188,7 +188,7 @@ export function PaywallModal({
               <Icon name="credit-card" size={18} class="text-accent shrink-0 mt-0.5" />
               <div class="flex flex-col gap-0.5">
                 <span class="text-xs font-semibold text-text">Cartão de Crédito</span>
-                <span class="text-[11px] text-secondary">
+                <span class="text-xs text-secondary">
                   {isAnnual ? 'Em até 12x sem juros (R$ 14,90/mês)' : 'Renovação mensal automática sem interrupção'}
                 </span>
               </div>
@@ -257,7 +257,7 @@ export function PaywallModal({
         )}
 
         {/* Aviso de Conformidade Legal e CDC */}
-        <p class="text-[11px] text-muted text-center leading-relaxed m-0">
+        <p class="text-xs text-muted text-center leading-relaxed m-0">
           Ao prosseguir, você concorda com os{' '}
           <a href="/?legal=terms" target="_blank" rel="noopener noreferrer" class="underline hover:text-text">
             Termos de Uso

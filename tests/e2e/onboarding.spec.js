@@ -110,7 +110,7 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await waitForAppReady(page);
   const welcome = page.locator('#overviewNextAction');
   await expect(welcome).toContainText('Montar meu plano de estudos');
-  await expect(welcome).toContainText('Experimentar demonstração');
+  await expect(welcome).toContainText('Explorar demonstração');
   // Um cartão por vez: sem etapa concluída, o roteiro de 4 etapas vive no assistente.
   await expect(page.locator('#guidedOnboarding')).toBeHidden();
   await welcome.locator('[data-guided-action="open"]').click();
@@ -140,7 +140,7 @@ test('modal de boas-vindas do primeiro acesso abre com firstAccess=1 e bifurca p
   await expect(modal).toBeVisible();
   await expect(modal).toContainText('Boas-vindas ao Extrato de Estudos');
   await expect(modal).toContainText('Montar meu plano guiado');
-  await expect(modal).toContainText('Experimentar demonstração interativa');
+  await expect(modal).toContainText('Explorar demonstração interativa');
   // A frase é o nome acessível do botão "Configurar manualmente", não texto visível.
   await expect(
     modal.getByRole('button', { name: 'Configurar manualmente ou explorar livremente' })

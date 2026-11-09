@@ -63,14 +63,10 @@ export function LegalComplianceView({
             <span class="p-1.5 rounded-lg bg-brand/10 text-brand">
               <Icon name="shield-check" size={20} />
             </span>
-            <h3 class="text-base font-semibold text-text">
-              {currentDoc.title}
-            </h3>
+            <h3 class="text-base font-semibold text-text">{currentDoc.title}</h3>
           </div>
           <div class="flex items-center gap-2">
-            <Badge variant="info">
-              Versão {currentDoc.version}
-            </Badge>
+            <Badge variant="info">Versão {currentDoc.version}</Badge>
             <Button
               variant="ghost"
               size="small"
@@ -82,9 +78,7 @@ export function LegalComplianceView({
             </Button>
           </div>
         </div>
-        <p class="text-xs text-secondary mt-1">
-          {currentDoc.subtitle}
-        </p>
+        <p class="text-xs text-secondary mt-1">{currentDoc.subtitle}</p>
       </div>
 
       {/* Navegação por Abas */}
@@ -155,8 +149,9 @@ export function LegalComplianceView({
                 <span class="text-xs font-semibold text-text flex items-center gap-1.5">
                   <Icon name="download" size={14} /> Portabilidade de Dados (Art. 18, V)
                 </span>
-                <p class="text-[11px] text-secondary mt-1">
-                  Baixe imediatamente uma cópia integral do seu histórico de estudos em formato aberto JSON.
+                <p class="text-xs text-secondary mt-1">
+                  Baixe imediatamente uma cópia integral do seu histórico de estudos em formato
+                  aberto JSON.
                 </p>
               </div>
               {onExportData && (
@@ -178,7 +173,7 @@ export function LegalComplianceView({
                 <span class="text-xs font-semibold text-text flex items-center gap-1.5">
                   <Icon name="trash" size={14} /> Eliminação Local (Art. 18, VI)
                 </span>
-                <p class="text-[11px] text-secondary mt-1">
+                <p class="text-xs text-secondary mt-1">
                   Remova 100% dos dados armazenados no navegador do seu dispositivo atual.
                 </p>
               </div>
@@ -222,12 +217,10 @@ export function LegalComplianceView({
             class="p-3.5 rounded-lg bg-surface-card border border-border-default flex flex-col gap-2.5 transition-shadow hover:shadow-xs"
           >
             {/* Título da Seção */}
-            <h4 class="text-xs font-bold text-text leading-snug">
-              {section.title}
-            </h4>
+            <h4 class="text-xs font-bold text-text leading-snug">{section.title}</h4>
 
             {/* Caixa de Legal Design (Linguagem Simples) */}
-            <div class="p-2 rounded bg-surface-subtle border-l-3 border-brand text-[11px] text-secondary leading-relaxed">
+            <div class="p-2 rounded bg-surface-subtle border border-border-subtle text-xs text-secondary leading-relaxed">
               <strong class="font-semibold text-text block mb-0.5">Em linguagem simples:</strong>
               {section.simpleSummary}
             </div>
@@ -243,8 +236,10 @@ export function LegalComplianceView({
       </div>
 
       {/* Rodapé Institucional */}
-      <footer class="pt-3 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted">
-        <span>Vigência: {currentDoc.lastUpdated} · {LEGAL_METADATA.jurisdiction}</span>
+      <footer class="pt-3 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+        <span>
+          Vigência: {currentDoc.lastUpdated} · {LEGAL_METADATA.jurisdiction}
+        </span>
         {onClose && (
           <Button variant="ghost" size="small" onClick={onClose}>
             Fechar

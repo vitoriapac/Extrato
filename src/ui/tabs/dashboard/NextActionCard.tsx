@@ -138,10 +138,10 @@ export function NextActionCard({
                     enterBtn?.click();
                   }
                 }}
-                aria-label="Experimentar demonstração interativa com dados fictícios"
+                aria-label="Explorar demonstração interativa com dados fictícios"
               >
                 <Icon name="player-play" size={14} class="shrink-0" />
-                <span>Experimentar demonstração</span>
+                <span>Explorar demonstração</span>
               </button>
             </div>
           </section>

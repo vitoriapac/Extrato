@@ -53,7 +53,7 @@ test('NextActionCard — renderiza WelcomeHeroCard acolhedor quando isFirstRun �
   assert.ok(html.includes('data-guided-action="open"'));
   assert.ok(html.includes('Montar meu plano de estudos'));
   assert.ok(html.includes('id="enterDemoHeroBtn"'));
-  assert.ok(html.includes('Experimentar demonstração'));
+  assert.ok(html.includes('Explorar demonstração'));
   assert.ok(!html.includes('Ainda não há uma atividade elegível'));
 });
 

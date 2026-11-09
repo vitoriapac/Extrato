@@ -885,7 +885,7 @@
   /* A faixa da demo rola com a página: fixa, ela somava ~90px às barras presas no topo. */
   .demo-banner{position:static;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:0;padding:12px 14px;border:1px solid var(--accent);background:var(--highlight-bg);color:var(--ink)}
   .demo-banner[hidden]{display:none}.demo-banner>div:first-child{display:flex;flex-direction:column;gap:2px}.demo-banner strong{color:var(--heading);font:600 var(--text-micro) var(--font-body);letter-spacing:.08em}.demo-banner span{font-size:12px;color:var(--ink-soft)}.demo-banner-actions{display:flex;gap:8px;flex-shrink:0}
-  .demo-tour{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.demo-tour button{border:0;background:transparent;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:2px}.demo-empty-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border-subtle);background:var(--paper)}.demo-empty-cta[hidden]{display:none}.demo-empty-cta div{display:grid;gap:4px}.demo-empty-cta span{color:var(--ink-soft);font-size:12px}
+  .demo-tour{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.demo-tour button{border:0;background:transparent;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:6px 4px;min-height:32px}.demo-empty-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border-subtle);background:var(--paper)}.demo-empty-cta[hidden]{display:none}.demo-empty-cta div{display:grid;gap:4px}.demo-empty-cta span{color:var(--ink-soft);font-size:12px}
   .demo-header-badge{display:flex;width:max-content;max-width:100%;align-items:center;gap:8px;margin-top:6px;padding:4px 8px;border:1px solid var(--brand-on-header);color:var(--brand-on-header);font:600 var(--text-micro) var(--font-body);letter-spacing:.06em;text-transform:uppercase}.demo-header-badge[hidden]{display:none}.demo-header-badge small{font:400 var(--text-micro) var(--font-body);letter-spacing:0;color:var(--on-brand);text-transform:none}
   .demo-intro-dialog{width:min(560px,calc(100vw - 32px));max-height:min(85vh,760px);padding:0;border:1px solid var(--accent);background:var(--paper);color:var(--ink);box-shadow:0 24px 70px var(--shadow-color);overflow-y:auto}.demo-intro-dialog::backdrop{background:var(--backdrop)}.demo-intro-content{display:grid;gap:16px;padding:clamp(20px,5vw,36px)}.demo-intro-kicker{color:var(--ink-soft);font:600 var(--text-micro) var(--font-body);letter-spacing:.1em;text-transform:uppercase}.demo-intro-content h2{margin:0;color:var(--heading);font:600 clamp(24px,4vw,34px) var(--font-display)}.demo-intro-content p{margin:0;line-height:1.5}.demo-intro-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin:0;padding:0;list-style:none}.demo-intro-features li{padding-left:18px;position:relative;font-size:13px}.demo-intro-features li::before{content:'✓';position:absolute;left:0;color:var(--green)}.demo-intro-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
   @media(max-width:430px){.demo-intro-features{grid-template-columns:1fr}.demo-intro-actions{flex-direction:column-reverse}.demo-intro-actions .btn{width:100%}}
@@ -3625,14 +3625,13 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 }
 
 /* Laranja secundário: destaque editorial (o que olhar primeiro). O âmbar semântico (--amber) segue só para estado. */
-.statement-eyebrow{color:var(--secondary)}
+.statement-eyebrow{color:var(--ink-soft)}
 .kpi-cell{box-shadow:inset 0 3px 0 var(--secondary)}
 .stat-cell{box-shadow:inset 0 3px 0 var(--secondary-strong)}
 .tab-btn.active{box-shadow:inset 0 -3px 0 var(--secondary)}
 .section-title::before{content:"";display:inline-block;width:4px;height:.9em;margin-right:var(--space-2);background:var(--secondary-strong);vertical-align:-.1em}
-.overview-eyebrow,.overview-section-heading{color:var(--secondary-text)}
+.overview-eyebrow,.overview-section-heading{color:var(--ink-soft)}
 .overview-section-heading::after{background:color-mix(in srgb,var(--secondary-strong) 35%,var(--paper-line))}
-.overview-now-action{border-top:3px solid var(--secondary-strong)}
 .overview-action-buttons>.btn:not(.ghost):not(.tonal):not(:disabled){background:var(--secondary);color:var(--on-secondary);font-weight:var(--font-weight-semibold)}
 .overview-action-buttons>.btn:not(.ghost):not(.tonal):not(:disabled):hover{background:var(--secondary-hover)}
 .btn.secondary{background:var(--secondary);color:var(--on-secondary)}
@@ -3645,7 +3644,7 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .backup-danger-zone .btn{flex-shrink:0;white-space:nowrap}
 
 /* Laranja ampliado: rótulos, progresso, títulos de card e cabeçalhos de tabela. */
-.module-heading__eyebrow,.meta-hoje-label{color:var(--secondary-text)}
+.module-heading__eyebrow,.meta-hoje-label{color:var(--ink-soft)}
 .meta-progress-fill,.plano-item-progress span,.diagnostic-progress i,.weekly-focus-bar span,.weekly-focus-history-bar span,.badge-progress span,.onboarding-entry-progress span,.performance-week-bar.actual{background:var(--secondary-strong)}
 .meta-progress-fill.over{background:var(--green)}
 .timer-goal-progress::-webkit-progress-value{background:var(--secondary-strong)}

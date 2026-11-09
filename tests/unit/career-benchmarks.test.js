@@ -82,6 +82,17 @@ test('aggregateRecentActivity — calcula horas, questões, precisão e mix de t
   assert.equal(agg.reviewMinutes, 60);
 });
 
+test('aggregateRecentActivity — lê o formato real do app (durationSeconds e resolved)', () => {
+  const agg = aggregateRecentActivity(
+    [{ date: '2026-11-09', durationSeconds: 3600, type: 'study' }],
+    [{ date: '2026-11-09', resolved: 20, correct: 15 }],
+    { todayISO: '2026-11-09', daysWindow: 7 }
+  );
+  assert.equal(agg.studiedHours, 1);
+  assert.equal(agg.resolvedQuestions, 20);
+  assert.equal(agg.accuracyPercent, 75);
+});
+
 test('calculateCareerBenchmarkComparison — classifica métricas frente à carreira bancária', () => {
   const aggregates = {
     studiedHours: 20, // Faixa competitiva para bancária (18-24h)

@@ -284,29 +284,29 @@ export function AdminDashboardView({
                   {/* Grid de KPIs Principais */}
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="p-3.5 rounded-lg bg-surface-card border border-border-default flex flex-col gap-1">
-                      <span class="text-[11px] font-medium text-secondary">MRR Equivalente</span>
+                      <span class="text-xs font-medium text-secondary">MRR Equivalente</span>
                       <span class="text-xl font-bold text-text">{formatCurrencyBRL(kpis.mrrCents)}</span>
-                      <span class="text-[11px] text-muted">Receita mensal estimada</span>
+                      <span class="text-xs text-muted">Receita mensal estimada</span>
                     </div>
 
                     <div class="p-3.5 rounded-lg bg-surface-card border border-border-default flex flex-col gap-1">
-                      <span class="text-[11px] font-medium text-secondary">Receita Líquida</span>
+                      <span class="text-xs font-medium text-secondary">Receita Líquida</span>
                       <span class="text-xl font-bold text-brand">{formatCurrencyBRL(kpis.netRevenueCents)}</span>
-                      <span class="text-[11px] text-muted">Descontadas taxas de gateway</span>
+                      <span class="text-xs text-muted">Descontadas taxas de gateway</span>
                     </div>
 
                     <div class="p-3.5 rounded-lg bg-surface-card border border-border-default flex flex-col gap-1">
-                      <span class="text-[11px] font-medium text-secondary">Assinantes Pro / Alunos</span>
+                      <span class="text-xs font-medium text-secondary">Assinantes Pro / Alunos</span>
                       <span class="text-xl font-bold text-text">
                         {kpis.proUsers} <span class="text-xs font-normal text-secondary">/ {kpis.totalUsers}</span>
                       </span>
-                      <span class="text-[11px] text-muted">{kpis.freeUsers} no plano Free</span>
+                      <span class="text-xs text-muted">{kpis.freeUsers} no plano Free</span>
                     </div>
 
                     <div class="p-3.5 rounded-lg bg-surface-card border border-border-default flex flex-col gap-1">
-                      <span class="text-[11px] font-medium text-secondary">Retenção Ativa D7</span>
+                      <span class="text-xs font-medium text-secondary">Retenção Ativa D7</span>
                       <span class="text-xl font-bold text-text">{kpis.activePast7DaysPercent}%</span>
-                      <span class="text-[11px] text-muted">{kpis.activePast7DaysCount} sincronizaram em 7 dias</span>
+                      <span class="text-xs text-muted">{kpis.activePast7DaysCount} sincronizaram em 7 dias</span>
                     </div>
                   </div>
 
@@ -459,12 +459,12 @@ export function AdminDashboardView({
                               <tr key={user.id} class="hover:bg-surface-subtle/50 transition-colors">
                                 <td class="p-2.5">
                                   <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-[10px] shrink-0">
+                                    <div class="w-6 h-6 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-xs shrink-0">
                                       {user.displayName.substring(0, 2).toUpperCase()}
                                     </div>
                                     <div class="flex flex-col min-w-0">
                                       <span class="font-medium truncate">{user.displayName}</span>
-                                      <span class="text-[10px] text-secondary truncate">{user.email}</span>
+                                      <span class="text-xs text-secondary truncate">{user.email}</span>
                                     </div>
                                   </div>
                                 </td>
@@ -553,8 +553,8 @@ export function AdminDashboardView({
                           <tr key={order.id} class="hover:bg-surface-subtle/50 transition-colors">
                             <td class="p-2.5">
                               <div class="flex flex-col">
-                                <span class="font-mono text-[11px] text-secondary">{order.id}</span>
-                                <span class="text-[10px] text-muted">{formatDateBR(order.createdAt)}</span>
+                                <span class="font-mono text-xs text-secondary">{order.id}</span>
+                                <span class="text-xs text-muted">{formatDateBR(order.createdAt)}</span>
                               </div>
                             </td>
                             <td class="p-2.5">
@@ -629,10 +629,10 @@ export function AdminDashboardView({
                       <tbody class="divide-y divide-border-subtle bg-surface-card text-text">
                         {snapshots.map(snp => (
                           <tr key={snp.id} class="hover:bg-surface-subtle/50 transition-colors">
-                            <td class="p-2.5 font-mono text-[11px]">{snp.id}</td>
+                            <td class="p-2.5 font-mono text-xs">{snp.id}</td>
                             <td class="p-2.5">v{snp.schemaVersion}</td>
                             <td class="p-2.5">{Math.round(snp.sizeBytes / 1024)} KB</td>
-                            <td class="p-2.5 font-mono text-[10px] text-muted">
+                            <td class="p-2.5 font-mono text-xs text-muted">
                               {snp.checksumSha256.substring(0, 12)}...
                             </td>
                             <td class="p-2.5">
@@ -677,12 +677,12 @@ export function AdminDashboardView({
                             <td class="p-2.5 text-secondary whitespace-nowrap">
                               {formatDateBR(log.createdAt)}
                             </td>
-                            <td class="p-2.5 font-mono text-[11px]">{log.adminUserId}</td>
+                            <td class="p-2.5 font-mono text-xs">{log.adminUserId}</td>
                             <td class="p-2.5">
                               <Badge variant="default">{log.action}</Badge>
                             </td>
                             <td class="p-2.5 max-w-xs">{log.reason}</td>
-                            <td class="p-2.5 font-mono text-[10px] text-muted">
+                            <td class="p-2.5 font-mono text-xs text-muted">
                               {JSON.stringify(log.metadata)}
                             </td>
                           </tr>

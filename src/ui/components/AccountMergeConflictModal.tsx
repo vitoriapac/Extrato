@@ -43,7 +43,7 @@ export function AccountMergeConflictModal({
               <Icon name="device-laptop" size={16} class="text-secondary shrink-0" />
               <strong class="text-xs font-semibold text-text">Este Dispositivo (Navegador)</strong>
             </div>
-            <p class="text-[11px] text-secondary m-0">
+            <p class="text-xs text-secondary m-0">
               {localUpdatedAt ? `Última alteração: ${localUpdatedAt}` : 'Contém registros recentes deste navegador'}
             </p>
             <div class="pt-2 mt-auto">
@@ -64,7 +64,7 @@ export function AccountMergeConflictModal({
               <Icon name="cloud" size={16} class="text-accent shrink-0" />
               <strong class="text-xs font-semibold text-text">Dados na Nuvem</strong>
             </div>
-            <p class="text-[11px] text-secondary m-0">
+            <p class="text-xs text-secondary m-0">
               {remoteUpdatedAt ? `Última alteração: ${remoteUpdatedAt}` : 'Sincronizado a partir de outro aparelho'}
             </p>
             <div class="pt-2 mt-auto">
@@ -86,7 +86,7 @@ export function AccountMergeConflictModal({
             <Icon name="shield-check" size={18} class="text-accent shrink-0" />
             <div class="flex flex-col gap-0.5">
               <span class="text-xs font-semibold text-text">Prefere se prevenir?</span>
-              <span class="text-[11px] text-secondary">
+              <span class="text-xs text-secondary">
                 Baixe um arquivo JSON com todos os dados deste dispositivo antes de sincronizar.
               </span>
             </div>

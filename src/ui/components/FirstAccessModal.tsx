@@ -102,7 +102,7 @@ export function FirstAccessModal({
               </div>
               <div className="min-w-0 space-y-1">
                 <h4 className="text-base font-semibold text-content-primary m-0">
-                  Experimentar demonstração interativa
+                  Explorar demonstração interativa
                 </h4>
                 <p className="text-xs text-content-secondary m-0 leading-relaxed">
                   Explore o aplicativo com dados fictícios. Seus registros pessoais permanecem preservados.

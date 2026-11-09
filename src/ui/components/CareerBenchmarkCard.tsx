@@ -38,7 +38,7 @@ function MetricBulletBar({
           <span class="font-bold text-sm text-content-primary">
             {currentValue} {unit}
           </span>
-          <span class="text-content-secondary text-[11px]">
+          <span class="text-content-secondary text-xs">
             (alvo: {targetMin}–{targetMax} {unit})
           </span>
         </div>
@@ -72,13 +72,13 @@ function MetricBulletBar({
       {/* Rótulo de Status e Comentário */}
       <div class="flex justify-between items-start gap-2 pt-0.5">
         <span
-          class={`text-[11px] font-semibold ${
+          class={`text-xs font-semibold ${
             isCompetitive ? 'text-accent' : 'text-content-secondary'
           }`}
         >
           {comparison.statusLabel}
         </span>
-        <span class="text-[11px] text-content-secondary text-right leading-tight">
+        <span class="text-xs text-content-secondary text-right leading-tight">
           {comparison.commentary}
         </span>
       </div>
@@ -91,8 +91,16 @@ export function CareerBenchmarkCard({
   selectedCareerId,
   onSelectCareer,
 }: CareerBenchmarkCardProps): JSX.Element {
-  const { career, weeklyHours, weeklyQuestions, accuracy, measuredMix, overallStatus, overallLabel, guidanceNote } =
-    comparison;
+  const {
+    career,
+    weeklyHours,
+    weeklyQuestions,
+    accuracy,
+    measuredMix,
+    overallStatus,
+    overallLabel,
+    guidanceNote,
+  } = comparison;
 
   const careerOptions = Object.values(CAREER_BENCHMARKS);
 
@@ -117,13 +125,17 @@ export function CareerBenchmarkCard({
           </div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 id="careerBenchmarkTitle" class="text-base font-semibold text-content-primary m-0">
+              <h3
+                id="careerBenchmarkTitle"
+                class="text-base font-semibold text-content-primary m-0"
+              >
                 Ritmo Frente aos Aprovados
               </h3>
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Parâmetros consolidados para <strong>{career.name}</strong> · 100% privado no seu aparelho
+              Parâmetros consolidados para <strong>{career.name}</strong> · 100% privado no seu
+              aparelho
             </p>
           </div>
         </div>
@@ -137,7 +149,9 @@ export function CareerBenchmarkCard({
             id="careerClusterSelect"
             class="select-control text-xs py-1 px-2.5 rounded border border-border-default bg-surface-subtle text-content-primary font-medium focus:ring-1 focus:ring-brand w-full sm:w-auto"
             value={selectedCareerId}
-            onChange={e => onSelectCareer?.((e.target as HTMLSelectElement).value as CareerClusterId)}
+            onChange={e =>
+              onSelectCareer?.((e.target as HTMLSelectElement).value as CareerClusterId)
+            }
             aria-label="Filtrar parâmetros de aprovados por carreira"
           >
             {careerOptions.map(opt => (
@@ -169,10 +183,7 @@ export function CareerBenchmarkCard({
 
         {/* 3. Precisão em Questões */}
         <div class="p-3.5 rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
-          <MetricBulletBar
-            comparison={accuracy}
-            maxDisplay={100}
-          />
+          <MetricBulletBar comparison={accuracy} maxDisplay={100} />
         </div>
       </div>
 
@@ -182,7 +193,7 @@ export function CareerBenchmarkCard({
           <span class="font-medium text-content-primary">
             Mix de Estudo (Teoria / Questões / Revisão)
           </span>
-          <span class="text-content-secondary text-[11px]">
+          <span class="text-content-secondary text-xs">
             Recomendado para {career.name}: {career.targetMix.theoryPercent}% T /{' '}
             {career.targetMix.questionsPercent}% Q / {career.targetMix.reviewPercent}% R
           </span>
@@ -195,46 +206,56 @@ export function CareerBenchmarkCard({
           aria-label={`Mix medido: ${measuredMix.theoryPercent}% teoria, ${measuredMix.questionsPercent}% questões, ${measuredMix.reviewPercent}% revisão`}
         >
           <div
-            class="h-full bg-accent transition-all"
-            style={{ width: `${measuredMix.theoryPercent}%` }}
+            class="h-full transition-all"
+            style={{
+              width: `${measuredMix.theoryPercent}%`,
+              background: 'var(--chart-series-primary)',
+            }}
             title={`Teoria: ${measuredMix.theoryPercent}%`}
           />
           <div
-            class="h-full bg-accent transition-all"
-            style={{ width: `${measuredMix.questionsPercent}%` }}
+            class="h-full transition-all"
+            style={{ width: `${measuredMix.questionsPercent}%`, background: 'var(--subject-2)' }}
             title={`Questões: ${measuredMix.questionsPercent}%`}
           />
           <div
-            class="h-full bg-brand-secondary transition-all"
-            style={{ width: `${measuredMix.reviewPercent}%` }}
+            class="h-full transition-all"
+            style={{ width: `${measuredMix.reviewPercent}%`, background: 'var(--ink-soft)' }}
             title={`Revisão: ${measuredMix.reviewPercent}%`}
           />
         </div>
 
         {/* Legenda do Mix */}
-        <div class="flex items-center justify-between text-[11px] text-content-secondary pt-0.5">
+        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary pt-0.5">
           <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-accent" />
-              <span>Teoria: <strong>{measuredMix.theoryPercent}%</strong></span>
+              <span
+                class="w-2 h-2 rounded-full"
+                style={{ background: 'var(--chart-series-primary)' }}
+              />
+              <span>
+                Teoria: <strong>{measuredMix.theoryPercent}%</strong>
+              </span>
             </span>
             <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-accent" />
-              <span>Questões: <strong>{measuredMix.questionsPercent}%</strong></span>
+              <span class="w-2 h-2 rounded-full" style={{ background: 'var(--subject-2)' }} />
+              <span>
+                Questões: <strong>{measuredMix.questionsPercent}%</strong>
+              </span>
             </span>
             <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-accent-secondary" />
-              <span>Revisão: <strong>{measuredMix.reviewPercent}%</strong></span>
+              <span class="w-2 h-2 rounded-full" style={{ background: 'var(--ink-soft)' }} />
+              <span>
+                Revisão: <strong>{measuredMix.reviewPercent}%</strong>
+              </span>
             </span>
           </div>
-          <span class="hidden sm:inline text-content-secondary italic">
-            Janela: últimos 7 dias
-          </span>
+          <span class="text-content-secondary">Período: últimos 7 dias</span>
         </div>
       </div>
 
       {/* Nota de Orientação Pedagógica */}
-      <footer class="flex items-start gap-2 p-3 rounded bg-surface-subtle border-l-2 border-accent text-xs text-content-secondary leading-relaxed">
+      <footer class="flex items-start gap-2 p-3 rounded bg-surface-subtle text-xs text-content-secondary leading-relaxed">
         <Icon name="info-circle" size={16} class="text-accent shrink-0 mt-0.5" />
         <div>
           <strong class="text-content-primary">Diretriz Pedagógica: </strong>

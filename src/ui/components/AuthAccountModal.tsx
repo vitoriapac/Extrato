@@ -212,7 +212,7 @@ export function AuthAccountModal({
                         ? `Cartão de Crédito ${cardBrand ? cardBrand.toUpperCase() : ''} ${cardLast4 ? `(final •••• ${cardLast4})` : ''}`.trim()
                         : 'PIX Instantâneo Pré-pago'}
                     </span>
-                    <span class="text-[11px] text-secondary">
+                    <span class="text-xs text-secondary">
                       {paymentMethod === 'card'
                         ? autoRenew
                           ? 'Renovação automática ativa'
@@ -292,7 +292,7 @@ export function AuthAccountModal({
 
           <div class="relative flex py-1 items-center">
             <div class="flex-grow border-t border-border-default" />
-            <span class="flex-shrink mx-3 text-[11px] text-secondary uppercase font-medium">
+            <span class="flex-shrink mx-3 text-xs text-secondary uppercase font-medium">
               Ou receba um link de acesso por e-mail
             </span>
             <div class="flex-grow border-t border-border-default" />
@@ -339,7 +339,7 @@ export function AuthAccountModal({
           )}
 
           {/* Aviso de Termos de Uso e LGPD */}
-          <p class="text-[11px] text-muted text-center leading-relaxed m-0">
+          <p class="text-xs text-muted text-center leading-relaxed m-0">
             Ao entrar ou se cadastrar, você concorda com os{' '}
             <a href="/?legal=terms" target="_blank" rel="noopener noreferrer" class="underline hover:text-text">
               Termos de Uso

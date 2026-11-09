@@ -30,7 +30,7 @@ test('FirstAccessModal — renderiza opções de plano guiado e demonstração q
 
   assert.match(html, /Boas-vindas ao Extrato de Estudos/);
   assert.match(html, /Montar meu plano guiado/);
-  assert.match(html, /Experimentar demonstração interativa/);
+  assert.match(html, /Explorar demonstração interativa/);
   assert.match(html, /dados fictícios/);
   assert.match(html, /registros pessoais permanecem preservados/);
   assert.match(html, /Configurar manualmente ou explorar livremente/);

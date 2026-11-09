@@ -240,7 +240,7 @@ export function CloudExamCatalogModal({
                       {/* Metadados Superiores */}
                       <div class="flex items-center justify-between gap-2 mb-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                          <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-subtle text-secondary border border-border-subtle capitalize">
+                          <span class="px-2 py-0.5 rounded text-xs font-medium bg-surface-subtle text-secondary border border-border-subtle capitalize">
                             {item.category}
                           </span>
                           <span class="text-xs text-muted">
@@ -248,7 +248,7 @@ export function CloudExamCatalogModal({
                           </span>
                         </div>
                         {item.isPremium && (
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
                             <Icon name="crown" size={12} />
                             PRO
                           </span>

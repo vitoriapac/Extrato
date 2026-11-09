@@ -301,7 +301,7 @@ export function aggregateRecentActivity(
     if (!sessionDate || sessionDate < windowStartISO || sessionDate > todayISO) {
       continue;
     }
-    const mins = Number(session.durationMinutes) || 0;
+    const mins = Number(session.durationMinutes) || (Number(session.durationSeconds) || 0) / 60;
     totalMinutes += mins;
 
     const type = session.type || 'study';
@@ -322,7 +322,7 @@ export function aggregateRecentActivity(
     if (!qDate || qDate < windowStartISO || qDate > todayISO) {
       continue;
     }
-    const total = Number(q.total || q.quantidade) || 0;
+    const total = Number(q.resolved || q.total || q.quantidade) || 0;
     const correct = Number(q.correct || q.acertos) || 0;
     totalQuestions += total;
     correctQuestions += correct;
@@ -342,7 +342,7 @@ export function aggregateRecentActivity(
     for (const q of questions) {
       const qDate = q.date || q.createdAt?.slice(0, 10);
       if (qDate && qDate >= extendedStartISO && qDate <= todayISO) {
-        extendedTotal += Number(q.total || q.quantidade) || 0;
+        extendedTotal += Number(q.resolved || q.total || q.quantidade) || 0;
         extendedCorrect += Number(q.correct || q.acertos) || 0;
       }
     }

@@ -24,11 +24,7 @@ export function renderMiniComparisonChart(
             ? 'text-amber bg-amber-subtle'
             : 'text-content-secondary bg-surface-card';
       const trendIcon =
-        metric.trend === 'up'
-          ? 'trending-up'
-          : metric.trend === 'down'
-            ? 'trending-down'
-            : 'minus';
+        metric.trend === 'up' ? 'trending-up' : metric.trend === 'down' ? 'trending-down' : 'minus';
 
       const currentWidth = Math.max(0, Math.min(100, metric.currentBarPct));
       const prevWidth = Math.max(0, Math.min(100, metric.previousBarPct));
@@ -46,19 +42,19 @@ export function renderMiniComparisonChart(
             <span>${escapeHtml(metric.deltaFormatted)}</span>
           </span>
         </div>
-        <svg viewBox="0 0 220 28" class="w-full h-7 overflow-visible" role="img" aria-label="${escapeHtml(`Gráfico de barras de ${metric.label}: atual ${metric.currentFormatted}, semana passada ${metric.previousFormatted}`)}">
-          <g>
+        <div class="flex items-center gap-3">
+          <svg viewBox="0 0 150 28" class="h-7 min-w-0 flex-1 overflow-visible" role="img" aria-label="${escapeHtml(`Gráfico de barras de ${metric.label}: atual ${metric.currentFormatted}, semana passada ${metric.previousFormatted}`)}">
             <rect x="0" y="2" width="150" height="10" rx="2" fill="currentColor" fill-opacity="0.08"></rect>
             <rect x="0" y="2" width="${((currentWidth / 100) * 150).toFixed(1)}" height="10" rx="2" fill="${currentBarFill}"></rect>
             ${prevWidth > 0 ? `<line x1="${prevMarkerX}" y1="0.5" x2="${prevMarkerX}" y2="13.5" stroke="var(--chart-series-secondary)" stroke-width="1.5"/>` : ''}
-            <text x="156" y="10.5" font-size="10" font-weight="600" fill="currentColor">${escapeHtml(metric.currentFormatted)}</text>
-          </g>
-          <g>
             <rect x="0" y="16" width="150" height="8" rx="2" fill="currentColor" fill-opacity="0.08"></rect>
             <rect x="0" y="16" width="${prevMarkerX}" height="8" rx="2" fill="currentColor" fill-opacity="0.32"></rect>
-            <text x="156" y="23" font-size="10" fill="currentColor" opacity="0.72">ant.: ${escapeHtml(metric.previousFormatted)}</text>
-          </g>
-        </svg>
+          </svg>
+          <div class="shrink-0 text-xs font-data leading-tight text-right">
+            <div class="font-semibold text-content-primary">${escapeHtml(metric.currentFormatted)}</div>
+            <div class="text-content-secondary">ant.: ${escapeHtml(metric.previousFormatted)}</div>
+          </div>
+        </div>
       </div>`;
     })
     .join('');

@@ -136,7 +136,7 @@ export function ClerkUserAvatarButton({
           <span class="text-xs font-medium text-text max-w-[120px] truncate">
             {profile?.displayName || profile?.email}
           </span>
-          <span class="text-[10px] font-semibold tracking-wider text-secondary">
+          <span class="text-xs font-semibold tracking-wider text-secondary">
             {badgeLabel}
           </span>
         </div>
@@ -175,7 +175,7 @@ export function ClerkUserAvatarButton({
               <span class="text-xs font-semibold text-text truncate">
                 {profile?.displayName || 'Estudante'}
               </span>
-              <span class="text-[11px] text-secondary truncate">
+              <span class="text-xs text-secondary truncate">
                 {profile?.email}
               </span>
               <div class="mt-1">

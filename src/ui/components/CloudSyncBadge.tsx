@@ -77,7 +77,7 @@ export function CloudSyncBadge({
     <>
       <Icon name={iconName} size={14} class={`${iconClass} shrink-0`} />
       {!isCompact && (
-        <span class="text-[11px] font-medium text-secondary truncate max-w-[130px]">
+        <span class="text-xs font-medium text-secondary truncate max-w-[130px]">
           {label}
         </span>
       )}
