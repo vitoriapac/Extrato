@@ -31,7 +31,7 @@ export function renderCalendarIndicators({ items = [], today }: any) {
     `<div class="kpi-cell ${cls}"><div class="n">${bucket.total}</div><div class="l">${label}</div><small>${describeBucket(bucket, period, empty, singular)}</small></div>`;
   return (
     cell(b.overdue.total ? 'warn' : '', b.overdue, 'Vencidas', 'atrasadas', 'Nada atrasado', 'atrasada') +
-    cell(b.today.total ? 'ok' : '', b.today, 'Hoje', 'hoje') +
+    cell(b.today.total ? 'ok' : '', b.today, 'Hoje na agenda', 'hoje', 'Nada na agenda hoje') +
     cell('', b.next7, 'Próx. 7 dias', 'nos próximos 7 dias')
   );
 }

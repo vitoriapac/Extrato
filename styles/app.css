@@ -3017,6 +3017,7 @@ summary.overview-section-heading:focus-visible{outline:2px solid var(--accent);o
 @media (max-width:760px){.subject-progress-bar{flex:1 0 100%;width:auto}.subject-recent-accuracy{flex:1 0 100%}.subject-header .subject-toggle{flex:1 1 140px}}
 .subject-color-field{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:6px 10px;font-size:var(--text-small);color:var(--text-secondary)}
 .subject-color-field select{min-height:36px;padding:4px 8px;border:1px solid var(--border-control);border-radius:var(--radius-control);background:var(--surface-card);color:var(--text-primary);font:inherit}
+@media (pointer:coarse),(max-width:760px){.subject-color-field select{min-height:var(--touch-target)}}
 /* C6: motivation. Streak in the fixed header, 4-week consistency strip, discreet goal cue. */
 .compact-streak{display:inline-flex;align-items:center;gap:2px;color:var(--brand-on-header)}.compact-streak[hidden]{display:none}
 .consistency-strip{margin:0 0 var(--space-4)}
@@ -3317,7 +3318,6 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 :root {
   --ease-amicro: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out-smooth: cubic-bezier(0, 0, 0.2, 1);
 }
 

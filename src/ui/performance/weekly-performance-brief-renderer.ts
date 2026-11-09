@@ -56,7 +56,7 @@ function renderMiniComparisonChart(
           <g>
             <rect x="0" y="16" width="150" height="8" rx="2" fill="currentColor" fill-opacity="0.08"></rect>
             <rect x="0" y="16" width="${prevMarkerX}" height="8" rx="2" fill="currentColor" fill-opacity="0.32"></rect>
-            <text x="156" y="23" font-size="9.5" fill="currentColor" opacity="0.72">ant.: ${escapeHtml(metric.previousFormatted)}</text>
+            <text x="156" y="23" font-size="10" fill="currentColor" opacity="0.72">ant.: ${escapeHtml(metric.previousFormatted)}</text>
           </g>
         </svg>
       </div>`;

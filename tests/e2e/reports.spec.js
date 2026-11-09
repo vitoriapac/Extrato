@@ -82,13 +82,26 @@ test('paleta executa ações de registro por teclado e fecha com Escape', async 
   await expect(page.locator('#globalSearchResults')).not.toHaveClass(/show/);
 });
 
-test('paleta apresenta acesso direto à recomendação prioritária', async ({ page }) => {
+test('paleta leva à recomendação prioritária sem iniciar o estudo', async ({ page }) => {
   await openDemo(page);
   const search = page.locator('#globalSearchInput');
   await page.keyboard.press('Control+k');
   await search.fill('recomendação prioritária');
-  const action = page.getByRole('option', { name: /Iniciar recomendação prioritária/ });
+  const action = page.getByRole('option', { name: /Ir para a recomendação prioritária/ });
   await expect(action).toBeVisible();
   await action.click();
   await expect(page.locator('#globalSearchResults')).not.toHaveClass(/show/);
+  await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
+  await expect(page.locator('#timerFocusContext')).toBeHidden();
+});
+
+test('paleta abre o Diagnóstico mesmo no modo Essencial', async ({ page }) => {
+  await openDemo(page);
+  await page.locator('#essentialToggleBtn').click();
+  await expect(page.locator('html')).toHaveAttribute('data-essential', 'on');
+  await page.keyboard.press('Control+k');
+  await page.locator('#globalSearchInput').fill('ver diagnóstico');
+  await page.getByRole('option', { name: /Ver Diagnóstico/ }).click();
+  await expect(page.locator('#panel-desempenho')).toHaveClass(/active/);
+  await expect(page.locator('#diagnosisCenter')).toBeVisible();
 });

@@ -1,4 +1,5 @@
 import { hydrateLazy } from '../lazy-details.js';
+import { revealAdvanced } from '../essential-mode.js';
 import {
   analysisContextInScope,
   createAnalysisContext,
@@ -112,7 +113,9 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
         if (destination === 'hoje') {
           const panel = document.getElementById('panel-desempenho');
           if (panel) panel.dataset.performanceView = 'overview';
-          document.querySelector('.today-analysis-details')?.setAttribute('open', '');
+          const details = document.querySelector<HTMLElement>('.today-analysis-details');
+          details?.setAttribute('open', '');
+          revealAdvanced(details, false);
         }
         if (destination === 'metas')
           document.querySelector('#examStudyPlan .study-plan-details')?.setAttribute('open', '');

@@ -51,7 +51,7 @@ export function renderPerformanceOverview(
     ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
   </section>`;
   const secondaryKpis = `<section class="performance-kpis ui-metric-group" aria-label="Prontidão e carga no período">
-    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `Cálculo de agora · ${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} entre fechamentos (${shown(model.readinessPair?.previous?.score)} → ${shown(model.readinessPair?.current?.score)})`)}
+    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `Calculado agora · último fechamento: ${shown(model.readinessPair?.current?.score)} (${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} sobre ${shown(model.readinessPair?.previous?.score)})`)}
     ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}
   </section>`;
   const history = renderReadinessHistory(model.history, {

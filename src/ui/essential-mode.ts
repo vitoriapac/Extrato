@@ -38,6 +38,17 @@ export function decorateTermHints(root: ParentNode = document) {
   });
 }
 
+/** Opens an essential-mode [data-advanced] block and hides its "Mostrar …" button; callers that jump to a block (Ctrl+K, deep links) use this so essential mode never strands them. */
+export function revealAdvanced(block: HTMLElement | null | undefined, focus = true) {
+  if (!block) return;
+  block.classList.add('is-advanced-open');
+  const before = block.previousElementSibling as HTMLElement | null;
+  if (before?.classList.contains('advanced-reveal')) before.hidden = true;
+  if (!focus) return;
+  if (!block.matches('button,a,summary,input,select,textarea,[tabindex]')) block.tabIndex = -1;
+  block.focus({ preventScroll: true });
+}
+
 /** Puts a "Mostrar …" button before each [data-advanced] block; in essential mode it opens that block. */
 export function decorateAdvancedReveals(root: ParentNode = document) {
   root.querySelectorAll<HTMLElement>('[data-advanced]:not([data-advanced-ready])').forEach(block => {
@@ -46,12 +57,7 @@ export function decorateAdvancedReveals(root: ParentNode = document) {
     button.type = 'button';
     button.className = 'btn ghost small advanced-reveal';
     button.textContent = `Mostrar ${block.dataset.advanced}`;
-    button.addEventListener('click', () => {
-      block.classList.add('is-advanced-open');
-      button.hidden = true;
-      if (!block.matches('button,a,summary,input,select,textarea,[tabindex]')) block.tabIndex = -1;
-      block.focus({ preventScroll: true });
-    });
+    button.addEventListener('click', () => revealAdvanced(block));
     block.before(button);
   });
 }

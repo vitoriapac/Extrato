@@ -2,6 +2,8 @@ import { renderGlobalSearchPanel } from '../renderers/global-search-renderer.js'
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { scrollBehavior } from '../accessibility.js';
 import { subjectColorOf } from '../../domain/subjects/subject-color.js';
+import { revealAdvanced } from '../essential-mode.js';
+import { hydrateLazy } from '../lazy-details.js';
 
 export interface SearchCommand {
   label: string;
@@ -32,7 +34,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'sun',
   },
   {
-    label: 'Iniciar recomendação prioritária',
+    label: 'Ir para a recomendação prioritária',
     keywords: 'começar iniciar estudo primeiro item do plano próxima ação estudar recomendação prioritária',
     action: 'recommendation',
     icon: 'player-play',
@@ -289,22 +291,31 @@ export function createSearchController(options: SearchControllerOptions) {
         document.querySelector('[data-delegated-click="openWeeklyClose()"]') as HTMLElement | null
       )?.click();
     } else if (action === 'diagnosis') {
-      // A central fica num <details> fechado em Desempenho: abrir, rolar e focar o título.
+      // A central fica num <details> fechado em Desempenho, que o modo Essencial também esconde: abrir, liberar, rolar e focar.
       activateTab('desempenho');
       const center = document.getElementById('diagnosisCenter');
       const details = center?.closest('details') as HTMLDetailsElement | null;
-      if (details) details.open = true;
+      if (details) {
+        details.open = true;
+        revealAdvanced(details, false);
+      }
+      if (center) hydrateLazy(center);
       const heading = center?.closest('section')?.querySelector('h3') as HTMLElement | null;
-      if (heading) {
-        heading.tabIndex = -1;
-        heading.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
-        heading.focus({ preventScroll: true });
+      const target = heading || details;
+      if (target) {
+        target.tabIndex = -1;
+        target.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
+        target.focus({ preventScroll: true });
       }
     } else if (action === 'recommendation') {
+      // Só leva ao botão de iniciar em Hoje: começar um estudo muda o dia e não deve acontecer num clique da paleta.
       const recommendations = options.getRecommendations ? options.getRecommendations() : [];
-      const recommendation = recommendations[0];
-      if (recommendation && options.onExecuteRecommendation) {
-        options.onExecuteRecommendation(recommendation.id);
+      if (recommendations[0]) {
+        activateTab('hoje');
+        const start = document.querySelector<HTMLElement>(
+          '#panel-hoje [data-delegated-click^="executeStudyRecommendation"]'
+        );
+        (start || document.getElementById('timerSubjectSelect'))?.focus();
       } else {
         activateTab('hoje');
         document.getElementById('timerSubjectSelect')?.focus();

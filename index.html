@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=60797a09d52c">
-<link rel="stylesheet" href="styles/app.css?v=60797a09d52c">
+<link rel="stylesheet" href="styles/tailwind.css?v=d080610c141f">
+<link rel="stylesheet" href="styles/app.css?v=d080610c141f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -325,7 +325,6 @@
     <h2 class="section-title today-title">Hoje · Execução Diária</h2>
 
     <div id="firstStepsMissionSlot"></div>
-    <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
     <div class="today-layout-grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
       <!-- COLUNA PRINCIPAL DE EXECUÇÃO (8 cols) -->
@@ -334,6 +333,8 @@
           <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
           <div id="planoHojeContent"></div>
         </section>
+
+        <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
         <div class="chart-card study-timer-card" id="study-timer">
           <h3 id="studyTimerTitle">Cronômetro de estudo</h3>
@@ -1045,7 +1046,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=60797a09d52c"></script>
+  <script src="src/app.bundle.js?v=d080610c141f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
