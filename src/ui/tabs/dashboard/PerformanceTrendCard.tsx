@@ -168,9 +168,10 @@ export function PerformanceTrendCard({
             </p>
           </div>
         ) : (
-          <div class="w-full overflow-hidden">
+          <div class="w-full overflow-x-auto flex flex-row-reverse" role="region" aria-label="Gráfico de evolução de acertos e simulados, rolável na horizontal" tabIndex={0}>
             <svg
               viewBox={`0 0 ${width} ${height}`}
+              style={{ minWidth: `${width}px` }}
               class="w-full h-auto max-h-[175px] block select-none"
               aria-label="Gráfico de evolução de acertos e notas de simulados"
               role="img"

@@ -2767,6 +2767,8 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .footer-demo-note{align-self:center;color:var(--text-secondary);font-size:var(--text-xs);line-height:1.4}
 /* Nav icons: icon before the label on desktop, above it in the bottom bar, alone under 375px. */
 .tab-btn:not(.more-tab-btn){display:inline-flex;align-items:center;justify-content:center;gap:6px;padding-inline:12px}
+/* Tablet estreito: as 8 abas somavam 759px em 715px e cortavam "Instruções"; 8px de respiro lateral as faz caber. */
+@media (min-width:761px) and (max-width:1050px){.tab-btn:not(.more-tab-btn){padding-inline:8px}}
 .tab-icon{flex:0 0 auto}
 .mobile-more-menu button{display:flex;align-items:center;gap:10px}
 @media(max-width:760px){
@@ -3612,3 +3614,9 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 /* Lista longa de disciplinas na alocação: 5 visíveis, o resto sob demanda. */
 .allocation-more > summary { min-height: var(--touch-target, 44px); display: flex; align-items: center; }
+
+/* Alvos de toque: este bloco vem por último para vencer os min-height de 36px declarados depois do bloco de toque. */
+@media (pointer:coarse),(max-width:760px){
+  .btn,.action-menu>summary,summary.btn{min-height:var(--touch-target)}
+  .btn,.action-menu>summary{min-width:var(--touch-target)}
+}

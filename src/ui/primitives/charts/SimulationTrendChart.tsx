@@ -95,10 +95,12 @@ export function SimulationTrendChart({
       </div>
 
       {/* Gráfico SVG de Notas vs Meta */}
-      <div class="w-full overflow-x-auto">
+      {/* Largura mínima = viewBox: o texto do eixo nunca renderiza abaixo de 12px; row-reverse abre a rolagem no dado mais recente. */}
+      <div class="w-full overflow-x-auto flex flex-row-reverse" role="region" aria-label="Gráfico de notas de simulados contra a meta, rolável na horizontal" tabIndex={0}>
         <svg
           viewBox={`0 0 ${geom.width} ${geom.height}`}
-          class="w-full h-auto min-w-[340px] max-h-[170px] overflow-visible"
+          style={{ minWidth: `${geom.width}px` }}
+          class="w-full h-auto max-h-[170px] overflow-visible"
           role="img"
           aria-hidden="true"
         >

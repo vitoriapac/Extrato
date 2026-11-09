@@ -74,10 +74,12 @@ export function WeeklyTrendChart({
       </div>
 
       {/* Gráfico SVG Combinado */}
-      <div class="w-full overflow-x-auto">
+      {/* Largura mínima = viewBox: o texto do eixo nunca renderiza abaixo de 12px; row-reverse abre a rolagem no dado mais recente. */}
+      <div class="w-full overflow-x-auto flex flex-row-reverse" role="region" aria-label="Gráfico semanal de volume e precisão, rolável na horizontal" tabIndex={0}>
         <svg
           viewBox={`0 0 ${geom.width} ${geom.height}`}
-          class="w-full h-auto min-w-[320px] max-h-[170px] overflow-visible"
+          style={{ minWidth: `${geom.width}px` }}
+          class="w-full h-auto max-h-[170px] overflow-visible"
           role="img"
           aria-hidden="true"
         >
