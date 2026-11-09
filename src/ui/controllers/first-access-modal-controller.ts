@@ -4,13 +4,25 @@ import { FirstAccessModal } from '../components/FirstAccessModal.js';
 import { SalesLandingPage } from '../components/SalesLandingPage.js';
 import { PaywallModal } from '../components/PaywallModal.js';
 import { AuthAccountModal } from '../components/AuthAccountModal.js';
+import { AdminDashboardView } from '../views/AdminDashboardView.js';
+import { LegalComplianceView } from '../views/LegalComplianceView.js';
+import { CloudExamCatalogModal } from '../components/CloudExamCatalogModal.js';
+import { parseLegalQueryParam } from '../../domain/legal/legal-documents.js';
 import {
   isFirstAccessSession,
   markFirstAccessDismissed,
 } from '../../features/onboarding/first-access-detector.js';
 import type { BillingCycle } from '../../domain/billing/entitlements.js';
 
-export type FirstAccessViewMode = 'closed' | 'welcome' | 'landing' | 'paywall' | 'auth';
+export type FirstAccessViewMode =
+  | 'closed'
+  | 'welcome'
+  | 'landing'
+  | 'paywall'
+  | 'auth'
+  | 'admin'
+  | 'legal'
+  | 'catalog';
 
 export interface FirstAccessModalControllerContext {
   getContainer: () => HTMLElement | null | any;
@@ -31,6 +43,7 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
   let paywallCycle: BillingCycle = 'annual';
   let paywallFeatureTitle: string | undefined;
   let paywallFeatureDescription: string | undefined;
+  let legalInitialTab: 'terms' | 'privacy' | 'rights' = 'terms';
   let triggersBound = false;
 
   function renderModal() {
@@ -129,6 +142,43 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
       return;
     }
 
+    if (activeView === 'admin') {
+      mountPreact(
+        h(AdminDashboardView, {
+          open: true,
+          onClose: close,
+        }),
+        container
+      );
+      return;
+    }
+
+    if (activeView === 'legal') {
+      mountPreact(
+        h(LegalComplianceView, {
+          open: true,
+          onClose: close,
+          initialTab: legalInitialTab,
+          isModal: true,
+        }),
+        container
+      );
+      return;
+    }
+
+    if (activeView === 'catalog') {
+      mountPreact(
+        h(CloudExamCatalogModal, {
+          open: true,
+          onClose: close,
+          isPro: false,
+          onImportBlueprint: () => close(),
+        }),
+        container
+      );
+      return;
+    }
+
     mountPreact(
       h(FirstAccessModal, {
         open: true,
@@ -183,6 +233,22 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
     renderModal();
   }
 
+  function openAdmin() {
+    activeView = 'admin';
+    renderModal();
+  }
+
+  function openLegal(tab: 'terms' | 'privacy' | 'rights' = 'terms') {
+    legalInitialTab = tab;
+    activeView = 'legal';
+    renderModal();
+  }
+
+  function openCatalog() {
+    activeView = 'catalog';
+    renderModal();
+  }
+
   function close() {
     activeView = 'closed';
     renderModal();
@@ -197,6 +263,21 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
 
     const landingBtn = win.document.getElementById?.('openSalesLandingBtn');
     landingBtn?.addEventListener?.('click', () => win.location.assign('/'));
+
+    win.addEventListener?.('open-admin-panel', () => openAdmin());
+    win.addEventListener?.('open-legal-terms', () => openLegal('terms'));
+    win.addEventListener?.('open-legal-privacy', () => openLegal('privacy'));
+    win.addEventListener?.('open-cloud-catalog', () => openCatalog());
+
+    win.__EXTRATO_MODALS__ = {
+      openAdmin,
+      openLegal,
+      openCatalog,
+      openPaywall,
+      openAuthModal,
+      openSalesLanding,
+      close,
+    };
   }
 
   function checkAndTrigger() {
@@ -212,6 +293,22 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
     try {
       if (win?.location?.search) {
         const params = new URLSearchParams(win.location.search);
+        if (params.get('admin') === '1') {
+          openAdmin();
+          return true;
+        }
+
+        const legalParam = parseLegalQueryParam(win.location.search);
+        if (legalParam) {
+          openLegal(legalParam);
+          return true;
+        }
+
+        if (params.get('catalogo') === '1' || params.get('editais') === '1') {
+          openCatalog();
+          return true;
+        }
+
         if (params.get('firstAccess') === '1' || params.get('welcome') === '1') {
           forceFirstAccess = true;
         }
@@ -256,6 +353,9 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
     openSalesLanding,
     openPaywall,
     openAuthModal,
+    openAdmin,
+    openLegal,
+    openCatalog,
     close,
     isOpen: () => activeView !== 'closed',
     getActiveView: () => activeView,

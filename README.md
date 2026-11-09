@@ -50,8 +50,24 @@ Extrato de Estudos é uma aplicação web para planejar estudos, registrar sess�
 - Catálogo Dinâmico de Editais Oficiais na Nuvem (`src/application/subjects/cloud-catalog-service.ts` e `CloudExamCatalogModal.tsx`): biblioteca de editais verticalizados (Bancária, Fiscal, Tribunais, Policial, Administrativa, OAB, ENEM) com importação estruturada 1-click para o `exam-import-service.ts`, preservando integralmente o histórico de estudos do aluno.
 - Painel Administrativo e Backoffice SaaS (`src/ui/views/AdminDashboardView.tsx`, `admin-service.ts` e `admin-metrics.ts`): Cockpit de Receita em tempo real com MRR equivalente, receita líquida com desconto automático de taxas de gateway (PIX e Cartão), Radar de Retenção duplo (tolerância de 3 dias no cartão e radar de vencimento PIX 7 dias), CRM de alunos com extensão de dias e promoção de papéis, conciliação financeira com estorno do Art. 49 do CDC, telemetria de snapshots com restauração de segurança e trilha de auditoria imutável (`admin_audit_logs`).
 - Central de Conformidade Legal, Termos de Uso e Privacidade LGPD/CDC (`src/ui/views/LegalComplianceView.tsx` e `legal-documents.ts`): Termos de Uso com Obrigação de Meio e Garantia de Não-Sequestro de Dados, Política de Privacidade Privacy-by-Design, painel de exercício dos direitos do titular do Art. 18 da LGPD (portabilidade em JSON imediata e eliminação) e canal direto com o DPO.
+- Rotas Diretas e Deep-Linking via URL: abertura imediata de recursos administrativos, jurídicos e de catálogo por parâmetros de consulta (`/?admin=1`, `/?legal=terms`, `/?legal=privacy`, `/?catalogo=1`, `/?landing=1`).
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos, incluindo Caderno de Erros com flashcards SM-2 e pegadinhas de banca, Detector de Platô com prescrições de estudo, análise cronobiológica de turnos (Manhã pico, Tarde, Noite com fadiga) e balanço de alocação de edital.
 - Tema claro/escuro, layout responsivo, conformidade WCAG AA completa (token `--border-control` com contraste > 3:1 em inputs/selects), barra fixa contínua sem vazamento (zero gap), normalização de raios para `var(--radius)` (2px), focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
+
+## Rotas Diretas e Deep Linking via URL
+
+O Extrato de Estudos suporta navegação direta e atalhos por query parameters no navegador:
+
+| Parâmetro de URL | Destino | Descrição |
+| :--- | :--- | :--- |
+| `/?admin=1` | **Painel Administrativo & Backoffice** | Cockpit SaaS com métricas MRR, retenção de cartões e PIX, CRM e auditoria. |
+| `/?legal=terms` | **Termos e Condições Gerais de Uso** | Contrato de prestação de serviços, obrigação de meio e CDC Art. 49. |
+| `/?legal=privacy` | **Política de Privacidade & LGPD** | Quadro de bases legais, subprocessadores e direitos do titular (Art. 18). |
+| `/?catalogo=1` | **Catálogo de Editais na Nuvem** | Biblioteca de concursos oficiais verticalizados prontos para importação. |
+| `/?landing=1` | **Landing Page de Conversão** | Apresentação de produto, comparativo de planos e garantia de 7 dias. |
+| `/?firstAccess=1` | **Boas-Vindas e Primeiro Acesso** | Assistente guiado de montagem de plano e metas semanais. |
+
+Para instruções completas sobre promoção de papéis de administrador (`admin`) e conexão com Clerk e Supabase, consulte o [Manual Prático de Conexão SaaS](docs/PLANO-TRANSFORMACAO-SAAS.md#65-acesso-ao-painel-de-administração-e-deep-linking-via-url).
 
 ## Como o Extrato de Estudos funciona
 

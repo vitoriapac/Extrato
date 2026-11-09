@@ -663,3 +663,94 @@ No `index.html` (ou injetado pelo pipeline de deploy no Cloudflare Pages / Verce
 3. **Liquidação:** Ao pagar, a AbacatePay envia o webhook para `abacatepay-webhook`, que valida a assinatura, executa a RPC atômica `settle_billing_order`, atualiza o perfil para `plan_tier = 'pro'` e `subscription_status = 'active'`.
 4. **Sincronização:** O app detecta o plano ativo, exibe o selo `<Icon name="cloud-check" />` no header e passa a sincronizar o estado de estudos continuamente a cada salvamento no `IndexedDB`.
 
+---
+
+### 6.5. Acesso ao Painel de Administração e Deep-Linking via URL
+
+A plataforma disponibiliza controle de acesso para administração do SaaS e deep-linking direto por parâmetros de URL, eliminando atritos e permitindo acesso rápido tanto em desenvolvimento quanto em produção.
+
+#### 1. Acesso Direto por Parâmetros de URL (Deep-Linking Nativo)
+
+Ao carregar o Extrato de Estudos no navegador, o controlador [`first-access-modal-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/first-access-modal-controller.ts) avalia os parâmetros de consulta (`window.location.search`) e abre imediatamente a interface solicitada:
+
+| Parâmetro de URL | Interface Aberta | Descrição |
+| :--- | :--- | :--- |
+| `/?admin=1` | **Painel Administrativo & Backoffice** | Cockpit completo com MRR (PIX vs. Cartão), Radar de Retenção duplo, CRM com extensão de dias, concessão de planos, alteração de papéis, estornos CDC e trilha de auditoria. |
+| `/?legal=terms` | **Termos e Condições de Uso** | Central de conformidade jurídica com obrigações de meio, regras de faturamento, cancelamento e direito de arrependimento (Art. 49 CDC). |
+| `/?legal=privacy` | **Política de Privacidade & LGPD** | Informações sobre a arquitetura *Local-First*, inventário de dados pessoais, bases legais e autoatendimento do Art. 18 da LGPD (exportação e eliminação). |
+| `/?catalogo=1` ou `/?editais=1` | **Catálogo de Editais Oficiais** | Biblioteca em nuvem com 8 editais verticalizados oficiais prontos para importação 1-click. |
+| `/?landing=1` ou `/?vendas=1` | **Landing Page Comercial** | Apresentação de valor ("O Extrato Bancário da Aprovação"), diferenciais *Local-First*, depoimentos e tabela de preços. |
+| `/?firstAccess=1` ou `/?welcome=1` | **Boas-Vindas e Escolha de Rota** | Roteiro inicial de configuração de concurso, carga horária e modo guiado. |
+
+Também é possível disparar a abertura programática a partir do console do navegador ou de outras rotas através do objeto global exposto `window.__EXTRATO_MODALS__`:
+```javascript
+// Abrir o Painel Admin via JavaScript
+window.__EXTRATO_MODALS__.openAdmin();
+
+// Abrir os Termos de Uso ou Privacidade
+window.__EXTRATO_MODALS__.openLegal('terms');
+window.__EXTRATO_MODALS__.openLegal('privacy');
+
+// Abrir o Catálogo na Nuvem
+window.__EXTRATO_MODALS__.openCatalog();
+
+// Ou disparando eventos do DOM
+window.dispatchEvent(new CustomEvent('open-admin-panel'));
+```
+
+#### 2. Acesso ao Painel Admin pelo Menu do Usuário (Header / Avatar)
+
+Quando um usuário conectado ao Clerk possui o papel de administrador (`role === 'admin'`), a aplicação exibe o atalho nativo para o Painel Admin:
+- O componente [`ClerkUserAvatarButton.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/ClerkUserAvatarButton.tsx) no cabeçalho exibe uma tag sutil de identificação de privilégio e o botão direto para o **Painel do Administrador**.
+- O clique aciona o evento `open-admin-panel`, abrindo o cockpit do backoffice instantaneamente sobre a tela ativa.
+
+#### 3. Como Promover um Usuário a Administrador (Passo a Passo)
+
+Para conceder privilégios de administrador a um usuário pela primeira vez, utilize qualquer um dos dois métodos abaixo:
+
+##### Opção A: Pelo Dashboard do Clerk (Recomendado para Usuários e Equipe)
+1. Acesse o painel do [Clerk Dashboard](https://dashboard.clerk.com).
+2. No menu lateral, acesse **Users** e clique no usuário desejado.
+3. Role até a seção **Metadata** e localize **Public Metadata**.
+4. Clique em **Edit** e adicione o campo `"role": "admin"`:
+   ```json
+   {
+     "role": "admin",
+     "plan_tier": "mentor"
+   }
+   ```
+5. Clique em **Save**.
+6. No próximo login ou renovação automática de token JWT, o claim `role: "admin"` será incluído no token assinado pelo Clerk e reconhecido imediatamente pelo cliente e pelo Supabase.
+
+##### Opção B: Diretamente pelo SQL Editor do Supabase (Acesso Direto ao Banco)
+1. Acesse o painel do [Supabase Dashboard](https://supabase.com/dashboard) e abra o seu projeto.
+2. Acesse a aba **SQL Editor** no menu lateral.
+3. Execute a instrução SQL para promover o usuário pelo endereço de e-mail cadastrado:
+   ```sql
+   UPDATE public.profiles
+   SET role = 'admin',
+       plan_tier = 'mentor',
+       subscription_status = 'active',
+       subscription_period_end = NOW() + INTERVAL '10 years'
+   WHERE email = 'seu-email-administrador@exemplo.com';
+   ```
+4. Para auditar e listar todos os administradores cadastrados na plataforma:
+   ```sql
+   SELECT id, email, display_name, role, plan_tier, subscription_status, created_at
+   FROM public.profiles
+   WHERE role = 'admin';
+   ```
+
+#### 4. Arquitetura de Segurança e Defesa em Profundidade
+
+O acesso ao Painel Admin é protegido em duas camadas (*Defense in Depth*):
+
+1. **Camada de Interface (Client-Side):**
+   - Em ambiente de desenvolvimento ou modo local/demonstração, o painel exibe dados sintéticos de demonstração para testes de layout e validação de componentes.
+   - Em produção, a interface lê os dados reais através de [`admin-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/admin/admin-service.ts).
+2. **Camada de Backend e Banco de Dados (Server-Side / Zero-Trust):**
+   - Qualquer mutação sensível (estorno de pagamento, prorrogação de assinatura ou alteração de role de outro usuário) passa pela Edge Function `supabase/functions/admin-api` e pelas RPCs do PostgreSQL (`admin_extend_subscription`, `admin_change_role`).
+   - A função PostgreSQL `public.is_admin(p_user_id)` valida criptograficamente se o `user_id` correspondente ao JWT (`auth.jwt()->>'sub'`) possui `role = 'admin'` na tabela `public.profiles`.
+   - Se um usuário comum ou invasor tentar forçar requisições com `?admin=1`, as chamadas de API do Supabase retornarão status **HTTP 403 Forbidden**, garantindo total inviolabilidade dos dados dos estudantes e das operações financeiras.
+
+

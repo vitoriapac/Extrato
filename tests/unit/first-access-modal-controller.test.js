@@ -26,6 +26,12 @@ test('first-access-modal-controller — inicializa fechado e responde a open/clo
   assert.equal(controller.getActiveView(), 'landing');
   controller.openPaywall('annual', 'Simulador');
   assert.equal(controller.getActiveView(), 'paywall');
+  controller.openAdmin();
+  assert.equal(controller.getActiveView(), 'admin');
+  controller.openLegal('terms');
+  assert.equal(controller.getActiveView(), 'legal');
+  controller.openCatalog();
+  assert.equal(controller.getActiveView(), 'catalog');
   controller.close();
   assert.equal(controller.isOpen(), false);
 });
@@ -85,4 +91,117 @@ test('first-access-modal-controller — checkAndTrigger não abre quando já há
   const didTrigger = controller.checkAndTrigger();
   assert.equal(didTrigger, false);
   assert.equal(controller.isOpen(), false);
+});
+
+test('first-access-modal-controller — checkAndTrigger abre admin quando ?admin=1', () => {
+  const mockContainer = { _preactRoot: null };
+  const mockWindow = {
+    location: { search: '?admin=1' },
+    document: {},
+    addEventListener: () => {},
+  };
+
+  const controller = createFirstAccessModalController({
+    getContainer: () => mockContainer,
+    getState: () => ({ subjects: [{ id: 's1' }] }), // Mesmo com matérias existentes
+    isDemoMode: () => false,
+    isTestMode: () => false,
+    window: mockWindow,
+    onStartGuidedPlan: () => {},
+    onStartDemo: () => {},
+  });
+
+  const didTrigger = controller.checkAndTrigger();
+  assert.equal(didTrigger, true);
+  assert.equal(controller.isOpen(), true);
+  assert.equal(controller.getActiveView(), 'admin');
+});
+
+test('first-access-modal-controller — checkAndTrigger abre legal quando ?legal=privacy', () => {
+  const mockContainer = { _preactRoot: null };
+  const mockWindow = {
+    location: { search: '?legal=privacy' },
+    document: {},
+    addEventListener: () => {},
+  };
+
+  const controller = createFirstAccessModalController({
+    getContainer: () => mockContainer,
+    getState: () => ({ subjects: [{ id: 's1' }] }),
+    isDemoMode: () => false,
+    isTestMode: () => false,
+    window: mockWindow,
+    onStartGuidedPlan: () => {},
+    onStartDemo: () => {},
+  });
+
+  const didTrigger = controller.checkAndTrigger();
+  assert.equal(didTrigger, true);
+  assert.equal(controller.isOpen(), true);
+  assert.equal(controller.getActiveView(), 'legal');
+});
+
+test('first-access-modal-controller — checkAndTrigger abre catalogo quando ?catalogo=1', () => {
+  const mockContainer = { _preactRoot: null };
+  const mockWindow = {
+    location: { search: '?catalogo=1' },
+    document: {},
+    addEventListener: () => {},
+  };
+
+  const controller = createFirstAccessModalController({
+    getContainer: () => mockContainer,
+    getState: () => ({ subjects: [{ id: 's1' }] }),
+    isDemoMode: () => false,
+    isTestMode: () => false,
+    window: mockWindow,
+    onStartGuidedPlan: () => {},
+    onStartDemo: () => {},
+  });
+
+  const didTrigger = controller.checkAndTrigger();
+  assert.equal(didTrigger, true);
+  assert.equal(controller.isOpen(), true);
+  assert.equal(controller.getActiveView(), 'catalog');
+});
+
+test('first-access-modal-controller — bindGlobalTriggers expõe __EXTRATO_MODALS__ e responde a eventos', () => {
+  const mockContainer = { _preactRoot: null };
+  const listeners = {};
+  const mockWindow = {
+    location: { search: '' },
+    document: {},
+    addEventListener: (event, handler) => {
+      listeners[event] = handler;
+    },
+  };
+
+  const controller = createFirstAccessModalController({
+    getContainer: () => mockContainer,
+    getState: () => ({ subjects: [{ id: 's1' }] }),
+    isDemoMode: () => false,
+    isTestMode: () => false,
+    window: mockWindow,
+    onStartGuidedPlan: () => {},
+    onStartDemo: () => {},
+  });
+
+  controller.checkAndTrigger();
+
+  assert.ok(mockWindow.__EXTRATO_MODALS__);
+  assert.equal(typeof mockWindow.__EXTRATO_MODALS__.openAdmin, 'function');
+
+  // Testar chamada direta via __EXTRATO_MODALS__
+  mockWindow.__EXTRATO_MODALS__.openAdmin();
+  assert.equal(controller.isOpen(), true);
+  assert.equal(controller.getActiveView(), 'admin');
+
+  // Testar disparo de evento
+  assert.ok(listeners['open-legal-terms']);
+  listeners['open-legal-terms']();
+  assert.equal(controller.getActiveView(), 'legal');
+
+  assert.ok(listeners['open-cloud-catalog']);
+  listeners['open-cloud-catalog']();
+  assert.equal(controller.getActiveView(), 'catalog');
 });
