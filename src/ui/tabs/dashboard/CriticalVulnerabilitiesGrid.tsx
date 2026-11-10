@@ -17,7 +17,10 @@ export function CriticalVulnerabilitiesGrid({
   const { vulnerabilities, summary, measuredTopicsCount } = model;
 
   return (
-    <article class="chart-card cockpit-analytics-card flex flex-col justify-between h-full" aria-labelledby="vulnerabilitiesGridTitle">
+    <article
+      class="chart-card cockpit-analytics-card flex flex-col justify-between h-full"
+      aria-labelledby="vulnerabilitiesGridTitle"
+    >
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
           <div class="p-1.5 rounded bg-surface-subtle text-amber">
@@ -25,12 +28,16 @@ export function CriticalVulnerabilitiesGrid({
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h3 id="vulnerabilitiesGridTitle" class="text-base font-semibold text-content-primary m-0">
+              <h3
+                id="vulnerabilitiesGridTitle"
+                class="text-base font-semibold text-content-primary m-0"
+              >
                 Radar de Vulnerabilidades Críticas
               </h3>
               {vulnerabilities.length > 0 && (
                 <Badge variant="warning">
-                  {vulnerabilities.length} {vulnerabilities.length === 1 ? 'maior risco' : 'maiores riscos'}
+                  {vulnerabilities.length}{' '}
+                  {vulnerabilities.length === 1 ? 'maior risco' : 'maiores riscos'}
                 </Badge>
               )}
             </div>
@@ -80,11 +87,12 @@ export function CriticalVulnerabilitiesGrid({
                   <span class="text-xs font-medium text-content-primary truncate max-w-[65%]">
                     {item.subjectName}
                   </span>
-                  <Badge variant={item.urgencyVariant}>
-                    {item.incidence}
-                  </Badge>
+                  <Badge variant={item.urgencyVariant}>{item.incidence}</Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-content-primary m-0 mb-2 line-clamp-2" title={item.topicName}>
+                <h4
+                  class="text-sm font-semibold text-content-primary m-0 mb-2 line-clamp-2"
+                  title={item.topicName}
+                >
                   {item.topicName}
                 </h4>
 
@@ -107,13 +115,11 @@ export function CriticalVulnerabilitiesGrid({
               </div>
 
               <div class="flex items-center justify-between pt-2 border-t border-border-subtle">
-                <span class="text-xs text-red font-medium">
-                  Faltam {item.gap} p.p. para a meta
-                </span>
+                <span class="text-xs text-red font-medium">Faltam {item.gap} p.p. para a meta</span>
                 {onTrainTopic && (
                   <button
                     type="button"
-                    class="btn small primary flex items-center gap-1 text-xs py-1 px-2.5"
+                    class="btn small ghost flex items-center gap-1 text-xs py-1 px-2.5"
                     onClick={() => onTrainTopic(item.topicId, item.subjectId)}
                     aria-label={`${item.actionText}: ${item.topicName}`}
                     title={`Registrar treino de questões em ${item.topicName}`}

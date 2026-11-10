@@ -270,3 +270,9 @@ T6, T7, T10, T11 (independentes, em paralelo) ─┤
 - Fase 4 e as pendências implementadas (commit desta rodada): copiar link nos 5 blocos; calendário com células de 24px em Desempenho e resumo semanal em texto; checkbox "Comparar" com 24px; Diagnóstico com 3 cartões e dobra; ação no vazio de Incidência × Domínio; limiares da comparação de períodos explícitos; "Analisar <disciplina>" com o motivo; meta e plano de recuperação na leitura; glossário com link para a Ajuda.
 - Decididos: aderência continua visível (sem dobra); CSV adiado.
 - Ainda abertos: legenda 304/305 (origem não localizada), título "Incidência × Domínio" repetido, zero cortado da fonte mono, `DESIGN.md` sem as novidades.
+
+## 11. Fase 5 (crítica final, 10/11/2026): 27/40, meta de 32 não atingida
+
+Rodada seguinte (sem commit): leitura com "Prontidão 46/100 calculada agora" e o fechamento explicado numa frase; atalhos do resumo semanal viram links sem verbo de ordem (único botão sólido: "Abrir em Hoje"); botões do Radar viram secundários; plano de recuperação explica que redistribui entre disciplinas e Hoje escolhe um tópico; "impacto alto na prova" traz a origem (configurado por você, oficial, ajustado pelo histórico ou estimado); "Ação de Hoje" sobe no celular; "Abaixo do mínimo" virou "Abaixo da referência mínima"; distribuição do tempo por disciplina fica numa dobra.
+
+Não feito: escala da Matriz Domínio × Retenção ajustada aos dados (a geometria dos quadrantes é fixa); donut trocado por barras; unir "Saúde da evidência" e "Qualidade do histórico"; suprimir percentuais de semana parcial; nomes distintos para as quatro aderências (a terminologia fixa do produto as chama de aderência); recolher o cartão de filtros no celular; "Copiar link" com menos peso visual.

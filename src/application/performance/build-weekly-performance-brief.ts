@@ -544,31 +544,31 @@ export function buildWeeklyPerformanceBrief({
 
   if (!hasActivity) {
     p3 = `Para dar o primeiro passo agora sem precisar analisar tabelas longas, abra a aba Hoje para ver a tarefa recomendada do dia, revise seu cronograma na aba Planejamento ou registre sua prática em Questões & Simulados.`;
-    addLink({ label: 'Ir para a aba Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
+    addLink({ label: 'Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
     addLink({
-      label: 'Treinar em Questões & Simulados',
+      label: 'Questões e simulados',
       icon: 'list-check',
       kind: 'tab',
       target: 'questoes',
     });
-    addLink({ label: 'Ver Planejamento', icon: 'map-2', kind: 'tab', target: 'metas' });
+    addLink({ label: 'Planejamento', icon: 'map-2', kind: 'tab', target: 'metas' });
   } else if (weakestSubject && overdueReviews > 0) {
     p3 = `Para os próximos dias, vale focar em duas frentes simples: abra a seção Disciplinas ou a aba Questões & Simulados para revisar os assuntos de ${weakestSubject.name} em que houve mais erros, e passe na aba Agenda para colocar em dia ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
     addLink({
-      label: `Analisar ${weakestSubject.name} (menor acerto da semana)`,
+      label: `${weakestSubject.name}: ver análise (menor acerto da semana)`,
       icon: 'chart-dots',
       kind: 'section',
       target: 'subjects',
       subjectId: weakestSubject.id,
     });
     addLink({
-      label: 'Treinar em Questões & Simulados',
+      label: 'Questões e simulados',
       icon: 'list-check',
       kind: 'tab',
       target: 'questoes',
     });
     addLink({
-      label: 'Abrir Agenda de Revisões',
+      label: 'Agenda de revisões',
       icon: 'calendar-time',
       kind: 'tab',
       target: 'agenda',
@@ -576,14 +576,14 @@ export function buildWeeklyPerformanceBrief({
   } else if (weakestSubject) {
     p3 = `Para transformar essa leitura em resultado prático, vale abrir a seção Disciplinas para ver quais assuntos de ${weakestSubject.name} puxaram seus acertos para baixo, ou ir direto à aba Questões & Simulados para treinar uma nova bateria dessa matéria.`;
     addLink({
-      label: `Analisar ${weakestSubject.name} (menor acerto da semana)`,
+      label: `${weakestSubject.name}: ver análise (menor acerto da semana)`,
       icon: 'chart-dots',
       kind: 'section',
       target: 'subjects',
       subjectId: weakestSubject.id,
     });
     addLink({
-      label: 'Treinar em Questões & Simulados',
+      label: 'Questões e simulados',
       icon: 'list-check',
       kind: 'tab',
       target: 'questoes',
@@ -597,12 +597,12 @@ export function buildWeeklyPerformanceBrief({
   } else if (overdueReviews > 0) {
     p3 = `Como você está com ${pluralize(overdueReviews, 'revisão atrasada', 'revisões atrasadas')}, o melhor próximo passo é passar na aba Agenda para colocá-las em dia e proteger o que já estudou, ou abrir a aba Hoje para seguir a prioridade do dia.`;
     addLink({
-      label: 'Abrir Agenda de Revisões',
+      label: 'Agenda de revisões',
       icon: 'calendar-time',
       kind: 'tab',
       target: 'agenda',
     });
-    addLink({ label: 'Ir para a aba Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
+    addLink({ label: 'Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
     addLink({
       label: 'Ver evolução em Questões',
       icon: 'help-circle',
@@ -618,7 +618,7 @@ export function buildWeeklyPerformanceBrief({
       kind: 'section',
       target: 'consistency',
     });
-    addLink({ label: 'Ir para a aba Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
+    addLink({ label: 'Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
   } else {
     p3 = `Com a rotina em dia e bom aproveitamento, você pode avançar nos próximos conteúdos na aba Disciplinas, aprofundar a evolução de acertos na seção Questões${current.simulationsCount > 0 ? ' ou conferir o detalhamento da sua nota na seção Simulados' : ' ou acompanhar sua regularidade em Consistência'}.`;
     addLink({

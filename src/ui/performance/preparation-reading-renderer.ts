@@ -37,7 +37,7 @@ export function renderPreparationReading(
   const how =
     [
       howAmI.readiness
-        ? `<p class="m-0"><strong class="performance-reading__figure">Prontidão ${escapeHtml(howAmI.readiness.value)}/100</strong>${howAmI.readiness.detail ? ` <span>${escapeHtml(howAmI.readiness.detail)}</span>` : ''}</p>`
+        ? `<p class="m-0"><strong class="performance-reading__figure">Prontidão ${escapeHtml(howAmI.readiness.value)}/100</strong> <span>calculada agora</span></p>${howAmI.readiness.detail ? line(howAmI.readiness.detail) : ''}`
         : '',
       howAmI.projection ? line(howAmI.projection.text) : '',
       howAmI.rhythm ? line(howAmI.rhythm.text) : '',

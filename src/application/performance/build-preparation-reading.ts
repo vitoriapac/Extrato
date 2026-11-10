@@ -38,6 +38,14 @@ export interface PreparationReading {
   evidence: string[];
 }
 
+/** De onde vem o impacto na prova: nunca apresentado como fato sem origem. */
+const impactOrigin = (item: Row): string => {
+  const profile = item.examIntelligence || {};
+  if (profile.usedHistory) return 'ajustado pelo histórico da banca';
+  if (profile.impactSourceType === 'manual') return 'configurado por você';
+  if (profile.impactSourceType === 'official') return 'oficial';
+  return 'estimado';
+};
 const finite = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null;
 const round = (value: number) => Math.round(value);
@@ -71,8 +79,10 @@ export function buildPreparationReading({
   const pair = model.readinessPair;
   const readinessDetail =
     model.readinessDelta != null && pair?.current && pair?.previous
-      ? `${model.readinessDelta > 0 ? '+' : model.readinessDelta < 0 ? '−' : ''}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} no fechamento de ${formatDateBR(pair.current.date)} frente a ${formatDateBR(pair.previous.date)}`
-      : null;
+      ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}, ${model.readinessDelta > 0 ? '+' : model.readinessDelta < 0 ? '−' : ''}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente a ${pair.previous.score} em ${formatDateBR(pair.previous.date)}, último registro do período anterior.`
+      : pair?.current
+        ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}.`
+        : null;
   if (readinessValue != null && model.readinessDelta == null)
     evidence.push('Sem fechamento anterior comparável: a Prontidão aparece sem variação.');
   const band = projection?.projection?.calibratedSimulationBand;
@@ -110,7 +120,7 @@ export function buildPreparationReading({
     .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
   for (const gap of gaps.slice(0, 3 - pulling.length))
     pulling.push({
-      text: `${gap.subjectName} — ${gap.topicName}: domínio ${round(Number(gap.mastery))}, com impacto alto na prova.`,
+      text: `${gap.subjectName} — ${gap.topicName}: domínio ${round(Number(gap.mastery))}; impacto alto na prova (${impactOrigin(gap)}).`,
       link: {
         kind: 'section',
         target: 'subjects',

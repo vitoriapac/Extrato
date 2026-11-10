@@ -77,7 +77,7 @@ export function renderMiniComparisonChart(
 
 function renderBriefLinkButton(
   link: WeeklyBriefLink,
-  primary: boolean,
+  primary: boolean | null,
   escapeHtml: (value: any) => string,
   escapeAttr: (value: any) => string
 ): string {
@@ -88,7 +88,8 @@ function renderBriefLinkButton(
         }`
       : `data-performance-open="${escapeAttr(link.target)}"`;
 
-  return `<button type="button" class="btn${primary ? '' : ' ghost'} small inline-flex items-center gap-1.5" ${attrs}>${renderIconSvg(
+  // Dentro da leitura da preparação o único botão é "Abrir em Hoje"; estes são links de análise.
+  return `<button type="button" class="${primary === null ? 'performance-topic-link' : `btn${primary ? '' : ' ghost'} small`} inline-flex items-center gap-1.5" ${attrs}>${renderIconSvg(
     link.icon,
     { size: 14, className: 'shrink-0' }
   )}<span>${escapeHtml(link.label)}</span></button>`;
@@ -115,7 +116,7 @@ export function renderWeeklyPerformanceBriefCard(
   const linksHtml = brief.links.length
     ? `<nav class="ui-filter-bar flex flex-wrap gap-2 pt-1" aria-label="Atalhos da semana">${brief.links
         .map((link, index) =>
-          renderBriefLinkButton(link, index === 0 && !options.embedded, escapeHtml, escapeAttr)
+          renderBriefLinkButton(link, options.embedded ? null : index === 0, escapeHtml, escapeAttr)
         )
         .join('')}</nav>`
     : '';

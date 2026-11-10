@@ -373,7 +373,7 @@ export function calculateCareerBenchmarkComparison(
   // 1. Horas Semanais
   const hours = aggregates.studiedHours;
   let hoursStatus: BenchmarkStatus = 'insufficient';
-  let hoursStatusLabel = 'Abaixo do mínimo';
+  let hoursStatusLabel = 'Abaixo da referência mínima';
   let hoursCommentary = 'Abaixo da faixa mínima de referência; pode ser fase inicial ou semana atípica.';
 
   if (hours >= career.weeklyHours.advanced) {
@@ -408,7 +408,7 @@ export function calculateCareerBenchmarkComparison(
   // 2. Volume de Questões
   const questions = aggregates.resolvedQuestions;
   let qStatus: BenchmarkStatus = 'insufficient';
-  let qStatusLabel = 'Abaixo do mínimo';
+  let qStatusLabel = 'Abaixo da referência mínima';
   let qCommentary = 'Volume de questões abaixo da faixa mínima de referência nesta semana.';
 
   if (questions >= career.weeklyQuestions.advanced) {
