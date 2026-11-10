@@ -12,9 +12,16 @@ export interface PreparationLink {
   label: string;
 }
 
+export type ReadinessVerdict = { state: 'down' | 'steady' | 'up'; text: string } | null;
+
 export interface PreparationReading {
   howAmI: {
-    readiness: { value: number; detail: string | null } | null;
+    readiness: {
+      value: number;
+      detail: string | null;
+      /** Tendência frente ao período anterior; sem causa. */
+      verdict: ReadinessVerdict;
+    } | null;
     projection: { text: string } | null;
     rhythm: { text: string } | null;
   };
@@ -83,6 +90,15 @@ export function buildPreparationReading({
       : pair?.current
         ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}.`
         : null;
+  const delta = finite(model.readinessDelta);
+  const readinessVerdict: ReadinessVerdict =
+    delta == null
+      ? null
+      : Math.abs(delta) <= 1
+        ? { state: 'steady', text: 'Tendência: estável frente ao período anterior' }
+        : delta < 0
+          ? { state: 'down', text: 'Tendência: em queda frente ao período anterior' }
+          : { state: 'up', text: 'Tendência: em alta frente ao período anterior' };
   if (readinessValue != null && model.readinessDelta == null)
     evidence.push('Sem fechamento anterior comparável: a Prontidão aparece sem variação.');
   const band = projection?.projection?.calibratedSimulationBand;
@@ -169,7 +185,10 @@ export function buildPreparationReading({
   void range;
   return {
     howAmI: {
-      readiness: readinessValue != null ? { value: readinessValue, detail: readinessDetail } : null,
+      readiness:
+        readinessValue != null
+          ? { value: readinessValue, detail: readinessDetail, verdict: readinessVerdict }
+          : null,
       projection: projectionText ? { text: projectionText } : null,
       rhythm: rhythmText ? { text: rhythmText } : null,
     },

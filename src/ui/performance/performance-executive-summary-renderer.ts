@@ -66,7 +66,9 @@ export function renderPerformanceExecutiveSummary(
     <dl class="m-0 grid grid-cols-1 md:grid-cols-2 gap-4">${row('No período', changeText(summary.change))}${row('Base da leitura', baseText(summary.base))}</dl>
     <nav class="ui-filter-bar flex flex-wrap gap-2 pt-3" aria-label="Aprofundar o resumo"><button type="button" class="btn ghost small" data-performance-investigate="diagnosis">Ver diagnóstico</button></nav>`;
   // Embutido: o resumo semanal entra no mesmo cartão, com as duas janelas escritas.
-  if (embedded) return body;
+  // Embutido, o resumo não repete o que a Leitura e os indicadores logo abaixo já mostram (variação, questões e sessões).
+  if (embedded)
+    return `${lead(situationText(summary.situation))}${summary.base.smallSample ? `<p class="analytics-note">${escapeHtml(baseText(summary.base))}</p>` : ''}<nav class="ui-filter-bar flex flex-wrap gap-2 pt-3" aria-label="Aprofundar o resumo"><button type="button" class="btn ghost small" data-performance-investigate="diagnosis">Ver diagnóstico</button></nav>`;
   return `<section class="performance-executive chart-card mb-4" aria-label="Resumo executivo do período">
     <header class="module-heading module-heading--compact mb-3">
       <div class="flex flex-wrap items-center justify-between gap-2">

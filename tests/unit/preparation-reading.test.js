@@ -88,3 +88,32 @@ test('o que mudou depois das recomendações: só mostra resultados medidos e n�
   assert.match(html, /não indica que a recomendação causou/);
   assert.doesNotMatch(html, /porque|graças a|garante/i);
 });
+
+test('leitura da preparação: a Prontidão traz barra e tendência, sem causa', () => {
+  const readiness = { value: 46, availableFactors: ['coverage', 'mastery', 'retention'] };
+  const pair = {
+    current: { date: '2026-11-08', score: 53 },
+    previous: { date: '2026-10-11', score: 56 },
+  };
+  const down = buildPreparationReading({
+    model: { readiness, readinessDelta: -3, readinessPair: pair },
+    weeklyBrief: { current: week() },
+  });
+  assert.equal(down.howAmI.readiness.verdict.state, 'down');
+  const steady = buildPreparationReading({
+    model: { readiness, readinessDelta: 1, readinessPair: pair },
+  });
+  assert.equal(steady.howAmI.readiness.verdict.state, 'steady');
+  const up = buildPreparationReading({
+    model: { readiness, readinessDelta: 4, readinessPair: pair },
+  });
+  assert.equal(up.howAmI.readiness.verdict.state, 'up');
+  const none = buildPreparationReading({ model: { readiness, readinessDelta: null } });
+  assert.equal(none.howAmI.readiness.verdict, null);
+  const html = renderPreparationReading(down);
+  assert.match(html, /performance-reading__bar/);
+  assert.match(html, /aria-label="Prontidão 46 em uma escala de 0 a 100"/);
+  assert.match(html, /Tendência: em queda frente ao período anterior/);
+  assert.match(html, /class="performance-window">7 dias</);
+  assert.doesNotMatch(html, /porque|graças a|garante/i);
+});

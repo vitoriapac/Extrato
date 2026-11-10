@@ -17,7 +17,10 @@ export function VolatileMasteryGrid({
   const { volatileTopics, summary } = model;
 
   return (
-    <article class="chart-card cockpit-analytics-card flex flex-col justify-between h-full" aria-labelledby="volatileGridTitle">
+    <article
+      class="chart-card cockpit-analytics-card flex flex-col justify-between h-full"
+      aria-labelledby="volatileGridTitle"
+    >
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
           <div class="p-1.5 rounded bg-surface-subtle text-red">
@@ -53,9 +56,10 @@ export function VolatileMasteryGrid({
           <div class="inline-flex p-2 rounded-full bg-surface-card text-content-secondary mb-2">
             <Icon name="info-circle" size={24} />
           </div>
-          <p class="m-0 font-medium text-content-primary">Nenhuma queda de retenção detectada</p>
+          <p class="m-0 font-medium text-content-primary">Sem queda de retenção medida</p>
           <p class="m-0 mt-1 text-xs">
-            Nenhum tópico caiu entre avaliações. Sem questões em datas diferentes, não há como medir.
+            Nenhum tópico mostrou queda entre avaliações. Medir a queda exige questões do mesmo
+            tópico em datas diferentes.
           </p>
         </div>
       ) : (
@@ -70,22 +74,31 @@ export function VolatileMasteryGrid({
                   <span class="text-xs font-medium text-content-primary truncate max-w-[65%]">
                     {item.subjectName}
                   </span>
-                  <Badge variant={item.statusVariant}>
-                    -{item.accuracyDrop} p.p.
-                  </Badge>
+                  <Badge variant={item.statusVariant}>-{item.accuracyDrop} p.p.</Badge>
                 </div>
-                <h4 class="text-sm font-semibold text-content-primary m-0 mb-2 line-clamp-2" title={item.topicName}>
+                <h4
+                  class="text-sm font-semibold text-content-primary m-0 mb-2 line-clamp-2"
+                  title={item.topicName}
+                >
                   {item.topicName}
                 </h4>
 
                 <div class="grid grid-cols-2 gap-2 p-2 rounded bg-surface-subtle text-xs mb-2">
                   <div>
-                    <span class="text-xs text-content-secondary block uppercase">Logo após o estudo</span>
-                    <span class="font-semibold font-mono text-green text-sm">{item.initialAccuracy}%</span>
+                    <span class="text-xs text-content-secondary block uppercase">
+                      Logo após o estudo
+                    </span>
+                    <span class="font-semibold font-mono text-green text-sm">
+                      {item.initialAccuracy}%
+                    </span>
                   </div>
                   <div class="border-l border-border-subtle pl-2">
-                    <span class="text-xs text-content-secondary block uppercase">Após {item.daysBetweenAssessments} dias</span>
-                    <span class="font-semibold font-mono text-red text-sm">{item.spacedAccuracy}%</span>
+                    <span class="text-xs text-content-secondary block uppercase">
+                      Após {item.daysBetweenAssessments} dias
+                    </span>
+                    <span class="font-semibold font-mono text-red text-sm">
+                      {item.spacedAccuracy}%
+                    </span>
                   </div>
                 </div>
 

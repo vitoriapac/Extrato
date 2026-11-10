@@ -130,12 +130,13 @@ export function CareerBenchmarkCard({
                 id="careerBenchmarkTitle"
                 class="text-base font-semibold text-content-primary m-0"
               >
-                Ritmo frente aos aprovados
+                Referência interna de ritmo
               </h3>
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Faixas de referência internas para <strong>{career.name}</strong>, sem fonte oficial · últimos 7 dias · 100% privado no seu aparelho
+              Faixas de referência internas para <strong>{career.name}</strong>, sem fonte oficial ·
+              últimos 7 dias · 100% privado no seu aparelho
             </p>
           </div>
         </div>

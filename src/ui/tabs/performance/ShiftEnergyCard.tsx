@@ -39,6 +39,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
               {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
+              <span class="performance-window">histórico</span>
               Todo o histórico registrado, sem o filtro de período (
               {totalStudyHours.toLocaleString('pt-BR')}h no total). A seção Foco profundo por turno
               usa só o período escolhido.
