@@ -102,7 +102,7 @@ export function renderPerformancePage({
     viewState.section === 'exam'
       ? 'Histórico de provas'
       : viewState.section === 'history'
-        ? 'Seletor de período próprio'
+        ? 'Período definido nos filtros de sessões'
         : viewState.section === 'diagnosis'
           ? 'Situação atual'
           : escapeHtml(range.label),

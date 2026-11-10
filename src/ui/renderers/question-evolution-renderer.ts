@@ -20,12 +20,26 @@ export function renderQuestionEvolution(
     right = 16,
     top = 12,
     bottom = 32;
+  // Posição pela data real: uma semana sem questões aparece como lacuna, não é pulada.
+  const times: number[] = model.buckets.map((item: any) =>
+    Date.parse(model.monthly ? `${item.key}-01` : item.key)
+  );
+  const span = times.length > 1 ? times[times.length - 1] - times[0] : 0;
   const x = (index: number) =>
     left +
-    (model.buckets.length === 1
+    (model.buckets.length === 1 || !span
       ? 0
-      : (index / (model.buckets.length - 1)) * (width - left - right));
-  const y = (value: number) => top + ((100 - value) / 100) * (height - top - bottom);
+      : ((times[index] - times[0]) / span) * (width - left - right));
+  // Escala ajustada aos dados (como nos simulados): com 2 ou 3 pontos, 0 a 100 deixaria a linha achatada.
+  const values: number[] = model.buckets
+    .map((item: any) => item.movingAccuracy)
+    .filter((value: unknown): value is number => typeof value === 'number');
+  const scaleLow = values.length ? Math.max(0, Math.floor((Math.min(...values) - 5) / 10) * 10) : 0;
+  const scaleHigh = values.length
+    ? Math.min(100, Math.max(scaleLow + 20, Math.ceil((Math.max(...values) + 5) / 10) * 10))
+    : 100;
+  const y = (value: number) =>
+    top + ((scaleHigh - value) / (scaleHigh - scaleLow)) * (height - top - bottom);
   const segments = [];
   for (let index = 1; index < model.buckets.length; index++) {
     const previous = model.buckets[index - 1].movingAccuracy,
@@ -42,7 +56,7 @@ export function renderQuestionEvolution(
         : `<circle class="question-evolution-point" cx="${x(index)}" cy="${y(item.movingAccuracy)}" r="4">${renderChartTooltip(label(item, model.monthly, formatDate) + ': média móvel ' + item.movingAccuracy + '% · ' + item.resolved + ' questões')}</circle>`
     )
     .join('');
-  const axis = [0, 50, 100]
+  const axis = [scaleLow, Math.round((scaleLow + scaleHigh) / 2), scaleHigh]
     .map(
       value =>
         `<line class="question-evolution-grid" x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}"/><text x="0" y="${y(value) + 3}">${value}</text>`

@@ -115,7 +115,7 @@ export function buildCriticalVulnerabilitiesViewModel({
 
   let summary = 'Nenhuma vulnerabilidade crítica detectada no escopo do edital.';
   if (topItems.length > 0) {
-    summary = `${totalCount} ${totalCount === 1 ? 'tópico prioritário requer' : 'tópicos prioritários requerem'} reforço antes da prova.`;
+    summary = `${totalCount} ${totalCount === 1 ? 'tópico prioritário requer' : 'tópicos prioritários requerem'} reforço antes da prova, pela prioridade calculada do app.`;
   }
 
   return {

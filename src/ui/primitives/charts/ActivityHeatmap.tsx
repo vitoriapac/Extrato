@@ -351,7 +351,7 @@ export function ActivityHeatmap({
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-content-secondary pt-2 border-t border-border-subtle">
         <span>
           {metric === 'hours'
-            ? 'Cores: <25% · 25–50% · 50–75% · ≥100% da meta diária'
+            ? 'Cores: abaixo de 50% · 50% a 99% · 100% ou mais da meta diária (sem meta: menos de 1 h · 1 a 2 h · mais de 2 h)'
             : 'Intensidade relativa da atividade selecionada'}
         </span>
 

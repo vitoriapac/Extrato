@@ -23,6 +23,22 @@ const change = (value: number | null | undefined) =>
 const card = (label: string, value: unknown, unit: string, detail: string) =>
   renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail });
 
+const glossaryItems: Array<[string, string]> = [
+  [
+    'Prontidão',
+    'Índice de 0 a 100 que combina cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.',
+  ],
+  ['Domínio', 'Desempenho pessoal medido em um tópico ou disciplina, de 0 a 100.'],
+  ['Retenção', 'Estimativa de quanto o conteúdo se mantém na memória ao longo das revisões.'],
+  [
+    'Aderência',
+    'Tempo realizado que tem crédito compatível com uma atividade do plano. Difere do tempo total estudado.',
+  ],
+  ['Incidência', 'Percentual das provas do histórico em que o tópico aparece.'],
+];
+const renderGlossary = (escapeHtml: (value: any) => string) =>
+  `<dl class="performance-glossary">${glossaryItems.map(([term, text]) => `<div><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(text)}</dd></div>`).join('')}</dl>`;
+
 export function renderPerformanceOverview(
   model: Record<string, any>,
   {
@@ -96,5 +112,5 @@ export function renderPerformanceOverview(
     { escapeHtml, embedded: true }
   );
   const readingHtml = `<section class="performance-executive chart-card mb-4" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
-  return `${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  return `${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
 }

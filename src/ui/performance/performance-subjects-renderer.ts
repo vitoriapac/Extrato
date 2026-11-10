@@ -52,7 +52,7 @@ export function renderPerformanceSubjects(
     });
     const counts = matrix.quadrantCounts;
     // No celular a dispersão não cabe com rótulos legíveis: a lista ordena as disciplinas de menor domínio.
-    const matrixRanked = `<ol class="matrix-ranked" aria-label="Disciplinas ordenadas por menor domínio">${[
+    const matrixRanked = `<ol class="matrix-ranked" aria-label="Nomes completos das disciplinas, do menor para o maior domínio">${[
       ...matrix.items,
     ]
       .sort((a: Row, b: Row) => a.mastery - b.mastery)

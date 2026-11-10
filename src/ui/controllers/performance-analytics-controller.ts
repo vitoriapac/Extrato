@@ -110,7 +110,7 @@ export function renderRadarSvg({
     })
     .join('');
 
-  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="radar-svg" viewBox="0 0 ${width} ${height}" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;">
+  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Radar de prontidão por disciplina, com rolagem horizontal"><svg class="radar-svg" role="img" aria-label="Radar de prontidão por disciplina" viewBox="0 0 ${width} ${height}" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;">
     ${gridRings}
     ${axes}
     ${series}

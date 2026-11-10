@@ -96,7 +96,7 @@ export function renderPerformanceQuestions({
     multiLineSection = `<section class="performance-block" aria-label="Evolução da precisão por disciplina">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
-          <h3 class="m-0">Desempenho por disciplina</h3>
+          <h3 class="m-0">Precisão por disciplina</h3>
           <p class="analytics-note m-0">Evolução da taxa de acerto nas questões por período, nas cores de cada matéria.${msp.series.length > chartLimit ? ` O gráfico traça as ${chartLimit} de menor precisão; a lista traz as ${msp.series.length}.` : ''}</p>
         </div>
       </div>

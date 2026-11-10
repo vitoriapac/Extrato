@@ -175,6 +175,6 @@ export function renderExamOpportunity(model: Record<string, any>) {
   );
   const row = candidates[0];
   if (!row)
-    return '<p class="analytics-note">Nenhum tópico deste recorte reúne presença em 50% ou mais das provas, domínio abaixo de 70 e confiança moderada ou alta, então não há oportunidade a destacar. Ajuste os filtros da matriz para ver outros recortes.</p>';
+    return '<p class="analytics-note">Nenhum tópico deste recorte reúne presença em 50% ou mais das provas, domínio abaixo de 70 e confiança moderada ou alta, então não há oportunidade a destacar. Ajuste os filtros da matriz para ver outros recortes. Esta leitura usa só a incidência histórica; a lista de tópicos prioritários usa a prioridade calculada do app.</p>';
   return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade no recorte</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · confiança ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-analysis-nav="hoje" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
 }

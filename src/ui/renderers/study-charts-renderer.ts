@@ -39,7 +39,7 @@ export function renderProgressChart({ data, formatDate }: any) {
         `<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(item.pct)}" r="3"><title>${formatDate(item.date)}: ${item.pct}%</title></circle>`
     )
     .join('');
-  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${gridLines}<polygon class="chart-area" points="${areaPoints}"></polygon><polyline class="chart-line" points="${points}"></polyline>${dots}${dateLabels}</svg></div>`;
+  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico da evolução do progresso, com rolagem horizontal"><svg class="progress-chart-svg" role="img" aria-label="Gráfico da evolução do progresso" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${gridLines}<polygon class="chart-area" points="${areaPoints}"></polygon><polyline class="chart-line" points="${points}"></polyline>${dots}${dateLabels}</svg></div>`;
 }
 
 export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatDuration }: any) {
@@ -82,7 +82,7 @@ export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatD
     targetSeconds > 0
       ? `<line x1="${padL}" y1="${yFor(targetSeconds)}" x2="${W - padR}" y2="${yFor(targetSeconds)}" stroke="var(--chart-series-secondary)" stroke-width="1.5" stroke-dasharray="5 4"><title>Meta diária: ${formatDuration(targetSeconds)}</title></line>`
       : '';
-  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${targetLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`;
+  return `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico de horas de estudo, com rolagem horizontal"><svg class="progress-chart-svg" role="img" aria-label="Gráfico de horas de estudo" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${targetLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`;
 }
 
 export function renderSubjectHoursBars({

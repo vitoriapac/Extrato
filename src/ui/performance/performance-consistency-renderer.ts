@@ -10,7 +10,10 @@ import { formatDecimal } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 
 // Share of rated sessions with deep focus per shift; a shift without rated sessions shows "sem sessões", never 0%.
-export function renderFocusByShift(analysis: Record<string, any> | null | undefined) {
+export function renderFocusByShift(
+  analysis: Record<string, any> | null | undefined,
+  windowLabel = ''
+) {
   if (!analysis?.shifts) return '';
   const rows = (['morning', 'afternoon', 'night'] as const)
     .map(key => {
@@ -25,7 +28,7 @@ export function renderFocusByShift(analysis: Record<string, any> | null | undefi
       ? `${analysis.shifts[analysis.peakShift]?.averageAccuracy != null ? 'Maior acerto em questões' : 'Mais foco profundo'}: ${String(analysis.peakShiftLabel).toLowerCase()}.`
       : ''
     : `Ainda há poucas sessões avaliadas; a partir de 5 o diagnóstico por turno fica disponível.`;
-  return `<section class="performance-block focus-shift" aria-label="Foco profundo por turno"><h3>Foco profundo por turno</h3><p class="analytics-note">Percentual das sessões avaliadas no encerramento com foco profundo. ${note}</p><ul class="focus-shift__list">${rows}</ul></section>`;
+  return `<section class="performance-block focus-shift" aria-label="Foco profundo por turno"><h3>Foco profundo por turno</h3><p class="analytics-note">Percentual das sessões avaliadas no encerramento com foco profundo${windowLabel ? `, no período escolhido (${windowLabel})` : ''}. ${note}</p><ul class="focus-shift__list">${rows}</ul></section>`;
 }
 
 export function renderPerformanceConsistency(
@@ -120,5 +123,5 @@ export function renderPerformanceConsistency(
     model.plannedMinutes > 0 && model.adherence != null
       ? `<section class="performance-synthesis" aria-label="Síntese da consistência"><p class="performance-synthesis__lead">${escapeHtml(range?.label || 'No período')}: ${escapeHtml(formatStudyMinutes(model.studiedMinutes))} estudados de ${escapeHtml(formatStudyMinutes(model.plannedMinutes))} planejados (${formatDecimal(model.adherence)}% do tempo planejado), em ${pluralize(model.activeDays, 'dia', 'dias')} com estudo.</p><p class="analytics-note m-0">É tempo total, sem exigir vínculo com o plano. Aderência ao plano, execução prioritária e crédito semanal usam outras bases e ficam em "Execução do plano", logo abaixo, cada uma com a sua janela.</p></section>`
       : '';
-  return `${synthesis}${timelineHtml}${distributionHtml}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}<div id="shiftEnergyMount" class="mt-4">${renderFocusByShift(model.focusByShift)}</div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
+  return `${synthesis}${timelineHtml}${distributionHtml}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}<div id="shiftEnergyMount" class="mt-4">${renderFocusByShift(model.focusByShift, range?.label)}</div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
 }

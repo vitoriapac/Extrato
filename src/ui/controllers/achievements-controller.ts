@@ -251,8 +251,8 @@ export function createAchievementsController(options: AchievementsControllerOpti
       {
         id: 'recommendationPositive',
         icon: 'star',
-        name: 'Estratégia funcionando',
-        desc: 'Recomendação com resultado positivo',
+        name: 'Resultado após recomendação',
+        desc: 'Resultado positivo medido depois de uma recomendação',
         check: () =>
           (state.recommendationFeedback || []).some(
             (item: any) => item.outcome?.state === 'positive'
