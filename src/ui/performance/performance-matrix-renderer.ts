@@ -38,7 +38,7 @@ export function renderPedagogicalMatrixSection(
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro font-medium text-content-secondary">
           <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green inline-block"></span>Consolidadas: ${counts.consolidated}</span>
           <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber inline-block"></span>Atenção: ${counts.forgetting_risk + counts.building}</span>
-          <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red inline-block"></span>Críticas: ${counts.critical}</span>
+          <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red inline-block"></span>Prioridade alta: ${counts.critical}</span>
         </div>
       </div>
       <div class="matrix-chart-scroll mt-3 overflow-x-auto">${matrixChart}</div>${matrixRanked}

@@ -1,7 +1,7 @@
 import { h, type JSX } from 'preact';
-import { TABLER_ICONS_DATA, type TablerNode } from './tabler-icons-data.js';
+import { LUCIDE_ICONS_DATA, type LucideNode } from './lucide-icons-data.js';
 
-export type IconName = keyof typeof TABLER_ICONS_DATA | string;
+export type IconName = keyof typeof LUCIDE_ICONS_DATA | string;
 
 export type IconProps = Omit<JSX.IntrinsicElements['svg'], 'stroke'> & {
   name: IconName;
@@ -10,6 +10,14 @@ export type IconProps = Omit<JSX.IntrinsicElements['svg'], 'stroke'> & {
   class?: string;
   'aria-label'?: string;
 };
+
+function escapeSvgAttr(value: string | number): string {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
 
 export function Icon({
   name,
@@ -20,7 +28,7 @@ export function Icon({
   ...rest
 }: IconProps) {
   const isAccessible = Boolean(ariaLabel);
-  const nodes: TablerNode[] = TABLER_ICONS_DATA[name] || TABLER_ICONS_DATA['help'] || [];
+  const nodes: LucideNode[] = LUCIDE_ICONS_DATA[name] || LUCIDE_ICONS_DATA['help'] || [];
 
   return (
     <svg
@@ -33,7 +41,7 @@ export function Icon({
       stroke-width={stroke}
       stroke-linecap="round"
       stroke-linejoin="round"
-      class={`icon icon-tabler icon-tabler-${name} ${className}`.trim()}
+      class={`icon icon-lucide icon-lucide-${name} ${className}`.trim()}
       aria-hidden={!isAccessible ? 'true' : undefined}
       role={isAccessible ? 'img' : undefined}
       aria-label={ariaLabel}
@@ -64,22 +72,22 @@ export function renderIconSvg(
   } = options;
   const className = classProp || classNameProp || '';
   const isAccessible = Boolean(ariaLabel);
-  const nodes: TablerNode[] = TABLER_ICONS_DATA[name] || TABLER_ICONS_DATA['help'] || [];
+  const nodes: LucideNode[] = LUCIDE_ICONS_DATA[name] || LUCIDE_ICONS_DATA['help'] || [];
 
   const inner = nodes
     .map(([tag, attrs]) => {
       const attrStr = Object.entries(attrs)
-        .map(([k, v]) => `${k}="${v}"`)
+        .map(([k, v]) => `${k}="${escapeSvgAttr(v)}"`)
         .join(' ');
       return `<${tag} ${attrStr}></${tag}>`;
     })
     .join('');
 
   const accessibility = isAccessible
-    ? `role="img" aria-label="${ariaLabel}"`
+    ? `role="img" aria-label="${escapeSvgAttr(ariaLabel!)}"`
     : 'aria-hidden="true"';
 
-  const classAttr = `icon icon-tabler icon-tabler-${name} ${className}`.trim();
+  const classAttr = escapeSvgAttr(`icon icon-lucide icon-lucide-${name} ${className}`.trim());
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" class="${classAttr}" ${accessibility}>${inner}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${escapeSvgAttr(size)}" height="${escapeSvgAttr(size)}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${escapeSvgAttr(stroke)}" stroke-linecap="round" stroke-linejoin="round" class="${classAttr}" ${accessibility}>${inner}</svg>`;
 }

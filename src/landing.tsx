@@ -11,9 +11,24 @@ import { Button } from './ui/primitives/button.js';
 import { Icon } from './ui/primitives/icon.js';
 
 const situations = [
-  { title: 'Saiba por onde começar', text: 'Veja a próxima atividade do plano, o tempo previsto e as pendências do dia.', image: '/assets/landing/demo-proxima-acao.png', alt: 'Próxima ação e execução de hoje na Visão geral' },
-  { title: 'Ajuste a semana com segurança', text: 'Confira uma prévia de recuperação e escolha se deseja aplicar a mudança ao planejamento.', image: '/assets/landing/demo-previa-recuperacao.png', alt: 'Prévia do plano de recuperação com mudanças e capacidade preservada' },
-  { title: 'Entenda sua evolução', text: 'Acompanhe o período, a evidência disponível e os limites das análises.', image: '/assets/landing/demo-desempenho.png', alt: 'Resumo de desempenho com evolução, prontidão e dados do período' },
+  {
+    title: 'Saiba por onde começar',
+    text: 'Veja a próxima atividade do plano, o tempo previsto e as pendências do dia.',
+    image: '/assets/landing/demo-proxima-acao.png',
+    alt: 'Próxima ação e execução de hoje na Visão geral',
+  },
+  {
+    title: 'Ajuste a semana com segurança',
+    text: 'Confira uma prévia de recuperação e escolha se deseja aplicar a mudança ao planejamento.',
+    image: '/assets/landing/demo-previa-recuperacao.png',
+    alt: 'Prévia do plano de recuperação com mudanças e capacidade preservada',
+  },
+  {
+    title: 'Entenda sua evolução',
+    text: 'Acompanhe o período, a evidência disponível e os limites das análises.',
+    image: '/assets/landing/demo-desempenho.png',
+    alt: 'Resumo de desempenho com evolução, prontidão e dados do período',
+  },
 ];
 
 const questions = [
@@ -41,12 +56,30 @@ const sectionTitle =
 
 function StudyPreview() {
   return (
-    <figure id="painel" class="m-0 min-w-0 rounded-default border border-border-default bg-surface-card p-3 sm:p-4">
-      <figcaption class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-brand">Visão geral do Extrato <Badge variant="info">Dados fictícios da demonstração</Badge></figcaption>
-      <a href="/assets/landing/demo-proxima-acao.png" target="_blank" rel="noopener noreferrer" aria-label="Ampliar imagem da Visão geral (abre em nova aba)">
-        <img src="/assets/landing/demo-proxima-acao.png" alt="Visão geral com próxima ação, tempo planejado e revisões" width="1216" height="689" class="block h-auto w-full rounded" />
+    <figure
+      id="painel"
+      class="m-0 min-w-0 rounded-default border border-border-default bg-surface-card p-3 sm:p-4"
+    >
+      <figcaption class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-brand">
+        Visão geral do Extrato <Badge variant="info">Dados fictícios da demonstração</Badge>
+      </figcaption>
+      <a
+        href="/assets/landing/demo-proxima-acao.png"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Ampliar imagem da Visão geral (abre em nova aba)"
+      >
+        <img
+          src="/assets/landing/demo-proxima-acao.png"
+          alt="Visão geral com próxima ação, tempo planejado e revisões"
+          width="1216"
+          height="689"
+          class="block h-auto w-full rounded"
+        />
       </a>
-      <p class="mt-2 mb-0 text-sm text-content-secondary">Toque ou clique na imagem para ampliar.</p>
+      <p class="mt-2 mb-0 text-sm text-content-secondary">
+        Toque ou clique na imagem para ampliar.
+      </p>
     </figure>
   );
 }
@@ -82,7 +115,7 @@ function LandingPricing() {
                 aria-pressed={option === cycle}
                 aria-controls="pro-price"
                 onClick={() => setCycle(option)}
-                className="min-h-[44px]! border-transparent! px-4!"
+                className="min-h-[44px] border-transparent px-4"
               >
                 {option === 'monthly' ? 'Mensal' : 'Anual'}
               </Button>
@@ -322,16 +355,32 @@ function LandingPage() {
           <section id="como-funciona" class="border-y border-border-default bg-surface-card">
             <div class={`${pageWidth} py-12 sm:py-20`}>
               <h2 class={sectionTitle}>Seu estudo, com mais clareza.</h2>
-              <p class="mt-3 mb-0 max-w-[60ch] text-content-secondary">Veja três momentos do aplicativo com dados fictícios da demonstração.</p>
+              <p class="mt-3 mb-0 max-w-[60ch] text-content-secondary">
+                Veja três momentos do aplicativo com dados fictícios da demonstração.
+              </p>
               <div class="mt-8 grid gap-10">
                 {situations.map(item => (
-                  <article key={item.title} class="grid min-w-0 items-start gap-4 border-t border-border-default pt-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:gap-10">
+                  <article
+                    key={item.title}
+                    class="grid min-w-0 items-start gap-4 border-t border-border-default pt-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:gap-10"
+                  >
                     <div>
                       <h3 class="m-0 font-display text-xl text-brand">{item.title}</h3>
                       <p class="mt-2 mb-0 max-w-[50ch] text-content-secondary">{item.text}</p>
                     </div>
-                    <a href={item.image} target="_blank" rel="noopener noreferrer" aria-label={`Ampliar: ${item.alt} (abre em nova aba)`}>
-                      <img src={item.image} alt={item.alt} loading="lazy" decoding="async" class="block h-auto max-w-full rounded-default border border-border-default" />
+                    <a
+                      href={item.image}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Ampliar: ${item.alt} (abre em nova aba)`}
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.alt}
+                        loading="lazy"
+                        decoding="async"
+                        class="block h-auto max-w-full rounded-default border border-border-default"
+                      />
                     </a>
                   </article>
                 ))}

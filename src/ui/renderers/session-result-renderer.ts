@@ -1,3 +1,5 @@
+import { renderIconSvg } from '../primitives/icon.js';
+
 function renderLedger(ledger: Record<string, any>) {
   if (!ledger) return '';
   const line = (label: string, value: Record<string, any> | null | undefined) =>
@@ -39,7 +41,7 @@ export function renderSessionResult(
     '<button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>';
   const chainQuestionsBtn =
     model.subjectId && model.rawType !== 'questions'
-      ? `<button class="btn tonal small chain-questions-btn" type="button" data-delegated-click="chainQuestionsForTopic('${escapeAttr(model.subjectId)}', '${escapeAttr(model.topicId || '')}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-list-check icon-inline" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"></path><path d="M11 6l9 0"></path><path d="M11 12l9 0"></path><path d="M11 18l9 0"></path></svg>Registrar questões deste tópico →</button>`
+      ? `<button class="btn tonal small chain-questions-btn" type="button" data-delegated-click="chainQuestionsForTopic('${escapeAttr(model.subjectId)}', '${escapeAttr(model.topicId || '')}')">${renderIconSvg('list-check', { size: 14, className: 'icon-inline' })}Registrar questões deste tópico →</button>`
       : '';
   const actionCluster = chainQuestionsBtn
     ? `<div class="session-result-actions">${chainQuestionsBtn}${button}</div>`

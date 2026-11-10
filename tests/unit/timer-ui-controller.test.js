@@ -68,14 +68,14 @@ test('createTimerUiController — ativa e desativa modo foco restaurando a aba d
   assert.equal(mockBody.classList.contains('timer-focus-active'), true);
   assert.equal(controller.getTimerFocusReturnTab(), 'dashboard');
   assert.equal(contextRendered, true);
-  assert.match(elements.timerFocusToggle.innerHTML, /icon-tabler-x[^]*Sair do modo foco$/);
+  assert.match(elements.timerFocusToggle.innerHTML, /icon-lucide-x[^]*Sair do modo foco$/);
 
   // Sai do modo foco: deve retornar à Visão Geral
   controller.toggleTimerFocus(false);
   assert.equal(activeTab, 'dashboard');
   assert.equal(mockBody.classList.contains('timer-focus-active'), false);
   assert.equal(controller.getTimerFocusReturnTab(), null);
-  assert.match(elements.timerFocusToggle.innerHTML, /icon-tabler-focus-2[^]*Modo foco$/);
+  assert.match(elements.timerFocusToggle.innerHTML, /icon-lucide-focus-2[^]*Modo foco$/);
   assert.ok(!elements.timerFocusToggle.innerHTML.includes('⛶'));
 });
 

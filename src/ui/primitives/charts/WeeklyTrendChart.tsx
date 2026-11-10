@@ -50,7 +50,7 @@ export function WeeklyTrendChart({
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Evolução Semanal</span>
           <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${trendBadgeClass}`}>
-            <Icon name={trendIcon} size={12} stroke={2.5} />
+            <Icon name={trendIcon} size={12} />
             {trendLabel}
             {trendDelta !== null && ` (${trendDelta > 0 ? '+' : ''}${trendDelta} p.p.)`}
           </span>

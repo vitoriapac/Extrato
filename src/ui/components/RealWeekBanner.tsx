@@ -45,8 +45,8 @@ export function RealWeekBanner({
             {hasOverdue && hasDeficit
               ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'revisão pendente' : 'revisões pendentes'} e ${deficitMinutes} min a redistribuir. A consistência se constrói na adaptação, não na culpa: resgate em blocos curtos ou recalibre seus limites sem perder seu histórico.`
               : hasOverdue
-              ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'revisão aguardando resgate' : 'revisões aguardando resgate'}. Em vez de acumular ansiedade, recupere os tópicos essenciais em uma missão rápida e guiada de 30 minutos.`
-              : `Você tem ${deficitMinutes} min de saldo planejado pendente nesta semana. Recalibre seus próximos dias em 1 clique respeitando sua disponibilidade real.`}
+                ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'revisão aguardando resgate' : 'revisões aguardando resgate'}. Em vez de acumular ansiedade, recupere os tópicos essenciais em uma missão rápida e guiada de 30 minutos.`
+                : `Você tem ${deficitMinutes} min de saldo planejado pendente nesta semana. Recalibre seus próximos dias em 1 clique respeitando sua disponibilidade real.`}
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export function RealWeekBanner({
           <Button
             variant="secondary"
             size="small"
-            className="inline-flex items-center gap-1.5 text-xs text-brand font-medium hover:border-brand"
+            className="inline-flex items-center gap-1.5 text-xs text-heading font-medium hover:border-border-hover"
             onClick={onOpenRecoveryMission}
             aria-label="Abrir missão de recuperação de revisões atrasadas"
           >

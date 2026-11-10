@@ -55,7 +55,7 @@ export function PhaseRoadmapTimeline({
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="p-2.5 rounded-default bg-accent-subtle text-accent-emphasis flex items-center justify-center">
-            <Icon name="flag" size={20} stroke={2} />
+            <Icon name="flag" size={20} />
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -130,7 +130,7 @@ export function PhaseRoadmapTimeline({
                   )}
                   {isPassed && !isCurrent && (
                     <span class="text-success-emphasis" title="Fase concluída">
-                      <Icon name="check" size={12} stroke={2.5} />
+                      <Icon name="check" size={12} />
                     </span>
                   )}
                 </div>

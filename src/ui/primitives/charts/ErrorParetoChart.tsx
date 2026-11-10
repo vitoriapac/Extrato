@@ -49,7 +49,7 @@ export function ErrorParetoChart({
 
         {predominantCause && (
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle border border-warning-subtle">
-            <Icon name="alert-triangle" size={13} stroke={2.5} />
+            <Icon name="alert-triangle" size={13} />
             Causa principal: <strong class="font-bold">{predominantCause}</strong>
           </span>
         )}
@@ -75,7 +75,7 @@ export function ErrorParetoChart({
               <div class="flex items-center justify-between gap-2 mb-1 text-xs">
                 <div class="flex items-center gap-1.5 min-w-0">
                   <span class="text-content-secondary flex-shrink-0">
-                    <Icon name={item.icon || 'alert-circle'} size={14} stroke={2} />
+                    <Icon name={item.icon || 'alert-circle'} size={14} />
                   </span>
                   <span class="font-medium text-content-primary truncate error-profile-label">
                     {' '}{item.label}

@@ -19,10 +19,11 @@ export function renderChartLegend(items: Array<{ tone?: string; label?: unknown 
 }
 
 export function renderChartEmptyState(
-  message = 'Ainda não há dados suficientes para este gráfico.'
+  message = 'Ainda não há dados suficientes para este gráfico.',
+  title = 'Gráfico ainda não disponível'
 ) {
   return renderEmptyState({
-    title: 'Gráfico ainda não disponível',
+    title,
     message,
     className: 'chart-frame__empty',
   });
@@ -39,6 +40,7 @@ export function renderChartFrame({
   chart = '',
   records = '',
   emptyMessage = '',
+  emptyTitle = undefined,
 }: any = {}) {
-  return `<section class="chart-frame" aria-label="${escape(title)}">${renderSectionHeader({ title, description, period, level: 4, compact: true, className: 'chart-frame__header' })}${renderChartLegend(legend)}<div class="chart-frame__plot">${chart || renderChartEmptyState(emptyMessage)}</div>${evidence ? `<p class="chart-frame__evidence">${escape(evidence)}</p>` : ''}${records ? `<div class="chart-frame__records">${records}</div>` : ''}</section>`;
+  return `<section class="chart-frame" aria-label="${escape(title)}">${renderSectionHeader({ title, description, period, level: 4, compact: true, className: 'chart-frame__header' })}${renderChartLegend(legend)}<div class="chart-frame__plot">${chart || renderChartEmptyState(emptyMessage || undefined, emptyTitle)}</div>${evidence ? `<p class="chart-frame__evidence">${escape(evidence)}</p>` : ''}${records ? `<div class="chart-frame__records">${records}</div>` : ''}</section>`;
 }

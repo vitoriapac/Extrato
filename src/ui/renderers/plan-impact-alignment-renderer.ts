@@ -18,9 +18,9 @@ export function renderPlanImpactAlignment(
     subjects: subjectsList,
   });
 
-  const checkIcon = renderIconSvg('check', { size: 12, stroke: 2.5 });
-  const alertIcon = renderIconSvg('alert-triangle', { size: 12, stroke: 2.5 });
-  const trendingIcon = renderIconSvg('trending-up', { size: 12, stroke: 2.5 });
+  const checkIcon = renderIconSvg('check', { size: 12 });
+  const alertIcon = renderIconSvg('alert-triangle', { size: 12 });
+  const trendingIcon = renderIconSvg('trending-up', { size: 12 });
 
   const rowsHtml = visual.rows.map(row => {
     let statusBadge = '';

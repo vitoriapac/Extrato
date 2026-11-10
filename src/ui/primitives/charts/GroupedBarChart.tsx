@@ -103,7 +103,7 @@ export function GroupedBarChart({
                     class={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ${statusBadgeClass}`}
                     title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${row.diffMinutes} min`}
                   >
-                    <Icon name={statusIcon} size={11} stroke={2.5} />
+                    <Icon name={statusIcon} size={11} />
                     {statusText}
                   </span>
                 </div>

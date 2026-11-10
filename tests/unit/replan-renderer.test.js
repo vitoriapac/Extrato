@@ -37,5 +37,5 @@ test('prévia de recuperação mostra conteúdo, motivo, destino e capacidade', 
   assert.match(html, /30 min livres/);
   assert.match(html, /Gramática/);
   assert.match(html, /Sua semana mudou\? Reajuste sua capacidade sem culpa/);
-  assert.match(html, /icon-tabler-heart-handshake/);
+  assert.match(html, /icon-lucide-heart-handshake/);
 });

@@ -947,7 +947,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         '<div class="upcoming-empty">Sua semana está em equilíbrio. Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions">${preview.allocations.length ? '<button class="btn" data-delegated-click="confirmReplan()"><svg class="icon icon-tabler icon-tabler-check icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10 -10"></path></svg>Confirmar redistribuição da semana real</button>' : ''}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length ? 'Cancelar' : 'Fechar'}</button></div>`;
+    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions">${preview.allocations.length ? `<button class="btn" data-delegated-click="confirmReplan()">${renderIconSvg('check', { size: 14, className: 'icon-inline' })}Confirmar redistribuição da semana real</button>` : ''}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length ? 'Cancelar' : 'Fechar'}</button></div>`;
   }
 
   return {

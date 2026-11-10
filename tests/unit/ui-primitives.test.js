@@ -145,7 +145,7 @@ test('UI Primitives — Icon renderiza SVG acessível ou decorativo com traço f
   assert.ok(decorativeHtml.includes('width="18"'));
   assert.ok(decorativeHtml.includes('aria-hidden="true"'));
   assert.ok(decorativeHtml.includes('stroke="currentColor"'));
-  assert.ok(decorativeHtml.includes('icon-tabler-search'));
+  assert.ok(decorativeHtml.includes('icon-lucide-search'));
 
   const accessibleHtml = render(
     h(Icon, { name: 'download', size: 20, 'aria-label': 'Baixar backup' })
@@ -153,16 +153,16 @@ test('UI Primitives — Icon renderiza SVG acessível ou decorativo com traço f
   assert.ok(accessibleHtml.includes('role="img"'));
   assert.ok(accessibleHtml.includes('aria-label="Baixar backup"'));
   assert.ok(!accessibleHtml.includes('aria-hidden="true"'));
-  assert.ok(accessibleHtml.includes('icon-tabler-download'));
+  assert.ok(accessibleHtml.includes('icon-lucide-download'));
 
   // Teste de renderIconSvg para templates de string
   const svgString = renderIconSvg('player-play', { size: 14, class: 'mr-1' });
   assert.ok(svgString.includes('<svg'));
-  assert.ok(svgString.includes('icon-tabler-player-play'));
+  assert.ok(svgString.includes('icon-lucide-player-play'));
   assert.ok(svgString.includes('width="14"'));
 });
 
-test('UI Primitives — ícones da Fase 2 do plano visual existem nos dados do Tabler', () => {
+test('UI Primitives — ícones da Fase 2 do plano visual existem nos dados do Lucide', () => {
   const phaseTwoIcons = [
     'layout-dashboard', 'chart-line', 'sun', 'books', 'calendar-month', 'repeat', 'list-check',
     'map-2', 'help-circle', 'dots', 'gauge', 'progress', 'loader-2', 'circle-check', 'flame',
@@ -175,9 +175,9 @@ test('UI Primitives — ícones da Fase 2 do plano visual existem nos dados do T
   ];
   for (const name of phaseTwoIcons) {
     const svg = renderIconSvg(name);
-    assert.ok(svg.includes(`icon-tabler-${name}`), name);
+    assert.ok(svg.includes(`icon-lucide-${name}`), name);
     // Unknown names fall back to "help"; a real icon has its own paths.
-    assert.notEqual(svg.replace(`icon-tabler-${name}`, ''), renderIconSvg('help').replace('icon-tabler-help', ''), name);
+    assert.notEqual(svg.replace(`icon-lucide-${name}`, ''), renderIconSvg('help').replace('icon-lucide-help', ''), name);
   }
 });
 
@@ -192,31 +192,31 @@ test('UI Primitives — Badge mostra ícone decorativo por estado, além da cor'
   ];
   for (const [variant, icon] of entries) {
     const html = render(h(Badge, { variant, children: 'Estado' }));
-    assert.ok(html.includes(`icon-tabler-${icon}`), variant);
+    assert.ok(html.includes(`icon-lucide-${icon}`), variant);
     assert.ok(html.includes('aria-hidden="true"'), variant);
     assert.ok(html.includes('width="14"'), variant);
     assert.ok(html.includes('Estado'), variant);
   }
   assert.ok(!render(h(Badge, { variant: 'default', children: 'Neutro' })).includes('<svg'));
   assert.ok(!render(h(Badge, { variant: 'success', icon: false, children: 'Sem ícone' })).includes('<svg'));
-  assert.ok(render(h(Badge, { variant: 'info', icon: 'flask', children: 'Demo' })).includes('icon-tabler-flask'));
+  assert.ok(render(h(Badge, { variant: 'info', icon: 'flask', children: 'Demo' })).includes('icon-lucide-flask'));
 });
 
 test('UI Primitives — EmptyState, MetricCard e Button aceitam ícones nos tamanhos do sistema', () => {
   const empty = render(h(EmptyState, { title: 'Sem sessões', icon: 'clock' }));
-  assert.ok(empty.includes('icon-tabler-clock'));
+  assert.ok(empty.includes('icon-lucide-clock'));
   assert.ok(empty.includes('width="32"') && empty.includes('stroke-width="1.5"'));
   assert.ok(empty.includes('aria-hidden="true"'));
   assert.ok(!render(h(EmptyState, { title: 'Sem ícone' })).includes('<svg'));
 
   const metric = render(h(MetricCard, { label: 'Prontidão', value: 72, icon: 'gauge' }));
-  assert.ok(metric.includes('icon-tabler-gauge') && metric.includes('width="14"'));
+  assert.ok(metric.includes('icon-lucide-gauge') && metric.includes('width="14"'));
 
   const button = render(
     h(Button, { iconLeft: 'plus', iconRight: 'arrow-right', children: 'Nova disciplina' })
   );
-  assert.ok(button.indexOf('icon-tabler-plus') < button.indexOf('Nova disciplina'));
-  assert.ok(button.indexOf('Nova disciplina') < button.indexOf('icon-tabler-arrow-right'));
+  assert.ok(button.indexOf('icon-lucide-plus') < button.indexOf('Nova disciplina'));
+  assert.ok(button.indexOf('Nova disciplina') < button.indexOf('icon-lucide-arrow-right'));
   assert.equal((button.match(/width="14"/g) || []).length, 2);
   assert.equal((button.match(/aria-hidden="true"/g) || []).length, 2);
 });

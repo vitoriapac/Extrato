@@ -252,7 +252,7 @@ test('fetchExamBlueprint — recupera blueprint de slug conhecido', async () => 
   assert.equal(inexistente, null);
 });
 
-test('CloudExamCatalogModal — renderiza com Tabler Icons e conformidade estrita de Zero Emojis (WCAG AA)', () => {
+test('CloudExamCatalogModal — renderiza com Lucide Icons e conformidade estrita de Zero Emojis (WCAG AA)', () => {
   const html = renderToString(
     h(CloudExamCatalogModal, {
       open: true,
@@ -266,7 +266,7 @@ test('CloudExamCatalogModal — renderiza com Tabler Icons e conformidade estrit
   // Validação de acessibilidade e estrutura
   assert.ok(html.includes('Catálogo de Editais na Nuvem'));
   assert.ok(html.includes('Buscar por concurso, banca organizadora'));
-  assert.ok(html.includes('icon-tabler'));
+  assert.ok(html.includes('icon-lucide'));
 
   // PROIBIÇÃO ESTRITA DE EMOJIS (Zero Emojis Policy)
   const emojiRegex = /\p{Extended_Pictographic}/u;

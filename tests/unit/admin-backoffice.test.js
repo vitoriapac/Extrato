@@ -195,7 +195,7 @@ test('adminRestoreUserSnapshot — restaura snapshot com registro de justificati
   assert.equal(log.reason, 'Restauração pós exclusão acidental de disciplina');
 });
 
-test('AdminDashboardView — renderiza cockpit executivo com Tabler Icons e conformidade estrita de Zero Emojis (WCAG AA)', () => {
+test('AdminDashboardView — renderiza cockpit executivo com Lucide Icons e conformidade estrita de Zero Emojis (WCAG AA)', () => {
   const html = renderToString(
     h(AdminDashboardView, {
       open: true,
@@ -208,7 +208,7 @@ test('AdminDashboardView — renderiza cockpit executivo com Tabler Icons e conf
   assert.ok(html.includes('Cockpit &amp; Receita') || html.includes('Cockpit & Receita'));
   assert.ok(html.includes('MRR Equivalente'));
   assert.ok(html.includes('Radar de Retenção &amp; Cobrança Preventiva') || html.includes('Radar de Retenção & Cobrança Preventiva'));
-  assert.ok(html.includes('icon-tabler'));
+  assert.ok(html.includes('icon-lucide'));
 
   // PROIBIÇÃO ESTRITA DE EMOJIS (Zero Emojis Policy)
   const emojiRegex = /\p{Extended_Pictographic}/u;

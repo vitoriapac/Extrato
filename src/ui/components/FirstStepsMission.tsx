@@ -138,7 +138,7 @@ export function FirstStepsMission({
                     }`}
                     aria-hidden="true"
                   >
-                    {isDone ? <Icon name="check" size={12} stroke={3} /> : ''}
+                    {isDone ? <Icon name="check" size={12} /> : ''}
                   </span>
                   <div className="flex flex-col">
                     <span

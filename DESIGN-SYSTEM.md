@@ -256,8 +256,8 @@ Um bundle novo precisa de quatro passos:
 3. Sair do typecheck (`tsconfig*.json`) e do Prettier.
 4. Ganhar um teste em `pwa.spec.js`.
 
-## Iconografia Vetorial (Tabler Icons) e Regra Zero Emojis
+## Iconografia Vetorial (Lucide Icons) e Regra Zero Emojis
 
 - **Zero Emojis:** É terminantemente proibido o uso de emojis Unicode em qualquer elemento de interface (botões, rótulos, badges, tabelas, modais, etc.). Emojis geram inconsistência visual entre sistemas operacionais (Windows, macOS, Linux, iOS, Android) e quebram a estética técnica sóbria de extrato bancário.
-- **Tabler Icons:** Toda iconografia utiliza exclusivamente a biblioteca **Tabler Icons** através do componente `<Icon name="..." size={16} stroke={2} class="..." />` ou da função utilitária `renderIconSvg(name, { size, strokeWidth, className })` em [`src/ui/primitives/icon.tsx`](src/ui/primitives/icon.tsx). Os ícones utilizam `currentColor` e adaptam-se perfeitamente aos temas Claro e Escuro.
-- **Adição de Novos Ícones:** Para adicionar novos ícones do Tabler, adicione o identificador kebab-case à lista em [`scripts/generate-tabler-icons.mjs`](scripts/generate-tabler-icons.mjs) e execute `node scripts/generate-tabler-icons.mjs` para regenerar os dados vetoriais otimizados sem inflar o bundle desnecessariamente.
+- **Lucide Icons (`1.5px`):** Toda iconografia utiliza exclusivamente a biblioteca **Lucide Icons** com espessura padrão de traço `1.5px` através do componente `<Icon name="..." size={16} stroke={1.5} class="..." />` ou da função utilitária `renderIconSvg(name, { size, strokeWidth, className })` em [`src/ui/primitives/icon.tsx`](src/ui/primitives/icon.tsx). Os ícones utilizam `currentColor` e adaptam-se perfeitamente aos temas Claro e Escuro.
+- **Adição de Novos Ícones:** Para adicionar novos ícones do Lucide, adicione o identificador kebab-case em [`scripts/generate-lucide-icons.mjs`](scripts/generate-lucide-icons.mjs) e execute `node scripts/generate-lucide-icons.mjs` para regenerar os dados vetoriais otimizados sem inflar o bundle desnecessariamente.

@@ -63,7 +63,7 @@ export function renderPreparationReading(
     : line('Nenhum ponto de atenção com evidência suficiente.');
 
   const todo = whatToDo.action
-    ? `<p class="m-0" data-recommendation-id="${escapeAttr(whatToDo.action.recommendationId ?? '')}"><strong>${escapeHtml(whatToDo.action.label)}:</strong> ${escapeHtml(whatToDo.action.text)}</p><div class="performance-reading__actions">${linkButton({ kind: 'tab', target: 'hoje', label: 'Abrir em Hoje' }, escapeAttr, true)}${linkButton({ kind: 'plan-adjust', target: 'metas', label: 'Ajustar plano' }, escapeAttr)}${whatToDo.recovery ? linkButton({ kind: 'reveal', target: 'trajectory', label: 'Ver plano de recuperação' }, escapeAttr) : ''}</div>${line(whatToDo.action.planNote)}${whatToDo.deficit ? line(whatToDo.deficit) : ''}`
+    ? `<p class="m-0" data-recommendation-id="${escapeAttr(whatToDo.action.recommendationId ?? '')}"><strong>${escapeHtml(whatToDo.action.label)}:</strong> ${escapeHtml(whatToDo.action.text)}</p><div class="performance-reading__actions">${linkButton({ kind: 'tab', target: 'hoje', label: 'Abrir em Hoje' }, escapeAttr, true)}${linkButton({ kind: 'plan-adjust', target: 'metas', label: 'Ajustar plano' }, escapeAttr)}${whatToDo.recovery ? linkButton({ kind: 'reveal', target: 'trajectory', label: 'Ver plano de recuperação' }, escapeAttr) : ''}</div><p class="performance-reading__facts"><span>No plano: <b>${escapeHtml(whatToDo.action.facts.inPlan)}</b></span><span>Evidência: <b>${escapeHtml(whatToDo.action.facts.evidence)}</b></span></p>${whatToDo.deficit ? line(whatToDo.deficit) : ''}`
     : `${line(whatToDo.reason || 'Nenhuma ação indicada agora.')}${whatToDo.deficit ? line(whatToDo.deficit) : ''}<div class="performance-reading__actions">${linkButton({ kind: 'tab', target: 'hoje', label: 'Abrir Hoje' }, escapeAttr, true)}</div>`;
 
   const evidenceHtml = evidence.length
@@ -103,5 +103,5 @@ export function renderRecommendationFollowupSummary(
       return `<li><strong>${escapeHtml(row.topicName)}</strong> (${escapeHtml(row.action)}): ${escapeHtml(STATE_LABEL[row.state])}${escapeHtml(change)}.</li>`;
     })
     .join('');
-  return `<section class="performance-followup chart-card mb-4" id="bloco-recomendacoes" aria-labelledby="performanceFollowupTitle"><header class="module-heading module-heading--compact mb-3"><h3 class="module-heading__title" id="performanceFollowupTitle">O que mudou depois das recomendações</h3></header><ul class="performance-reading__list">${items}</ul><p class="analytics-note m-0">Medição depois de recomendações concluídas. É uma observação: não indica que a recomendação causou a mudança.</p></section>`;
+  return `<details class="performance-followup chart-card mb-4" id="bloco-recomendacoes"><summary>O que mudou depois das recomendações (${measured.length})</summary><ul class="performance-reading__list">${items}</ul><p class="analytics-note m-0">Medição depois de recomendações concluídas. É uma observação: não indica que a recomendação causou a mudança.</p></details>`;
 }

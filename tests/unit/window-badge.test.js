@@ -12,7 +12,7 @@ test('selo de janela: só o vocabulário oficial e o título é escapado', () =>
     '7 dias',
     'período',
     'semana atual',
-    'histórico',
+    'todo o histórico',
   ]);
   const html = renderWindowBadge('period', 'Últimos "30" dias');
   assert.match(html, /data-window="period"/);

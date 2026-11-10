@@ -412,7 +412,7 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px em toque; links de tópico e disciplina em listas densas têm no mínimo 24px com ponteiro fino).
 - **Do** usar foco sálvia visível em tudo que é interativo, com `--accent` no anel: `--brand` quase coincide com o fundo no tema escuro (1,1:1).
 - **Do** manter um único botão primário por card; repetições em lista usam `tonal`.
-- **Do** usar `<Icon name="..." />` ou `renderIconSvg(...)` do Tabler Icons para apoiar ações e sinalizações sem poluição visual.
+- **Do** usar `<Icon name="..." />` ou `renderIconSvg(...)` do Lucide Icons (`1.5px`) para apoiar ações e sinalizações sem poluição visual.
 - **Do** oferecer "Desfazer" em vez de "Tem certeza?" quando a exclusão é de um único registro e pode ser revertida exatamente.
 - **Do** dar a todo gráfico uma descrição textual e, quando houver tabela, "Ver dados".
 
@@ -425,4 +425,4 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Don't** usar peso 700 como voz padrão; a hierarquia vai até 600.
 - **Don't** usar âmbar ou vermelho como cor de disciplina, nem animação contínua; movimento só para eventos e respeitando `prefers-reduced-motion`.
 - **Don't** carregar fontes, scripts ou estilos de hosts externos; o app roda local e offline.
-- **Don't** usar emojis Unicode na interface (`\p{Extended_Pictographic}`); use estritamente ícones vetoriais Tabler via `src/ui/primitives/icon.tsx`.
+- **Don't** usar emojis Unicode na interface (`\p{Extended_Pictographic}`); use estritamente ícones vetoriais Lucide (`1.5px`) via `src/ui/primitives/icon.tsx`.

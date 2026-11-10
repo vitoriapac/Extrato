@@ -82,7 +82,6 @@ export function SimulationTrendChart({
                   <Icon
                     name={scoreDelta > 0 ? 'trending-up' : 'trending-down'}
                     size={12}
-                    stroke={2.5}
                   />
                 )}
                 {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} p.p.

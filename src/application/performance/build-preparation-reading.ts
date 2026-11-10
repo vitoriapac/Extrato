@@ -35,6 +35,8 @@ export interface PreparationReading {
       label: string;
       text: string;
       planNote: string;
+      /** "No plano" e "Evidência" em pares rótulo/valor, para ler em diagonal. */
+      facts: { inPlan: string; evidence: string };
     } | null;
     reason: string | null;
     deficit: string | null;
@@ -169,7 +171,14 @@ export function buildPreparationReading({
       : best.currentAllocationMinutes != null
         ? `No plano da semana: ${formatStudyMinutes(best.currentAllocationMinutes)} para este tópico, de ${formatStudyMinutes(best.weeklyPlannedMinutes)} planejados.`
         : 'Este tópico ainda não tem tempo no plano da semana.';
+    const evidenceText = String(best.evidence || 'não avaliada').toLowerCase();
+    const inPlan = !best.activePlanId
+      ? 'sem plano ativo'
+      : best.currentAllocationMinutes != null
+        ? `sim, ${formatStudyMinutes(best.currentAllocationMinutes)} de ${formatStudyMinutes(best.weeklyPlannedMinutes)} na semana`
+        : 'não';
     action = {
+      facts: { inPlan, evidence: evidenceText },
       recommendationId: best.action.recommendationId || null,
       label: best.label || 'Abrir em Hoje',
       text: `${best.topicName}${best.subjectName ? ` (${best.subjectName})` : ''}${minutes ? `, ${formatStudyMinutes(minutes)}` : ''}`,

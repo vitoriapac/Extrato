@@ -40,13 +40,13 @@ export function SimulationBreakdownBarChart({
         <div class="flex items-center gap-3 text-xs text-content-secondary">
           {highestSubject && (
             <span class="inline-flex items-center gap-1 text-success-emphasis">
-              <Icon name="trending-up" size={12} stroke={2.5} />
+              <Icon name="trending-up" size={12} />
               Destaque: <strong class="font-medium text-content-primary">{highestSubject}</strong>
             </span>
           )}
           {lowestSubject && lowestSubject !== highestSubject && (
             <span class="inline-flex items-center gap-1 text-warning-emphasis">
-              <Icon name="alert-triangle" size={12} stroke={2.5} />
+              <Icon name="alert-triangle" size={12} />
               Atenção: <strong class="font-medium text-content-primary">{lowestSubject}</strong>
             </span>
           )}

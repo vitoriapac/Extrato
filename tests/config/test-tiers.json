@@ -1169,7 +1169,7 @@
     {
       "file": "tests/unit/no-emojis.test.js",
       "tier": "FAST_GATE",
-      "rationale": "Governança visual automatizada: garante zero emojis Unicode na aplicação e conformidade com Tabler Icons."
+      "rationale": "Governança visual automatizada: garante zero emojis Unicode na aplicação e conformidade com Lucide Icons."
     },
     {
       "file": "tests/unit/onboarding-modal-controller.test.js",
@@ -1930,6 +1930,11 @@
       "file": "tests/unit/ui-presentation.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/ui-primitives-composed.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato de renderização, acessibilidade, roving tabindex e invariantes CSS/tokens dos primitivos compostos do UI Kit."
     },
     {
       "file": "tests/unit/ui-primitives.test.js",

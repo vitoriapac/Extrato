@@ -203,7 +203,7 @@ export function GuidedTourPopover({
                 variant="secondary"
                 size="small"
                 onClick={onNext}
-                className="bg-accent text-brand font-semibold hover:bg-accent/90 border-0"
+                className="bg-accent text-primary-contrast font-semibold hover:bg-brand-secondary border-0"
                 data-guided-tour-next="true"
                 aria-label={isLast ? 'Concluir tour guiado' : 'Próxima parada'}
                 iconRight={isLast ? 'check' : 'arrow-right'}

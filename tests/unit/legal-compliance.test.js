@@ -130,7 +130,7 @@ test('LegalComplianceView — renderiza abas, resumos em linguagem simples e bot
   assert.ok(html.includes('Privacidade &amp; LGPD') || html.includes('Privacidade & LGPD'));
   assert.ok(html.includes('Seus Direitos'));
   assert.ok(html.includes('Em linguagem simples:'));
-  assert.ok(html.includes('icon-tabler'));
+  assert.ok(html.includes('icon-lucide'));
 
   // PROIBIÇÃO ESTRITA DE EMOJIS (Zero Emojis Policy)
   const emojiRegex = /\p{Extended_Pictographic}/u;

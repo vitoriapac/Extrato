@@ -62,7 +62,7 @@ export function TodayAgendaSections({
             <Button
               variant="secondary"
               size="small"
-              className="inline-flex items-center gap-1.5 text-xs text-brand font-medium hover:border-brand"
+              className="inline-flex items-center gap-1.5 text-xs text-heading font-medium hover:border-border-hover"
               onClick={onOpenRecoveryMission}
               aria-label="Abrir missão de recuperação de revisões atrasadas"
             >

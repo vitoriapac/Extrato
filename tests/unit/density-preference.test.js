@@ -21,7 +21,7 @@ test('densidade: alterna compacta/confortável, salva a preferência e atualiza 
   assert.equal(attrs['data-density'], 'compact');
   assert.equal(saved['studytrack.density'], 'compact');
   assert.equal(button.attrs['aria-pressed'], 'true');
-  assert.match(button.innerHTML, /icon-tabler-baseline-density-small/);
+  assert.match(button.innerHTML, /icon-lucide-baseline-density-small/);
   assert.equal(controller.toggle(), 'comfortable');
   assert.equal('data-density' in attrs, false);
   // Storage failures (private mode) never break the toggle.

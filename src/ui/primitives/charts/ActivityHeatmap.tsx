@@ -148,7 +148,7 @@ export function ActivityHeatmap({
             data-delegated-click="setHeatmapMode('calendar')"
             class={`btn small inline-flex items-center gap-1.5${isCalendar ? ' active' : ' ghost'}`}
           >
-            <Icon name="calendar" size={13} stroke={2} />
+            <Icon name="calendar" size={13} />
             Calendário contínuo
           </button>
           <button
@@ -157,7 +157,7 @@ export function ActivityHeatmap({
             data-delegated-click="setHeatmapMode('hours')"
             class={`btn small inline-flex items-center gap-1.5${!isCalendar ? ' active' : ' ghost'}`}
           >
-            <Icon name="clock" size={13} stroke={2} />
+            <Icon name="clock" size={13} />
             Horários do dia (24h)
           </button>
         </div>

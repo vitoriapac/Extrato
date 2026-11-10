@@ -1,3 +1,4 @@
+import { renderWindowBadge } from './window-badge.js';
 import { renderEvidenceBadge, type EvidenceState } from './evidence-badge.js';
 import { renderCopyBlockLink } from './block-link.js';
 import { formatDecimal, formatDelta } from '../../core/format-number.js';
@@ -71,14 +72,14 @@ export function renderPerformanceOverview(
   const comparisonLabel = range.comparePrevious
     ? 'Comparação com período anterior'
     : 'Sem comparação';
-  const kpis = `<section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
+  const kpis = `<p class="performance-kpi-window m-0">${renderWindowBadge('period', range?.label || '')}<span>Os indicadores abaixo seguem o período escolhido.</span></p><section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
     ${renderMetricCard({ label: 'Tempo estudado', value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
     ${card('Questões resolvidas', current.resolved ?? 0, '', 'No período selecionado')}
     ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
     ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`) : ''}
   </section>`;
   const secondaryKpis = `<section class="performance-kpis ui-metric-group" aria-label="Prontidão e carga no período">
-    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `Calculado agora · último fechamento: ${shown(model.readinessPair?.current?.score)} (${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} sobre ${shown(model.readinessPair?.previous?.score)}, último registro do período anterior)`)}
+    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : 'Calculado agora; o último fechamento e a variação estão na Leitura da preparação')}
     ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}
   </section>`;
   const history = renderReadinessHistory(model.history, {

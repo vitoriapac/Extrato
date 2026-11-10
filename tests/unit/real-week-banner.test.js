@@ -27,8 +27,8 @@ test('RealWeekBanner — renderiza acolhimento empático quando há revisões em
   assert.match(html, /Semana Real/);
   assert.match(html, /Você tem 4 revisões aguardando resgate/);
   assert.match(html, /Resgatar em 30 min/);
-  assert.match(html, /icon-tabler-heart-handshake/);
-  assert.match(html, /icon-tabler-bolt/);
+  assert.match(html, /icon-lucide-heart-handshake/);
+  assert.match(html, /icon-lucide-bolt/);
   // Zero Unicode emojis policy
   assert.doesNotMatch(html, /[\u{1F300}-\u{1FAFF}]/u);
 });
@@ -45,7 +45,7 @@ test('RealWeekBanner — renderiza acolhimento com déficit semanal e botão de 
   assert.match(html, /Sua semana não saiu como planejada\? Tudo bem\./);
   assert.match(html, /90 min de saldo planejado pendente/);
   assert.match(html, /Recalibrar Semana/);
-  assert.match(html, /icon-tabler-refresh/);
+  assert.match(html, /icon-lucide-refresh/);
   assert.doesNotMatch(html, /Resgatar em 30 min/);
 });
 
