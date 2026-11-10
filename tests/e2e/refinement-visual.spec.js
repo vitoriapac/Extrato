@@ -30,6 +30,8 @@ for (const { name, width, theme, columns } of [
         await expect(
           page.locator('#performanceSectionContent .exam-intelligence-hub')
         ).toBeVisible();
+      else if (section === 'consistency')
+        await expect(page.locator('#performanceSectionContent .performance-synthesis')).toBeVisible();
       else
         await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
       if (section === 'overview') {

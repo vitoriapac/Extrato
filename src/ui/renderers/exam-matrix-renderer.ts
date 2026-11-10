@@ -33,7 +33,12 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
   const advancedCount = ['board', 'year', 'role'].filter(
     key => model.filters[key] && model.filters[key] !== 'all'
   ).length;
-  const controls = `<div class="exam-matrix-filters">
+  // Os controles ficam numa linha de resumo; a dobra lembra se foi aberta (chave estável, não o texto).
+  const activeFilters =
+    advancedCount +
+    (model.filters.subject && model.filters.subject !== 'all' ? 1 : 0) +
+    (model.filters.search ? 1 : 0);
+  const controls = `<details class="exam-matrix-filters-fold" data-fold-key="exam-filters"><summary>Filtros e busca${activeFilters ? ` (${activeFilters} ${activeFilters === 1 ? 'ativo' : 'ativos'})` : ''}</summary><div class="exam-matrix-filters">
     <label>Concurso<select data-exam-matrix-filter="scope">${options(
       scopeOptions,
       (item: Record<string, any>) => item.value,
@@ -88,7 +93,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
         (item: Record<string, any>) => item.label
       )}</select></label>
     </div></details>
-  </div><div class="exam-matrix-modes" role="group" aria-label="Visualização da matriz"><button type="button" class="btn ghost small ${model.filters.mode === 'history' ? 'active' : ''}" data-exam-matrix-mode="history" aria-pressed="${model.filters.mode === 'history'}">Histórico</button><button type="button" class="btn ghost small ${model.filters.mode === 'priorities' ? 'active' : ''}" data-exam-matrix-mode="priorities" aria-pressed="${model.filters.mode === 'priorities'}">Prioridades</button><button type="button" class="btn ghost small" data-exam-matrix-mode="quadrants" aria-pressed="${model.filters.mode === 'quadrants'}">Incidência × Domínio</button></div>`;
+  </div></details><div class="exam-matrix-modes" role="group" aria-label="Visualização da matriz"><button type="button" class="btn ghost small ${model.filters.mode === 'history' ? 'active' : ''}" data-exam-matrix-mode="history" aria-pressed="${model.filters.mode === 'history'}">Histórico</button><button type="button" class="btn ghost small ${model.filters.mode === 'priorities' ? 'active' : ''}" data-exam-matrix-mode="priorities" aria-pressed="${model.filters.mode === 'priorities'}">Prioridades</button><button type="button" class="btn ghost small" data-exam-matrix-mode="quadrants" aria-pressed="${model.filters.mode === 'quadrants'}">Incidência × Domínio</button></div>`;
   const summary = `<p class="analytics-note">${model.exams.length} ${model.exams.length === 1 ? 'prova completa' : 'provas completas'} · ${model.analyzedQuestionCount} ${model.analyzedQuestionCount === 1 ? 'questão analisada' : 'questões analisadas'}${model.partialExamCount ? ` · ${model.partialExamCount} ${model.partialExamCount === 1 ? 'prova parcial fora' : 'provas parciais fora'} do denominador` : ''}. Cada célula informa o número de questões; a intensidade é apenas um apoio visual.</p>`;
   if (model.state === 'empty' && model.filters.mode !== 'quadrants')
     return `${controls}${summary}<p class="analytics-note">Nenhuma prova completa corresponde aos filtros. Ajuste o escopo ou importe uma prova com cobertura completa.</p>`;

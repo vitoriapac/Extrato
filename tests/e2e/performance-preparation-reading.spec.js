@@ -130,3 +130,50 @@ test('Dobras de Desempenho continuam abertas quando a tela é redesenhada', asyn
     })
   ).toHaveJSProperty('open', true);
 });
+
+test('Diagnóstico recebe Matriz, Balanço, Radar e Queda; Por disciplina fica enxuta', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'subjects');
+  await expect(page.locator('#bloco-comparacao')).toBeVisible();
+  await expect(page.locator('#bloco-matriz')).toHaveCount(0);
+  await expect(page.locator('#performanceDecisionDetails')).toBeHidden();
+  const subjectsHeight = await page
+    .locator('#performanceSectionContent')
+    .evaluate(node => node.getBoundingClientRect().height);
+  expect(subjectsHeight).toBeLessThan(3200);
+  await openPerformanceSection(page, 'diagnosis');
+  await expect(page.locator('#bloco-matriz')).toBeVisible();
+  const balance = page.locator('#performanceDecisionDetails');
+  await expect(balance).toBeVisible();
+  // Nasce fechada, mas lembra se foi aberta.
+  await expect(balance).toHaveJSProperty('open', false);
+  await balance.locator(':scope > summary').click();
+  await expect(page.getByRole('heading', { name: /Radar de Vulnerabilidades/ })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: /Queda de retenção entre avaliações/ })
+  ).toBeVisible();
+});
+
+test('Aderência fica numa dobra que não fecha ao trocar a semana, e os filtros da prova lembram o estado', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'consistency');
+  const fold = page
+    .locator('#performanceSectionContent details')
+    .filter({ has: page.locator(':scope > summary', { hasText: 'Como o plano foi cumprido' }) })
+    .first();
+  await expect(fold).toHaveJSProperty('open', false);
+  await openPerformanceSection(page, 'exam');
+  const filters = page.locator('details.exam-matrix-filters-fold');
+  await expect(filters).toHaveJSProperty('open', false);
+  await filters.locator(':scope > summary').click();
+  await page.locator('[data-exam-matrix-filter="sort"]').selectOption('impact');
+  await expect(page.locator('details.exam-matrix-filters-fold')).toHaveJSProperty('open', true);
+});

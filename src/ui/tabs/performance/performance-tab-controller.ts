@@ -102,7 +102,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
   // Dobras lembram se estavam abertas ao redesenhar (trocar período, filtro ou semana não as fecha).
   const foldMemory = new Map<string, boolean>();
   const foldKey = (section: string, fold: Element) =>
-    `${section}|${fold.querySelector(':scope > summary')?.textContent?.trim().slice(0, 80) ?? ''}`;
+    `${section}|${(fold as HTMLElement).dataset?.foldKey ?? fold.querySelector(':scope > summary')?.textContent?.trim().slice(0, 80) ?? ''}`;
   let selectedCareerClusterId: CareerClusterId | null = null;
 
   function recordProgressSnapshot(pct: number) {
@@ -346,12 +346,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       const readinessMount = target.querySelector('#performanceReadinessMount');
       if (readinessMount && readinessCard) readinessMount.append(readinessCard);
     } else if (performanceViewState.section === 'subjects') {
-      const subjectsMount = target.querySelector('#performanceSubjectsSupplementalMount');
-      if (subjectsMount) {
-        for (const node of [decisionDetails, gapsDetails]) {
-          if (node) subjectsMount.append(node);
-        }
-      }
+      // Matriz, Balanço, Radar e Queda de retenção moraram aqui; agora ficam em Diagnóstico.
     } else if (performanceViewState.section === 'diagnosis') {
       const diagnosisMount = target.querySelector('#performanceDiagnosisMount');
       if (diagnosisMount && todayAnalysisDetails) {
@@ -359,6 +354,15 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         todayAnalysisDetails.setAttribute('open', '');
         revealAdvanced(todayAnalysisDetails as HTMLElement, false);
         diagnosisMount.append(todayAnalysisDetails);
+      }
+      const gapsMount = target.querySelector('#performanceDiagnosisGapsMount');
+      if (gapsMount) {
+        // Nasce fechada: Diagnóstico já traz a matriz e o diagnóstico consolidado; a dobra lembra se foi aberta.
+        if (decisionDetails && !foldMemory.has(foldKey('diagnosis', decisionDetails)))
+          (decisionDetails as HTMLDetailsElement).open = false;
+        for (const node of [decisionDetails, gapsDetails]) {
+          if (node) gapsMount.append(node);
+        }
       }
     } else if (performanceViewState.section === 'consistency') {
       const muralMount = target.querySelector('#performanceConsistencyMuralMount');

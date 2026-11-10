@@ -435,6 +435,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   const scope = await page.locator('.performance-scope-note').textContent();
   const records = () => page.evaluate(() => localStorage.getItem('bb-premium-study-data'));
   const before = await records();
+  await openPerformanceFold(page, 'Como o plano foi cumprido');
   await page
     .locator('.adherence-summary')
     .getByRole('button', { name: 'Entenda aderência', exact: true })

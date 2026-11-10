@@ -1,7 +1,12 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
-import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openPerformanceFold,
+  openPerformanceSection,
+} from './helpers.js';
 
 async function prepare(page) {
   await page.clock.install({ time: new Date('2026-10-03T12:00:00-03:00') });
@@ -18,6 +23,7 @@ async function prepare(page) {
   }, state);
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'consistency');
+  await openPerformanceFold(page, 'Como o plano foi cumprido');
 }
 for (const [width, theme] of [
   [320, 'light'],

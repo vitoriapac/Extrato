@@ -123,7 +123,15 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     if (!model.rows.some((row: any) => row.topicId === selectedExamMatrixTopicId))
       selectedExamMatrixTopicId = null;
 
+    // Trocar um filtro redesenha a matriz: a dobra dos filtros continua como o aluno a deixou.
+    const filtersWereOpen = Boolean(
+      container.querySelector?.('details.exam-matrix-filters-fold[open]')
+    );
     container.innerHTML = renderExamMatrix(model, { selectedTopicId: selectedExamMatrixTopicId });
+    if (filtersWereOpen)
+      (
+        container.querySelector?.('details.exam-matrix-filters-fold') as HTMLDetailsElement | null
+      )?.setAttribute('open', '');
     const opportunity = ctx.document.getElementById('examOpportunity');
     if (opportunity) opportunity.innerHTML = renderExamOpportunity(model);
 

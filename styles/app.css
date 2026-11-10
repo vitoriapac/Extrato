@@ -3197,9 +3197,9 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 
 /* Histórico é uma subaba: conquistas, tempo de estudo e sessões só aparecem nela; a análise de risco fica nas outras. */
 #panel-desempenho:not([data-performance-view="overview"]) #performanceReadinessCard,
-#panel-desempenho:not([data-performance-view="subjects"]) #performanceDecisionDetails,
+#panel-desempenho:not([data-performance-view="diagnosis"]) #performanceDecisionDetails,
 #panel-desempenho:not([data-performance-view="diagnosis"]) .today-analysis-details,
-#panel-desempenho:not([data-performance-view="subjects"]) #desempenho-gaps,
+#panel-desempenho:not([data-performance-view="diagnosis"]) #desempenho-gaps,
 #panel-desempenho:not([data-performance-view="consistency"]) #performanceConsistencyMural,
 #panel-desempenho:not([data-performance-view="history"]) #performance-progress,
 #panel-desempenho:not([data-performance-view="history"]) #desempenho-study{display:none}
@@ -3748,3 +3748,4 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
   .performance-topic-link{display:inline-block;min-width:44px;min-height:44px;padding:12px 4px;line-height:1.3;box-sizing:border-box}
   .performance-toolbar .performance-compare input[type=checkbox]{width:24px;height:24px}
 }
+.exam-matrix-filters-fold{margin:10px 0}.exam-matrix-filters-fold>summary{cursor:pointer;color:var(--heading);font-weight:600}

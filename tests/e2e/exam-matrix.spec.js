@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openPerformanceFold,
+  openPerformanceSection,
+} from './helpers.js';
 
 test('matriz histórica filtra concurso e detalha o tópico em mobile', async ({ page }) => {
   await page.goto('/?test=1');
@@ -83,6 +88,7 @@ test('matriz histórica filtra concurso e detalha o tópico em mobile', async ({
   await expect(page.locator('#examHistoricalMatrix')).toContainText('2 provas completas');
   await page.locator('[data-exam-matrix-mode="history"]').click();
   await expect(page.locator('.exam-matrix-table')).toContainText('0 questões');
+  await openPerformanceFold(page, 'Filtros e busca');
   await page.locator('[data-exam-matrix-filter="scope"]').selectOption('caixa-tbn');
   await expect(page.locator('#examHistoricalMatrix')).toContainText('Caixa 2024');
   await page.setViewportSize({ width: 320, height: 740 });

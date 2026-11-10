@@ -267,6 +267,8 @@ export function createShellUiController(options: ShellUiControllerOptions) {
 
     document.getElementById('overviewOpenPerformance')?.addEventListener('click', () => {
       activateTab('desempenho');
+      // Balanço, Radar e Queda de retenção agora ficam na subaba Diagnóstico.
+      window.location.hash = '#desempenho/diagnosis';
       const details = document.getElementById('performanceDecisionDetails') as HTMLDetailsElement | null;
       if (!details) return;
       details.open = true;
@@ -277,7 +279,7 @@ export function createShellUiController(options: ShellUiControllerOptions) {
             behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
             block: 'start',
           }),
-        150
+        300
       );
     });
 

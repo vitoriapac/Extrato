@@ -34,16 +34,16 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h3 id="shiftEnergyTitle" class="text-base font-semibold text-content-primary m-0">
-                Eficiência &amp; Energia por Turno
-              </h3>
+              <h4 id="shiftEnergyTitle" class="text-base font-semibold text-content-primary m-0">
+                Rendimento por turno
+              </h4>
               {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
               <WindowBadge kind="history" title="Todo o histórico registrado" />
               Todo o histórico registrado, sem o filtro de período (
-              {totalStudyHours.toLocaleString('pt-BR')}h no total). A seção Foco profundo por turno
-              usa só o período escolhido.
+              {totalStudyHours.toLocaleString('pt-BR')}h no total). O foco profundo por turno, logo
+              abaixo, usa só o período escolhido.
             </p>
           </div>
         </div>

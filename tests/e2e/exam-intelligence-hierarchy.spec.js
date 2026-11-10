@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openPerformanceFold,
+  openPerformanceSection,
+} from './helpers.js';
 
 test('saúde, incidência e divergências precedem importação', async ({ page }) => {
   await page.goto('/?test=1');
@@ -82,6 +87,7 @@ test('filtros avançados da matriz cabem no celular e preservam seleção durant
   await openPerformanceSection(page, 'exam');
   const advanced = page.locator('.exam-matrix-more-filters');
   await expect(advanced).not.toHaveAttribute('open');
+  await openPerformanceFold(page, 'Filtros e busca');
   await expect(page.locator('[data-exam-matrix-filter="scope"]')).toBeVisible();
   await expect(page.locator('[data-exam-matrix-filter="subject"]')).toBeVisible();
   await advanced.locator('summary').focus();
