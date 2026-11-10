@@ -47,7 +47,7 @@ export function renderPerformanceSection(
         pedagogicalMatrix: pageModel.pedagogicalMatrix,
       });
     case 'consistency':
-      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml })}<div id="performanceConsistencyMuralMount" class="mt-4"></div>`;
+      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml })}<div id="performanceConsistencyMuralMount" class="mt-4"></div><div id="performanceCareerBenchmarkMount" class="mt-4"></div>`;
     case 'diagnosis':
       return '<div id="performanceDiagnosisMount" class="space-y-4"></div>';
     case 'history':
