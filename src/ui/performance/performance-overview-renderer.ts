@@ -14,6 +14,8 @@ import { renderMetricCard, renderEmptyState } from '../components/presentation.j
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { renderPlannedVsActualChart } from './planned-actual-chart.js';
 import { renderWeeklyPerformanceBriefCard } from './weekly-performance-brief-renderer.js';
+import { buildPerformanceExecutiveSummary } from '../../application/performance/build-performance-executive-summary.js';
+import { renderPerformanceExecutiveSummary } from './performance-executive-summary-renderer.js';
 
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
 const change = (value: number | null | undefined) =>
@@ -75,14 +77,22 @@ export function renderPerformanceOverview(
     ? `<ul class="performance-changes">${model.changes.map((item: any) => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.delta > 0 ? '+' : ''}${shown(item.delta)} ${escapeHtml(item.unit)}</span></li>`).join('')}</ul>`
     : '<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';
   const insights = (comparisonModel?.insights || []).slice(0, 3);
-  const summary = model.changes[0]
-    ? `${model.changes[0].label}: ${change(model.changes[0].delta)} ${model.changes[0].unit} frente ao período anterior.`
-    : 'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
+  // A principal mudança já abre a página no resumo executivo: aqui entra a segunda, sem repetir a notícia.
+  const secondChange = model.changes[1];
+  const summary = secondChange
+    ? `${secondChange.label}: ${change(secondChange.delta)} ${secondChange.unit} frente ao período anterior.`
+    : model.changes[0]
+      ? 'Os detalhes por indicador e o histórico de prontidão estão abaixo.'
+      : 'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
   const method = `<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>`;
   const weeklyBriefHtml = renderWeeklyPerformanceBriefCard(weeklyBrief || model.weeklyBrief, {
     escapeHtml,
     escapeAttr,
   });
-  // O resumo semanal antecede a leitura do período e suas métricas.
-  return `${weeklyBriefHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}<div id="performanceCareerBenchmarkMount" class="mt-4"></div>${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  // Resumo executivo do período e leitura da semana antecedem as métricas; o comparativo semanal visual fica em Início.
+  const executiveHtml = renderPerformanceExecutiveSummary(
+    buildPerformanceExecutiveSummary({ model, range, projection: achievementProjection }),
+    { escapeHtml }
+  );
+  return `${executiveHtml}${weeklyBriefHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}<div id="performanceCareerBenchmarkMount" class="mt-4"></div>${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }

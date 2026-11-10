@@ -540,6 +540,7 @@ export function simulationTrendGeometry(
     padRight = 20,
     padTop = 15,
     padBottom = 25,
+    yMin = 0,
   }: {
     width?: number;
     height?: number;
@@ -547,6 +548,8 @@ export function simulationTrendGeometry(
     padRight?: number;
     padTop?: number;
     padBottom?: number;
+    /** Piso do eixo Y em %; 0 mantém a escala completa. */
+    yMin?: number;
   } = {}
 ) {
   const plotW = width - padLeft - padRight;
@@ -555,7 +558,8 @@ export function simulationTrendGeometry(
   const step = n > 1 ? plotW / (n - 1) : 0;
 
   const xFor = (index: number) => +(padLeft + (n === 1 ? plotW / 2 : index * step)).toFixed(1);
-  const yFor = (pct: number) => +(padTop + plotH - (Math.max(0, Math.min(100, pct)) / 100) * plotH).toFixed(1);
+  const yFor = (pct: number) =>
+    +(padTop + plotH - ((Math.max(yMin, Math.min(100, pct)) - yMin) / (100 - yMin)) * plotH).toFixed(1);
 
   const points = simulations.map((sim, idx) => {
     const x = xFor(idx);
@@ -594,6 +598,7 @@ export function simulationTrendGeometry(
     padBottom,
     targetScore,
     targetY,
+    yMin,
     points,
     pathD,
   };

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-09T20:55:06.020Z",
+  "generatedAt": "2026-11-09T23:54:02.472Z",
   "title": "Design System: StudyTrack — Extrato de Estudos",
   "extensions": {
     "colorMeta": {
@@ -351,6 +351,11 @@
       {
         "name": "A Regra do Âmbar",
         "body": "O âmbar semântico (`amber` sobre `amber-bg`, `attention`) só marca estado de atenção: prontidão, prazo, atraso, e sempre acompanha rótulo textual. Laranja de destaque e âmbar de estado compartilham o matiz; o que os separa é o papel. Selo ou faixa com texto \"atenção/atraso\" usa `amber`; elemento sem estado usa `secondary`.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Prioridade Provisória",
+        "body": "Um diagnóstico crítico com evidência baixa ou não avaliada aparece como \"Prioridade provisória\", em tom de atenção (âmbar) e não de alarme (vermelho), com a explicação de que pode mudar com mais registros. O vermelho fica para risco com evidência suficiente.",
         "section": "colors"
       },
       {

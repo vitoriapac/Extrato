@@ -113,13 +113,21 @@ export function renderWeeklyPerformanceBriefCard(
         .join('')}</nav>`
     : '';
 
-  const chartHtml = renderMiniComparisonChart(brief.chartMetrics, escapeHtml);
+  const tipList = (title: string, items: string[]) =>
+    items.length
+      ? `<div class="space-y-1"><h4 class="text-xs font-semibold text-content-primary m-0">${escapeHtml(title)}</h4><ul class="text-xs text-content-secondary leading-relaxed m-0 pl-4 space-y-1">${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>`
+      : '';
+  const tipsBody =
+    tipList('Como ler', brief.readingTips) + tipList('Para manter o resumo útil', brief.keepTips);
+  const tipsHtml = tipsBody
+    ? `<aside class="performance-weekly-brief__tips bg-surface-subtle/50 border border-border-subtle rounded-default p-3.5 space-y-3" aria-label="Dicas para este resumo">${tipsBody}</aside>`
+    : '';
 
   return `<section class="performance-weekly-brief chart-card mb-4" aria-label="Seu resumo da última semana">
     <header class="module-heading module-heading--compact mb-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <span class="module-heading__eyebrow">Leitura rápida · Últimos 7 dias</span>
+          <span class="module-heading__eyebrow">Leitura da semana · Últimos 7 dias</span>
           <h3 class="module-heading__title">Seu resumo da última semana</h3>
         </div>
         <span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span>
@@ -131,7 +139,7 @@ export function renderWeeklyPerformanceBriefCard(
         ${linksHtml}
       </div>
       <div class="lg:col-span-4 w-full">
-        ${chartHtml}
+        ${tipsHtml}
       </div>
     </div>
   </section>`;

@@ -1,4 +1,5 @@
 import { updatePerformanceViewState } from '../../application/performance/performance-view-state.js';
+import { scrollBehavior } from '../accessibility.js';
 
 export function createPerformanceController({
   document,
@@ -76,6 +77,10 @@ export function createPerformanceController({
         if (stable) {
           update({ subjectId: stable.dataset.stabilitySubject });
           render();
+          // O detalhe fica bem abaixo da lista: leva a tela e o foco até ele.
+          const detail = document.querySelector('[data-performance-subject]') as HTMLElement | null;
+          detail?.scrollIntoView?.({ block: 'start', behavior: scrollBehavior() });
+          detail?.focus?.({ preventScroll: true });
           return;
         }
         const topic = event.target.closest('[data-performance-topic]');

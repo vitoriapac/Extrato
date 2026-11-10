@@ -62,6 +62,10 @@ export interface WeeklyPerformanceBriefViewModel {
   /** Aderência ao plano, só quando a semana teve plano; a Visão geral a soma às três métricas. */
   adherenceMetric: WeeklyBriefChartMetric | null;
   links: WeeklyBriefLink[];
+  /** Como ler o resumo desta semana (amostra, comparação, plano). */
+  readingTips: string[];
+  /** O que registrar para o resumo continuar útil. */
+  keepTips: string[];
 }
 
 export interface BuildWeeklyPerformanceBriefInput {
@@ -344,6 +348,39 @@ function buildAdherenceMetric(
     currentBarPct: bar(now),
     previousBarPct: bar(before),
   };
+}
+
+/**
+ * Dicas curtas para a aba Desempenho: explicam o limite da leitura e o que registrar,
+ * sem repetir números que a Visão geral (Início) já mostra e sem alterar nada sozinhas.
+ */
+export function buildWeeklyReadingTips(
+  current: WeeklyWindowStats,
+  previous: WeeklyWindowStats
+): { readingTips: string[]; keepTips: string[] } {
+  const readingTips: string[] = [];
+  const keepTips: string[] = [];
+  if (current.resolved > 0 && current.resolved < 30)
+    readingTips.push(
+      'Com menos de 30 questões na semana, a precisão é um indício, não uma tendência.'
+    );
+  if (previous.studiedMinutes === 0 && previous.resolved === 0)
+    readingTips.push(
+      'Ainda não há semana anterior com registros: o comparativo aparece quando houver dois períodos.'
+    );
+  if (current.planFulfillmentPct != null && current.planFulfillmentPct < 70)
+    readingTips.push(
+      'Se o plano ficar abaixo do planejado em outras semanas, você decide o ajuste em Planejamento; nada muda sozinho.'
+    );
+  if (current.sessionCount === 0)
+    keepTips.push('Registre as sessões de estudo para o resumo medir o seu tempo.');
+  if (current.resolved === 0)
+    keepTips.push('Registre as questões, com a disciplina, para ler a precisão por matéria.');
+  if (current.simulationsCount === 0)
+    keepTips.push('Um simulado comparável por mês ajuda a calibrar a faixa da projeção.');
+  if (!keepTips.length)
+    keepTips.push('Feche a semana em Planejamento para preservar este retrato como ele foi.');
+  return { readingTips: readingTips.slice(0, 3), keepTips: keepTips.slice(0, 2) };
 }
 
 export function buildWeeklyPerformanceBrief({
@@ -659,5 +696,6 @@ export function buildWeeklyPerformanceBrief({
     chartMetrics: buildChartMetrics(current, previous),
     adherenceMetric: buildAdherenceMetric(current, previous),
     links,
+    ...buildWeeklyReadingTips(current, previous),
   };
 }

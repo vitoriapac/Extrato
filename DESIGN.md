@@ -259,6 +259,8 @@ O contraste contra a página vai de 4,7:1 a 6,6:1 no claro e de 6,9:1 a 9,8:1 no
 
 **A Regra do Âmbar.** O âmbar semântico (`amber` sobre `amber-bg`, `attention`) só marca estado de atenção: prontidão, prazo, atraso, e sempre acompanha rótulo textual. Laranja de destaque e âmbar de estado compartilham o matiz; o que os separa é o papel. Selo ou faixa com texto "atenção/atraso" usa `amber`; elemento sem estado usa `secondary`.
 
+**A Regra da Prioridade Provisória.** Um diagnóstico crítico com evidência baixa ou não avaliada aparece como "Prioridade provisória", em tom de atenção (âmbar) e não de alarme (vermelho), com a explicação de que pode mudar com mais registros. O vermelho fica para risco com evidência suficiente.
+
 **A Regra do Significado.** Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.
 
 ## Typography
@@ -296,7 +298,7 @@ Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 
 As oito abas, na ordem do app (Início, Desempenho, Hoje, Disciplinas, Agenda, Questões e Simulados, Planejamento e Instruções), têm papéis separados:
 - **Visão geral** é o resumo visual: Próxima ação com Atenção, Saúde do Edital ao lado da tendência e da coluna de apoio (meta e plano de hoje, revisões, 28 dias), e um fecho que leva a Desempenho. A análise detalhada não mora aqui.
-- **Desempenho** abre no veredito (Índice de Prontidão e projeção). Subabas: Visão geral, Disciplinas, Diagnóstico, Questões, Simulados, Inteligência da prova, Consistência e Histórico. A camada de decisão (balanço, radar, retenção) fica numa dobra (`details.decision-fold`) lembrada pelo navegador; conquistas, tempo de estudo e sessões só aparecem em Histórico.
+- **Desempenho** abre no veredito (Índice de Prontidão e projeção). Quatro abas de primeiro nível, com um segundo nível dentro dos grupos que têm mais de uma seção: Visão geral; Disciplinas (Por disciplina e Diagnóstico); Provas (Questões, Simulados e Inteligência da prova); Consistência (Ritmo e aderência e Histórico). Cada seção tem URL própria (`#desempenho/<seção>`, com `#desempenho` abrindo a Visão geral). A camada de decisão (balanço, radar, retenção) fica numa dobra (`details.decision-fold`) lembrada pelo navegador; conquistas, tempo de estudo e sessões só aparecem em Histórico, que abre pelo extrato de sessões e deixa as conquistas abaixo dele.
 - **Agenda** é uma aba só, com duas seções: "Tarefas de estudo" (visões Mês e Lista) e "Revisões espaçadas", com filtros de disciplina, status e mês compartilhados e uma lista única de atrasadas. `#calendario` continua como alias.
 
 Seções recolhíveis (`details[data-remember]`) ficam abertas no desktop e fechadas no celular quando têm `data-default-open="wide"`, e fechadas sempre quando não têm; a escolha é lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
@@ -363,6 +365,7 @@ Três níveis, um primário por card: o primário é a próxima ação; o tonal 
 ### Navigation
 - **Abas:** Sans 500 13px sem caixa-alta, fundo ardósia, texto tinta-suave; ativa em musgo com texto Sálvia Claro; hover em `tab-hover-bg`.
 - **Navegação de seções (Visão Geral):** barra fixa em papel com links Sans 12px; hover/foco ganham fundo ardósia e contorno sálvia de 1px.
+- **Subabas de Desempenho:** duas linhas de abas (`role="tablist"`). A primeira tem quatro grupos, com a ativa em musgo; a segunda, só do grupo ativo, usa fundo transparente e a ativa em `green-bg` com borda sálvia. Setas, Home e End funcionam em cada nível, e trocar de grupo abre a primeira seção dele.
 - **Mobile (<760px):** navegação inferior fixa com Início, Desempenho, Hoje, Matérias e menu "Mais"; a busca vira uma lupa que abre a paleta de comandos.
 - **Atalhos dos blocos (Planejamento):** mesma barra de seções, com botões; o último escolhido fica marcado com `aria-current` (fundo ardósia e sublinhado sálvia); setas, Home e End passam de um atalho ao outro.
 
@@ -379,7 +382,7 @@ Compara minutos em linhas de razão, só na apresentação (sem regra de domíni
 Três filas rotuladas por tipo e período: Vencidas, Hoje e Próx. 7 dias, cada uma com o total e a divisão em Revisão espaçada e Tarefa de estudo. Vencidas só ganha ênfase quando há itens ("Nada atrasado" quando vazia). O calendário Mês continua visível no desktop, abaixo das filas.
 
 ### Gráficos
-SVG puro, sem biblioteca, em `src/ui/primitives/charts/`: `RingGauge` (anel com meta), `Sparkline` (tendência, com `connectGaps`), `BulletBar` (valor contra meta), `StackedBar` (composição) e `ColumnChart` (colunas, agrupadas ou com meta). A geometria é pura (`geometry.ts`) e testada. Todo gráfico tem `role="img"` com descrição em texto e, quando há tabela, um "Ver dados" acessível; a cor nunca é a única leitura. Séries usam `--chart-series-*`; atenção usa âmbar só abaixo da meta. **Regra do texto do gráfico:** o texto de um SVG nunca renderiza abaixo de 12px, então o SVG tem `min-width` igual à largura do seu `viewBox` e, em contêiner mais estreito, rola na horizontal dentro de uma região focável (`role="region"`, nome e `tabindex="0"`) que abre no dado mais recente. **Exceção do mapa de atividade:** as células (`button.heatmap-cell`) medem 14px com ponteiro fino e 24px em toque; o passo de 17px não cumpre o WCAG 2.5.8 para mouse, e isso foi aceito conscientemente em favor da densidade de 52 semanas (a seleção também é feita pelas setas do teclado).
+SVG puro, sem biblioteca, em `src/ui/primitives/charts/`: `RingGauge` (anel com meta), `Sparkline` (tendência, com `connectGaps`), `BulletBar` (valor contra meta), `StackedBar` (composição) e `ColumnChart` (colunas, agrupadas ou com meta). A geometria é pura (`geometry.ts`) e testada. Todo gráfico tem `role="img"` com descrição em texto e, quando há tabela, um "Ver dados" acessível; a cor nunca é a única leitura. Séries usam `--chart-series-*`; atenção usa âmbar só abaixo da meta. **Regra da escala real:** o eixo Y se ajusta aos dados (arredondado a dezenas, com no mínimo 20 pontos de altura) em vez de fixar 0–100, e traz grade com rótulos; faixa estimada e meta entram no gráfico, e um ponto de "cálculo atual" nunca se liga à linha dos fechamentos salvos. Nenhum SVG é ampliado acima do seu `viewBox` (a trajetória tem largura máxima de 760px). **Regra do texto do gráfico:** o texto de um SVG nunca renderiza abaixo de 12px, então o SVG tem `min-width` igual à largura do seu `viewBox` e, em contêiner mais estreito, rola na horizontal dentro de uma região focável (`role="region"`, nome e `tabindex="0"`) que abre no dado mais recente (a região rola em `flex-direction: row-reverse` para começar pelo fim). Eixos de data mostram no máximo cerca de 6 rótulos. **Exceção do mapa de atividade:** as células (`button.heatmap-cell`) medem 14px com ponteiro fino e 24px em toque; o passo de 17px não cumpre o WCAG 2.5.8 para mouse, e isso foi aceito conscientemente em favor da densidade de 52 semanas (a seleção também é feita pelas setas do teclado).
 
 ### Avisos e Desfazer
 O aviso (`#toast`) é do tamanho do texto; no celular fica 8px acima da barra inferior. Exclusões de um único registro (item do calendário, questões, simulado, revisão, sessão, tópico arquivado) acontecem na hora e o aviso traz "Desfazer" por 10s, pausando sob o ponteiro ou foco, com Ctrl+Z. Exclusões em cascata, limpeza total, importação e descarte do cronômetro continuam pedindo confirmação.
@@ -403,7 +406,7 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Do** manter Plex Mono para números, datas, durações e códigos, Fraunces para valores e marca, e Plex Sans para rótulos, estados e ações.
 - **Do** usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.
 - **Do** dar a todo badge de estado um rótulo textual.
-- **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px).
+- **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px em toque; links de tópico e disciplina em listas densas têm no mínimo 24px com ponteiro fino).
 - **Do** usar foco sálvia visível em tudo que é interativo.
 - **Do** manter um único botão primário por card; repetições em lista usam `tonal`.
 - **Do** usar `<Icon name="..." />` ou `renderIconSvg(...)` do Tabler Icons para apoiar ações e sinalizações sem poluição visual.

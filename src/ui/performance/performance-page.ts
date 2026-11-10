@@ -79,7 +79,7 @@ export function renderPerformancePage({
       if (items.length === 1)
         return sectionButton(items[0][0], groupLabel, viewState.section === items[0][0]);
       const active = activeGroup?.[0] === groupKey;
-      return `<button type="button" role="tab" id="performanceGroupTab-${groupKey}" class="performance-section-button performance-group-button${active ? ' active' : ''}" data-performance-group="${groupKey}" data-performance-group-target="${items[0][0]}" aria-selected="${active}" aria-controls="performanceSubnav-${groupKey}" tabindex="${active ? 0 : -1}">${groupLabel}</button>`;
+      return `<button type="button" role="tab" id="performanceGroupTab-${groupKey}" class="performance-section-button performance-group-button${active ? ' active' : ''}" data-performance-group="${groupKey}" data-performance-group-target="${items[0][0]}" aria-selected="${active}" ${active ? `aria-controls="performanceSubnav-${groupKey}" ` : ''}tabindex="${active ? 0 : -1}">${groupLabel}</button>`;
     })
     .join('');
   const subnav =

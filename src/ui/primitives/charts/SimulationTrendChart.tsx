@@ -32,7 +32,10 @@ export function SimulationTrendChart({
     );
   }
 
-  const geom = simulationTrendGeometry(simulations, targetScore, { width: 560, height: 160 });
+  // Escala ajustada aos dados (0–100 achatava notas entre 77% e 84%); no máximo 80 de piso.
+  const lowest = Math.min(...simulations.map(sim => sim.score), targetScore);
+  const yMin = Math.min(80, Math.max(0, Math.floor((lowest - 10) / 10) * 10));
+  const geom = simulationTrendGeometry(simulations, targetScore, { width: 560, height: 160, yMin });
 
   return (
     <div
@@ -57,7 +60,9 @@ export function SimulationTrendChart({
         </div>
 
         <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-0.5">Último Simulado</span>
+          <span class="text-content-secondary text-xs block font-medium mb-0.5">
+            Último Simulado
+          </span>
           <div class="flex items-center gap-1.5">
             <span class="text-base font-semibold font-data text-content-primary">
               {latestScore !== null ? `${latestScore}%` : '—'}
@@ -87,7 +92,9 @@ export function SimulationTrendChart({
         </div>
 
         <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-0.5">Na Meta (≥ {targetScore}%)</span>
+          <span class="text-content-secondary text-xs block font-medium mb-0.5">
+            Na Meta (≥ {targetScore}%)
+          </span>
           <div class="text-base font-semibold font-data text-amber">
             {onTargetCount} de {simulations.length}
           </div>
@@ -96,7 +103,12 @@ export function SimulationTrendChart({
 
       {/* Gráfico SVG de Notas vs Meta */}
       {/* Largura mínima = viewBox: o texto do eixo nunca renderiza abaixo de 12px; row-reverse abre a rolagem no dado mais recente. */}
-      <div class="w-full overflow-x-auto flex flex-row-reverse" role="region" aria-label="Gráfico de notas de simulados contra a meta, rolável na horizontal" tabIndex={0}>
+      <div
+        class="w-full overflow-x-auto flex flex-row-reverse"
+        role="region"
+        aria-label="Gráfico de notas de simulados contra a meta, rolável na horizontal"
+        tabIndex={0}
+      >
         <svg
           viewBox={`0 0 ${geom.width} ${geom.height}`}
           style={{ minWidth: `${geom.width}px` }}
@@ -154,9 +166,30 @@ export function SimulationTrendChart({
           </text>
 
           {/* Rótulos de escala Y */}
-          <text x={geom.padLeft - 6} y={geom.padTop + 4} text-anchor="end" class="text-xs fill-content-secondary font-mono">100%</text>
-          <text x={geom.padLeft - 6} y={geom.padTop + geom.plotH * 0.5 + 3} text-anchor="end" class="text-xs fill-content-secondary font-mono">50%</text>
-          <text x={geom.padLeft - 6} y={geom.padTop + geom.plotH} text-anchor="end" class="text-xs fill-content-secondary font-mono">0%</text>
+          <text
+            x={geom.padLeft - 6}
+            y={geom.padTop + 4}
+            text-anchor="end"
+            class="text-xs fill-content-secondary font-mono"
+          >
+            100%
+          </text>
+          <text
+            x={geom.padLeft - 6}
+            y={geom.padTop + geom.plotH * 0.5 + 3}
+            text-anchor="end"
+            class="text-xs fill-content-secondary font-mono"
+          >
+            {Math.round((100 + geom.yMin) / 2)}%
+          </text>
+          <text
+            x={geom.padLeft - 6}
+            y={geom.padTop + geom.plotH}
+            text-anchor="end"
+            class="text-xs fill-content-secondary font-mono"
+          >
+            {geom.yMin}%
+          </text>
 
           {/* Curva de evolução de notas dos simulados */}
           {geom.pathD && (

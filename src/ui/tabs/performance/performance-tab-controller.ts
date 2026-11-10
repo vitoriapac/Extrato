@@ -82,6 +82,16 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
   ];
   let performanceViewState = createPerformanceViewState();
   const hashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
+  // Voltar e URLs coladas mudam o hash sem recarregar: a seção acompanha.
+  doc?.defaultView?.addEventListener?.('hashchange', () => {
+    const hash = doc?.defaultView?.location?.hash || '';
+    if (!/^#desempenho(\/|$)/.test(hash)) return;
+    const next = /^#desempenho\/([a-z]+)/.exec(hash)?.[1] ?? 'overview';
+    if (!PERFORMANCE_SECTIONS.includes(next) || next === performanceViewState.section) return;
+    performanceViewState = updatePerformanceViewState(performanceViewState, { section: next });
+    if ((doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho')
+      renderPerformance();
+  });
   if (hashSection && PERFORMANCE_SECTIONS.includes(hashSection)) {
     performanceViewState = updatePerformanceViewState(performanceViewState, {
       section: hashSection,
@@ -350,7 +360,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       if (win.location.hash !== next) win.history.replaceState(null, '', next);
     }
     const status = doc.getElementById('performanceStatus');
-    const section = target.querySelector('.performance-section-button.active[data-performance-section]')?.textContent?.trim();
+    const section = target
+      .querySelector('.performance-section-button.active[data-performance-section]')
+      ?.textContent?.trim();
     const statusText = section
       ? `Mostrando ${section}${examSection || performanceViewState.section === 'history' || performanceViewState.section === 'diagnosis' ? '' : ` · ${range.label}`}.`
       : '';
