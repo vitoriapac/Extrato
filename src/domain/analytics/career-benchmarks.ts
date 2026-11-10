@@ -373,7 +373,7 @@ export function calculateCareerBenchmarkComparison(
   // 1. Horas Semanais
   const hours = aggregates.studiedHours;
   let hoursStatus: BenchmarkStatus = 'insufficient';
-  let hoursStatusLabel = 'Abaixo do Mínimo';
+  let hoursStatusLabel = 'Abaixo do mínimo';
   let hoursCommentary = 'Abaixo da faixa mínima de referência; pode ser fase inicial ou semana atípica.';
 
   if (hours >= career.weeklyHours.advanced) {
@@ -394,7 +394,7 @@ export function calculateCareerBenchmarkComparison(
 
   const weeklyHoursComparison: BenchmarkMetricComparison = Object.freeze({
     metric: 'weeklyHours',
-    label: 'Horas Líquidas Semanais',
+    label: 'Horas líquidas por semana',
     unit: 'h/sem',
     currentValue: hours,
     targetMin: career.weeklyHours.competitiveMin,
@@ -408,7 +408,7 @@ export function calculateCareerBenchmarkComparison(
   // 2. Volume de Questões
   const questions = aggregates.resolvedQuestions;
   let qStatus: BenchmarkStatus = 'insufficient';
-  let qStatusLabel = 'Abaixo do Mínimo';
+  let qStatusLabel = 'Abaixo do mínimo';
   let qCommentary = 'Volume de questões abaixo da faixa mínima de referência nesta semana.';
 
   if (questions >= career.weeklyQuestions.advanced) {
@@ -429,7 +429,7 @@ export function calculateCareerBenchmarkComparison(
 
   const weeklyQuestionsComparison: BenchmarkMetricComparison = Object.freeze({
     metric: 'weeklyQuestions',
-    label: 'Volume de Questões Semanais',
+    label: 'Questões por semana',
     unit: 'questões/sem',
     currentValue: questions,
     targetMin: career.weeklyQuestions.competitiveMin,
@@ -501,25 +501,25 @@ export function calculateCareerBenchmarkComparison(
     (statusScores[hoursStatus] + statusScores[qStatus] + statusScores[accStatus]) / 3;
 
   let overallStatus: BenchmarkStatus = 'insufficient';
-  let overallLabel = 'Construindo Consistência';
+  let overallLabel = 'Construindo consistência';
   let guidanceNote =
-    'Seu foco no momento deve ser a regularidade. Mesmo 1h a 2h diárias bem cumpridas garantem evolução sólida.';
+    'Os indicadores ainda estão abaixo das faixas de referência. Regularidade ao longo da semana é o que esta leitura mede.';
 
   if (avgScore >= 2.3) {
     overallStatus = 'advanced';
-    overallLabel = 'Ritmo Avançado de Aprovado';
+    overallLabel = 'Ritmo avançado de referência';
     guidanceNote =
-      'Seu ritmo está entre os mais altos da categoria. Mantenha os simulados periódicos e preserve o sono e o descanso.';
+      'Os indicadores estão na faixa avançada de referência. Cargas altas pedem atenção ao descanso.';
   } else if (avgScore >= 1.6) {
     overallStatus = 'competitive';
-    overallLabel = 'Ritmo Competitivo de Aprovação';
+    overallLabel = 'Ritmo competitivo de referência';
     guidanceNote =
-      'Parabéns! Seus indicadores de horas, questões e precisão convergem para a média dos aprovados nesta carreira.';
+      'Horas, questões e precisão estão dentro das faixas de referência desta carreira.';
   } else if (avgScore >= 0.8) {
     overallStatus = 'building';
-    overallLabel = 'Fase de Construção de Base';
+    overallLabel = 'Fase de construção de base';
     guidanceNote =
-      'Você está no caminho certo. Pequenos ajustes de 20 minutos a mais de questões por dia aceleram sua prontidão.';
+      'Parte dos indicadores já está nas faixas de referência; os demais ficam entre o mínimo e a faixa competitiva.';
   }
 
   return Object.freeze({

@@ -110,7 +110,7 @@ test('calculateCareerBenchmarkComparison — classifica métricas frente à carr
   assert.equal(comparison.weeklyQuestions.status, 'competitive');
   assert.equal(comparison.accuracy.status, 'competitive');
   assert.equal(comparison.overallStatus, 'competitive');
-  assert.ok(comparison.overallLabel.includes('Competitivo'));
+  assert.ok(comparison.overallLabel.includes('competitivo'));
   assert.ok(comparison.guidanceNote.length > 20);
   assert.ok(Object.isFrozen(comparison));
 });

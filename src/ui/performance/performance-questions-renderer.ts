@@ -74,8 +74,16 @@ export function renderPerformanceQuestions({
   const msp = multiSubjectPerformance;
   let multiLineSection = '';
   if (msp && msp.series.length > 0 && msp.periods.length > 0) {
+    // Doze linhas viram emaranhado: o gráfico traça as cinco de menor precisão e a lista ao lado traz todas.
+    const chartLimit = 5;
+    const chartSeries =
+      msp.series.length > chartLimit
+        ? [...msp.series]
+            .sort((a: any, b: any) => (a.overallAccuracy ?? 101) - (b.overallAccuracy ?? 101))
+            .slice(0, chartLimit)
+        : msp.series;
     const multiChart = renderMultiLineChart({
-      series: msp.series,
+      series: chartSeries,
       periodLabels: msp.periodLabels,
     });
     const subRows = msp.series
@@ -89,7 +97,7 @@ export function renderPerformanceQuestions({
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
           <h3 class="m-0">Desempenho por disciplina</h3>
-          <p class="analytics-note m-0">Evolução da taxa de acerto nas questões por período, traçada nas cores oficiais de cada matéria.</p>
+          <p class="analytics-note m-0">Evolução da taxa de acerto nas questões por período, nas cores de cada matéria.${msp.series.length > chartLimit ? ` O gráfico traça as ${chartLimit} de menor precisão; a lista traz as ${msp.series.length}.` : ''}</p>
         </div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-3">
@@ -100,7 +108,7 @@ export function renderPerformanceQuestions({
           <div class="mb-3">
             <span class="text-3xl font-semibold font-data text-content-primary">${msp.overallAccuracy ?? '—'}%</span>
             <p class="text-xs text-content-secondary m-0">${msp.totalResolved} questões · ${msp.totalCorrect} acertos</p>
-            <span class="text-micro font-medium uppercase tracking-wider text-content-secondary mt-1 inline-block">Média de desempenho</span>
+            <span class="text-xs font-medium text-content-secondary mt-1 inline-block">Precisão geral no período</span>
           </div>
           <ul class="m-0 p-0 list-none space-y-1">
             ${subRows}

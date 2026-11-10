@@ -11,7 +11,7 @@ export function renderStabilityMap(
 ) {
   if (!model?.total) return '';
   const cell = ([key, label, description]: any) =>
-    `<div class="stability-map-cell stability-map-cell--${key}"><h4>${label}</h4><p>${description}</p><ul>${model.groups[
+    `<div class="stability-map-cell stability-map-cell--${key}"><h4>${label}</h4><p>${description}</p>${model.groups[key].length ? '' : '<p class="analytics-note">Nenhuma disciplina neste grupo no período.</p>'}<ul>${model.groups[
       key
     ]
       .slice(0, 5)

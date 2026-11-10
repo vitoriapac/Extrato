@@ -110,7 +110,7 @@ export function CareerBenchmarkCard({
       ? 'success'
       : overallStatus === 'building'
         ? 'info'
-        : 'warning';
+        : 'info';
 
   return (
     <article
@@ -258,7 +258,7 @@ export function CareerBenchmarkCard({
       <footer class="flex items-start gap-2 p-3 rounded bg-surface-subtle text-xs text-content-secondary leading-relaxed">
         <Icon name="info-circle" size={16} class="text-accent shrink-0 mt-0.5" />
         <div>
-          <strong class="text-content-primary">Diretriz Pedagógica: </strong>
+          <strong class="text-content-primary">Leitura: </strong>
           <span>{guidanceNote}</span>
         </div>
       </footer>

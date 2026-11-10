@@ -30,14 +30,14 @@ test('CareerBenchmarkCard — renderiza comparativo completo de ritmo por carrei
 
   assert.match(html, /Ritmo frente aos aprovados/);
   assert.match(html, /Fiscal &amp; Controle|Fiscal & Controle/);
-  assert.match(html, /Horas Líquidas Semanais/);
+  assert.match(html, /Horas líquidas por semana/);
   assert.match(html, /26 h\/sem/);
-  assert.match(html, /Volume de Questões Semanais/);
+  assert.match(html, /Questões por semana/);
   assert.match(html, /240 questões\/sem/);
   assert.match(html, /Precisão em Questões/);
   assert.match(html, /82 %/);
   assert.match(html, /Mix de Estudo/);
-  assert.match(html, /Diretriz Pedagógica/);
+  assert.match(html, /Leitura:/);
   assert.match(html, /careerClusterSelect/);
 });
 

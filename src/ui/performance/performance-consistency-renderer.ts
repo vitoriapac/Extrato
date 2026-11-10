@@ -7,6 +7,7 @@ import {
   renderDonutChart,
 } from '../primitives/charts/charts.js';
 import { formatDecimal } from '../../core/format-number.js';
+import { formatStudyMinutes } from '../format-study-time.js';
 
 // Share of rated sessions with deep focus per shift; a shift without rated sessions shows "sem sessões", never 0%.
 export function renderFocusByShift(analysis: Record<string, any> | null | undefined) {
@@ -29,7 +30,7 @@ export function renderFocusByShift(analysis: Record<string, any> | null | undefi
 
 export function renderPerformanceConsistency(
   model: Record<string, any>,
-  { formatDate, escapeHtml }: any = {}
+  { formatDate, escapeHtml, range }: any = {}
 ) {
   const cells = model.heatmap
     .map((day: any) => {
@@ -114,5 +115,10 @@ export function renderPerformanceConsistency(
     </section>`;
   }
 
-  return `${timelineHtml}${distributionHtml}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}<div id="shiftEnergyMount" class="mt-4">${renderFocusByShift(model.focusByShift)}</div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
+  // Síntese no topo: o mesmo critério do resumo semanal (tempo estudado frente ao planejado), agora na janela filtrada.
+  const synthesis =
+    model.plannedMinutes > 0 && model.adherence != null
+      ? `<section class="performance-synthesis" aria-label="Síntese da consistência"><p class="performance-synthesis__lead">${escapeHtml(range?.label || 'No período')}: ${escapeHtml(formatStudyMinutes(model.studiedMinutes))} estudados de ${escapeHtml(formatStudyMinutes(model.plannedMinutes))} planejados (${formatDecimal(model.adherence)}% do tempo planejado), em ${pluralize(model.activeDays, 'dia', 'dias')} com estudo.</p><p class="analytics-note m-0">É tempo total, sem exigir vínculo com o plano. Aderência ao plano, execução prioritária e crédito semanal usam outras bases e vêm abaixo, cada uma com a sua janela.</p></section>`
+      : '';
+  return `${synthesis}${timelineHtml}${distributionHtml}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}<div id="shiftEnergyMount" class="mt-4">${renderFocusByShift(model.focusByShift)}</div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
 }
