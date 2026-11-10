@@ -92,7 +92,7 @@ export function buildShiftEnergyViewModel({
 
   let summary = 'Amostra ainda em consolidação para traçar seu perfil de pico cognitivo.';
   if (diagnostic.isSampleSufficient && diagnostic.peakShiftLabel) {
-    summary = `Seu melhor rendimento cognitivo ocorre no turno da ${diagnostic.peakShiftLabel}.`;
+    summary = `Nas sessões avaliadas, o melhor rendimento apareceu no turno da ${diagnostic.peakShiftLabel}.`;
   }
 
   return {

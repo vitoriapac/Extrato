@@ -109,8 +109,6 @@ test('analyzeFocusAndEnergy — identifica turno de pico e alerta de fadiga notu
   assert.ok(result.fatigueAlert !== null);
   assert.match(result.fatigueAlert, /Queda de 35 p.p./);
   assert.ok(
-    result.recommendations.some(r =>
-      r.includes('melhor rendimento cognitivo ocorre no turno da manhã')
-    )
+    result.recommendations.some(r => r.includes('o melhor rendimento apareceu no turno da manhã'))
   );
 });

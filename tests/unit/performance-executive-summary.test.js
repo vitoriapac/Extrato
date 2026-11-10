@@ -47,8 +47,8 @@ test('resumo executivo — com projeção mostra situação, faixa, confiança e
     },
   });
   const html = renderPerformanceExecutiveSummary(summary);
-  assert.match(html, /Atenção\. Resultado central dos simulados comparáveis: 81%, meta de 80%/);
-  assert.match(html, /faixa estimada de 69% a 93%/);
+  assert.match(html, /Atenção\. O resultado central dos simulados \(81%\) atinge a meta de 80%/);
+  assert.match(html, /faixa estimada de 69% a 93% inclui valores abaixo dela/);
   assert.match(html, /Confiança baixa/);
   assert.match(html, /Precisão em questões: \+7 p\.p\. frente ao período anterior/);
   assert.match(html, /20 questões · 4 sessões/);

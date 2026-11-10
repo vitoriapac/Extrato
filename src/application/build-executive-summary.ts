@@ -53,7 +53,7 @@ export function buildExecutiveSummary({
     target = Number(weeklyGoal.target) || 0;
   const weekly = {
     value: target ? `${Math.round((achieved / target) * 100)}%` : '—',
-    label: 'meta semanal',
+    label: 'meta semanal de tópicos',
     detail: target ? `${achieved} de ${target} tópicos` : 'Meta não configurada',
   };
   return {

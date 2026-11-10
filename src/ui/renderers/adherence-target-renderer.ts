@@ -22,5 +22,5 @@ export function renderAdherenceTarget(context: Record<string, any>, { escapeHtml
       : context.state === 'below_target'
         ? 'Meta ainda não atingida'
         : 'Registre sessões vinculadas a um plano para acompanhar esta meta.';
-  return `<aside class="context-note adherence-target" aria-label="Meta pessoal de aderência"><strong>Meta pessoal de aderência: ${context.target}%</strong><p>${escapeHtml(actual)} · ${escapeHtml(result)}</p><p>Semana atual, somente até hoje. Contexto de execução; não estima ganho de nota nem altera a Prontidão ou a prioridade.</p></aside>`;
+  return `<aside class="context-note adherence-target" aria-label="Meta pessoal de aderência"><strong>Meta pessoal de aderência: ${context.target}%</strong><p>${escapeHtml(actual)} · ${escapeHtml(result)}</p><p>Semana atual, somente até hoje. O crédito só conta estudo vinculado a uma atividade do plano, por isso pode ser menor que o tempo total estudado. Contexto de execução; não estima ganho de nota nem altera a Prontidão ou a prioridade.</p></aside>`;
 }

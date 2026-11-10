@@ -8,7 +8,15 @@ export interface ShiftEnergyCardProps {
 }
 
 export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
-  const { shifts, peakShift, totalStudyHours, isSampleSufficient, fatigueAlert, recommendations, summary } = model;
+  const {
+    shifts,
+    peakShift,
+    totalStudyHours,
+    isSampleSufficient,
+    fatigueAlert,
+    recommendations,
+    summary,
+  } = model;
 
   const SHIFT_ICONS: Record<string, string> = {
     morning: 'sun',
@@ -28,12 +36,12 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
               <h3 id="shiftEnergyTitle" class="text-base font-semibold text-content-primary m-0">
                 Eficiência &amp; Energia por Turno
               </h3>
-              {peakShift && (
-                <Badge variant="success">Pico de Rendimento</Badge>
-              )}
+              {peakShift && <Badge variant="success">Pico de Rendimento</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Correlação entre horário de estudo, foco profundo e rendimento cognitivo ({totalStudyHours.toLocaleString('pt-BR')}h totais)
+              Todo o histórico registrado, sem o filtro de período (
+              {totalStudyHours.toLocaleString('pt-BR')}h no total). A seção Foco profundo por turno
+              usa só o período escolhido.
             </p>
           </div>
         </div>
@@ -53,23 +61,22 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
             >
               <div class="flex items-center justify-between gap-1 mb-2">
                 <div class="flex items-center gap-1.5">
-                  <div class={`p-1 rounded ${shift.isPeak ? 'text-accent bg-accent/10' : 'text-content-secondary bg-surface-subtle'}`}>
+                  <div
+                    class={`p-1 rounded ${shift.isPeak ? 'text-accent bg-accent/10' : 'text-content-secondary bg-surface-subtle'}`}
+                  >
                     <Icon name={iconName} size={16} />
                   </div>
-                  <span class="text-xs font-semibold text-content-primary">
-                    {shift.shiftLabel}
-                  </span>
+                  <span class="text-xs font-semibold text-content-primary">{shift.shiftLabel}</span>
                 </div>
-                {shift.isPeak && (
-                  <Badge variant="success">Pico</Badge>
-                )}
+                {shift.isPeak && <Badge variant="success">Pico</Badge>}
               </div>
 
               <div class="space-y-1.5 text-xs">
                 <div class="flex justify-between items-center text-content-secondary">
                   <span>Horas de estudo:</span>
                   <span class="font-mono font-medium text-content-primary">
-                    {shift.hoursSpent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}h ({shift.timePercent}%)
+                    {shift.hoursSpent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}h (
+                    {shift.timePercent}%)
                   </span>
                 </div>
 
@@ -89,9 +96,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
 
                 <div class="flex justify-between items-center text-content-secondary">
                   <span>Foco profundo:</span>
-                  <span class="font-mono text-content-primary">
-                    {shift.deepFocusPercent}%
-                  </span>
+                  <span class="font-mono text-content-primary">{shift.deepFocusPercent}%</span>
                 </div>
               </div>
             </div>

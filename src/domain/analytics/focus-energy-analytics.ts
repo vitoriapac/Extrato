@@ -214,7 +214,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
   if (peakShift) {
     const accLabel = highestAccuracy >= 0 ? ` com ${highestAccuracy}% de acerto médio` : '';
     recommendations.push(
-      `Seu melhor rendimento cognitivo ocorre no turno da ${SHIFT_LABELS[peakShift].split(' ')[0].toLowerCase()}${accLabel}. Priorize conteúdos densos e novas teorias nesse horário.`
+      `Nas sessões avaliadas, o melhor rendimento apareceu no turno da ${SHIFT_LABELS[peakShift].split(' ')[0].toLowerCase()}${accLabel}. Se fizer sentido para a sua rotina, vale testar conteúdos densos nesse horário.`
     );
   }
 
@@ -228,12 +228,12 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
     if (nightAcc !== null && peakAcc - nightAcc >= 20) {
       fatigueAlert = `Queda de ${peakAcc - nightAcc} p.p. no acerto em questões durante a noite em relação ao seu horário de pico.`;
       recommendations.push(
-        'Evite baterias extensas de questões ou novos tópicos complexos no turno da noite. Concentre esse período em revisões ativas leves ou leitura de lei seca.'
+        'Se a queda se repetir, vale testar revisões leves ou leitura nesse turno, em vez de baterias longas de questões. É uma diferença observada, sem causa comprovada.'
       );
     } else if (night.lowEnergyPercent >= 50) {
       fatigueAlert = 'Mais de 50% das sessões noturnas foram registradas com cansaço mental.';
       recommendations.push(
-        'Sinais de esgotamento noturno: considere reduzir a duração dos blocos à noite para 30-40 minutos ou priorizar o descanso reparador.'
+        'Houve registro frequente de cansaço à noite. Vale testar blocos mais curtos nesse turno e ver se o registro muda.'
       );
     }
   }
