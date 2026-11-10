@@ -236,3 +236,4 @@ T6, T7, T10, T11 (independentes, em paralelo) ─┤
 - Fase 0 concluída (commits `a548c39`; T2 só parcial: a aderência não pôde ser recolhida em dobra porque a dobra fecha ao re-renderizar e o seletor de semanas perde o foco. Preservar o estado aberto das dobras é pré-requisito se isso voltar).
 - Fase 1 concluída (commit `dfde623`). Ficaram de fora: tamanho das células do calendário (14px no desktop; o foco rotativo já existe), zero cortado da fonte mono e as legendas de contagens 304/305 e 12/17 contra 9/17.
 - Próximo: Fase 2 (T4, T5, T8).
+- Fase 2 implementada, ainda sem commit: T4 (`build-preparation-reading.ts`), T5 (`preparation-reading-renderer.ts`, faixa no topo da Visão geral, E2E `performance-preparation-reading.spec.js`) e T8 (síntese de Consistência com déficit e "Ajustar plano"). A faixa começa em y=635 de 900 no desktop (o chrome do app ocupa o resto), então não cabe inteira na primeira dobra; encurtar o cabeçalho de Desempenho é um ajuste à parte.

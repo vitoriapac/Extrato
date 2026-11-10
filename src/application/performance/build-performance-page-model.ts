@@ -1,3 +1,4 @@
+import { buildPreparationReading } from './build-preparation-reading.js';
 import { buildQuestionEvolution } from '../questions/build-question-evolution.js';
 import { buildPerformanceAnalysis } from '../questions/build-performance-analysis.js';
 import { buildPerformanceOverview } from './build-performance-overview.js';
@@ -28,6 +29,7 @@ export function buildPerformancePageModel({
   achievementCapacityMinutes = 0,
   adherenceContext = null,
   recoveryPlan = null,
+  nextBestAction = null,
   readinessSnapshots = [],
   readiness = null,
   blueprint = {},
@@ -66,10 +68,20 @@ export function buildPerformancePageModel({
       subjects,
       subjectIdFor,
     });
+    const readinessChange = buildReadinessChangeExplanation(model.readinessPair);
     return {
       section,
       model,
       weeklyBrief,
+      preparationReading: buildPreparationReading({
+        range,
+        model,
+        projection: achievementProjection,
+        weeklyBrief,
+        readinessChange,
+        nextBestAction,
+        candidates,
+      }),
       achievementProjection,
       achievementHistory,
       achievementCapacityMinutes,
@@ -78,7 +90,7 @@ export function buildPerformancePageModel({
       comparisonModel: buildPerformanceComparison(model, {
         comparePrevious: range.comparePrevious,
       }),
-      readinessChange: buildReadinessChangeExplanation(model.readinessPair),
+      readinessChange,
     };
   }
   if (section === 'questions') {
@@ -212,16 +224,22 @@ export function buildPerformancePageModel({
           .map((m: any) => m?.mastery)
           .filter((val: any) => Number.isFinite(val));
         const avgMastery = validMastery.length
-          ? Math.round(validMastery.reduce((a: number, b: number) => a + b, 0) / validMastery.length)
+          ? Math.round(
+              validMastery.reduce((a: number, b: number) => a + b, 0) / validMastery.length
+            )
           : 50;
         const validRetention = topicMetrics
           .map((m: any) => m?.retention)
           .filter((val: any) => Number.isFinite(val));
         const avgRetention = validRetention.length
-          ? Math.round(validRetention.reduce((a: number, b: number) => a + b, 0) / validRetention.length)
+          ? Math.round(
+              validRetention.reduce((a: number, b: number) => a + b, 0) / validRetention.length
+            )
           : 50;
 
-        const subSessions = scope.sessions.included.filter((sess: any) => subjectIdFor(sess) === sub.id);
+        const subSessions = scope.sessions.included.filter(
+          (sess: any) => subjectIdFor(sess) === sub.id
+        );
         const studyMinutes = Math.round(
           subSessions.reduce(
             (sum: number, sess: any) => sum + (Number(sess.durationSeconds) || 0) / 60,

@@ -44,6 +44,8 @@ export interface PerformanceTabControllerDeps {
   readinessResult?: (metrics: any) => any;
   computeApprovalMetrics?: () => any;
   intelligenceCandidates?: () => any[];
+  /** A mesma próxima melhor ação de Hoje, para a leitura da preparação. */
+  nextBestAction?: () => any;
   entitySubjectId?: (item: any) => string | null;
   simuladoEffectiveCounts?: (simulado: any) => any;
   localDateFromTimestamp?: (timestamp: any) => string;
@@ -242,8 +244,13 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               : null,
           blueprint: state.examBlueprint,
           globalTarget: state.metas?.metaAprovacao,
+          nextBestAction:
+            performanceViewState.section === 'overview' && deps.nextBestAction
+              ? deps.nextBestAction()
+              : null,
           candidates:
-            performanceViewState.section === 'subjects' && deps.intelligenceCandidates
+            ['subjects', 'overview'].includes(performanceViewState.section) &&
+            deps.intelligenceCandidates
               ? deps.intelligenceCandidates()
               : [],
           dailyPlans: performanceScopedPlans(scope),

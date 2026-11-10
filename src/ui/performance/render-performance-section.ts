@@ -18,6 +18,7 @@ export function renderPerformanceSection(
         escapeHtml,
         escapeAttr,
         weeklyBrief: pageModel.weeklyBrief,
+        preparationReading: pageModel.preparationReading,
         comparisonModel: pageModel.comparisonModel,
         readinessChange: pageModel.readinessChange,
         achievementProjection: pageModel.achievementProjection,

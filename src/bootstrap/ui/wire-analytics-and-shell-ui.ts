@@ -18,6 +18,7 @@ import { createShellUiController } from '../../ui/shell/shell-ui-controller.js';
 import { createSearchController } from '../../ui/controllers/search-controller.js';
 import { createApprovalTabController } from '../../ui/tabs/approval/approval-tab-controller.js';
 import { createDashboardTabController } from '../../ui/tabs/dashboard/dashboard-tab-controller.js';
+import { buildNextBestAction } from '../../application/diagnostics/build-next-best-action.js';
 import { createPerformanceTabController } from '../../ui/tabs/performance/performance-tab-controller.js';
 
 export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
@@ -309,6 +310,12 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     readinessResult: approvalReadinessService.readinessResult,
     computeApprovalMetrics: approvalReadinessService.computeApprovalMetrics,
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
+    nextBestAction: () =>
+      buildNextBestAction({
+        recommendations: getCurrentStudyRecommendations(),
+        activePlan: getLatestStudyPlan(),
+        weeklyCapacityMinutes: studyMetricsSelectors.weeklyStrategyCapacity(),
+      }),
     entitySubjectId,
     simuladoEffectiveCounts: studyMetricsSelectors.simuladoEffectiveCounts,
     localDateFromTimestamp,

@@ -80,7 +80,7 @@ export interface BuildWeeklyPerformanceBriefInput {
   subjectIdFor?: (item: any) => string | null;
 }
 
-function formatReadableMinutes(minutes: number): string {
+export function formatReadableMinutes(minutes: number): string {
   const rounded = Math.max(0, Math.round(Number(minutes) || 0));
   if (rounded === 0) return '0 min';
   const hours = Math.floor(rounded / 60);
