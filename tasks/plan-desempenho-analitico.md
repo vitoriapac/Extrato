@@ -224,9 +224,15 @@ T6, T7, T10, T11 (independentes, em paralelo) ─┤
 - **Goldens.** A faixa muda as capturas de Desempenho em desktop e celular, claro e escuro: atualizar só dos specs afetados.
 - **Substituir a tabela de disciplinas** pode quebrar E2E de `stability-phase-comparison` e `visual-density`: rodar esses specs antes e depois.
 
-## 8. Perguntas em aberto
+## 8. Decisões (respondidas em 10/11/2026)
 
-1. **Janela principal da faixa**: o período filtrado (30 dias) ou sempre os 7 dias da semana corrente? A recomendação é o período filtrado para "como estou" e a semana corrente para "o que fazer".
-2. **Tabela Planejado × Realizado**: substitui "Comparação entre disciplinas" ou convive com ela? A recomendação é substituir, para não criar uma terceira leitura por disciplina.
-3. **Exportação CSV** em Questões e Simulados entra agora ou depois? Não afeta o restante.
-4. **Glossário "Como calculamos"**: uma dobra na Visão geral ou uma página de Ajuda? A recomendação é uma dobra única no fim de Desempenho, ligada ao glossário de Ajuda.
+1. **Janela da faixa:** período filtrado (30 dias) para "Como estou" e semana corrente para "O que fazer".
+2. **Tabela Planejado × Realizado × Saldo:** substitui "Comparação entre disciplinas". Rodar `stability-phase-comparison` e `visual-density` antes e depois.
+3. **Exportação CSV** em Questões e Simulados: fica para depois. T12 mantém só ordenação e busca.
+4. **Glossário "Como calculamos":** dobra em Desempenho. Já existe no fim da Visão geral com 5 termos; ampliar e ligar à Ajuda.
+
+## 9. Andamento
+
+- Fase 0 concluída (commits `a548c39`; T2 só parcial: a aderência não pôde ser recolhida em dobra porque a dobra fecha ao re-renderizar e o seletor de semanas perde o foco. Preservar o estado aberto das dobras é pré-requisito se isso voltar).
+- Fase 1 concluída (commit `dfde623`). Ficaram de fora: tamanho das células do calendário (14px no desktop; o foco rotativo já existe), zero cortado da fonte mono e as legendas de contagens 304/305 e 12/17 contra 9/17.
+- Próximo: Fase 2 (T4, T5, T8).
