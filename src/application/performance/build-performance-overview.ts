@@ -1,4 +1,5 @@
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
+import { formatDateBR } from '../../core/format-date.js';
 import { plannedMinutesForPlan } from '../goals/build-plan-execution.js';
 import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
 import { compareReadinessSnapshots } from '../analytics/build-readiness-evolution.js';
@@ -112,8 +113,9 @@ export function buildPerformanceOverview({
   const changes = [];
   if (readinessDelta != null && readinessDelta !== 0)
     changes.push({
-      label: 'Prontidão (último fechamento)',
+      label: 'Prontidão no último fechamento',
       delta: readinessDelta,
+      detail: `${latest!.score} em ${formatDateBR(latest!.date)} contra ${prior!.score} em ${formatDateBR(prior!.date)}, último registro do período anterior`,
       unit: Math.abs(readinessDelta) === 1 ? 'ponto' : 'pontos',
     });
   if (previous) {

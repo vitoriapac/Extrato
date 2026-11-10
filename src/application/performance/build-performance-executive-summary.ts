@@ -11,7 +11,7 @@ export interface PerformanceExecutiveSummary {
     band: { low: number; high: number } | null;
   };
   /** A principal mudança medida contra o período anterior, quando há base comparável. */
-  change: { label: string; delta: number; unit: string } | null;
+  change: { label: string; delta: number; unit: string; detail?: string } | null;
   base: { resolved: number; sessions: number; smallSample: boolean };
 }
 
@@ -46,7 +46,9 @@ export function buildPerformanceExecutiveSummary({
       simulationAccuracy: finite(projection?.current?.simulationAccuracy),
       band: low != null && high != null ? { low, high } : null,
     },
-    change: first ? { label: first.label, delta: first.delta, unit: first.unit } : null,
+    change: first
+      ? { label: first.label, delta: first.delta, unit: first.unit, detail: first.detail }
+      : null,
     base: {
       resolved,
       sessions: Number(current.sessionCount) || 0,

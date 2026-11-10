@@ -9,6 +9,7 @@ import { renderIconSvg } from '../primitives/icon.js';
 export interface RenderWeeklyPerformanceBriefOptions {
   escapeHtml?: (value: any) => string;
   escapeAttr?: (value: any) => string;
+  embedded?: boolean;
 }
 
 export function renderMiniComparisonChart(
@@ -127,6 +128,13 @@ export function renderWeeklyPerformanceBriefCard(
     ? `<details class="performance-more performance-weekly-brief__tips"><summary>Como ler este resumo</summary><div class="space-y-3 mt-2">${tipsBody}</div></details>`
     : '';
 
+  const inner = `<div class="space-y-2.5">
+      ${paragraphsHtml}
+      ${linksHtml}
+      ${tipsHtml}
+    </div>`;
+  if (options.embedded)
+    return `<div class="performance-executive__week" aria-label="Seu resumo da última semana"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h4 class="module-heading__title">Últimos 7 dias</h4><span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span></div>${inner}</div>`;
   return `<section class="performance-weekly-brief chart-card mb-4" aria-label="Seu resumo da última semana">
     <header class="module-heading module-heading--compact mb-3">
       <div class="flex flex-wrap items-center justify-between gap-2">

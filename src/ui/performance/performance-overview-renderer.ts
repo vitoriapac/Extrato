@@ -88,11 +88,13 @@ export function renderPerformanceOverview(
   const weeklyBriefHtml = renderWeeklyPerformanceBriefCard(weeklyBrief || model.weeklyBrief, {
     escapeHtml,
     escapeAttr,
+    embedded: true,
   });
   // Resumo executivo do período e leitura da semana antecedem as métricas; o comparativo semanal visual fica em Início.
   const executiveHtml = renderPerformanceExecutiveSummary(
     buildPerformanceExecutiveSummary({ model, range, projection: achievementProjection }),
-    { escapeHtml }
+    { escapeHtml, embedded: true }
   );
-  return `${executiveHtml}${weeklyBriefHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  const readingHtml = `<section class="performance-executive chart-card mb-4" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
+  return `${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }
