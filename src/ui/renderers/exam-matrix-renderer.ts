@@ -100,18 +100,18 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
     .join('');
   const desktopOf = (rows: any[]) =>
     rows
-    .map(
-      (row: any) =>
-        `<tr><th scope="row"><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button></th>${row.cells.map((cell: any) => `<td class="exam-matrix-cell is-${level(cell.count)}" title="${escape(cell.examName)}: ${cellText(cell.count)}"><span>${cell.count || '—'}</span><small>${cellText(cell.count)}</small></td>`).join('')}<td>${row.presencePercent ?? '—'}%</td></tr>`
-    )
-    .join('');
+      .map(
+        (row: any) =>
+          `<tr><th scope="row"><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button></th>${row.cells.map((cell: any) => `<td class="exam-matrix-cell is-${level(cell.count)}" title="${escape(cell.examName)}: ${cellText(cell.count)}"><span>${cell.count || '—'}</span><small>${cellText(cell.count)}</small></td>`).join('')}<td>${row.presencePercent ?? '—'}%</td></tr>`
+      )
+      .join('');
   const mobileOf = (rows: any[]) =>
     rows
-    .map(
-      (row: any) =>
-        `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · ${row.presentExamCount} de ${row.examCount} provas · ${row.questionCount} questões</p><div>${row.cells.map((cell: any) => `<span class="exam-matrix-cell is-${level(cell.count)}">${escape(cell.year)}: ${cellText(cell.count)}</span>`).join('')}</div></article>`
-    )
-    .join('');
+      .map(
+        (row: any) =>
+          `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · ${row.presentExamCount} de ${row.examCount} provas · ${row.questionCount} questões</p><div>${row.cells.map((cell: any) => `<span class="exam-matrix-cell is-${level(cell.count)}">${escape(cell.year)}: ${cellText(cell.count)}</span>`).join('')}</div></article>`
+      )
+      .join('');
   const selected = model.rows.find((row: any) => row.topicId === selectedTopicId);
   const audit = selected?.audit;
   const comparison = audit
@@ -130,19 +130,24 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
     : '';
   const priorityRowsOf = (rows: any[]) =>
     rows
-    .map(
-      (row: any) =>
-        `<tr><th scope="row"><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button></th><td>${row.presencePercent ?? '—'}%</td><td>${row.mastery == null ? '—' : Math.round(row.mastery)}</td><td>${row.impact == null ? '—' : Math.round(row.impact)}</td><td>${row.gap == null ? 'Dados insuficientes' : row.gap >= 30 ? 'Lacuna prioritária' : row.gap >= 10 ? 'Acompanhar' : 'Manutenção'}</td></tr>`
-    )
-    .join('');
+      .map(
+        (row: any) =>
+          `<tr><th scope="row"><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button></th><td>${row.presencePercent ?? '—'}%</td><td>${row.mastery == null ? '—' : Math.round(row.mastery)}</td><td>${row.impact == null ? '—' : Math.round(row.impact)}</td><td>${row.gap == null ? 'Dados insuficientes' : row.gap >= 30 ? 'Lacuna prioritária' : row.gap >= 10 ? 'Acompanhar' : 'Manutenção'}</td></tr>`
+      )
+      .join('');
   const priorityCardsOf = (rows: any[]) =>
-    rows.map((row: any) => `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? '—' : Math.round(row.mastery)} · impacto ${row.impact == null ? '—' : Math.round(row.impact)} · ${row.gap == null ? 'dados insuficientes' : row.gap >= 30 ? 'lacuna prioritária' : row.gap >= 10 ? 'acompanhar' : 'manutenção'}</p></article>`).join('');
+    rows
+      .map(
+        (row: any) =>
+          `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? '—' : Math.round(row.mastery)} · impacto ${row.impact == null ? '—' : Math.round(row.impact)} · ${row.gap == null ? 'dados insuficientes' : row.gap >= 30 ? 'lacuna prioritária' : row.gap >= 10 ? 'acompanhar' : 'manutenção'}</p></article>`
+      )
+      .join('');
   // Oito linhas à vista; o restante da lista fica sob "Mostrar mais · +N" (cabeçalho repetido para a tabela continuar legível).
   const firstRows = model.rows.slice(0, VISIBLE_ROWS);
   const restRows = model.rows.slice(VISIBLE_ROWS);
   const more = (body: string) =>
     restRows.length
-      ? `<details class="performance-more"><summary>Mostrar mais · +${restRows.length}</summary>${body}</details>`
+      ? `<details class="performance-more"><summary>Mostrar mais · +${restRows.length}</summary><template data-lazy>${body}</template></details>`
       : '';
   const prioritiesTable = (rows: any[], caption: string) =>
     `<div class="exam-matrix-table-wrap"><table class="exam-matrix-table"><caption>${caption}</caption><thead><tr><th scope="col">Tópico</th><th scope="col">Incidência</th><th scope="col">Domínio</th><th scope="col">Impacto</th><th scope="col">Situação</th></tr></thead><tbody>${priorityRowsOf(rows)}</tbody></table></div>`;

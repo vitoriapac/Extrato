@@ -112,7 +112,7 @@ export function buildPerformanceOverview({
   const changes = [];
   if (readinessDelta != null && readinessDelta !== 0)
     changes.push({
-      label: 'Prontidão no último fechamento',
+      label: 'Prontidão (último fechamento)',
       delta: readinessDelta,
       unit: Math.abs(readinessDelta) === 1 ? 'ponto' : 'pontos',
     });

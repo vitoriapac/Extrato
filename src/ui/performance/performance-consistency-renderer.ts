@@ -1,7 +1,11 @@
 import { pluralize } from '../../core/utils.js';
 import { renderPerformanceDetails } from './performance-story.js';
 import { renderAdherenceAnalysis } from '../renderers/adherence-renderer.js';
-import { renderBulletBar, renderStackedColumnChart, renderDonutChart } from '../primitives/charts/charts.js';
+import {
+  renderBulletBar,
+  renderStackedColumnChart,
+  renderDonutChart,
+} from '../primitives/charts/charts.js';
 import { formatDecimal } from '../../core/format-number.js';
 
 // Share of rated sessions with deep focus per shift; a shift without rated sessions shows "sem sessões", never 0%.
@@ -40,17 +44,17 @@ export function renderPerformanceConsistency(
   let timelineHtml = '';
   if (timeline && timeline.days.length > 0) {
     const totalHours = formatDecimal(timeline.totalSeconds / 3600);
+    // Teto da escala em horas "redondas" (a metade também): evita rótulos como 0 / 1,9h / 3,8h.
+    const maxHours = Math.max(
+      0,
+      ...timeline.days.map((day: any) => (day.totalSeconds || 0) / 3600)
+    );
+    const niceMaxHours =
+      [1, 2, 4, 6, 8, 10, 12, 16, 20, 24].find(value => value >= maxHours) || Math.ceil(maxHours);
     const chart = renderStackedColumnChart({
       days: timeline.days,
-      minYMax: 3600,
+      minYMax: niceMaxHours * 3600,
     });
-    const summaries = (timeline.subjectSummaries || [])
-      .map(
-        (sub: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${sub.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(sub.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatDecimal(sub.totalSeconds / 3600)}h <span class="text-micro font-sans text-content-secondary">(${formatDecimal(sub.percentage)}%)</span></div></li>`
-      )
-      .join('');
-
     timelineHtml = `<section class="performance-block" aria-label="Linha do tempo de estudos">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
@@ -67,9 +71,7 @@ export function renderPerformanceConsistency(
             <span class="text-2xl font-semibold font-data text-content-primary">${totalHours}h</span>
             <p class="text-xs text-content-secondary m-0">Tempo total no período selecionado</p>
           </div>
-          <ul class="m-0 p-0 list-none space-y-1">
-            ${summaries || '<li class="text-xs text-content-secondary">Nenhuma sessão registrada.</li>'}
-          </ul>
+          <p class="text-xs text-content-secondary m-0">A divisão por disciplina está em "Tempo de estudo por disciplina", logo abaixo.</p>
         </div>
       </div>
     </section>`;

@@ -130,7 +130,7 @@ export function CareerBenchmarkCard({
                 id="careerBenchmarkTitle"
                 class="text-base font-semibold text-content-primary m-0"
               >
-                Ritmo Frente aos Aprovados
+                Ritmo frente aos aprovados
               </h3>
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>

@@ -3731,7 +3731,10 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
   .performance-section-nav .performance-section-button{flex:1 1 auto;padding:9px 8px;font-size:.8125rem}
   .performance-page>.performance-toolbar{gap:var(--space-2) var(--space-3);padding:var(--space-3)}
   .performance-toolbar label{width:auto;flex:0 0 auto}
-  .performance-toolbar select{min-width:112px;flex:none}
-  .performance-toolbar .performance-compare{flex:1 1 130px;min-width:0}
+  .performance-toolbar select{min-width:96px;flex:none}
+  .performance-toolbar .performance-compare{flex:1 1 120px;min-width:0;font-size:.8125rem;line-height:1.25}
   .performance-scope-control{width:100%;margin-left:0;justify-content:space-between}
+  /* A descrição da página repete o que as abas já dizem; no celular o conteúdo sobe uma tela inteira de rolagem. */
+  .performance-page>.page-header{margin-bottom:var(--space-3);padding-bottom:var(--space-3)}
+  .performance-page>.page-header p{display:none}
 }

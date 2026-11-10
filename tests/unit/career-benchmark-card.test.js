@@ -28,7 +28,7 @@ test('CareerBenchmarkCard — renderiza comparativo completo de ritmo por carrei
     })
   );
 
-  assert.match(html, /Ritmo Frente aos Aprovados/);
+  assert.match(html, /Ritmo frente aos aprovados/);
   assert.match(html, /Fiscal &amp; Controle|Fiscal & Controle/);
   assert.match(html, /Horas Líquidas Semanais/);
   assert.match(html, /26 h\/sem/);

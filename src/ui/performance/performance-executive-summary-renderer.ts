@@ -24,7 +24,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
     ? `; faixa estimada de ${formatEvidencePercent(situation.band.low)} a ${formatEvidencePercent(situation.band.high)}`
     : '';
   const confidence = confidenceLabels[situation.confidence || ''];
-  return `${label}. Simulados comparáveis em ${formatEvidencePercent(situation.simulationAccuracy)} contra a meta de ${formatEvidencePercent(situation.target)}${band}.${confidence ? ` Confiança ${confidence}.` : ''}`;
+  return `${label}. Resultado central dos simulados comparáveis: ${formatEvidencePercent(situation.simulationAccuracy)}, meta de ${formatEvidencePercent(situation.target)}${band}.${confidence ? ` Confiança ${confidence}.` : ''}`;
 }
 
 function changeText(change: PerformanceExecutiveSummary['change']): string {

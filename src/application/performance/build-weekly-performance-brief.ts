@@ -468,7 +468,7 @@ export function buildWeeklyPerformanceBrief({
       if (current.planFulfillmentPct > 150) {
         planText = ` Isso passa bem do que estava planejado (${plannedFormatted}); o plano da semana cobre poucos dias.`;
       } else if (current.planFulfillmentPct >= 95) {
-        planText = ` Com isso, você cumpriu ${current.planFulfillmentPct}% da sua meta semanal (${plannedFormatted}), mostrando uma ótima regularidade.`;
+        planText = ` Com isso, você cumpriu ${current.planFulfillmentPct}% do tempo planejado para os últimos 7 dias (${plannedFormatted}), mostrando uma ótima regularidade.`;
       } else if (current.planFulfillmentPct >= 75) {
         planText = ` Isso representa ${current.planFulfillmentPct}% das ${plannedFormatted} que você planejou para a semana, mantendo sua rotina bem encaminhada.`;
       } else {

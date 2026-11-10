@@ -289,6 +289,14 @@ export function createTopicDiagnosisService(deps: TopicDiagnosisServiceDependenc
         questions: 10,
       };
 
+    // Tópico nunca iniciado não tem o que revisar: o primeiro passo é estudar.
+    if (
+      found.topic.status === 'Não iniciado' &&
+      !pendingReview &&
+      recommendation.studyType === 'review'
+    )
+      recommendation = { ...recommendation, studyType: 'study' };
+
     const reasons = [];
     if (overdueDays > 0) reasons.push('revisão atrasada ' + overdueDays + 'd');
     if (reliablePerformance && performance.accuracy! < target)

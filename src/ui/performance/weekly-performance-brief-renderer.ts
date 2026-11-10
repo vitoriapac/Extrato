@@ -100,12 +100,15 @@ export function renderWeeklyPerformanceBriefCard(
   const escapeHtml = options.escapeHtml || escapePresentationText;
   const escapeAttr = options.escapeAttr || escapeHtml;
 
-  const paragraphsHtml = brief.detailedParagraphs
-    .map(
-      paragraph =>
-        `<p class="text-sm text-content-primary leading-relaxed m-0">${escapeHtml(paragraph)}</p>`
-    )
-    .join('');
+  const paragraph = (text: string) =>
+    `<p class="text-sm text-content-primary leading-relaxed m-0">${escapeHtml(text)}</p>`;
+  // Só o primeiro parágrafo abre a leitura; o restante fica a um toque, para a Visão geral ter um foco só.
+  const [firstParagraph = '', ...otherParagraphs] = brief.detailedParagraphs;
+  const paragraphsHtml =
+    paragraph(firstParagraph) +
+    (otherParagraphs.length
+      ? `<details class="performance-more"><summary>Ler o resumo completo</summary><div class="space-y-2.5 mt-2">${otherParagraphs.map(paragraph).join('')}</div></details>`
+      : '');
 
   const linksHtml = brief.links.length
     ? `<nav class="ui-filter-bar flex flex-wrap gap-2 pt-1" aria-label="Atalhos da semana">${brief.links
@@ -120,27 +123,20 @@ export function renderWeeklyPerformanceBriefCard(
   const tipsBody =
     tipList('Como ler', brief.readingTips) + tipList('Para manter o resumo útil', brief.keepTips);
   const tipsHtml = tipsBody
-    ? `<aside class="performance-weekly-brief__tips bg-surface-subtle/50 border border-border-subtle rounded-default p-3.5 space-y-3" aria-label="Dicas para este resumo">${tipsBody}</aside>`
+    ? `<details class="performance-more performance-weekly-brief__tips"><summary>Como ler este resumo</summary><div class="space-y-3 mt-2">${tipsBody}</div></details>`
     : '';
 
   return `<section class="performance-weekly-brief chart-card mb-4" aria-label="Seu resumo da última semana">
     <header class="module-heading module-heading--compact mb-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <span class="module-heading__eyebrow">Leitura da semana · Últimos 7 dias</span>
-          <h3 class="module-heading__title">Seu resumo da última semana</h3>
-        </div>
+        <h3 class="module-heading__title">Seu resumo da última semana</h3>
         <span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span>
       </div>
     </header>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-      <div class="lg:col-span-8 space-y-2.5">
-        ${paragraphsHtml}
-        ${linksHtml}
-      </div>
-      <div class="lg:col-span-4 w-full">
-        ${tipsHtml}
-      </div>
+    <div class="space-y-2.5">
+      ${paragraphsHtml}
+      ${linksHtml}
+      ${tipsHtml}
     </div>
   </section>`;
 }

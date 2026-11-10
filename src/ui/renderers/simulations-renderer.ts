@@ -96,13 +96,24 @@ export function renderSimulationTrendChart({
     plotHeight = height - padTop - padBottom,
     count = items.length;
   const xFor = (index: number) => padLeft + (count === 1 ? 0 : (index / (count - 1)) * plotWidth);
-  const yFor = (score: number) => padTop + plotHeight - (score / 100) * plotHeight;
-  const scores = items.map(scoreFor),
-    points = scores.map((score, index) => `${xFor(index)},${yFor(score)}`).join(' ');
-  const grid = [0, 25, 50, 75, 100]
+  const scores = items.map(scoreFor);
+  // Escala ajustada aos dados (0–100 achatava a linha); a meta entra no intervalo para não sair do gráfico.
+  const goalValue =
+    Number.isFinite(Number(targetScore)) && targetScore !== null && targetScore !== ''
+      ? Math.max(0, Math.min(100, Number(targetScore)))
+      : null;
+  const known = goalValue === null ? scores : [...scores, goalValue];
+  const rawLow = known.length ? Math.min(...known) : 0,
+    rawHigh = known.length ? Math.max(...known) : 100;
+  const low = Math.max(0, Math.floor((rawLow - 5) / 10) * 10),
+    high = Math.min(100, Math.max(low + 20, Math.ceil((rawHigh + 5) / 10) * 10));
+  const yFor = (score: number) => padTop + plotHeight - ((score - low) / (high - low)) * plotHeight;
+  const gridValues = [0, 1, 2, 3, 4].map(step => low + ((high - low) * step) / 4);
+  const points = scores.map((score, index) => `${xFor(index)},${yFor(score)}`).join(' ');
+  const grid = gridValues
     .map(
       value =>
-        `<line class="chart-grid" x1="${padLeft}" y1="${yFor(value)}" x2="${width - padRight}" y2="${yFor(value)}"></line><text x="2" y="${yFor(value) + 3}">${value}%</text>`
+        `<line class="chart-grid" x1="${padLeft}" y1="${yFor(value)}" x2="${width - padRight}" y2="${yFor(value)}"></line><text x="2" y="${yFor(value) + 3}">${formatDecimal(value)}%</text>`
     )
     .join('');
   const dots = items
@@ -112,15 +123,14 @@ export function renderSimulationTrendChart({
     )
     .join('');
   const labels = items
-    .map(
-      (_item: Row, index: number) =>
-        `<text x="${xFor(index)}" y="${height - 6}" text-anchor="middle">${index + 1}</text>`
+    .map((item: Row, index: number) =>
+      // Datas curtas (dd/mm); com muitos pontos, alterna para os rótulos não se sobreporem.
+      count > 6 && index % 2 === count % 2
+        ? ''
+        : `<text x="${xFor(index)}" y="${height - 6}" text-anchor="middle">${escapeHtml(String(formatDate(item.date)).replace(/\/\d{4}$/, ''))}</text>`
     )
     .join('');
-  const goal =
-    Number.isFinite(Number(targetScore)) && targetScore !== null && targetScore !== ''
-      ? Math.max(0, Math.min(100, Number(targetScore)))
-      : null;
+  const goal = goalValue;
   const goalLine =
     goal === null
       ? ''

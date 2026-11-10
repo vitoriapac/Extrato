@@ -100,7 +100,6 @@ test('buildWeeklyPerformanceBrief e renderWeeklyPerformanceBriefCard — estado 
 
   const html = renderWeeklyPerformanceBriefCard(brief);
   assert.match(html, /Seu resumo da última semana/);
-  assert.match(html, /Leitura da semana/);
   assert.match(html, /Para manter o resumo útil/);
   // O comparativo visual da semana mora em Início e não se repete aqui.
   assert.doesNotMatch(html, /Últimos 7 dias × semana anterior/);

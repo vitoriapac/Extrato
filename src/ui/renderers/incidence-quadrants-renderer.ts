@@ -46,9 +46,9 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
         return `<section class="incidence-quadrant"><h5>${group.label} (0)</h5><p>Nenhum tópico neste grupo.</p></section>`;
       // Sem evidência o grupo não orienta decisão: fica fechado, só com a contagem à vista.
       if (group.key === 'insufficient' && items.length > visibleItems)
-        return `<section class="incidence-quadrant"><details class="performance-more"><summary>${group.label} (${items.length})</summary>${list(items)}</details></section>`;
+        return `<section class="incidence-quadrant"><details class="performance-more"><summary>${group.label} (${items.length})</summary><template data-lazy>${list(items)}</template></details></section>`;
       const rest = items.slice(visibleItems);
-      return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${list(items.slice(0, visibleItems))}${rest.length ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary>${list(rest)}</details>` : ''}</section>`;
+      return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${list(items.slice(0, visibleItems))}${rest.length ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${list(rest)}</template></details>` : ''}</section>`;
     })
     .join('');
   return renderChartFrame({
