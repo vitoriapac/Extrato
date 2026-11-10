@@ -3,7 +3,8 @@
 export const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
-const clampRatio = (value: number, max: number) => (max > 0 ? Math.max(0, Math.min(1, value / max)) : 0);
+const clampRatio = (value: number, max: number) =>
+  max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
 
 /** Ring arc as stroke-dasharray/offset on a circle of radius `r`; null when there is no value. */
 export function ringGeometry(value: unknown, max = 100, r = 26) {
@@ -26,14 +27,18 @@ export function sparklinePaths(
   connectGaps = false
 ) {
   const points = values.map((value, index) => ({ value, index }));
-  const valid = points.filter(point => isFiniteNumber(point.value)) as { value: number; index: number }[];
+  const valid = points.filter(point => isFiniteNumber(point.value)) as {
+    value: number;
+    index: number;
+  }[];
   if (valid.length < 2) return null;
   const min = Math.min(...valid.map(point => point.value));
   const max = Math.max(...valid.map(point => point.value));
   const span = max - min || 1;
   const stepX = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
   const x = (index: number) => +(pad + index * stepX).toFixed(2);
-  const y = (value: number) => +(height - pad - ((value - min) / span) * (height - pad * 2)).toFixed(2);
+  const y = (value: number) =>
+    +(height - pad - ((value - min) / span) * (height - pad * 2)).toFixed(2);
   const runs: string[] = [];
   // A value with gaps on both sides has no line to sit on; it is drawn as a dot.
   const dots: { x: number; y: number }[] = [];
@@ -46,8 +51,7 @@ export function sparklinePaths(
   for (const point of points) {
     if (!isFiniteNumber(point.value)) {
       if (!connectGaps) close();
-    }
-    else run.push({ x: x(point.index), y: y(point.value) });
+    } else run.push({ x: x(point.index), y: y(point.value) });
   }
   close();
   const last = valid[valid.length - 1];
@@ -92,9 +96,17 @@ export function stackedSegments(parts: { value: unknown }[]) {
  */
 export function columnGeometry(
   columns: { value: unknown; separated?: boolean }[],
-  { height = 48, width = 8, gap = 2, separation = 8, max }: { height?: number; width?: number; gap?: number; separation?: number; max?: number } = {}
+  {
+    height = 48,
+    width = 8,
+    gap = 2,
+    separation = 8,
+    max,
+  }: { height?: number; width?: number; gap?: number; separation?: number; max?: number } = {}
 ) {
-  const values = columns.map(column => (isFiniteNumber(column.value) && column.value > 0 ? column.value : 0));
+  const values = columns.map(column =>
+    isFiniteNumber(column.value) && column.value > 0 ? column.value : 0
+  );
   const top = Math.max(1, isFiniteNumber(max) ? max : 0, ...values);
   let x = 0;
   const bars = values.map((value, index) => {
@@ -107,10 +119,7 @@ export function columnGeometry(
 }
 
 /** Donut geometry using stroke-dasharray on circle with radius `r`. */
-export function donutGeometry(
-  slices: Array<{ ratio: number; startRatio: number }>,
-  r = 50
-) {
+export function donutGeometry(slices: Array<{ ratio: number; startRatio: number }>, r = 50) {
   const circumference = +(2 * Math.PI * r).toFixed(2);
   const items = slices.map(s => {
     const len = +(Math.max(0, s.ratio) * circumference).toFixed(2);
@@ -165,7 +174,8 @@ export function stackedColumnsGeometry(
   const colWidth = n > 0 ? Math.max(4, Math.min(32, Math.floor((plotW / n) * 0.65))) : 12;
   const step = n > 1 ? plotW / (n - 1) : 0;
 
-  const yFor = (secs: number) => +(padTop + plotH - (Math.min(maxSecs, Math.max(0, secs)) / maxSecs) * plotH).toFixed(1);
+  const yFor = (secs: number) =>
+    +(padTop + plotH - (Math.min(maxSecs, Math.max(0, secs)) / maxSecs) * plotH).toFixed(1);
 
   const columns = days.map((day, index) => {
     const cx = n === 1 ? padLeft + plotW / 2 : padLeft + index * step;
@@ -246,8 +256,10 @@ export function multiLineGeometry(
   const plotH = height - padTop - padBottom;
   const step = periodsCount > 1 ? plotW / (periodsCount - 1) : 0;
 
-  const xFor = (index: number) => +(padLeft + (periodsCount === 1 ? plotW / 2 : index * step)).toFixed(1);
-  const yFor = (pct: number) => +(padTop + plotH - (Math.max(0, Math.min(100, pct)) / 100) * plotH).toFixed(1);
+  const xFor = (index: number) =>
+    +(padLeft + (periodsCount === 1 ? plotW / 2 : index * step)).toFixed(1);
+  const yFor = (pct: number) =>
+    +(padTop + plotH - (Math.max(0, Math.min(100, pct)) / 100) * plotH).toFixed(1);
 
   const series = seriesList.map(s => {
     const dots: Array<{ x: number; y: number; accuracy: number; periodIndex: number }> = [];
@@ -317,7 +329,9 @@ export function pedagogicalMatrixGeometry(
     padBottom = 40,
     thresholdMastery = 70,
     thresholdRetention = 60,
+    zoom = false,
   }: {
+    zoom?: boolean;
     width?: number;
     height?: number;
     padLeft?: number;
@@ -331,8 +345,23 @@ export function pedagogicalMatrixGeometry(
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
 
-  const xFor = (ret: number) => +(padLeft + (Math.max(0, Math.min(100, ret)) / 100) * plotW).toFixed(1);
-  const yFor = (dom: number) => +(padTop + plotH - (Math.max(0, Math.min(100, dom)) / 100) * plotH).toFixed(1);
+  // Com zoom, a escala acompanha o intervalo real das disciplinas (e os dois limites), em passos de 10.
+  const domainOf = (values: number[]) => {
+    if (!zoom || !values.length) return [0, 100] as const;
+    let low = Math.max(0, Math.floor((Math.min(...values) - 8) / 10) * 10);
+    let high = Math.min(100, Math.ceil((Math.max(...values) + 8) / 10) * 10);
+    if (high - low < 30) {
+      low = Math.max(0, low - 10);
+      high = Math.min(100, Math.max(high, low + 30));
+    }
+    return [low, high] as const;
+  };
+  const [xMin, xMax] = domainOf([...items.map(it => it.retention), thresholdRetention]);
+  const [yMin, yMax] = domainOf([...items.map(it => it.mastery), thresholdMastery]);
+  const clampTo = (value: number, low: number, high: number) =>
+    (Math.max(low, Math.min(high, value)) - low) / (high - low);
+  const xFor = (ret: number) => +(padLeft + clampTo(ret, xMin, xMax) * plotW).toFixed(1);
+  const yFor = (dom: number) => +(padTop + plotH - clampTo(dom, yMin, yMax) * plotH).toFixed(1);
 
   const maxMinutes = Math.max(60, ...items.map(it => it.studyMinutes || 0));
 
@@ -364,6 +393,7 @@ export function pedagogicalMatrixGeometry(
     padBottom,
     plotW,
     plotH,
+    domain: { xMin, xMax, yMin, yMax, zoomed: zoom },
     thresholdX: xFor(thresholdRetention),
     thresholdY: yFor(thresholdMastery),
     bubbles,
@@ -411,12 +441,7 @@ export function groupedBarsGeometry(
 }
 
 /** Layout for Phase Roadmap timeline in SVG units. */
-export function phaseRoadmapGeometry(
-  progressPct: number,
-  phasesCount = 4,
-  width = 600,
-  padX = 30
-) {
+export function phaseRoadmapGeometry(progressPct: number, phasesCount = 4, width = 600, padX = 30) {
   const plotW = width - padX * 2;
   const clampedProgress = Math.max(0, Math.min(100, progressPct));
   const currentX = +(padX + (clampedProgress / 100) * plotW).toFixed(1);
@@ -474,12 +499,16 @@ export function weeklyTrendGeometry(
   const ceilingResolved = Math.max(1, maxResolved);
 
   const xFor = (index: number) => +(padLeft + (n === 1 ? plotW / 2 : index * step)).toFixed(1);
-  const yForAccuracy = (acc: number) => +(padTop + plotH - (Math.max(0, Math.min(100, acc)) / 100) * plotH).toFixed(1);
+  const yForAccuracy = (acc: number) =>
+    +(padTop + plotH - (Math.max(0, Math.min(100, acc)) / 100) * plotH).toFixed(1);
 
   const items = points.map((p, idx) => {
     const x = xFor(idx);
     const y = p.accuracy !== null ? yForAccuracy(p.accuracy) : null;
-    const barH = Math.max(p.resolved > 0 ? 3 : 0, +((p.resolved / ceilingResolved) * maxBarH).toFixed(1));
+    const barH = Math.max(
+      p.resolved > 0 ? 3 : 0,
+      +((p.resolved / ceilingResolved) * maxBarH).toFixed(1)
+    );
     const barX = +(x - barW / 2).toFixed(1);
     const barY = +(padTop + plotH - barH).toFixed(1);
 
@@ -559,7 +588,11 @@ export function simulationTrendGeometry(
 
   const xFor = (index: number) => +(padLeft + (n === 1 ? plotW / 2 : index * step)).toFixed(1);
   const yFor = (pct: number) =>
-    +(padTop + plotH - ((Math.max(yMin, Math.min(100, pct)) - yMin) / (100 - yMin)) * plotH).toFixed(1);
+    +(
+      padTop +
+      plotH -
+      ((Math.max(yMin, Math.min(100, pct)) - yMin) / (100 - yMin)) * plotH
+    ).toFixed(1);
 
   const points = simulations.map((sim, idx) => {
     const x = xFor(idx);

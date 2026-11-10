@@ -4,7 +4,7 @@ import {
   openDemo,
   expectNoPageOverflow,
   openPerformanceHistory,
-  openPlanningSubtab, openPerformanceSection } from './helpers.js';
+  openPlanningSubtab, openPerformanceSection, openPerformanceFilters } from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
@@ -430,6 +430,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
     await expect(page.locator('#performanceSectionContent')).not.toBeEmpty();
     await expectNoPageOverflow(page);
   }
+  await openPerformanceFilters(page);
   await page.locator('#performancePeriod').selectOption('90');
   const scope = await page.locator('.performance-scope-note').textContent();
   const records = () => page.evaluate(() => localStorage.getItem('bb-premium-study-data'));

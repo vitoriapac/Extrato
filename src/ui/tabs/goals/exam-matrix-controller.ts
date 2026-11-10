@@ -87,8 +87,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     );
 
     const auditMatchesScope =
-      filters.scope === 'active' &&
-      ['board', 'year', 'role'].every(key => filters[key] === 'all');
+      filters.scope === 'active' && ['board', 'year', 'role'].every(key => filters[key] === 'all');
     const state = ctx.getState();
     const auditByTopic = auditMatchesScope
       ? Object.fromEntries(
@@ -156,7 +155,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     if (overview) {
       overview.hidden = !qualityModel.examCount;
       overview.innerHTML = qualityModel.examCount
-        ? `<strong>${qualityModel.examCount} ${qualityModel.examCount === 1 ? 'prova' : 'provas'} · ${qualityModel.questionCount} questões</strong><span>${qualityModel.completeExamCount} completas · ${qualityModel.mappedTopics} tópicos mapeados · confiança ${qualityModel.confidence === 'high' ? 'alta' : qualityModel.confidence === 'moderate' ? 'moderada' : qualityModel.confidence === 'low' ? 'baixa' : 'limitada'}</span>`
+        ? `<strong>${qualityModel.mappedTopics} tópicos mapeados</strong><span>Provas, questões, cobertura e confiança estão em "Qualidade do histórico".</span>`
         : '';
     }
 

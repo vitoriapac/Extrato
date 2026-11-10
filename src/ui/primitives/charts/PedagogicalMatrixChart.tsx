@@ -26,16 +26,25 @@ export function PedagogicalMatrixChart({
     height,
     thresholdMastery,
     thresholdRetention,
+    zoom: true,
   });
 
   // Com muitas disciplinas as siglas se sobrepõem: só as 5 de menor domínio recebem rótulo; as demais seguem no tooltip.
   const labeled = new Set(
-    [...geom.bubbles].sort((a, b) => a.mastery - b.mastery).slice(0, 5).map(b => b.id)
+    [...geom.bubbles]
+      .sort((a, b) => a.mastery - b.mastery)
+      .slice(0, 5)
+      .map(b => b.id)
   );
   const drawOrder = [...geom.bubbles].sort((a, b) => b.r - a.r);
 
   return (
-    <div class={`chart-matrix-wrap ${className}`} tabIndex={0} role="region" aria-label="Gráfico com rolagem horizontal">
+    <div
+      class={`chart-matrix-wrap ${className}`}
+      tabIndex={0}
+      role="region"
+      aria-label="Gráfico com rolagem horizontal"
+    >
       <svg
         class="chart-matrix"
         viewBox={`0 0 ${geom.width} ${geom.height}`}
@@ -136,6 +145,40 @@ export function PedagogicalMatrixChart({
           Domínio / Precisão →
         </text>
 
+        {/* Valores nas pontas dos eixos: a escala acompanha os dados, então precisa estar escrita. */}
+        <text
+          class="chart-stacked-columns__label"
+          x={geom.padLeft}
+          y={geom.height - geom.padBottom + 14}
+          text-anchor="start"
+        >
+          {geom.domain.xMin}%
+        </text>
+        <text
+          class="chart-stacked-columns__label"
+          x={geom.width - geom.padRight}
+          y={geom.height - geom.padBottom + 14}
+          text-anchor="end"
+        >
+          {geom.domain.xMax}%
+        </text>
+        <text
+          class="chart-stacked-columns__label"
+          x={geom.padLeft - 4}
+          y={geom.height - geom.padBottom}
+          text-anchor="end"
+        >
+          {geom.domain.yMin}%
+        </text>
+        <text
+          class="chart-stacked-columns__label"
+          x={geom.padLeft - 4}
+          y={geom.padTop + 8}
+          text-anchor="end"
+        >
+          {geom.domain.yMax}%
+        </text>
+
         {/* Bolhas das Disciplinas */}
         {drawOrder.map(b => (
           <g key={`bubble-${b.id}`}>
@@ -150,14 +193,9 @@ export function PedagogicalMatrixChart({
               <title>{`${b.name} · Domínio: ${formatDecimal(b.mastery)}% · Retenção: ${formatDecimal(b.retention)}% · Estudo: ${formatDecimal(b.studyMinutes / 60)}h`}</title>
             </circle>
             {labeled.has(b.id) && (
-            <text
-              class="chart-matrix__bubble-text"
-              x={b.cx}
-              y={b.cy + 3}
-              text-anchor="middle"
-            >
-              {b.name.slice(0, 3).toUpperCase()}
-            </text>
+              <text class="chart-matrix__bubble-text" x={b.cx} y={b.cy + 3} text-anchor="middle">
+                {b.name.slice(0, 3).toUpperCase()}
+              </text>
             )}
           </g>
         ))}

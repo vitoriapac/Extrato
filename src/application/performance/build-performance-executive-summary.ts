@@ -35,7 +35,9 @@ export function buildPerformanceExecutiveSummary({
   const band = projection?.projection?.calibratedSimulationBand;
   const low = finite(band?.low),
     high = finite(band?.high);
-  const first = (model.changes || [])[0];
+  // A Prontidão já está na Leitura da preparação; aqui entra a primeira mudança medida que ela não cobre.
+  const first =
+    (model.changes || []).find((item: Row) => !/^Prontidão/.test(String(item.label))) ?? null;
   const resolved = Number(current.resolved) || 0;
   return {
     rangeLabel: String(range.label || ''),

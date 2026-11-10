@@ -155,7 +155,13 @@ test('classifyPedagogicalQuadrant e buildPedagogicalMatrixModel — quadrantes p
 
 test('geometrias SVG — donutGeometry, stackedColumnsGeometry, multiLineGeometry, pedagogicalMatrixGeometry', () => {
   // Donut
-  const donut = donutGeometry([{ ratio: 0.6, startRatio: 0 }, { ratio: 0.4, startRatio: 0.6 }], 50);
+  const donut = donutGeometry(
+    [
+      { ratio: 0.6, startRatio: 0 },
+      { ratio: 0.4, startRatio: 0.6 },
+    ],
+    50
+  );
   assert.equal(donut.items.length, 2);
   assert.ok(donut.circumference > 300);
 
@@ -184,7 +190,10 @@ test('geometrias SVG — donutGeometry, stackedColumnsGeometry, multiLineGeometr
         id: 's1',
         name: 'S1',
         colorSlot: 1,
-        points: [{ periodKey: 'p1', accuracy: 80 }, { periodKey: 'p2', accuracy: 90 }],
+        points: [
+          { periodKey: 'p1', accuracy: 80 },
+          { periodKey: 'p2', accuracy: 90 },
+        ],
       },
     ],
     2
@@ -265,4 +274,26 @@ test('renderers de componentes Preact — geram SVG acessível com classes semâ
   assert.match(matrixHtml, /class="chart-matrix/);
   assert.match(matrixHtml, /subject-fill-5/);
   assert.match(matrixHtml, /Consolidada/);
+});
+
+test('matriz pedagógica com zoom — a escala acompanha os dados e mantém os limites dentro dela', () => {
+  const items = [
+    { id: 'a', name: 'A', colorSlot: 1, mastery: 45, retention: 50, studyMinutes: 60 },
+    { id: 'b', name: 'B', colorSlot: 2, mastery: 61, retention: 58, studyMinutes: 90 },
+  ];
+  const fixed = pedagogicalMatrixGeometry(items, { thresholdMastery: 70, thresholdRetention: 60 });
+  assert.deepEqual(
+    [fixed.domain.xMin, fixed.domain.xMax, fixed.domain.yMin, fixed.domain.yMax],
+    [0, 100, 0, 100]
+  );
+  const zoomed = pedagogicalMatrixGeometry(items, {
+    thresholdMastery: 70,
+    thresholdRetention: 60,
+    zoom: true,
+  });
+  assert.ok(zoomed.domain.yMin > 0 && zoomed.domain.yMax < 100);
+  assert.ok(zoomed.domain.yMin <= 45 && zoomed.domain.yMax >= 70);
+  assert.ok(zoomed.domain.xMin <= 50 && zoomed.domain.xMax >= 60);
+  const spread = geom => Math.abs(geom.bubbles[0].cx - geom.bubbles[1].cx);
+  assert.ok(spread(zoomed) > spread(fixed));
 });

@@ -93,6 +93,17 @@ export function createPerformanceController({
           document.getElementById('performanceTopicDialog')?.close();
           return;
         }
+        const filters = event.target.closest(
+          '[data-performance-filters-toggle]'
+        ) as HTMLElement | null;
+        if (filters) {
+          const toolbar = filters.closest('.performance-toolbar') as HTMLElement | null;
+          const collapsed = toolbar?.dataset.collapsed !== 'false';
+          if (toolbar) toolbar.dataset.collapsed = collapsed ? 'false' : 'true';
+          filters.setAttribute('aria-expanded', String(collapsed));
+          filters.textContent = collapsed ? 'Recolher filtros' : 'Alterar filtros';
+          return;
+        }
         const reveal = event.target.closest('[data-performance-reveal]') as HTMLElement | null;
         if (reveal) {
           const fold = document.querySelector(

@@ -92,3 +92,21 @@ test('Copiar link gera a âncora do bloco e o calendário tem alternativa em tex
     /Semana de \d{2}\/\d{2}: \d de \d dias?/
   );
 });
+
+test('No celular os filtros ficam numa linha e abrem ao tocar em Alterar filtros', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const toolbar = page.locator('#performanceToolbar');
+  await expect(toolbar).toHaveAttribute('data-collapsed', 'true');
+  await expect(page.locator('#performancePeriod')).toBeHidden();
+  await toolbar.getByRole('button', { name: 'Alterar filtros' }).click();
+  await expect(page.locator('#performancePeriod')).toBeVisible();
+  await expect(toolbar.getByRole('button', { name: 'Recolher filtros' })).toHaveAttribute(
+    'aria-expanded',
+    'true'
+  );
+});

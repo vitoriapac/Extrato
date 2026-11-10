@@ -65,7 +65,7 @@ export function renderPerformanceSubjects(
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div class="min-w-0">
           <h3 class="m-0">Matriz Pedagógica: Domínio × Retenção</h3>
-          <p class="analytics-note m-0">Dispersão em 4 quadrantes cruzando aproveitamento e memória. As esferas recebem a cor oficial e tamanho relativo às horas estudadas.</p>
+          <p class="analytics-note m-0">Dispersão em 4 quadrantes cruzando aproveitamento e memória, com a escala ajustada aos dados (os valores das pontas dos eixos estão escritos). As esferas recebem a cor oficial e tamanho relativo às horas estudadas.</p>
         </div>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro font-medium text-content-secondary">
           <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green inline-block"></span>Consolidadas: ${counts.consolidated}</span>

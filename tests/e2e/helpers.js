@@ -2,7 +2,10 @@ import { expect } from '@playwright/test';
 
 export async function openDemo(page) {
   await page.goto('/');
-  await page.getByRole('button', { name: /Explorar demonstração/i }).first().click();
+  await page
+    .getByRole('button', { name: /Explorar demonstração/i })
+    .first()
+    .click();
   await page.getByRole('button', { name: 'Carregar demonstração' }).click();
   await expect(
     page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO', { exact: true })
@@ -88,4 +91,13 @@ export async function openPlanningSubtab(page, key) {
   await activateTab(page, 'metas');
   await page.locator(`#metasTab-${key}`).evaluate(button => button.click());
   await expect(page.locator(`#metasSub-${key}`)).toBeVisible();
+}
+
+// No celular os filtros de Desempenho ficam recolhidos numa linha; no desktop o botão nem aparece.
+export async function openPerformanceFilters(page) {
+  const toggle = page.locator('[data-performance-filters-toggle]');
+  if (await toggle.isVisible()) {
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  }
+  await expect(page.locator('#performancePeriod')).toBeVisible();
 }

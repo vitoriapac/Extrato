@@ -70,7 +70,7 @@ export function renderQuestionEvolution(
     .join('');
   const chart =
     model.state === 'ready'
-      ? `<div class="question-evolution-scroll"><svg aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:${width}px;max-width:none;height:auto">${axis}${segments.join('')}${points}${labels}</svg></div>`
+      ? `<div class="question-evolution-scroll"><svg aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;min-width:${width}px;max-width:none;height:auto">${axis}${segments.join('')}${points}${labels}</svg></div>`
       : '<p class="analytics-note">A linha aparece após dois períodos com média móvel sustentada por pelo menos 30 questões.</p>';
   const rows = model.buckets
     .map((item: any) => {
