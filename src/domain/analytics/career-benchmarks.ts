@@ -374,20 +374,20 @@ export function calculateCareerBenchmarkComparison(
   const hours = aggregates.studiedHours;
   let hoursStatus: BenchmarkStatus = 'insufficient';
   let hoursStatusLabel = 'Abaixo do Mínimo';
-  let hoursCommentary = 'Ritmo em fase inicial ou semana atípica. Busque regularidade sem sobrecarga.';
+  let hoursCommentary = 'Abaixo da faixa mínima de referência; pode ser fase inicial ou semana atípica.';
 
   if (hours >= career.weeklyHours.advanced) {
     hoursStatus = 'advanced';
     hoursStatusLabel = 'Ritmo Avançado';
-    hoursCommentary = 'Carga horária avançada. Monitore o descanso para evitar fadiga cognitiva.';
+    hoursCommentary = 'Carga horária na faixa avançada de referência.';
   } else if (hours >= career.weeklyHours.competitiveMin) {
     hoursStatus = 'competitive';
     hoursStatusLabel = 'Faixa Competitiva';
-    hoursCommentary = 'Excelente volume semanal! Você estuda no mesmo ritmo da média dos aprovados.';
+    hoursCommentary = 'Volume semanal dentro da faixa de referência.';
   } else if (hours >= career.weeklyHours.minimum) {
     hoursStatus = 'building';
     hoursStatusLabel = 'Fase de Construção';
-    hoursCommentary = 'Ritmo consistente de base. Um pequeno aumento diário aproxima você da faixa competitiva.';
+    hoursCommentary = 'Entre o mínimo e a faixa competitiva de referência.';
   }
 
   const hoursProgress = Math.min(100, Math.round((hours / career.weeklyHours.advanced) * 100));
@@ -409,20 +409,20 @@ export function calculateCareerBenchmarkComparison(
   const questions = aggregates.resolvedQuestions;
   let qStatus: BenchmarkStatus = 'insufficient';
   let qStatusLabel = 'Abaixo do Mínimo';
-  let qCommentary = 'Volume baixo de questões nesta semana. Praticar questões é essencial para fixação.';
+  let qCommentary = 'Volume de questões abaixo da faixa mínima de referência nesta semana.';
 
   if (questions >= career.weeklyQuestions.advanced) {
     qStatus = 'advanced';
     qStatusLabel = 'Volume Avançado';
-    qCommentary = 'Volume excelente de resolução. Garanta que está revisando com calma os erros.';
+    qCommentary = 'Volume na faixa avançada de referência. Vale conferir se há tempo para revisar os erros.';
   } else if (questions >= career.weeklyQuestions.competitiveMin) {
     qStatus = 'competitive';
     qStatusLabel = 'Faixa Competitiva';
-    qCommentary = 'Volume de questões ideal para consolidação de gabarito e velocidade de resolução.';
+    qCommentary = 'Volume dentro da faixa competitiva de referência.';
   } else if (questions >= career.weeklyQuestions.minimum) {
     qStatus = 'building';
     qStatusLabel = 'Fase de Construção';
-    qCommentary = 'Bom volume de questões. Resolva mais 10 a 15 questões diárias para entrar na faixa competitiva.';
+    qCommentary = 'Entre o mínimo e a faixa competitiva de referência.';
   }
 
   const qProgress = Math.min(100, Math.round((questions / career.weeklyQuestions.advanced) * 100));

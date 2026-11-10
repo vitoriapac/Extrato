@@ -135,8 +135,7 @@ export function CareerBenchmarkCard({
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Parâmetros consolidados para <strong>{career.name}</strong> · 100% privado no seu
-              aparelho
+              Faixas de referência internas para <strong>{career.name}</strong>, sem fonte oficial · últimos 7 dias · 100% privado no seu aparelho
             </p>
           </div>
         </div>

@@ -14,7 +14,7 @@ const groups: Array<[string, string, Array<[string, string]>]> = [
   ],
   [
     'proofs',
-    'Provas',
+    'Questões e provas',
     [
       ['questions', 'Questões'],
       ['simulations', 'Simulados'],
@@ -26,7 +26,7 @@ const groups: Array<[string, string, Array<[string, string]>]> = [
     'Consistência',
     [
       ['consistency', 'Ritmo e aderência'],
-      ['history', 'Histórico'],
+      ['history', 'Conquistas e histórico'],
     ],
   ],
 ];

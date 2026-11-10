@@ -55,6 +55,8 @@ export function renderPerformanceExecutiveSummary(
   summary: PerformanceExecutiveSummary,
   { escapeHtml = escapePresentationText }: { escapeHtml?: (value: any) => string } = {}
 ): string {
+  const lead = (text: string) =>
+    `<p class="performance-executive__lead" data-status="${escapeHtml(summary.situation.status)}">${escapeHtml(text)}</p>`;
   const row = (term: string, text: string) =>
     `<div class="space-y-0.5"><dt class="text-xs font-semibold text-content-secondary">${escapeHtml(term)}</dt><dd class="m-0 text-sm text-content-primary leading-relaxed">${escapeHtml(text)}</dd></div>`;
   return `<section class="performance-executive chart-card mb-4" aria-label="Resumo executivo do período">
@@ -64,7 +66,8 @@ export function renderPerformanceExecutiveSummary(
         ${summary.rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(summary.rangeLabel)}</span>` : ''}
       </div>
     </header>
-    <dl class="m-0 grid grid-cols-1 md:grid-cols-3 gap-4">${row('Situação da meta', situationText(summary.situation))}${row('No período', changeText(summary.change))}${row('Base da leitura', baseText(summary.base))}</dl>
-    <nav class="ui-filter-bar flex flex-wrap gap-2 pt-3" aria-label="Aprofundar o resumo"><button type="button" class="btn ghost small" data-performance-investigate="diagnosis">Ver diagnóstico</button><button type="button" class="btn ghost small" data-performance-investigate="simulations">Ver simulados</button></nav>
+    ${lead(situationText(summary.situation))}
+    <dl class="m-0 grid grid-cols-1 md:grid-cols-2 gap-4">${row('No período', changeText(summary.change))}${row('Base da leitura', baseText(summary.base))}</dl>
+    <nav class="ui-filter-bar flex flex-wrap gap-2 pt-3" aria-label="Aprofundar o resumo"><button type="button" class="btn ghost small" data-performance-investigate="diagnosis">Ver diagnóstico</button></nav>
   </section>`;
 }

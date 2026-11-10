@@ -22,7 +22,7 @@ export function renderChartEmptyState(
   message = 'Ainda não há dados suficientes para este gráfico.'
 ) {
   return renderEmptyState({
-    title: 'Dados insuficientes para o gráfico',
+    title: 'Gráfico ainda não disponível',
     message,
     className: 'chart-frame__empty',
   });

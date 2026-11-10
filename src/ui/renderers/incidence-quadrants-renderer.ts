@@ -40,11 +40,14 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
   const list = (items: any[]) => `<ul>${items.map(item).join('')}</ul>`;
   // Cinco por grupo, o resto sob "Mostrar mais"; a ordem é a escolhida no filtro "Ordenar por".
   const visibleItems = 5;
+  const emptyGroups: string[] = [];
   const records = groups
     .map(group => {
       const items = classified.filter(row => row.quadrant === group.key);
-      if (!items.length)
-        return `<section class="incidence-quadrant"><h5>${group.label} (0)</h5><p>Nenhum tópico neste grupo.</p></section>`;
+      if (!items.length) {
+        emptyGroups.push(group.label);
+        return '';
+      }
       // Sem evidência o grupo não orienta decisão: fica fechado, só com a contagem à vista.
       if (group.key === 'insufficient' && items.length > visibleItems)
         return `<section class="incidence-quadrant"><details class="performance-more"><summary>${group.label} (${items.length})</summary><template data-lazy>${list(items)}</template></details></section>`;
@@ -52,6 +55,10 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
       return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${list(items.slice(0, visibleItems))}${rest.length ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${list(rest)}</template></details>` : ''}</section>`;
     })
     .join('');
+  // Grupos vazios viram uma linha só, em vez de uma seção com título e aviso cada.
+  const emptyNote = emptyGroups.length
+    ? `<p class="analytics-note">Sem tópicos em: ${emptyGroups.map(escape).join('; ')}.</p>`
+    : '';
   return renderChartFrame({
     title: 'Incidência × Domínio',
     description:
@@ -61,6 +68,6 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
     emptyMessage: positioned
       ? `${positioned} de ${classified.length} tópicos têm confiança moderada ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". A lista abaixo mostra cada grupo.`
       : `Os ${classified.length} tópicos ainda não têm confiança moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
-    records: `<div class="incidence-quadrants">${records}</div>`,
+    records: `<div class="incidence-quadrants">${records}</div>${emptyNote}`,
   });
 }

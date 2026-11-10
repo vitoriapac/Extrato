@@ -36,7 +36,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
               <h3 id="shiftEnergyTitle" class="text-base font-semibold text-content-primary m-0">
                 Eficiência &amp; Energia por Turno
               </h3>
-              {peakShift && <Badge variant="success">Pico de Rendimento</Badge>}
+              {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
               Todo o histórico registrado, sem o filtro de período (
@@ -68,7 +68,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
                   </div>
                   <span class="text-xs font-semibold text-content-primary">{shift.shiftLabel}</span>
                 </div>
-                {shift.isPeak && <Badge variant="success">Pico</Badge>}
+                {shift.isPeak && <Badge variant="success">Melhor</Badge>}
               </div>
 
               <div class="space-y-1.5 text-xs">

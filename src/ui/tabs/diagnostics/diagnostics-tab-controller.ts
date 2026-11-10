@@ -239,7 +239,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     let energyAlertHtml = '';
     if (energyAnalysis.fatigueAlert) {
       energyAlertHtml = `<div class="alerta-item alerta-media mt-4">
-        <span class="alerta-icon">${renderIconSvg('alert-triangle', { size: 16, className: 'inline-block align-middle' })}</span><span><strong>Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
+        <span class="alerta-icon">${renderIconSvg('alert-triangle', { size: 16, className: 'inline-block align-middle' })}</span><span><strong>Rendimento por turno:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
       </div>`;
     }
 

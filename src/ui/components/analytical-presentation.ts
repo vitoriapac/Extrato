@@ -14,7 +14,7 @@ export function renderDisclosure({
   return `<details class="${escape(className)}"${open ? ' open' : ''}><summary>${escape(title)}</summary><div class="${escape(bodyClassName)}">${contentHTML}</div></details>`;
 }
 export function renderDecisionSummary({ title, summary, details = [] }: any = {}) {
-  return `<section class="performance-story" aria-label="Leitura principal"><span class="performance-story__eyebrow">O que observar</span><h3>${escape(title)}</h3><p>${escape(summary)}</p>${
+  return `<section class="performance-story" aria-label="Leitura principal"><h3>${escape(title)}</h3><p>${escape(summary)}</p>${
     details.length
       ? `<ul>${details
           .slice(0, 3)

@@ -468,23 +468,23 @@ export function buildWeeklyPerformanceBrief({
       if (current.planFulfillmentPct > 150) {
         planText = ` Isso passa bem do que estava planejado (${plannedFormatted}); o plano da semana cobre poucos dias.`;
       } else if (current.planFulfillmentPct >= 95) {
-        planText = ` Com isso, você cumpriu ${current.planFulfillmentPct}% do tempo planejado para os últimos 7 dias (${plannedFormatted}), mostrando uma ótima regularidade.`;
+        planText = ` Nos últimos 7 dias, o tempo estudado equivale a ${current.planFulfillmentPct}% do tempo planejado (${plannedFormatted}); é um tempo total, que não depende de o estudo estar vinculado a uma atividade do plano.`;
       } else if (current.planFulfillmentPct >= 75) {
-        planText = ` Isso representa ${current.planFulfillmentPct}% das ${plannedFormatted} que você planejou para a semana, mantendo sua rotina bem encaminhada.`;
+        planText = ` Isso representa ${current.planFulfillmentPct}% das ${plannedFormatted} que você planejou para a semana.`;
       } else {
         planText = ` Esse tempo equivale a ${current.planFulfillmentPct}% das ${plannedFormatted} planejadas para a semana, sinalizando que os últimos dias foram mais corridos que o previsto.`;
       }
     } else {
       planText =
         current.activeDays >= 4
-          ? ' Sua frequência na semana mostra que o hábito de estudo está bem firme.'
-          : ' Tentar espalhar o estudo em mais dias da semana pode deixar a rotina ainda mais leve.';
+          ? ' Houve estudo em 4 ou mais dias da semana.'
+          : ' Houve estudo em menos de 4 dias da semana.';
     }
 
     const introTone =
       current.activeDays >= 4 ||
       (current.planFulfillmentPct != null && current.planFulfillmentPct >= 75)
-        ? 'Nesta última semana, você manteve uma constância muito boa'
+        ? 'Nesta última semana'
         : 'Nos últimos 7 dias, você manteve seus estudos em movimento';
 
     p1 = `${introTone}: esteve presente em ${daysText}, ${sessionsText}${timeCompareText}.${planText}`;

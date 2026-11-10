@@ -8,7 +8,7 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   const tablist = page.getByRole('tablist', { name: 'Análises de desempenho' });
   const tabs = tablist.getByRole('tab');
   await expect(tabs).toHaveCount(4);
-  await expect(tabs.nth(2)).toHaveText('Provas');
+  await expect(tabs.nth(2)).toHaveText('Questões e provas');
   await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
   await expect(tabs.first()).toHaveAttribute('tabindex', '0');
   await expect(tabs.nth(1)).toHaveAttribute('tabindex', '-1');
@@ -37,13 +37,13 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   await expect(tabs.first()).toBeFocused();
 });
 
-test('Provas reúne Questões, Simulados e Inteligência da prova, e a URL acompanha a subaba', async ({
+test('Questões e provas reúne Questões, Simulados e Inteligência da prova, e a URL acompanha a subaba', async ({
   page,
 }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.getByRole('tab', { name: 'Provas', exact: true }).click();
-  const sections = page.getByRole('tablist', { name: 'Seções de Provas' }).getByRole('tab');
+  await page.getByRole('tab', { name: 'Questões e provas', exact: true }).click();
+  const sections = page.getByRole('tablist', { name: 'Seções de Questões e provas' }).getByRole('tab');
   await expect(sections).toHaveText(['Questões', 'Simulados', 'Inteligência da prova']);
   await sections.nth(2).click();
   await expect(page.locator('#panel-desempenho')).toHaveAttribute('data-performance-view', 'exam');
