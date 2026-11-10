@@ -21,7 +21,7 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 | Linha do Tempo Diária | Desempenho → Consistência | `buildStudyTimelineModel`, `StackedColumnChart` | Sessões do período e concurso ativo | Consistência: colunas empilhadas diárias coloridas por disciplina e resumo lateral de horas. |
 | Tempo de Estudo por Disciplina | Desempenho → Consistência | `buildStudyDistributionModel`, `DonutChart` | Sessões do período e concurso ativo | Consistência: gráfico Donut em SVG com arcos coloridos e legenda percentual de carga horária. |
 | Desempenho por Disciplina | Desempenho → Questões | `buildMultiSubjectPerformanceModel`, `MultiLineChart` | Questões pessoais no período | Questões: curvas multilineares de taxa de acerto por matéria, média geral e proporções. |
-| Matriz Domínio × Retenção | Desempenho → Disciplinas | `buildPedagogicalMatrixModel`, `PedagogicalMatrixChart` | Métricas de tópicos e sessões | Disciplinas: dispersão em 4 quadrantes pedagógicos com esferas coloridas nas cores das matérias. |
+| Matriz Domínio × Retenção | Desempenho → Diagnóstico | `buildPedagogicalMatrixModel`, `PedagogicalMatrixChart` | Métricas de tópicos e sessões | Diagnóstico (desde 10/11/2026): dispersão em 4 quadrantes pedagógicos com esferas nas cores das matérias, com a escala ajustada ao intervalo dos dados (valores das pontas dos eixos escritos). |
 | Distribuição Planejado × Realizado | Planejamento → Resumo da semana | `buildSubjectStudyDistributionVisual`, `GroupedBarChart` | Planos diários e sessões da semana | Planejamento: barras horizontais agrupadas por matéria com cores oficiais e status pedagógico. |
 | Alinhamento Plano × Impacto no Edital | Planejamento → Resumo da semana | `buildPlanImpactAlignmentVisual`, `renderPlanImpactAlignment` | Planos da semana e relevância do edital | Planejamento: barras duplas contrastantes de esforço vs. relevância e diagnóstico de alinhamento. |
 | Capacidade Semanal e Mix Pedagógico | Planejamento → Plano até a prova | `buildWeeklyAllocationBarVisual`, `AllocationBar` | Plano semanal (confirmado e proposta) | Planejamento: barra segmentada contínua com cores das disciplinas e divisão Teoria / Questões / Revisão. |
@@ -48,3 +48,27 @@ Mover o proprietário de cada análise junto com seu renderer, sem duplicar IDs 
 Desempenho apresenta questões, simulados, disciplinas, detalhe de tópico, consistência e Inteligência da Prova. A Visão Geral aponta para o histórico completo e conserva o índice atual, o fechamento e decisões estratégicas. Questões e Simulados conservam os registros; a análise especializada de erros fica recolhida. Metas conserva a configuração estratégica, o plano, a execução atual e a comparação com datas personalizadas. Os gráficos históricos de prontidão, tempo de estudo, heatmap e simulados deixaram as telas de origem.
 
 A visão geral também compara precisão, tempo, volume e aderência com o período anterior equivalente. Precisão só recebe classificação com pelo menos 30 questões em cada intervalo; aderência requer 60 minutos planejados em cada um. Os insights são regras descritivas sobre mudanças observadas, sem atribuir causa. Com escopo ou evidência insuficientes, a interface explica a ausência do indicador. O heatmap limita a visualização diária a 90 dias e mantém o histórico semanal em uma lista expansível.
+
+## Composição atual da aba (10/11/2026)
+
+A aba responde, na ordem, **como estou, o que mais pesa e o que fazer**, e leva o restante a subabas com uma pergunta cada.
+
+| Subaba | Pergunta | Blocos principais | Orçamento (desktop) |
+|---|---|---|---|
+| Visão geral | Como estou, o que pesa, o que faço? | Leitura da preparação (`build-preparation-reading.ts`); O que mudou depois das recomendações; Resumo do período (com os últimos 7 dias); indicadores; dobras de trajetória, comparação e glossário | até 1.600 px (medido: 1.992) |
+| Por disciplina | Onde estou melhor e pior? | Comparação entre disciplinas (precisão, meta, evolução, planejado, realizado, saldo do plano e sugestão); Mapa de estabilidade; detalhe da disciplina | até 2.500 px (medido: 2.859) |
+| Diagnóstico | Quais lacunas existem? | Situação do preparo; Extrato Diagnóstico; Replanejamento da semana; Matriz Domínio × Retenção; dobra com Balanço, Radar e Queda de retenção | até 3.200 px (medido: 3.443) |
+| Questões, Simulados | Como vão minhas questões e simulados? | Como na seção anterior | 2.097 px e 1.037 px |
+| Inteligência da prova | O que a banca privilegia? | Resumo e lista; filtros na dobra "Filtros e busca" | até 2.500 px (medido: 2.831) |
+| Ritmo e aderência | Estou cumprindo o plano? | Síntese; linha do tempo; Turno de estudo (rendimento e foco profundo); dobras "Como o plano foi cumprido", distribuição do tempo e calendário | até 2.600 px (medido: 2.626) |
+| Conquistas e histórico | O que já construí? | Progresso, conquistas e sessões | 999 px |
+
+Regras de composição:
+
+- **Hoje é dono da próxima ação.** A leitura mostra a mesma recomendação (mesmo `recommendationId`) e leva a Hoje com o único botão sólido ("Abrir em Hoje"). "Ajustar plano" abre a prévia em Metas; nada é aplicado a partir de Desempenho.
+- **Selos de janela** (`window-badge.tsx`): "7 dias", "período", "semana atual" e "histórico" acompanham os números de aderência, simulado e turno. A Prontidão traz as datas do fechamento por extenso.
+- **Selos de evidência** (`evidence-badge.ts`): "amostra pequena", "confiança baixa" e "sem dados suficientes" no cabeçalho dos blocos que têm esse sinal (resumo, comparação, mapa de estabilidade e simulados). Matriz e Radar ainda não têm sinal de amostra e ficam sem selo.
+- **Dobras lembram o estado** ao redesenhar (`foldMemory` em `performance-tab-controller.ts`; chave = seção + título, ou `data-fold-key`). A dobra de filtros da prova também sobrevive ao redesenho da matriz.
+- **Âncoras:** `#desempenho/<seção>/<bloco>` (`leitura`, `resumo`, `comparacao`, `estabilidade`, `sintese`, `matriz`, `turno`, `recomendacoes`); os cinco primeiros blocos têm "Copiar link".
+- **Celular:** os filtros viram uma linha ("Alterar filtros"); a leitura segue a ordem número da Prontidão, "O que fazer", "O que mais pesa" e números de apoio.
+- **O que mudou depois das recomendações** reutiliza `buildRecommendationFollowup` (o mesmo modelo da aba de Aprovação), só com resultados medidos e sem afirmar causa.

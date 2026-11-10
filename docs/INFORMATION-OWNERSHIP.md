@@ -50,6 +50,16 @@ Registrar **entidade + concurso + período + unidade + denominador + fonte**, cl
 
 Aceite: nenhum destino novo, nenhuma edição fora da autoridade existente, nenhum resultado histórico reinterpretado como atual. O inventário de ocorrências abaixo é evidência da inspeção inicial; o backlog registra decisões novas sem apagar essa proveniência.
 
+## Leitura da preparação em Desempenho (10/11/2026)
+
+| Informação | Proprietário de detalhe | O que Desempenho mostra | Limite |
+|---|---|---|---|
+| Próxima ação e justificativa | Hoje | A mesma ação (mesmo `recommendationId`), o minuto sugerido e o vínculo com o plano da semana | Um único botão sólido, "Abrir em Hoje"; nenhuma atividade confirmada é alterada |
+| Plano da semana e capacidade | Planejamento (Metas) | Déficit contra o planejado e o botão "Ajustar plano" | Abre a prévia em Metas; nada é aplicado em Desempenho |
+| Resultado das recomendações | Aprovação (acompanhamento) | Até três resultados medidos, com a variação de uma métrica | Observação, sem atribuir causa |
+| Prontidão atual | Visão Geral | Valor "calculado agora", barra e tendência frente ao período anterior | O fechamento e as datas aparecem por extenso |
+| Lacunas (Matriz, Balanço, Radar, Queda de retenção) | Desempenho → Diagnóstico | Os quatro blocos moram na subaba Diagnóstico | Radar usa a prioridade calculada; Matriz usa domínio e retenção |
+
 ## Inventário observado
 
 | Informação | Ocorrência principal | Outras ocorrências | Classificação observada | Tratamento e ressalva |

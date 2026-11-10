@@ -35,20 +35,23 @@ export function renderPreparationReading(
   const { howAmI, pulling, whatToDo, evidence } = reading;
   const line = (text: string) => `<p class="m-0">${escapeHtml(text)}</p>`;
 
-  const how =
-    [
-      howAmI.readiness
-        ? `<p class="m-0"><strong class="performance-reading__figure">Prontidão ${escapeHtml(howAmI.readiness.value)}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label="Prontidão ${escapeAttr(howAmI.readiness.value)} em uma escala de 0 a 100"><i style="width:${Math.max(0, Math.min(100, Number(howAmI.readiness.value)))}%"></i></div>${howAmI.readiness.verdict ? `<p class="performance-reading__verdict m-0" data-state="${howAmI.readiness.verdict.state}">${escapeHtml(howAmI.readiness.verdict.text)}</p>` : ''}${howAmI.readiness.detail ? `<p class="m-0 performance-reading__support">${escapeHtml(howAmI.readiness.detail)}</p>` : ''}`
-        : '',
-      howAmI.projection
-        ? `<p class="m-0 performance-reading__support">${renderWindowBadge('history', 'Simulados comparáveis, todo o histórico')}${escapeHtml(howAmI.projection.text)}</p>`
-        : '',
-      howAmI.rhythm
-        ? `<p class="m-0 performance-reading__support">${renderWindowBadge('sevenDays', 'Últimos 7 dias')}${escapeHtml(howAmI.rhythm.text)}</p>`
-        : '',
-    ]
-      .filter(Boolean)
-      .join('') || line('Ainda não há dados suficientes para esta leitura.');
+  const readiness = howAmI.readiness;
+  const howPrimary = readiness
+    ? `<p class="m-0"><strong class="performance-reading__figure">Prontidão ${escapeHtml(readiness.value)}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label="Prontidão ${escapeAttr(readiness.value)} em uma escala de 0 a 100"><i style="width:${Math.max(0, Math.min(100, Number(readiness.value)))}%"></i></div>${readiness.verdict ? `<p class="performance-reading__verdict m-0" data-state="${readiness.verdict.state}">${escapeHtml(readiness.verdict.text)}</p>` : ''}`
+    : line('Ainda não há dados suficientes para esta leitura.');
+  const howSupport = [
+    readiness
+      ? `<p class="m-0 performance-reading__support">Índice de 0 a 100 que combina cobertura, domínio, retenção, consistência e simulados.</p>${readiness.detail ? `<p class="m-0 performance-reading__support">${escapeHtml(readiness.detail)}</p>` : ''}`
+      : '',
+    howAmI.projection
+      ? `<p class="m-0 performance-reading__support">${renderWindowBadge('history', 'Simulados comparáveis, todo o histórico')}${escapeHtml(howAmI.projection.text)}</p>`
+      : '',
+    howAmI.rhythm
+      ? `<p class="m-0 performance-reading__support">${renderWindowBadge('sevenDays', 'Últimos 7 dias')}${escapeHtml(howAmI.rhythm.text)}</p>`
+      : '',
+  ]
+    .filter(Boolean)
+    .join('');
 
   const pull = pulling.length
     ? `<ol class="performance-reading__list">${pulling
@@ -60,7 +63,7 @@ export function renderPreparationReading(
     : line('Nenhum ponto de atenção com evidência suficiente.');
 
   const todo = whatToDo.action
-    ? `<p class="m-0" data-recommendation-id="${escapeAttr(whatToDo.action.recommendationId ?? '')}"><strong>${escapeHtml(whatToDo.action.label)}:</strong> ${escapeHtml(whatToDo.action.text)}</p>${line(whatToDo.action.planNote)}${whatToDo.deficit ? line(whatToDo.deficit) : ''}<div class="performance-reading__actions">${linkButton({ kind: 'tab', target: 'hoje', label: 'Abrir em Hoje' }, escapeAttr, true)}${linkButton({ kind: 'plan-adjust', target: 'metas', label: 'Ajustar plano' }, escapeAttr)}${whatToDo.recovery ? linkButton({ kind: 'reveal', target: 'trajectory', label: 'Ver plano de recuperação' }, escapeAttr) : ''}</div>`
+    ? `<p class="m-0" data-recommendation-id="${escapeAttr(whatToDo.action.recommendationId ?? '')}"><strong>${escapeHtml(whatToDo.action.label)}:</strong> ${escapeHtml(whatToDo.action.text)}</p><div class="performance-reading__actions">${linkButton({ kind: 'tab', target: 'hoje', label: 'Abrir em Hoje' }, escapeAttr, true)}${linkButton({ kind: 'plan-adjust', target: 'metas', label: 'Ajustar plano' }, escapeAttr)}${whatToDo.recovery ? linkButton({ kind: 'reveal', target: 'trajectory', label: 'Ver plano de recuperação' }, escapeAttr) : ''}</div>${line(whatToDo.action.planNote)}${whatToDo.deficit ? line(whatToDo.deficit) : ''}`
     : `${line(whatToDo.reason || 'Nenhuma ação indicada agora.')}${whatToDo.deficit ? line(whatToDo.deficit) : ''}<div class="performance-reading__actions">${linkButton({ kind: 'tab', target: 'hoje', label: 'Abrir Hoje' }, escapeAttr, true)}</div>`;
 
   const evidenceHtml = evidence.length
@@ -70,9 +73,10 @@ export function renderPreparationReading(
   return `<section class="performance-reading chart-card mb-4" id="bloco-leitura" aria-labelledby="performanceReadingTitle">
     <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3>${renderCopyBlockLink('leitura')}${rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(rangeLabel)}</span>` : ''}</div></header>
     <div class="performance-reading__grid">
-      <section aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>${how}</section>
-      <section aria-labelledby="performanceReadingPull"><h4 id="performanceReadingPull">O que mais pesa</h4>${pull}</section>
-      <section aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">O que fazer</h4>${todo}</section>
+      <section class="performance-reading__how" aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>${howPrimary}</section>
+      <section class="performance-reading__support-block" aria-label="Números de apoio">${howSupport}</section>
+      <section class="performance-reading__pull" aria-labelledby="performanceReadingPull"><h4 id="performanceReadingPull">O que mais pesa</h4>${pull}</section>
+      <section class="performance-reading__todo" aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">O que fazer</h4>${todo}</section>
     </div>${evidenceHtml}
   </section>`;
 }

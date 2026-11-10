@@ -177,3 +177,37 @@ test('Aderência fica numa dobra que não fecha ao trocar a semana, e os filtros
   await page.locator('[data-exam-matrix-filter="sort"]').selectOption('impact');
   await expect(page.locator('details.exam-matrix-filters-fold')).toHaveJSProperty('open', true);
 });
+
+test('No celular a ação "Abrir em Hoje" aparece até a primeira tela e a Leitura mantém a ordem', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const reading = page.locator('.performance-reading');
+  await expect(reading).toBeVisible();
+  const button = reading.getByRole('button', { name: 'Abrir em Hoje' });
+  const box = await button.evaluate(node => node.getBoundingClientRect().top + window.scrollY);
+  expect(box).toBeLessThan(900);
+  const order = await reading.locator('.performance-reading__grid > section').evaluateAll(nodes =>
+    nodes
+      .map(node => ({
+        name: node.className.replace('performance-reading__', ''),
+        y: node.getBoundingClientRect().top,
+      }))
+      .sort((a, b) => a.y - b.y)
+      .map(item => item.name)
+  );
+  expect(order).toEqual(['how', 'todo', 'pull', 'support-block']);
+  await expectNoPageOverflow(page);
+});
+
+test('Blocos analíticos mostram o selo de evidência quando falta amostra', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await expect(page.locator('#bloco-resumo .performance-evidence')).toBeVisible();
+  await openPerformanceSection(page, 'subjects');
+  await expect(page.locator('#bloco-comparacao .performance-evidence')).toBeVisible();
+});

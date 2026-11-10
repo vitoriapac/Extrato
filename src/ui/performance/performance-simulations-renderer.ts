@@ -1,3 +1,4 @@
+import { renderEvidenceBadge } from './evidence-badge.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
 import { renderSimulationTrendChart } from '../renderers/simulations-renderer.js';
@@ -47,5 +48,6 @@ export function renderPerformanceSimulations(
   });
   const method =
     '<p class="performance-method-note">Resultados de provas com composição ou dificuldade diferentes não são diretamente equivalentes. A comparação por disciplina mostra somente áreas detalhadas em ambas as provas.</p>';
-  return `${renderPerformanceSummary(story, kpis, method)}${model.count < 2 ? renderPerformanceSampleState({ name: 'A tendência recente', current: model.count, required: 2, message: 'comparar os dois resultados mais recentes', unit: 'simulados', singular: 'simulado', actionLabel: 'Registrar simulado' }) : ''}<section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section>${renderPerformanceDetails('Comparação por disciplina e projeção', `<section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`)}`;
+  const simulationsEvidence = model.count < 2 ? 'insufficient' : model.count < 3 ? 'small' : null;
+  return `${simulationsEvidence ? `<p class="performance-evidence-row m-0">${renderEvidenceBadge(simulationsEvidence, `${model.count} simulados no período`)}</p>` : ''}${renderPerformanceSummary(story, kpis, method)}${model.count < 2 ? renderPerformanceSampleState({ name: 'A tendência recente', current: model.count, required: 2, message: 'comparar os dois resultados mais recentes', unit: 'simulados', singular: 'simulado', actionLabel: 'Registrar simulado' }) : ''}<section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section>${renderPerformanceDetails('Comparação por disciplina e projeção', `<section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`)}`;
 }

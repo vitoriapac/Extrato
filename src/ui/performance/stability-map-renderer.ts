@@ -1,3 +1,4 @@
+import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
 import { renderCopyBlockLink } from './block-link.js';
 import { formatDecimal } from '../../core/format-number.js';
 const cells = [
@@ -33,5 +34,5 @@ export function renderStabilityMap(
             .join('')}</ul></details>`
         : ''
     }</div>`;
-  return `<section class="performance-block stability-map" id="bloco-estabilidade" aria-label="Mapa de estabilidade"><h3>Mapa de estabilidade</h3>${renderCopyBlockLink('estabilidade')}<details class="limits-disclosure"><summary aria-label="Limites de estabilidade">Limites</summary><p class="analytics-note">Precisão pessoal frente à meta e mudança entre períodos equivalentes. Uma queda ou melhora de pelo menos 3 pontos percentuais muda o quadrante. Isto não substitui a prioridade estratégica.</p></details>${model.measured ? `<div class="stability-map-grid">${cells.map(cell).join('')}</div>` : ''}<p class="performance-method-note">${model.measured} de ${model.total} disciplinas com precisão e evolução comparáveis (a comparação entre disciplinas conta também as que têm só precisão). ${model.groups.insufficient.length ? 'As demais precisam de 10 questões em cada período.' : ''}</p></section>`;
+  return `<section class="performance-block stability-map" id="bloco-estabilidade" aria-label="Mapa de estabilidade"><h3>Mapa de estabilidade</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.total), `${model.measured} de ${model.total} disciplinas com precisão e evolução comparáveis`)}${renderCopyBlockLink('estabilidade')}<details class="limits-disclosure"><summary aria-label="Limites de estabilidade">Limites</summary><p class="analytics-note">Precisão pessoal frente à meta e mudança entre períodos equivalentes. Uma queda ou melhora de pelo menos 3 pontos percentuais muda o quadrante. Isto não substitui a prioridade estratégica.</p></details>${model.measured ? `<div class="stability-map-grid">${cells.map(cell).join('')}</div>` : ''}<p class="performance-method-note">${model.measured} de ${model.total} disciplinas com precisão e evolução comparáveis (a comparação entre disciplinas conta também as que têm só precisão). ${model.groups.insufficient.length ? 'As demais precisam de 10 questões em cada período.' : ''}</p></section>`;
 }

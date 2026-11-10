@@ -914,3 +914,15 @@ Todas as decisões e entregas registradas neste histórico respeitam os contrato
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)
+
+---
+
+## 26. Desempenho analítico e redistribuição do conteúdo (10/11/2026)
+
+Oito rodadas de crítica (26 a 27 de 40) mostraram que os defeitos mecânicos estavam zerados e que o teto vinha do conteúdo: números concorrentes, falta de estado no número central e subabas longas. O ciclo entregou:
+
+- **Leitura da preparação** (`build-preparation-reading.ts`, `preparation-reading-renderer.ts`): Prontidão com barra e tendência, faixa projetada e ritmo; o que mais pesa; o que fazer com a recomendação de Hoje medida contra o plano.
+- **Selos de janela e de evidência**, **dobras que lembram o estado**, âncoras por bloco com "Copiar link" e filtros recolhidos no celular.
+- **Comparação por disciplina** com planejado, realizado, saldo do plano e sugestão; **Diagnóstico** recebe Matriz, Balanço, Radar e Queda de retenção.
+- Resumos fundidos, aderência e filtros da prova em dobras, calendário com células de 24 px e resumo semanal em texto.
+- Planos e análises: `tasks/plan-desempenho-analitico.md`, `tasks/analise-desempenho-distribuicao.md` e `tasks/plan-desempenho-distribuicao.md`. A nota da crítica ficou em 27 de 40 durante o ciclo; os orçamentos de altura ainda não foram todos cumpridos (ver o plano).

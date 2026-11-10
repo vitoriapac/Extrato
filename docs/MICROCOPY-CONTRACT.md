@@ -36,4 +36,13 @@ Inspirado na filosofia do Leruma (*"O plano de estudos que aguenta a sua semana 
 | "Você não bateu a meta" | "Sua semana não saiu como planejada? Tudo bem." | Acolhe a realidade de imprevistos e oferece ações imediatas (resgate em 30 min ou recalibração). |
 | "Replanejar atrasos" | "Recalibrar Semana Real" | Replanejar é um ato estratégico normal, não uma admissão de culpa ou fracasso. |
 
+## Selos de janela e de evidência em Desempenho
+
+- **Janelas oficiais:** "7 dias", "período", "semana atual" e "histórico". Todo percentual de aderência, simulado ou turno usa um deles (componente `window-badge`); o `title` diz a janela real. A Prontidão usa as datas do fechamento por extenso.
+- **Evidência:** "amostra pequena", "confiança baixa" e "sem dados suficientes", no cabeçalho do bloco, usando só os limiares que o produto já calcula.
+- **Links de análise sem verbo de ordem:** "Questões e simulados", "Agenda de revisões", "<Disciplina>: ver análise". O único verbo de ação da Visão geral é "Abrir em Hoje".
+- **Ausência não é "nenhuma":** quando não deu para medir, o título diz "Sem queda de retenção medida" (e não "Nenhuma queda detectada").
+- **Referências internas** sem fonte oficial se chamam "Referência interna de ritmo" e "Abaixo da referência mínima"; não prometem comparação com aprovados.
+- **Sem causa:** "pesa" e "mudou depois" descrevem associação; "porque", "garante" e "graças a" não aparecem.
+
 Referências: [hierarquia](INFORMATION-HIERARCHY-CONTRACT.md), [propriedade das informações](INFORMATION-OWNERSHIP.md) e [auditoria das jornadas](PRODUCT-JOURNEY-AUDIT.md).

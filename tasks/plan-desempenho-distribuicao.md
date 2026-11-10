@@ -142,3 +142,11 @@ Nenhuma bloqueia a Fase A. Duas para depois: (a) rótulo definitivo da subaba "D
 - **F6:** a análise de aderência está na dobra "Como o plano foi cumprido: aderência, execução prioritária e crédito semanal" (fechada); a síntese continua aberta. Funciona porque a F1 preserva o estado.
 - **F11:** os filtros de Inteligência da prova ficam na dobra "Filtros e busca (N ativos)", fechada; o estado é preservado também quando a matriz se redesenha.
 - **Alturas medidas (desktop, demo) contra os orçamentos:** Visão geral 1.992 px (orçamento 1.600, não atingido); Por disciplina 2.859 px (de 5.079; orçamento 2.500); Diagnóstico 3.443 px (orçamento 3.200); Ritmo e aderência 2.626 px (orçamento 2.600, 4 blocos); Inteligência da prova 2.831 px (de 2.957; orçamento 2.500).
+
+## Andamento: Fases D e E (10/11/2026)
+- Fase C commitada (`474c06b`).
+- **F7:** `evidence-badge.ts` (amostra pequena, confiança baixa, sem dados suficientes) no cabeçalho de Resumo do período, Comparação entre disciplinas, Mapa de estabilidade e Simulados. Matriz e Radar ficaram sem selo: não há sinal de amostra nesses modelos.
+- **F8:** definições no ponto de uso na leitura ("Índice de 0 a 100 que combina cobertura, domínio, retenção, consistência e simulados"; "domínio 38 (desempenho no tópico, de 0 a 100)"). Os termos Retenção, Incidência e crédito ao plano já tinham definição na própria frase dos blocos; não criei o helper `renderTerm`.
+- **F10:** a leitura foi dividida em número principal e números de apoio; no celular a ordem é Prontidão, "O que fazer", "O que mais pesa" e apoio; "Abrir em Hoje" ficou em y=807 (era 1.166), com os botões antes da nota do plano.
+- **Documentação:** `docs/PERFORMANCE-INVENTORY.md`, `docs/INFORMATION-OWNERSHIP.md`, `docs/MICROCOPY-CONTRACT.md`, `README.md` e `docs/PLANOS-CONCLUIDOS.md` atualizados; `DESIGN.md` editado e não commitado (já tinha mudanças pendentes).
+- Falta: F9 (crítica final) e os orçamentos de altura da Visão geral, Diagnóstico e Inteligência da prova.

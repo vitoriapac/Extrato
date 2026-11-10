@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-09T23:54:02.472Z",
+  "generatedAt": "2026-11-10T03:06:33.301Z",
   "title": "Design System: StudyTrack — Extrato de Estudos",
   "extensions": {
     "colorMeta": {
@@ -390,7 +390,7 @@
       "Do usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.",
       "Do dar a todo badge de estado um rótulo textual.",
       "Do funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px).",
-      "Do usar foco sálvia visível em tudo que é interativo.",
+      "Do usar foco sálvia visível em tudo que é interativo, com `--accent` no anel: `--brand` quase coincide com o fundo no tema escuro (1,1:1).",
       "Do manter um único botão primário por card; repetições em lista usam `tonal`."
     ],
     "donts": [

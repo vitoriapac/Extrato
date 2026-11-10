@@ -1,3 +1,4 @@
+import { renderEvidenceBadge, type EvidenceState } from './evidence-badge.js';
 import { renderCopyBlockLink } from './block-link.js';
 import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
@@ -114,11 +115,25 @@ export function renderPerformanceOverview(
     embedded: true,
   });
   // Resumo executivo do período e leitura da semana antecedem as métricas; o comparativo semanal visual fica em Início.
-  const executiveHtml = renderPerformanceExecutiveSummary(
-    buildPerformanceExecutiveSummary({ model, range, projection: achievementProjection }),
-    { escapeHtml, embedded: true }
-  );
-  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${renderCopyBlockLink('resumo')}${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
+  const executiveSummary = buildPerformanceExecutiveSummary({
+    model,
+    range,
+    projection: achievementProjection,
+  });
+  const executiveHtml = renderPerformanceExecutiveSummary(executiveSummary, {
+    escapeHtml,
+    embedded: true,
+  });
+  const summaryEvidence: EvidenceState | null =
+    ['none', 'insufficient_data'].includes(executiveSummary.situation.status) ||
+    executiveSummary.situation.confidence === 'insufficient'
+      ? 'insufficient'
+      : executiveSummary.situation.confidence === 'low'
+        ? 'low'
+        : executiveSummary.base.smallSample
+          ? 'small'
+          : null;
+  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${renderEvidenceBadge(summaryEvidence)}${renderCopyBlockLink('resumo')}${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
   const preparationHtml = renderPreparationReading(preparationReading, {
     escapeHtml,
     escapeAttr,

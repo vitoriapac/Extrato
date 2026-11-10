@@ -136,7 +136,7 @@ export function buildPreparationReading({
     .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
   for (const gap of gaps.slice(0, 3 - pulling.length))
     pulling.push({
-      text: `${gap.subjectName} — ${gap.topicName}: domínio ${round(Number(gap.mastery))}; impacto alto na prova (${impactOrigin(gap)}).`,
+      text: `${gap.subjectName} — ${gap.topicName}: domínio ${round(Number(gap.mastery))} (desempenho no tópico, de 0 a 100); impacto alto na prova (${impactOrigin(gap)}).`,
       link: {
         kind: 'section',
         target: 'subjects',
