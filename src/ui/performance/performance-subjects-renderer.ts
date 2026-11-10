@@ -52,7 +52,15 @@ export function renderPerformanceSubjects(
     });
     const counts = matrix.quadrantCounts;
     // No celular a dispersão não cabe com rótulos legíveis: a lista ordena as disciplinas de menor domínio.
-    const matrixRanked = `<ol class="matrix-ranked" aria-label="Disciplinas ordenadas por menor domínio">${[...matrix.items].sort((a: Row, b: Row) => a.mastery - b.mastery).map((item: Row) => `<li><span>${escapeHtml(item.name)}</span><span>domínio ${value(item.mastery, "%")} · retenção ${value(item.retention, "%")}</span></li>`).join("")}</ol>`;
+    const matrixRanked = `<ol class="matrix-ranked" aria-label="Disciplinas ordenadas por menor domínio">${[
+      ...matrix.items,
+    ]
+      .sort((a: Row, b: Row) => a.mastery - b.mastery)
+      .map(
+        (item: Row) =>
+          `<li><span>${escapeHtml(item.name)}</span><span>domínio ${value(item.mastery, '%')} · retenção ${value(item.retention, '%')}</span></li>`
+      )
+      .join('')}</ol>`;
     matrixSection = `<section class="performance-block" aria-label="Matriz de Domínio versus Retenção">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div class="min-w-0">
@@ -85,5 +93,5 @@ export function renderPerformanceSubjects(
     model.activity.questions < 10
       ? `Amostra insuficiente: ${model.activity.questions} questões no período.`
       : `Precisão de ${value(model.accuracy, '%')} frente à meta de ${model.goal.target}%.`;
-  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${matrixSection}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}<div id="performanceSubjectsSupplementalMount" class="space-y-4 mt-4"></div>`;
+  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão · ${escapeHtml(model.subject.name)}</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${matrixSection}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}<div id="performanceSubjectsSupplementalMount" class="space-y-4 mt-4"></div>`;
 }
