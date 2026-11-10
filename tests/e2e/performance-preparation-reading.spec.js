@@ -37,3 +37,22 @@ test('Leitura da preparação cabe em 375 px sem rolagem lateral', async ({ page
   await expect(page.locator('.performance-reading')).toBeVisible();
   await expectNoPageOverflow(page);
 });
+
+test('Comparação por disciplina mostra o saldo do plano e a âncora do bloco é preservada', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await page.evaluate(() => {
+    window.location.hash = '#desempenho/subjects/comparacao';
+  });
+  const block = page.locator('#bloco-comparacao');
+  await expect(block).toBeVisible();
+  await expect(block).toBeInViewport();
+  expect(await page.evaluate(() => window.location.hash)).toBe('#desempenho/subjects/comparacao');
+  await block.locator('summary', { hasText: 'Ver tabela detalhada' }).click();
+  await expect(block.getByRole('columnheader', { name: 'Saldo do plano' }).first()).toBeVisible();
+  await expect(block.getByRole('columnheader', { name: 'Sugestão' }).first()).toBeVisible();
+  await expect(block.locator('tbody td', { hasText: /faltam|sobram/ }).first()).toBeVisible();
+});

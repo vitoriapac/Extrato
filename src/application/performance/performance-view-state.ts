@@ -75,7 +75,7 @@ export function updatePerformanceViewState(
   if (patch.topicId !== undefined) next.topicId = patch.topicId || null;
   if (
     patch.subjectSort !== undefined &&
-    ['gap', 'accuracy', 'evolution', 'questions', 'priority'].includes(patch.subjectSort)
+    ['gap', 'accuracy', 'evolution', 'questions', 'priority', 'balance'].includes(patch.subjectSort)
   )
     next.subjectSort = patch.subjectSort;
   if (patch.adherenceWeeks !== undefined && [4, 8, 12].includes(Number(patch.adherenceWeeks)))

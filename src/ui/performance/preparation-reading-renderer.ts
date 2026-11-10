@@ -57,7 +57,7 @@ export function renderPreparationReading(
     ? `<ul class="performance-reading__evidence analytics-note">${evidence.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
     : '';
 
-  return `<section class="performance-reading chart-card mb-4" aria-labelledby="performanceReadingTitle">
+  return `<section class="performance-reading chart-card mb-4" id="bloco-leitura" aria-labelledby="performanceReadingTitle">
     <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3>${rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(rangeLabel)}</span>` : ''}</div></header>
     <div class="performance-reading__grid">
       <section aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>${how}</section>

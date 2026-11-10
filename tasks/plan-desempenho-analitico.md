@@ -237,3 +237,8 @@ T6, T7, T10, T11 (independentes, em paralelo) ─┤
 - Fase 1 concluída (commit `dfde623`). Ficaram de fora: tamanho das células do calendário (14px no desktop; o foco rotativo já existe), zero cortado da fonte mono e as legendas de contagens 304/305 e 12/17 contra 9/17.
 - Próximo: Fase 2 (T4, T5, T8).
 - Fase 2 implementada, ainda sem commit: T4 (`build-preparation-reading.ts`), T5 (`preparation-reading-renderer.ts`, faixa no topo da Visão geral, E2E `performance-preparation-reading.spec.js`) e T8 (síntese de Consistência com déficit e "Ajustar plano"). A faixa começa em y=635 de 900 no desktop (o chrome do app ocupa o resto), então não cabe inteira na primeira dobra; encurtar o cabeçalho de Desempenho é um ajuste à parte.
+- Fase 2 commitada (`ca02c2b`).
+- Fase 3 implementada, ainda sem commit:
+  - T9: a "Comparação entre disciplinas" foi estendida (em vez de uma tabela nova): colunas Planejado, Realizado, Saldo do plano e Sugestão, com ordenação por saldo. Planejado e realizado vêm do mesmo modelo de aderência de Consistência; a sugestão é o tópico de maior prioridade já calculado. O critério "soma do saldo = déficit da faixa" não vale: a faixa mede 7 dias e a tabela mede o período filtrado.
+  - T12: sem trabalho. Questões e Simulados não têm listas ordenáveis (são gráficos e KPIs), e a busca de tópicos já existe em Inteligência da prova e vale para os quadrantes. CSV segue adiado.
+  - T13: âncoras `#desempenho/<seção>/<bloco>` com ids `bloco-leitura`, `bloco-resumo`, `bloco-comparacao`, `bloco-estabilidade` e `bloco-sintese`. A âncora vale só na seção a que pertence e rola até o bloco. Não há botão visível de copiar link.

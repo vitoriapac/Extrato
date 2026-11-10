@@ -360,11 +360,18 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       ?.setAttribute?.('data-performance-view', performanceViewState.section);
     const win = doc.defaultView;
     if (win && /^#desempenho(\/|$)/.test(win.location.hash)) {
-      const next =
+      // Âncora de bloco ("#desempenho/subjects/comparacao"): vale só na seção a que pertence.
+      const anchored = /^#desempenho\/([a-z]+)\/([a-z0-9-]+)/.exec(win.location.hash);
+      const block = anchored && anchored[1] === performanceViewState.section ? anchored[2] : '';
+      const base =
         performanceViewState.section === 'overview'
           ? '#desempenho'
           : `#desempenho/${performanceViewState.section}`;
+      const next = block
+        ? `${base === '#desempenho' ? '#desempenho/overview' : base}/${block}`
+        : base;
       if (win.location.hash !== next) win.history.replaceState(null, '', next);
+      if (block) doc.getElementById(`bloco-${block}`)?.scrollIntoView?.({ block: 'start' });
     }
     const status = doc.getElementById('performanceStatus');
     const section = target

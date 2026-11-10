@@ -114,7 +114,9 @@ export function renderWeeklyPerformanceBriefCard(
 
   const linksHtml = brief.links.length
     ? `<nav class="ui-filter-bar flex flex-wrap gap-2 pt-1" aria-label="Atalhos da semana">${brief.links
-        .map((link, index) => renderBriefLinkButton(link, index === 0 && !options.embedded, escapeHtml, escapeAttr))
+        .map((link, index) =>
+          renderBriefLinkButton(link, index === 0 && !options.embedded, escapeHtml, escapeAttr)
+        )
         .join('')}</nav>`
     : '';
 

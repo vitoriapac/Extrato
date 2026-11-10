@@ -1,3 +1,4 @@
+import { buildAdherenceModel } from '../adherence/build-adherence-model.js';
 import { buildPreparationReading } from './build-preparation-reading.js';
 import { buildQuestionEvolution } from '../questions/build-question-evolution.js';
 import { buildPerformanceAnalysis } from '../questions/build-performance-analysis.js';
@@ -158,6 +159,25 @@ export function buildPerformancePageModel({
       ...item,
       subjectId: subjectIdFor(item),
     }));
+    // Planejado e realizado por disciplina no período, do mesmo modelo de aderência da aba Consistência.
+    const planBySubject = () => {
+      if (!executionSource) return [];
+      const dates = [...(executionSource.dailyPlans || []), ...(executionSource.sessions || [])]
+        .map((item: any) => item.date)
+        .filter((date: unknown) => typeof date === 'string' && date <= today)
+        .sort();
+      try {
+        return buildAdherenceModel({
+          ...executionSource,
+          start: range?.start || dates[0] || today,
+          end: range?.end || today,
+          today,
+          activeExamTags,
+        }).subjects;
+      } catch {
+        return [];
+      }
+    };
     const comparison = buildPerformanceSubjectComparison({
       subjects: eligibleSubjects,
       questions,
@@ -166,6 +186,7 @@ export function buildPerformancePageModel({
       globalTarget,
       candidates,
       sort: viewState.subjectSort,
+      adherenceSubjects: planBySubject(),
     });
     const selected =
       eligibleSubjects.find((item: any) => item.id === viewState.subjectId) || eligibleSubjects[0];
