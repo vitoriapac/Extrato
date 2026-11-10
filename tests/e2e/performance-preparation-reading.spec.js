@@ -4,6 +4,7 @@ import {
   expectNoPageOverflow,
   openDemo,
   openPerformanceSection,
+  openPerformanceFilters,
   overviewRecommendationId,
 } from './helpers.js';
 
@@ -109,4 +110,23 @@ test('No celular os filtros ficam numa linha e abrem ao tocar em Alterar filtros
     'aria-expanded',
     'true'
   );
+});
+
+test('Dobras de Desempenho continuam abertas quando a tela é redesenhada', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const fold = page.locator('#performanceSectionContent details', {
+    has: page.locator(':scope > summary', { hasText: 'Prontidão, trajetória e carga' }),
+  });
+  await fold.locator(':scope > summary').click();
+  await expect(fold).toHaveJSProperty('open', true);
+  // Trocar o período redesenha a tela; a dobra aberta não pode fechar.
+  await openPerformanceFilters(page);
+  await page.locator('#performancePeriod').selectOption('90');
+  await expect(
+    page.locator('#performanceSectionContent details', {
+      has: page.locator(':scope > summary', { hasText: 'Prontidão, trajetória e carga' }),
+    })
+  ).toHaveJSProperty('open', true);
 });

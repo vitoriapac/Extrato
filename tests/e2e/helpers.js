@@ -101,3 +101,12 @@ export async function openPerformanceFilters(page) {
   }
   await expect(page.locator('#performancePeriod')).toBeVisible();
 }
+
+// As dobras de Desempenho lembram o estado: abrir só se ainda estiver fechada, em vez de alternar.
+export async function openPerformanceFold(page, title) {
+  const fold = page
+    .locator('#performanceSectionContent details')
+    .filter({ has: page.locator(':scope > summary', { hasText: title }) })
+    .first();
+  if (!(await fold.evaluate(node => node.open))) await fold.locator(':scope > summary').click();
+}

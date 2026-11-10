@@ -114,6 +114,6 @@ test('leitura da preparação: a Prontidão traz barra e tendência, sem causa',
   assert.match(html, /performance-reading__bar/);
   assert.match(html, /aria-label="Prontidão 46 em uma escala de 0 a 100"/);
   assert.match(html, /Tendência: em queda frente ao período anterior/);
-  assert.match(html, /class="performance-window">7 dias</);
+  assert.match(html, /data-window="sevenDays"[^>]*>7 dias</);
   assert.doesNotMatch(html, /porque|graças a|garante/i);
 });

@@ -99,6 +99,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       section: hashSection,
     });
   }
+  // Dobras lembram se estavam abertas ao redesenhar (trocar período, filtro ou semana não as fecha).
+  const foldMemory = new Map<string, boolean>();
+  const foldKey = (section: string, fold: Element) =>
+    `${section}|${fold.querySelector(':scope > summary')?.textContent?.trim().slice(0, 80) ?? ''}`;
   let selectedCareerClusterId: CareerClusterId | null = null;
 
   function recordProgressSnapshot(pct: number) {
@@ -313,6 +317,18 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
         });
 
+    if ((target as HTMLElement).dataset && !(target as HTMLElement).dataset.foldMemory) {
+      (target as HTMLElement).dataset.foldMemory = 'true';
+      target.addEventListener?.(
+        'toggle',
+        (event: Event) => {
+          const fold = event.target as HTMLDetailsElement;
+          if (fold?.tagName !== 'DETAILS' || !fold.closest('#performanceSectionContent')) return;
+          foldMemory.set(foldKey(performanceViewState.section, fold), fold.open);
+        },
+        true
+      );
+    }
     target.innerHTML = renderPerformancePage({
       viewState: performanceViewState,
       range,
@@ -355,6 +371,12 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           if (node) historyMount.append(node);
         }
       }
+    }
+
+    for (const fold of (target.querySelectorAll?.('#performanceSectionContent details') ??
+      []) as any) {
+      const remembered = foldMemory.get(foldKey(performanceViewState.section, fold));
+      if (remembered !== undefined && fold.open !== remembered) fold.open = remembered;
     }
 
     doc

@@ -1,3 +1,4 @@
+import { renderWindowBadge } from './window-badge.js';
 import { renderCopyBlockLink } from './block-link.js';
 import { pluralize } from '../../core/utils.js';
 import { renderPerformanceDetails } from './performance-story.js';
@@ -29,7 +30,7 @@ export function renderFocusByShift(
       ? `${analysis.shifts[analysis.peakShift]?.averageAccuracy != null ? 'Maior acerto em questões' : 'Mais foco profundo'}: ${String(analysis.peakShiftLabel).toLowerCase()}.`
       : ''
     : `Ainda há poucas sessões avaliadas; a partir de 5 o diagnóstico por turno fica disponível.`;
-  return `<section class="performance-block focus-shift" aria-label="Foco profundo por turno"><h3>Foco profundo por turno</h3><p class="analytics-note">Percentual das sessões avaliadas no encerramento com foco profundo${windowLabel ? `, no período escolhido (${windowLabel})` : ''}. ${note}</p><ul class="focus-shift__list">${rows}</ul></section>`;
+  return `<section class="performance-block focus-shift" aria-label="Foco profundo por turno"><h3>Foco profundo por turno ${renderWindowBadge('period', windowLabel)}</h3><p class="analytics-note">Percentual das sessões avaliadas no encerramento com foco profundo${windowLabel ? `, no período escolhido (${windowLabel})` : ''}. ${note}</p><ul class="focus-shift__list">${rows}</ul></section>`;
 }
 
 export function renderPerformanceConsistency(
@@ -122,7 +123,7 @@ export function renderPerformanceConsistency(
   // Síntese no topo: o mesmo critério do resumo semanal (tempo estudado frente ao planejado), agora na janela filtrada.
   const synthesis =
     model.plannedMinutes > 0 && model.adherence != null
-      ? `<section class="performance-synthesis" id="bloco-sintese" aria-label="Síntese da consistência">${renderCopyBlockLink('sintese')}<p class="performance-synthesis__lead"><span class="performance-window">${escapeHtml(range?.label || 'No período')}</span> ${escapeHtml(formatStudyMinutes(model.studiedMinutes))} estudados de ${escapeHtml(formatStudyMinutes(model.plannedMinutes))} planejados (${formatDecimal(model.adherence)}% do tempo planejado), em ${pluralize(model.activeDays, 'dia', 'dias')} com estudo.</p><p class="analytics-note m-0">É tempo total, sem exigir vínculo com o plano. Aderência ao plano, execução prioritária e crédito semanal usam outras bases e ficam em "Execução do plano", logo abaixo, cada uma com a sua janela.</p>${model.plannedMinutes > model.studiedMinutes ? `<p class="analytics-note m-0">Faltam ${escapeHtml(formatStudyMinutes(model.plannedMinutes - model.studiedMinutes))} para igualar o planejado neste período.</p><div class="performance-reading__actions"><button type="button" class="btn ghost small" data-performance-adjust-plan>Ajustar plano</button></div>` : ''}</section>`
+      ? `<section class="performance-synthesis" id="bloco-sintese" aria-label="Síntese da consistência">${renderCopyBlockLink('sintese')}<p class="performance-synthesis__lead">${renderWindowBadge('period', range?.label || '')} ${escapeHtml(range?.label || 'No período')}: ${escapeHtml(formatStudyMinutes(model.studiedMinutes))} estudados de ${escapeHtml(formatStudyMinutes(model.plannedMinutes))} planejados (${formatDecimal(model.adherence)}% do tempo planejado), em ${pluralize(model.activeDays, 'dia', 'dias')} com estudo.</p><p class="analytics-note m-0">É tempo total, sem exigir vínculo com o plano. Aderência ao plano, execução prioritária e crédito semanal usam outras bases e ficam em "Execução do plano", logo abaixo, cada uma com a sua janela.</p>${model.plannedMinutes > model.studiedMinutes ? `<p class="analytics-note m-0">Faltam ${escapeHtml(formatStudyMinutes(model.plannedMinutes - model.studiedMinutes))} para igualar o planejado neste período.</p><div class="performance-reading__actions"><button type="button" class="btn ghost small" data-performance-adjust-plan>Ajustar plano</button></div>` : ''}</section>`
       : '';
   return `${synthesis}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml) : ''}${renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml })}<div id="shiftEnergyMount" class="mt-4">${renderFocusByShift(model.focusByShift, range?.label)}</div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
 }

@@ -1,3 +1,4 @@
+import { renderWindowBadge } from './window-badge.js';
 import { renderCopyBlockLink } from './block-link.js';
 import type {
   PreparationLink,
@@ -5,7 +6,6 @@ import type {
 } from '../../application/performance/build-preparation-reading.js';
 import { escapePresentationText } from '../components/presentation.js';
 
-const windowBadge = (label: string) => `<span class="performance-window">${label}</span>`;
 const linkButton = (link: PreparationLink, escapeAttr: (value: any) => string, solid = false) => {
   const attrs =
     link.kind === 'section'
@@ -41,10 +41,10 @@ export function renderPreparationReading(
         ? `<p class="m-0"><strong class="performance-reading__figure">Prontidão ${escapeHtml(howAmI.readiness.value)}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label="Prontidão ${escapeAttr(howAmI.readiness.value)} em uma escala de 0 a 100"><i style="width:${Math.max(0, Math.min(100, Number(howAmI.readiness.value)))}%"></i></div>${howAmI.readiness.verdict ? `<p class="performance-reading__verdict m-0" data-state="${howAmI.readiness.verdict.state}">${escapeHtml(howAmI.readiness.verdict.text)}</p>` : ''}${howAmI.readiness.detail ? `<p class="m-0 performance-reading__support">${escapeHtml(howAmI.readiness.detail)}</p>` : ''}`
         : '',
       howAmI.projection
-        ? `<p class="m-0 performance-reading__support">${windowBadge('simulados')}${escapeHtml(howAmI.projection.text)}</p>`
+        ? `<p class="m-0 performance-reading__support">${renderWindowBadge('history', 'Simulados comparáveis, todo o histórico')}${escapeHtml(howAmI.projection.text)}</p>`
         : '',
       howAmI.rhythm
-        ? `<p class="m-0 performance-reading__support">${windowBadge('7 dias')}${escapeHtml(howAmI.rhythm.text)}</p>`
+        ? `<p class="m-0 performance-reading__support">${renderWindowBadge('sevenDays', 'Últimos 7 dias')}${escapeHtml(howAmI.rhythm.text)}</p>`
         : '',
     ]
       .filter(Boolean)

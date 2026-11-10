@@ -1,3 +1,4 @@
+import { renderWindowBadge } from '../performance/window-badge.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { renderExecutionBreakdown } from './execution-breakdown-renderer.js';
 import { renderAdherenceTarget } from './adherence-target-renderer.js';
@@ -20,7 +21,7 @@ export function renderAdherenceMetrics(model: Row, { escapeHtml }: any = {}) {
     priority.classifiedCoverage >= ADHERENCE_STATUS_POLICY.minimumClassifiedCoverage &&
     priority.plannedMinutes > 0 &&
     !model.ambiguousItemCount;
-  return `<section class="adherence-summary performance-summary" aria-label="Resumo de aderência" data-adherence-assessment="${assessment.status}"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Execução do plano</h3><p class="module-heading__description">${escapeHtml(assessment.label)}. Crédito ao plano e estudo realizado são medidas distintas.</p></header><section class="performance-kpis" aria-label="Indicadores de aderência">
+  return `<section class="adherence-summary performance-summary" aria-label="Resumo de aderência" data-adherence-assessment="${assessment.status}"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Execução do plano ${renderWindowBadge('period', 'Período filtrado')}</h3><p class="module-heading__description">${escapeHtml(assessment.label)}. Crédito ao plano e estudo realizado são medidas distintas.</p></header><section class="performance-kpis" aria-label="Indicadores de aderência">
     <article class="performance-kpi"><span>Aderência ao plano</span><strong>${percent(summary.temporalAdherence)}</strong><small>${shown(summary.matchedMinutes)} min com crédito compatível.</small></article>
     <article class="performance-kpi"><span>Execução prioritária</span><strong>${supported ? percent(priority.adherence) : '—'}</strong><small>${supported ? `${shown(priority.executedMinutes)} de ${shown(priority.plannedMinutes)} min prioritários.` : 'Evidência histórica insuficiente para interpretar prioridades.'}</small></article>
     <article class="performance-kpi"><span>Carga planejada</span><strong>${shown(summary.plannedMinutes)} min</strong><small>Somente atividades elegíveis no período.</small></article>

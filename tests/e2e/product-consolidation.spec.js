@@ -4,7 +4,7 @@ import {
   openDemo,
   expectNoPageOverflow,
   openPerformanceHistory,
-  openPlanningSubtab, openPerformanceSection, openPerformanceFilters } from './helpers.js';
+  openPlanningSubtab, openPerformanceSection, openPerformanceFilters, openPerformanceFold } from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
@@ -355,7 +355,7 @@ test('cinco perfis percorrem a experiência consolidada com ação, contexto e l
     await expectNoPageOverflow(page);
     await activateTab(page, 'desempenho');
     await openPerformanceSection(page, 'overview');
-    await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
+    await openPerformanceFold(page, 'Prontidão, trajetória e carga');
     const trajectory = page.locator('.achievement-projection');
     await expect(trajectory).toBeVisible();
     if (profile === 'beginner')
@@ -420,7 +420,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
 
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'overview');
-  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
+  await openPerformanceFold(page, 'Prontidão, trajetória e carga');
   const explanation = page.locator('.readiness-change-explanation');
   await expect(explanation).toBeVisible();
   await explanation.locator(':scope > summary').click();
@@ -452,7 +452,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
       .getByRole('button', { name: 'Entenda aderência', exact: true })
   ).toBeFocused();
   await openPerformanceSection(page, 'overview');
-  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
+  await openPerformanceFold(page, 'Prontidão, trajetória e carga');
   await page
     .locator('.achievement-projection__details > summary')
     .filter({ hasText: 'Entender esta projeção' })

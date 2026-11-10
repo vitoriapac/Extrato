@@ -1,3 +1,4 @@
+import { renderWindowBadge } from './window-badge.js';
 import type { PerformanceExecutiveSummary } from '../../application/performance/build-performance-executive-summary.js';
 import { formatDelta } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
@@ -59,7 +60,7 @@ export function renderPerformanceExecutiveSummary(
   }: { escapeHtml?: (value: any) => string; embedded?: boolean } = {}
 ): string {
   const lead = (text: string) =>
-    `<p class="performance-executive__lead" data-status="${escapeHtml(summary.situation.status)}">${escapeHtml(text)}</p>`;
+    `<p class="performance-executive__lead" data-status="${escapeHtml(summary.situation.status)}">${renderWindowBadge('history', 'Simulados comparáveis, todo o histórico')}${escapeHtml(text)}</p>`;
   const row = (term: string, text: string) =>
     `<div class="space-y-0.5"><dt class="text-xs font-semibold text-content-secondary">${escapeHtml(term)}</dt><dd class="m-0 text-sm text-content-primary leading-relaxed">${escapeHtml(text)}</dd></div>`;
   const body = `${lead(situationText(summary.situation))}
