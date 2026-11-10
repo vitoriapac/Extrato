@@ -1,3 +1,4 @@
+import { renderCopyBlockLink } from './block-link.js';
 import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
 import { formatStudyMinutes, formatStudyMinuteDelta } from '../format-study-time.js';
@@ -15,7 +16,10 @@ import { renderAchievementProjection } from './achievement-projection-renderer.j
 import { renderPlannedVsActualChart } from './planned-actual-chart.js';
 import { renderWeeklyPerformanceBriefCard } from './weekly-performance-brief-renderer.js';
 import { buildPerformanceExecutiveSummary } from '../../application/performance/build-performance-executive-summary.js';
-import { renderPreparationReading } from './preparation-reading-renderer.js';
+import {
+  renderPreparationReading,
+  renderRecommendationFollowupSummary,
+} from './preparation-reading-renderer.js';
 import { renderPerformanceExecutiveSummary } from './performance-executive-summary-renderer.js';
 
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
@@ -38,7 +42,7 @@ const glossaryItems: Array<[string, string]> = [
   ['Incidência', 'Percentual das provas do histórico em que o tópico aparece.'],
 ];
 const renderGlossary = (escapeHtml: (value: any) => string) =>
-  `<dl class="performance-glossary">${glossaryItems.map(([term, text]) => `<div><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(text)}</dd></div>`).join('')}</dl>`;
+  `<p class="m-0"><button type="button" class="btn ghost small" data-performance-open="instrucoes">Abrir a Ajuda</button></p><dl class="performance-glossary">${glossaryItems.map(([term, text]) => `<div><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(text)}</dd></div>`).join('')}</dl>`;
 
 export function renderPerformanceOverview(
   model: Record<string, any>,
@@ -51,6 +55,7 @@ export function renderPerformanceOverview(
     escapeAttr = escapeHtml,
     weeklyBrief = null,
     preparationReading = null,
+    recommendationFollowup = [],
     comparisonModel = null,
     readinessChange = null,
     achievementProjection = null,
@@ -113,11 +118,12 @@ export function renderPerformanceOverview(
     buildPerformanceExecutiveSummary({ model, range, projection: achievementProjection }),
     { escapeHtml, embedded: true }
   );
-  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
+  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${renderCopyBlockLink('resumo')}${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
   const preparationHtml = renderPreparationReading(preparationReading, {
     escapeHtml,
     escapeAttr,
     rangeLabel: range?.label,
   });
-  return `${preparationHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
+  const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });
+  return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
 }

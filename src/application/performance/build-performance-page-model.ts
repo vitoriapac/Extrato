@@ -1,3 +1,4 @@
+import { buildRecommendationFollowup } from '../recommendations/build-recommendation-followup.js';
 import { buildAdherenceModel } from '../adherence/build-adherence-model.js';
 import { buildPreparationReading } from './build-preparation-reading.js';
 import { buildQuestionEvolution } from '../questions/build-question-evolution.js';
@@ -31,6 +32,8 @@ export function buildPerformancePageModel({
   adherenceContext = null,
   recoveryPlan = null,
   nextBestAction = null,
+  recommendationFeedback = [],
+  allSessions = [],
   readinessSnapshots = [],
   readiness = null,
   blueprint = {},
@@ -74,6 +77,13 @@ export function buildPerformancePageModel({
       section,
       model,
       weeklyBrief,
+      recommendationFollowup: buildRecommendationFollowup({
+        feedback: recommendationFeedback,
+        sessions: allSessions,
+        topics: subjects.flatMap((subject: any) => subject.topics || []),
+        activeExamTags,
+        today,
+      }).rows.filter((row: any) => row.state !== 'insufficient'),
       preparationReading: buildPreparationReading({
         range,
         model,

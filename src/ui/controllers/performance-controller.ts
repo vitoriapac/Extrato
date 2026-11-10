@@ -93,6 +93,49 @@ export function createPerformanceController({
           document.getElementById('performanceTopicDialog')?.close();
           return;
         }
+        const reveal = event.target.closest('[data-performance-reveal]') as HTMLElement | null;
+        if (reveal) {
+          const fold = document.querySelector(
+            '.performance-details--trajectory'
+          ) as HTMLDetailsElement | null;
+          if (fold) {
+            fold.open = true;
+            fold.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
+          }
+          return;
+        }
+        const copy = event.target.closest('[data-performance-copy-link]') as HTMLElement | null;
+        if (copy) {
+          const section =
+            document.getElementById('panel-desempenho')?.dataset.performanceView || 'overview';
+          const url = `${window.location.origin}${window.location.pathname}#desempenho/${section}/${copy.dataset.performanceCopyLink}`;
+          const label = copy.textContent;
+          const ariaLabel = copy.getAttribute('aria-label');
+          const say = (text: string, name: string) => {
+            copy.textContent = text;
+            copy.setAttribute('aria-label', name);
+          };
+          Promise.resolve(window.navigator?.clipboard?.writeText(url))
+            .then(() => {
+              say('Link copiado', 'Link copiado para a área de transferência');
+              window.setTimeout(() => say(label || '', ariaLabel || ''), 2000);
+            })
+            .catch(() => say('Não foi possível copiar', 'Não foi possível copiar o link'));
+          return;
+        }
+        // "Ajustar plano": abre Metas com a prévia de ajuste à vista; nada é aplicado sem confirmação lá.
+        if (event.target.closest('[data-performance-adjust-plan]')) {
+          document.getElementById('performanceTopicDialog')?.close();
+          activateTab('metas');
+          requestAnimationFrame(() => {
+            const fold = document.getElementById('metasAdjust') as HTMLDetailsElement | null;
+            if (!fold) return;
+            fold.open = true;
+            fold.scrollIntoView({ block: 'start' });
+            (fold.querySelector(':scope > summary') as HTMLElement | null)?.focus();
+          });
+          return;
+        }
         const open = event.target.closest('[data-performance-open]');
         if (open) {
           document.getElementById('performanceTopicDialog')?.close();

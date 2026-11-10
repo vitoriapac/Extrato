@@ -3,6 +3,7 @@ import {
   activateTab,
   expectNoPageOverflow,
   openDemo,
+  openPerformanceSection,
   overviewRecommendationId,
 } from './helpers.js';
 
@@ -55,4 +56,39 @@ test('Comparação por disciplina mostra o saldo do plano e a âncora do bloco �
   await expect(block.getByRole('columnheader', { name: 'Saldo do plano' }).first()).toBeVisible();
   await expect(block.getByRole('columnheader', { name: 'Sugestão' }).first()).toBeVisible();
   await expect(block.locator('tbody td', { hasText: /faltam|sobram/ }).first()).toBeVisible();
+});
+
+test('Ajustar plano abre a prévia de ajuste em Metas sem alterar nenhum dado', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const records = () => page.evaluate(() => localStorage.getItem('bb-premium-study-data'));
+  const before = await records();
+  await page.locator('.performance-reading').getByRole('button', { name: 'Ajustar plano' }).click();
+  await expect(page.locator('#panel-metas')).toBeVisible();
+  await expect(page.locator('#metasAdjust')).toHaveJSProperty('open', true);
+  expect(await records()).toBe(before);
+});
+
+test('Copiar link gera a âncora do bloco e o calendário tem alternativa em texto', async ({
+  page,
+  context,
+}) => {
+  test.setTimeout(120_000);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await page.locator('.performance-reading').getByRole('button', { name: 'Copiar link' }).click();
+  await expect(
+    page.locator('.performance-reading').getByRole('button', { name: 'Link copiado' })
+  ).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toMatch(/#desempenho\/overview\/leitura$/);
+  await openPerformanceSection(page, 'consistency');
+  const weekly = page.locator('.heatmap-weekly-text');
+  await expect(weekly).toBeVisible();
+  await weekly.locator('summary').click();
+  await expect(weekly.locator('li').first()).toContainText(
+    /Semana de \d{2}\/\d{2}: \d de \d dias?/
+  );
 });

@@ -45,6 +45,20 @@ const HEATMAP_METRICS: Array<[string, string]> = [
 
 const WEEKDAYS_PT = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
+/** Alternativa em texto à grade: dias com atividade por semana (segunda a domingo), das mais recentes. */
+function weeklyActivity(days: ActivityCalendarHeatmapVisualModel['days'], limit = 12) {
+  const weeks = new Map<string, { start: string; active: number; total: number }>();
+  for (const day of days) {
+    const time = Date.parse(day.date + 'T00:00:00');
+    const monday = new Date(time - day.dayOfWeek * 86400000).toISOString().slice(0, 10);
+    const week = weeks.get(monday) || { start: monday, active: 0, total: 0 };
+    week.total++;
+    if (day.level > 0) week.active++;
+    weeks.set(monday, week);
+  }
+  return [...weeks.values()].slice(-limit).reverse();
+}
+
 /** Resumo só do período exibido: independe da métrica, pois usa apenas o nível de cada dia. */
 function summarizeCalendar(days: ActivityCalendarHeatmapVisualModel['days']) {
   if (!days.length) return null;
@@ -89,7 +103,9 @@ export function ActivityHeatmap({
 }: ActivityHeatmapProps): JSX.Element {
   const isCalendar = mode === 'calendar';
   // Filtros num disclosure fechado; abre sozinho enquanto algum filtro foge do padrão.
-  const filtersActive = Boolean(controls && (metric !== 'hours' || controls.subjectId || controls.onlyActiveDays));
+  const filtersActive = Boolean(
+    controls && (metric !== 'hours' || controls.subjectId || controls.onlyActiveDays)
+  );
   // Roving tabindex: uma única parada de Tab na grade; as setas movem entre as células.
   const days = calendarVisual?.days ?? [];
   const tabStopDate = (days.find(d => d.selected) ?? days[days.length - 1])?.date;
@@ -105,9 +121,14 @@ export function ActivityHeatmap({
       {controls && (
         <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <h3 class="font-semibold text-base text-content-primary m-0">Consistência de estudos</h3>
-          <select aria-label="Período do heatmap" data-delegated-change="setHeatmapFilter('weeks',this.value)">
+          <select
+            aria-label="Período do heatmap"
+            data-delegated-change="setHeatmapFilter('weeks',this.value)"
+          >
             {HEATMAP_PERIODS.map(([value, label]) => (
-              <option key={value} value={value} selected={controls.weeks === value}>{label}</option>
+              <option key={value} value={value} selected={controls.weeks === value}>
+                {label}
+              </option>
             ))}
           </select>
         </div>
@@ -116,7 +137,11 @@ export function ActivityHeatmap({
       {/* Topo com seletor de modo e atalhos rápidos */}
       <div class="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-border-subtle pb-3">
         {/* Seletor de Modo (Calendário vs Horários do Dia) */}
-        <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Visualização do heatmap">
+        <div
+          class="flex flex-wrap items-center gap-1.5"
+          role="group"
+          aria-label="Visualização do heatmap"
+        >
           <button
             type="button"
             aria-pressed={isCalendar}
@@ -141,11 +166,17 @@ export function ActivityHeatmap({
         <div class="flex items-center gap-3 text-xs text-content-secondary">
           <span class="inline-flex items-center gap-1.5">
             <Icon name="flame" size={14} class="text-warning-emphasis" />
-            Atividade: <strong class="font-bold text-content-primary">{activityStreak} {activityStreak === 1 ? 'dia' : 'dias'}</strong>
+            Atividade:{' '}
+            <strong class="font-bold text-content-primary">
+              {activityStreak} {activityStreak === 1 ? 'dia' : 'dias'}
+            </strong>
           </span>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="target" size={14} class="text-success-emphasis" />
-            Meta: <strong class="font-bold text-content-primary">{goalStreak} {goalStreak === 1 ? 'dia' : 'dias'}</strong>
+            Meta:{' '}
+            <strong class="font-bold text-content-primary">
+              {goalStreak} {goalStreak === 1 ? 'dia' : 'dias'}
+            </strong>
           </span>
         </div>
       </div>
@@ -154,15 +185,29 @@ export function ActivityHeatmap({
         <details class="heatmap-filters" open={filtersActive}>
           <summary>Filtros do mapa{filtersActive ? ' (ativos)' : ''}</summary>
           <div class="heatmap-toolbar">
-            <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)">
+            <select
+              aria-label="Métrica do heatmap"
+              data-delegated-change="setHeatmapFilter('metric',this.value)"
+            >
               {HEATMAP_METRICS.map(([value, label]) => (
-                <option key={value} value={value} selected={metric === value}>{label}</option>
+                <option key={value} value={value} selected={metric === value}>
+                  {label}
+                </option>
               ))}
             </select>
-            <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)">
+            <select
+              aria-label="Disciplina do heatmap"
+              data-delegated-change="setHeatmapFilter('subjectId',this.value)"
+            >
               <option value="">Todas as disciplinas</option>
               {controls.subjects.map(subject => (
-                <option key={subject.id} value={subject.id} selected={controls.subjectId === subject.id}>{subject.name}</option>
+                <option
+                  key={subject.id}
+                  value={subject.id}
+                  selected={controls.subjectId === subject.id}
+                >
+                  {subject.name}
+                </option>
               ))}
             </select>
             <button
@@ -181,71 +226,96 @@ export function ActivityHeatmap({
       {isCalendar && calendarVisual && (
         <div class="space-y-2">
           <div class="lg:flex lg:items-start lg:gap-8">
-          <div class="min-w-0 flex-1 overflow-x-auto pb-2">
-            <div class="inline-flex flex-col min-w-[580px]">
-              {/* Linha com os rótulos de meses */}
-              <div class="relative h-4 mb-1 pl-8 text-xs text-content-secondary font-mono">
-                {calendarVisual.monthLabels.map(m => (
-                  <span
-                    key={`month-${m.label}-${m.weekIndex}`}
-                    class="absolute"
-                    style={{ left: `calc(32px + ${m.weekIndex} * (var(--hm-cell) + var(--hm-gap)))` }}
-                  >
-                    {m.label}
-                  </span>
-                ))}
-              </div>
-
-              {/* Grade de 7 dias com rótulos à esquerda */}
-              <div class="flex items-start gap-2">
-                {/* Rótulos dos dias da semana (Seg, Qua, Sex) */}
-                <div class="heatmap-weekdays flex flex-col justify-between text-xs text-content-secondary font-mono select-none">
-                  <span class="leading-none">Seg</span>
-                  <span class="leading-none">Qua</span>
-                  <span class="leading-none">Sex</span>
+            <div class="min-w-0 flex-1 overflow-x-auto pb-2">
+              <div class="inline-flex flex-col min-w-[580px]">
+                {/* Linha com os rótulos de meses */}
+                <div class="relative h-4 mb-1 pl-8 text-xs text-content-secondary font-mono">
+                  {calendarVisual.monthLabels.map(m => (
+                    <span
+                      key={`month-${m.label}-${m.weekIndex}`}
+                      class="absolute"
+                      style={{
+                        left: `calc(32px + ${m.weekIndex} * (var(--hm-cell) + var(--hm-gap)))`,
+                      }}
+                    >
+                      {m.label}
+                    </span>
+                  ))}
                 </div>
 
-                {/* Grid de células do calendário */}
-                <div
-                  class="heatmap-grid"
-                  role="group"
-                  aria-label="Grade de consistência diária de estudos. Use as setas para percorrer os dias."
-                  data-heatmap-grid
-                >
-                  {calendarVisual.days.map(day => (
-                    <button
-                      key={`day-${day.date}`}
-                      type="button"
-                      class={`heatmap-cell heat-${day.level} ${day.selected ? 'selected' : ''}`}
-                      title={day.tooltip}
-                      aria-label={day.tooltip}
-                      aria-pressed={day.selected}
-                      tabIndex={day.date === tabStopDate ? 0 : -1}
-                      data-heatmap-date={day.date}
-                      data-delegated-click={`selectHeatmapDay('${day.date}')`}
-                    />
-                  ))}
+                {/* Grade de 7 dias com rótulos à esquerda */}
+                <div class="flex items-start gap-2">
+                  {/* Rótulos dos dias da semana (Seg, Qua, Sex) */}
+                  <div class="heatmap-weekdays flex flex-col justify-between text-xs text-content-secondary font-mono select-none">
+                    <span class="leading-none">Seg</span>
+                    <span class="leading-none">Qua</span>
+                    <span class="leading-none">Sex</span>
+                  </div>
+
+                  {/* Grid de células do calendário */}
+                  <div
+                    class="heatmap-grid"
+                    role="group"
+                    aria-label="Grade de consistência diária de estudos. Use as setas para percorrer os dias."
+                    data-heatmap-grid
+                  >
+                    {calendarVisual.days.map(day => (
+                      <button
+                        key={`day-${day.date}`}
+                        type="button"
+                        class={`heatmap-cell heat-${day.level} ${day.selected ? 'selected' : ''}`}
+                        title={day.tooltip}
+                        aria-label={day.tooltip}
+                        aria-pressed={day.selected}
+                        tabIndex={day.date === tabStopDate ? 0 : -1}
+                        data-heatmap-date={day.date}
+                        data-delegated-click={`selectHeatmapDay('${day.date}')`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
+            {hasActivity && insights && (
+              <dl
+                class="heatmap-insights mt-3 lg:mt-0 lg:w-60 lg:shrink-0 lg:border-l lg:border-border-subtle lg:pl-6 grid grid-cols-1 gap-3 text-xs"
+                aria-label="Resumo do período exibido"
+              >
+                <div>
+                  <dt class="text-content-secondary">Dias com atividade</dt>
+                  <dd class="m-0 font-data font-semibold text-sm text-content-primary">
+                    {insights.activeDays} de {insights.totalDays}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-content-secondary">Maior sequência no período</dt>
+                  <dd class="m-0 font-data font-semibold text-sm text-content-primary">
+                    {insights.bestRun} {insights.bestRun === 1 ? 'dia' : 'dias'}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-content-secondary">Dia da semana mais ativo</dt>
+                  <dd class="m-0 font-semibold text-sm text-content-primary">
+                    {insights.topWeekday}
+                  </dd>
+                </div>
+              </dl>
+            )}
           </div>
-          {hasActivity && insights && (
-            <dl class="heatmap-insights mt-3 lg:mt-0 lg:w-60 lg:shrink-0 lg:border-l lg:border-border-subtle lg:pl-6 grid grid-cols-1 gap-3 text-xs" aria-label="Resumo do período exibido">
-              <div>
-                <dt class="text-content-secondary">Dias com atividade</dt>
-                <dd class="m-0 font-data font-semibold text-sm text-content-primary">{insights.activeDays} de {insights.totalDays}</dd>
-              </div>
-              <div>
-                <dt class="text-content-secondary">Maior sequência no período</dt>
-                <dd class="m-0 font-data font-semibold text-sm text-content-primary">{insights.bestRun} {insights.bestRun === 1 ? 'dia' : 'dias'}</dd>
-              </div>
-              <div>
-                <dt class="text-content-secondary">Dia da semana mais ativo</dt>
-                <dd class="m-0 font-semibold text-sm text-content-primary">{insights.topWeekday}</dd>
-              </div>
-            </dl>
+
+          {hasActivity && isCalendar && (
+            <details class="performance-more heatmap-weekly-text">
+              <summary>Dias com atividade por semana, em texto</summary>
+              <ul class="m-0 mt-2 pl-4 text-xs text-content-secondary">
+                {weeklyActivity(days).map(week => (
+                  <li key={week.start}>
+                    Semana de {week.start.slice(8, 10)}/{week.start.slice(5, 7)}: {week.active} de{' '}
+                    {week.total} {week.total === 1 ? 'dia' : 'dias'} com atividade
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
-          </div>
 
           {!hasActivity && (
             <div class="empty-inline heatmap-empty p-3 rounded-default bg-surface-ground text-center text-xs text-content-secondary">
@@ -312,19 +382,27 @@ export function ActivityHeatmap({
           {/* Card de Insights Circadianos */}
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-border-subtle text-xs">
             <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-              <span class="text-content-secondary text-xs font-medium block mb-0.5">Horário de Maior Foco</span>
+              <span class="text-content-secondary text-xs font-medium block mb-0.5">
+                Horário de Maior Foco
+              </span>
               <strong class="text-base font-semibold font-data text-amber">
-                {hoursVisual.peakHour !== null ? `${String(hoursVisual.peakHour).padStart(2, '0')}:00` : '—'}
+                {hoursVisual.peakHour !== null
+                  ? `${String(hoursVisual.peakHour).padStart(2, '0')}:00`
+                  : '—'}
               </strong>
             </div>
             <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-              <span class="text-content-secondary text-xs font-medium block mb-0.5">Dia Mais Produtivo</span>
+              <span class="text-content-secondary text-xs font-medium block mb-0.5">
+                Dia Mais Produtivo
+              </span>
               <strong class="text-base font-semibold text-content-primary">
                 {hoursVisual.peakWeekday || '—'}
               </strong>
             </div>
             <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-              <span class="text-content-secondary text-xs font-medium block mb-0.5">Tempo Total Mapeado</span>
+              <span class="text-content-secondary text-xs font-medium block mb-0.5">
+                Tempo Total Mapeado
+              </span>
               <strong class="text-base font-semibold font-data text-content-primary">
                 {formatDecimal(hoursVisual.totalStudyMinutes / 60, 1)}h
               </strong>
@@ -335,7 +413,10 @@ export function ActivityHeatmap({
 
       {/* Detalhamento do Dia Selecionado */}
       {selectedDate && selectedTooltip && (
-        <div class="heatmap-detail p-3 rounded-default bg-surface-ground border border-border-subtle flex flex-wrap items-center justify-between gap-2 text-xs" role="status">
+        <div
+          class="heatmap-detail p-3 rounded-default bg-surface-ground border border-border-subtle flex flex-wrap items-center justify-between gap-2 text-xs"
+          role="status"
+        >
           <span class="text-content-primary font-medium">{selectedTooltip}</span>
           <button
             class="btn ghost small"

@@ -555,7 +555,7 @@ export function buildWeeklyPerformanceBrief({
   } else if (weakestSubject && overdueReviews > 0) {
     p3 = `Para os próximos dias, vale focar em duas frentes simples: abra a seção Disciplinas ou a aba Questões & Simulados para revisar os assuntos de ${weakestSubject.name} em que houve mais erros, e passe na aba Agenda para colocar em dia ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
     addLink({
-      label: `Analisar ${weakestSubject.name}`,
+      label: `Analisar ${weakestSubject.name} (menor acerto da semana)`,
       icon: 'chart-dots',
       kind: 'section',
       target: 'subjects',
@@ -576,7 +576,7 @@ export function buildWeeklyPerformanceBrief({
   } else if (weakestSubject) {
     p3 = `Para transformar essa leitura em resultado prático, vale abrir a seção Disciplinas para ver quais assuntos de ${weakestSubject.name} puxaram seus acertos para baixo, ou ir direto à aba Questões & Simulados para treinar uma nova bateria dessa matéria.`;
     addLink({
-      label: `Analisar ${weakestSubject.name}`,
+      label: `Analisar ${weakestSubject.name} (menor acerto da semana)`,
       icon: 'chart-dots',
       kind: 'section',
       target: 'subjects',

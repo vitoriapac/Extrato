@@ -244,6 +244,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               : null,
           blueprint: state.examBlueprint,
           globalTarget: state.metas?.metaAprovacao,
+          recommendationFeedback: state.recommendationFeedback || [],
+          allSessions: state.studySessions || [],
           nextBestAction:
             performanceViewState.section === 'overview' && deps.nextBestAction
               ? deps.nextBestAction()

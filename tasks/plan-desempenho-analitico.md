@@ -242,3 +242,31 @@ T6, T7, T10, T11 (independentes, em paralelo) ─┤
   - T9: a "Comparação entre disciplinas" foi estendida (em vez de uma tabela nova): colunas Planejado, Realizado, Saldo do plano e Sugestão, com ordenação por saldo. Planejado e realizado vêm do mesmo modelo de aderência de Consistência; a sugestão é o tópico de maior prioridade já calculado. O critério "soma do saldo = déficit da faixa" não vale: a faixa mede 7 dias e a tabela mede o período filtrado.
   - T12: sem trabalho. Questões e Simulados não têm listas ordenáveis (são gráficos e KPIs), e a busca de tópicos já existe em Inteligência da prova e vale para os quadrantes. CSV segue adiado.
   - T13: âncoras `#desempenho/<seção>/<bloco>` com ids `bloco-leitura`, `bloco-resumo`, `bloco-comparacao`, `bloco-estabilidade` e `bloco-sintese`. A âncora vale só na seção a que pertence e rola até o bloco. Não há botão visível de copiar link.
+- Fase 3 commitada (`747862b`).
+- Fase 4 implementada, ainda sem commit:
+  - T14: reformulada. O app não grava uma "decisão semanal" (a síntese do fechamento é transitória), então o bloco usa o que existe: as recomendações concluídas com resultado medido (`buildRecommendationFollowup`, o mesmo modelo da aba de Aprovação). O bloco "O que mudou depois das recomendações" mostra até 3, só observação, e some quando não há resultado medido.
+  - T15: o botão "Ajustar plano" (na leitura e na síntese de Consistência) abre Metas com a dobra de ajuste (`#metasAdjust`) aberta e em foco. Nada é preenchido: a prévia já usa a capacidade declarada e o déficit aparece na leitura. Nada é aplicado sem confirmação em Metas; o E2E confere que os dados não mudam.
+- Próximo: Fase 5 (T16, nova crítica; meta 32 de 40, sem P0 nem P1).
+
+## 10. Pendências fora da Fase 5 (levantadas em 10/11/2026)
+
+**Do plano, não feito**
+- T2: aderência continua visível, sem dobra. Recolher exige preservar o estado aberto das dobras ao re-renderizar.
+- T7: legendas de contagem (304/305; 12/17 e 9/17); ação no "Gráfico ainda não disponível"; título "Incidência × Domínio" repetido; 33%/38% e 68%/69% do turno só têm a janela escrita em Consistência.
+- T10: tamanho das células do calendário (14px desktop, 24px celular), checkbox "Comparar" (20×20 no desktop) e zero cortado da fonte mono.
+- T11: ligar o glossário à Ajuda e confirmar as definições de Domínio e Retenção; "Desempenho" ainda é palavra polissêmica em outros títulos.
+- T12: CSV (adiado por decisão).
+- T13: botão visível de copiar link.
+- T5: a leitura não cabe inteira na primeira dobra; o Diagnóstico segue com 5 cartões iguais e "+292".
+- Leitura: não mostra distância até a meta de nota nem o plano de recuperação.
+- T15: sem preenchimento da prévia (a capacidade já é a declarada).
+- Observações sem tarefa: critério de "Piorou" (−1 h 21) contra "Estável" (−0,2 p.p.); link "Analisar Língua Portuguesa" sem o motivo.
+
+**Não verificado**
+- Aparência em celular e no tema escuro da leitura, do bloco de recomendações e da tabela de 9 colunas (só E2E e goldens).
+
+**Housekeeping**
+- Fase 4 sem commit; `DESIGN.md` e `.impeccable/design.json` com mudanças que não são minhas e não foram commitadas; `DESIGN.md` não descreve a faixa, a tabela com saldo nem as âncoras.
+- Fase 4 e as pendências implementadas (commit desta rodada): copiar link nos 5 blocos; calendário com células de 24px em Desempenho e resumo semanal em texto; checkbox "Comparar" com 24px; Diagnóstico com 3 cartões e dobra; ação no vazio de Incidência × Domínio; limiares da comparação de períodos explícitos; "Analisar <disciplina>" com o motivo; meta e plano de recuperação na leitura; glossário com link para a Ajuda.
+- Decididos: aderência continua visível (sem dobra); CSV adiado.
+- Ainda abertos: legenda 304/305 (origem não localizada), título "Incidência × Domínio" repetido, zero cortado da fonte mono, `DESIGN.md` sem as novidades.

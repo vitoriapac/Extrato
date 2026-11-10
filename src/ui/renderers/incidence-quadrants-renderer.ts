@@ -66,7 +66,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
     evidence:
       'Só confiança moderada ou alta permite posicionar. Baixa confiança e ausência de domínio ficam separados.',
     emptyMessage: positioned
-      ? `${positioned} de ${classified.length} tópicos têm confiança moderada ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". A lista abaixo mostra cada grupo.`
+      ? `${positioned} de ${classified.length} tópicos têm confiança moderada ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". Registrar questões e revisões desses tópicos aumenta a confiança e permite posicioná-los. A lista abaixo mostra cada grupo.`
       : `Os ${classified.length} tópicos ainda não têm confiança moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
     records: `<div class="incidence-quadrants">${records}</div>${emptyNote}`,
   });

@@ -1,4 +1,11 @@
 import { formatDecimal } from '../../core/format-number.js';
+/** Diferença mínima para um indicador deixar de ser "Estável". */
+export const COMPARISON_THRESHOLDS = Object.freeze({
+  accuracy: 1,
+  minutes: 30,
+  questions: 10,
+  load: 2,
+});
 const rounded = (value: number) => Math.round(value * 10) / 10;
 const classify = (value: number, threshold: number) =>
   value > threshold ? 'improved' : value < -threshold ? 'worsened' : 'stable';
@@ -34,7 +41,7 @@ export function buildPerformanceComparison(
       previous.accuracy,
       current.accuracy,
       'p.p.',
-      1,
+      COMPARISON_THRESHOLDS.accuracy,
       previous.resolved >= 30 && current.resolved >= 30
     ),
     metric(
@@ -42,7 +49,7 @@ export function buildPerformanceComparison(
       previous.studiedMinutes,
       current.studiedMinutes,
       'min',
-      30,
+      COMPARISON_THRESHOLDS.minutes,
       (previous.sessionCount || 0) + (current.sessionCount || 0) > 0
     ),
     metric(
@@ -50,7 +57,7 @@ export function buildPerformanceComparison(
       previous.resolved,
       current.resolved,
       'questões',
-      10,
+      COMPARISON_THRESHOLDS.questions,
       (previous.resolved || 0) + (current.resolved || 0) > 0
     ),
     metric(
@@ -58,7 +65,7 @@ export function buildPerformanceComparison(
       previous.adherence,
       current.adherence,
       'p.p.',
-      2,
+      COMPARISON_THRESHOLDS.load,
       previous.plannedMinutes >= 60 && current.plannedMinutes >= 60
     ),
   ];

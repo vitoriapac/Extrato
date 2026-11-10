@@ -26,7 +26,7 @@ export function renderConsolidatedDiagnosis(
       <div class="diagnostic-row-action"><span>PRÓXIMO PASSO</span><div class="diagnostic-row-buttons">${action ? `<button class="btn ghost small" type="button" data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${escapeAttr(action.source)}')">${escapeHtml(action.label)}</button>` : ''}<button class="btn ghost small" type="button" data-analysis-nav="desempenho" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Ver evolução</button><button class="btn ghost small" type="button" data-analysis-nav="metas" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Planejar ação</button></div></div>
     </article>`;
   };
-  const first = rows.slice(0, 5),
-    remaining = rows.slice(5);
+  const first = rows.slice(0, 3),
+    remaining = rows.slice(3);
   return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta.</p><div class="diagnosis-consolidated-list">${first.map(renderRow).join('')}</div>${remaining.length ? `<details class="performance-more diagnosis-insufficient"><summary>Mostrar mais diagnósticos · +${remaining.length}</summary><template data-lazy><div class="diagnosis-consolidated-list">${remaining.map((item, index) => renderRow(item, index + 5)).join('')}</div></template></details>` : ''}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }

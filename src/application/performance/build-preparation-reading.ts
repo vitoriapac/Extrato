@@ -6,7 +6,7 @@ import { formatDateBR } from '../../core/format-date.js';
 type Row = Record<string, any>;
 
 export interface PreparationLink {
-  kind: 'section' | 'tab';
+  kind: 'section' | 'tab' | 'plan-adjust' | 'reveal';
   target: string;
   subjectId?: string | null;
   label: string;
@@ -31,6 +31,8 @@ export interface PreparationReading {
     } | null;
     reason: string | null;
     deficit: string | null;
+    /** Há plano de recuperação na trajetória (situação de atenção ou risco). */
+    recovery: boolean;
   };
   /** O que falta registrar para a leitura ficar mais firme; nunca omitido. */
   evidence: string[];
@@ -81,7 +83,7 @@ export function buildPreparationReading({
     confidence === 'moderate' ? 'moderada' : confidence === 'low' ? 'baixa' : null;
   const projectionText =
     low != null && high != null
-      ? `Faixa projetada de ${round(low)}% a ${round(high)}%${confidenceLabel ? `, confiança ${confidenceLabel}` : ''}. Não é chance de aprovação.`
+      ? `Faixa projetada de ${round(low)}% a ${round(high)}%${confidenceLabel ? `, confiança ${confidenceLabel}` : ''}. ${finite(projection?.current?.targetScore) != null ? `Meta de ${round(projection!.current.targetScore)}%.` : ''} Não é chance de aprovação.`
       : null;
   if (!projectionText) evidence.push('Sem simulados comparáveis para projetar a faixa de nota.');
   const week = weeklyBrief?.current;
@@ -167,6 +169,7 @@ export function buildPreparationReading({
       action,
       reason: action ? null : best?.reason || null,
       deficit,
+      recovery: ['attention', 'at_risk'].includes(projection?.status),
     },
     evidence: [...new Set(evidence)],
   };

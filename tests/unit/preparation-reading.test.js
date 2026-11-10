@@ -66,3 +66,25 @@ test('leitura da preparação: o render tem um botão sólido, três blocos e ne
   assert.equal((html.match(/class="btn small"/g) || []).length, 1);
   assert.doesNotMatch(html, /porque|garante|graças/i);
 });
+
+test('o que mudou depois das recomendações: só mostra resultados medidos e não afirma causa', async () => {
+  const { renderRecommendationFollowupSummary } =
+    await import('../../src/ui/performance/preparation-reading-renderer.js');
+  assert.equal(renderRecommendationFollowupSummary([]), '');
+  assert.equal(
+    renderRecommendationFollowupSummary([{ state: 'insufficient', topicName: 'X', action: 'Y' }]),
+    ''
+  );
+  const html = renderRecommendationFollowupSummary([
+    {
+      state: 'positive',
+      topicName: 'Juros compostos',
+      action: 'Revisar',
+      metrics: [{ label: 'Domínio', before: 41, after: 52 }],
+    },
+  ]);
+  assert.match(html, /Juros compostos/);
+  assert.match(html, /Domínio de 41 para 52/);
+  assert.match(html, /não indica que a recomendação causou/);
+  assert.doesNotMatch(html, /porque|graças a|garante/i);
+});
