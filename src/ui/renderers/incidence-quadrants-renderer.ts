@@ -34,6 +34,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
             ? 'monitor'
             : 'evaluate',
   }));
+  const positioned = classified.filter(row => row.quadrant !== 'insufficient').length;
   const item = (row: any) =>
     `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : Math.round(row.mastery)} · confiança ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`;
   const list = (items: any[]) => `<ul>${items.map(item).join('')}</ul>`;
@@ -57,7 +58,9 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
       'Presença em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',
     evidence:
       'Só confiança moderada ou alta permite posicionar. Baixa confiança e ausência de domínio ficam separados.',
-    emptyMessage: `Os ${classified.length} tópicos ainda não têm confiança moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
+    emptyMessage: positioned
+      ? `${positioned} de ${classified.length} tópicos têm confiança moderada ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". A lista abaixo mostra cada grupo.`
+      : `Os ${classified.length} tópicos ainda não têm confiança moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
     records: `<div class="incidence-quadrants">${records}</div>`,
   });
 }

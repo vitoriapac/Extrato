@@ -35,7 +35,8 @@ export function AllocationBalanceGrid({
               <Badge variant="default">Janela fixa · 30 dias</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              Últimos 30 dias ({totalHours.toLocaleString('pt-BR')}h) comparados com a relevância na prova (independente do filtro de período acima)
+              Últimos 30 dias ({totalHours.toLocaleString('pt-BR')}h) comparados com a relevância na
+              prova (independente do filtro de período acima)
             </p>
           </div>
         </div>
@@ -54,14 +55,16 @@ export function AllocationBalanceGrid({
 
       {rows.length === 0 ? (
         <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md">
-          <p class="m-0">Cadastre disciplinas e registre suas horas de estudo para ver o balanço.</p>
+          <p class="m-0">
+            Cadastre disciplinas e registre suas horas de estudo para ver o balanço.
+          </p>
         </div>
       ) : noEvidence ? (
         <div class="p-4 text-sm text-content-secondary bg-surface-subtle rounded-md">
           <p class="m-0">
             {hasBlueprint
               ? 'Sem horas de estudo registradas nos últimos 30 dias.'
-              : 'Sem pesos do edital configurados: não há base para comparar o seu tempo com a prova.'}
+              : 'Sem peso por disciplina configurado no edital: não há base para comparar o seu tempo com a prova. O impacto por tópico aparece em Inteligência da prova.'}
           </p>
         </div>
       ) : (
@@ -82,7 +85,10 @@ export function AllocationBalanceGrid({
                 // Cálculo da largura visual da barra (proporção tempo vs peso)
                 const maxVal = Math.max(row.timePercent, row.examWeightPercent, 10);
                 const timeWidth = Math.min(100, Math.round((row.timePercent / maxVal) * 100));
-                const weightMarker = Math.min(100, Math.round((row.examWeightPercent / maxVal) * 100));
+                const weightMarker = Math.min(
+                  100,
+                  Math.round((row.examWeightPercent / maxVal) * 100)
+                );
 
                 return (
                   <tr key={row.subjectId} class="hover:bg-surface-hover transition-colors">
@@ -102,14 +108,17 @@ export function AllocationBalanceGrid({
                       {row.examWeightPercent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}%
                     </td>
                     <td class="py-2.5 px-3 hidden sm:table-cell">
-                      <div class="relative w-full h-3 bg-surface-subtle rounded overflow-hidden" title={`Tempo: ${row.timePercent}% | Peso: ${row.examWeightPercent}%`}>
+                      <div
+                        class="relative w-full h-3 bg-surface-subtle rounded overflow-hidden"
+                        title={`Tempo: ${row.timePercent}% | Peso: ${row.examWeightPercent}%`}
+                      >
                         <div
                           class={`h-full rounded ${
                             row.status === 'suballocated'
                               ? 'bg-amber'
                               : row.status === 'overallocated'
-                              ? 'bg-brand-secondary'
-                              : 'bg-green'
+                                ? 'bg-brand-secondary'
+                                : 'bg-green'
                           }`}
                           style={{ width: `${timeWidth}%` }}
                         />
@@ -121,9 +130,7 @@ export function AllocationBalanceGrid({
                       </div>
                     </td>
                     <td class="py-2.5 px-3 text-center hidden sm:table-cell">
-                      <Badge variant={row.statusVariant}>
-                        {row.statusLabel}
-                      </Badge>
+                      <Badge variant={row.statusVariant}>{row.statusLabel}</Badge>
                     </td>
                   </tr>
                 );

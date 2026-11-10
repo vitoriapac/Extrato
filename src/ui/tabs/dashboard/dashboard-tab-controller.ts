@@ -9,26 +9,14 @@ import { QuickStatsGrid, type QuickStatsData } from './QuickStatsGrid.js';
 import { SubjectProgressList, type SubjectProgressItem } from './SubjectProgressList.js';
 import { UpcomingReviewsList, type UpcomingReviewItem } from './UpcomingReviewsList.js';
 import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
-import {
-  AllocationBalanceGrid,
-  type AllocationBalanceGridProps,
-} from './AllocationBalanceGrid.js';
+import { AllocationBalanceGrid, type AllocationBalanceGridProps } from './AllocationBalanceGrid.js';
 import {
   CriticalVulnerabilitiesGrid,
   type CriticalVulnerabilitiesGridProps,
 } from './CriticalVulnerabilitiesGrid.js';
-import {
-  VolatileMasteryGrid,
-  type VolatileMasteryGridProps,
-} from './VolatileMasteryGrid.js';
-import {
-  SyllabusHealthCard,
-  type SyllabusHealthCardProps,
-} from './SyllabusHealthCard.js';
-import {
-  PerformanceTrendCard,
-  type PerformanceTrendCardProps,
-} from './PerformanceTrendCard.js';
+import { VolatileMasteryGrid, type VolatileMasteryGridProps } from './VolatileMasteryGrid.js';
+import { SyllabusHealthCard, type SyllabusHealthCardProps } from './SyllabusHealthCard.js';
+import { PerformanceTrendCard, type PerformanceTrendCardProps } from './PerformanceTrendCard.js';
 import {
   CockpitSidebarCards,
   type CockpitSidebarCardsProps,
@@ -59,7 +47,10 @@ import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-render
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
 import { buildOverviewStanding } from '../../../application/analytics/build-overview-standing.js';
 import { renderMiniComparisonChart } from '../../performance/weekly-performance-brief-renderer.js';
-import { renderOverviewEvidence, renderOverviewStanding } from '../../renderers/overview-standing-renderer.js';
+import {
+  renderOverviewEvidence,
+  renderOverviewStanding,
+} from '../../renderers/overview-standing-renderer.js';
 
 export interface DashboardTabControllerDeps {
   document?: any;
@@ -77,6 +68,7 @@ export interface DashboardTabControllerDeps {
   recentPerformance?: () => { current?: { accuracy: number | null } | null } | any;
   projectPerformance?: () => { central?: number | null } | any;
   examMatrixRows?: () => any[];
+  intelligenceCandidates?: () => any[];
   revisoesAtrasadas?: () => number;
   getRevisoesUnificadas?: () => any[];
   metaHoursToday?: () => number;
@@ -216,9 +208,9 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
     const hasConfigured = Boolean(
       state.examDate ||
-        (Array.isArray(state.subjects) && state.subjects.length > 0) ||
-        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
-        (Array.isArray(state.studySessions) && state.studySessions.length > 0)
+      (Array.isArray(state.subjects) && state.subjects.length > 0) ||
+      (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+      (Array.isArray(state.studySessions) && state.studySessions.length > 0)
     );
 
     // Gestão de visibilidade de seções secundárias no estado zero para evitar sobrecarga de alertas vazios
@@ -271,7 +263,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       }
     }
 
-        // Meta diária e questões ficam dentro de "Próxima ação"; Carga de Revisões na coluna de Atenção
+    // Meta diária e questões ficam dentro de "Próxima ação"; Carga de Revisões na coluna de Atenção
     const sidebarModel = buildCockpitSidebarViewModel(state, today, {
       goalMinutes: (deps.metaHoursToday?.() ?? 0) * 60,
       planMinutes: deps.getTodayPlannedMinutes?.() ?? 0,
@@ -281,7 +273,10 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
     const todayGoalMount = doc.getElementById('cockpitTodayGoalMount');
     if (todayGoalMount) {
-      mountPreact(h(TodayGoalCard, { data: sidebarModel.todayGoal, variant: 'inline' }), todayGoalMount);
+      mountPreact(
+        h(TodayGoalCard, { data: sidebarModel.todayGoal, variant: 'inline' }),
+        todayGoalMount
+      );
     }
 
     const reviewLoadMount = doc.getElementById('cockpitReviewLoadMount');
@@ -404,7 +399,19 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       const vulModel = buildCriticalVulnerabilitiesViewModel({
         subjects: state.subjects || [],
         blueprint: state.examBlueprint || {},
-        metricsByTopic: state.metricsByTopic || {},
+        // O estado não guarda métricas por tópico; vêm dos mesmos candidatos que alimentam a matriz da prova.
+        metricsByTopic: Object.fromEntries(
+          (deps.intelligenceCandidates ? deps.intelligenceCandidates() : []).map((item: any) => [
+            item.topicId,
+            // A matriz de domínio lê { value }; os candidatos trazem o número direto.
+            {
+              mastery: item.mastery == null ? null : { value: item.mastery },
+              retention: item.retention == null ? null : { value: item.retention },
+              trend: item.trend,
+              priority: item.score == null ? null : { value: item.score },
+            },
+          ])
+        ),
         activeExamTags: state.examBlueprint?.activeExamTags || [],
         limit: 4,
       });
@@ -435,7 +442,10 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
   function goToPerformance(sectionId: string): void {
     navigateKpi('desempenho');
     setTimeout(
-      () => doc?.getElementById(sectionId)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' }),
+      () =>
+        doc
+          ?.getElementById(sectionId)
+          ?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' }),
       150
     );
   }
@@ -619,7 +629,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const sessions = state.studySessions || state.sessions || [];
 
     // O innerHTML recria os botões: guarda o dia focado para devolver o foco ao teclado.
-    const focusedDate = (doc.activeElement as HTMLElement | null)?.closest?.('[data-heatmap-date]')
+    const focusedDate = (doc.activeElement as HTMLElement | null)
+      ?.closest?.('[data-heatmap-date]')
       ?.getAttribute('data-heatmap-date');
     bindHeatmapKeys(container);
 
@@ -644,7 +655,9 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     });
 
     if (focusedDate) {
-      (container.querySelector(`[data-heatmap-date="${focusedDate}"]`) as HTMLElement | null)?.focus({
+      (
+        container.querySelector(`[data-heatmap-date="${focusedDate}"]`) as HTMLElement | null
+      )?.focus({
         preventScroll: true,
       });
     }
@@ -657,13 +670,20 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     heatmapKeysBound = container;
     container.addEventListener('keydown', (event: Event) => {
       const e = event as KeyboardEvent;
-      const current = (e.target as HTMLElement | null)?.closest('[data-heatmap-date]') as HTMLElement | null;
+      const current = (e.target as HTMLElement | null)?.closest(
+        '[data-heatmap-date]'
+      ) as HTMLElement | null;
       if (!current) return;
       const cells = Array.from(
         container.querySelectorAll<HTMLElement>('[data-heatmap-grid] [data-heatmap-date]')
       );
       const index = cells.indexOf(current);
-      const step: Record<string, number> = { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -7, ArrowRight: 7 };
+      const step: Record<string, number> = {
+        ArrowUp: -1,
+        ArrowDown: 1,
+        ArrowLeft: -7,
+        ArrowRight: 7,
+      };
       let next = index;
       if (e.key in step) next = index + step[e.key];
       else if (e.key === 'Home') next = 0;
@@ -681,7 +701,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
   function setHeatmapFilter(field: string, value: any): void {
     if (field === 'metric' && HEATMAP_METRICS.includes(value)) streakView.metric = value;
     if (field === 'subjectId') streakView.subjectId = value;
-    if (field === 'weeks' && HEATMAP_WEEK_OPTIONS.includes(Number(value))) streakView.weeks = Number(value);
+    if (field === 'weeks' && HEATMAP_WEEK_OPTIONS.includes(Number(value)))
+      streakView.weeks = Number(value);
     streakView.selectedDate = null;
     renderHeatmap();
   }
