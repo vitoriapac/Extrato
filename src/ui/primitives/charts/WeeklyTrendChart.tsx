@@ -165,7 +165,7 @@ export function WeeklyTrendChart({
                   fill="var(--surface-card)"
                   stroke="var(--chart-series-secondary)"
                   stroke-width="2"
-                  class="cursor-pointer hover:r-5 transition-all chart-point-interactive"
+                  class="cursor-pointer chart-point-interactive"
                 >
                   <title>{`${it.label}: ${it.accuracy}% de acerto (${it.resolved} questões)`}</title>
                 </circle>

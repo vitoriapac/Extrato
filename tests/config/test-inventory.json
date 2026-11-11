@@ -1830,7 +1830,7 @@
         "./helpers.js",
         "@axe-core/playwright"
       ],
-      "staticTestDeclarations": 25,
+      "staticTestDeclarations": 26,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 17,
       "observedCaseSeconds": 125.4,
@@ -6311,7 +6311,7 @@
         "node:assert/strict",
         "../../src/ui/events/keyboard-shortcuts.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6591,7 +6591,7 @@
         "node:assert/strict",
         "../../src/ui/controllers/navigation-controller.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6685,7 +6685,7 @@
         "node:assert/strict",
         "../../src/features/onboarding/onboarding-modal-controller.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -9612,10 +9612,13 @@
       "imports": [
         "node:test",
         "node:assert/strict",
+        "preact",
+        "preact-render-to-string",
         "../../src/ui/controllers/search-controller.js",
+        "../../src/ui/components/GlobalCommandPalette.js",
         "../../src/ui/renderers/global-search-renderer.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -11164,7 +11167,7 @@
         "node:assert/strict",
         "../../src/ui/controllers/timer-ui-controller.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

@@ -137,3 +137,63 @@ test('createTimerUiController — salva e limpa bookmarks de sessão no tópico'
   const label = controller.topicResumeLabel('t1');
   assert.match(label, /Manual de Constitucional/);
 });
+
+test('createTimerUiController — aplica e restaura inert nos irmãos fora de #study-timer no modo foco', () => {
+  const mkNode = (initialInert = false) => ({
+    inert: initialInert,
+    attrs: new Map(),
+    setAttribute(k, v) {
+      this.attrs.set(k, String(v));
+    },
+    removeAttribute(k) {
+      this.attrs.delete(k);
+    },
+  });
+  const sibling = mkNode(false);
+  const alreadyInert = mkNode(true);
+  const bodyClasses = new Set();
+  const mockDoc = {
+    body: {
+      classList: {
+        contains: cls => bodyClasses.has(cls),
+        toggle: (cls, force) => {
+          const next = force == null ? !bodyClasses.has(cls) : Boolean(force);
+          if (next) bodyClasses.add(cls);
+          else bodyClasses.delete(cls);
+        },
+      },
+    },
+    getElementById: () => ({
+      setAttribute() {},
+      focus() {},
+      innerHTML: '',
+    }),
+    querySelector: () => null,
+    querySelectorAll: sel => {
+      if (sel === '[data-focus-inert="1"]') {
+        return [sibling, alreadyInert].filter(n => n.attrs.has('data-focus-inert'));
+      }
+      return [sibling, alreadyInert];
+    },
+  };
+
+  const controller = createTimerUiController({
+    document: mockDoc,
+    activeTabName: () => 'hoje',
+    activateTab: () => {},
+    renderTimerFocusContext: () => {},
+    isTimerRunning: () => false,
+    getTopicById: () => null,
+  });
+
+  controller.toggleTimerFocus(true);
+  assert.equal(sibling.inert, true);
+  assert.equal(sibling.attrs.get('data-focus-inert'), '1');
+  assert.equal(alreadyInert.inert, true);
+  assert.equal(alreadyInert.attrs.has('data-focus-inert'), false);
+
+  controller.toggleTimerFocus(false);
+  assert.equal(sibling.inert, false);
+  assert.equal(sibling.attrs.has('data-focus-inert'), false);
+  assert.equal(alreadyInert.inert, true);
+});

@@ -706,3 +706,69 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   await expect(page.locator('.cal-legend')).toContainText('mais revisões pendentes');
   await expectNoPageOverflow(page);
 });
+
+test('alvos de toque móveis, modo foco inerte, envio de metas e indicador de salvamento sem colisões', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openDemo(page);
+
+  await activateTab(page, 'hoje');
+  const segmentedBtns = page.locator('.ui-segmented--sm .ui-segmented__item');
+  if (await segmentedBtns.count()) {
+    const segBox = await segmentedBtns.first().boundingBox();
+    expect(segBox.height).toBeGreaterThanOrEqual(43);
+  }
+  const smallUiBtns = page.locator('.ui-btn.btn-small:visible');
+  if (await smallUiBtns.count()) {
+    const smallBox = await smallUiBtns.first().boundingBox();
+    expect(smallBox.height).toBeGreaterThanOrEqual(43);
+  }
+
+  // Modo foco isola irmãos com inert e oculta utilitários globais
+  await page.locator('#timerFocusToggle').click();
+  await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await expect(page.locator('.global-search-row')).toBeHidden();
+  await expect(page.locator('main > footer')).toBeHidden();
+  expect(
+    await page.locator('.today-layout-grid__side').evaluate(el => el.inert)
+  ).toBe(true);
+  expect(
+    await page.locator('main > footer').evaluate(el => el.inert)
+  ).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);
+  expect(
+    await page.locator('.today-layout-grid__side').evaluate(el => el.inert)
+  ).toBe(false);
+  expect(
+    await page.locator('main > footer').evaluate(el => el.inert)
+  ).toBe(false);
+
+  // Scrim do menu Mais no mobile aparece quando aberto e fecha ao tocar fora
+  await page.locator('#moreTabButton').click();
+  await expect(page.locator('.mobile-more-scrim')).toBeVisible();
+  await page.locator('.mobile-more-scrim').click({ position: { x: 20, y: 120 } });
+  await expect(page.locator('.mobile-more-scrim')).toHaveCount(0);
+
+  // Envio sem inline onsubmit adiciona meta por disciplina via Enter no form
+  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'metas');
+  await expect(page.locator('#metaDisciplinaForm')).not.toHaveAttribute('onsubmit', /./);
+  const metaCards = page.locator('#metasPorDisciplinaContainer .meta-card');
+  const initialCount = await metaCards.count();
+  expect(initialCount).toBeGreaterThan(0);
+  const removedSubject = (await metaCards.first().locator('.meta-name').innerText()).trim();
+  await metaCards.first().getByRole('button', { name: 'Remover meta de questões' }).click();
+  await expect(metaCards).toHaveCount(initialCount - 1);
+  await page.locator('#novaMetaDisciplinaSelect').selectOption({ label: removedSubject });
+  await page.locator('#novaMetaDisciplinaValor').fill('45');
+  await page.locator('#novaMetaDisciplinaValor').press('Enter');
+  await expect(metaCards).toHaveCount(initialCount);
+
+  // Indicador de salvamento e botão Sair da demonstração nunca colidem no desktop
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const indicatorBox = await page.locator('#saveIndicator').boundingBox();
+  const exitBox = await page.locator('#exitDemoBtn').boundingBox();
+  expect(indicatorBox.y).toBeGreaterThan(exitBox.y + exitBox.height);
+});

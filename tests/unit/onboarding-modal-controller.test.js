@@ -338,3 +338,57 @@ test('onboardingModalController: Escape fecha o modal de onboarding', () => {
   assert.equal(prevented, true);
   assert.equal(uiState.onboarding.open, false);
 });
+
+test('onboardingModalController: fechamento restaura foco em fallback visível quando previousFocus era body ou modal desmontado', async () => {
+  const { document, makeElement } = createMockDom();
+  const dashboardTab = makeElement('tab-dashboard', 'button');
+  const firstAccessBtn = {
+    tagName: 'BUTTON',
+    isConnected: true,
+    closest: sel => (sel.includes('#firstAccessModalMount') ? {} : null),
+    focus() {},
+  };
+  document.activeElement = firstAccessBtn;
+
+  const state = { examDate: null, metas: { horasPorDia: {} }, subjects: [] };
+  const uiState = { onboarding: { open: false, currentStep: 'goal' } };
+
+  const controller = createOnboardingModalController({
+    document,
+    getState: () => state,
+    getUiState: () => uiState,
+    isDemoMode: () => false,
+    ensureExamCatalog: async () => {
+      document.activeElement = document.body;
+    },
+    showToast: () => {},
+    escapeHtml: s => s,
+    escapeAttr: s => s,
+    formatPlanMinutes: m => `${m}m`,
+    todayISO: () => '2026-10-28',
+    examPresets: [],
+    difficultyOptions: ['Fácil', 'Médio', 'Difícil'],
+    subjectService: { updateTopic: () => {} },
+    getSubjectById: () => null,
+    activeSubjects: () => [],
+    scheduleSave: () => {},
+    persistAndRender: () => {},
+    buildStudyPlanProposal: () => null,
+    calculateStudyPlanPreview: () => {},
+    getStudyPlanPreview: () => null,
+    confirmStudyPlan: () => {},
+    calculateDailyPlanPreview: () => {},
+    getDailyPlanPreview: () => null,
+    confirmDailyPlanPreview: () => {},
+    render: () => {},
+    activateTab: () => {},
+    syncModalShell: () => {},
+    requestFrame: cb => cb(),
+  });
+
+  await controller.openGuidedOnboarding();
+  assert.equal(uiState.onboarding.previousFocus, null);
+
+  controller.closeGuidedOnboarding();
+  assert.equal(dashboardTab.isFocused, true);
+});

@@ -49,7 +49,12 @@ export function GuidedOnboardingModal({
           aria-label="Progresso da configuração"
         />
         <div class="onboarding-modal-body">
-          <main id="guidedOnboardingContent" />
+          <div
+            id="guidedOnboardingContent"
+            class="onboarding-modal-main"
+            role="region"
+            aria-label="Etapa atual da configuração"
+          />
           <aside
             id="guidedOnboardingHelp"
             class="onboarding-help"

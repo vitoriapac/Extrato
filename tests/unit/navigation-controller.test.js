@@ -74,3 +74,130 @@ test('o Calendário virou a visão Mês da Agenda e o nome antigo continua abrin
   assert.equal(TAB_ALIASES.calendario, 'agenda');
   assert.ok(!MAIN_TABS.includes('calendario'));
 });
+
+test('atalhos Ctrl/Cmd+Shift+N funcionam com botão focado e Alt+S cede à Visão Geral ativa', () => {
+  const listeners = new Map();
+  const makeClassList = (initial = []) => {
+    const set = new Set(initial);
+    return {
+      contains: name => set.has(name),
+      toggle: (name, on) => (on ? set.add(name) : set.delete(name)),
+    };
+  };
+  const panels = {
+    dashboard: { classList: makeClassList(['active']) },
+    desempenho: { classList: makeClassList() },
+    hoje: { classList: makeClassList() },
+  };
+  const makeTabButton = tab => ({
+    dataset: { tab },
+    classList: makeClassList(),
+    setAttribute() {},
+    removeAttribute() {},
+    scrollIntoView() {},
+    addEventListener() {},
+    focus() {},
+  });
+  const tabButtons = {
+    dashboard: makeTabButton('dashboard'),
+    desempenho: makeTabButton('desempenho'),
+    hoje: makeTabButton('hoje'),
+  };
+  let dashboardPrimaryPresent = true;
+  let timerStartClicked = false;
+
+  const document = {
+    activeElement: { tagName: 'BUTTON', isContentEditable: false },
+    getElementById: id => {
+      if (id === 'timerStartBtn') {
+        return {
+          click() {
+            timerStartClicked = true;
+          },
+        };
+      }
+      return panels[id.replace('panel-', '')] || null;
+    },
+    querySelector: sel => {
+      if (sel.includes('#panel-dashboard.active')) {
+        return dashboardPrimaryPresent ? { click() {} } : null;
+      }
+      const tabMatch = /^\.tab-btn\[data-tab="([^"]+)"\]$/.exec(sel);
+      if (tabMatch) {
+        return tabButtons[tabMatch[1]] || null;
+      }
+      return null;
+    },
+    querySelectorAll: sel => {
+      if (sel === '.panel') return Object.values(panels);
+      if (sel === '.tab-btn[data-tab]') return Object.values(tabButtons);
+      return [];
+    },
+    addEventListener: (type, fn) => {
+      if (!listeners.has(type)) listeners.set(type, []);
+      listeners.get(type).push(fn);
+    },
+    dispatchEvent() {},
+  };
+  const window = {
+    Event: class {},
+    scrollTo() {},
+    getComputedStyle: () => ({ display: 'inline-flex' }),
+    history: { replaceState() {} },
+    navigator: { platform: 'Win32' },
+  };
+
+  const navigation = createNavigationController({ document, window, render() {} });
+  navigation.registerShortcuts();
+  const keydown = listeners.get('keydown')[0];
+
+  // Alt+S com botão da próxima ação visível na Visão Geral não força troca para Hoje
+  let altSPrevented = false;
+  keydown({
+    key: 's',
+    code: 'KeyS',
+    altKey: true,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    defaultPrevented: false,
+    preventDefault() {
+      altSPrevented = true;
+    },
+  });
+  assert.equal(altSPrevented, false);
+  assert.equal(timerStartClicked, false);
+  assert.equal(panels.hoje.classList.contains('active'), false);
+
+  // Ctrl+Shift+2 ativa Desempenho mesmo quando o foco está em um botão
+  let tabShortcutPrevented = false;
+  keydown({
+    key: '@',
+    code: 'Digit2',
+    ctrlKey: true,
+    shiftKey: true,
+    altKey: false,
+    metaKey: false,
+    defaultPrevented: false,
+    preventDefault() {
+      tabShortcutPrevented = true;
+    },
+  });
+  assert.equal(tabShortcutPrevented, true);
+  assert.equal(panels.desempenho.classList.contains('active'), true);
+
+  // Sem botão primário na Visão Geral, Alt+S navega para Hoje e aciona #timerStartBtn
+  dashboardPrimaryPresent = false;
+  keydown({
+    key: 's',
+    code: 'KeyS',
+    altKey: true,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    defaultPrevented: false,
+    preventDefault() {},
+  });
+  assert.equal(panels.hoje.classList.contains('active'), true);
+  assert.equal(timerStartClicked, true);
+});

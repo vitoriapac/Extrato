@@ -28,24 +28,24 @@ function renderTrajectory(
   const t0 = Date.parse(`${obs[0].date}T12:00:00Z`);
   const span = Date.parse(`${obs[obs.length - 1].date}T12:00:00Z`) - t0;
   const x = (date: string) =>
-    span > 0 ? 26 + ((Date.parse(`${date}T12:00:00Z`) - t0) / span) * 164 : 108;
+    span > 0 ? 30 + ((Date.parse(`${date}T12:00:00Z`) - t0) / span) * 182 : 120;
   const points = obs.map(item => `${x(item.date).toFixed(1)},${y(item.value).toFixed(1)}`);
   const dots = obs
     .map(
       item =>
-        `<circle class="ovs-dot" cx="${x(item.date).toFixed(1)}" cy="${y(item.value).toFixed(1)}" r="2.5"><title>${formatDate(item.date)}: ${Math.round(item.value)}%</title></circle>`
+        `<circle class="ovs-dot" cx="${x(item.date).toFixed(1)}" cy="${y(item.value).toFixed(1)}" r="2.8"><title>${formatDate(item.date)}: ${Math.round(item.value)}%</title></circle>`
     )
     .join('');
   const label = `Simulados de ${formatDate(obs[0].date)} a ${formatDate(obs[obs.length - 1].date)}, estimativa de ${model.low} a ${model.high} contra a meta de ${model.target}`;
-  const svg = `<svg viewBox="0 0 240 120" role="img" aria-label="${label}" class="ovs-chart">
-    <line class="ovs-target" x1="24" x2="234" y1="${y(model.target)}" y2="${y(model.target)}"/>
-    <text class="ovs-axis ovs-axis--target" x="26" y="${y(model.target) - 3}">meta ${model.target}</text>
-    <text class="ovs-axis" x="20" y="${y(hi) + 3}" text-anchor="end">${hi}</text><text class="ovs-axis" x="20" y="${y(lo) + 3}" text-anchor="end">${lo}</text>
-    <rect class="ovs-band" x="206" width="28" y="${y(model.high)}" height="${Math.max(2, y(model.low) - y(model.high))}"/>
-    <line class="ovs-central" x1="206" x2="234" y1="${y(model.central)}" y2="${y(model.central)}"/>
+  const svg = `<svg viewBox="0 0 260 124" role="img" aria-label="${label}" class="ovs-chart">
+    <line class="ovs-target" x1="28" x2="254" y1="${y(model.target)}" y2="${y(model.target)}"/>
+    <text class="ovs-axis ovs-axis--target" x="30" y="${Math.max(12, y(model.target) - 4)}">meta ${model.target}</text>
+    <text class="ovs-axis" x="24" y="${y(hi) + 4}" text-anchor="end">${hi}</text><text class="ovs-axis" x="24" y="${y(lo) + 4}" text-anchor="end">${lo}</text>
+    <rect class="ovs-band" x="224" width="30" y="${y(model.high)}" height="${Math.max(2, y(model.low) - y(model.high))}"/>
+    <line class="ovs-central" x1="224" x2="254" y1="${y(model.central)}" y2="${y(model.central)}"/>
     <polyline class="ovs-line" points="${points.join(' ')}"/>${dots}
-    <text class="ovs-axis" x="24" y="118">${formatDate(obs[0].date)}</text>
-    <text class="ovs-axis" x="234" y="118" text-anchor="end">${formatDate(obs[obs.length - 1].date)}</text>
+    <text class="ovs-axis" x="28" y="120">${formatDate(obs[0].date)}</text>
+    <text class="ovs-axis" x="254" y="120" text-anchor="end">${formatDate(obs[obs.length - 1].date)}</text>
   </svg>`;
   const confidence = model.confidenceLabel ? ` Confiança ${model.confidenceLabel.toLowerCase()}.` : '';
   return `<article class="chart-card overview-standing__card" aria-labelledby="ovsTrajectoryTitle"><h3 class="module-heading__title" id="ovsTrajectoryTitle">Trajetória nos simulados</h3>${svg}<p class="overview-standing__note">Estimativa de ${model.low} a ${model.high}: ${STATUS_TEXT[model.status] || ''} de ${model.target}.${confidence}</p></article>`;
@@ -58,30 +58,30 @@ function renderMatrix(model: OverviewStanding['matrix'], { escapeHtml = defaultE
         ? `Nenhum dos ${model.total} tópicos tem evidência suficiente para ser posicionado. Registre questões para ver onde a prova cobra mais do que você domina.`
         : 'Sem tópicos no concurso ativo. Configure o concurso para cruzar a prova com o seu domínio.'
     }</p></article>`;
-  const px = (mastery: number) => 24 + Math.max(0, Math.min(100, mastery)) * 2.08;
+  const px = (mastery: number) => 26 + Math.max(0, Math.min(100, mastery)) * 2.24;
   const py = (presence: number) => 104 - Math.max(0, Math.min(100, presence)) * 0.98;
   const plain = model.dots
     .filter(dot => !dot.rank)
     .map(
       dot =>
-        `<circle class="ovs-point" cx="${px(dot.mastery).toFixed(1)}" cy="${py(dot.presencePercent).toFixed(1)}" r="2.6"/>`
+        `<circle class="ovs-point" cx="${px(dot.mastery).toFixed(1)}" cy="${py(dot.presencePercent).toFixed(1)}" r="2.8"/>`
     )
     .join('');
   const ranked = model.dots
     .filter(dot => dot.rank)
     .map(
       dot =>
-        `<g><circle class="ovs-rank" cx="${px(dot.mastery).toFixed(1)}" cy="${py(dot.presencePercent).toFixed(1)}" r="7"/><text class="ovs-rank-label" x="${px(dot.mastery).toFixed(1)}" y="${(py(dot.presencePercent) + 3.5).toFixed(1)}" text-anchor="middle">${dot.rank}</text></g>`
+        `<g><circle class="ovs-rank" cx="${px(dot.mastery).toFixed(1)}" cy="${py(dot.presencePercent).toFixed(1)}" r="9"/><text class="ovs-rank-label" x="${px(dot.mastery).toFixed(1)}" y="${(py(dot.presencePercent) + 4).toFixed(1)}" text-anchor="middle">${dot.rank}</text></g>`
     )
     .join('');
-  const svg = `<svg viewBox="0 0 240 120" role="img" aria-label="Incidência na prova contra o seu domínio: ${model.positioned} tópicos posicionados, ${model.priority.length} de alta incidência e baixo domínio" class="ovs-chart">
-    <rect class="ovs-zone" x="24" y="6" width="${(px(70) - 24).toFixed(1)}" height="${(py(50) - 6).toFixed(1)}"/>
-    <rect class="ovs-frame" x="24" y="6" width="208" height="98"/>
+  const svg = `<svg viewBox="0 0 260 124" role="img" aria-label="Incidência na prova contra o seu domínio: ${model.positioned} tópicos posicionados, ${model.priority.length} de alta incidência e baixo domínio" class="ovs-chart">
+    <rect class="ovs-zone" x="26" y="6" width="${(px(70) - 26).toFixed(1)}" height="${(py(50) - 6).toFixed(1)}"/>
+    <rect class="ovs-frame" x="26" y="6" width="224" height="98"/>
     <line class="ovs-cut" x1="${px(70).toFixed(1)}" x2="${px(70).toFixed(1)}" y1="6" y2="104"/>
-    <line class="ovs-cut" x1="24" x2="232" y1="${py(50).toFixed(1)}" y2="${py(50).toFixed(1)}"/>
+    <line class="ovs-cut" x1="26" x2="250" y1="${py(50).toFixed(1)}" y2="${py(50).toFixed(1)}"/>
     ${plain}${ranked}
-    <text class="ovs-axis" x="232" y="117" text-anchor="end">seu domínio →</text>
-    <text class="ovs-axis" x="24" y="117">na prova ↑</text>
+    <text class="ovs-axis" x="12" y="55" text-anchor="middle" transform="rotate(-90 12 55)">na prova ↑</text>
+    <text class="ovs-axis" x="250" y="120" text-anchor="end">seu domínio →</text>
   </svg>`;
   const list = model.priority.length
     ? `<ol class="overview-standing__list">${model.priority

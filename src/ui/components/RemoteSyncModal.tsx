@@ -55,8 +55,8 @@ export function RemoteSyncModal({
   const inputClass =
     'w-full box-border px-3 py-2 text-sm font-body rounded border border-border-control bg-paper text-text-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent';
   const statusClass = statusError
-    ? 'rounded border border-red border-l-3 bg-red-bg text-red px-3 py-3 text-sm leading-relaxed'
-    : 'rounded border border-border-default border-l-3 border-l-accent bg-info-bg text-text-primary px-3 py-3 text-sm leading-relaxed';
+    ? 'rounded border border-red bg-red-bg text-red px-3 py-3 text-sm leading-relaxed'
+    : 'rounded border border-border-emphasis bg-info-bg text-text-primary px-3 py-3 text-sm leading-relaxed';
 
   return (
     <Dialog
@@ -180,7 +180,7 @@ export function RemoteSyncModal({
             Verificar status
           </Button>
           <Button
-            variant="primary"
+            variant="tonal"
             size="small"
             id="pushRemoteSyncBtn"
             iconLeft="cloud-upload"
@@ -189,7 +189,7 @@ export function RemoteSyncModal({
             Enviar para nuvem
           </Button>
           <Button
-            variant="primary"
+            variant="tonal"
             size="small"
             id="pullRemoteSyncBtn"
             iconLeft="cloud-download"

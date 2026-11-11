@@ -79,10 +79,9 @@ export function RealWeekBanner({
         {onDismiss && (
           <button
             type="button"
-            class="text-content-muted hover:text-content-secondary p-1 rounded transition-colors"
+            class="inline-flex items-center justify-center min-w-7 min-h-7 max-md:min-w-11 max-md:min-h-11 pointer-coarse:min-w-11 pointer-coarse:min-h-11 text-content-muted hover:text-content-secondary p-1 rounded border-0 bg-transparent cursor-pointer transition-colors"
             onClick={onDismiss}
             aria-label="Dispensar aviso da semana real"
-            title="Dispensar por enquanto"
           >
             <Icon name="x" size={14} />
           </button>

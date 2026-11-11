@@ -432,7 +432,7 @@ export function SalesLandingPage({
                                 color: 'var(--on-brand)',
                               }
                         }
-                        class="min-h-touch sm:min-h-8 px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                        class="min-h-touch sm:min-h-8 px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-on-header"
                       >
                         Semana 01
                       </button>
@@ -451,7 +451,7 @@ export function SalesLandingPage({
                                 color: 'var(--on-brand)',
                               }
                         }
-                        class="min-h-touch sm:min-h-8 px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                        class="min-h-touch sm:min-h-8 px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-on-header"
                       >
                         Semana 14
                       </button>
@@ -921,27 +921,27 @@ export function SalesLandingPage({
           <div class="flex flex-wrap items-center gap-4">
             <a
               href="/?legal=terms"
-              class="underline text-secondary hover:text-text p-1 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="inline-flex items-center max-sm:min-h-11 max-sm:px-2 underline text-secondary hover:text-text p-1 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Termos de Uso
             </a>
             <a
               href="/?legal=privacy"
-              class="underline text-secondary hover:text-text p-1 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="inline-flex items-center max-sm:min-h-11 max-sm:px-2 underline text-secondary hover:text-text p-1 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Privacidade & LGPD
             </a>
             <button
               type="button"
               onClick={onStartLiveDemo}
-              class="underline text-secondary hover:text-text bg-transparent border-0 p-1 rounded cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="inline-flex items-center max-sm:min-h-11 max-sm:px-2 underline text-secondary hover:text-text bg-transparent border-0 p-1 rounded cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Explorar Demonstração (140 dias)
             </button>
             <button
               type="button"
               onClick={onStartFreeApp}
-              class="underline text-secondary hover:text-text bg-transparent border-0 p-1 rounded cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="inline-flex items-center max-sm:min-h-11 max-sm:px-2 underline text-secondary hover:text-text bg-transparent border-0 p-1 rounded cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Acessar Aplicativo
             </button>

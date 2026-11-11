@@ -1,10 +1,11 @@
-import { renderGlobalSearchPanel } from '../renderers/global-search-renderer.js';
+import { h } from 'preact';
 import { openPerformanceSection } from '../performance/open-performance-section.js';
-import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { scrollBehavior } from '../accessibility.js';
 import { subjectColorOf } from '../../domain/subjects/subject-color.js';
 import { revealAdvanced } from '../essential-mode.js';
 import { hydrateLazy } from '../lazy-details.js';
+import { mountPreact } from '../preact-mount.js';
+import { GlobalCommandPalette } from '../components/GlobalCommandPalette.js';
 
 export interface SearchCommand {
   label: string;
@@ -191,15 +192,11 @@ export interface SearchControllerOptions {
 
 export function createSearchController(options: SearchControllerOptions) {
   const { document, window, getState, activateTab, showToast, jumpToTopic } = options;
-  const escapeHtml = options.escapeHtml || defaultEscapeHtml;
-  const escapeAttr = options.escapeAttr || escapeHtml;
 
-  function renderResults(): void {
-    const input = document.getElementById('globalSearchInput') as HTMLInputElement | null;
-    const panel = document.getElementById('globalSearchResults');
-    if (!input || !panel) return;
+  let paletteOpen = false;
+  let paletteQuery = '';
 
-    const q = input.value;
+  function filterCommandsForQuery(q: string) {
     const normalized = normalizeSearchText(q.trim());
     const commands = (
       normalized
@@ -207,70 +204,19 @@ export function createSearchController(options: SearchControllerOptions) {
             normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)
           )
         : SEARCH_COMMANDS
-    ).slice(0, 18);
-    const results = normalized ? performGlobalSearch(q, getState().subjects || []) : [];
-
-    panel.innerHTML = renderGlobalSearchPanel({
-      query: q,
+    ).slice(0, 20);
+    const topics = normalized ? performGlobalSearch(q, getState().subjects || []) : [];
+    return {
+      normalized,
       commands,
-      results,
-      escapeHtml,
-      escapeAttr,
-    });
-    panel.classList.add('show');
-    input.setAttribute('aria-expanded', 'true');
-    // O listbox não se anuncia sozinho: a contagem vai para a região viva.
-    const status = document.getElementById('globalSearchStatus');
-    if (status) {
-      const total = commands.length + results.length;
-      status.textContent = normalized
-        ? total
-          ? `${total} ${total === 1 ? 'resultado' : 'resultados'} para "${q.trim()}"`
-          : `Nada encontrado para "${q.trim()}"`
-        : '';
-    }
-    // Options get stable ids so the input can point at the active one (aria-activedescendant).
-    panel.querySelectorAll<HTMLElement>('.search-result-item').forEach((item, index) => {
-      item.id = `globalSearchOption-${index}`;
-    });
-    input.removeAttribute('aria-activedescendant');
-
-    if (typeof input.getBoundingClientRect === 'function') {
-      const inputRect = input.getBoundingClientRect();
-      const isMobile = (window.innerWidth || 1024) <= 760;
-      if (isMobile) {
-        panel.style.left = '12px';
-        panel.style.width = `${Math.max(280, (window.innerWidth || 360) - 24)}px`;
-        panel.style.top = `${Math.min(inputRect.bottom + 6, (window.innerHeight || 600) - 80)}px`;
-      } else {
-        const targetWidth = Math.min(620, Math.max(inputRect.width, 500));
-        const left = Math.max(
-          16,
-          Math.min(inputRect.left, (window.innerWidth || 1200) - targetWidth - 16)
-        );
-        panel.style.left = `${left}px`;
-        panel.style.width = `${Math.min(targetWidth, (window.innerWidth || 1200) - 32)}px`;
-        panel.style.top = `${Math.min(inputRect.bottom + 6, (window.innerHeight || 800) - 100)}px`;
-      }
-    }
+      actionCommands: commands.filter(item => Boolean(item.action)),
+      navCommands: commands.filter(item => Boolean(item.tab)),
+      topics,
+    };
   }
 
-  function handleActionClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement | null;
-    const button = target?.closest('.search-result-item') as HTMLElement | null;
-    if (!button) return;
-
-    if (button.dataset.searchTopic) {
-      jumpToTopic(button.dataset.searchSubject || '', button.dataset.searchTopic);
-      const topicInput = document.getElementById('globalSearchInput') as HTMLInputElement | null;
-      if (topicInput) topicInput.value = '';
-      return;
-    }
-
-    const action = button.dataset.searchAction;
-    const input = document.getElementById('globalSearchInput');
-    const panel = document.getElementById('globalSearchResults');
-
+  function executeCommandSpec(command: { action?: string | null; tab?: string | null }): void {
+    const action = command.action || '';
     if (action === 'report') {
       (document.getElementById('exportReportBtn') as HTMLElement | null)?.click();
     } else if (action === 'backup') {
@@ -329,100 +275,81 @@ export function createSearchController(options: SearchControllerOptions) {
           'Ainda não há uma recomendação elegível. Você pode iniciar uma sessão livre ou revisar o planejamento.'
         );
       }
-    } else if (button.dataset.searchTab) {
-      activateTab(button.dataset.searchTab);
+    } else if (command.tab) {
+      activateTab(command.tab);
     }
-
-    panel?.classList.remove('show');
-    input?.setAttribute('aria-expanded', 'false');
-    // Busca concluída: não deixar a consulta antiga no campo.
-    if (input) (input as HTMLInputElement).value = '';
-    if (document.activeElement === input) input?.blur();
   }
 
   function mount(): void {
-    const input = document.getElementById('globalSearchInput') as HTMLInputElement | null;
-    const panel = document.getElementById('globalSearchResults');
-    if (!input || !panel) return;
-    // Em tela de toque não há teclado para o atalho; a dica só confunde.
-    if (window?.matchMedia?.('(pointer: coarse), (max-width: 760px)').matches)
-      input.placeholder = input.placeholder.replace(/\s*\(Ctrl\+K\)$/, '');
+    const paletteMount =
+      typeof globalThis.document !== 'undefined' &&
+      document === (globalThis.document as unknown) &&
+      typeof document.getElementById === 'function'
+        ? document.getElementById('globalCommandPaletteMount')
+        : null;
+    if (!paletteMount) return;
 
-    input.addEventListener('input', renderResults);
-    input.addEventListener('focus', renderResults);
-    // Phones show only a magnifier (F3); it unfolds the field, which opens the palette on focus.
-    const row = input.closest('.global-search-row');
-    const openButton = document.getElementById('globalSearchOpenBtn');
-    openButton?.addEventListener('click', () => {
-      row?.classList.add('is-search-open');
-      openButton.setAttribute('aria-expanded', 'true');
-      input.focus();
-    });
-    input.addEventListener('blur', () => {
-      setTimeout(() => {
-        if (panel.contains(document.activeElement)) return;
-        panel.classList.remove('show');
-        input.setAttribute('aria-expanded', 'false');
-        row?.classList.remove('is-search-open');
-        openButton?.setAttribute('aria-expanded', 'false');
-      }, 150);
-    });
+    const openButton =
+      typeof document.getElementById === 'function'
+        ? document.getElementById('globalSearchOpenBtn')
+        : null;
 
-    panel.addEventListener('click', handleActionClick);
+    const syncTriggerAria = (open: boolean) => {
+      openButton?.setAttribute('aria-expanded', String(open));
+    };
 
-    // Combobox pattern: focus stays in the input, so typing keeps refining while the arrows
-    // move the active option and screen readers announce it.
-    input.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) return;
-      const items = [...panel.querySelectorAll<HTMLElement>('.search-result-item')];
-      if (!items.length) return;
-      event.preventDefault();
-      const current = items.findIndex(
-        item => item.id === input.getAttribute('aria-activedescendant')
+    const isMac = Boolean(window?.navigator?.platform?.toUpperCase().includes('MAC'));
+    if (openButton && isMac) {
+      const kbdEl = openButton.querySelector('.global-search-trigger__kbd');
+      if (kbdEl) kbdEl.textContent = '⌘K';
+      openButton.setAttribute('aria-keyshortcuts', 'Meta+K');
+    }
+
+    const renderPalette = () => {
+      const { actionCommands, navCommands, topics } = filterCommandsForQuery(paletteQuery);
+      syncTriggerAria(paletteOpen);
+      mountPreact(
+        h(GlobalCommandPalette, {
+          open: paletteOpen,
+          query: paletteQuery,
+          actionCommands,
+          navCommands,
+          topics,
+          onOpenChange: nextOpen => {
+            paletteOpen = nextOpen;
+            renderPalette();
+          },
+          onQueryChange: nextQuery => {
+            paletteQuery = nextQuery;
+            renderPalette();
+          },
+          onExecuteCommand: command => {
+            executeCommandSpec(command);
+          },
+          onSelectTopic: (subjectId, topicId) => {
+            jumpToTopic(subjectId, topicId);
+          },
+        }),
+        paletteMount
       );
-      if (event.key === 'Enter') {
-        items[Math.max(0, current)].click();
+    };
+
+    openButton?.addEventListener('click', () => {
+      if (
+        typeof document.querySelector === 'function' &&
+        document.querySelector('dialog[open], .modal-overlay.show, .overlay.show')
+      ) {
         return;
       }
-      const next =
-        event.key === 'ArrowDown'
-          ? (current + 1) % items.length
-          : current <= 0
-            ? items.length - 1
-            : current - 1;
-      items.forEach((item, index) => {
-        item.setAttribute('aria-selected', String(index === next));
-        item.classList.toggle('is-active', index === next);
-      });
-      input.setAttribute('aria-activedescendant', items[next].id);
-      items[next].scrollIntoView?.({ block: 'nearest' });
+      paletteOpen = true;
+      renderPalette();
     });
 
-    panel.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-      const items = [...panel.querySelectorAll<HTMLElement>('.search-result-item')];
-      const index = items.indexOf(document.activeElement as HTMLElement);
-      if (!items.length) return;
-      event.preventDefault();
-      if (event.key === 'ArrowUp' && index === 0) {
-        input.focus();
-        return;
-      }
-      const next =
-        event.key === 'Home'
-          ? 0
-          : event.key === 'End'
-            ? items.length - 1
-            : event.key === 'ArrowDown'
-              ? Math.min(items.length - 1, index + 1)
-              : Math.max(0, index - 1);
-      items[next]?.focus();
-    });
+    renderPalette();
   }
 
   return {
     mount,
-    renderResults,
     performSearch: (q: string) => performGlobalSearch(q, getState().subjects || []),
   };
 }

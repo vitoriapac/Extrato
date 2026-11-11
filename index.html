@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=01b250adf3d2">
-<link rel="stylesheet" href="styles/app.css?v=01b250adf3d2">
+<link rel="stylesheet" href="styles/tailwind.css?v=1a6dc1b77720">
+<link rel="stylesheet" href="styles/app.css?v=1a6dc1b77720">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -28,8 +28,8 @@
   <h2 class="sr-only">Painel de acompanhamento e planejamento</h2>
 
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
-    <div><strong><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flask icon-inline" aria-hidden="true"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"></path><path d="M6.453 15h11.094"></path><path d="M8.5 2h7"></path></svg>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
-    <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="desempenho">Desempenho</button><button data-demo-target="questoes">Questões &amp; Platô</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Exportar relatório (PDF)</button></nav>
+    <div><strong><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flask icon-inline" aria-hidden="true"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"></path><path d="M6.453 15h11.094"></path><path d="M8.5 2h7"></path></svg>MODO DEMONSTRAÇÃO</strong><span>Dados fictícios isolados</span></div>
+    <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Roteiro:</span><button data-demo-target="hoje" aria-label="Ir para Hoje na demonstração">Hoje</button><button data-demo-target="dashboard" aria-label="Ir para Visão geral na demonstração">Visão geral</button><button data-demo-target="desempenho" aria-label="Ir para Desempenho na demonstração">Desempenho</button><button data-demo-target="questoes" aria-label="Ir para Questões e Simulados na demonstração">Questões</button><button data-demo-target="agenda" aria-label="Ir para Agenda e revisões na demonstração">Agenda</button><button data-demo-target="metas" aria-label="Ir para Planejamento na demonstração">Planos</button><button id="demoReportShortcut" aria-label="Gerar relatório PDF da demonstração">PDF</button></nav>
     <button class="btn ghost small demo-menu-toggle" id="demoMenuToggle" type="button" aria-expanded="false" aria-controls="demoBannerActions"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-dots icon-inline tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>Opções</button>
     <div class="demo-banner-actions" id="demoBannerActions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-route icon-inline" aria-hidden="true"><circle cx="6" cy="19" r="3"></circle><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"></path><circle cx="18" cy="5" r="3"></circle></svg>Tour guiado</button><button class="btn ghost small" id="resetDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-refresh icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-logout icon-inline" aria-hidden="true"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg>Sair da demonstração</button></div>
   </aside>
@@ -89,20 +89,6 @@
     </div>
   </div>
 
-  <div class="global-search-row">
-    <div class="global-search">
-      <label class="sr-only" for="globalSearchInput">Busca global</label>
-      <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="O que você quer fazer? (Ctrl+K)">
-      <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
-      <div class="sr-only" id="globalSearchStatus" role="status" aria-live="polite"></div>
-    </div>
-    <button class="theme-toggle-btn search-open-btn" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" aria-controls="globalSearchInput" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-search" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
-    <button class="theme-toggle-btn" id="openDataManagementHeaderBtn" type="button" aria-haspopup="dialog" aria-label="Dados e backups" title="Dados e backups"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-database" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></button>
-    <button class="theme-toggle-btn" id="essentialToggleBtn" type="button" aria-pressed="false" aria-label="Modo essencial" title="Modo completo (ativo)"></button>
-    <button class="theme-toggle-btn" id="densityToggleBtn" type="button" aria-pressed="false" aria-label="Densidade compacta" title="Densidade confortável (ativa)"></button>
-    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span></button>
-  </div>
-
   <div class="sticky-shell">
     <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flame icon-inline" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
     <div class="primary-nav-shell">
@@ -118,6 +104,18 @@
       </div>
       <div id="mobileMoreMenuMount" class="mobile-more-menu-slot"></div>
     </div>
+  </div>
+
+  <div class="global-search-row">
+    <button class="global-search-trigger" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" aria-keyshortcuts="Control+K" aria-haspopup="dialog" aria-controls="globalCommandPaletteDialog" aria-expanded="false">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-search shrink-0" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+      <span class="global-search-trigger__placeholder">O que você quer fazer?</span>
+      <kbd class="global-search-trigger__kbd" aria-hidden="true">Ctrl+K</kbd>
+    </button>
+    <button class="theme-toggle-btn" id="openDataManagementHeaderBtn" type="button" aria-haspopup="dialog" aria-label="Dados e backups" title="Dados e backups"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-database" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></button>
+    <button class="theme-toggle-btn" id="essentialToggleBtn" type="button" aria-pressed="false" aria-label="Modo essencial" title="Modo completo (ativo)"></button>
+    <button class="theme-toggle-btn" id="densityToggleBtn" type="button" aria-pressed="false" aria-label="Densidade compacta" title="Densidade confortável (ativa)"></button>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span></button>
   </div>
 
   <!-- DASHBOARD -->
@@ -323,19 +321,9 @@
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
     <h2 class="section-title today-title">Hoje · Execução Diária</h2>
 
-    <div id="firstStepsMissionSlot"></div>
-    <div id="todayRealWeekBannerSlot"></div>
-
-    <div class="today-layout-grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
+    <div class="today-layout-grid grid grid-cols-1 lg:grid-cols-12 items-start">
       <!-- COLUNA PRINCIPAL DE EXECUÇÃO (8 cols) -->
-      <div class="lg:col-span-8 space-y-4">
-        <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
-          <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div id="todayExecutionModeMount"></div></header>
-          <div id="planoHojeContent"></div>
-        </section>
-
-        <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
-
+      <div class="today-layout-grid__col today-layout-grid__main lg:col-span-8">
         <div class="chart-card study-timer-card" id="study-timer">
           <h3 id="studyTimerTitle">Cronômetro de estudo</h3>
           <div class="timer-block" role="region" aria-label="Cronômetro de estudo">
@@ -379,6 +367,16 @@
           <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
         </div>
 
+        <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
+          <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div id="todayExecutionModeMount"></div></header>
+          <div id="planoHojeContent"></div>
+        </section>
+
+        <div id="firstStepsMissionSlot"></div>
+        <div id="todayRealWeekBannerSlot"></div>
+
+        <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
+
         <section class="chart-card today-recommendation-card" aria-labelledby="todaySuggestionTitle">
           <header class="module-heading module-heading--compact"><span class="module-heading__eyebrow">Estratégia</span><h3 class="module-heading__title" id="todaySuggestionTitle">Sugestão opcional</h3><p class="module-heading__description">Explica o porquê da prioridade atual ou sugere alternativas sem alterar seu planejamento.</p></header>
           <div id="studyRecommendation"></div>
@@ -391,9 +389,9 @@
       </div>
 
       <!-- COLUNA LATERAL DE RITMO, METAS E AGENDA (4 cols) -->
-      <div class="lg:col-span-4 space-y-4">
+      <div class="today-layout-grid__col today-layout-grid__side lg:col-span-4">
         <section class="chart-card today-metas-section" aria-labelledby="todayMetasHeading">
-          <header class="module-heading module-heading--compact mb-3">
+          <header class="module-heading module-heading--compact">
             <span class="module-heading__eyebrow">Progresso diário</span>
             <h3 class="module-heading__title" id="todayMetasHeading">Metas de hoje</h3>
           </header>
@@ -403,11 +401,11 @@
         <div id="todayWeeklyRhythmSlot"></div>
 
         <div class="chart-card today-agenda-card" aria-labelledby="todayAgendaHeading">
-          <header class="module-heading module-heading--compact mb-3">
+          <header class="module-heading module-heading--compact">
             <span class="module-heading__eyebrow">Compromissos</span>
             <h3 class="module-heading__title" id="todayAgendaHeading">Agenda e revisões</h3>
           </header>
-          <div class="today-agenda-sidebar-list space-y-4">
+          <div class="today-agenda-sidebar-list">
             <section><h4>Eventos do calendário</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
             <section><h4>Revisões para regularizar</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
             <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
@@ -711,7 +709,7 @@
     <p class="helper-text">
       Meta de questões resolvidas por semana, específica por disciplina.
     </p>
-    <form class="meta-disciplina-add" id="metaDisciplinaForm" onsubmit="event.preventDefault(); document.getElementById('addMetaDisciplinaBtn')?.click();">
+    <form class="meta-disciplina-add" id="metaDisciplinaForm">
       <label for="novaMetaDisciplinaSelect" class="sr-only">Disciplina da nova meta</label>
       <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
       <label for="novaMetaDisciplinaValor" class="sr-only">Quantidade de questões da nova meta</label>
@@ -757,7 +755,7 @@
         <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-database icon-inline" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>Gerenciar dados e backups</button>
       </div>
     </div>
-    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–9</strong> troca de área · <strong>Esc</strong> fecha</span>
+    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
   </footer>
 </main>
 
@@ -783,8 +781,9 @@
 <div id="sessionModalMount"></div>
 <div id="reviewRatingMount"></div>
 <div id="whatIfSimulatorMount"></div>
+<div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=01b250adf3d2"></script>
+  <script src="src/app.bundle.js?v=1a6dc1b77720"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

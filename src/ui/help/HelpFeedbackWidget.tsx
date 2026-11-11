@@ -60,7 +60,7 @@ export function HelpFeedbackWidget({
         <button
           type="button"
           onClick={handleReset}
-          class="text-xs text-text-muted hover:text-text underline ml-2 transition-colors cursor-pointer"
+          class="text-xs text-text-muted hover:text-text underline ml-2 px-1 rounded max-md:min-h-11 max-md:inline-flex max-md:items-center pointer-coarse:min-h-11 pointer-coarse:inline-flex pointer-coarse:items-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label={`Alterar avaliação de ${topicTitle || topicId}`}
         >
           Desfazer
@@ -83,7 +83,7 @@ export function HelpFeedbackWidget({
         <button
           type="button"
           onClick={() => handleVote(true)}
-          class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-primary/40 cursor-pointer"
+          class="inline-flex items-center justify-center gap-1 rounded-default border border-border bg-surface px-2 py-1 max-md:min-h-11 max-md:min-w-11 max-md:px-3 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-primary/40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label={`Sim, a explicação sobre ${topicTitle || topicId} foi útil`}
         >
           <Icon name="thumb-up" size={14} class="shrink-0" />
@@ -92,7 +92,7 @@ export function HelpFeedbackWidget({
         <button
           type="button"
           onClick={() => handleVote(false)}
-          class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-danger/40 cursor-pointer"
+          class="inline-flex items-center justify-center gap-1 rounded-default border border-border bg-surface px-2 py-1 max-md:min-h-11 max-md:min-w-11 max-md:px-3 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-danger/40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label={`Não, a explicação sobre ${topicTitle || topicId} precisa melhorar`}
         >
           <Icon name="thumb-down" size={14} class="shrink-0" />

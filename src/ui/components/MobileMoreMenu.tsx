@@ -37,26 +37,29 @@ export function MobileMoreMenu({
   });
 
   return (
-    <DropdownMenu
-      items={items}
-      open={open}
-      onOpenChange={onOpenChange}
-      keepMounted
-      restoreFocusOnSelect={false}
-      placement="top-end"
-      className="mobile-more-menu-popover"
-      triggerVariant="unstyled"
-      triggerId="moreTabButton"
-      triggerClassName={isSecondaryActive ? 'tab-btn more-tab-btn active' : 'tab-btn more-tab-btn'}
-      triggerContent={
-        <>
-          <Icon name="dots" size={16} class="tab-icon" />
-          <span class="tab-label">Mais</span>
-        </>
-      }
-      menuId="mobileMoreMenu"
-      menuAriaLabel="Mais seções do extrato"
-      menuClassName="mobile-more-menu"
-    />
+    <>
+      {open && <div class="mobile-more-scrim" aria-hidden="true" />}
+      <DropdownMenu
+        items={items}
+        open={open}
+        onOpenChange={onOpenChange}
+        keepMounted
+        restoreFocusOnSelect={false}
+        placement="top-end"
+        className="mobile-more-menu-popover"
+        triggerVariant="unstyled"
+        triggerId="moreTabButton"
+        triggerClassName={isSecondaryActive ? 'tab-btn more-tab-btn active' : 'tab-btn more-tab-btn'}
+        triggerContent={
+          <>
+            <Icon name="dots" size={16} class="tab-icon" />
+            <span class="tab-label">Mais</span>
+          </>
+        }
+        menuId="mobileMoreMenu"
+        menuAriaLabel="Mais seções do extrato"
+        menuClassName="mobile-more-menu"
+      />
+    </>
   );
 }

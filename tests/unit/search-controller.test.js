@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
 import {
   performGlobalSearch,
   normalizeSearchText,
   createSearchController,
   SEARCH_COMMANDS,
 } from '../../src/ui/controllers/search-controller.js';
+import { GlobalCommandPalette } from '../../src/ui/components/GlobalCommandPalette.js';
 import { renderGlobalSearchPanel } from '../../src/ui/renderers/global-search-renderer.js';
 
 test('normalizeSearchText — remove acentos e normaliza para minúsculas', () => {
@@ -139,4 +142,40 @@ test('renderGlobalSearchPanel — renderiza empty state amigável quando nada é
   assert.ok(html.includes('search-result-empty'));
   assert.ok(html.includes('termo inexistente'));
   assert.ok(html.includes('command-palette-footer'));
+});
+
+test('GlobalCommandPalette — renderiza dialog modal unificado com status live, swatch de tópico e autoSelectFirst=false', () => {
+  const openHtml = render(
+    h(GlobalCommandPalette, {
+      open: true,
+      query: 'controle',
+      actionCommands: [{ label: 'Abrir cronômetro', keywords: 'timer', action: 'timer', icon: 'clock' }],
+      navCommands: [{ label: 'Visão Geral', keywords: 'inicio', tab: 'dashboard', icon: 'layout-dashboard' }],
+      topics: [
+        {
+          topicId: 't1',
+          topicName: 'Controle de Constitucionalidade',
+          subjectId: 's1',
+          subjectName: 'Direito Constitucional',
+          colorSlot: 3,
+        },
+      ],
+      onOpenChange: () => {},
+      onQueryChange: () => {},
+      onExecuteCommand: () => {},
+      onSelectTopic: () => {},
+    })
+  );
+
+  assert.ok(openHtml.includes('id="globalCommandPaletteDialog"'));
+  assert.ok(openHtml.includes('id="globalSearchInput"'));
+  assert.ok(openHtml.includes('type="search"'));
+  assert.ok(openHtml.includes('id="globalSearchResults"'));
+  assert.ok(openHtml.includes('search-results show'));
+  assert.ok(openHtml.includes('id="globalSearchStatus"'));
+  assert.ok(openHtml.includes('3 resultados para &quot;controle&quot;'));
+  assert.ok(!openHtml.includes('aria-activedescendant='));
+  assert.ok(openHtml.includes('subject-bg-3'));
+  assert.ok(openHtml.includes('Abrir cronômetro'));
+  assert.ok(openHtml.includes('Visão Geral'));
 });

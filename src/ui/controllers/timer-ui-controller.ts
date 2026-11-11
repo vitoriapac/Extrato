@@ -59,10 +59,31 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
     toggleTimerFocus(true);
   }
 
+  const FOCUS_INERT_SELECTORS =
+    '.demo-banner, .demo-empty-cta, .statement, .sticky-shell, .global-search-row, main > footer, .panel:not(#panel-hoje), #panel-hoje > *:not(.today-layout-grid), .today-layout-grid__side, .today-layout-grid__main > *:not(#study-timer), #backToTopBtn';
+
+  function syncFocusInert(active: boolean): void {
+    if (typeof document.querySelectorAll !== 'function') return;
+    if (active) {
+      document.querySelectorAll(FOCUS_INERT_SELECTORS).forEach((el: any) => {
+        if (!el || el.inert) return;
+        el.inert = true;
+        el.setAttribute?.('data-focus-inert', '1');
+      });
+      return;
+    }
+    document.querySelectorAll('[data-focus-inert="1"]').forEach((el: any) => {
+      if (!el) return;
+      el.inert = false;
+      el.removeAttribute?.('data-focus-inert');
+    });
+  }
+
   function toggleTimerFocus(force: boolean | null = null): boolean {
     const body = document.body;
     const active = force == null ? !body.classList.contains('timer-focus-active') : Boolean(force);
     body.classList.toggle('timer-focus-active', active);
+    syncFocusInert(active);
     renderTimerFocusContext();
 
     const toggle = document.getElementById('timerFocusToggle');

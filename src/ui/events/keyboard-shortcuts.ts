@@ -26,6 +26,9 @@ export function createKeyboardShortcutsController(opts: KeyboardShortcutsOptions
 
   function handleTimerFocusKeydown(event: KeyboardEvent | any): void {
     if (!document.body?.classList?.contains?.('timer-focus-active')) return;
+    if (document.querySelector?.('dialog[open], .modal-overlay.show, .overlay.show')) {
+      return;
+    }
     if (event.key === 'Escape') {
       event.preventDefault();
       onExitTimerFocus?.();

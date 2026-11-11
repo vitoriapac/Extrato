@@ -51,7 +51,7 @@ function MetricBulletBar({
           >
             <button
               type="button"
-              class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+              class="inline-flex items-center justify-center rounded-full min-w-7 min-h-7 max-md:min-w-11 max-md:min-h-11 pointer-coarse:min-w-11 pointer-coarse:min-h-11 p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
               aria-label={`Explicar faixa competitiva de ${comparison.label}`}
             >
               <Icon name="info-circle" size={14} />

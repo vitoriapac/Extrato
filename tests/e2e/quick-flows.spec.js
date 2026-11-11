@@ -77,7 +77,8 @@ test('novo registro de questões começa na disciplina do último registro (F4)'
 
 test('Ctrl+K continua abrindo a busca no desktop (F3)', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#globalSearchOpenBtn')).toBeHidden();
+  await expect(page.locator('#globalSearchOpenBtn')).toBeVisible();
+  await expect(page.locator('#globalSearchInput')).toBeHidden();
   await page.locator('body').press('Control+k');
   await expect(page.locator('#globalSearchInput')).toBeFocused();
 });

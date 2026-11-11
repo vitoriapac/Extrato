@@ -41,7 +41,9 @@ test('listas progressivas: teclado, filtros, atualização e mobile nos dois tem
   await expect(rows).toHaveCount(5);
   await expect(button).toBeFocused();
   await button.click();
+  await page.keyboard.press('Control+k');
   await page.locator('#globalSearchInput').fill('impacto');
+  await page.keyboard.press('Escape');
   await expect(rows).toHaveCount(5);
   await page.evaluate(() => {
     const root = document.getElementById('gapMapDashboard');

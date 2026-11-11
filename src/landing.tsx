@@ -68,6 +68,7 @@ function StudyPreview() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Ampliar imagem da Visão geral (abre em nova aba)"
+        class="block rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         <img
           src="/assets/landing/demo-proxima-acao.png"
@@ -373,6 +374,7 @@ function LandingPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`Ampliar: ${item.alt} (abre em nova aba)`}
+                      class="block rounded-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     >
                       <img
                         src={item.image}
@@ -450,19 +452,19 @@ function LandingPage() {
             >
               <div class="flex flex-col items-start">
                 <p class="m-0 font-semibold text-brand">Produto</p>
-                <a href="#como-funciona" class={`${navLink} px-0!`}>
+                <a href="#como-funciona" class={`${navLink} px-0! min-w-touch justify-start`}>
                   Como funciona
                 </a>
-                <a href="#precos" class={`${navLink} px-0!`}>
+                <a href="#precos" class={`${navLink} px-0! min-w-touch justify-start`}>
                   Planos
                 </a>
               </div>
               <div class="flex flex-col items-start">
                 <p class="m-0 font-semibold text-brand">Acesso</p>
-                <a href="/app" class={`${navLink} px-0!`}>
+                <a href="/app" class={`${navLink} px-0! min-w-touch justify-start`}>
                   Abrir o app
                 </a>
-                <a href="#duvidas" class={`${navLink} px-0!`}>
+                <a href="#duvidas" class={`${navLink} px-0! min-w-touch justify-start`}>
                   Dúvidas
                 </a>
               </div>

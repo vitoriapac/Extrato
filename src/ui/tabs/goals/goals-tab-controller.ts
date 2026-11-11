@@ -489,13 +489,22 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     doc
       .getElementById('periodComparisonEnd')
       ?.addEventListener('change', () => renderSelectedPeriodComparison());
-    doc.getElementById('addMetaDisciplinaBtn')?.addEventListener('click', () => {
+    const submitMetaDisciplina = () => {
       const subjectId =
         (doc.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement)?.value || '';
       const rawMeta =
         (doc.getElementById('novaMetaDisciplinaValor') as HTMLInputElement)?.value || '';
       ctx.addMetaDisciplina?.(subjectId, rawMeta);
-    });
+    };
+    const metaForm = doc.getElementById('metaDisciplinaForm');
+    if (metaForm) {
+      metaForm.addEventListener('submit', (event: Event) => {
+        event.preventDefault();
+        submitMetaDisciplina();
+      });
+    } else {
+      doc.getElementById('addMetaDisciplinaBtn')?.addEventListener('click', submitMetaDisciplina);
+    }
   }
 
   function renderRitmo(containerEl?: any): void {

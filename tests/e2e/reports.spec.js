@@ -48,7 +48,9 @@ test('metas comparam intervalos predefinidos e personalizados', async ({ page })
 
 test('busca global abre instruções por teclado', async ({ page }) => {
   await openDemo(page);
+  await page.keyboard.press('Control+k');
   const search = page.locator('#globalSearchInput');
+  await expect(search).toBeFocused();
   await search.fill('abrir instruções');
   const command = page.getByRole('option', { name: /Abrir Instruções/ });
   await expect(command).toBeVisible();

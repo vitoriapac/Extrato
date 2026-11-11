@@ -285,7 +285,7 @@ for (const theme of ['light', 'dark'])
       const assertLayering = async expectedCompleted => {
         const colors = await overlay.evaluate(element => {
           const modal = element.querySelector('.onboarding-modal'),
-            main = element.querySelector('.onboarding-modal-body>main'),
+            main = element.querySelector('#guidedOnboardingContent'),
             help = element.querySelector('.onboarding-help');
           return {
             modal: getComputedStyle(modal).backgroundColor,

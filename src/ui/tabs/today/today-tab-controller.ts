@@ -539,17 +539,15 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   function renderRealWeekBanner(): void {
     if (!doc) return;
     let slot = doc.getElementById('todayRealWeekBannerSlot');
-    const summary = doc.getElementById('todayExecutionSummary');
     if (!slot) {
+      const summary = doc.getElementById('todayExecutionSummary');
       if (summary) {
         slot = doc.createElement('div');
         slot.id = 'todayRealWeekBannerSlot';
+        summary.parentNode?.insertBefore(slot, summary);
       }
     }
     if (!slot) return;
-    if (summary?.parentNode && slot.nextSibling !== summary) {
-      summary.parentNode.insertBefore(slot, summary);
-    }
 
     if (isRealWeekBannerDismissed()) {
       unmountPreact(slot);

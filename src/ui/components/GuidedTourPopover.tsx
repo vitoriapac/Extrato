@@ -127,7 +127,7 @@ export function GuidedTourPopover({
           y="0"
           width="100%"
           height="100%"
-          fill="rgba(11, 20, 35, 0.55)"
+          fill="var(--backdrop)"
           mask="url(#tour-spotlight-mask)"
         />
       </svg>
@@ -158,7 +158,7 @@ export function GuidedTourPopover({
               </Badge>
               <button
                 type="button"
-                className="inline-flex items-center justify-center p-1 bg-transparent border-0 text-on-brand/70 hover:text-on-brand cursor-pointer transition-colors"
+                className="inline-flex items-center justify-center min-w-9 min-h-9 max-md:min-w-11 max-md:min-h-11 pointer-coarse:min-w-11 pointer-coarse:min-h-11 p-1 rounded bg-transparent border-0 text-on-brand/80 hover:text-on-brand cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-on-header"
                 onClick={onClose}
                 aria-label="Fechar tour interativo"
                 data-guided-tour-close="true"
@@ -182,10 +182,11 @@ export function GuidedTourPopover({
                 size="small"
                 onClick={onPrev}
                 disabled={isFirst}
-                className="text-on-brand hover:bg-white/10 disabled:opacity-30"
+                className="text-on-brand hover:bg-on-brand/10 disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-on-header"
                 aria-label="Parada anterior"
               >
-                ← Anterior
+                <Icon name="arrow-left" size={14} class="shrink-0" />
+                <span>Anterior</span>
               </Button>
 
               <div className="flex items-center gap-2" aria-hidden="true">
@@ -203,7 +204,7 @@ export function GuidedTourPopover({
                 variant="secondary"
                 size="small"
                 onClick={onNext}
-                className="bg-accent text-primary-contrast font-semibold hover:bg-brand-secondary border-0"
+                className="bg-accent text-primary-contrast font-semibold hover:bg-brand-secondary border-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-on-header"
                 data-guided-tour-next="true"
                 aria-label={isLast ? 'Concluir tour guiado' : 'Próxima parada'}
                 iconRight={isLast ? 'check' : 'arrow-right'}

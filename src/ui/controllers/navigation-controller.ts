@@ -186,40 +186,15 @@ export function createNavigationController({
       activate(tabs[next]?.dataset.tab);
     });
   });
-  let searchReturnFocus: HTMLElement | null = null;
   const registerShortcuts = () =>
     document.addEventListener('keydown', (event: any) => {
       trapModalTab(event);
-      const modifier = window.navigator.platform.toUpperCase().includes('MAC')
-          ? event.metaKey
-          : event.ctrlKey,
-        active = document.activeElement,
-        typing =
-          ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(active?.tagName) ||
-          active?.isContentEditable;
-      if (modifier && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        const search = document.getElementById('globalSearchInput');
-        if (active !== search) searchReturnFocus = active;
-        // On phones the field is folded behind the magnifier; unfold it before focusing.
-        search?.closest('.global-search-row')?.classList.add('is-search-open');
-        search?.focus();
-        return;
-      }
+      if (event.defaultPrevented) return;
+      const active = document.activeElement;
+      const typing =
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) ||
+        active?.isContentEditable;
       if (event.key === 'Escape') {
-        const search = document.getElementById('globalSearchInput'),
-          results = document.getElementById('globalSearchResults');
-        if (results?.classList.contains('show')) {
-          event.preventDefault();
-          results.classList.remove('show');
-          search?.setAttribute('aria-expanded', 'false');
-          // Esc desfaz a busca: limpa o termo e devolve o foco a quem a abriu.
-          if (search) (search as HTMLInputElement).value = '';
-          if (searchReturnFocus?.isConnected) searchReturnFocus.focus();
-          else search?.blur();
-          searchReturnFocus = null;
-          return;
-        }
         const modalOverlay = document.getElementById('modalOverlay') as
           (HTMLElement & { open?: boolean }) | null;
         if (modalOverlay?.classList.contains('show') || modalOverlay?.open) {
@@ -243,6 +218,13 @@ export function createNavigationController({
         }
         return;
       }
+      if (
+        document.querySelector?.(
+          '.modal-overlay.show, dialog[open], #guidedOnboardingOverlay.show, .overlay.show, #sessionModalOverlay.show'
+        )
+      ) {
+        return;
+      }
       const shortcut = shortcutTabIndex(event);
       if (!typing && shortcut >= 0) {
         event.preventDefault();
@@ -251,6 +233,10 @@ export function createNavigationController({
       }
       if (!typing && event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
         if (event.key.toLowerCase() === 's') {
+          const dashboardHasPrimaryAction = document.querySelector?.(
+            '#panel-dashboard.active .overview-now-action .overview-action-card button:not([disabled]), #panel-dashboard.active .overview-now-action button[data-daily-start]:not([disabled]), #panel-dashboard.active .overview-now-action button[data-daily-resume]:not([disabled])'
+          );
+          if (dashboardHasPrimaryAction) return;
           event.preventDefault();
           activate('hoje');
           const startBtn = document.getElementById('timerStartBtn');

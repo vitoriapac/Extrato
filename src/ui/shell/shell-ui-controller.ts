@@ -112,6 +112,7 @@ export function createShellUiController(options: ShellUiControllerOptions) {
         'whatIfSimulatorMount',
         'firstAccessModalMount',
         'recoveryMissionModalMount',
+        'globalCommandPaletteMount',
       ].forEach(
         mountId => {
           const mount = document.getElementById(mountId);

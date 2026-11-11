@@ -183,7 +183,7 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
     mountPreact(
       h(FirstAccessModal, {
         open: true,
-        onClose: close,
+        onClose: () => close({ restoreFocus: true }),
         onStartGuidedPlan: () => {
           markFirstAccessDismissed(context.storage);
           close();
@@ -196,7 +196,7 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
         },
         onExploreManually: () => {
           markFirstAccessDismissed(context.storage);
-          close();
+          close({ restoreFocus: true });
         },
         onPasteSyllabus: context.onPasteSyllabus
           ? () => {
@@ -257,9 +257,40 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
     renderModal();
   }
 
-  function close() {
+  function restoreFocusAfterManualDismiss() {
+    const win = context.window || (typeof window !== 'undefined' ? window : null);
+    const doc = win?.document;
+    if (!doc || typeof doc.querySelector !== 'function') return;
+    const schedule =
+      typeof win?.requestAnimationFrame === 'function'
+        ? win.requestAnimationFrame.bind(win)
+        : (cb: () => void) => setTimeout(cb, 0);
+    schedule(() => {
+      if (activeView !== 'closed') return;
+      if (doc.querySelector('dialog[open], .modal-overlay.show')) return;
+      const active = doc.activeElement;
+      if (active && active !== doc.body) return;
+      const candidates = [
+        doc.querySelector('#overviewNextAction [data-guided-action="open"]'),
+        doc.querySelector('#guidedOnboarding [data-guided-action="open"]'),
+        doc.getElementById('tab-dashboard'),
+        doc.getElementById('mainContent'),
+      ];
+      const target = candidates.find(el => {
+        if (!el || typeof el.focus !== 'function' || el.disabled) return false;
+        if (typeof el.closest === 'function' && el.closest('[hidden], [inert]')) return false;
+        return typeof el.getClientRects === 'function' ? el.getClientRects().length > 0 : true;
+      });
+      target?.focus?.();
+    });
+  }
+
+  function close({ restoreFocus = false }: { restoreFocus?: boolean } = {}) {
     activeView = 'closed';
     renderModal();
+    if (restoreFocus) {
+      restoreFocusAfterManualDismiss();
+    }
   }
 
   function bindGlobalTriggers(win: any) {

@@ -117,6 +117,45 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
   let pasteSyllabusOpen = false;
   let lastModalOpen: boolean | null = null;
 
+  function isFocusableCandidate(el: any): boolean {
+    if (!el || el === document.body || el.tagName === 'BODY' || typeof el.focus !== 'function') {
+      return false;
+    }
+    if (el.isConnected === false || el.disabled) return false;
+    if (
+      typeof el.closest === 'function' &&
+      el.closest('#guidedOnboardingOverlay, #firstAccessModalMount, [hidden], [inert]')
+    ) {
+      return false;
+    }
+    if (typeof el.getClientRects === 'function') {
+      return el.getClientRects().length > 0;
+    }
+    return true;
+  }
+
+  function resolveFallbackFocusTarget(previousFocus: any) {
+    const candidates = [
+      previousFocus,
+      document.querySelector?.('#overviewNextAction [data-guided-action="open"]'),
+      document.querySelector?.('#guidedOnboarding [data-guided-action="open"]'),
+      document.getElementById('tab-dashboard'),
+      document.getElementById('mainContent'),
+    ];
+    return candidates.find(isFocusableCandidate);
+  }
+
+  function restoreFocusAfterClose(previousFocus: any): void {
+    const mainContent = document.getElementById('mainContent');
+    const hasAnotherModal =
+      typeof document.querySelector === 'function' &&
+      Boolean(document.querySelector('dialog[open], .modal-overlay.show'));
+    if (mainContent && !hasAnotherModal) {
+      mainContent.inert = false;
+    }
+    resolveFallbackFocusTarget(previousFocus)?.focus?.();
+  }
+
   function onboardingModel() {
     const state = getState();
     const uiState = getUiState();
@@ -200,7 +239,11 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     if (overview) overview.after(entry);
     // Automatic modal launch on first use with empty base (item 4.4)
     const inTest = typeof window !== 'undefined' && Boolean((window as any).__EXTRATO_TEST__);
+    const wasOpen = Boolean(uiState.onboarding.open);
     if (!inTest && visible && uiState.onboarding.open === undefined && !uiState.onboarding.completed) {
+      if (!uiState.onboarding.previousFocus && isFocusableCandidate(document.activeElement)) {
+        uiState.onboarding.previousFocus = document.activeElement;
+      }
       uiState.onboarding.open = true;
     }
     // Keep entry hidden as static card when modal mode is preferred
@@ -213,6 +256,11 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     }
     syncOnboardingPhase(document, { visible });
     const modalOpen = Boolean(visible && uiState.onboarding.open);
+    if (modalOpen) {
+      document.body?.classList?.add?.('onboarding-open');
+    } else {
+      document.body?.classList?.remove?.('onboarding-open');
+    }
     if (!mountNode) {
       overlay.hidden = !modalOpen;
       overlay.classList.toggle('show', modalOpen);
@@ -223,6 +271,18 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       return;
     }
     syncGuidedModal(modalOpen);
+    if (modalOpen && (!wasOpen || lastModalOpen === false)) {
+      requestFrame(() => {
+        const currentOverlay = document.getElementById('guidedOnboardingOverlay');
+        const active = document.activeElement;
+        if (
+          getUiState().onboarding.open &&
+          (!active || active === document.body || !currentOverlay?.contains?.(active))
+        ) {
+          document.getElementById('guidedOnboardingClose')?.focus?.();
+        }
+      });
+    }
     const progressEl = document.getElementById('guidedOnboardingProgress');
     if (progressEl) progressEl.innerHTML = renderOnboardingProgress(model);
 
@@ -294,15 +354,18 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
   }
 
   async function openGuidedOnboarding({ step = null }: { step?: string | null } = {}) {
+    const capturedFocus = document.activeElement;
     try {
       await ensureExamCatalog();
       const uiState = getUiState();
       const model = onboardingModel();
-      uiState.onboarding.previousFocus = document.activeElement as HTMLElement;
+      uiState.onboarding.previousFocus = isFocusableCandidate(capturedFocus)
+        ? (capturedFocus as HTMLElement)
+        : null;
       uiState.onboarding.open = true;
       uiState.onboarding.manualReturn = false;
       uiState.onboarding.currentStep = step || model.next?.id || model.current.id;
-      document.body.classList.add('onboarding-open');
+      document.body?.classList?.add?.('onboarding-open');
       renderGuidedOnboarding();
       requestFrame(() => document.getElementById('guidedOnboardingClose')?.focus());
     } catch (error: any) {
@@ -321,7 +384,7 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     const model = onboardingModel();
     uiState.onboarding.currentStep = step === 'plan' && !model.hasContent ? 'content' : step;
     uiState.onboarding.open = true;
-    document.body.classList.add('onboarding-open');
+    document.body?.classList?.add?.('onboarding-open');
     renderGuidedOnboarding();
     requestFrame(() => document.getElementById('guidedOnboardingClose')?.focus());
   }
@@ -332,16 +395,25 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     uiState.onboarding.open = false;
     uiState.onboarding.dismissedForSession = !manual;
     uiState.onboarding.manualReturn = manual;
-    document.body.classList.remove('onboarding-open');
+    document.body?.classList?.remove?.('onboarding-open');
     renderGuidedOnboarding();
     syncModalShell();
-    const focusTarget = previousFocus?.isConnected
-      ? previousFocus
-      : document.querySelector<HTMLElement>('#overviewNextAction [data-guided-action="open"], #guidedOnboarding [data-guided-action="open"]');
-    (focusTarget?.getClientRects?.().length
-      ? focusTarget
-      : document.getElementById('tab-dashboard')
-    )?.focus?.();
+    restoreFocusAfterClose(previousFocus);
+    requestFrame(() => {
+      const hasAnotherModal =
+        typeof document.querySelector === 'function' &&
+        Boolean(document.querySelector('dialog[open], .modal-overlay.show'));
+      if (!getUiState().onboarding.open && !hasAnotherModal) {
+        const active = document.activeElement;
+        if (
+          !active ||
+          active === document.body ||
+          (typeof active.closest === 'function' && active.closest('#guidedOnboardingOverlay'))
+        ) {
+          restoreFocusAfterClose(previousFocus);
+        }
+      }
+    });
     uiState.onboarding.previousFocus = null;
   }
 
@@ -619,6 +691,11 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     if (action === 'explore-no-plan') {
       closeGuidedOnboarding();
       activateTab('hoje');
+      requestFrame(() => {
+        if (!document.activeElement || document.activeElement === document.body) {
+          document.getElementById('tab-hoje')?.focus?.();
+        }
+      });
       showToast('Você pode informar a data depois em Planejamento. Nenhum plano foi criado.');
       return;
     }

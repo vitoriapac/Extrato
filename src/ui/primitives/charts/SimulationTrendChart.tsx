@@ -216,7 +216,7 @@ export function SimulationTrendChart({
                   fill="var(--surface-card)"
                   stroke={ptColor}
                   stroke-width="2.5"
-                  class="cursor-pointer hover:r-6 transition-all chart-point-interactive"
+                  class="cursor-pointer chart-point-interactive"
                 >
                   <title>{`${pt.name} (${pt.date}): ${pt.score}% (${pt.correct}/${pt.total})`}</title>
                 </circle>
@@ -226,7 +226,7 @@ export function SimulationTrendChart({
                   x={pt.x}
                   y={pt.y - 8}
                   text-anchor="middle"
-                  class="text-xs font-bold font-mono fill-content-primary"
+                  class="text-xs font-semibold font-mono fill-content-primary"
                 >
                   {pt.score}%
                 </text>

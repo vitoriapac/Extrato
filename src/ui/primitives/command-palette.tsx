@@ -33,6 +33,7 @@ interface CommandPaletteContextValue {
   listboxId: string;
   inputId: string;
   titleId: string;
+  listClassName: string;
   activeIndex: number;
   setActiveIndex: (idx: number) => void;
   activeOptionId: string | undefined;
@@ -140,6 +141,12 @@ function groupHasMatchingItem(children: ComponentChildren, query: string): boole
 export type CommandPaletteSize = 'md' | 'lg';
 
 export interface CommandPaletteProps {
+  dialogId?: string;
+  inputId?: string;
+  listboxId?: string;
+  statusId?: string;
+  listClassName?: string;
+  autoSelectFirst?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -161,6 +168,12 @@ export interface CommandPaletteProps {
 }
 
 export function CommandPalette({
+  dialogId,
+  inputId: customInputId,
+  listboxId: customListboxId,
+  statusId,
+  listClassName = '',
+  autoSelectFirst = true,
   open: controlledOpen,
   defaultOpen = false,
   onOpenChange,
@@ -181,8 +194,8 @@ export function CommandPalette({
   children,
 }: CommandPaletteProps) {
   const baseId = useId();
-  const listboxId = `${baseId}-listbox`;
-  const inputId = `${baseId}-input`;
+  const listboxId = customListboxId || `${baseId}-listbox`;
+  const inputId = customInputId || `${baseId}-input`;
   const titleId = `${baseId}-title`;
 
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -194,6 +207,7 @@ export function CommandPalette({
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
+  const skipFocusRestoreRef = useRef(false);
   const optionRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
 
   const visibleItems = useMemo(
@@ -205,9 +219,15 @@ export function CommandPalette({
     () => visibleItems.findIndex(item => !item.disabled),
     [visibleItems]
   );
-  const [activeIndex, setActiveIndex] = useState<number>(firstEnabledIndex);
+  const [activeIndex, setActiveIndex] = useState<number>(
+    autoSelectFirst ? firstEnabledIndex : -1
+  );
 
   useEffect(() => {
+    if (!isOpen) {
+      setActiveIndex(autoSelectFirst ? firstEnabledIndex : -1);
+      return;
+    }
     if (visibleItems.length === 0) {
       setActiveIndex(-1);
       return;
@@ -216,9 +236,33 @@ export function CommandPalette({
       if (prev >= 0 && prev < visibleItems.length && !visibleItems[prev]?.disabled) {
         return prev;
       }
-      return firstEnabledIndex;
+      return autoSelectFirst ? firstEnabledIndex : -1;
     });
-  }, [visibleItems, firstEnabledIndex]);
+  }, [isOpen, visibleItems, firstEnabledIndex, autoSelectFirst]);
+
+  const closePaletteSynchronously = () => {
+    const dialog = dialogRef.current;
+    if (dialog) {
+      if (dialog.open) {
+        if (typeof dialog.close === 'function') {
+          dialog.close();
+        } else {
+          dialog.removeAttribute('open');
+        }
+      } else if (dialog.hasAttribute?.('open')) {
+        dialog.removeAttribute('open');
+      }
+    }
+    if (typeof document !== 'undefined') {
+      const mainContent = document.getElementById('mainContent');
+      const stillHasModal =
+        typeof document.querySelector === 'function' &&
+        Boolean(document.querySelector('dialog[open], .modal-overlay.show'));
+      if (mainContent && !stillHasModal) {
+        mainContent.inert = false;
+      }
+    }
+  };
 
   const setOpenState = (next: boolean) => {
     if (controlledOpen === undefined) {
@@ -251,6 +295,13 @@ export function CommandPalette({
         !event.altKey &&
         event.key.toLowerCase() === hotkey.toLowerCase()
       ) {
+        if (
+          !isOpen &&
+          typeof document.querySelector === 'function' &&
+          document.querySelector('dialog[open], .modal-overlay.show, .overlay.show')
+        ) {
+          return;
+        }
         event.preventDefault();
         setOpenState(!isOpen);
       }
@@ -266,6 +317,7 @@ export function CommandPalette({
     if (!dialog || typeof document === 'undefined') return;
 
     if (isOpen) {
+      skipFocusRestoreRef.current = false;
       if (
         !wasOpenRef.current &&
         document.activeElement &&
@@ -294,20 +346,14 @@ export function CommandPalette({
       });
     } else if (wasOpenRef.current || dialog.open || dialog.hasAttribute?.('open')) {
       wasOpenRef.current = false;
-      if (dialog.open) {
-        if (typeof dialog.close === 'function') {
-          dialog.close();
-        } else {
-          dialog.removeAttribute('open');
-        }
-      } else if (dialog.hasAttribute?.('open')) {
-        dialog.removeAttribute('open');
-      }
+      closePaletteSynchronously();
       const target = previousFocusRef.current;
       previousFocusRef.current = null;
+      const shouldRestore = restoreFocusOnClose && !skipFocusRestoreRef.current;
+      skipFocusRestoreRef.current = false;
       const active = document.activeElement;
       if (
-        restoreFocusOnClose &&
+        shouldRestore &&
         target &&
         typeof target.focus === 'function' &&
         (!active || active === document.body || dialog.contains(active))
@@ -326,13 +372,23 @@ export function CommandPalette({
   }, [isOpen, inputId, restoreFocusOnClose]);
 
   const resolvedActiveIndex =
-    activeIndex >= 0 && activeIndex < visibleItems.length ? activeIndex : firstEnabledIndex;
+    activeIndex >= 0 && activeIndex < visibleItems.length
+      ? activeIndex
+      : autoSelectFirst
+        ? firstEnabledIndex
+        : -1;
   const activeOption = resolvedActiveIndex >= 0 ? visibleItems[resolvedActiveIndex] : undefined;
 
   const moveActive = (key: 'ArrowDown' | 'ArrowUp' | 'Home' | 'End') => {
+    const effectiveKey =
+      resolvedActiveIndex < 0 && key === 'ArrowUp'
+        ? 'End'
+        : resolvedActiveIndex < 0 && key === 'ArrowDown'
+          ? 'Home'
+          : key;
     const nextIdx = getRovingTabIndex(
       resolvedActiveIndex,
-      key,
+      effectiveKey,
       visibleItems.length,
       'vertical',
       idx => Boolean(visibleItems[idx]?.disabled)
@@ -347,11 +403,15 @@ export function CommandPalette({
 
   const selectItem = (item: CommandPaletteItemMeta) => {
     if (item.disabled) return;
-    item.onSelect?.(item.value);
-    onSelect?.(item.value, item);
     if (closeOnSelect) {
+      skipFocusRestoreRef.current = true;
+      wasOpenRef.current = false;
+      previousFocusRef.current = null;
+      closePaletteSynchronously();
       setOpenState(false);
     }
+    item.onSelect?.(item.value);
+    onSelect?.(item.value, item);
   };
 
   const confirmActive = () => {
@@ -368,6 +428,7 @@ export function CommandPalette({
     listboxId,
     inputId,
     titleId,
+    listClassName,
     activeIndex: resolvedActiveIndex,
     setActiveIndex,
     activeOptionId: activeOption?.optionId,
@@ -389,11 +450,19 @@ export function CommandPalette({
     .filter(Boolean)
     .join(' ');
   const ssrOpenAttr = typeof document === 'undefined' && isOpen ? true : undefined;
+  const trimmedQuery = query.trim();
+  const statusText =
+    statusId && isOpen && trimmedQuery
+      ? visibleItems.length
+        ? `${visibleItems.length} ${visibleItems.length === 1 ? 'resultado' : 'resultados'} para "${trimmedQuery}"`
+        : `Nada encontrado para "${trimmedQuery}"`
+      : '';
 
   return (
     <CommandPaletteContext.Provider value={ctxValue}>
       <dialog
         ref={dialogRef}
+        id={dialogId}
         open={ssrOpenAttr}
         aria-label={label}
         class={dialogClass}
@@ -408,6 +477,11 @@ export function CommandPalette({
         }}
       >
         <div class="ui-command-palette__surface">{children}</div>
+        {statusId && (
+          <div id={statusId} class="sr-only" role="status" aria-live="polite">
+            {statusText}
+          </div>
+        )}
       </dialog>
     </CommandPaletteContext.Provider>
   );
@@ -448,6 +522,12 @@ export function CommandPaletteInput({
       if (ctx.activeOptionId) {
         event.preventDefault();
         ctx.confirmActive();
+      } else if (ctx.query.trim()) {
+        const firstEnabled = ctx.visibleItems.find(item => !item.disabled);
+        if (firstEnabled) {
+          event.preventDefault();
+          ctx.selectItem(firstEnabled);
+        }
       }
     } else if (event.key === 'Escape') {
       event.preventDefault();
@@ -462,8 +542,9 @@ export function CommandPaletteInput({
       <input
         id={ctx.inputId}
         data-command-input=""
-        type="text"
+        type="search"
         role="combobox"
+        list={undefined}
         autocomplete="off"
         spellcheck={false}
         value={ctx.query}
@@ -531,7 +612,7 @@ export function CommandPaletteList({
       id={ctx.listboxId}
       role="listbox"
       aria-label={label}
-      class={['ui-command-palette__list', className].filter(Boolean).join(' ')}
+      class={['ui-command-palette__list', ctx.listClassName, className].filter(Boolean).join(' ')}
     >
       {children}
       {!hasExplicitEmpty && ctx.visibleItems.length === 0 && (
@@ -581,6 +662,8 @@ export interface CommandPaletteItemProps {
   label: string;
   description?: string;
   icon?: IconName;
+  leading?: ComponentChildren;
+  trailing?: ComponentChildren;
   shortcut?: string | string[];
   keywords?: string[];
   disabled?: boolean;
@@ -595,6 +678,8 @@ export function CommandPaletteItem({
   label,
   description,
   icon,
+  leading,
+  trailing,
   shortcut,
   keywords,
   disabled = false,
@@ -652,18 +737,23 @@ export function CommandPaletteItem({
         ctx.selectItem({ value, label, description, keywords, disabled, onSelect });
       }}
     >
-      {icon && <Icon name={icon} size={16} class="ui-command-palette__item-icon shrink-0" />}
+      {leading ?? (icon && <Icon name={icon} size={16} class="ui-command-palette__item-icon shrink-0" />)}
       <span class="ui-command-palette__item-body">
         <span class="ui-command-palette__item-label">{children ?? label}</span>
         {description && <span class="ui-command-palette__item-description">{description}</span>}
       </span>
-      {shortcutKeys.length > 0 && (
-        <span class="ui-command-palette__shortcuts" aria-hidden="true">
-          {shortcutKeys.map((key, idx) => (
-            <kbd key={`${value}-key-${idx}`} class="ui-command-palette__kbd">
-              {key}
-            </kbd>
-          ))}
+      {(trailing || shortcutKeys.length > 0) && (
+        <span class="ui-command-palette__item-trail">
+          {trailing}
+          {shortcutKeys.length > 0 && (
+            <span class="ui-command-palette__shortcuts" aria-hidden="true">
+              {shortcutKeys.map((key, idx) => (
+                <kbd key={`${value}-key-${idx}`} class="ui-command-palette__kbd">
+                  {key}
+                </kbd>
+              ))}
+            </span>
+          )}
         </span>
       )}
     </button>
@@ -710,25 +800,28 @@ export function CommandPaletteFooter({ className = '', children }: CommandPalett
     <footer class={['ui-command-palette__footer', className].filter(Boolean).join(' ')}>
       {children ?? (
         <>
-          <span class="ui-command-palette__hint">
-            <kbd class="ui-command-palette__kbd" aria-hidden="true">
-              <Icon name="arrow-up" size={12} />
-            </kbd>
-            <kbd class="ui-command-palette__kbd" aria-hidden="true">
-              <Icon name="arrow-down" size={12} />
-            </kbd>
-            <span>Navegar</span>
-          </span>
-          <span class="ui-command-palette__hint">
-            <kbd class="ui-command-palette__kbd" aria-hidden="true">
-              <Icon name="corner-down-left" size={12} />
-            </kbd>
-            <span>Selecionar</span>
-          </span>
-          <span class="ui-command-palette__hint">
-            <kbd class="ui-command-palette__kbd">Esc</kbd>
-            <span>Fechar</span>
-          </span>
+          <div class="ui-command-palette__hints">
+            <span class="ui-command-palette__hint">
+              <kbd class="ui-command-palette__kbd" aria-hidden="true">
+                <Icon name="arrow-up" size={12} />
+              </kbd>
+              <kbd class="ui-command-palette__kbd" aria-hidden="true">
+                <Icon name="arrow-down" size={12} />
+              </kbd>
+              <span>Navegar</span>
+            </span>
+            <span class="ui-command-palette__hint">
+              <kbd class="ui-command-palette__kbd" aria-hidden="true">
+                <Icon name="corner-down-left" size={12} />
+              </kbd>
+              <span>Selecionar</span>
+            </span>
+            <span class="ui-command-palette__hint">
+              <kbd class="ui-command-palette__kbd">Esc</kbd>
+              <span>Fechar</span>
+            </span>
+          </div>
+          <span>Paleta de comandos</span>
         </>
       )}
     </footer>

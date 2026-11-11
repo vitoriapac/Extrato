@@ -196,3 +196,27 @@ test('createKeyboardShortcutsController — Alt+Enter ignorado se modal aberto o
 
   assert.equal(clicked, false);
 });
+
+test('createKeyboardShortcutsController — Escape no modo foco ignora quando há dialog aberto', () => {
+  const mockDoc = createMockDocument();
+  mockDoc.querySelector = sel => (sel.includes('dialog[open]') ? {} : null);
+  let exitCalled = false;
+  let prevented = false;
+
+  const controller = createKeyboardShortcutsController({
+    document: mockDoc,
+    onExitTimerFocus: () => {
+      exitCalled = true;
+    },
+  });
+
+  controller.handleTimerFocusKeydown({
+    key: 'Escape',
+    preventDefault: () => {
+      prevented = true;
+    },
+  });
+
+  assert.equal(exitCalled, false);
+  assert.equal(prevented, false);
+});
