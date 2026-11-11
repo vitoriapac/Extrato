@@ -31,6 +31,7 @@ graphify-out/*
 !.claude/launch.json
 .impeccable/*
 !.impeccable/design.json
+.agents/skills/impeccable/scripts/bin/
 
 # Build de producao e variaveis locais
 dist/
