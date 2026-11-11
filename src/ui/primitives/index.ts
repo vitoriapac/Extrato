@@ -14,3 +14,8 @@ export * from './select-field.js';
 export * from './bottom-sheet.js';
 export * from './tooltip.js';
 export * from './toast.js';
+export * from './command-palette.js';
+export * from './drawer.js';
+export * from './stepper.js';
+export * from './collapsible.js';
+export * from './table.js';

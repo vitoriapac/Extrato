@@ -1982,6 +1982,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/ui-primitives-astryx.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato de renderização, acessibilidade, lógica pura e governança CSS dos primitivos Astryx (CommandPalette, Drawer, Stepper, CollapsibleGroup e Table)."
+    },
+    {
       "file": "tests/unit/ui-primitives-composed.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato de renderização, acessibilidade, roving tabindex e invariantes CSS/tokens dos primitivos compostos do UI Kit."

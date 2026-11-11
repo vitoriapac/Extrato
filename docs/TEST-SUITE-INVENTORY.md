@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-332 arquivos Node e 71 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+333 arquivos Node e 71 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -399,6 +399,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/topic-strategy-renderer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-strategy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ui-presentation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/ui-primitives-astryx.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ui-primitives-composed.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ui-primitives.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/utils.test.js | node | Aplicação | functional | — | contract | none |

@@ -138,6 +138,15 @@ const iconMapping = {
   'cloud-off': 'cloud-off',
   // Acolhimento e Empatia
   'heart-handshake': 'heart-handshake',
+  // CommandPalette, Collapsible, Stepper & Table
+  'arrow-up': 'arrow-up',
+  'arrow-down': 'arrow-down',
+  'chevrons-up-down': 'chevrons-up-down',
+  command: 'command',
+  'corner-down-left': 'corner-down-left',
+  'chevrons-left': 'chevrons-left',
+  'chevrons-right': 'chevrons-right',
+  inbox: 'inbox',
   // Ícones semânticos adicionais
   adjustments: 'sliders-horizontal',
   'calendar-plus': 'calendar-plus',
