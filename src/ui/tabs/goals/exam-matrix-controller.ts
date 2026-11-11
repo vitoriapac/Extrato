@@ -1,3 +1,7 @@
+import { h } from 'preact';
+import { mountPreact } from '../../preact-mount.js';
+import { ExamClassificationModal } from '../../modals/ExamClassificationModal.js';
+import { syncDialogOpen } from '../../primitives/dialog.js';
 import { buildExamConfigurationAudit } from '../../../application/exam-intelligence/build-exam-configuration-audit.js';
 import { renderExamConfigurationAudit } from '../../renderers/exam-configuration-audit-renderer.js';
 import { buildExamMatrix } from '../../../application/exam-intelligence/build-exam-matrix.js';
@@ -53,9 +57,29 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
   };
   let selectedExamMatrixTopicId: string | null = null;
 
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    ctx.document === globalThis.document &&
+    typeof ctx.document?.createElement === 'function'
+      ? ctx.document.getElementById('examClassificationMount')
+      : null;
+
   let examClassificationFilter = 'all';
   let examClassificationPage = 0;
   let examClassificationPreviousFocus: HTMLElement | null = null;
+  let classificationOpen = false;
+
+  function renderClassificationModal() {
+    if (!mountNode) return;
+    mountPreact(
+      h(ExamClassificationModal, {
+        open: classificationOpen,
+        onClose: () => closeExamClassificationReview(),
+      }),
+      mountNode
+    );
+    syncDialogOpen(ctx.document, 'examClassificationOverlay', classificationOpen);
+  }
 
   function buildCurrentModel(filters: Record<string, any>) {
     const personal = new Map<string, { total: number; correct: number }>();
@@ -284,8 +308,14 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
   }
 
   function closeExamClassificationReview() {
-    const overlay = ctx.document.getElementById('examClassificationOverlay');
-    overlay?.classList.remove('show');
+    if (mountNode) {
+      if (!classificationOpen) return;
+      classificationOpen = false;
+      renderClassificationModal();
+    } else {
+      const overlay = ctx.document.getElementById('examClassificationOverlay');
+      overlay?.classList.remove('show');
+    }
     (examClassificationPreviousFocus?.isConnected
       ? examClassificationPreviousFocus
       : ctx.document.getElementById('openExamClassificationReview')
@@ -442,23 +472,33 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
         ?.scrollIntoView?.({ block: 'nearest' });
     });
 
+    if (mountNode) {
+      renderClassificationModal();
+    }
     const overlay = ctx.document.getElementById('examClassificationOverlay');
     ctx.document.getElementById('examDataQuality')?.addEventListener('click', event => {
       if (!(event.target as HTMLElement).closest('#openExamClassificationReview')) return;
       examClassificationPreviousFocus = ctx.document.activeElement as HTMLElement;
       examClassificationFilter = 'all';
       examClassificationPage = 0;
+      if (mountNode) {
+        classificationOpen = true;
+        renderClassificationModal();
+      } else {
+        overlay?.classList.add('show');
+      }
       updateExamClassificationReview();
-      overlay?.classList.add('show');
       ctx.document.getElementById('examClassificationFilter')?.focus();
     });
 
-    ctx.document
-      .getElementById('examClassificationClose')
-      ?.addEventListener('click', closeExamClassificationReview);
+    if (!mountNode) {
+      ctx.document
+        .getElementById('examClassificationClose')
+        ?.addEventListener('click', closeExamClassificationReview);
+    }
 
     overlay?.addEventListener('click', event => {
-      if (event.target === overlay) {
+      if (!mountNode && event.target === overlay) {
         closeExamClassificationReview();
         return;
       }
@@ -509,12 +549,14 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       }
     });
 
-    overlay?.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeExamClassificationReview();
-      }
-    });
+    if (!mountNode) {
+      overlay?.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeExamClassificationReview();
+        }
+      });
+    }
 
     ctx.document
       .getElementById('examDateInput')

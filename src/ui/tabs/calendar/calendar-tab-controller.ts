@@ -1,6 +1,8 @@
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
+import { mountPreact } from '../../preact-mount.js';
 import { CalendarTable, type CalendarItem } from './CalendarTable.js';
+import { CalendarViewSwitch, type CalendarMobileView } from './CalendarViewSwitch.js';
 import {
   buildUnifiedReviews,
   unifiedReviewLabel as defaultUnifiedItemLabel,
@@ -324,9 +326,27 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
   function setCalendarMobileView(view: string) {
     const doc = getDoc();
-    const normalized = view === 'agenda' ? 'agenda' : 'month';
+    const normalized: CalendarMobileView = view === 'agenda' ? 'agenda' : 'month';
     calendarUiState.view = normalized;
     doc?.getElementById('panel-agenda')?.setAttribute('data-calendar-view', normalized);
+    const mount = doc?.getElementById('calendarViewSwitchMount') as Element | null;
+    if (
+      mount &&
+      typeof globalThis.document !== 'undefined' &&
+      mount.ownerDocument === globalThis.document
+    ) {
+      mountPreact(
+        h(CalendarViewSwitch, {
+          value: normalized,
+          onChange: (nextView: CalendarMobileView) => {
+            calendarController?.setView(nextView);
+            setCalendarMobileView(calendarUiState.view || nextView);
+          },
+        }),
+        mount
+      );
+      return;
+    }
     doc?.querySelectorAll('.calendar-view-btn').forEach((button: any) => {
       const active = button.dataset.calendarView === normalized;
       button.classList?.toggle('active', active);
@@ -463,7 +483,9 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   function overdueOrigin(items: any[]): string {
     const agenda = items.filter((x: any) => x.origem === 'Agenda de Revisões').length,
       calendar = items.length - agenda;
-    return agenda && calendar ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} + ${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · ` : '';
+    return agenda && calendar
+      ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} + ${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · `
+      : '';
   }
 
   function renderCalAtrasadas(elId = 'calAtrasadas') {
@@ -582,7 +604,12 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       d.getElementById(sharedId)?.addEventListener('change', (event: any) => {
         const mirror = d.getElementById(mirrorId) as HTMLSelectElement | null;
         if (!mirror) return;
-        const wanted = event.target.value;
+        const wanted =
+          event.detail?.value !== undefined
+            ? event.detail.value
+            : event.target?.dataset?.selectedValue !== undefined
+              ? event.target.dataset.selectedValue
+              : event.target?.value || '';
         mirror.value = Array.from(mirror.options || []).some(option => option.value === wanted)
           ? wanted
           : '';

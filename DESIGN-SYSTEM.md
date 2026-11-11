@@ -45,7 +45,7 @@ As superfícies, textos, divisores e estados semânticos também têm aliases (`
 - `exam-subject-row`: nome e quatro campos estratégicos alinhados em uma linha no desktop e empilhados no mobile; valores ausentes comunicam herança da meta geral.
 - `consistency-strip`: últimos 28 dias em quatro níveis (as mesmas faixas do mapa de calor de Desempenho), no topo de Hoje, com contagem em texto.
 - `number-stepper` e `stepper-field`: campo numérico com botões de menos e mais (alvo de 44px), `inputmode="numeric"` e rótulo ligado ao campo; usado no registro de questões, onde acertos nunca passam de resolvidas.
-- `metas-subtab` e `metas-subpanel`: atalhos e blocos recolhíveis do Planejamento (`src/ui/planning-subtabs.ts`).
+- `metas-subtab` e `metas-subpanel`: atalhos e blocos recolhíveis do Planejamento (`src/ui/planning-subtabs.ts` e [`PlanningSubtabsNav.tsx`](src/ui/components/PlanningSubtabsNav.tsx)).
 - `advanced-reveal` e `term-hint`: botões do modo Essencial (`src/ui/essential-mode.ts`).
 - `backup-export-status`: "Último backup exportado há N dias", em `--warn-text` depois de 7 dias ou quando nunca houve exportação.
 
@@ -125,19 +125,24 @@ Cada um existe como componente Preact e como `render*` em string, para os render
 
 ### Inventário de componentes primitivos (Preact)
 
-| Papel                 | Contrato existente                                                   | Componente Preact (`src/ui/primitives/`)                 |
-| --------------------- | -------------------------------------------------------------------- | -------------------------------------------------------- |
-| Ações e botões        | `btn`, `btn-tonal`, `btn-tertiary`, `btn-ghost`, `btn-danger`        | `<Button variant="..." size="..." />`                    |
-| Badges e status       | `status-badge`, `status-pill`, `badge`                               | `<Badge variant="..." />` / `<StatusPill />`             |
-| Cards e seções        | `card`, `card--insight`, `card--attention`, `card--primary`          | `<Card variant="..." as="..." />`                        |
-| Cabeçalhos editoriais | `module-heading`, `ui-section-header`                                | `<SectionHeader title="..." eyebrow="..." />`            |
-| Progresso acessível   | `bar-track`, `bar-fill`, `ui-progress`                               | `<ProgressBar value={...} max={...} />`                  |
-| Estados vazios        | `empty-state`, `empty-state--compact`                                | `<EmptyState title="..." message="..." />`               |
-| Métricas              | `performance-kpi`, `ui-metric`                                       | `<MetricCard label="..." value="..." />`                 |
-| Diálogos e modais     | `modal-overlay`, `<dialog>`                                          | `<Dialog open={...} onClose={...} title="..." />`        |
-| Abas de navegação     | `tab-nav`, `nav-item`                                                | `<Tabs items={...} activeTab={...} onTabChange={...} />` |
-| Listas de registros   | `src/ui/progressive-list.ts` e `src/ui/list-components.ts`           | Em migração incremental                                  |
-| Gráficos              | `src/ui/chart-components.ts`, `chart-frame`, `chart-period-controls` | Contrato compartilhado mantido                           |
+| Papel                 | Contrato / classe `.ui-*`                                            | Componente Preact (`src/ui/primitives/`)                                              |
+| --------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Ações e botões        | `btn`, `btn-tonal`, `btn-tertiary`, `btn-ghost`, `btn-danger`        | `<Button variant="..." size="..." />` (`button.tsx`)                                  |
+| Badges e status       | `status-badge`, `status-pill`, `badge`                               | `<Badge variant="..." />` / `<StatusPill />` (`badge.tsx`)                            |
+| Cards e seções        | `card`, `card--insight`, `card--attention`, `card--primary`          | `<Card variant="..." as="..." />` (`card.tsx`)                                        |
+| Cabeçalhos editoriais | `module-heading`, `ui-section-header`                                | `<SectionHeader title="..." eyebrow="..." />` (`card.tsx`)                            |
+| Progresso acessível   | `bar-track`, `bar-fill`, `ui-progress`                               | `<ProgressBar value={...} max={...} />` (`progress-bar.tsx`)                          |
+| Estados vazios        | `empty-state`, `empty-state--compact`                                | `<EmptyState title="..." message="..." />` (`empty-state.tsx`)                        |
+| Métricas e razão      | `performance-kpi`, `ui-metric`, `ledger-line`                        | `<MetricCard />` (`metric-card.tsx`) e `<LedgerLine />` (`ledger-line.tsx`)           |
+| Diálogos e sheets     | `<dialog>` Top Layer, `.ui-dialog`, `.ui-bottom-sheet`               | `<Dialog />` (`dialog.tsx`) e `<BottomSheet />` (`bottom-sheet.tsx`)                  |
+| Menus e popovers      | `.ui-popover`, `.ui-menu`, teclado `Arrow`/`Home`/`End`              | `<Popover />` (`popover.tsx`) e `<DropdownMenu />` (`dropdown-menu.tsx`)              |
+| Seletores e busca     | `.ui-select-field`, `.ui-combobox`, busca sem acentos                | `<SelectField />` e `<Combobox />` (`select-field.tsx`)                               |
+| Abas e alternadores   | `.ui-tabs`, `.ui-segmented`, `role="tablist"`, roving tabindex      | `<Tabs variant="..." />` e `<SegmentedControl />` (`tabs.tsx`)                        |
+| Tooltips acessíveis   | `.ui-tooltip`, `aria-describedby` em foco/hover                      | `<Tooltip content="..." />` (`tooltip.tsx`)                                           |
+| Avisos e Undo         | `.ui-toast`, `.ui-toast-viewport`, `role="status"` / `role="alert"`  | `<Toast />` e `<ToastViewport />` (`toast.tsx`)                                       |
+| Iconografia vetorial  | `.icon-lucide`, traço padrão `1.5px`, zero emojis Unicode            | `<Icon name="..." stroke={1.5} />` / `renderIconSvg(...)` (`icon.tsx`)                |
+| Listas de registros   | `src/ui/progressive-list.ts` e `src/ui/list-components.ts`           | Em migração incremental                                                               |
+| Gráficos              | `src/ui/chart-components.ts`, `chart-frame`, `chart-period-controls` | Contrato compartilhado mantido + `src/ui/primitives/charts/*.tsx`                     |
 
 ### Linha de razão e conciliações
 
@@ -149,28 +154,23 @@ Cada um existe como componente Preact e como `render*` em string, para os render
 
 O fundo da página não tem mais textura pontilhada; a única textura do sistema é a de linhas verticais do cabeçalho do extrato.
 
-### Componentes de tela das abas (Preact `.tsx`)
+### Componentes de tela das abas e modais (Preact `.tsx`)
 
-A migração incremental da interface introduziu componentes funcionais Preact para as telas centrais, organizados por domínio funcional:
+A migração incremental da interface consolidou componentes funcionais Preact tanto para os blocos das abas quanto para os controles de navegação e todos os modais/sheets da aplicação (`src/ui/modals/*.tsx`):
 
-| Aba             | Componente TSX                           | Localização                                       | Responsabilidade                                                        |
-| --------------- | ---------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Disciplinas** | `<SubjectTopicManager />`                | `src/ui/tabs/disciplinas/SubjectTopicManager.tsx` | Gerenciamento de disciplinas, tópicos, importância, esforço e bookmarks |
-| **Questões**    | `<QuestionsTable />`                     | `src/ui/tabs/questoes/QuestionsTable.tsx`         | Histórico progressivo de questões, acertos, erros e filtros contextuais |
-| **Questões**    | `<PlateauDetectorCard />`                | `src/ui/tabs/questions/PlateauDetectorCard.tsx`   | Diagnóstico de platô de desempenho e prescrição de quebra de estagnação |
-| **Simulados**   | `<SimulationsTable />`                   | `src/ui/tabs/questoes/SimulationsTable.tsx`       | Lista e cadastro de simulados completos com notas e metas               |
-| **Desempenho**  | `<ShiftEnergyCard />`                    | `src/ui/tabs/performance/ShiftEnergyCard.tsx`     | Análise cronobiológica de energia e eficiência por turno                |
-| **Revisões**    | `<ReviewsSchedule />`                    | `src/ui/tabs/revisoes/ReviewsSchedule.tsx`        | Fila de revisões adaptativas, cartões de urgência e ações rápidas       |
-| **Calendário**  | `<CalendarView />` / `<CalendarTable />` | `src/ui/tabs/calendar/`                           | Visão mensal interativa e grade operacional de estudo                   |
-| **Metas**       | `<WeeklyGoals />`                        | `src/ui/tabs/metas/WeeklyGoals.tsx`               | Distribuição de capacidade, horas planejadas e metas semanais           |
-| **Hoje**        | `<TodaySchedule />`                      | `src/ui/tabs/hoje/TodaySchedule.tsx`              | Próxima melhor ação, cronograma do dia e execução em tempo real         |
-| **Visão Geral** | `<NextActionCard />`                     | `src/ui/tabs/dashboard/NextActionCard.tsx`        | Próxima ação com 6 respostas e acolhimento de boas-vindas               |
-| **Visão Geral** | `<CockpitSidebarCards />`                | `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`   | Coluna de suporte: Meta diária, Carga de revisões e Mini-heatmap 28d   |
-| **Visão Geral** | `<SyllabusHealthCard />`                 | `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`    | Saúde do edital com radar multidimensional e faixas de domínio         |
-| **Visão Geral** | `<PerformanceTrendCard />`               | `src/ui/tabs/dashboard/PerformanceTrendCard.tsx`  | Gráfico SVG puro de evolução de acertos de questões e simulados         |
-| **Visão Geral** | `<AllocationBalanceCard />`              | `src/ui/tabs/dashboard/AllocationBalanceCard.tsx` | Balanço de esforço vs peso no edital com divulgação progressiva (5 itens) |
-| **Visão Geral** | `<DashboardOverview />`                  | `src/ui/tabs/visao-geral/DashboardOverview.tsx`   | Painel executivo, índices de prontidão e KPIs resumidos                 |
-| **Onboarding**  | `<FirstAccessModal />`                   | `src/ui/components/FirstAccessModal.tsx`          | Modal acessível de primeiro acesso para início guiado ou demo          |
+| Área / Superfície | Componente TSX                              | Localização                                         | Responsabilidade                                                         |
+| ----------------- | ------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Disciplinas**   | `<SubjectsTab />` / `<SubjectBlock />`      | `src/ui/tabs/subjects/`                             | Filtro de edital (`SegmentedControl`), disciplinas, tópicos e bookmarks  |
+| **Questões**      | `<QuestionLogTable />` / `<PlateauDetectorCard />` | `src/ui/tabs/questions/`                    | Histórico progressivo de questões, erros, filtros e platô de rendimento  |
+| **Simulados**     | `<SimulationLogTable />`                    | `src/ui/tabs/questions/SimulationLogTable.tsx`      | Lista e registro de simulados completos com detalhamento por matéria     |
+| **Desempenho**    | `<ShiftEnergyCard />` / `<PerformancePageNav />` | `src/ui/tabs/performance/` e `src/ui/performance/` | Energia por turno, sub-abas (`Tabs` em 2 níveis) e selos `<Tooltip>`    |
+| **Revisões**      | `<ReviewsTable />`                          | `src/ui/tabs/reviews/ReviewsTable.tsx`              | Fila de revisões adaptativas com `<ReviewRatingSheet />`                 |
+| **Calendário**    | `<CalendarTable />` / `<CalendarViewSwitch />` | `src/ui/tabs/calendar/`                          | Grade operacional e alternador Mês/Lista (`SegmentedControl`)            |
+| **Metas**         | `<WeeklyAvailabilityGrid />` / `<PlanningSubtabsNav />` | `src/ui/tabs/goals/` e `src/ui/components/` | Capacidade, plano, conciliação e barra de sub-abas (`Tabs`)              |
+| **Hoje**          | `<TodayAgendaSections />`, `<TodayGoalsCard />`, `<TodayExecutionModeSwitch />` | `src/ui/tabs/today/`   | Execução (`Agenda`/`Sequência`), metas (`BulletBar`) e Extrato do Dia    |
+| **Visão Geral**   | `<NextActionCard />`, `<CockpitSidebarCards />`, `<SyllabusHealthCard />`, `<PerformanceTrendCard />`, `<AllocationBalanceGrid />` | `src/ui/tabs/dashboard/` | Cockpit em camadas: próxima ação, sidebar 28d, radar saúde, tendência e balanço |
+| **Modais/Sheets** | `<DataManagementModal />`, `<ExamClassificationModal />`, `<StructuredImportModal />`, `<QuestionsImportModal />`, `<ExamImportModal />`, `<GuidedOnboardingModal />`, `<SessionModalSheet />`, `<ReviewRatingSheet />`, `<ConfirmPromptModal />`, `<RemoteSyncModal />`, `<FirstAccessModal />`, `<WhatIfSimulatorModal />` | `src/ui/modals/`, `src/ui/components/` e `src/ui/forecasts/` | Modais e sheets em Top Layer nativo (`<Dialog>` / `<BottomSheet>`) montados em `*Mount` |
+| **Controles Shell** | `<MobileMoreMenu />`, `<ImportActionMenu />`, `<SubjectCombobox />`, `<ToastViewport />` | `src/ui/components/` e `src/ui/primitives/` | Menu móvel, menus Importar (`DropdownMenu`), busca sem acentos e avisos |
 
 Componentes novos devem reutilizar esses contratos antes de criar variantes. Matrizes e comparações mantêm a visualização simultânea dos dados.
 
@@ -178,9 +178,12 @@ Componentes novos devem reutilizar esses contratos antes de criar variantes. Mat
 
 A estilização foi enriquecida com **Tailwind CSS v4** integrado diretamente aos design tokens em [`styles/tokens.css`](styles/tokens.css) através de [`styles/tailwind.input.css`](styles/tailwind.input.css).
 
-### Regra de Coexistência Visual (Sem Preflight)
+### Regra de Coexistência Visual (Sem Preflight e Cascata `@layer`)
 
-Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes visuais com baselines PNG, o reset global (`Preflight`) está **desativado**. O Tailwind atua estritamente gerando utilitários e temas sob demanda.
+Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes visuais com baselines PNG, o reset global (`Preflight`) está **desativado**. O CSS segue a ordem explícita declarada em [`styles/tailwind.input.css`](styles/tailwind.input.css) e [`styles/app.css`](styles/app.css): `@layer theme, legacy, components, utilities;`.
+
+- **`@layer legacy` (`styles/app.css`):** envolve em bloco único todo o CSS de layout e estilos legados, com os 10 `@keyframes` posicionados no nível raiz e zero regras `.ui-*` duplicadas ou seletores mortos de modais (`.modal-*`).
+- **`@layer components` (`styles/tailwind.input.css`):** define os contratos `.ui-*` dos primitivos Preact (`.ui-dialog`, `.ui-bottom-sheet`, `.ui-popover`, `.ui-menu`, `.ui-select-field`, `.ui-combobox`, `.ui-tabs`, `.ui-segmented`, `.ui-tooltip`, `.ui-toast`), com precedência limpa sobre o legado e sem bloquear `@layer utilities`.
 
 ### Classes Utilitárias Semânticas do Tema
 
@@ -205,7 +208,7 @@ flowchart TD
         PT["Evolução de Acertos & Simulados (PerformanceTrendCard, 6 cols)"]
     end
     subgraph C3 ["Camada 3: Decisão Pedagógica"]
-        AB["Balanço de Alocação Tempo vs Peso (AllocationBalanceCard, 12 cols, máx 5 visíveis)"]
+        AB["Balanço de Alocação Tempo vs Peso (AllocationBalanceGrid, 12 cols, máx 5 visíveis)"]
         DG1["Disciplinas que Demandam Atenção (6 cols)"]
         DG2["Tópicos Prioritários para Revisar (6 cols)"]
     end
@@ -236,7 +239,7 @@ renderRecommendationExplanation usa quatro perguntas: o que fazer, por que, evid
 
 ## Gerenciamento de Dados e Backups
 
-O bloco de backup e zona de perigo foi desacoplado da visualização padrão de todas as abas e isolado em um modal flutuante (`#dataManagementOverlay`), acionado pelo botão discreto `#openDataManagementBtn` no rodapé. O botão `[▶ Explorar demonstração]` permanece imediatamente acessível no rodapé para descoberta rápida e onboarding. O overlay vive fora da raiz `<main>`, prevenindo traps de foco e atributos `inert` indevidos.
+O bloco de backup e zona de perigo foi desacoplado da visualização padrão de todas as abas e isolado em um modal flutuante declarativo (`<DataManagementModal />` em `src/ui/modals/DataManagementModal.tsx`, renderizado via `<Dialog>` no ponto de montagem `#dataManagementMount`), acionado pelo botão discreto `#openDataManagementBtn` no rodapé. O botão `[▶ Explorar demonstração]` permanece imediatamente acessível no rodapé para descoberta rápida e onboarding. O diálogo nativo `<dialog>` é promovido ao Top Layer pelo navegador (`showModal()`) e coordenado por `syncModalShell`, prevenindo traps de foco e atributos `inert` indevidos sobre `#mainContent`.
 
 O bloco mostra o lembrete do último backup exportado (`lastExportAt`, schema 30, gravado só ao baixar o arquivo; `lastBackupAt` continua sendo a cópia automática no navegador): "hoje", "ontem" ou "há N dias", em atenção depois de 7 dias, e "Nenhum backup exportado ainda" para quem nunca exportou.
 

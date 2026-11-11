@@ -5,6 +5,8 @@ import { buildWeeklyReadingTips } from '../../src/application/performance/build-
 import { renderPerformanceExecutiveSummary } from '../../src/ui/performance/performance-executive-summary-renderer.js';
 
 const window = (over = {}) => ({
+  start: '2026-04-01',
+  end: '2026-04-07',
   studiedMinutes: 0,
   plannedMinutes: 0,
   planFulfillmentPct: null,

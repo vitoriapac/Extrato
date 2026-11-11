@@ -1,6 +1,8 @@
 import type { JSX } from 'preact';
 import { Icon } from '../primitives/icon.js';
 import { Badge } from '../primitives/badge.js';
+import { SelectField } from '../primitives/select-field.js';
+import { Tooltip } from '../primitives/tooltip.js';
 import { formatDecimal } from '../../core/format-number.js';
 import {
   CAREER_BENCHMARKS,
@@ -33,7 +35,7 @@ function MetricBulletBar({
 
   return (
     <div class="space-y-1.5 w-full">
-      <div class="flex justify-between items-baseline text-xs">
+      <div class="flex justify-between items-baseline text-xs gap-2">
         <span class="font-medium text-content-primary">{comparison.label}</span>
         <div class="flex items-center gap-1.5 font-mono">
           <span class="font-bold text-sm text-content-primary">
@@ -42,6 +44,19 @@ function MetricBulletBar({
           <span class="text-content-secondary text-xs">
             (alvo: {formatDecimal(targetMin)}–{formatDecimal(targetMax)} {unit})
           </span>
+          <Tooltip
+            content={`Faixa competitiva de referência: ${formatDecimal(targetMin)} a ${formatDecimal(targetMax)} ${unit}`}
+            placement="top"
+            align="end"
+          >
+            <button
+              type="button"
+              class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+              aria-label={`Explicar faixa competitiva de ${comparison.label}`}
+            >
+              <Icon name="info-circle" size={14} />
+            </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -58,7 +73,6 @@ function MetricBulletBar({
         <div
           class="absolute top-0 bottom-0 bg-accent/15 border-x border-accent/30"
           style={{ left: `${targetMinPct}%`, width: `${targetWidthPct}%` }}
-          title={`Faixa competitiva: ${targetMin} a ${targetMax} ${unit}`}
         />
 
         {/* Barra de Progresso Atual */}
@@ -142,26 +156,18 @@ export function CareerBenchmarkCard({
         </div>
 
         {/* Seletor de Carreira */}
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <label for="careerClusterSelect" class="text-xs text-content-secondary whitespace-nowrap">
-            Carreira:
-          </label>
-          <select
-            id="careerClusterSelect"
-            class="select-control text-xs py-1 px-2.5 rounded border border-border-default bg-surface-subtle text-content-primary font-medium focus:ring-1 focus:ring-brand w-full sm:w-auto"
-            value={selectedCareerId}
-            onChange={e =>
-              onSelectCareer?.((e.target as HTMLSelectElement).value as CareerClusterId)
-            }
-            aria-label="Filtrar parâmetros de aprovados por carreira"
-          >
-            {careerOptions.map(opt => (
-              <option key={opt.id} value={opt.id}>
-                {opt.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="careerClusterSelect"
+          label="Carreira:"
+          inline
+          size="compact"
+          aria-label="Filtrar parâmetros de aprovados por carreira"
+          value={selectedCareerId}
+          options={careerOptions.map(opt => ({ value: opt.id, label: opt.name }))}
+          onChange={e => onSelectCareer?.((e.target as HTMLSelectElement).value as CareerClusterId)}
+          className="w-full sm:w-auto"
+          selectClassName="w-full sm:w-auto font-medium"
+        />
       </header>
 
       {/* Grid com os 3 Indicadores Principais */}
@@ -212,44 +218,68 @@ export function CareerBenchmarkCard({
               width: `${measuredMix.theoryPercent}%`,
               background: 'var(--chart-series-primary)',
             }}
-            title={`Teoria: ${measuredMix.theoryPercent}%`}
           />
           <div
             class="h-full transition-all"
             style={{ width: `${measuredMix.questionsPercent}%`, background: 'var(--subject-2)' }}
-            title={`Questões: ${measuredMix.questionsPercent}%`}
           />
           <div
             class="h-full transition-all"
             style={{ width: `${measuredMix.reviewPercent}%`, background: 'var(--ink-soft)' }}
-            title={`Revisão: ${measuredMix.reviewPercent}%`}
           />
         </div>
 
         {/* Legenda do Mix */}
         <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary pt-0.5">
-          <div class="flex items-center gap-3">
-            <span class="inline-flex items-center gap-1">
-              <span
-                class="w-2 h-2 rounded-full"
-                style={{ background: 'var(--chart-series-primary)' }}
-              />
-              <span>
-                Teoria: <strong>{measuredMix.theoryPercent}%</strong>
-              </span>
-            </span>
-            <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full" style={{ background: 'var(--subject-2)' }} />
-              <span>
-                Questões: <strong>{measuredMix.questionsPercent}%</strong>
-              </span>
-            </span>
-            <span class="inline-flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full" style={{ background: 'var(--ink-soft)' }} />
-              <span>
-                Revisão: <strong>{measuredMix.reviewPercent}%</strong>
-              </span>
-            </span>
+          <div class="flex flex-wrap items-center gap-3">
+            <Tooltip
+              content={`Teoria: ${measuredMix.theoryPercent}% do tempo medido (referência recomendada: ${career.targetMix.theoryPercent}%)`}
+              placement="top"
+              align="start"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <span
+                  class="w-2 h-2 rounded-full"
+                  style={{ background: 'var(--chart-series-primary)' }}
+                />
+                <span>
+                  Teoria: <strong>{measuredMix.theoryPercent}%</strong>
+                </span>
+              </button>
+            </Tooltip>
+            <Tooltip
+              content={`Questões: ${measuredMix.questionsPercent}% do tempo medido (referência recomendada: ${career.targetMix.questionsPercent}%)`}
+              placement="top"
+              align="center"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <span class="w-2 h-2 rounded-full" style={{ background: 'var(--subject-2)' }} />
+                <span>
+                  Questões: <strong>{measuredMix.questionsPercent}%</strong>
+                </span>
+              </button>
+            </Tooltip>
+            <Tooltip
+              content={`Revisão: ${measuredMix.reviewPercent}% do tempo medido (referência recomendada: ${career.targetMix.reviewPercent}%)`}
+              placement="top"
+              align="center"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <span class="w-2 h-2 rounded-full" style={{ background: 'var(--ink-soft)' }} />
+                <span>
+                  Revisão: <strong>{measuredMix.reviewPercent}%</strong>
+                </span>
+              </button>
+            </Tooltip>
           </div>
           <span class="text-content-secondary">Período: últimos 7 dias</span>
         </div>

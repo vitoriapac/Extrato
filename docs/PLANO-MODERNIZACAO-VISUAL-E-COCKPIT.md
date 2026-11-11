@@ -2,6 +2,9 @@
 
 Este documento estabelece as especificações técnicas, arquiteturais e de design para a modernização do **StudyTrack** em cinco fases sequenciais, testáveis e reversíveis via Pull Requests atômicos no repositório.
 
+> [!NOTE]
+> **Atualização evolutiva (Lucide Icons `1.5px` e Primitivos UI Ondas 1–4):** Posteriormente à conclusão destas 5 fases iniciais do cockpit, o catálogo de ícones foi migrado integralmente de Tabler para **Lucide Icons (`1.5px`)** via `lucide-static` e [`scripts/generate-lucide-icons.mjs`](../scripts/generate-lucide-icons.mjs), e o sistema de componentes foi expandido com primitivos compostos, cascata `@layer theme, legacy, components, utilities;` e modais declarativos em `src/ui/modals/*.tsx` (consulte a Seção 27 de [PLANOS-CONCLUIDOS.md](PLANOS-CONCLUIDOS.md) e [DESIGN-SYSTEM.md](../DESIGN-SYSTEM.md)).
+
 O plano consolida a evolução estética e ergonômica da aplicação mantendo invioláveis as diretrizes de governança ([AGENTS.md](../AGENTS.md)): **identidade única de Extrato Bancário**, **privacidade local-first**, **ausência de emojis**, **zero cores fora dos tokens** e **modularização estrita**.
 
 ---

@@ -7,10 +7,13 @@ export type BottomSheetProps = Omit<JSX.IntrinsicElements['dialog'], 'title'> & 
   open: boolean;
   onClose: () => void;
   title: string;
+  titleId?: string;
   description?: string;
+  descriptionId?: string;
   footer?: ComponentChildren;
   maxWidth?: 'sm' | 'md' | 'lg';
   closeOnBackdropClick?: boolean;
+  restoreFocusOnClose?: boolean;
   className?: string;
   children?: ComponentChildren;
 };
@@ -19,10 +22,13 @@ export function BottomSheet({
   open,
   onClose,
   title,
+  titleId: customTitleId,
   description = '',
+  descriptionId: customDescId,
   footer,
   maxWidth = 'md',
   closeOnBackdropClick = true,
+  restoreFocusOnClose = true,
   className = '',
   children,
   onCancel,
@@ -30,19 +36,25 @@ export function BottomSheet({
   ...rest
 }: BottomSheetProps) {
   const generatedId = useId();
-  const titleId = `${generatedId}-title`;
-  const descId = `${generatedId}-desc`;
+  const titleId = customTitleId || `${generatedId}-title`;
+  const descId = customDescId || `${generatedId}-desc`;
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog || typeof document === 'undefined') return;
 
     if (open) {
-      if (document.activeElement && document.activeElement !== document.body) {
+      if (
+        document.activeElement &&
+        document.activeElement !== document.body &&
+        !dialog.contains(document.activeElement)
+      ) {
         previousFocusRef.current = document.activeElement as HTMLElement;
       }
+      wasOpenRef.current = true;
       if (!dialog.open) {
         if (typeof dialog.showModal === 'function') {
           dialog.showModal();
@@ -50,18 +62,29 @@ export function BottomSheet({
           dialog.setAttribute('open', '');
         }
       }
-    } else if (dialog.open) {
-      if (typeof dialog.close === 'function') {
-        dialog.close();
-      } else {
-        dialog.removeAttribute('open');
+    } else if (wasOpenRef.current || dialog.open) {
+      wasOpenRef.current = false;
+      if (dialog.open) {
+        if (typeof dialog.close === 'function') {
+          dialog.close();
+        } else {
+          dialog.removeAttribute('open');
+        }
       }
-      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
-        previousFocusRef.current.focus();
-      }
+      const targetToFocus = previousFocusRef.current;
       previousFocusRef.current = null;
+      if (restoreFocusOnClose && targetToFocus && typeof targetToFocus.focus === 'function') {
+        if (targetToFocus.isConnected) {
+          targetToFocus.focus();
+        }
+        queueMicrotask(() => {
+          if (targetToFocus.isConnected && document.activeElement !== targetToFocus) {
+            targetToFocus.focus();
+          }
+        });
+      }
     }
-  }, [open]);
+  }, [open, restoreFocusOnClose]);
 
   const sizeClass =
     maxWidth === 'sm'

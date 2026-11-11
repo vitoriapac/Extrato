@@ -145,6 +145,39 @@ test('Shell UI Controller — syncModalShell aplica inert e modal-open conforme 
   assert.equal(env.body.classList.contains('modal-open'), false);
 });
 
+test('Shell UI Controller — syncModalShell reconhece dialog[open] nativo para inert e modal-open', () => {
+  const env = createMockEnvironment();
+  const nativeDialog = new MockElement('remoteSyncOverlay', 'dialog');
+  let openDialogs = [nativeDialog];
+  const baseQueryAll = env.mockDocument.querySelectorAll;
+  env.mockDocument.querySelectorAll = selector => {
+    if (selector === 'dialog[open]') return openDialogs;
+    return baseQueryAll(selector);
+  };
+
+  const controller = createShellUiController({
+    document: env.mockDocument,
+    window: env.mockWindow,
+    activateTab: () => {},
+    state: {},
+    scheduleSave: () => {},
+  });
+
+  controller.syncModalShell();
+  assert.equal(env.mainContent.inert, true);
+  assert.equal(env.body.classList.contains('modal-open'), true);
+
+  nativeDialog.hidden = true;
+  controller.syncModalShell();
+  assert.equal(env.mainContent.inert, false);
+  assert.equal(env.body.classList.contains('modal-open'), false);
+
+  openDialogs = [];
+  controller.syncModalShell();
+  assert.equal(env.mainContent.inert, false);
+  assert.equal(env.body.classList.contains('modal-open'), false);
+});
+
 test('Shell UI Controller — initExecutionModeSwitchers altera modo e agenda persistência', () => {
   const env = createMockEnvironment();
   const agendaBtn = new MockElement('executionAgendaBtn');

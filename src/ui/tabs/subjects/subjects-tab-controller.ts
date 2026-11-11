@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { getRovingTabIndex } from '../../primitives/tabs.js';
 import { isSubjectColor } from '../../../domain/subjects/subject-color.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { VerticalizedSyllabusView } from '../../views/VerticalizedSyllabusView.js';
@@ -719,6 +720,32 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     ctx.document.getElementById('verticalizedSyllabusToggleBtn')?.addEventListener('click', () => {
       setVerticalizedSyllabusActive(!isVerticalizedSyllabusActive());
       renderSubjects();
+    });
+    ctx.document.getElementById('subjectsContainer')?.addEventListener('keydown', (event: KeyboardEvent) => {
+      const target = (event.target as HTMLElement | null)?.closest?.(
+        '.exam-scope-filter.ui-segmented .ui-segmented__item'
+      ) as HTMLElement | null;
+      if (!target || event.altKey || event.ctrlKey || event.metaKey) return;
+      const group = target.closest('.exam-scope-filter.ui-segmented');
+      if (!group) return;
+      const items = [...group.querySelectorAll<HTMLElement>('.ui-segmented__item')];
+      const nextIndex = getRovingTabIndex(
+        items.indexOf(target),
+        event.key,
+        items.length,
+        'horizontal',
+        idx => Boolean((items[idx] as HTMLButtonElement | undefined)?.disabled)
+      );
+      if (nextIndex === null) return;
+      event.preventDefault();
+      const nextValue = items[nextIndex]?.dataset?.examFilter;
+      if (!nextValue) return;
+      setSubjectExamFilter(nextValue);
+      (
+        ctx.document.querySelector(
+          `.exam-scope-filter [data-exam-filter="${nextValue}"]`
+        ) as HTMLElement | null
+      )?.focus();
     });
   }
 

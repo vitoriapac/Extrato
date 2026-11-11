@@ -93,7 +93,7 @@ export function NextActionCard({
             <div dangerouslySetInnerHTML={{ __html: activeTimerNoticeHtml }} />
           )}
           <section
-            className="welcome-hero-card p-5 rounded-default border border-border-default bg-surface-card shadow-xs flex flex-col gap-3"
+            className="welcome-hero-card flex flex-col gap-3"
             aria-labelledby="welcomeHeroTitle"
             data-welcome-hero="true"
           >

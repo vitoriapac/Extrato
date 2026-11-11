@@ -11,6 +11,7 @@ export interface SelectOption {
 export type SelectFieldProps = Omit<JSX.IntrinsicElements['select'], 'size' | 'role'> & {
   label: string;
   hideLabel?: boolean;
+  inline?: boolean;
   options?: SelectOption[];
   placeholder?: string;
   hint?: string;
@@ -25,6 +26,7 @@ export type SelectFieldProps = Omit<JSX.IntrinsicElements['select'], 'size' | 'r
 export function SelectField({
   label,
   hideLabel = false,
+  inline = false,
   options,
   placeholder,
   hint,
@@ -44,7 +46,12 @@ export function SelectField({
   const describedBy =
     [hint ? hintId : '', error ? errorId : ''].filter(Boolean).join(' ') || undefined;
 
-  const rootClass = ['ui-select-field', fullWidth ? 'w-full' : '', className]
+  const rootClass = [
+    'ui-select-field',
+    inline ? 'ui-select-field--inline' : '',
+    fullWidth ? 'w-full' : '',
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
   const controlClass = [
@@ -134,6 +141,7 @@ export interface ComboboxProps {
   onChange?: (value: string, option: ComboboxOption | null) => void;
   placeholder?: string;
   emptyMessage?: string;
+  emptyValueAsPlaceholder?: boolean;
   clearable?: boolean;
   disabled?: boolean;
   error?: string;
@@ -151,6 +159,7 @@ export function Combobox({
   onChange,
   placeholder = 'Buscar...',
   emptyMessage = 'Nenhuma opção encontrada',
+  emptyValueAsPlaceholder = false,
   clearable = true,
   disabled = false,
   error,
@@ -172,16 +181,25 @@ export function Combobox({
   const [activeIndex, setActiveIndex] = useState(-1);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const didMouseSelectRef = useRef(false);
 
   const filtered = useMemo(
     () => (isTyping ? filterComboboxOptions(options, query) : options),
     [options, isTyping, query]
   );
 
-  const displayText = isTyping ? query : selectedOption?.label || '';
+  const displayText = isTyping
+    ? query
+    : emptyValueAsPlaceholder && !value
+      ? ''
+      : selectedOption?.label || '';
 
   useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') return undefined;
+    if (!isOpen) {
+      didMouseSelectRef.current = false;
+      return undefined;
+    }
+    if (typeof document === 'undefined') return undefined;
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node | null;
@@ -243,6 +261,7 @@ export function Combobox({
       }
     } else if (event.key === 'Escape' && isOpen) {
       event.preventDefault();
+      event.stopPropagation();
       setIsOpen(false);
       setIsTyping(false);
       setActiveIndex(-1);
@@ -273,6 +292,7 @@ export function Combobox({
           autocomplete="off"
           disabled={disabled}
           value={displayText}
+          data-selected-value={value}
           placeholder={placeholder}
           aria-autocomplete="list"
           aria-expanded={isOpen ? 'true' : 'false'}
@@ -283,6 +303,9 @@ export function Combobox({
           class="ui-combobox__input"
           onFocus={() => {
             if (!disabled) setIsOpen(true);
+          }}
+          onClick={() => {
+            if (!disabled && !isOpen) setIsOpen(true);
           }}
           onInput={event => {
             setIsTyping(true);
@@ -344,6 +367,7 @@ export function Combobox({
                     key={option.value}
                     id={`${listboxId}-opt-${index}`}
                     role="option"
+                    data-option-value={option.value}
                     aria-selected={isSelected ? 'true' : 'false'}
                     aria-disabled={option.disabled ? 'true' : undefined}
                     class={['ui-combobox__option', isActive ? 'ui-combobox__option--active' : '']
@@ -351,6 +375,14 @@ export function Combobox({
                       .join(' ')}
                     onMouseDown={event => {
                       event.preventDefault();
+                      didMouseSelectRef.current = true;
+                      selectOption(option);
+                    }}
+                    onClick={() => {
+                      if (didMouseSelectRef.current) {
+                        didMouseSelectRef.current = false;
+                        return;
+                      }
                       selectOption(option);
                     }}
                   >

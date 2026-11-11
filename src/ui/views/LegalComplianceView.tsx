@@ -60,7 +60,7 @@ export function LegalComplianceView({
       <div class="flex flex-col gap-1 pb-3 border-b border-border-default">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-2">
-            <span class="p-1.5 rounded-lg bg-brand/10 text-brand">
+            <span class="p-1.5 rounded-lg bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent">
               <Icon name="shield-check" size={20} />
             </span>
             <h3 class="text-base font-semibold text-text">{currentDoc.title}</h3>
@@ -133,7 +133,7 @@ export function LegalComplianceView({
       {activeTab === 'rights' && (
         <div class="p-3.5 rounded-lg bg-surface-subtle border border-border-default flex flex-col gap-3">
           <div class="flex items-center gap-2">
-            <Icon name="bolt" size={18} class="text-brand" />
+            <Icon name="bolt" size={18} class="text-brand dark:text-accent" />
             <h4 class="text-xs font-semibold text-text uppercase tracking-wider">
               Painel de Autoatendimento do Titular
             </h4>
@@ -256,7 +256,7 @@ export function LegalComplianceView({
         onClose={onClose || (() => {})}
         title="Conformidade Legal & Privacidade"
         maxWidth="xl"
-        className="max-h-[92vh] flex flex-col"
+        className="max-h-[92vh]"
       >
         {content}
       </Dialog>

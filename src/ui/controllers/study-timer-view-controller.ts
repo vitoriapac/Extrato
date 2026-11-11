@@ -8,9 +8,13 @@
  * Camada: UI Controller.
  */
 
+import { h } from 'preact';
 import { formatDuration, formatPlanMinutes } from '../../core/format-duration.js';
 import { formatTimerTitle } from './pip-timer-controller.js';
 import { renderGuidedStrategyHtml } from './timer-controller.js';
+import { mountPreact } from '../preact-mount.js';
+import { SubjectCombobox } from '../components/SubjectCombobox.js';
+import type { ComboboxOption } from '../primitives/select-field.js';
 import type { ActiveTimerState } from '../../core/types.js';
 
 export interface TimerViewDocumentLike {
@@ -55,6 +59,52 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
   } = opts;
 
   const BASE_DOCUMENT_TITLE = document.title;
+
+  const getRealMount = (id: string): Element | null => {
+    if (typeof globalThis.document === 'undefined') return null;
+    const mount = document.getElementById(id);
+    return mount && mount.ownerDocument === globalThis.document ? mount : null;
+  };
+
+  let currentSubjectOptions: ComboboxOption[] = [{ value: '', label: 'Sem disciplina específica' }];
+  let selectedSubjectId = '';
+  let controlsDisabled = false;
+  let subjectChangeHandler: ((subjectId: string) => void) | null = null;
+
+  function renderSubjectCombobox() {
+    const mount = getRealMount('timerSubjectMount');
+    if (!mount) return;
+    mountPreact(
+      h(SubjectCombobox, {
+        id: 'timerSubjectSelect',
+        label: 'Disciplina da sessão',
+        hideLabel: true,
+        placeholder: 'Sem disciplina específica',
+        options: currentSubjectOptions,
+        value: selectedSubjectId,
+        disabled: controlsDisabled,
+        onChange: (nextSubjectId: string) => {
+          selectedSubjectId = nextSubjectId;
+          renderSubjectCombobox();
+          subjectChangeHandler?.(nextSubjectId);
+        },
+      }),
+      mount
+    );
+  }
+
+  function getSelectedSubjectId(): string {
+    if (getRealMount('timerSubjectMount')) {
+      return selectedSubjectId;
+    }
+    return (document.getElementById('timerSubjectSelect') as HTMLSelectElement | null)?.value || '';
+  }
+
+  function onSubjectChange(handler: (subjectId: string) => void) {
+    subjectChangeHandler = handler;
+  }
+
+  renderSubjectCombobox();
 
   function renderTimerFocusContext() {
     const section = document.getElementById('timerFocusContext');
@@ -175,7 +225,16 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
       if (el) el.disabled = !hasTime && !isRunning;
     });
 
-    ['timerSubjectSelect', 'timerTopicSelect', 'timerTypeSelect'].forEach(id => {
+    const hasSubjectMount = Boolean(getRealMount('timerSubjectMount'));
+    if (hasSubjectMount && controlsDisabled !== hasTime) {
+      controlsDisabled = hasTime;
+      renderSubjectCombobox();
+    }
+
+    (hasSubjectMount
+      ? ['timerTopicSelect', 'timerTypeSelect']
+      : ['timerSubjectSelect', 'timerTopicSelect', 'timerTypeSelect']
+    ).forEach(id => {
       const el = document.getElementById(id) as HTMLSelectElement | null;
       if (el) el.disabled = hasTime;
     });
@@ -206,21 +265,42 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
 
   function populateTimerContextControls() {
     const active = getActiveTimer();
-    const subjectSelect = document.getElementById('timerSubjectSelect') as HTMLSelectElement | null;
+    const subjectMount = getRealMount('timerSubjectMount');
+    const subjectSelect = subjectMount
+      ? null
+      : (document.getElementById('timerSubjectSelect') as HTMLSelectElement | null);
     const typeSelect = document.getElementById('timerTypeSelect') as HTMLSelectElement | null;
-    if (!subjectSelect || !typeSelect) return;
+    if ((!subjectMount && !subjectSelect) || !typeSelect) return;
 
-    subjectSelect.innerHTML =
-      `<option value="">Sem disciplina específica</option>` +
-      subjectsForSelection(active.subjectId)
-        .map(
-          subject =>
-            `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}${subject.archived ? ' (arquivada)' : ''}</option>`
-        )
-        .join('');
-    subjectSelect.value = active.subjectId || '';
-    if (subjectSelect.value !== (active.subjectId || '')) {
-      active.subjectId = null;
+    if (subjectMount) {
+      const options: ComboboxOption[] = [
+        { value: '', label: 'Sem disciplina específica' },
+        ...subjectsForSelection(active.subjectId).map(subject => ({
+          value: String(subject.id),
+          label: `${subject.name}${subject.archived ? ' (arquivada)' : ''}`,
+        })),
+      ];
+      currentSubjectOptions = options;
+      const desired = active.subjectId || '';
+      const valid = options.some(opt => opt.value === desired) ? desired : '';
+      selectedSubjectId = valid;
+      if (valid !== desired) {
+        active.subjectId = null;
+      }
+      renderSubjectCombobox();
+    } else if (subjectSelect) {
+      subjectSelect.innerHTML =
+        `<option value="">Sem disciplina específica</option>` +
+        subjectsForSelection(active.subjectId)
+          .map(
+            subject =>
+              `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}${subject.archived ? ' (arquivada)' : ''}</option>`
+          )
+          .join('');
+      subjectSelect.value = active.subjectId || '';
+      if (subjectSelect.value !== (active.subjectId || '')) {
+        active.subjectId = null;
+      }
     }
     populateTimerTopicSelect(active.subjectId || '', active.topicId || null);
     typeSelect.value = active.type || 'study';
@@ -228,6 +308,8 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
   }
 
   return {
+    getSelectedSubjectId,
+    onSubjectChange,
     renderTimerFocusContext,
     renderGuidedStrategy,
     updateTimerDisplay,

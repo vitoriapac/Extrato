@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, openExamImport, overviewRecommendationId, openPlanningSubtab, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  openDemo,
+  openExamImport,
+  overviewRecommendationId,
+  openPlanningSubtab,
+  openPerformanceSection,
+} from './helpers.js';
 
 test.describe('validação dos fluxos recentes', () => {
   test('matriz, cenários e fechamento aparecem no planejamento da demo', async ({ page }) => {
@@ -343,7 +350,7 @@ test.describe('validação dos fluxos recentes', () => {
     await expect(page.locator('#testReport')).toBeVisible();
     await page.locator('#testReport').evaluate(element => element.remove());
     await activateTab(page, 'questoes');
-    await page.locator('.questions-import-menu > summary').click();
+    await page.locator('.questions-import-menu > button').click();
     await expect(page.locator('#importQuestionsBtn')).toBeVisible();
     const csv =
       'Data;Disciplina;Tópico;Resolvidas;Acertos;Categoria do erro\n2026-10-15;Português;Interpretação de Texto;10;8;interpretacao\n2026-10-16;Conhecimentos Bancários;Sistema Financeiro Nacional;15;12;lacuna\n';

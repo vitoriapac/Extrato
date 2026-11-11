@@ -1,3 +1,7 @@
+import { h } from 'preact';
+import { mountPreact } from '../../ui/preact-mount.js';
+import { ExamImportModal } from '../../ui/modals/ExamImportModal.js';
+import { syncDialogOpen } from '../../ui/primitives/dialog.js';
 import { createExamImportState, resetExamImportState } from './exam-import-state.js';
 import { buildExamImportViewModel } from './exam-import-view-model.js';
 import {
@@ -38,8 +42,40 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
     importService: ctx.examImportService,
   });
 
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    ctx.document === globalThis.document &&
+    typeof ctx.document?.createElement === 'function'
+      ? ctx.document.getElementById('examImportMount')
+      : null;
+
   const examImportState = createExamImportState(ctx.EXAM_PRESETS[0]);
+  const modalViewState = {
+    open: false,
+    backHidden: true,
+    nextLabel: 'Continuar',
+    nextDisabled: false,
+  };
   let examImportOrigin: string | null = null;
+
+  function renderModal() {
+    if (!mountNode) return;
+    mountPreact(
+      h(ExamImportModal, {
+        open: modalViewState.open,
+        backHidden: modalViewState.backHidden,
+        nextLabel: modalViewState.nextLabel,
+        nextDisabled: modalViewState.nextDisabled,
+        onClose: () => closeExamImport(),
+      }),
+      mountNode
+    );
+    syncDialogOpen(ctx.document, 'examImportOverlay', modalViewState.open);
+  }
+
+  if (mountNode) {
+    renderModal();
+  }
 
   const nowISO = ctx.nowISO || (() => new Date().toISOString());
   const escapeHtml =
@@ -126,13 +162,22 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
       topicLabel: ctx.topicExamScopeLabel,
       preview,
     });
-    if (back) back.hidden = model.step === 1;
-    if (next) {
-      next.textContent = model.step === 3 ? 'Importar' : 'Continuar';
-      next.disabled =
-        model.step === 3
-          ? preview.addedSubjects + preview.addedTopics + preview.metadataUpdates === 0
-          : !model.canContinue;
+    const nextLabel = model.step === 3 ? 'Importar' : 'Continuar';
+    const nextDisabled =
+      model.step === 3
+        ? preview.addedSubjects + preview.addedTopics + preview.metadataUpdates === 0
+        : !model.canContinue;
+    if (mountNode) {
+      modalViewState.backHidden = model.step === 1;
+      modalViewState.nextLabel = nextLabel;
+      modalViewState.nextDisabled = nextDisabled;
+      renderModal();
+    } else {
+      if (back) back.hidden = model.step === 1;
+      if (next) {
+        next.textContent = nextLabel;
+        next.disabled = nextDisabled;
+      }
     }
     if (content) {
       content.innerHTML = renderExamImportView(model, {
@@ -164,7 +209,11 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
         ctx.suspendGuidedOnboarding();
       }
       editalImportFacade.begin(examImportState.presetId!);
-      ctx.document.getElementById('examImportOverlay')?.classList.add('show');
+      if (mountNode) {
+        modalViewState.open = true;
+      } else {
+        ctx.document.getElementById('examImportOverlay')?.classList.add('show');
+      }
       renderExamImport();
       ctx.document.querySelector<HTMLElement>('[name="examPreset"]')?.focus();
     } catch (error: any) {
@@ -173,9 +222,15 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
   }
 
   function closeExamImport({ completed = false }: { completed?: boolean } = {}) {
+    if (mountNode && !modalViewState.open) return;
     const origin = examImportOrigin;
     editalImportFacade.cancel();
-    ctx.document.getElementById('examImportOverlay')?.classList.remove('show');
+    if (mountNode) {
+      modalViewState.open = false;
+      renderModal();
+    } else {
+      ctx.document.getElementById('examImportOverlay')?.classList.remove('show');
+    }
     if (origin === 'onboarding') {
       if (ctx.resumeGuidedOnboarding) {
         ctx.resumeGuidedOnboarding(completed ? 'plan' : 'content');

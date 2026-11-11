@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openDemo, activateTab } from './helpers.js';
+import { openDemo, activateTab, selectSubjectCombobox } from './helpers.js';
 
 test.describe('no celular', () => {
   test.use({ viewport: { width: 375, height: 812 } });
@@ -52,7 +52,8 @@ test.describe('no celular', () => {
     await expect(page.locator('#questionDraft-resolved')).toHaveAttribute('inputmode', 'numeric');
     await form.getByRole('button', { name: 'Resolvidas: mais uma' }).click();
     await form.getByRole('button', { name: 'Resolvidas: mais uma' }).click();
-    for (let i = 0; i < 4; i++) await form.getByRole('button', { name: 'Acertos: mais uma' }).click();
+    for (let i = 0; i < 4; i++)
+      await form.getByRole('button', { name: 'Acertos: mais uma' }).click();
     await expect(page.locator('#questionDraft-correct')).toHaveValue('2');
     await page.locator('#questionDraft-resolved').fill('1');
     await expect(page.locator('#questionDraft-correct')).toHaveValue('1');
@@ -66,7 +67,10 @@ test('novo registro de questões começa na disciplina do último registro (F4)'
   const subject = page.locator('#questoesBody tr.row-editing select').first();
   const chosen = await subject.locator('option').nth(3).getAttribute('value');
   await subject.selectOption(chosen);
-  await page.locator('#questoesBody tr.row-editing').getByRole('button', { name: 'Salvar alterações' }).click();
+  await page
+    .locator('#questoesBody tr.row-editing')
+    .getByRole('button', { name: 'Salvar alterações' })
+    .click();
   await page.locator('#addQuestaoRowBtn').click();
   await expect(page.locator('#questoesBody tr.row-editing select').first()).toHaveValue(chosen);
 });
@@ -78,12 +82,10 @@ test('Ctrl+K continua abrindo a busca no desktop (F3)', async ({ page }) => {
   await expect(page.locator('#globalSearchInput')).toBeFocused();
 });
 
-test('resultado da sessão mostra prontidão e meta do dia e meta do dia (F5)', async ({
-  page,
-}) => {
+test('resultado da sessão mostra prontidão e meta do dia e meta do dia (F5)', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'hoje');
-  await page.locator('#timerSubjectSelect').selectOption({ index: 1 });
+  await selectSubjectCombobox(page, '#timerSubjectSelect', { index: 1 });
   await page.locator('#timerTopicSelect').selectOption({ index: 1 });
   await page.locator('#timerStartBtn').click();
   await expect(page.locator('#timerFinishBtn')).toBeEnabled();
@@ -100,9 +102,11 @@ test('Alex (Power User) — encadeamento pós-sessão de estudo para questões d
 }) => {
   await openDemo(page);
   await activateTab(page, 'hoje');
-  await page.locator('#timerSubjectSelect').selectOption({ index: 1 });
+  const chosenSubject = await selectSubjectCombobox(page, '#timerSubjectSelect', { index: 1 });
   await page.locator('#timerTopicSelect').selectOption({ index: 1 });
-  const subjectId = await page.locator('#timerSubjectSelect').inputValue();
+  const subjectId =
+    (await page.locator('#timerSubjectSelect').getAttribute('data-selected-value')) ||
+    chosenSubject.value;
   const topicId = await page.locator('#timerTopicSelect').inputValue();
   await page.locator('#timerStartBtn').click();
   await page.locator('#timerFinishBtn').click();
@@ -125,6 +129,7 @@ test('Alex (Power User) — encadeamento pós-sessão de estudo para questões d
   await row.getByRole('button', { name: 'Salvar alterações' }).click();
   await expect(page.locator('#questoesBody tr.row-editing')).toHaveCount(0);
   await expect(page.locator(`#questoesBody tr[data-id="${questionId}"]`)).toHaveCount(1);
-  await expect(page.locator(`#questoesBody tr[data-id="${questionId}"]:visible`)).toContainText('10');
+  await expect(page.locator(`#questoesBody tr[data-id="${questionId}"]:visible`)).toContainText(
+    '10'
+  );
 });
-

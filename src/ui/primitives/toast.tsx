@@ -16,11 +16,18 @@ export interface ToastProps {
   title: string;
   description?: string;
   variant?: ToastVariant;
+  compact?: boolean;
+  idle?: boolean;
+  open?: boolean;
   actionLabel?: string;
   onAction?: () => void;
   onDismiss?: () => void;
   dismissLabel?: string;
   className?: string;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  onFocusIn?: () => void;
+  onFocusOut?: () => void;
 }
 
 export function Toast({
@@ -28,15 +35,45 @@ export function Toast({
   title,
   description = '',
   variant = 'info',
+  compact = false,
+  idle = false,
+  open = true,
   actionLabel,
   onAction,
   onDismiss,
   dismissLabel = 'Dispensar notificação',
   className = '',
+  onMouseEnter,
+  onMouseLeave,
+  onFocusIn,
+  onFocusOut,
 }: ToastProps) {
   const isAssertive = variant === 'danger' || variant === 'warning';
-  const rootClass = ['ui-toast', `ui-toast--${variant}`, className].filter(Boolean).join(' ');
+  const hasAction = Boolean(actionLabel && onAction);
+  const rootClass = [
+    'ui-toast',
+    `ui-toast--${variant}`,
+    compact && 'ui-toast--compact',
+    idle && 'ui-toast--idle',
+    open && idle && 'show',
+    hasAction && 'has-action',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
   const iconName = TOAST_VARIANT_ICONS[variant] || TOAST_VARIANT_ICONS.info;
+
+  if (idle && !open) {
+    return (
+      <div
+        id={id}
+        role={isAssertive ? 'alert' : 'status'}
+        aria-live={isAssertive ? 'assertive' : 'polite'}
+        aria-atomic="true"
+        class={rootClass}
+      />
+    );
+  }
 
   return (
     <div
@@ -45,13 +82,17 @@ export function Toast({
       aria-live={isAssertive ? 'assertive' : 'polite'}
       aria-atomic="true"
       class={rootClass}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocusIn={onFocusIn}
+      onFocusOut={onFocusOut}
     >
-      <Icon name={iconName} size={18} class="ui-toast__icon" />
+      <Icon name={iconName} size={compact ? 16 : 18} class="ui-toast__icon" />
       <div class="ui-toast__content">
         <strong class="ui-toast__title">{title}</strong>
         {description && <p class="ui-toast__description">{description}</p>}
       </div>
-      {(actionLabel || onDismiss) && (
+      {(hasAction || onDismiss) && (
         <div class="ui-toast__actions">
           {actionLabel && onAction && (
             <Button variant="tertiary" size="small" onClick={onAction}>
@@ -77,15 +118,23 @@ export function Toast({
 export interface ToastViewportProps {
   children?: ComponentChildren;
   label?: string;
+  placement?: 'corner' | 'centered';
   className?: string;
 }
 
 export function ToastViewport({
   children,
   label = 'Notificações do sistema',
+  placement = 'corner',
   className = '',
 }: ToastViewportProps) {
-  const viewportClass = ['ui-toast-viewport', className].filter(Boolean).join(' ');
+  const viewportClass = [
+    'ui-toast-viewport',
+    placement === 'centered' && 'ui-toast-viewport--centered',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
     <section role="region" aria-label={label} class={viewportClass}>
       {children}

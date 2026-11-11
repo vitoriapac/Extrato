@@ -1,3 +1,7 @@
+import { h } from 'preact';
+import { mountPreact } from '../../ui/preact-mount.js';
+import { QuestionsImportModal } from '../../ui/modals/QuestionsImportModal.js';
+import { syncDialogOpen } from '../../ui/primitives/dialog.js';
 import { buildQuestionImportViewModel } from './question-import-view-model.js';
 
 export function createQuestionImportController({
@@ -10,6 +14,51 @@ export function createQuestionImportController({
   onCancel = (_status: string) => {},
   maxBytes = 5 * 1024 * 1024,
 }: any = {}) {
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    document === globalThis.document &&
+    typeof document?.createElement === 'function'
+      ? document.getElementById('questionsImportMount')
+      : null;
+
+  const viewState = {
+    open: false,
+    canConfirm: false,
+  };
+
+  let pending: Record<string, any> | null = null;
+  let previousFocus: any = null;
+
+  const handleConfirm = () => {
+    if (!pending || !pending.preview) return;
+    try {
+      const result = service.import(pending.preview, { createMissing: true, skipDuplicates: true });
+      close({ completed: true });
+      onImported(result);
+    } catch (error: any) {
+      notify(error?.message || 'A importação de questões falhou. Nenhum dado foi alterado.');
+    }
+  };
+
+  const renderModal = () => {
+    if (!mountNode) return;
+    mountPreact(
+      h(QuestionsImportModal, {
+        open: viewState.open,
+        canConfirm: viewState.canConfirm,
+        onClose: () => close(),
+        onCancel: () => close(),
+        onConfirm: handleConfirm,
+      }),
+      mountNode
+    );
+    syncDialogOpen(document, 'questionsImportOverlay', viewState.open);
+  };
+
+  if (mountNode) {
+    renderModal();
+  }
+
   const input = document.getElementById('questionsImportFile') as HTMLInputElement | null;
   const open = document.getElementById('importQuestionsBtn');
   const overlay = document.getElementById('questionsImportOverlay');
@@ -25,11 +74,14 @@ export function createQuestionImportController({
     });
   }
 
-  let pending: Record<string, any> | null = null;
-  let previousFocus: any = null;
-
   const close = ({ completed = false } = {}) => {
-    overlay.classList.remove('show');
+    if (mountNode) {
+      if (!viewState.open) return;
+      viewState.open = false;
+      renderModal();
+    } else {
+      overlay.classList.remove('show');
+    }
     pending = null;
     onCancel({ completed });
     previousFocus?.focus?.();
@@ -37,9 +89,16 @@ export function createQuestionImportController({
   };
 
   const show = (model: Record<string, any>) => {
+    if (mountNode) {
+      viewState.canConfirm = Boolean(model.canConfirm);
+      viewState.open = true;
+      renderModal();
+    }
     content.innerHTML = render(model);
     confirm.hidden = !model.canConfirm;
-    overlay.classList.add('show');
+    if (!mountNode) {
+      overlay.classList.add('show');
+    }
     cancel.focus();
   };
 
@@ -90,25 +149,16 @@ export function createQuestionImportController({
     input.value = '';
   });
 
-  cancel.addEventListener('click', () => close());
-
-  confirm.addEventListener('click', () => {
-    if (!pending || !pending.preview) return;
-    try {
-      const result = service.import(pending.preview, { createMissing: true, skipDuplicates: true });
-      close({ completed: true });
-      onImported(result);
-    } catch (error: any) {
-      notify(error?.message || 'A importação de questões falhou. Nenhum dado foi alterado.');
-    }
-  });
-
-  overlay.addEventListener('keydown', (event: any) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      close();
-    }
-  });
+  if (!mountNode) {
+    cancel.addEventListener('click', () => close());
+    confirm.addEventListener('click', handleConfirm);
+    overlay.addEventListener('keydown', (event: any) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+      }
+    });
+  }
 
   return Object.freeze({ read, close, choose });
 }

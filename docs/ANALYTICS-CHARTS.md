@@ -45,7 +45,7 @@ Os gráficos complementam os números e a explicação textual. Todos preservam 
 
 ## Apresentação compartilhada e prontidão explicável
 
-Questões, evolução de Simulados e Plano e execução usam chart-components.js para cabeçalho, período, legenda, evidência, estado vazio e dados textuais. As séries usam tokens semânticos de gráfico e os pontos oferecem detalhes via title, complementados pelos registros textuais. Os filtros existentes continuam responsáveis pelo recorte.
+Questões, evolução de Simulados e Plano e execução usam `chart-components.ts` para cabeçalho, período, legenda, evidência, estado vazio e dados textuais. As séries usam tokens semânticos de gráfico e os pontos oferecem detalhes via tooltip, complementados pelos registros textuais. Os filtros existentes continuam responsáveis pelo recorte.
 
 O painel de prontidão mostra o cálculo atual, último registro salvo, melhor registro comparável e variação entre fechamentos. Eventos anteriores a mudanças estratégicas são identificados pelo motivo e não entram na variação entre fechamentos. Só há delta e contribuição ponderada quando algoritmo, pesos e fatores disponíveis coincidem. Mudanças de versão ou disponibilidade interrompem a linha e explicam a ausência da comparação. Os 12 registros mais recentes aparecem no desenho; o resumo considera todo o histórico do mesmo concurso.
 
@@ -118,7 +118,7 @@ Revisar e confirmar cria nova versão com mudanças, evidências e prontidão co
 - **Localização:** Aba Planejamento → Plano da semana → **Resumo da semana** (`#studyDistribution`).
 - **Propósito:** Comparar visualmente o tempo planejado nos planos diários contra o tempo efetivamente estudado em sessões durante a semana atual.
 - **Estrutura:** Par de barras horizontais por disciplina. A barra de planejado utiliza tom neutro de contorno (`bg-content-secondary/30`), e a barra de realizado é preenchida com a cor oficial da disciplina (`subject-bg-X`).
-- **Indicadores:** Marcador circular colorido da matéria, minutos formatados e badge semântico com ícone Tabler de status pedagógico:
+- **Indicadores:** Marcador circular colorido da matéria, minutos formatados e badge semântico com ícone Lucide (`1.5px`) de status pedagógico:
   - *No ritmo:* Execução dentro da margem planejada.
   - *Superávit (+Xh):* Estudo acima do planejado.
   - *Déficit (-Xh):* Estudo abaixo do planejado.
@@ -163,14 +163,14 @@ Revisar e confirmar cria nova versão com mudanças, evidências e prontidão co
 - **Estrutura:**
   - *Colunas de Volume:* Barras verticais semitransparentes na base (`subject-bg-X`) representando a quantidade de exercícios concluídos em cada semana.
   - *Curva de Precisão:* Linha vetorial contínua conectando a taxa de acerto semanal (`subject-stroke-X`), com pontos de destaque (`subject-fill-X`) e rótulos de percentual.
-  - *KPIs do Topo:* Card com a direção da tendência (Evolução positiva, Estável ou Sob atenção com ícones Tabler), taxa média recente e volume total praticado.
+  - *KPIs do Topo:* Card com a direção da tendência (Evolução positiva, Estável ou Sob atenção com ícones Lucide `1.5px`), taxa média recente e volume total praticado.
 - **Acessibilidade:** Suporte completo a navegação por teclado, tooltips descritivos via `<title>` e contraste WCAG AA.
 
 ### 2. Distribuição de Falhas e Pareto 80/20 (Error Pareto Chart)
 - **Localização:** Aba Questões e Simulados → Análise da disciplina → **Perfil de erros categorizados** (`#subjectErrorProfile`).
 - **Propósito:** Expor o princípio de Pareto (80/20) sobre as causas de erro (interpretação, lacuna teórica, desatenção, gestão de tempo, etc.), apontando a causa raiz e as categorias responsáveis por 80% das falhas.
 - **Estrutura:**
-  - *Causa Principal:* Badge destacado com ícone Tabler `alert-triangle` identificando a causa raiz dominante.
+  - *Causa Principal:* Badge destacado com ícone Lucide (`alert-triangle` → `triangle-exclamation-point` em `lucide-icons-data.ts`) identificando a causa raiz dominante.
   - *Barras Horizontais:* Progresso de cada categoria com badge de alerta "Vital (80/20)" nas causas que acumulam até 80% do total de erros.
   - *Marcador de Acumulado:* Traço vertical na barra marcando o percentual acumulado e texto explícito `acumulado X%`.
   - *Resumo de Pareto:* Texto explicativo destacando a concentração: *"As X primeiras categorias somam Y% dos erros."*

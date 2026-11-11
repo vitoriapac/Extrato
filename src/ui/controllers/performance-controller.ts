@@ -48,14 +48,17 @@ export function createPerformanceController({
           applyRecovery((recoveryApply as any).dataset.recoverySignature);
           return;
         }
-        const group = event.target.closest('[data-performance-group]');
+        const inComponentNav = Boolean(event.target.closest('[data-performance-nav]'));
+        const group = !inComponentNav && event.target.closest('[data-performance-group]');
         if (group) {
           update({ section: group.dataset.performanceGroupTarget });
           render();
           return;
         }
         const section = event.target.closest(
-          '[data-performance-section],[data-performance-investigate]'
+          inComponentNav
+            ? '[data-performance-investigate]'
+            : '[data-performance-section],[data-performance-investigate]'
         );
         if (section) {
           update({
@@ -153,8 +156,9 @@ export function createPerformanceController({
           activateTab(open.dataset.performanceOpen);
         }
       });
-      // Subabas como tablist: setas, Home e End ativam a subaba vizinha e mantêm o foco nela.
+      // Subabas como tablist: fora dos tablists Preact, setas, Home e End ativam a subaba vizinha.
       document.getElementById('performancePage')?.addEventListener('keydown', (event: any) => {
+        if (event.target.closest?.('[data-performance-nav]')) return;
         const tabSelector =
           '[role="tab"][data-performance-section],[role="tab"][data-performance-group]';
         const tab = event.target.closest?.(tabSelector);

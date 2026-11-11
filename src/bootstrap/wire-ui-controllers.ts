@@ -116,16 +116,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     window,
     onRenderTab: tab => render(tab),
     onResetLists: resetRecordListLimits,
-    trapModalTab: event =>
-      trapModalTab(event, [
-        document.getElementById('guidedOnboardingOverlay'),
-        document.getElementById('structuredImportOverlay'),
-        document.getElementById('examImportOverlay'),
-        document.getElementById('examClassificationOverlay'),
-        document.getElementById('reviewRatingOverlay'),
-        document.getElementById('sessionModalOverlay'),
-        document.getElementById('modalOverlay'),
-      ]),
+    trapModalTab: event => trapModalTab(event, []),
     onCancelReview: () => practiceUi.reviewsTabController.closeReviewRating(),
   });
   const activateTab = (tabName: string, updateHash = true) =>
@@ -164,7 +155,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     renderPlanoHoje: () => executionUi.todayTabController.renderPlanoHoje(),
     // Mesmo modelo da "Execução de hoje": os dois cards citam o mesmo total do plano.
     getTodayPlannedMinutes: () =>
-      executionUi.todayTabController.dailyExecutionController.build()?.progress?.plannedMinutes ?? 0,
+      executionUi.todayTabController.dailyExecutionController.build()?.progress?.plannedMinutes ??
+      0,
     dismissFirstSteps: () => executionUi.todayTabController.dismissFirstSteps(),
     restoreFirstSteps: () => executionUi.todayTabController.restoreFirstSteps(),
     renderFirstStepsMissionCard: () => executionUi.todayTabController.renderFirstStepsMissionCard(),
@@ -309,7 +301,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       renderProgressChart: () => analyticsUi.performanceTabController.renderProgressChart(),
       renderBadges: () => analyticsUi.achievementsController.render(),
       renderRadarDisciplinas: () => analyticsUi.performanceTabController.renderRadarDisciplinas(),
-      renderSubjectProgressBars: () => analyticsUi.dashboardTabController.renderSubjectProgressBars(),
+      renderSubjectProgressBars: () =>
+        analyticsUi.dashboardTabController.renderSubjectProgressBars(),
       renderDashboard: () => analyticsUi.dashboardTabController.renderDashboard(),
       renderStudySessionsHistory: () =>
         executionUi.sessionHistoryController.renderStudySessionsHistory(),

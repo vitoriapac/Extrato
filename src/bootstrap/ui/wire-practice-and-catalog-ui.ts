@@ -1,4 +1,7 @@
+import { h } from 'preact';
 import { initialCalendarView } from '../../ui/calendar/calendar-state.js';
+import { mountPreact } from '../../ui/preact-mount.js';
+import { ImportActionMenu } from '../../ui/components/ImportActionMenu.js';
 import {
   STATUS_OPTIONS,
   STATUS_CLASS,
@@ -78,6 +81,19 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
   } = appSelectors;
   const localDateFromTimestamp = (v: any) => localDateISO(v);
   const { studyMetricsSelectors, topicDiagnosisService } = analytics;
+
+  const mountImportMenu = (mountId: string, menuType: 'subjects' | 'questions') => {
+    const mount = document.getElementById?.(mountId);
+    if (
+      mount &&
+      typeof globalThis.document !== 'undefined' &&
+      mount.ownerDocument === globalThis.document
+    ) {
+      mountPreact(h(ImportActionMenu, { menuType }), mount);
+    }
+  };
+  mountImportMenu('subjectsImportMenuMount', 'subjects');
+  mountImportMenu('questionsImportMenuMount', 'questions');
 
   let simulationsTabController: any;
 
@@ -213,7 +229,10 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
   });
   calendarTabController.bindEvents();
   calendarTabController.setCalendarMobileView(
-    initialCalendarView(calendarTabController.calendarUiState, window.matchMedia('(max-width:760px)').matches)
+    initialCalendarView(
+      calendarTabController.calendarUiState,
+      window.matchMedia('(max-width:760px)').matches
+    )
   );
 
   const errorNotebookController = createErrorNotebookController({

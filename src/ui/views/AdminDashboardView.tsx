@@ -169,7 +169,7 @@ export function AdminDashboardView({
       onClose={onClose}
       title="Painel de Administração e Backoffice SaaS"
       maxWidth="xl"
-      className="max-h-[92vh] flex flex-col"
+      className="max-h-[92vh]"
     >
       <div class="flex flex-col gap-3 p-1">
         {/* Barra superior de navegação por abas */}
@@ -273,7 +273,7 @@ export function AdminDashboardView({
         <div class="overflow-y-auto max-h-[60vh] pr-1">
           {loading ? (
             <div class="flex flex-col items-center justify-center py-12 gap-2 text-secondary">
-              <Icon name="loader-2" size={28} class="animate-spin text-brand" />
+              <Icon name="loader-2" size={28} class="animate-spin text-brand dark:text-accent" />
               <span class="text-xs">Carregando telemetria operacional...</span>
             </div>
           ) : (
@@ -291,7 +291,7 @@ export function AdminDashboardView({
 
                     <div class="p-3.5 rounded-lg bg-surface-card border border-border-default flex flex-col gap-1">
                       <span class="text-xs font-medium text-secondary">Receita Líquida</span>
-                      <span class="text-xl font-bold text-brand">{formatCurrencyBRL(kpis.netRevenueCents)}</span>
+                      <span class="text-xl font-bold text-brand dark:text-accent">{formatCurrencyBRL(kpis.netRevenueCents)}</span>
                       <span class="text-xs text-muted">Descontadas taxas de gateway</span>
                     </div>
 
@@ -459,7 +459,7 @@ export function AdminDashboardView({
                               <tr key={user.id} class="hover:bg-surface-subtle/50 transition-colors">
                                 <td class="p-2.5">
                                   <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-xs shrink-0">
+                                    <div class="w-6 h-6 rounded-full bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent flex items-center justify-center font-bold text-xs shrink-0">
                                       {user.displayName.substring(0, 2).toUpperCase()}
                                     </div>
                                     <div class="flex flex-col min-w-0">

@@ -77,7 +77,13 @@ export function createShellUiController(options: ShellUiControllerOptions) {
 
   function syncModalShell(): void {
     const layers = getModalLayers();
-    const active = layers.some(layer => layer.classList.contains('show') && !layer.hidden);
+    const hasOverlay = layers.some(layer => layer.classList.contains('show') && !layer.hidden);
+    const openDialogs =
+      typeof document.querySelectorAll === 'function'
+        ? Array.from(document.querySelectorAll<HTMLDialogElement>('dialog[open]'))
+        : [];
+    const hasOpenDialog = openDialogs.some(dialog => !dialog.hidden);
+    const active = hasOverlay || hasOpenDialog;
     const mainContent = document.getElementById('mainContent');
     if (mainContent) {
       mainContent.inert = active;
@@ -91,6 +97,33 @@ export function createShellUiController(options: ShellUiControllerOptions) {
       modalObserver = new MutationObserver(syncModalShell);
       layers.forEach(layer =>
         modalObserver?.observe(layer, { attributes: true, attributeFilter: ['class', 'hidden'] })
+      );
+      [
+        'remoteSyncMount',
+        'confirmModalMount',
+        'reviewRatingMount',
+        'sessionModalMount',
+        'dataManagementMount',
+        'examClassificationMount',
+        'structuredImportMount',
+        'questionsImportMount',
+        'guidedOnboardingMount',
+        'examImportMount',
+        'whatIfSimulatorMount',
+        'firstAccessModalMount',
+        'recoveryMissionModalMount',
+      ].forEach(
+        mountId => {
+          const mount = document.getElementById(mountId);
+          if (mount) {
+            modalObserver?.observe(mount, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['open', 'class', 'hidden'],
+            });
+          }
+        }
       );
     }
     syncModalShell();
@@ -140,6 +173,9 @@ export function createShellUiController(options: ShellUiControllerOptions) {
   }
 
   function initExecutionModeSwitchers(): void {
+    if (document.getElementById('todayExecutionModeMount')) {
+      return;
+    }
     document.getElementById('executionAgendaBtn')?.addEventListener('click', () => {
       resolveState().executionMode = 'agenda';
       scheduleSave();
@@ -240,26 +276,26 @@ export function createShellUiController(options: ShellUiControllerOptions) {
       setDemoMenu(!demoBanner?.classList.contains('is-menu-open'))
     );
     // Picking an action closes the menu so the strip goes back to one line.
-    document
-      .getElementById('demoBannerActions')
-      ?.addEventListener('click', event => {
-        if ((event.target as Element)?.closest?.('button')) setDemoMenu(false);
-      });
+    document.getElementById('demoBannerActions')?.addEventListener('click', event => {
+      if ((event.target as Element)?.closest?.('button')) setDemoMenu(false);
+    });
 
-    document.querySelectorAll('.overview-nav-mobile select:not(#metasSubtabSelect)').forEach((select: Element) =>
-      select.addEventListener('change', (event: any) => {
-        const target = document.getElementById((event.target as HTMLInputElement).value);
-        if (!target) return;
-        openSectionFor(target);
-        target.scrollIntoView({
-          block: 'start',
-          behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-            ? 'auto'
-            : 'smooth',
-        });
-        window.history.replaceState(null, '', `#${target.id}`);
-      })
-    );
+    document
+      .querySelectorAll('.overview-nav-mobile select:not(#metasSubtabSelect)')
+      .forEach((select: Element) =>
+        select.addEventListener('change', (event: any) => {
+          const target = document.getElementById((event.target as HTMLInputElement).value);
+          if (!target) return;
+          openSectionFor(target);
+          target.scrollIntoView({
+            block: 'start',
+            behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+              ? 'auto'
+              : 'smooth',
+          });
+          window.history.replaceState(null, '', `#${target.id}`);
+        })
+      );
 
     document
       .getElementById('overviewAttentionViewAll')
@@ -269,14 +305,18 @@ export function createShellUiController(options: ShellUiControllerOptions) {
       activateTab('desempenho');
       // Balanço, Radar e Queda de retenção agora ficam na subaba Diagnóstico.
       window.location.hash = '#desempenho/diagnosis';
-      const details = document.getElementById('performanceDecisionDetails') as HTMLDetailsElement | null;
+      const details = document.getElementById(
+        'performanceDecisionDetails'
+      ) as HTMLDetailsElement | null;
       if (!details) return;
       details.open = true;
       // activateTab rola ao topo e o roteador reaplica a aba em seguida: o scroll espera isso passar.
       window.setTimeout(
         () =>
           details.scrollIntoView({
-            behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+              ? 'auto'
+              : 'smooth',
             block: 'start',
           }),
         300

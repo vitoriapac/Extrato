@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openDemo,
+  openPlanningSubtab,
+  selectSubjectCombobox,
+} from './helpers.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { withPixelAlignedCapture } from './helpers/visual-capture.js';
 
@@ -182,7 +188,7 @@ test('Recovery exige confirmação, revalida e registra plano e decisão sem ree
   );
   const decision = after.history.at(-1);
   await activateTab(page, 'hoje');
-  await page.locator('#timerSubjectSelect').selectOption(decision.targetSubjectId);
+  await selectSubjectCombobox(page, '#timerSubjectSelect', decision.targetSubjectId);
   await page.locator('#timerTopicSelect').selectOption(decision.targetTopicId);
   await page.locator('#timerTypeSelect').selectOption('study');
   await page.locator('#timerStartBtn').click();

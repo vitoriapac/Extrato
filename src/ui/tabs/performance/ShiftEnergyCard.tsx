@@ -40,10 +40,9 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
               {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-0.5">
-              <WindowBadge kind="history" title="Todo o histórico registrado" />
-              Todo o histórico registrado, sem o filtro de período (
-              {totalStudyHours.toLocaleString('pt-BR')}h no total). O foco profundo por turno, logo
-              abaixo, usa só o período escolhido.
+              <WindowBadge kind="history" title="Todo o histórico registrado" /> Todo o histórico
+              registrado, sem o filtro de período ({totalStudyHours.toLocaleString('pt-BR')}h no
+              total). O foco profundo por turno, logo abaixo, usa só o período escolhido.
             </p>
           </div>
         </div>

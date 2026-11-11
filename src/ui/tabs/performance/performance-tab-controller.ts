@@ -7,7 +7,12 @@ import {
   updatePerformanceViewState,
 } from '../../../application/performance/performance-view-state.js';
 import { buildPerformancePageModel } from '../../../application/performance/build-performance-page-model.js';
-import { renderPerformancePage } from '../../performance/performance-page.js';
+import {
+  renderPerformanceChromeHtml,
+  renderPerformanceDefaultBody,
+  renderPerformancePage,
+} from '../../performance/performance-page.js';
+import { PerformancePageNav } from '../../performance/PerformancePageNav.js';
 import { renderPerformanceSection } from '../../performance/render-performance-section.js';
 import { createPerformanceController } from '../../controllers/performance-controller.js';
 import { createPerformanceAnalyticsController } from '../../controllers/performance-analytics-controller.js';
@@ -329,15 +334,70 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         true
       );
     }
-    target.innerHTML = renderPerformancePage({
-      viewState: performanceViewState,
-      range,
-      sectionHtml:
-        (deps.analysisContextBanner ? deps.analysisContextBanner('desempenho') : '') + sectionHtml,
-      activeExamCount: (state.examBlueprint?.activeExamTags || []).length,
-      escapeHtml,
-      escapeAttr,
-    });
+    const fullSectionHtml =
+      (deps.analysisContextBanner ? deps.analysisContextBanner('desempenho') : '') + sectionHtml;
+    const isRealDomTarget =
+      typeof globalThis.document !== 'undefined' &&
+      (target as Element).ownerDocument === globalThis.document &&
+      typeof (target as Element).querySelector === 'function';
+
+    if (isRealDomTarget) {
+      let navMount = target.querySelector('#performanceNavMount') as Element | null;
+      if (!navMount) {
+        target.innerHTML = `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2><p>Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></div></header><div id="performanceNavMount"></div><div id="performanceChromeArea" class="contents"></div><div id="performanceSectionContent" role="tabpanel"></div></div>`;
+        navMount = target.querySelector('#performanceNavMount') as Element | null;
+      }
+
+      if (navMount) {
+        mountPreact(
+          h(PerformancePageNav, {
+            activeSection: performanceViewState.section,
+            onSelectSection: (nextSection: string) => {
+              performanceViewState = updatePerformanceViewState(performanceViewState, {
+                section: nextSection,
+              });
+              if (deps.render) deps.render('desempenho-visao');
+              else renderPerformance();
+            },
+          }),
+          navMount
+        );
+      }
+
+      const chromeArea = target.querySelector('#performanceChromeArea');
+      if (chromeArea) {
+        chromeArea.innerHTML = renderPerformanceChromeHtml({
+          viewState: performanceViewState,
+          range,
+          activeExamCount: (state.examBlueprint?.activeExamTags || []).length,
+          escapeHtml,
+        });
+      }
+
+      const sectionContent = target.querySelector('#performanceSectionContent');
+      if (sectionContent) {
+        sectionContent.setAttribute(
+          'aria-labelledby',
+          `performanceTab-${performanceViewState.section}`
+        );
+        sectionContent.innerHTML =
+          fullSectionHtml ||
+          renderPerformanceDefaultBody({
+            viewState: performanceViewState,
+            escapeHtml,
+            escapeAttr,
+          });
+      }
+    } else {
+      target.innerHTML = renderPerformancePage({
+        viewState: performanceViewState,
+        range,
+        sectionHtml: fullSectionHtml,
+        activeExamCount: (state.examBlueprint?.activeExamTags || []).length,
+        escapeHtml,
+        escapeAttr,
+      });
+    }
 
     if (examSection) {
       target.querySelector('#examIntelligenceMount')?.append(examHub!);

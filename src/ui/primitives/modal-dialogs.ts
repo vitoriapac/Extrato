@@ -1,11 +1,15 @@
 /**
  * Utilitários e serviços de diálogo e notificação da aplicação.
  *
- * Gerencia a exibição de avisos temporários (toast), indicador de salvamento (flashSaved),
+ * Gerencia a exibição de avisos temporários (Toast + ToastViewport), indicador de salvamento (flashSaved),
  * modais de confirmação (confirm) e prompt de entrada de texto.
  *
  * Camada: UI Primitives.
  */
+
+import { h } from 'preact';
+import { mountPreact } from '../preact-mount.js';
+import { Toast, ToastViewport } from './toast.js';
 
 export interface ModalControllerInterface {
   confirm(
@@ -32,13 +36,102 @@ export interface DialogFeedbackOptions {
   modalController?: ModalControllerInterface;
 }
 
+interface DeclarativeToastState {
+  renderSeq: number;
+  open: boolean;
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  onFocusIn?: () => void;
+  onFocusOut?: () => void;
+}
+
 export function createDialogFeedback(opts: DialogFeedbackOptions) {
   const { document, modalController } = opts;
   let toastTimer: any = null;
   let flashTimer: any = null;
   let endUndo: (() => void) | null = null;
 
+  const docObj = document as Document & DialogFeedbackDocumentLike;
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    document === globalThis.document &&
+    typeof docObj.createElement === 'function'
+      ? docObj.getElementById('toastViewportMount')
+      : null;
+
+  const toastState: DeclarativeToastState = {
+    renderSeq: 0,
+    open: false,
+    message: '',
+  };
+
+  function renderToast(): void {
+    if (!mountNode) return;
+    mountPreact(
+      h(
+        ToastViewport,
+        { placement: 'centered' },
+        h(Toast, {
+          key: toastState.renderSeq,
+          id: 'toast',
+          compact: true,
+          idle: true,
+          open: toastState.open,
+          variant: 'info',
+          title: toastState.message,
+          actionLabel: toastState.actionLabel,
+          onAction: toastState.onAction,
+          onMouseEnter: toastState.onMouseEnter,
+          onMouseLeave: toastState.onMouseLeave,
+          onFocusIn: toastState.onFocusIn,
+          onFocusOut: toastState.onFocusOut,
+        })
+      ),
+      mountNode
+    );
+  }
+
+  renderToast();
+
+  function hideDeclarativeToast(): void {
+    if (toastTimer) {
+      clearTimeout(toastTimer);
+      toastTimer = null;
+    }
+    endUndo?.();
+    toastState.renderSeq += 1;
+    toastState.open = false;
+    toastState.message = '';
+    toastState.actionLabel = undefined;
+    toastState.onAction = undefined;
+    toastState.onMouseEnter = undefined;
+    toastState.onMouseLeave = undefined;
+    toastState.onFocusIn = undefined;
+    toastState.onFocusOut = undefined;
+    renderToast();
+  }
+
   function showToast(message: string, durationMs = 2600): void {
+    if (mountNode) {
+      endUndo?.();
+      toastState.renderSeq += 1;
+      toastState.open = true;
+      toastState.message = message;
+      toastState.actionLabel = undefined;
+      toastState.onAction = undefined;
+      toastState.onMouseEnter = undefined;
+      toastState.onMouseLeave = undefined;
+      toastState.onFocusIn = undefined;
+      toastState.onFocusOut = undefined;
+      renderToast();
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideDeclarativeToast, durationMs);
+      return;
+    }
+
     const el = document.getElementById('toast');
     if (!el) return;
     endUndo?.();
@@ -53,6 +146,56 @@ export function createDialogFeedback(opts: DialogFeedbackOptions) {
    * and Ctrl+Z outside text fields triggers it too.
    */
   function showUndoToast(message: string, onUndo: () => void, durationMs = 10000): void {
+    if (mountNode) {
+      endUndo?.();
+      const hide = () => {
+        hideDeclarativeToast();
+      };
+      const arm = (ms: number) => {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(hide, ms);
+      };
+      const pause = () => {
+        if (toastTimer) clearTimeout(toastTimer);
+      };
+      const resume = () => arm(4000);
+      const undo = () => {
+        hide();
+        onUndo();
+      };
+      const onKey = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement | null;
+        const editing =
+          target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || '');
+        if (
+          !(event.ctrlKey || event.metaKey) ||
+          event.shiftKey ||
+          event.key.toLowerCase() !== 'z' ||
+          editing
+        )
+          return;
+        event.preventDefault();
+        undo();
+      };
+      docObj.addEventListener('keydown', onKey);
+      endUndo = () => {
+        endUndo = null;
+        docObj.removeEventListener('keydown', onKey);
+      };
+      toastState.renderSeq += 1;
+      toastState.open = true;
+      toastState.message = message;
+      toastState.actionLabel = 'Desfazer';
+      toastState.onAction = undo;
+      toastState.onMouseEnter = pause;
+      toastState.onMouseLeave = resume;
+      toastState.onFocusIn = pause;
+      toastState.onFocusOut = resume;
+      renderToast();
+      arm(durationMs);
+      return;
+    }
+
     const el = document.getElementById('toast');
     if (!el) return;
     endUndo?.();
@@ -79,8 +222,14 @@ export function createDialogFeedback(opts: DialogFeedbackOptions) {
     };
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      const editing = target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || '');
-      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.key.toLowerCase() !== 'z' || editing)
+      const editing =
+        target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || '');
+      if (
+        !(event.ctrlKey || event.metaKey) ||
+        event.shiftKey ||
+        event.key.toLowerCase() !== 'z' ||
+        editing
+      )
         return;
       event.preventDefault();
       undo();

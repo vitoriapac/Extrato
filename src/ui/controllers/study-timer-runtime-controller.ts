@@ -297,8 +297,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       active.startedAt = nowISO();
       active.accumulatedSeconds = 0;
     }
-    active.subjectId =
-      (document.getElementById('timerSubjectSelect') as HTMLSelectElement).value || null;
+    active.subjectId = studyTimerViewController.getSelectedSubjectId() || null;
     active.topicId =
       (document.getElementById('timerTopicSelect') as HTMLSelectElement).value || null;
     active.type =
@@ -463,7 +462,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
   }
 
   function closeSessionModal() {
-    sessionModalController.hide();
+    sessionModalController.hide({ restoreFocus: false });
     resetTimer();
   }
 
@@ -473,14 +472,16 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
   }
 
   function discardSessionFromModal() {
-    const overlay = document.getElementById('sessionModalOverlay');
-    overlay!.classList.remove('show');
+    sessionModalController.hide({ restoreFocus: false });
     showConfirm(
       `Descartar esta sessão de ${formatDuration(timerSeconds)}? O tempo não será registrado.`,
       closeSessionModal,
       () => {
-        overlay!.classList.add('show');
+        sessionModalController.reopen();
         document.getElementById('sessionModalSkipBtn')?.focus();
+        queueMicrotask(() => {
+          document.getElementById('sessionModalSkipBtn')?.focus();
+        });
       },
       { confirmLabel: 'Descartar sessão' }
     );
@@ -506,12 +507,15 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       timerSeconds = 30 * 60;
       timerStartedAt = nowISO();
     }
-    showSessionModal();
+    const manualMinutes = String(Math.max(1, Math.round(timerSeconds / 60)));
+    sessionModalController.show(timerSeconds, getState().activeTimer, {
+      durationMinutes: manualMinutes,
+    });
     const durationMinutesInput = document.getElementById(
       'sessionModalDurationMinutes'
     ) as HTMLInputElement | null;
     if (durationMinutesInput && !durationMinutesInput.value) {
-      durationMinutesInput.value = String(Math.max(1, Math.round(timerSeconds / 60)));
+      durationMinutesInput.value = manualMinutes;
     }
   }
 
@@ -550,16 +554,29 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
   function bindEvents() {
     document.getElementById('timerStartBtn')!.addEventListener('click', startTimer);
     document.getElementById('timerPauseBtn')!.addEventListener('click', () => pauseTimer());
-    document
-      .getElementById('timerSubjectSelect')!
-      .addEventListener('change', function (this: HTMLSelectElement) {
-        const state = getState();
-        state.activeTimer.subjectId = this.value || null;
-        state.activeTimer.topicId = null;
-        populateTimerTopicSelect(state.activeTimer.subjectId!, null);
-        renderTimerFocusContext();
-        scheduleSave();
+    const handleSubjectChange = (subjectId: string | null) => {
+      const state = getState();
+      state.activeTimer.subjectId = subjectId || null;
+      state.activeTimer.topicId = null;
+      populateTimerTopicSelect(state.activeTimer.subjectId!, null);
+      renderTimerFocusContext();
+      scheduleSave();
+    };
+    const subjectMount = document.getElementById('timerSubjectMount');
+    if (
+      typeof globalThis.document !== 'undefined' &&
+      subjectMount?.ownerDocument === globalThis.document
+    ) {
+      studyTimerViewController.onSubjectChange(nextSubjectId => {
+        handleSubjectChange(nextSubjectId);
       });
+    } else {
+      document
+        .getElementById('timerSubjectSelect')!
+        .addEventListener('change', function (this: HTMLSelectElement) {
+          handleSubjectChange(this.value || null);
+        });
+    }
     document
       .getElementById('timerTopicSelect')!
       .addEventListener('change', function (this: HTMLSelectElement) {
@@ -615,13 +632,18 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         const dayBefore = session.date === todayISO() ? getDailyExecutionItems() : null;
         // The result compares in-memory values around the save; nothing extra is stored.
         const readinessBefore = getReadinessResult ? getReadinessResult() : getReadinessValue();
-        const reviewIdsBefore = new Set((getState().reviewAgenda || []).map((item: any) => item.id));
+        const reviewIdsBefore = new Set(
+          (getState().reviewAgenda || []).map((item: any) => item.id)
+        );
         if (guidedStudyService.current()) guidedStudyService.complete(session);
         else sessionService.complete(session);
         persistAndRender();
         const dayAfter = dayBefore ? getDailyExecutionItems() : null;
         const outcome = {
-          readiness: { before: readinessBefore, after: getReadinessResult ? getReadinessResult() : getReadinessValue() },
+          readiness: {
+            before: readinessBefore,
+            after: getReadinessResult ? getReadinessResult() : getReadinessValue(),
+          },
           reviewDates: (getState().reviewAgenda || [])
             .filter((item: any) => !reviewIdsBefore.has(item.id) && item.status !== 'Concluído')
             .map((item: any) => item.date)

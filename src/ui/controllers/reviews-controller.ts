@@ -4,19 +4,18 @@ export function createReviewsController({ root = document, actions }: any = {}) 
     root.querySelector(selector)?.addEventListener(event, handler);
   return Object.freeze({
     register() {
-      root
-        .querySelectorAll('[data-review-rating]')
-        .forEach((button: any) =>
-          button.addEventListener('click', () => actions.rate(button.dataset.reviewRating))
-        );
-      listen('#reviewRatingCancelBtn', 'click', actions.cancelRating);
-      for (const id of [
-        '#agendaFilterSubject',
-        '#agendaFilterStatus',
-        '#agendaFilterMes',
-        '#agendaFilterTipo',
-      ])
-        listen(id, 'change', actions.filtersChanged);
+      if (!root.querySelector?.('#reviewRatingMount')) {
+        root
+          .querySelectorAll('[data-review-rating]')
+          .forEach((button: any) =>
+            button.addEventListener('click', () => actions.rate(button.dataset.reviewRating))
+          );
+        listen('#reviewRatingCancelBtn', 'click', actions.cancelRating);
+      }
+      const filterIds = root.querySelector?.('#agendaFilterSubjectMount')
+        ? ['#agendaFilterStatus', '#agendaFilterMes', '#agendaFilterTipo']
+        : ['#agendaFilterSubject', '#agendaFilterStatus', '#agendaFilterMes', '#agendaFilterTipo'];
+      for (const id of filterIds) listen(id, 'change', actions.filtersChanged);
       listen('#addAgendaRowBtn', 'click', actions.createManual);
       listen('#autoGenBtn', 'click', actions.generateAutomatic);
     },

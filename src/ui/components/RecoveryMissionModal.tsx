@@ -154,7 +154,7 @@ export function RecoveryMissionModal({
                     aria-pressed={isSelected}
                     className={`p-3 rounded-default border text-left transition-colors flex flex-col justify-between gap-1.5 ${
                       isSelected
-                        ? 'border-brand bg-brand/10 text-brand font-medium'
+                        ? 'border-brand bg-brand/10 text-brand dark:border-accent dark:bg-accent/15 dark:text-accent font-medium'
                         : 'border-border-default bg-surface-card hover:border-border-hover text-content-primary'
                     }`}
                   >
@@ -170,7 +170,7 @@ export function RecoveryMissionModal({
             {/* Painel do Plano de Resgate */}
             {plan.blocks.length === 0 ? (
               <div className="p-6 text-center rounded-default border border-border-subtle bg-surface-subtle text-content-secondary">
-                <Icon name="circle-check" size={24} class="mx-auto mb-2 text-brand" />
+                <Icon name="circle-check" size={24} class="mx-auto mb-2 text-brand dark:text-accent" />
                 <p className="font-medium m-0">Nenhuma revisão atrasada pendente!</p>
                 <p className="text-xs mt-1 m-0">
                   Seu cronograma de revisões está 100% em dia.
@@ -183,7 +183,7 @@ export function RecoveryMissionModal({
                     Ordem de maior impacto pedagógico ({plan.rescuedReviewsCount} de{' '}
                     {plan.totalReviewsInDebt} atrasadas):
                   </span>
-                  <span className="font-medium text-brand">
+                  <span className="font-medium text-brand dark:text-accent">
                     {plan.totalAllocatedMinutes} min planejados
                   </span>
                 </div>
@@ -195,7 +195,7 @@ export function RecoveryMissionModal({
                       className="p-3 rounded-default border border-border-default bg-surface-card flex items-start justify-between gap-3"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 text-brand text-xs font-bold shrink-0 mt-0.5">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent text-xs font-bold shrink-0 mt-0.5">
                           {idx + 1}
                         </span>
                         <div className="space-y-0.5">
@@ -239,10 +239,10 @@ export function RecoveryMissionModal({
         {stage === 'running' && currentBlock && (
           <div className="space-y-6">
             {/* Card do Bloco Ativo */}
-            <div className="p-5 rounded-default border-2 border-brand bg-brand/5 space-y-4">
+            <div className="p-5 rounded-default border-2 border-brand bg-brand/5 dark:border-accent dark:bg-accent/10 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-brand">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-accent">
                     Revisão Ativa ({currentBlockIndex + 1} de {plan.blocks.length})
                   </span>
                   <h3 className="text-lg font-bold text-content-primary mt-1 m-0">
@@ -317,7 +317,7 @@ export function RecoveryMissionModal({
         {/* ETAPA 3: CONCLUSÃO DA MISSÃO */}
         {stage === 'completed' && (
           <div className="py-4 text-center space-y-5">
-            <div className="inline-flex p-3 rounded-full bg-brand/10 text-brand">
+            <div className="inline-flex p-3 rounded-full bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent">
               <Icon name="circle-check" size={40} />
             </div>
 
@@ -339,7 +339,7 @@ export function RecoveryMissionModal({
                 <div className="text-xs text-content-secondary">Revisões salvas</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-brand">
+                <div className="text-2xl font-bold text-brand dark:text-accent">
                   {completedBlocks.length * (plan.blockDurationMinutes || 15)}m
                 </div>
                 <div className="text-xs text-content-secondary">Tempo investido</div>

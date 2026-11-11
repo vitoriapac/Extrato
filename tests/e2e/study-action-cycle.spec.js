@@ -63,11 +63,14 @@ for (const source of ['overview', 'today', 'diagnosis'])
     const actionId = await action.getAttribute('data-study-action-id');
     expect(actionId).toBeTruthy();
     if (source === 'diagnosis') await action.click();
-    else await action.getByRole('button', { name: /Iniciar estudo|Estudar como atividade adicional/i }).click();
+    else
+      await action
+        .getByRole('button', { name: /Iniciar estudo|Estudar como atividade adicional/i })
+        .click();
     await expect(page.locator('#guidedStrategy')).toBeVisible();
     const timer = await page.evaluate(() => ({
       ...window.__EXTRATO_TEST__.getState().activeTimer,
-      subjectName: document.querySelector('#timerSubjectSelect option:checked')?.textContent,
+      subjectName: document.querySelector('#timerSubjectSelect')?.value,
       topicName: document.querySelector('#timerTopicSelect option:checked')?.textContent,
     }));
     expect(timer.recommendationId).toBe(actionId);

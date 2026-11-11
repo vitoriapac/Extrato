@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openPlanningSubtab, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openPlanningSubtab,
+  openPerformanceSection,
+  selectSubjectCombobox,
+} from './helpers.js';
 import { buildStrategicCycleFixture, STRATEGIC_CYCLE_TODAY } from '../fixtures/strategic-cycle.js';
 
 async function prepare(page) {
@@ -148,7 +154,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   }, timer);
   // A subsequent real session triggers the existing outcome measurement service.
   await activateTab(page, 'hoje');
-  await page.locator('#timerSubjectSelect').selectOption(timer.subjectId);
+  await selectSubjectCombobox(page, '#timerSubjectSelect', timer.subjectId);
   await page.locator('#timerTopicSelect').selectOption(timer.topicId);
   await page.locator('#timerStartBtn').click();
   await page.clock.fastForward('05:00');
@@ -215,7 +221,9 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   assertHistoryPreserved(before, after);
   // Aplicar termina com o selo e pode ser desfeito: os blocos ainda não estudados saem do plano.
   await expect(page.locator('#weeklyAppliedStatus')).toContainText('Próxima semana');
-  await page.locator('#weeklyCloseDashboard [data-delegated-click="undoWeeklyCloseApply()"]').click();
+  await page
+    .locator('#weeklyCloseDashboard [data-delegated-click="undoWeeklyCloseApply()"]')
+    .click();
   const undone = await getState(page);
   const linked = state =>
     state.dailyPlans.flatMap(plan => plan.items).filter(item => item.weeklyCloseSnapshotId).length;

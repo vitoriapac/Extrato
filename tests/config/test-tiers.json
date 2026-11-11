@@ -197,6 +197,11 @@
       ]
     },
     {
+      "file": "tests/e2e/performance-preparation-reading.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/performance-tablist.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -862,6 +867,11 @@
       "rationale": "Contrato unitário rápido no Node."
     },
     {
+      "file": "tests/unit/evidence-badge.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; estados do selo de evidência e cobertura de amostra."
+    },
+    {
       "file": "tests/unit/evidence-quality.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1187,9 +1197,34 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/onda1-modals.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; renderização declarativa e governança de RemoteSyncModal e ConfirmPromptModal."
+    },
+    {
+      "file": "tests/unit/onda2-primitives-integration.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; integração, acessibilidade e governança dos componentes Preact e seletores da Onda 2."
+    },
+    {
+      "file": "tests/unit/onda3-primitives-integration.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; integração, acessibilidade e governança dos componentes Preact e primitivas da Onda 3."
+    },
+    {
+      "file": "tests/unit/onda4-modals-and-css.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; modais declarativos via <dialog>, camada CSS única e higiene da Onda 4."
+    },
+    {
       "file": "tests/unit/opportunity-cost-analytics.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo analítico puro de custo de oportunidade, pontos por hora (PPH) e priorização marginal."
+    },
+    {
+      "file": "tests/unit/overview-standing.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; leitura consolidada da preparação na Visão Geral."
     },
     {
       "file": "tests/unit/overview-view-model.test.js",
@@ -1217,9 +1252,19 @@
       "rationale": "Teste unitário determinístico para os novos componentes gráficos de planejado x realizado e perfil de erros."
     },
     {
+      "file": "tests/unit/performance-executive-summary.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; resumo executivo e dicas de leitura semanal em Desempenho."
+    },
+    {
       "file": "tests/unit/performance-forecast.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/performance-subject-comparison-plan.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; saldo do plano e sugestões por disciplina em Desempenho."
     },
     {
       "file": "tests/unit/performance-tab-controller.test.js",
@@ -1300,6 +1345,11 @@
       "file": "tests/unit/preact-mount.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/preparation-reading.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; leitura estruturada da preparação e recomendação compartilhada."
     },
     {
       "file": "tests/unit/preparation-signals.test.js",
@@ -2040,6 +2090,11 @@
       "file": "tests/unit/what-if-simulator.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/window-badge.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; vocabulário oficial e escape de selos de janela em Desempenho."
     },
     {
       "file": "tests/unit/wire-dependencies.test.js",

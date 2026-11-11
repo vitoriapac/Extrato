@@ -70,19 +70,19 @@ export function ErrorParetoChart({
           return (
             <div
               key={item.id}
-              class="error-profile-item group p-2 rounded-default bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
+              class="error-profile-item group flex flex-col gap-1.5 min-w-0 p-2 rounded-default bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
             >
-              <div class="flex items-center justify-between gap-2 mb-1 text-xs">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <span class="text-content-secondary flex-shrink-0">
+              <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-1 text-xs min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5 min-w-0 max-w-full">
+                  <span class="text-content-secondary shrink-0">
                     <Icon name={item.icon || 'alert-circle'} size={14} />
                   </span>
-                  <span class="font-medium text-content-primary truncate error-profile-label">
+                  <span class="font-medium text-content-primary break-words min-w-0 error-profile-label">
                     {' '}{item.label}
                   </span>
                   {item.isVital && (
                     <span
-                      class="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider text-warning-emphasis bg-warning-subtle"
+                      class="shrink-0 px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider text-warning-emphasis bg-warning-subtle"
                       title="Item dentro dos 80% prioritários do Princípio de Pareto"
                     >
                       Vital (80/20)
@@ -90,7 +90,7 @@ export function ErrorParetoChart({
                   )}
                 </div>
 
-                <div class="flex items-center gap-2 flex-shrink-0 text-xs">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 max-w-full text-xs">
                   <span class="font-mono font-semibold text-content-primary">
                     {item.count}
                   </span>

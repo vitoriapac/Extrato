@@ -130,7 +130,7 @@ export function CloudExamCatalogModal({
       onClose={onClose}
       title="Catálogo de Editais na Nuvem"
       maxWidth="xl"
-      className="max-h-[90vh] flex flex-col"
+      className="max-h-[90vh]"
     >
       <div class="flex flex-col gap-4 p-1">
         {/* Descrição e contextualização */}
@@ -214,7 +214,7 @@ export function CloudExamCatalogModal({
         <div class="overflow-y-auto max-h-[50vh] pr-1">
           {loading ? (
             <div class="flex flex-col items-center justify-center py-12 gap-3 text-secondary">
-              <Icon name="loader-2" size={28} class="animate-spin text-brand" />
+              <Icon name="loader-2" size={28} class="animate-spin text-brand dark:text-accent" />
               <span class="text-xs">Carregando catálogo de editais...</span>
             </div>
           ) : filteredItems.length === 0 ? (

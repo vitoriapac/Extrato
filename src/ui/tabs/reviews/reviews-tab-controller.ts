@@ -7,6 +7,10 @@ import {
   type ReviewMove,
 } from '../../../application/reviews/redistribute-overdue-reviews.js';
 import { renderIconSvg } from '../../primitives/icon.js';
+import { mountPreact } from '../../preact-mount.js';
+import { ReviewRatingSheet, type ReviewRatingKey } from '../../modals/ReviewRatingSheet.js';
+import { SubjectCombobox } from '../../components/SubjectCombobox.js';
+import type { ComboboxOption } from '../../primitives/select-field.js';
 import { render } from 'preact-render-to-string';
 import { ReviewsTable, type ReviewItem } from './ReviewsTable.js';
 import { createReviewViewModel } from '../../view-models/review-view-model.js';
@@ -119,6 +123,12 @@ const defaultNowISO = () => new Date().toISOString();
 
 const cloneRecord = <T>(v: T): T => (v ? JSON.parse(JSON.stringify(v)) : v);
 
+function getRealMount(doc: any, id: string): Element | null {
+  if (typeof globalThis.document === 'undefined' || !doc) return null;
+  const mount = doc.getElementById?.(id);
+  return mount && mount.ownerDocument === globalThis.document ? mount : null;
+}
+
 export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   const getDoc = () => ctx.document || (typeof document !== 'undefined' ? document : null);
   const escapeHtml = ctx.escapeHtml || defaultEscapeHtml;
@@ -171,6 +181,55 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
 
   let pendingReviewRatingId: string | null = null;
   let reviewRatingOrigin: HTMLElement | null = null;
+  let reviewRatingOpen = false;
+  let reviewRatingTopicLabel = '';
+  let reviewRatingRestoreFocus = true;
+  let selectedAgendaSubjectId = '';
+  let agendaSubjectOptions: ComboboxOption[] = [{ value: '', label: 'Todas as disciplinas' }];
+
+  function renderReviewRatingSheet() {
+    const doc = getDoc();
+    const mount = getRealMount(doc, 'reviewRatingMount');
+    if (!mount) return;
+    mountPreact(
+      h(ReviewRatingSheet, {
+        open: reviewRatingOpen,
+        topicLabel: reviewRatingTopicLabel,
+        restoreFocusOnClose: reviewRatingRestoreFocus,
+        onRate: (rating: ReviewRatingKey) => rateCompletedReview(rating),
+        onCancel: () => closeReviewRating({ restoreFocus: true }),
+      }),
+      mount
+    );
+  }
+
+  function renderAgendaSubjectFilter() {
+    const doc = getDoc();
+    const mount = getRealMount(doc, 'agendaFilterSubjectMount');
+    if (!mount) return;
+    mountPreact(
+      h(SubjectCombobox, {
+        id: 'agendaFilterSubject',
+        label: 'Filtrar revisões por disciplina',
+        hideLabel: true,
+        placeholder: 'Todas as disciplinas',
+        options: agendaSubjectOptions,
+        value: selectedAgendaSubjectId,
+        onChange: (nextSubjectId: string) => {
+          selectedAgendaSubjectId = nextSubjectId;
+          renderAgendaSubjectFilter();
+          agendaUiState.upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
+          agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
+          renderAgenda();
+          const input = doc?.getElementById('agendaFilterSubject') as HTMLInputElement | null;
+          input?.dispatchEvent?.(
+            new CustomEvent('change', { bubbles: true, detail: { value: nextSubjectId } })
+          );
+        },
+      }),
+      mount
+    );
+  }
 
   function toLocalDateString(d: Date): string {
     const y = d.getFullYear();
@@ -190,7 +249,9 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     if (ctx.filters) return ctx.filters;
     const doc = getDoc();
     if (!doc) return { subjectId: '', status: '', month: '', type: '' };
-    const subjectId = (doc.getElementById('agendaFilterSubject') as HTMLSelectElement)?.value || '';
+    const subjectId = getRealMount(doc, 'agendaFilterSubjectMount')
+      ? selectedAgendaSubjectId
+      : (doc.getElementById('agendaFilterSubject') as HTMLSelectElement)?.value || '';
     const status = (doc.getElementById('agendaFilterStatus') as HTMLSelectElement)?.value || '';
     const month = (doc.getElementById('agendaFilterMes') as HTMLSelectElement)?.value || '';
     const type = (doc.getElementById('agendaFilterTipo') as HTMLSelectElement)?.value || '';
@@ -325,9 +386,12 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     body.innerHTML = renderHtml();
     const load = doc.getElementById('reviewLoad');
     if (load)
-      load.innerHTML = renderReviewLoad(buildReviewLoad(getFilteredAndSortedReviews(), todayISO()), {
-        formatDate: formatDatePt,
-      });
+      load.innerHTML = renderReviewLoad(
+        buildReviewLoad(getFilteredAndSortedReviews(), todayISO()),
+        {
+          formatDate: formatDatePt,
+        }
+      );
     renderRedistribution();
   }
 
@@ -375,34 +439,59 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
 
   function confirmRedistribution() {
     if (!redistributionPreview) return;
-    lastRedistribution = applyReviewMoves(ctx.state.reviewAgenda || [], redistributionPreview.moves);
+    lastRedistribution = applyReviewMoves(
+      ctx.state.reviewAgenda || [],
+      redistributionPreview.moves
+    );
     redistributionPreview = null;
     persistAndRender();
-    showToast(`${lastRedistribution.length} ${lastRedistribution.length === 1 ? 'revisão redistribuída' : 'revisões redistribuídas'}.`);
+    showToast(
+      `${lastRedistribution.length} ${lastRedistribution.length === 1 ? 'revisão redistribuída' : 'revisões redistribuídas'}.`
+    );
   }
 
   function undoRedistribution() {
     const reverted = revertReviewMoves(ctx.state.reviewAgenda || [], lastRedistribution);
     lastRedistribution = [];
     persistAndRender();
-    showToast(`${reverted.length} ${reverted.length === 1 ? 'revisão voltou' : 'revisões voltaram'} para a data anterior.`);
+    showToast(
+      `${reverted.length} ${reverted.length === 1 ? 'revisão voltou' : 'revisões voltaram'} para a data anterior.`
+    );
   }
 
   function renderAgendaFilters() {
     const doc = getDoc();
     if (!doc) return;
-    const sel = doc.getElementById('agendaFilterSubject') as HTMLSelectElement | null;
+    const subjectMount = getRealMount(doc, 'agendaFilterSubjectMount');
+    const sel = subjectMount
+      ? null
+      : (doc.getElementById('agendaFilterSubject') as HTMLSelectElement | null);
     const selMes = doc.getElementById('agendaFilterMes') as HTMLSelectElement | null;
     const selTipo = doc.getElementById('agendaFilterTipo') as HTMLSelectElement | null;
-    if (!sel || !selMes || !selTipo) return;
+    if ((!subjectMount && !sel) || !selMes || !selTipo) return;
 
-    const current = sel.value;
-    sel.innerHTML =
-      `<option value="">Todas as disciplinas</option>` +
-      (ctx.state.subjects || [])
-        .map((s: any) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`)
-        .join('');
-    sel.value = current;
+    if (subjectMount) {
+      const options: ComboboxOption[] = [
+        { value: '', label: 'Todas as disciplinas' },
+        ...(ctx.state.subjects || []).map((s: any) => ({
+          value: String(s.id),
+          label: String(s.name || ''),
+        })),
+      ];
+      agendaSubjectOptions = options;
+      if (selectedAgendaSubjectId && !options.some(opt => opt.value === selectedAgendaSubjectId)) {
+        selectedAgendaSubjectId = '';
+      }
+      renderAgendaSubjectFilter();
+    } else if (sel) {
+      const current = sel.value;
+      sel.innerHTML =
+        `<option value="">Todas as disciplinas</option>` +
+        (ctx.state.subjects || [])
+          .map((s: any) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`)
+          .join('');
+      sel.value = current;
+    }
 
     const currentMes = selMes.value;
     const meses = collectMonthKeys(ctx.state.reviewAgenda || []);
@@ -640,16 +729,27 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     }
   }
 
-  function closeReviewRating() {
+  function closeReviewRating({ restoreFocus = true }: { restoreFocus?: boolean } = {}) {
     pendingReviewRatingId = null;
     const doc = getDoc();
+    if (getRealMount(doc, 'reviewRatingMount')) {
+      reviewRatingRestoreFocus = restoreFocus;
+      reviewRatingOpen = false;
+      reviewRatingTopicLabel = '';
+      renderReviewRatingSheet();
+      reviewRatingOrigin = null;
+      return;
+    }
     const overlay = doc?.getElementById('reviewRatingOverlay');
     if (overlay) {
       overlay.classList?.remove('show');
       overlay.setAttribute?.('aria-hidden', 'true');
     }
     const origin = reviewRatingOrigin;
-    if (origin) queueMicrotask(() => { if (origin.isConnected) origin.focus(); });
+    if (restoreFocus && origin)
+      queueMicrotask(() => {
+        if (origin.isConnected) origin.focus();
+      });
     reviewRatingOrigin = null;
   }
 
@@ -667,6 +767,16 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     pendingReviewRatingId = id;
     const doc = getDoc();
     reviewRatingOrigin = doc?.activeElement || null;
+    if (getRealMount(doc, 'reviewRatingMount')) {
+      const topicId = item.topicId || item.topicRef;
+      const subjectName = getSubjectName(entitySubjectId(item));
+      const topicName = topicId ? getTopicName(topicId) : item.topic || '';
+      reviewRatingTopicLabel = [subjectName, topicName].filter(Boolean).join(' — ');
+      reviewRatingRestoreFocus = true;
+      reviewRatingOpen = true;
+      renderReviewRatingSheet();
+      return;
+    }
     const overlay = doc?.getElementById('reviewRatingOverlay');
     if (overlay) {
       overlay.classList?.add('show');
@@ -679,13 +789,13 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     const ratingKey = String(rating || '');
     const ratingDef = (REVIEW_RATINGS as Record<string, any>)[ratingKey];
     if (!ratingDef) {
-      return closeReviewRating();
+      return closeReviewRating({ restoreFocus: true });
     }
     const result = ctx.reviewService?.rateReview(pendingReviewRatingId, ratingKey, {
       label: ratingDef.label,
     });
-    if (!result) return closeReviewRating();
-    closeReviewRating();
+    if (!result) return closeReviewRating({ restoreFocus: true });
+    closeReviewRating({ restoreFocus: false });
     persistAndRender();
     const list = getDoc()?.getElementById('agendaBody');
     if (list) {
@@ -700,6 +810,9 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   function bindEvents(doc?: any) {
     const d = doc || getDoc();
     if (!d) return;
+
+    renderReviewRatingSheet();
+    renderAgendaSubjectFilter();
 
     createReviewsController({
       root: d,

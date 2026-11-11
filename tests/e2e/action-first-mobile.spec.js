@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, overviewRecommendationId, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  openDemo,
+  overviewRecommendationId,
+  openPerformanceSection,
+} from './helpers.js';
 
 test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', async ({ page }) => {
   await openDemo(page);
@@ -46,7 +51,9 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
   ).toBeVisible();
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'diagnosis');
-  const diagnosisActions = page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
+  const diagnosisActions = page.locator(
+    '#diagnosisCenter .diagnostic-row button[data-study-action-source="diagnosis"]'
+  );
   await expect(diagnosisActions.first()).toBeVisible();
   await expect(diagnosisActions.first()).toHaveAttribute(
     'data-activity-type',

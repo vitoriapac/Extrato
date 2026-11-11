@@ -50,8 +50,30 @@ export async function overviewRecommendationId(page) {
     .evaluate(card => card.dataset.studyActionId || card.dataset.recommendationActionId || null);
 }
 export async function openExamImport(page) {
-  await page.locator('.subjects-import-menu summary').click();
+  await page.locator('.subjects-import-menu > button').click();
   await page.getByTestId('open-exam-import').click();
+}
+export async function selectSubjectCombobox(
+  page,
+  selector = '#timerSubjectSelect',
+  target = { index: 1 }
+) {
+  const input = page.locator(selector);
+  await input.click();
+  const inputId = await input.getAttribute('id');
+  const listbox = page.locator(`#${inputId}-listbox`);
+  await expect(listbox).toBeVisible();
+  const option =
+    typeof target === 'string'
+      ? listbox.locator(`[data-option-value="${target}"]`)
+      : listbox.locator('[role="option"]').nth(target.index ?? 1);
+  const chosen = {
+    value: (await option.getAttribute('data-option-value')) || '',
+    text: ((await option.innerText()) || '').trim(),
+  };
+  await option.click();
+  await expect(input).toHaveAttribute('data-selected-value', chosen.value);
+  return chosen;
 }
 export async function expectNoPageOverflow(page) {
   const dimensions = await page.evaluate(() => ({

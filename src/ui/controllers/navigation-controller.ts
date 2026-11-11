@@ -1,4 +1,7 @@
+import { h } from 'preact';
 import { scrollBehavior } from '../accessibility.js';
+import { mountPreact } from '../preact-mount.js';
+import { MobileMoreMenu } from '../components/MobileMoreMenu.js';
 // Public URL names for tabs whose internal id predates their label; the old hash still works on load.
 export const TAB_HASHES: Readonly<Record<string, string>> = Object.freeze({
   metas: 'planejamento',
@@ -40,9 +43,43 @@ export function createNavigationController({
 }: any = {}) {
   if (!document || !window)
     throw new TypeError('Controlador de navegação requer documento e janela.');
-  const moreButton = document.getElementById('moreTabButton'),
-    moreMenu = document.getElementById('mobileMoreMenu');
+  const mobileMoreMount = document.getElementById?.('mobileMoreMenuMount') as Element | null;
+  const usePreactMobileMore = Boolean(
+    mobileMoreMount &&
+    typeof globalThis.document !== 'undefined' &&
+    mobileMoreMount.ownerDocument === globalThis.document
+  );
+  const moreButton = usePreactMobileMore ? null : document.getElementById('moreTabButton'),
+    moreMenu = usePreactMobileMore ? null : document.getElementById('mobileMoreMenu');
+  let activeMoreTab = 'dashboard';
+  let mobileMoreOpen = false;
+  let activateTabRef: (requestedTab: string, updateHash?: boolean) => boolean = () => false;
+
+  const renderMobileMore = () => {
+    if (!usePreactMobileMore || !mobileMoreMount) return;
+    mountPreact(
+      h(MobileMoreMenu, {
+        activeTab: activeMoreTab,
+        open: mobileMoreOpen,
+        onOpenChange: (nextOpen: boolean) => {
+          mobileMoreOpen = nextOpen;
+          renderMobileMore();
+        },
+        onSelectTab: (tabName: string) => {
+          mobileMoreOpen = false;
+          activateTabRef(tabName);
+        },
+      }),
+      mobileMoreMount
+    );
+  };
+
   const syncMore = (tabName: string) => {
+    activeMoreTab = tabName;
+    if (usePreactMobileMore) {
+      renderMobileMore();
+      return;
+    }
     const secondary = ['agenda', 'questoes', 'metas', 'instrucoes'].includes(tabName);
     moreButton?.classList.toggle('active', secondary);
     moreMenu?.querySelectorAll('[data-more-tab]').forEach((item: any) => {
@@ -53,6 +90,16 @@ export function createNavigationController({
     });
   };
   const closeMore = ({ restoreFocus = false } = {}) => {
+    if (usePreactMobileMore) {
+      if (mobileMoreOpen) {
+        mobileMoreOpen = false;
+        renderMobileMore();
+      }
+      if (restoreFocus) {
+        document.getElementById?.('moreTabButton')?.focus();
+      }
+      return;
+    }
     if (!moreMenu) return;
     moreMenu.hidden = true;
     moreButton?.setAttribute('aria-expanded', 'false');
@@ -86,6 +133,10 @@ export function createNavigationController({
     if (updateHash) window.history.replaceState(null, '', `#${TAB_HASHES[tabName] || tabName}`);
     return true;
   };
+  activateTabRef = activate;
+  if (usePreactMobileMore) {
+    renderMobileMore();
+  }
   moreButton?.addEventListener('click', () => {
     const open = moreMenu?.hidden;
     if (!moreMenu) return;
@@ -112,10 +163,16 @@ export function createNavigationController({
     event.preventDefault();
     items[nextNavigationIndex(index, items.length, event.key)]?.focus();
   });
-  document.addEventListener('click', (event: any) => {
-    if (!moreMenu?.hidden && !moreMenu.contains(event.target) && !moreButton?.contains(event.target))
-      closeMore();
-  });
+  if (!usePreactMobileMore) {
+    document.addEventListener('click', (event: any) => {
+      if (
+        !moreMenu?.hidden &&
+        !moreMenu.contains(event.target) &&
+        !moreButton?.contains(event.target)
+      )
+        closeMore();
+    });
+  }
   document.querySelectorAll('.tab-btn[data-tab]').forEach((button: any) => {
     button.addEventListener('click', () => activate(button.dataset.tab));
     button.addEventListener('keydown', (event: any) => {
@@ -163,6 +220,16 @@ export function createNavigationController({
           searchReturnFocus = null;
           return;
         }
+        const modalOverlay = document.getElementById('modalOverlay') as
+          (HTMLElement & { open?: boolean }) | null;
+        if (modalOverlay?.classList.contains('show') || modalOverlay?.open) {
+          event.preventDefault();
+          document.getElementById('modalCancelBtn')?.click();
+          return;
+        }
+        if (document.querySelector?.('dialog[open]')) {
+          return;
+        }
         if (document.getElementById('reviewRatingOverlay')?.classList.contains('show')) {
           event.preventDefault();
           closeReview();
@@ -173,11 +240,6 @@ export function createNavigationController({
           document
             .getElementById('sessionModalOverlay')
             .dispatchEvent(new window.CustomEvent('session-modal-dismiss'));
-          return;
-        }
-        if (document.getElementById('modalOverlay')?.classList.contains('show')) {
-          event.preventDefault();
-          document.getElementById('modalCancelBtn')?.click();
         }
         return;
       }

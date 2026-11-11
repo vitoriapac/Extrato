@@ -187,16 +187,22 @@ test('DropdownMenu — renderiza menu acessível, variante danger, desabilitado 
   const openHtml = render(
     h(DropdownMenu, {
       defaultOpen: true,
+      keepMounted: true,
+      triggerId: 'meu-trigger',
+      menuId: 'meu-menu',
       placement: 'bottom-end',
       triggerLabel: 'Ações',
       hint: 'Use Delete para remover rapidamente.',
       items: [
-        { id: 'editar', label: 'Renomear', icon: 'pencil' },
+        { id: 'editar', label: 'Renomear', icon: 'pencil', active: true, ariaCurrent: 'page' },
         { id: 'arquivar', label: 'Arquivar', disabled: true },
         { id: 'excluir', label: 'Excluir meta', icon: 'trash', variant: 'danger' },
       ],
     })
   );
+  assert.ok(openHtml.includes('id="meu-trigger"'));
+  assert.ok(openHtml.includes('id="meu-menu"'));
+  assert.ok(openHtml.includes('aria-current="page"'));
   assert.ok(openHtml.includes('aria-expanded="true"'));
   assert.ok(openHtml.includes('role="menu"'));
   assert.ok(openHtml.includes('ui-popover__panel--bottom-end'));
@@ -325,26 +331,22 @@ test('BottomSheet — preserva open apenas em SSR quando aberto e aplica título
 
 test('Tooltip — mescla aria-describedby apenas quando visível e aplica posicionamento', () => {
   const closedHtml = render(
-    h(
-      Tooltip,
-      { content: 'Calcular cobertura ponderada' },
-      h('button', { type: 'button', 'aria-describedby': 'ajuda-externa' }, 'Peso')
-    )
+    h(Tooltip, {
+      content: 'Calcular cobertura ponderada',
+      children: h('button', { type: 'button', 'aria-describedby': 'ajuda-externa' }, 'Peso'),
+    })
   );
   assert.ok(closedHtml.includes('aria-describedby="ajuda-externa"'));
   assert.ok(!closedHtml.includes('role="tooltip"'));
 
   const openHtml = render(
-    h(
-      Tooltip,
-      {
-        defaultOpen: true,
-        placement: 'bottom',
-        align: 'end',
-        content: 'Cobertura ponderada pelo peso do edital',
-      },
-      h('button', { type: 'button', 'aria-describedby': 'ajuda-externa' }, 'Peso')
-    )
+    h(Tooltip, {
+      defaultOpen: true,
+      placement: 'bottom',
+      align: 'end',
+      content: 'Cobertura ponderada pelo peso do edital',
+      children: h('button', { type: 'button', 'aria-describedby': 'ajuda-externa' }, 'Peso'),
+    })
   );
   const bubbleMatch = openHtml.match(/<span id="([^"]+)" role="tooltip"/);
   assert.ok(bubbleMatch);
@@ -392,6 +394,42 @@ test('Toast e ToastViewport — diferencia live regions e ícones semânticos', 
   assert.ok(viewportHtml.includes('<section role="region"'));
   assert.ok(viewportHtml.includes('aria-label="Notificações do sistema"'));
   assert.ok(viewportHtml.includes('ui-toast-viewport'));
+
+  const compactIdleClosedHtml = render(
+    h(
+      ToastViewport,
+      { placement: 'centered' },
+      h(Toast, {
+        id: 'toast',
+        compact: true,
+        idle: true,
+        open: false,
+        title: '',
+      })
+    )
+  );
+  assert.ok(compactIdleClosedHtml.includes('ui-toast-viewport--centered'));
+  assert.ok(compactIdleClosedHtml.includes('id="toast"'));
+  assert.ok(compactIdleClosedHtml.includes('ui-toast--compact'));
+  assert.ok(compactIdleClosedHtml.includes('ui-toast--idle'));
+  assert.ok(compactIdleClosedHtml.includes('aria-live="polite"'));
+  assert.ok(!compactIdleClosedHtml.includes('show'));
+
+  const compactOpenHtml = render(
+    h(Toast, {
+      id: 'toast',
+      compact: true,
+      idle: true,
+      open: true,
+      title: 'Registro excluído.',
+      actionLabel: 'Desfazer',
+      onAction: () => {},
+    })
+  );
+  assert.ok(compactOpenHtml.includes('ui-toast--idle'));
+  assert.ok(compactOpenHtml.includes('show'));
+  assert.ok(compactOpenHtml.includes('has-action'));
+  assert.ok(compactOpenHtml.includes('Desfazer'));
 });
 
 test('Governança Fase 1/2 — camada CSS em ordem, zero hex solto e zero emojis nos primitivos compostos', () => {

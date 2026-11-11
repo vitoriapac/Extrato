@@ -7,19 +7,11 @@ import { waitForAppReady } from './helpers/app-state.js';
 const OPEN_GUIDED =
   '#overviewNextAction [data-guided-action="open"]:visible, #guidedOnboarding [data-guided-action="open"]:visible';
 
-
 for (const width of [375, 768, 1366, 1440, 1920])
   test(`preserva todas as áreas sem overflow global em ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await openDemo(page);
-    for (const name of [
-      'dashboard',
-      'hoje',
-      'disciplinas',
-      'agenda',
-      'questoes',
-      'metas',
-    ]) {
+    for (const name of ['dashboard', 'hoje', 'disciplinas', 'agenda', 'questoes', 'metas']) {
       await activateTab(page, name);
       await expectNoPageOverflow(page);
     }
@@ -75,7 +67,9 @@ for (const width of [320, 375, 430, 768, 1440])
       await page.locator('#timerFinishBtn').click();
       await expect(page.locator('#sessionModalOverlay')).toBeVisible();
       await expectNoPageOverflow(page);
-      const sessionBounds = await page.locator('#sessionModalOverlay .modal-box').boundingBox();
+      const sessionBounds = await page
+        .locator('#sessionModalOverlay .ui-bottom-sheet__inner')
+        .boundingBox();
       expect(sessionBounds.x).toBeGreaterThanOrEqual(0);
       expect(sessionBounds.x + sessionBounds.width).toBeLessThanOrEqual(width + 1);
       await page.locator('#sessionModalSkipBtn').click();

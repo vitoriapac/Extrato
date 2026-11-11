@@ -1,7 +1,11 @@
 /**
  * Controller de Interação do Usuário com Backup, Recuperação e Zona de Perigo.
  */
+import { h } from 'preact';
 import { buildExportReminder } from '../../domain/backup/export-reminder.js';
+import { mountPreact } from '../preact-mount.js';
+import { DataManagementModal } from '../modals/DataManagementModal.js';
+import { syncDialogOpen } from '../primitives/dialog.js';
 
 export interface BackupModalControllerContext {
   document: any;
@@ -244,17 +248,52 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
     listeners.push(() => target.removeEventListener?.(event, handler));
   };
 
-  const mount = () => {
-    const fileInput = ctx.document.getElementById('importBackupFile');
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    ctx.document === globalThis.document &&
+    typeof ctx.document?.createElement === 'function'
+      ? ctx.document.getElementById('dataManagementMount')
+      : null;
+
+  let isModalOpen = false;
+
+  const renderDeclarativeModal = () => {
+    if (!mountNode) return;
+    mountPreact(
+      h(DataManagementModal, {
+        open: isModalOpen,
+        onClose: () => setModalOpen(false),
+      }),
+      mountNode
+    );
+    syncDialogOpen(ctx.document, 'dataManagementOverlay', isModalOpen);
+  };
+
+  const setModalOpen = (nextOpen: boolean) => {
+    isModalOpen = nextOpen;
+    if (mountNode) {
+      renderDeclarativeModal();
+      if (isModalOpen) {
+        renderExportStatus();
+      }
+      ctx.document
+        .getElementById('openDataManagementBtn')
+        ?.setAttribute('aria-expanded', String(isModalOpen));
+      if (!isModalOpen) {
+        const mainContent = ctx.document.getElementById('mainContent') as HTMLElement | null;
+        if (mainContent && !ctx.document.querySelector?.('dialog[open], .modal-overlay.show')) {
+          mainContent.inert = false;
+        }
+      }
+      return;
+    }
+
     const overlay =
       ctx.document.getElementById('dataManagementOverlay') ||
       ctx.document.getElementById('dataManagementDialog');
     const openBtn = ctx.document.getElementById('openDataManagementBtn');
-    const closeBtn = ctx.document.getElementById('closeDataManagementBtn');
-
-    renderExportStatus();
-    const openModal = () => {
-      if (!overlay) return;
+    if (!overlay) return;
+    if (isModalOpen) {
       renderExportStatus();
       overlay.classList.add('show');
       if (typeof (overlay as any).showModal === 'function' && overlay.tagName === 'DIALOG') {
@@ -265,10 +304,7 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
         }
       }
       openBtn?.setAttribute('aria-expanded', 'true');
-    };
-
-    const closeModal = () => {
-      if (!overlay) return;
+    } else {
       overlay.classList.remove('show');
       if (typeof (overlay as any).close === 'function' && overlay.tagName === 'DIALOG') {
         try {
@@ -278,19 +314,38 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
         }
       }
       openBtn?.setAttribute('aria-expanded', 'false');
-    };
+    }
+  };
+
+  const mount = () => {
+    if (mountNode) {
+      renderDeclarativeModal();
+    }
+
+    const fileInput = ctx.document.getElementById('importBackupFile');
+    const overlay =
+      ctx.document.getElementById('dataManagementOverlay') ||
+      ctx.document.getElementById('dataManagementDialog');
+    const openBtn = ctx.document.getElementById('openDataManagementBtn');
+    const closeBtn = ctx.document.getElementById('closeDataManagementBtn');
+
+    renderExportStatus();
+    const openModal = () => setModalOpen(true);
+    const closeModal = () => setModalOpen(false);
 
     if (overlay && openBtn) {
       listen(openBtn, 'click', openModal);
       listen(ctx.document.getElementById('openDataManagementHeaderBtn'), 'click', openModal);
     }
-    if (overlay && closeBtn) {
-      listen(closeBtn, 'click', closeModal);
-    }
-    if (overlay) {
-      listen(overlay, 'click', (e: any) => {
-        if (e.target === overlay) closeModal();
-      });
+    if (!mountNode) {
+      if (overlay && closeBtn) {
+        listen(closeBtn, 'click', closeModal);
+      }
+      if (overlay) {
+        listen(overlay, 'click', (e: any) => {
+          if (e.target === overlay) closeModal();
+        });
+      }
     }
 
     listen(ctx.document.getElementById('exportBackupBtn'), 'click', () =>

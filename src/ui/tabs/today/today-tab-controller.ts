@@ -2,6 +2,7 @@ import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { TodayExecutionSummary } from './TodayExecutionSummary.js';
+import { TodayExecutionModeSwitch, type ExecutionMode } from './TodayExecutionModeSwitch.js';
 import { TodayAgendaSections, type TodayAgendaSectionsProps } from './TodayAgendaSections.js';
 import { TodayGoalsCard, type TodayGoalsCardProps } from './TodayGoalsCard.js';
 import { TodayWeeklyRhythmCard, type WeeklyRhythmDay } from './TodayWeeklyRhythmCard.js';
@@ -14,7 +15,10 @@ import {
 import { buildFinalStretchBanner } from '../../../domain/planning/final-stretch-policy.js';
 import { FinalStretchBanner } from '../../components/FinalStretchBanner.js';
 import { RealWeekBanner, type RealWeekBannerProps } from '../../components/RealWeekBanner.js';
-import { buildTodayViewModel, canGenerateAutomaticTodayPlan } from '../../../application/planning/build-today-view-model.js';
+import {
+  buildTodayViewModel,
+  canGenerateAutomaticTodayPlan,
+} from '../../../application/planning/build-today-view-model.js';
 import { buildNextBestAction } from '../../../application/diagnostics/build-next-best-action.js';
 import { createDailyExecutionController } from '../../controllers/daily-execution-controller.js';
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
@@ -22,7 +26,11 @@ import { capturePlanPriority } from '../../../domain/planning/plan-priority-snap
 import { renderIconSvg } from '../../primitives/icon.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
 
-const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: 'alert-circle', Média: 'alert-triangle', Baixa: 'circle-check' };
+const PRIORITY_TIER_EMOJI: Record<string, string> = {
+  Alta: 'alert-circle',
+  Média: 'alert-triangle',
+  Baixa: 'circle-check',
+};
 
 export interface TodayTabControllerContext {
   formatPlanMinutes: (mins: number) => string;
@@ -350,7 +358,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   }
 
   function ensureTodayDailyStudyPlan(priorities: any[], availableMinutes: number) {
-    return todayDailyStudyPlan() || (canGenerateAutomaticTodayPlan(getState(), latestStudyPlan()) ? materializeDailyStudyPlan(priorities, availableMinutes) : null);
+    return (
+      todayDailyStudyPlan() ||
+      (canGenerateAutomaticTodayPlan(getState(), latestStudyPlan())
+        ? materializeDailyStudyPlan(priorities, availableMinutes)
+        : null)
+    );
   }
 
   function planItemStatusLabel(status: string) {
@@ -385,7 +398,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         typeof localStorage !== 'undefined' &&
         Boolean(
           localStorage.getItem('extrato_first_steps_dismissed') ??
-            localStorage.getItem('studytrack_first_steps_dismissed')
+          localStorage.getItem('studytrack_first_steps_dismissed')
         )
       );
     } catch {
@@ -558,7 +571,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       (sum: number, p: any) =>
         sum +
         (p.items || [])
-          .filter((it: any) => !['skipped', 'replaced', 'deferred', 'discarded'].includes(it.status))
+          .filter(
+            (it: any) => !['skipped', 'replaced', 'deferred', 'discarded'].includes(it.status)
+          )
           .reduce((t: number, it: any) => t + (Number(it.plannedMinutes) || 0), 0),
       0
     );
@@ -581,7 +596,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         if (ctx.onOpenRecoveryMission) {
           ctx.onOpenRecoveryMission();
         } else {
-          const btn = doc.querySelector?.('[data-action="open-recovery-mission"]') as HTMLElement | null;
+          const btn = doc.querySelector?.(
+            '[data-action="open-recovery-mission"]'
+          ) as HTMLElement | null;
           btn?.click();
         }
       },
@@ -643,9 +660,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     const state = getState();
     const hasConfigured = Boolean(
       state.examDate ||
-        (Array.isArray(state.subjects) && state.subjects.length > 0) ||
-        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
-        (Array.isArray(state.studySessions) && state.studySessions.length > 0)
+      (Array.isArray(state.subjects) && state.subjects.length > 0) ||
+      (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+      (Array.isArray(state.studySessions) && state.studySessions.length > 0)
     );
     if (!hasConfigured) {
       container.innerHTML = '';
@@ -660,17 +677,47 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     });
   }
 
+  function setExecutionMode(mode: ExecutionMode): void {
+    const normalized: ExecutionMode = mode === 'sequence' ? 'sequence' : 'agenda';
+    const state = getState();
+    if (state) state.executionMode = normalized;
+    scheduleSave();
+    renderPlanoHoje();
+  }
+
+  function renderExecutionModeSwitch(): void {
+    if (!doc) return;
+    const state = getState();
+    const mode: ExecutionMode = state?.executionMode === 'sequence' ? 'sequence' : 'agenda';
+    const mount = doc.getElementById('todayExecutionModeMount') as Element | null;
+    if (
+      mount &&
+      typeof globalThis.document !== 'undefined' &&
+      mount.ownerDocument === globalThis.document
+    ) {
+      mountPreact(
+        h(TodayExecutionModeSwitch, {
+          value: mode,
+          onChange: setExecutionMode,
+        }),
+        mount
+      );
+      return;
+    }
+    const agendaBtn = doc.getElementById('executionAgendaBtn');
+    const sequenceBtn = doc.getElementById('executionSequenceBtn');
+    if (agendaBtn && sequenceBtn) {
+      agendaBtn.setAttribute('aria-pressed', String(mode === 'agenda'));
+      sequenceBtn.setAttribute('aria-pressed', String(mode === 'sequence'));
+    }
+  }
+
   function renderPlanoHoje() {
     if (!doc) return;
+    renderExecutionModeSwitch();
     const container = doc.getElementById('planoHojeContent');
     if (!container) return;
     const state = getState();
-    const agendaBtn = doc.getElementById('executionAgendaBtn'),
-      sequenceBtn = doc.getElementById('executionSequenceBtn');
-    if (agendaBtn && sequenceBtn) {
-      agendaBtn.setAttribute('aria-pressed', String(state.executionMode === 'agenda'));
-      sequenceBtn.setAttribute('aria-pressed', String(state.executionMode === 'sequence'));
-    }
     const priorities = computeStudyPriorities();
     const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
     const plan = ensureTodayDailyStudyPlan(priorities, availableMinutes);
@@ -701,10 +748,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       return;
     }
     if (!plan) {
-      container.innerHTML =
-        latestStudyPlan()
-          ? '<div class="upcoming-empty">Nenhuma atividade do plano semanal foi distribuída para hoje. Confira a distribuição em Planejamento.</div>'
-          : '<div class="upcoming-empty">Confirme um plano em Planejamento para organizar as atividades de hoje.</div>';
+      container.innerHTML = latestStudyPlan()
+        ? '<div class="upcoming-empty">Nenhuma atividade do plano semanal foi distribuída para hoje. Confira a distribuição em Planejamento.</div>'
+        : '<div class="upcoming-empty">Confirme um plano em Planejamento para organizar as atividades de hoje.</div>';
       return;
     }
 
@@ -791,7 +837,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           item.status === 'completed'
             ? 'text-green'
             : active
-              ? 'text-brand'
+              ? 'text-brand dark:text-accent'
               : 'text-content-secondary';
         const actionButton = active
           ? `<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">${renderIconSvg('focus-2', { size: 13, className: 'icon-inline' })}Retomar sessão</button>`
@@ -833,7 +879,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
     const executionHint = `
       <div class="today-plan-hint text-xs text-content-secondary mb-3 p-2.5 rounded bg-surface-subtle border border-border-subtle flex items-center gap-2">
-        <span class="text-brand shrink-0 inline-flex">${renderIconSvg('bulb', { size: 15 })}</span>
+        <span class="text-brand dark:text-accent shrink-0 inline-flex">${renderIconSvg('bulb', { size: 15 })}</span>
         <span>Clique em <strong>Iniciar</strong> no bloco para estudar com o cronômetro integrado ou registre seu tempo após finalizar a sessão.</span>
       </div>
     `;
@@ -928,6 +974,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
   function bindEvents() {
     if (!doc) return;
+    renderExecutionModeSwitch();
     doc.addEventListener('click', (event: any) => {
       const start = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-daily-start]');
       if (start) {

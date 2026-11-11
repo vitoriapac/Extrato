@@ -37,7 +37,7 @@ export function renderReplanProposal(
 
   const empathyHeader = `
     <div class="replan-empathy-header mb-3 p-3 rounded-lg bg-surface-subtle border border-border-default flex items-start gap-3">
-      <div class="p-1.5 rounded bg-brand/10 text-brand shrink-0">
+      <div class="p-1.5 rounded bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent shrink-0">
         ${renderIconSvg('heart-handshake', { size: 18 })}
       </div>
       <div>

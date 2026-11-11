@@ -1,3 +1,7 @@
+import { h } from 'preact';
+import { mountPreact } from '../../ui/preact-mount.js';
+import { StructuredImportModal } from '../../ui/modals/StructuredImportModal.js';
+import { syncDialogOpen } from '../../ui/primitives/dialog.js';
 import { buildStructuredImportViewModel } from './structured-import-view-model.js';
 export function createStructuredImportController({
   document,
@@ -11,25 +15,81 @@ export function createStructuredImportController({
   onOpen = () => {},
   maxBytes = 2 * 1024 * 1024,
 }: any = {}) {
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    document === globalThis.document &&
+    typeof document?.createElement === 'function'
+      ? document.getElementById('structuredImportMount')
+      : null;
+
+  const viewState = {
+    open: false,
+    canConfirm: false,
+  };
+
+  let pending: Record<string, any> | null = null,
+    previousFocus: any = null;
+
+  const handleConfirm = () => {
+    if (!pending) return;
+    try {
+      const result = service.import(pending.subjects);
+      close({ completed: true });
+      onImported(result);
+    } catch (error: any) {
+      notify(error?.message || 'A importação falhou. Nenhum dado foi alterado.');
+    }
+  };
+
+  const renderModal = () => {
+    if (!mountNode) return;
+    mountPreact(
+      h(StructuredImportModal, {
+        open: viewState.open,
+        canConfirm: viewState.canConfirm,
+        onClose: () => close(),
+        onCancel: () => close(),
+        onConfirm: handleConfirm,
+      }),
+      mountNode
+    );
+    syncDialogOpen(document, 'structuredImportOverlay', viewState.open);
+  };
+
+  if (mountNode) {
+    renderModal();
+  }
+
   const input = document.getElementById('structuredContentFile'),
     open = document.getElementById('structuredContentImportBtn'),
     overlay = document.getElementById('structuredImportOverlay'),
     content = document.getElementById('structuredImportContent'),
     confirm = document.getElementById('structuredImportConfirmBtn'),
     cancel = document.getElementById('structuredImportCancelBtn');
-  let pending: Record<string, any> | null = null,
-    previousFocus: any = null;
   const close = ({ completed = false } = {}) => {
-    overlay.classList.remove('show');
+    if (mountNode) {
+      if (!viewState.open) return;
+      viewState.open = false;
+      renderModal();
+    } else {
+      overlay.classList.remove('show');
+    }
     pending = null;
     onCancel({ completed });
     previousFocus?.focus?.();
     previousFocus = null;
   };
   const show = (model: Record<string, any>) => {
+    if (mountNode) {
+      viewState.canConfirm = Boolean(model.canConfirm);
+      viewState.open = true;
+      renderModal();
+    }
     content.innerHTML = render(model);
     confirm.hidden = !model.canConfirm;
-    overlay.classList.add('show');
+    if (!mountNode) {
+      overlay.classList.add('show');
+    }
     cancel.focus();
   };
   const read = (file: File) => {
@@ -70,22 +130,15 @@ export function createStructuredImportController({
     } else onCancel({ completed: false });
     input.value = '';
   });
-  cancel.addEventListener('click', () => close());
-  confirm.addEventListener('click', () => {
-    if (!pending) return;
-    try {
-      const result = service.import(pending.subjects);
-      close({ completed: true });
-      onImported(result);
-    } catch (error: any) {
-      notify(error?.message || 'A importação falhou. Nenhum dado foi alterado.');
-    }
-  });
-  overlay.addEventListener('keydown', (event: any) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      close();
-    }
-  });
+  if (!mountNode) {
+    cancel.addEventListener('click', () => close());
+    confirm.addEventListener('click', handleConfirm);
+    overlay.addEventListener('keydown', (event: any) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+      }
+    });
+  }
   return Object.freeze({ read, close, choose });
 }

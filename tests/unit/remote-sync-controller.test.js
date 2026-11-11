@@ -455,4 +455,6 @@ test('regra da frase mestre: mínimo de 12 caracteres e aviso de força', async 
   assert.equal(evaluatePassphrase('minhasenhaboa').strength, 'fraca');
   assert.equal(evaluatePassphrase('Correct-Horse-Battery-9').strength, 'forte');
   assert.equal(evaluatePassphrase('Abcdefgh1234').ok, true);
+  assert.equal(evaluatePassphrase('Abc123456789').strength, 'forte');
+  assert.equal(evaluatePassphrase('abcdefgh1234').strength, 'media');
 });

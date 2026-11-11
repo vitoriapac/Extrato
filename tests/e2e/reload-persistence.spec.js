@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab } from './helpers.js';
+import { activateTab, selectSubjectCombobox } from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 
 // Real mode (no ?test=1): the only path that boots through loadState.
@@ -35,7 +35,7 @@ test('recarregar com hash de aba mantém sessões salvas', async ({ page }) => {
   }, JSON.stringify(seed));
   await page.goto('/');
   await activateTab(page, 'hoje');
-  await page.locator('#timerSubjectSelect').selectOption({ index: 1 });
+  await selectSubjectCombobox(page, '#timerSubjectSelect', { index: 1 });
   await page.locator('#timerTopicSelect').selectOption({ index: 1 });
   await page.locator('#timerStartBtn').click();
   await page.clock.fastForward('00:05:00');

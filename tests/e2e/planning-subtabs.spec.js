@@ -9,19 +9,19 @@ test('Planejamento agrupa as seções em blocos recolhíveis e o link profundo a
   await expect(page.locator('#metasSub-semana')).toHaveAttribute('open', '');
   await expect(page.locator('#metasSub-fechamento')).not.toHaveAttribute('open', '');
 
-  await page.getByRole('button', { name: 'Fechamento semanal', exact: true }).click();
+  await page.getByRole('tab', { name: 'Fechamento semanal', exact: true }).click();
   await expect(page.locator('#metasSub-fechamento')).toHaveAttribute('open', '');
   await expect(page.locator('#metasSub-semana')).not.toHaveAttribute('open', '');
   await expect(page).toHaveURL(/#planejamento\/fechamento$/);
 
-  await page.getByRole('button', { name: 'Fechamento semanal', exact: true }).press('ArrowRight');
-  await expect(page.getByRole('button', { name: 'Histórico', exact: true })).toBeFocused();
+  await page.getByRole('tab', { name: 'Fechamento semanal', exact: true }).press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Histórico', exact: true })).toBeFocused();
   await expect(page.locator('#metasSub-historico')).toHaveAttribute('open', '');
 
   await page.reload();
   await expect(page.locator('#metasSub-historico')).toHaveAttribute('open', '');
-  await expect(page.getByRole('button', { name: 'Histórico', exact: true })).toHaveAttribute(
-    'aria-current',
+  await expect(page.getByRole('tab', { name: 'Histórico', exact: true })).toHaveAttribute(
+    'aria-selected',
     'true'
   );
 });

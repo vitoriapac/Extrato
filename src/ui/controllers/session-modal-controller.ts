@@ -7,7 +7,11 @@
  * Camada: UI Controller.
  */
 
+import { h } from 'preact';
 import { SESSION_BOOKMARK_FIELDS } from '../../application/sessions/timer-coordinator.js';
+import { mountPreact } from '../preact-mount.js';
+import type { SelectOption } from '../primitives/select-field.js';
+import { SessionModalSheet, type SessionBookmarkViewState } from '../modals/SessionModalSheet.js';
 
 export interface ModalDocumentLike {
   getElementById(id: string): any;
@@ -53,6 +57,21 @@ export interface SessionModalEventHandlers {
   onSave?: (formValues: SessionFormValues) => void;
 }
 
+export interface SessionModalShowOptions {
+  durationMinutes?: string;
+}
+
+export interface SessionModalHideOptions {
+  restoreFocus?: boolean;
+}
+
+const ACTIVITY_HINTS: Record<string, string> = {
+  study: 'Registre o que você estudou e atualize seus indicadores.',
+  questions: 'Informe volume e acertos para atualizar seu desempenho.',
+  review: 'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',
+  simulation: 'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
+};
+
 export function createSessionModalController(opts: SessionModalControllerOptions) {
   const {
     document,
@@ -65,7 +84,253 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     topicsForSelection,
   } = opts;
 
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    document === globalThis.document &&
+    typeof (document as Document).createElement === 'function'
+      ? document.getElementById('sessionModalMount')
+      : null;
+
+  let boundHandlers: SessionModalEventHandlers = {};
+
+  function emptyBookmarkState(): SessionBookmarkViewState {
+    return {
+      hidden: true,
+      open: false,
+      clearMarked: false,
+      clearBtnHidden: true,
+      resourceType: 'pdf',
+      label: '',
+      currentUnit: '',
+      totalUnits: '',
+      positionText: '',
+    };
+  }
+
+  const viewState = {
+    open: false,
+    sessionKey: 0,
+    restoreFocusOnClose: true,
+    activityHint: 'Confira a disciplina, o tópico e a duração calculada para salvar o lançamento.',
+    durationFormatted: '00:00',
+    durationMinutesValue: '',
+    durationMinutesPlaceholder: 'Min',
+    subjectOptions: [{ value: '', label: 'Sem disciplina específica' }] as SelectOption[],
+    topicOptions: [{ value: '', label: 'Sem tópico específico' }] as SelectOption[],
+    subjectId: '',
+    topicId: '',
+    activityType: 'study',
+    resolvedValue: '',
+    correctValue: '',
+    pagesReadValue: '',
+    videoBlocksValue: '',
+    difficultyValue: '',
+    retentionValue: '',
+    focusValue: '',
+    energyValue: '',
+    optionalOpen: false,
+    notesValue: '',
+    bookmark: emptyBookmarkState(),
+  };
+
+  function buildSubjectOptions(currentSubjectId: string): SelectOption[] {
+    return [
+      { value: '', label: 'Sem disciplina específica' },
+      ...subjectsForSelection(currentSubjectId).map(s => ({
+        value: s.id,
+        label: `${s.name}${s.archived ? ' (arquivada)' : ''}`,
+      })),
+    ];
+  }
+
+  function buildTopicOptions(
+    subjectId: string,
+    selectedTopicId: string | null = null
+  ): SelectOption[] {
+    const subject = getSubjectById(subjectId);
+    return [
+      { value: '', label: 'Sem tópico específico' },
+      ...(subject
+        ? topicsForSelection(subject, selectedTopicId).map((topic: any) => ({
+            value: topic.id,
+            label: topic.name || '(tópico sem nome)',
+          }))
+        : []),
+    ];
+  }
+
+  function buildBookmarkState(topicId: string): SessionBookmarkViewState {
+    const bookmark = topicId ? getTopicById(topicId)?.topic?.bookmark : null;
+    return {
+      hidden: !topicId,
+      open: Boolean(bookmark),
+      clearMarked: false,
+      clearBtnHidden: !bookmark,
+      resourceType: String((bookmark as Record<string, any> | null)?.resourceType ?? 'pdf'),
+      label: String((bookmark as Record<string, any> | null)?.label ?? ''),
+      currentUnit:
+        (bookmark as Record<string, any> | null)?.currentUnit != null
+          ? String((bookmark as Record<string, any>).currentUnit)
+          : '',
+      totalUnits:
+        (bookmark as Record<string, any> | null)?.totalUnits != null
+          ? String((bookmark as Record<string, any>).totalUnits)
+          : '',
+      positionText: String((bookmark as Record<string, any> | null)?.positionText ?? ''),
+    };
+  }
+
+  function syncDialogElement(isOpen: boolean): void {
+    if (!mountNode) return;
+    const dialog = document.getElementById('sessionModalOverlay') as HTMLDialogElement | null;
+    if (!dialog) return;
+    if (isOpen && !dialog.open && typeof dialog.showModal === 'function') {
+      dialog.showModal();
+    } else if (!isOpen && dialog.open && typeof dialog.close === 'function') {
+      dialog.close();
+    }
+  }
+
+  function syncDomInputsToViewState(): void {
+    if (!mountNode) return;
+    const readVal = (id: string) =>
+      (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value;
+    const durMin = readVal('sessionModalDurationMinutes');
+    if (durMin !== undefined) viewState.durationMinutesValue = durMin;
+    const resolved = readVal('sessionModalResolved');
+    if (resolved !== undefined) viewState.resolvedValue = resolved;
+    const correct = readVal('sessionModalCorrect');
+    if (correct !== undefined) viewState.correctValue = correct;
+    const pagesRead = readVal('sessionModalPagesRead');
+    if (pagesRead !== undefined) viewState.pagesReadValue = pagesRead;
+    const videoBlocks = readVal('sessionModalVideoBlocks');
+    if (videoBlocks !== undefined) viewState.videoBlocksValue = videoBlocks;
+    const notes = readVal('sessionModalNotes');
+    if (notes !== undefined) viewState.notesValue = notes;
+    const bmLabel = readVal('sessionBookmarkLabel');
+    if (bmLabel !== undefined) viewState.bookmark.label = bmLabel;
+    const bmCurrent = readVal('sessionBookmarkCurrent');
+    if (bmCurrent !== undefined) viewState.bookmark.currentUnit = bmCurrent;
+    const bmTotal = readVal('sessionBookmarkTotal');
+    if (bmTotal !== undefined) viewState.bookmark.totalUnits = bmTotal;
+    const bmPos = readVal('sessionBookmarkPosition');
+    if (bmPos !== undefined) viewState.bookmark.positionText = bmPos;
+  }
+
+  function renderDeclarativeSheet(): void {
+    if (!mountNode) return;
+    mountPreact(
+      h(SessionModalSheet, {
+        open: viewState.open,
+        sessionKey: viewState.sessionKey,
+        restoreFocusOnClose: viewState.restoreFocusOnClose,
+        activityHint: viewState.activityHint,
+        durationFormatted: viewState.durationFormatted,
+        durationMinutesValue: viewState.durationMinutesValue,
+        durationMinutesPlaceholder: viewState.durationMinutesPlaceholder,
+        subjectOptions: viewState.subjectOptions,
+        topicOptions: viewState.topicOptions,
+        subjectId: viewState.subjectId,
+        topicId: viewState.topicId,
+        activityType: viewState.activityType,
+        resolvedValue: viewState.resolvedValue,
+        correctValue: viewState.correctValue,
+        pagesReadValue: viewState.pagesReadValue,
+        videoBlocksValue: viewState.videoBlocksValue,
+        difficultyValue: viewState.difficultyValue,
+        retentionValue: viewState.retentionValue,
+        focusValue: viewState.focusValue,
+        energyValue: viewState.energyValue,
+        optionalOpen: viewState.optionalOpen,
+        notesValue: viewState.notesValue,
+        bookmark: { ...viewState.bookmark },
+        onDurationMinutesChange: value => {
+          viewState.durationMinutesValue = value;
+          const numericVal = Number(value);
+          if (Number.isFinite(numericVal) && numericVal > 0) {
+            viewState.durationFormatted = formatTimer(Math.min(720, Math.round(numericVal)) * 60);
+          }
+          renderDeclarativeSheet();
+        },
+        onSubjectChange: nextSubjectId => {
+          viewState.subjectId = nextSubjectId;
+          viewState.topicId = '';
+          viewState.topicOptions = buildTopicOptions(nextSubjectId, null);
+          viewState.bookmark = buildBookmarkState('');
+          renderDeclarativeSheet();
+        },
+        onTopicChange: nextTopicId => {
+          viewState.topicId = nextTopicId;
+          viewState.bookmark = buildBookmarkState(nextTopicId);
+          renderDeclarativeSheet();
+        },
+        onActivityTypeChange: nextType => {
+          viewState.activityType = nextType || 'study';
+          viewState.activityHint = ACTIVITY_HINTS[viewState.activityType] || ACTIVITY_HINTS.study;
+          renderDeclarativeSheet();
+        },
+        onResolvedChange: value => {
+          viewState.resolvedValue = value;
+        },
+        onCorrectChange: value => {
+          viewState.correctValue = value;
+        },
+        onPagesReadChange: value => {
+          viewState.pagesReadValue = value;
+        },
+        onVideoBlocksChange: value => {
+          viewState.videoBlocksValue = value;
+        },
+        onDifficultyChange: value => {
+          viewState.difficultyValue = value;
+          renderDeclarativeSheet();
+        },
+        onRetentionChange: value => {
+          viewState.retentionValue = value;
+          renderDeclarativeSheet();
+        },
+        onFocusChange: value => {
+          viewState.focusValue = value;
+          renderDeclarativeSheet();
+        },
+        onEnergyChange: value => {
+          viewState.energyValue = value;
+          renderDeclarativeSheet();
+        },
+        onOptionalToggle: isOpen => {
+          viewState.optionalOpen = isOpen;
+        },
+        onNotesChange: value => {
+          viewState.notesValue = value;
+        },
+        onBookmarkFieldChange: (field, value) => {
+          viewState.bookmark[field] = value;
+          if (field === 'resourceType') renderDeclarativeSheet();
+        },
+        onBookmarkToggle: isOpen => {
+          viewState.bookmark.open = isOpen;
+        },
+        onBookmarkClear: () => {
+          clearSessionBookmarkFields();
+        },
+        onSkip: () => boundHandlers.onSkip?.(),
+        onDismiss: () => boundHandlers.onDismiss?.(),
+        onSave: () => boundHandlers.onSave?.(readFormValues()),
+      }),
+      mountNode
+    );
+    syncDialogElement(viewState.open);
+  }
+
   function populateSessionTopicSelect(subjectId: string, selectedTopicId: string | null = null) {
+    if (mountNode) {
+      viewState.topicOptions = buildTopicOptions(subjectId, selectedTopicId);
+      if (selectedTopicId !== null) {
+        viewState.topicId = selectedTopicId;
+      }
+      renderDeclarativeSheet();
+      return;
+    }
     const select = document.getElementById('sessionModalTopic') as HTMLSelectElement | null;
     if (!select) return;
     const subject = getSubjectById(subjectId);
@@ -82,6 +347,11 @@ export function createSessionModalController(opts: SessionModalControllerOptions
   }
 
   function fillSessionBookmarkFields(topicId: string) {
+    if (mountNode) {
+      viewState.bookmark = buildBookmarkState(topicId);
+      renderDeclarativeSheet();
+      return;
+    }
     const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement | null;
     if (!section) return;
     const bookmark = topicId ? getTopicById(topicId)?.topic?.bookmark : null;
@@ -105,6 +375,15 @@ export function createSessionModalController(opts: SessionModalControllerOptions
   }
 
   function clearSessionBookmarkFields() {
+    if (mountNode) {
+      viewState.bookmark.clearMarked = true;
+      viewState.bookmark.label = '';
+      viewState.bookmark.currentUnit = '';
+      viewState.bookmark.totalUnits = '';
+      viewState.bookmark.positionText = '';
+      renderDeclarativeSheet();
+      return;
+    }
     const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement | null;
     const clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement | null;
     if (section) section.dataset.clear = '1';
@@ -121,23 +400,56 @@ export function createSessionModalController(opts: SessionModalControllerOptions
   }
 
   function syncSessionModalActivityFields(type = 'study') {
-    const labels: Record<string, string> = {
-      study: 'Registre o que você estudou e atualize seus indicadores.',
-      questions: 'Informe volume e acertos para atualizar seu desempenho.',
-      review: 'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',
-      simulation:
-        'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
-    };
+    if (mountNode) {
+      viewState.activityType = type || 'study';
+      viewState.activityHint = ACTIVITY_HINTS[viewState.activityType] || ACTIVITY_HINTS.study;
+      renderDeclarativeSheet();
+      return;
+    }
     const hint = document.getElementById('sessionModalActivityHint');
     if (hint) {
-      hint.textContent = labels[type] || labels.study;
+      hint.textContent = ACTIVITY_HINTS[type] || ACTIVITY_HINTS.study;
     }
     document.querySelectorAll('[data-session-fields]').forEach((section: any) => {
       section.hidden = !section.dataset.sessionFields!.split(/\s+/).includes(type);
     });
   }
 
-  function show(timerSeconds: number, activeTimer: Record<string, any>) {
+  function show(
+    timerSeconds: number,
+    activeTimer: Record<string, any>,
+    showOptions: SessionModalShowOptions = {}
+  ) {
+    if (mountNode) {
+      viewState.sessionKey += 1;
+      viewState.open = true;
+      viewState.restoreFocusOnClose = true;
+      viewState.durationFormatted = formatTimer(timerSeconds);
+      viewState.durationMinutesPlaceholder = String(Math.max(1, Math.round(timerSeconds / 60)));
+      viewState.durationMinutesValue = showOptions.durationMinutes ?? '';
+      const subjectId = String(activeTimer.subjectId || '');
+      const topicId = String(activeTimer.topicId || '');
+      viewState.subjectOptions = buildSubjectOptions(subjectId);
+      viewState.subjectId = subjectId;
+      viewState.topicOptions = buildTopicOptions(subjectId, activeTimer.topicId || null);
+      viewState.topicId = topicId;
+      viewState.activityType = String(activeTimer.type || 'study');
+      viewState.activityHint = ACTIVITY_HINTS[viewState.activityType] || ACTIVITY_HINTS.study;
+      viewState.resolvedValue = '';
+      viewState.correctValue = '';
+      viewState.pagesReadValue = '';
+      viewState.videoBlocksValue = '';
+      viewState.difficultyValue = '';
+      viewState.retentionValue = '';
+      viewState.focusValue = '';
+      viewState.energyValue = '';
+      viewState.optionalOpen = false;
+      viewState.notesValue = '';
+      viewState.bookmark = buildBookmarkState(topicId);
+      renderDeclarativeSheet();
+      return;
+    }
+
     const overlay = document.getElementById('sessionModalOverlay');
     const durationEl = document.getElementById('sessionModalDuration');
     if (durationEl) durationEl.textContent = formatTimer(timerSeconds);
@@ -145,7 +457,7 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       'sessionModalDurationMinutes'
     ) as HTMLInputElement | null;
     if (durationMinutesInput) {
-      durationMinutesInput.value = '';
+      durationMinutesInput.value = showOptions.durationMinutes ?? '';
       durationMinutesInput.placeholder = String(Math.max(1, Math.round(timerSeconds / 60)));
     }
 
@@ -179,9 +491,7 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     const correctInput = document.getElementById('sessionModalCorrect') as HTMLInputElement | null;
     if (correctInput) correctInput.value = '';
 
-    const pagesInput = document.getElementById(
-      'sessionModalPagesRead'
-    ) as HTMLInputElement | null;
+    const pagesInput = document.getElementById('sessionModalPagesRead') as HTMLInputElement | null;
     if (pagesInput) pagesInput.value = '';
 
     const videoInput = document.getElementById(
@@ -210,9 +520,28 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     if (overlay) overlay.classList.add('show');
   }
 
-  function hide() {
+  function hide(hideOptions: SessionModalHideOptions = {}) {
+    if (mountNode) {
+      syncDomInputsToViewState();
+      viewState.restoreFocusOnClose = hideOptions.restoreFocus ?? true;
+      viewState.open = false;
+      renderDeclarativeSheet();
+      return;
+    }
     const overlay = document.getElementById('sessionModalOverlay');
     if (overlay) overlay.classList.remove('show');
+  }
+
+  function reopen() {
+    if (mountNode) {
+      syncDomInputsToViewState();
+      viewState.restoreFocusOnClose = true;
+      viewState.open = true;
+      renderDeclarativeSheet();
+      return;
+    }
+    const overlay = document.getElementById('sessionModalOverlay');
+    if (overlay) overlay.classList.add('show');
   }
 
   function readFormValues(): SessionFormValues {
@@ -265,8 +594,7 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     const rawEndUnit = Number(
       (document.getElementById('sessionBookmarkCurrent') as HTMLInputElement | null)?.value
     );
-    const endUnit =
-      Number.isFinite(rawEndUnit) && rawEndUnit > 0 ? Math.floor(rawEndUnit) : null;
+    const endUnit = Number.isFinite(rawEndUnit) && rawEndUnit > 0 ? Math.floor(rawEndUnit) : null;
 
     return {
       subjectId,
@@ -287,6 +615,19 @@ export function createSessionModalController(opts: SessionModalControllerOptions
   }
 
   function bindEvents(handlers: SessionModalEventHandlers = {}) {
+    if (mountNode) {
+      boundHandlers = handlers;
+      renderDeclarativeSheet();
+      const overlay = document.getElementById('sessionModalOverlay');
+      if (overlay && overlay.dataset && !overlay.dataset.dismissBound) {
+        overlay.dataset.dismissBound = 'true';
+        overlay.addEventListener('session-modal-dismiss', () => {
+          boundHandlers.onDismiss?.();
+        });
+      }
+      return;
+    }
+
     document.getElementById('sessionModalSkipBtn')?.addEventListener('click', () => {
       handlers.onSkip?.();
     });
@@ -346,12 +687,17 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       handlers.onSave?.(readFormValues());
     });
 
-    document.getElementById('sessionModalOverlay')?.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !['TEXTAREA', 'BUTTON'].includes((e.target as HTMLElement)?.tagName)) {
-        e.preventDefault();
-        handlers.onSave?.(readFormValues());
-      }
-    });
+    document
+      .getElementById('sessionModalOverlay')
+      ?.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (
+          e.key === 'Enter' &&
+          !['TEXTAREA', 'BUTTON'].includes((e.target as HTMLElement)?.tagName)
+        ) {
+          e.preventDefault();
+          handlers.onSave?.(readFormValues());
+        }
+      });
   }
 
   return {
@@ -361,6 +707,7 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     syncSessionModalActivityFields,
     show,
     hide,
+    reopen,
     readFormValues,
     bindEvents,
   };

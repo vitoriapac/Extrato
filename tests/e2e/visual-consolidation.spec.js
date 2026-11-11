@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, expectNoPageOverflow, openPlanningSubtab, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  openDemo,
+  expectNoPageOverflow,
+  openPlanningSubtab,
+  openPerformanceSection,
+  selectSubjectCombobox,
+} from './helpers.js';
 test('destaca prontidão e ativa o cabeçalho compacto ao rolar', async ({ page }) => {
   await openDemo(page);
   await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');
@@ -110,13 +117,8 @@ test('modo foco mostra o contexto da tarefa, prende o teclado e Escape devolve o
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
   await activateTab(page, 'hoje');
-  const subjectSelect = page.locator('#timerSubjectSelect'),
-    subject = await subjectSelect.locator('option').evaluateAll(options => {
-      const option = options.find(item => item.value);
-      return option ? { value: option.value, text: option.textContent } : null;
-    });
-  expect(subject).toBeTruthy();
-  await subjectSelect.selectOption(subject.value);
+  const subject = await selectSubjectCombobox(page, '#timerSubjectSelect', { index: 1 });
+  expect(subject.value).toBeTruthy();
   const topicSelect = page.locator('#timerTopicSelect'),
     topic = await topicSelect.locator('option').evaluateAll(options => {
       const option = options.find(item => item.value);
@@ -183,12 +185,15 @@ test('componentes visuais não transbordam e controles usam o padrão comum', as
   await page.setViewportSize({ width: 375, height: 900 });
   await openDemo(page);
   await expect(page.locator('#studyTimerTarget')).toBeHidden();
+  await expect(page.locator('#timerSubjectSelect')).toHaveClass(/ui-combobox__input/);
   for (const select of await page
     .locator(
-      '#timerSubjectSelect,#timerTopicSelect,#timerTypeSelect,#studySessionsPeriod,#studySessionsSubjectFilter,#studySessionsTypeFilter'
+      '#timerTopicSelect,#timerTypeSelect,#studySessionsPeriod,#studySessionsSubjectFilter,#studySessionsTypeFilter'
     )
-    .all())
+    .all()) {
     await expect(select).toHaveClass(/select-control/);
+    await expect(select).toHaveClass(/ui-select-field__control/);
+  }
   const dashboardOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth
   );
@@ -502,10 +507,15 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis', async
   await page.keyboard.press('Enter');
   await expect(page.locator('#panel-hoje')).toBeVisible();
 });
-test('tipografia separa ações em Sans, valores em Fraunces e durações em mono', async ({ page }) => {
+test('tipografia separa ações em Sans, valores em Fraunces e durações em mono', async ({
+  page,
+}) => {
   await openDemo(page);
   const family = selector =>
-    page.locator(selector).first().evaluate(el => getComputedStyle(el).fontFamily);
+    page
+      .locator(selector)
+      .first()
+      .evaluate(el => getComputedStyle(el).fontFamily);
   expect(await family('.tab-btn.active')).toMatch(/^["']?IBM Plex Sans/);
   expect(await family('#panel-dashboard .btn')).toMatch(/^["']?IBM Plex Sans/);
   expect(await family('.kpi-cell .n')).toMatch(/^["']?Fraunces/);
@@ -515,10 +525,14 @@ test('tipografia separa ações em Sans, valores em Fraunces e durações em mon
   const bodySize = await page.evaluate(() => getComputedStyle(document.body).fontSize);
   expect(parseFloat(bodySize)).toBeGreaterThanOrEqual(15);
 });
-test('barra inferior com ícones mantém nome acessível, toque de 44 px e menu Mais', async ({ page }) => {
+test('barra inferior com ícones mantém nome acessível, toque de 44 px e menu Mais', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto('/');
-  const buttons = page.locator('.primary-nav-shell .tab-btn:visible, .primary-nav-shell .more-tab-btn:visible');
+  const buttons = page.locator(
+    '.primary-nav-shell .tab-btn:visible, .primary-nav-shell .more-tab-btn:visible'
+  );
   await expect(buttons).toHaveCount(5);
   for (const button of await buttons.all()) {
     await expect(button.locator('svg[aria-hidden="true"]')).toHaveCount(1);
@@ -535,7 +549,9 @@ test('barra inferior com ícones mantém nome acessível, toque de 44 px e menu 
   await page.getByRole('menuitem', { name: 'Planejamento' }).click();
   await expect(page.locator('#panel-metas')).toBeVisible();
 });
-test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostra zero', async ({ page }) => {
+test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostra zero', async ({
+  page,
+}) => {
   await page.goto('/');
   const ring = page.locator('#balanceRing svg[role="img"]');
   await expect(ring).toHaveAttribute('aria-label', 'Índice de prontidão: sem dados suficientes');
@@ -544,7 +560,10 @@ test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostr
   await expect(page.locator('#balanceFigure')).toHaveText('faltam 5 de 5 fatores');
   await expect(page.locator('.readiness-factor-action')).toHaveCount(5);
   await page.locator('.readiness-factors > summary').click();
-  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', /histórico insuficiente/);
+  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute(
+    'aria-label',
+    /histórico insuficiente/
+  );
 
   await page.getByRole('button', { name: 'Consistência: estudar hoje' }).click();
   await expect(page.locator('#panel-hoje')).toBeVisible();
@@ -554,9 +573,15 @@ test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostr
   await expect(page.locator('.readiness-factor-action')).toHaveCount(0);
   const value = Number((await page.locator('#balanceFigure').innerText()).split('/')[0].trim());
   expect(Number.isFinite(value)).toBe(true);
-  await expect(ring).toHaveAttribute('aria-label', new RegExp(`^Índice de prontidão: ${value} de 100`));
+  await expect(ring).toHaveAttribute(
+    'aria-label',
+    new RegExp(`^Índice de prontidão: ${value} de 100`)
+  );
   await expect(ring).toHaveClass(value < 70 ? /chart-ring--attention/ : /chart-ring--ok/);
-  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', new RegExp(`a ${value} pontos, com dados em \\d de 8 períodos$`));
+  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute(
+    'aria-label',
+    new RegExp(`a ${value} pontos, com dados em \\d de 8 períodos$`)
+  );
 });
 test('primeira tela mostra a próxima ação sem rolar no celular e no desktop', async ({ page }) => {
   // Phone, first visit: the welcome card and its button sit above the bottom bar.
@@ -569,7 +594,10 @@ test('primeira tela mostra a próxima ação sem rolar no celular e no desktop',
   // Phone, with data: "Iniciar" of the next action is in the first screen.
   await openDemo(page);
   await page.evaluate(() => scrollTo(0, 0));
-  const start = await page.locator('#panel-dashboard .overview-now-action .overview-action-card .btn').first().boundingBox();
+  const start = await page
+    .locator('#panel-dashboard .overview-now-action .overview-action-card .btn')
+    .first()
+    .boundingBox();
   expect(start.y + start.height).toBeLessThanOrEqual(await navTop());
 
   // Desktop: the next action starts above 400px; the demo strip is discounted.
@@ -580,7 +608,9 @@ test('primeira tela mostra a próxima ação sem rolar no celular e no desktop',
   const action = await page.locator('#panel-dashboard .overview-now-action').boundingBox();
   expect(action.y - banner.height).toBeLessThan(400);
 });
-test('primeiro acesso no desktop: próxima ação acima de 400 px e sem convite duplicado à demo', async ({ page }) => {
+test('primeiro acesso no desktop: próxima ação acima de 400 px e sem convite duplicado à demo', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   await expect(page.locator('[data-welcome-hero]')).toBeVisible();
@@ -590,7 +620,9 @@ test('primeiro acesso no desktop: próxima ação acima de 400 px e sem convite 
   const welcome = await page.locator('[data-welcome-hero]').boundingBox();
   expect(welcome.y + welcome.height).toBeLessThanOrEqual(900);
 });
-test('gráficos de acerto, carga de revisões e status das disciplinas têm texto além da cor', async ({ page }) => {
+test('gráficos de acerto, carga de revisões e status das disciplinas têm texto além da cor', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
 
@@ -599,7 +631,9 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   await expect(page.locator('.subject-block .subject-overview')).toHaveCount(0);
   await page.locator('.subject-toggle').first().click();
   const overview = page.locator('.subject-block .subject-overview').first();
-  await expect(overview.getByRole('img', { name: /por status: Concluído \d+ \(\d+%\)/ })).toBeVisible();
+  await expect(
+    overview.getByRole('img', { name: /por status: Concluído \d+ \(\d+%\)/ })
+  ).toBeVisible();
   await expect(overview.locator('.chart-stacked__legend')).toContainText('Não iniciado');
   await expect(overview.getByRole('img', { name: /^Acerto semanal em questões/ })).toBeVisible();
   await expect(page.locator('.subject-block .subject-overview')).toHaveCount(1);
@@ -629,7 +663,9 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   await expect(accuracy.getByRole('columnheader', { name: 'Simulados detalhados' })).toBeVisible();
   await expectNoPageOverflow(page);
 });
-test('gráficos do Planejamento, Questões e Calendário descrevem os valores em texto', async ({ page }) => {
+test('gráficos do Planejamento, Questões e Calendário descrevem os valores em texto', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
 
@@ -637,8 +673,12 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   await openPlanningSubtab(page, 'metas');
   const history = page.locator('#historicoMetasContainer .goal-history-chart');
   await expect(history).toHaveCount(3);
-  await expect(history.first().getByRole('img', { name: /^Tópicos concluídos por semana/ })).toBeAttached();
-  await expect(history.first().locator('figcaption')).toContainText(/semanas? encerradas? na meta|sem meta definida/);
+  await expect(
+    history.first().getByRole('img', { name: /^Tópicos concluídos por semana/ })
+  ).toBeAttached();
+  await expect(history.first().locator('figcaption')).toContainText(
+    /semanas? encerradas? na meta|sem meta definida/
+  );
   await openPlanningSubtab(page, 'semana');
   await page.locator('.metas-execution-history').evaluate(node => (node.open = true));
   const week = page.getByRole('img', { name: /^Capacidade, planejado e estudado por dia: / });
@@ -646,12 +686,18 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   expect(await week.locator('.chart-columns__bar').count()).toBe(21);
   await openPlanningSubtab(page, 'prova');
   const burnup = page.locator('#ritmoContainer .rhythm-burnup');
-  await expect(burnup.getByRole('img', { name: /^Cobertura do edital até a prova: \d+ de \d+ tópicos/ })).toBeVisible();
-  await expect(burnup.locator('.rhythm-burnup__gap')).toContainText('necessário para terminar até a prova');
+  await expect(
+    burnup.getByRole('img', { name: /^Cobertura do edital até a prova: \d+ de \d+ tópicos/ })
+  ).toBeVisible();
+  await expect(burnup.locator('.rhythm-burnup__gap')).toContainText(
+    'necessário para terminar até a prova'
+  );
 
   await activateTab(page, 'questoes');
   await page.locator('#topicPerformanceCard').evaluate(node => (node.open = true));
-  const cumulative = await page.locator('#subjectErrorProfile .error-profile-cumulative-text').allInnerTexts();
+  const cumulative = await page
+    .locator('#subjectErrorProfile .error-profile-cumulative-text')
+    .allInnerTexts();
   const values = cumulative.map(text => Number(text.match(/\d+/)[0]));
   expect(values.length).toBeGreaterThan(0);
   expect(values).toEqual([...values].sort((a, b) => a - b));

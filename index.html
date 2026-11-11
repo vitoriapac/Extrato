@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=75f944de4d1f">
-<link rel="stylesheet" href="styles/app.css?v=75f944de4d1f">
+<link rel="stylesheet" href="styles/tailwind.css?v=f4e0971de15f">
+<link rel="stylesheet" href="styles/app.css?v=f4e0971de15f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -116,13 +116,7 @@
         <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-map-2 tab-icon" aria-hidden="true"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path><path d="M15 5.764v15"></path><path d="M9 3.236v15"></path></svg><span class="tab-label">Planejamento</span></button>
         <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-help-circle tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg><span class="tab-label">Instruções</span></button>
       </div>
-      <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-dots tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg><span class="tab-label">Mais</span></button>
-      <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
-        <button type="button" role="menuitem" data-more-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-repeat tab-icon" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span>Agenda</span></button>
-        <button type="button" role="menuitem" data-more-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-list-check tab-icon" aria-hidden="true"><path d="M16 5H3"></path><path d="M16 12H3"></path><path d="M11 19H3"></path><path d="m15 18 2 2 4-4"></path></svg><span>Questões e Simulados</span></button>
-        <button type="button" role="menuitem" data-more-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-map-2 tab-icon" aria-hidden="true"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path><path d="M15 5.764v15"></path><path d="M9 3.236v15"></path></svg><span>Planejamento</span></button>
-        <button type="button" role="menuitem" data-more-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-help-circle tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg><span>Instruções</span></button>
-      </div>
+      <div id="mobileMoreMenuMount" class="mobile-more-menu-slot"></div>
     </div>
   </div>
 
@@ -277,16 +271,16 @@
       <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-filter icon-inline" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"></path></svg>Filtros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-down icon-inline--end icon-inline" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
       <div class="cal-filters responsive-filters mt-3.5" id="studySessionsFilters">
         <label for="studySessionsPeriod" class="sr-only">Período do histórico de sessões</label>
-        <select class="select-control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
+        <select class="select-control ui-select-field__control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
           <option value="30" selected>Últimos 30 dias</option>
           <option value="90">Últimos 90 dias</option>
           <option value="all">Todo o período</option>
         </select>
         <label for="studySessionsSubjectFilter" class="sr-only">Disciplina do histórico de sessões</label>
-        <select class="select-control" id="studySessionsSubjectFilter" aria-label="Disciplina do histórico" data-delegated-change="updateSessionHistoryFilter('subjectId',this.value)"></select>
+        <select class="select-control ui-select-field__control" id="studySessionsSubjectFilter" aria-label="Disciplina do histórico" data-delegated-change="updateSessionHistoryFilter('subjectId',this.value)"></select>
         <label for="studySessionsTypeFilter" class="sr-only">Tipo de sessão do histórico</label>
-        <select class="select-control" id="studySessionsTypeFilter" aria-label="Tipo de sessão do histórico" data-delegated-change="updateSessionHistoryFilter('type',this.value)">
+        <select class="select-control ui-select-field__control" id="studySessionsTypeFilter" aria-label="Tipo de sessão do histórico" data-delegated-change="updateSessionHistoryFilter('type',this.value)">
           <option value="">Todos os tipos</option>
           <option value="study">Estudo teórico</option>
           <option value="review">Revisão</option>
@@ -336,7 +330,7 @@
       <!-- COLUNA PRINCIPAL DE EXECUÇÃO (8 cols) -->
       <div class="lg:col-span-8 space-y-4">
         <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
-          <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
+          <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div id="todayExecutionModeMount"></div></header>
           <div id="planoHojeContent"></div>
         </section>
 
@@ -356,12 +350,11 @@
             <details class="timer-manual-selectors-fold" id="timerManualSelectorsFold" open>
               <summary class="timer-manual-selectors-summary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-adjustments icon-inline" aria-hidden="true"><path d="M10 5H3"></path><path d="M12 19H3"></path><path d="M14 3v4"></path><path d="M16 17v4"></path><path d="M21 12h-9"></path><path d="M21 19h-5"></path><path d="M21 5h-7"></path><path d="M8 10v4"></path><path d="M8 12H3"></path></svg>Personalizar disciplina e tópico (estudo avulso)<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-down icon-inline disclosure-chevron" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
               <div class="timer-context" aria-label="Contexto da sessão">
-                <label for="timerSubjectSelect" class="sr-only">Disciplina da sessão</label>
-                <select class="select-control" data-searchable id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
+                <div id="timerSubjectMount" class="timer-subject-mount"></div>
                 <label for="timerTopicSelect" class="sr-only">Tópico da sessão</label>
-                <select class="select-control" id="timerTopicSelect" aria-label="Tópico da sessão"></select>
+                <select class="select-control ui-select-field__control" id="timerTopicSelect" aria-label="Tópico da sessão"></select>
                 <label for="timerTypeSelect" class="sr-only">Tipo da sessão</label>
-                <select class="select-control" id="timerTypeSelect" aria-label="Tipo da sessão">
+                <select class="select-control ui-select-field__control" id="timerTypeSelect" aria-label="Tipo da sessão">
                   <option value="study">Estudo teórico</option>
                   <option value="review">Revisão</option>
                   <option value="questions">Questões</option>
@@ -434,11 +427,7 @@
       <div class="subjects-header-actions">
         <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução</button>
         <button class="btn ghost small" type="button" id="verticalizedSyllabusToggleBtn" data-testid="verticalized-syllabus-toggle" aria-pressed="false">Edital verticalizado</button>
-        <details class="action-menu subjects-import-menu"><summary class="btn ghost" aria-label="Opções de importação de disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-import icon-inline" aria-hidden="true"><path d="M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M2 15h10"></path><path d="m9 18 3-3-3-3"></path></svg>Importar<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-down icon-inline--end icon-inline" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary><div class="action-menu__items">
-          <button type="button" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">Carregar disciplinas do edital</button>
-          <button type="button" id="structuredContentImportBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-import icon-inline" aria-hidden="true"><path d="M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M2 15h10"></path><path d="m9 18 3-3-3-3"></path></svg>Importar JSON ou CSV</button>
-          <button type="button" id="downloadStructuredCsvBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-download icon-inline" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Baixar modelo CSV</button>
-        </div></details>
+        <div id="subjectsImportMenuMount"></div>
         <input type="file" id="structuredContentFile" accept=".json,.csv,text/csv,application/json" hidden>
         <button class="btn" id="addSubjectBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Nova disciplina</button>
       </div>
@@ -459,7 +448,7 @@
       </div>
     </header>
     <p class="helper-text helper-text--compact">
-      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas. <a href="#instrucoes" class="text-brand hover:underline inline-flex items-center gap-0.5 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a>
+      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas. <a href="#instrucoes" class="text-brand dark:text-accent hover:underline inline-flex items-center gap-0.5 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a>
     </p>
 
     <div class="kpi-grid" id="calIndicadores"></div>
@@ -484,10 +473,9 @@
 
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
     <div class="cal-filters responsive-filters" id="agendaFilters">
-      <label for="agendaFilterSubject" class="sr-only">Filtrar por disciplina</label>
-      <select class="select-control" data-searchable id="agendaFilterSubject" aria-label="Filtrar por disciplina"><option value="">Todas as disciplinas</option></select>
+      <div id="agendaFilterSubjectMount" class="agenda-filter-subject-mount"></div>
       <label for="agendaFilterStatus" class="sr-only">Filtrar por status</label>
-      <select class="select-control" id="agendaFilterStatus" aria-label="Filtrar por status">
+      <select class="select-control ui-select-field__control" id="agendaFilterStatus" aria-label="Filtrar por status">
         <option value="">Todos os status</option>
         <option>Não iniciado</option>
         <option>Em andamento</option>
@@ -496,9 +484,9 @@
         <option value="Atrasadas">Atrasadas</option>
       </select>
       <label for="agendaFilterMes" class="sr-only">Filtrar por mês</label>
-      <select class="select-control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
+      <select class="select-control ui-select-field__control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
       <label for="agendaFilterTipo" class="sr-only">Filtrar revisões por tipo</label>
-      <select class="select-control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
+      <select class="select-control ui-select-field__control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
     </div>
     <!-- Espelho dos filtros acima: o controlador das tarefas lê estes selects; a ponte copia o valor. -->
     <div id="calendarFilters" hidden>
@@ -516,10 +504,7 @@
     <section class="agenda-section" aria-labelledby="agendaTasksTitle">
       <div class="section-head">
         <h3 class="section-title" id="agendaTasksTitle">Tarefas de estudo</h3>
-        <div class="calendar-view-switch" role="group" aria-label="Visualização das tarefas">
-          <button class="btn small calendar-view-btn active" type="button" aria-pressed="true" data-calendar-view="month">Mês</button>
-          <button class="btn ghost small calendar-view-btn" type="button" aria-pressed="false" data-calendar-view="agenda">Lista</button>
-        </div>
+        <div id="calendarViewSwitchMount"></div>
       </div>
 
       <div class="chart-card calendar-month-card" id="calendarMonthCard">
@@ -538,7 +523,7 @@
       <div class="cal-table-wrap calendar-agenda-view" id="calendarAgendaView">
         <div class="cal-filters responsive-filters">
           <label for="calFilterTipo" class="sr-only">Filtrar tarefas por tipo</label>
-          <select class="select-control" id="calFilterTipo" aria-label="Filtrar tarefas por tipo"><option value="">Todos os tipos de tarefa</option></select>
+          <select class="select-control ui-select-field__control" id="calFilterTipo" aria-label="Filtrar tarefas por tipo"><option value="">Todos os tipos de tarefa</option></select>
         </div>
         <table class="cal responsive-history-table">
           <caption class="sr-only">Calendário de tarefas e estudos</caption>
@@ -592,10 +577,7 @@
       <h2 class="module-heading__title">Questões resolvidas</h2>
       <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle" aria-pressed="false">Caderno de Erros (Flashcards)</button>
       <button class="btn" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Registrar sessão</button>
-      <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-import icon-inline" aria-hidden="true"><path d="M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M2 15h10"></path><path d="m9 18 3-3-3-3"></path></svg>Importar<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-down icon-inline--end icon-inline" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary><div class="action-menu__items">
-        <button type="button" id="importQuestionsBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-import icon-inline" aria-hidden="true"><path d="M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M2 15h10"></path><path d="m9 18 3-3-3-3"></path></svg>Importar CSV (QConcursos / Tec / Padrão)</button>
-        <button type="button" id="downloadQuestionsCsvBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-download icon-inline" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Baixar modelo CSV</button>
-      </div></details>
+      <div id="questionsImportMenuMount"></div>
       <label for="questionsImportFile" class="sr-only">Importar arquivo CSV de questões</label>
       <input type="file" id="questionsImportFile" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
       <button class="btn ghost small" type="button" data-performance-jump="questions">Ver evolução de precisão e erros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline--end icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
@@ -680,7 +662,7 @@
   <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
     <header class="page-header"><div class="page-header__text"><h2>Planejamento</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p></div></header>
     <nav class="overview-nav metas-nav" aria-label="Seções do Planejamento">
-      <div class="overview-nav-links" aria-label="Ir para a seção"><button type="button" class="metas-subtab active" id="metasTab-semana" aria-controls="metasSub-semana" tabindex="0" data-metas-subtab="semana">Plano da semana</button><button type="button" class="metas-subtab" id="metasTab-prova" aria-controls="metasSub-prova" tabindex="-1" data-metas-subtab="prova">Prova e ritmo</button><button type="button" class="metas-subtab" id="metasTab-metas" aria-controls="metasSub-metas" tabindex="-1" data-metas-subtab="metas">Metas por disciplina</button><button type="button" class="metas-subtab" id="metasTab-fechamento" aria-controls="metasSub-fechamento" tabindex="-1" data-metas-subtab="fechamento">Fechamento semanal</button><button type="button" class="metas-subtab" id="metasTab-historico" aria-controls="metasSub-historico" tabindex="-1" data-metas-subtab="historico">Histórico</button><button type="button" class="btn ghost small metas-collapse-others-btn" id="metasCollapseOthersBtn" hidden aria-hidden="true">Recolher outros</button></div>
+      <div id="metasSubtabsMount" class="overview-nav-links"></div><button type="button" class="btn ghost small metas-collapse-others-btn" id="metasCollapseOthersBtn" hidden aria-hidden="true">Recolher outros</button>
       <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e ritmo</option><option value="metas">Metas por disciplina</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
     </nav>
 
@@ -782,284 +764,27 @@
 <button class="back-to-top" id="backToTopBtn" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">↑<span>Topo</span></button>
 
 <div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">Salvo</div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="toastViewportMount"></div>
 <aside class="app-error-state" id="appErrorState" role="alert" hidden>
   <span id="appErrorMessage">Não foi possível atualizar esta área.</span>
   <button class="btn ghost small" id="appErrorRetryBtn" type="button">Tentar novamente</button>
 </aside>
 <article id="strategicPrintReport" class="strategic-print-report" aria-label="Relatório estratégico"></article>
 
-<div class="modal-overlay" id="dataManagementOverlay" role="dialog" aria-modal="true" aria-labelledby="dataManagementTitle">
-  <div class="modal-box data-management-box">
-    <div class="data-management-header">
-      <h3 id="dataManagementTitle">Gerenciamento de dados e backup</h3>
-      <button type="button" class="btn ghost small" id="closeDataManagementBtn" aria-label="Fechar gerenciamento de dados">✕</button>
-    </div>
-    <div class="backup-block">
-      <div>
-        <div class="backup-title">Backup dos dados</div>
-        <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando para não perder nada e importe para restaurar em outro dispositivo.</div>
-        <p class="backup-export-status" id="backupExportStatus" role="status"></p>
-      </div>
-      <div class="backup-actions">
-        <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
-        <input type="date" id="reportPeriodStart" aria-label="Início do período do relatório" hidden><input type="date" id="reportPeriodEnd" aria-label="Fim do período do relatório" hidden>
-        <button class="btn ghost small" id="exportReportBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-type-pdf icon-inline" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 18v-1"></path><path d="M12 18v-6"></path><path d="M16 18v-3"></path></svg>Exportar relatório PDF</button>
-        <button class="btn ghost small" id="exportBackupBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-export icon-inline" aria-hidden="true"><path d="M4.226 20.925A2 2 0 0 0 6 22h12a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.127"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="m5 11-3 3"></path><path d="m5 17-3-3h10"></path></svg>Exportar backup</button>
-        <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-download icon-inline" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Baixar recuperação</button>
-        <button class="btn ghost small" id="importBackupBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-file-import icon-inline" aria-hidden="true"><path d="M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M2 15h10"></path><path d="m9 18 3-3-3-3"></path></svg>Importar backup</button>
-        <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-cloud icon-inline" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>Sincronização WebDAV (E2EE)</button>
-        <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
-      </div>
-      <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-trash icon-inline" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>Limpar todos os dados</button></section>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="examClassificationOverlay" role="dialog" aria-modal="true" aria-labelledby="examClassificationTitle">
-  <div class="modal-box exam-classification-box">
-    <h3 id="examClassificationTitle">Revisar classificações históricas</h3>
-    <p class="analytics-note">Correções atualizam a incidência e as próximas recomendações. Sessões e recomendações anteriores permanecem preservadas.</p>
-    <div id="examClassificationContent"></div>
-    <div class="modal-actions"><button class="btn ghost" id="examClassificationClose" type="button">Fechar</button></div>
-  </div>
-</div>
-<div class="modal-overlay" id="structuredImportOverlay" role="dialog" aria-modal="true" aria-labelledby="structuredImportTitle">
-  <div class="modal-box structured-import-box">
-    <h3 id="structuredImportTitle">Prévia da importação</h3>
-    <div id="structuredImportContent"></div>
-    <div class="modal-actions"><button class="btn ghost" id="structuredImportCancelBtn" type="button">Cancelar</button><button class="btn" id="structuredImportConfirmBtn" type="button">Confirmar importação</button></div>
-  </div>
-</div>
-<div class="modal-overlay" id="questionsImportOverlay" role="dialog" aria-modal="true" aria-labelledby="questionsImportTitle">
-  <div class="modal-box structured-import-box">
-    <h3 id="questionsImportTitle">Prévia da importação de questões</h3>
-    <div id="questionsImportContent"></div>
-    <div class="modal-actions">
-      <button class="btn ghost" id="questionsImportCancelBtn" type="button">Cancelar</button>
-      <button class="btn" id="questionsImportConfirmBtn" type="button">Confirmar importação</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="remoteSyncOverlay" role="dialog" aria-modal="true" aria-labelledby="remoteSyncTitle">
-  <div class="modal-box remote-sync-box" style="max-width:540px;">
-    <h3 id="remoteSyncTitle">Sincronização em Nuvem (WebDAV + E2EE)</h3>
-    <p class="helper-text">
-      Conecte-se ao seu Nextcloud, ownCloud ou WebDAV pessoal. Os dados são <strong>criptografados com AES-GCM 256 bits</strong> antes do envio. O servidor nunca tem acesso ao conteúdo dos seus estudos.
-    </p>
+<div id="dataManagementMount"></div>
+<div id="examClassificationMount"></div>
+<div id="structuredImportMount"></div>
+<div id="questionsImportMount"></div>
+<div id="remoteSyncMount"></div>
+<div id="guidedOnboardingMount"></div>
+<div id="confirmModalMount"></div>
+<div id="examImportMount"></div>
 
-    <div class="field-group" style="margin-bottom:12px;">
-      <label for="remoteSyncUrl">URL da pasta WebDAV</label>
-      <input type="url" id="remoteSyncUrl" placeholder="https://meu-nextcloud.com/remote.php/dav/files/usuario/estudos/" class="input-control" style="width:100%;">
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-      <div class="field-group">
-        <label for="remoteSyncUsername">Usuário WebDAV</label>
-        <input type="text" id="remoteSyncUsername" placeholder="usuario" class="input-control" style="width:100%;">
-      </div>
-      <div class="field-group">
-        <label for="remoteSyncPassword">Senha / App Password</label>
-        <input type="password" id="remoteSyncPassword" placeholder="••••••••" autocomplete="off" class="input-control" style="width:100%;">
-      </div>
-    </div>
-    <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 12px;">Somente a URL, o usuário e a data da última sincronização são salvos neste navegador. A senha e a chave precisam ser informadas a cada sessão. O servidor precisa usar https:// e permitir acesso (CORS) a partir deste endereço — no Nextcloud/ownCloud, isso costuma exigir um app ou ajuste de CORS no servidor.</p>
-
-    <div class="field-group" style="margin-bottom:16px;">
-      <label for="remoteSyncPassphrase">Chave de Criptografia Mestre (E2EE)</label>
-      <input type="password" id="remoteSyncPassphrase" placeholder="Frase secreta para cifrar/decifrar os dados" class="input-control" style="width:100%;">
-      <small style="color:var(--text-muted);display:block;margin-top:4px;">Guarde esta chave. Sem ela, os dados na nuvem não poderão ser decifrados.</small>
-    </div>
-
-    <div id="remoteSyncStatusBox" class="callout callout-info" style="margin-bottom:16px;font-size:var(--text-md);" hidden>
-      <span id="remoteSyncStatusMsg"></span>
-    </div>
-
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-      <button class="btn ghost small" type="button" id="testRemoteSyncBtn">Testar conexão</button>
-      <button class="btn ghost small" type="button" id="reconcileRemoteSyncBtn">Verificar status</button>
-      <button class="btn small" type="button" id="pushRemoteSyncBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-cloud-upload icon-inline" aria-hidden="true"><path d="M12 13v8"></path><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="m8 17 4-4 4 4"></path></svg>Enviar para nuvem</button>
-      <button class="btn small" type="button" id="pullRemoteSyncBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-cloud-download icon-inline" aria-hidden="true"><path d="M12 13v8l-4-4"></path><path d="m12 21 4-4"></path><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"></path></svg>Baixar da nuvem</button>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn ghost" id="closeRemoteSyncBtn" type="button">Fechar</button>
-      <button class="btn" id="saveRemoteSyncConfigBtn" type="button">Salvar URL e usuário</button>
-    </div>
-  </div>
-</div>
-<div id="guidedOnboardingOverlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guidedOnboardingTitle" aria-describedby="guidedOnboardingSubtitle">
-  <div class="onboarding-modal" role="document">
-    <header class="onboarding-modal-header">
-      <div><h2 id="guidedOnboardingTitle">Vamos montar o seu plano</h2><p id="guidedOnboardingSubtitle">Em quatro passos, seu edital vira um plano que cabe na rotina.</p></div>
-      <button class="onboarding-close" id="guidedOnboardingClose" type="button" aria-label="Fechar configuração">×</button>
-    </header>
-    <div class="guided-onboarding-steps" id="guidedOnboardingProgress" aria-label="Progresso da configuração"></div>
-    <div class="onboarding-modal-body">
-      <main id="guidedOnboardingContent"></main>
-      <aside id="guidedOnboardingHelp" class="onboarding-help" aria-label="Como esta etapa será usada"></aside>
-    </div>
-    <footer class="onboarding-modal-actions" id="guidedOnboardingActions"></footer>
-  </div>
-</div>
-<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalMessage">
-  <div class="modal-box">
-    <p id="modalMessage">Tem certeza?</p>
-    <div class="modal-prompt" id="modalPromptGroup" hidden>
-      <label for="modalPromptInput" id="modalPromptLabel">Nome</label>
-          <input id="modalPromptInput" type="text" maxlength="80" autocomplete="off" aria-describedby="modalPromptError">
-      <span class="modal-prompt-error" id="modalPromptError" role="alert"></span>
-    </div>
-    <div class="modal-actions">
-      <button class="btn ghost small" id="modalCancelBtn">Cancelar</button>
-      <button class="btn danger modal-primary-action" id="modalConfirmBtn">Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="examImportOverlay" role="dialog" aria-modal="true" aria-labelledby="examImportTitle">
-  <div class="modal-box exam-import-box">
-    <h3 id="examImportTitle">Carregar edital</h3>
-    <div id="examImportContent"></div>
-    <div class="modal-actions">
-      <button class="btn ghost small" id="examImportCancelBtn">Cancelar</button>
-      <button class="btn ghost small" id="examImportBackBtn" hidden>Voltar</button>
-      <button class="btn" id="examImportNextBtn" data-testid="confirm-exam-import">Continuar</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="sessionModalOverlay" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
-  <div class="modal-box">
-    <h3 id="sessionModalTitle">Confirmar depósito de estudo</h3>
-    <p id="sessionModalActivityHint" class="session-modal-hint">Confira a disciplina, o tópico e a duração calculada para salvar o lançamento.</p>
-    <div class="session-modal-duration-row">
-      <p class="session-modal-duration">Tempo registrado: <strong id="sessionModalDuration">00:00</strong></p>
-      <label class="session-modal-duration-adjust">Ajustar (min)
-        <input class="session-detail-control" type="number" id="sessionModalDurationMinutes" aria-label="Duração em minutos" min="1" max="720" step="1" placeholder="Min">
-      </label>
-    </div>
-    <div class="session-modal-fields">
-      <label>Disciplina
-        <select class="select-control select-control--wide" id="sessionModalSubject" aria-label="Disciplina da sessão"></select>
-      </label>
-      <label>Tópico
-        <select class="select-control select-control--wide" id="sessionModalTopic" aria-label="Tópico da sessão"></select>
-      </label>
-      <label>Atividade
-        <select class="select-control select-control--wide" id="sessionModalType" aria-label="Tipo da sessão">
-        <option value="study">Estudo teórico</option>
-        <option value="review">Revisão</option>
-        <option value="questions">Questões</option>
-        <option value="simulation">Simulado</option>
-        </select>
-      </label>
-      <section class="session-activity-fields" data-session-fields="questions" hidden aria-labelledby="sessionQuestionsTitle">
-        <h4 id="sessionQuestionsTitle">Resultado das questões</h4>
-        <div class="session-question-fields">
-          <label>Questões resolvidas<input class="session-detail-control" type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Quantidade" min="0" inputmode="numeric"></label>
-          <label>Acertos<input class="session-detail-control" type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Quantidade" min="0" inputmode="numeric"></label>
-        </div>
-        <small>Os erros são calculados pela diferença entre questões e acertos.</small>
-      </section>
-      <section class="session-activity-fields" data-session-fields="study" hidden aria-labelledby="sessionTheoryProgressTitle">
-        <h4 id="sessionTheoryProgressTitle">Avanço teórico (opcional)</h4>
-        <div class="session-question-fields">
-          <label>Páginas lidas<input class="session-detail-control" type="number" id="sessionModalPagesRead" aria-label="Páginas lidas nesta sessão" placeholder="Quantidade" min="0" inputmode="numeric"></label>
-          <label>Blocos de aula<input class="session-detail-control" type="number" id="sessionModalVideoBlocks" aria-label="Blocos de videoaula assistidos" placeholder="Quantidade" min="0" inputmode="numeric"></label>
-        </div>
-        <small>Acompanhe seu avanço em leitura de PDFs e blocos de videoaula.</small>
-      </section>
-      <section class="session-activity-fields" data-session-fields="study questions" hidden aria-labelledby="sessionDifficultyTitle">
-        <h4 id="sessionDifficultyTitle">Percepção do esforço</h4>
-        <label>Dificuldade percebida
-          <select class="select-control select-control--wide" id="sessionModalDifficulty" aria-label="Dificuldade percebida na sessão">
-            <option value="">Ainda não avaliada</option>
-            <option value="easy">Fácil</option>
-            <option value="medium">Média</option>
-            <option value="hard">Difícil</option>
-          </select>
-        </label>
-      </section>
-      <section class="session-activity-fields" data-session-fields="review" hidden aria-labelledby="sessionReviewTitle">
-        <h4 id="sessionReviewTitle">Como estava sua retenção?</h4>
-        <label>Percepção ao recuperar o conteúdo
-          <select class="select-control select-control--wide" id="sessionModalRetention" aria-label="Retenção percebida na revisão">
-            <option value="">Ainda não avaliada</option>
-            <option value="easy">Lembrei com facilidade</option>
-            <option value="effortful">Lembrei com esforço</option>
-            <option value="unable">Não consegui recuperar</option>
-          </select>
-        </label>
-      </section>
-      <details class="session-activity-fields session-bookmark-fields" id="sessionBookmarkSection" hidden>
-        <summary>Onde você parou?</summary>
-        <label>Material
-          <select class="select-control select-control--wide" id="sessionBookmarkType" aria-label="Tipo do material">
-            <option value="pdf">PDF</option>
-            <option value="video">Videoaula</option>
-            <option value="law">Lei seca</option>
-            <option value="other">Outro</option>
-          </select>
-        </label>
-        <label>Nome do material<input class="session-detail-control" type="text" id="sessionBookmarkLabel" maxlength="120" placeholder="Ex.: Aula 03 - SFN.pdf"></label>
-        <div class="session-question-fields">
-          <label>Página ou aula<input class="session-detail-control" type="number" id="sessionBookmarkCurrent" min="0" inputmode="numeric" placeholder="Ex.: 42"></label>
-          <label>Total<input class="session-detail-control" type="number" id="sessionBookmarkTotal" min="0" inputmode="numeric" placeholder="Ex.: 110"></label>
-        </div>
-        <label>Posição<input class="session-detail-control" type="text" id="sessionBookmarkPosition" maxlength="60" placeholder="Ex.: 18m30s ou Art. 37, § 6º"></label>
-        <button class="btn ghost small" type="button" id="sessionBookmarkClearBtn">Limpar ponto de parada</button>
-      </details>
-      <p class="session-activity-fields session-simulation-hint" data-session-fields="simulation" hidden>Depois de salvar o tempo, você irá para Simulados para registrar nota e desempenho por disciplina.</p>
-      <details class="session-optional-fields" id="sessionOptionalFields">
-        <summary>Mais detalhes (energia e foco)</summary>
-        <section class="session-activity-fields" data-session-fields="study questions review simulation" aria-labelledby="sessionEnergyTitle">
-          <h4 id="sessionEnergyTitle">Energia e foco</h4>
-          <div class="session-question-fields">
-            <label>Nível de foco
-              <select class="select-control" id="sessionModalFocus" aria-label="Nível de foco na sessão">
-                <option value="">Não informado</option>
-                <option value="deep">Profundo</option>
-                <option value="normal">Normal</option>
-                <option value="distracted">Distraído</option>
-              </select>
-            </label>
-            <label>Nível de energia
-              <select class="select-control" id="sessionModalEnergy" aria-label="Nível de energia na sessão">
-                <option value="">Não informado</option>
-                <option value="high">Alta</option>
-                <option value="normal">Normal</option>
-                <option value="low">Cansado</option>
-              </select>
-            </label>
-          </div>
-        </section>
-      </details>
-      <label class="session-notes-label">Observação opcional
-        <textarea class="session-detail-control session-notes" id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Ex.: conceitos revistos, dúvidas ou próximos passos"></textarea>
-      </label>
-    </div>
-    <div class="modal-actions">
-      <button class="btn ghost small" id="sessionModalSkipBtn">Descartar sessão</button>
-      <button class="btn modal-primary-action" id="sessionModalSaveBtn">Salvar sessão</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="reviewRatingOverlay" role="dialog" aria-modal="true" aria-labelledby="reviewRatingTitle">
-  <div class="modal-box review-rating-box">
-    <h3 id="reviewRatingTitle">Como foi esta revisão?</h3>
-    <p>Seu resultado define quando este tópico deve aparecer novamente.</p>
-    <div class="review-rating-actions">
-      <button class="btn ghost" data-review-rating="again"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-circle-x icon-inline" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>Errei<small>rever amanhã</small></button>
-      <button class="btn ghost" data-review-rating="hard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-alert-triangle icon-inline" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>Difícil<small>intervalo menor</small></button>
-      <button class="btn" data-review-rating="good"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-circle-check icon-inline" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m16 9-5.5 5.5L8 12"></path></svg>Bom<small>intervalo normal</small></button>
-      <button class="btn ghost" data-review-rating="easy"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-bolt icon-inline" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"></path></svg>Fácil<small>intervalo maior</small></button>
-    </div>
-    <button class="btn ghost small" id="reviewRatingCancelBtn">Cancelar</button>
-  </div>
-</div>
+<div id="sessionModalMount"></div>
+<div id="reviewRatingMount"></div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=75f944de4d1f"></script>
+  <script src="src/app.bundle.js?v=f4e0971de15f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

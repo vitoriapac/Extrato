@@ -50,44 +50,47 @@ flowchart TD
 
 ## Estrutura
 
-- `index.html`: marcação e pontos de montagem da interface.
+- `index.html`: marcação, pontos de montagem `*Mount` para ilhas e modais Preact (sem shells estáticos `.modal-overlay`), e links de estilo.
 - `styles/tokens.css`: cores, temas e tokens visuais.
-- `styles/tailwind.input.css` e `styles/tailwind.css`: estilos utilitários gerados sob demanda via Tailwind CSS v4, conectados aos tokens sem Preflight global.
-- `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`, `Tabs`).
-- `src/ui/primitives/charts/*.tsx`: catálogo de gráficos visuais vetoriais em Preact/SVG (`DonutChart`, `StackedColumnChart`, `MultiLineChart`, `PedagogicalMatrixChart`, `GroupedBarChart`, `AllocationBar`, `PhaseRoadmapTimeline`, `WeeklyTrendChart`, `ErrorParetoChart`, `SimulationTrendChart`, `SimulationBreakdownBarChart`, `ActivityHeatmap`).
+- `styles/tailwind.input.css` e `styles/tailwind.css`: cascata explícita `@layer theme, legacy, components, utilities;` com Tailwind CSS v4 sem Preflight global, Tokens mapeados e regras `.ui-*` dos primitivos concentradas em `@layer components`.
+- `src/ui/primitives/*.tsx`: catálogo completo de componentes base e compostos em Preact (`Button`, `Badge`/`StatusPill`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `BottomSheet`, `DropdownMenu`, `Popover`, `SelectField`, `Combobox`, `Tabs`, `SegmentedControl`, `Tooltip`, `Toast`/`ToastViewport`, `EmptyState`, `MetricCard`, `LedgerLine` e `Icon` com vetores **Lucide Icons `1.5px`** em `lucide-icons-data.ts`).
+- `src/ui/modals/*.tsx`: modais e bottom-sheets declarativos montados via `mountPreact` sobre `<Dialog>` e `<BottomSheet>` no Top Layer nativo `<dialog>` (`SessionModalSheet.tsx`, `ReviewRatingSheet.tsx`, `DataManagementModal.tsx`, `ExamClassificationModal.tsx`, `StructuredImportModal.tsx`, `QuestionsImportModal.tsx`, `ExamImportModal.tsx`, `GuidedOnboardingModal.tsx`).
+- `src/ui/primitives/charts/*.tsx`: catálogo de gráficos visuais vetoriais em Preact/SVG (`DonutChart`, `StackedColumnChart`, `MultiLineChart`, `PedagogicalMatrixChart`, `GroupedBarChart`, `AllocationBar`, `PhaseRoadmapTimeline`, `WeeklyTrendChart`, `ErrorParetoChart`, `SimulationTrendChart`, `SimulationBreakdownBarChart`, `ActivityHeatmap`, além de `RingGauge`, `Sparkline`, `BulletBar`, `StackedBar` e `ColumnChart`).
 - `src/ui/primitives/a11y.ts`: utilitários de acessibilidade e gerenciamento de anúncios `aria-live` para leitores de tela em tempo real (cronômetro e cards).
 - `src/ui/tabs/dashboard/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada, ponto de parada e estado acolhedor de boas-vindas no primeiro uso (`WelcomeHeroCard`), compondo a seção `.overview-now` em grid responsivo ao lado do card de Atenção.
 - `src/ui/tabs/dashboard/SyllabusHealthCard.tsx`: card de Saúde do Edital com radar multidimensional, faixas de cobertura, domínio e retenção, e simetria de altura total (Camada 2).
 - `src/ui/tabs/dashboard/PerformanceTrendCard.tsx`: gráfico declarativo Preact com SVG puro da tendência móvel semanal de acertos de questões, notas de simulados e benchmark meta (Camada 2).
-- `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: coluna de suporte da Camada 2 com Meta do Dia (`DailyGoalProgressCard`), Carga de Revisões (`ReviewsLoadCard`) e Mini-Heatmap (`MiniConsistencyCard`).
-- `src/ui/tabs/dashboard/AllocationBalanceCard.tsx`: card do Balanço de Alocação de Tempo Investido vs Peso no Edital com divulgação progressiva (5 itens) e barra de progresso proporcional (Camada 3).
+- `src/ui/tabs/dashboard/CockpitSidebarCards.tsx`: coluna de suporte da Camada 2 com Meta do Dia (`TodayGoalCard`), Carga de Revisões (`WeeklyReviewLoadCard`) e Mini-Heatmap (`ConsistencyMiniHeatmapCard`).
+- `src/ui/tabs/dashboard/AllocationBalanceGrid.tsx`: card do Balanço de Alocação de Tempo Investido vs Peso no Edital com divulgação progressiva (5 itens) e barra de progresso proporcional (Camada 3).
 - `src/ui/tabs/dashboard/CriticalVulnerabilitiesGrid.tsx` e `src/ui/tabs/dashboard/VolatileMasteryGrid.tsx`: Duo Grids da Camada 3 destacando vulnerabilidades críticas de alto impacto e tópicos com ilusão de competência / domínio volátil.
 - `src/ui/tabs/today/TodayGoalsCard.tsx`: card declarativo de metas diárias com a primitiva `BulletBar` proporcional para tópicos, questões, revisões e horas de estudo, com input inline acessível de meta de horas.
 - `src/ui/tabs/today/TodayWeeklyRhythmCard.tsx`: card declarativo de ritmo semanal montado em `#todayWeeklyRhythmSlot`, com a primitiva `ColumnChart` em 7 colunas (Segunda a Domingo), destaque do dia ativo e linha de referência da meta diária.
-- `src/ui/tabs/today/TodayExecutionSummary.tsx`: card de partição visual do orçamento de tempo do estudante com a primitiva `StackedBar` (*Executado*, *A realizar*, *Flexível*).
-- Card de Prontidão e Projeções (`#approvalDashboard` / `.performance-readiness`): alocado na aba Desempenho para consulta detalhada contextual, mantendo a Visão Geral focada na operação e decisão.
+- `src/ui/tabs/today/TodayExecutionSummary.tsx`: card de partição visual do orçamento de tempo do estudante sob a metáfora de Extrato do Dia e `LedgerLine`.
+- `src/ui/tabs/today/TodayExecutionModeSwitch.tsx` e `src/ui/tabs/calendar/CalendarViewSwitch.tsx`: alternadores curtos em `SegmentedControl` para modo de execução (`Agenda` / `Sequência flexível`) e visão do calendário (`Mês` / `Lista`).
+- Card de Prontidão e Projeções (`#approvalDashboard` / `.performance-readiness`): alocado na aba Desempenho para consulta detalhada contextual, mantendo a Visão Geral focada na operação e decisão; navegação sub-abas persistente em `src/ui/performance/PerformancePageNav.tsx` (`<Tabs>` em dois níveis) e selos `<WindowBadge />` / `<EvidenceBadge />` (`window-badge.tsx` e `evidence-badge.tsx`) com `<Tooltip>`.
 - `src/application/performance/build-weekly-performance-brief.ts` e `src/ui/performance/weekly-performance-brief-renderer.ts`: caso de uso e renderizador do Resumo Rápido dos Últimos 7 Dias vs. Semana Anterior, gerando a narrativa em três parágrafos conversacionais, o mini-gráfico SVG comparativo e os atalhos híbridos no topo da aba Desempenho (`.performance-weekly-brief`), além do resumo compacto de um parágrafo na aba inicial (`#overviewClosingNote` / `#overviewWeeklyPeriod`).
 - `src/ui/tabs/questions/PlateauDetectorCard.tsx`: card do Detector de Platô de Desempenho com diagnóstico de estagnação e prescrição metodológica no topo da aba Questões & Simulados (junto aos KPIs `#kpiGrid`).
 - `src/ui/tabs/performance/ShiftEnergyCard.tsx`: card de análise cronobiológica de energia e eficiência por turno (Manhã, Tarde, Noite) na aba Desempenho.
-- `src/ui/components/FirstAccessModal.tsx`, `src/ui/components/SalesLandingPage.tsx`, `src/ui/components/PaywallModal.tsx`, `src/ui/components/AuthAccountModal.tsx` e `src/features/onboarding/first-access-detector.ts`: modal acessível de primeiro uso (`<dialog id="firstAccessDialog">`), Landing Page de vendas interativa ("O Extrato Bancário da Aprovação" acessível via `/landing.html`, `?landing=1` ou rodapé), modais de planos/autenticação SaaS e detector puro com isolamento para automação/testes E2E.
-- `src/auth/saas-auth-service.ts` e `src/domain/billing/entitlements.ts`: serviço leve de autenticação (Supabase Magic Link e Google OAuth), disparo de checkout PIX (AbacatePay) e regras puras de limites e feature gates dos planos `free`, `pro` e `mentor`.
-- Entrada do assistente guiado: `NextActionCard` (`data-welcome-hero`) e `#guidedOnboarding` abrem o mesmo modal por clique delegado em `onboarding-modal-controller.ts`. `renderGuidedOnboarding` marca `#guidedOnboarding` com `data-fresh`; enquanto o hero de boas-vindas existe e nenhuma etapa foi concluída, o CSS oculta o cartão de configuração para não haver dois convites.
+- `src/ui/components/FirstAccessModal.tsx`, `src/ui/components/ConfirmPromptModal.tsx`, `src/ui/components/RemoteSyncModal.tsx`, `src/ui/components/SalesLandingPage.tsx`, `src/ui/components/PaywallModal.tsx`, `src/ui/components/AuthAccountModal.tsx` e `src/features/onboarding/first-access-detector.ts`: modais acessíveis em `<Dialog>` nativo, Landing Page de vendas interativa ("O Extrato Bancário da Aprovação" acessível via `/landing.html`, `?landing=1` ou rodapé), modais de confirmação/sincronização WebDAV/planos/autenticação SaaS e detector puro com isolamento para automação/testes E2E.
+- `src/ui/components/MobileMoreMenu.tsx`, `src/ui/components/ImportActionMenu.tsx`, `src/ui/components/SubjectCombobox.tsx` e `src/ui/components/PlanningSubtabsNav.tsx`: menus declarativos em `<DropdownMenu>`, seletores filtráveis de disciplina em `<Combobox>` e barra acessível de sub-abas de Planejamento em `<Tabs>`.
+- `src/auth/saas-auth-service.ts` e `src/domain/billing/entitlements.ts`: serviço leve de autenticação (Clerk / perfil offline-first), disparo de checkout PIX/Cartão (AbacatePay) e regras puras de limites e feature gates dos planos `free`, `pro` e `mentor`.
+- Entrada do assistente guiado: `NextActionCard` (`data-welcome-hero`) e `#guidedOnboarding` abrem o mesmo `<GuidedOnboardingModal>` (`<Dialog id="guidedOnboardingDialog">`) por clique delegado em `onboarding-modal-controller.ts`. `renderGuidedOnboarding` marca `#guidedOnboarding` com `data-fresh`; enquanto o hero de boas-vindas existe e nenhuma etapa foi concluída, o CSS oculta o cartão de configuração para não haver dois convites.
 - `src/ui/components/FirstStepsMission.tsx`: checklist de onboarding para o primeiro uso com disparo direto da 1ª atividade planejada e ação de aquecimento rápido de 15 minutos.
 - `src/domain/onboarding/starter-packs.ts`: catálogo determinístico de starter packs pré-configurados em 1 clique (Bancária BB/Caixa, INSS, Policial PF/PRF e Fiscal & Controle) para acelerar a entrada do aluno sem atrito.
 - `src/domain/recovery/recovery-mission-engine.ts` e `src/ui/components/RecoveryMissionModal.tsx`: motor puramente algorítmico e modal reativo da Missão de Recuperação de Atrasos guiada por tempo disponível (30, 45, 60 e 90 min) ordenado por relevância, dias de atraso e risco de consolidação.
 - `src/domain/questions/practice-link-generator.ts`: gerador de atalhos diretos de questões para TEC Concursos, QConcursos e links de cadernos personalizados por tópico com sanitização de títulos.
-- `src/domain/analytics/career-benchmarks.ts` e `src/ui/components/CareerBenchmarkCard.tsx`: motor e componente de comparação com aprovados por 5 clusters de carreira (Fiscal, Policial, Tribunais, Bancária e Geral) na aba Desempenho, 100% privado e executado no cliente.
+- `src/domain/analytics/career-benchmarks.ts` e `src/ui/components/CareerBenchmarkCard.tsx`: motor e componente com `SelectField` e `Tooltip` para comparação com aprovados por 5 clusters de carreira (Fiscal, Policial, Tribunais, Bancária e Geral) na aba Desempenho, 100% privado e executado no cliente.
 - `src/ui/components/RealWeekBanner.tsx`: banner empático da Semana Real montado no topo da aba Hoje quando há atrasos ou déficit semanal, fornecendo resgate em 30 min e recalibração sem culpa.
-- `src/ui/components/SubjectTopicRow.tsx`: linha de tópico com bookmark contextual e ações rápidas.
-- `src/ui/components/WhatIfSimulatorModal.tsx` e `src/ui/controllers/what-if-controller.ts`: modal e controlador de simulação de cenários em memória.
+- `src/ui/tabs/subjects/SubjectTopicRow.tsx`: linha de tópico com bookmark contextual e ações rápidas.
+- `src/ui/forecasts/WhatIfSimulatorModal.tsx` e `src/ui/controllers/what-if-controller.ts`: modal com `<Dialog>` / `<Tooltip>` e controlador de simulação de cenários em memória.
 - `src/ui/components/FinalStretchBanner.tsx`: banner de urgência contextual do Modo Reta Final com atalho para o simulador.
 - `src/ui/views/VerticalizedSyllabusView.tsx`: visão declarativa de edital verticalizado com checklist de 4 etapas de estudo, filtros e importação por texto colado.
 - `src/ui/views/ErrorNotebookView.tsx`: visão declarativa do Caderno de Erros e Flashcards com repetição espaçada, pegadinha da banca e conceito correto.
 - `src/ui/components/ErrorNotebookDueNotice.tsx`: componente Preact de aviso e contagem de flashcards pendentes com navegação direta para revisão na Agenda e Hoje.
 - `src/ui/controllers/error-notebook-controller.ts`: controlador desacoplado para a visão do Caderno de Erros, gestão de rascunhos, criação e avisos de cartões pendentes.
-- `src/ui/tabs/**/*.tsx`: componentes funcionais das abas em Preact (`SubjectTopicManager.tsx`, `QuestionsTable.tsx`, `SimulationsTable.tsx`, `ReviewsSchedule.tsx`, `CalendarView.tsx`, `WeeklyGoals.tsx`, `TodaySchedule.tsx`, `DashboardOverview.tsx`).
+- `src/ui/tabs/**/*.tsx`: componentes funcionais das abas e sub-blocos em Preact (`subjects/{SubjectsTab,SubjectBlock,SubjectTopicRow}.tsx`, `questions/{QuestionLogTable,SimulationLogTable,PlateauDetectorCard}.tsx`, `reviews/ReviewsTable.tsx`, `calendar/{CalendarTable,CalendarViewSwitch}.tsx`, `goals/{WeeklyAvailabilityGrid,PlanExecutionCard,WeekReconciliationSummary}.tsx`, `today/{TodayAgendaSections,TodayExecutionSummary,TodayGoalsCard,TodayWeeklyRhythmCard,TodayExecutionModeSwitch}.tsx`, `dashboard/*`, `performance/ShiftEnergyCard.tsx`).
 - `src/ui/components/presentation.ts` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
-- `styles/app.css`: layout e componentes.
+- `styles/app.css`: estilos legados consolidados em bloco único `@layer legacy` (com `@keyframes` no nível raiz), sem duplicar classes `.ui-*` ou seletores mortos `.modal-*` de overlays antigos.
 - `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura (executado diretamente pelo navegador via `<script>`).
 - `src/pwa.js`: registro e ciclo de vida do Service Worker PWA (executado diretamente pelo navegador via `<script>`).
 - `src/bootstrap/bootstrap-application.ts`: executa a inicialização com contexto explícito e contenção de falhas.
@@ -422,7 +425,7 @@ No backend SaaS (`supabase/`), o webhook `abacatepay-webhook` liquida pedidos po
 
 ## Fatiamento arquitetural do orquestrador (`src/app.ts`)
 
-O orquestrador principal `src/app.ts` foi reduzido de 10.921 para **146 linhas** (-98,7%), atuando estritamente como *Pure Composition Root* sem funções de regra de negócio, seletores ou manipulação imperativa de DOM. Toda a orquestração foi decomposta em módulos desacoplados com responsabilidade única:
+O orquestrador principal `src/app.ts` foi reduzido originalmente de 10.921 para 146 linhas nas Fases 1–10 de modularização (mantendo hoje **370 linhas** de composição pura após o wiring de SaaS/nuvem/modais), atuando estritamente como *Pure Composition Root* sem funções de regra de negócio, seletores ou manipulação imperativa de DOM. Toda a orquestração foi decomposta em módulos desacoplados com responsabilidade única:
 
 - `src/bootstrap/wire-dependencies.ts`: instanciação unificada de providers de armazenamento (real e demo), repositórios de coleções e serviços de domínio/aplicação.
 - `src/bootstrap/wire-ui-controllers.ts` e `src/bootstrap/ui/*.ts`: composição modular de todos os controladores de abas, modais e fluxos visuais através de 4 sub-wirers especializados (`wire-analytics-and-planning-ui.ts`, `wire-practice-and-catalog-ui.ts`, `wire-temporal-and-support-ui.ts` e `wire-execution-and-onboarding-ui.ts`).
@@ -454,27 +457,33 @@ O arquivo `tsconfig.json` opera com checagem estática contínua via `npm run ch
 
 ## Migração incremental para Preact (.tsx)
 
-A interface do StudyTrack adota uma abordagem de migração progressiva e coexistência harmônica entre renderizadores imperativos e componentes funcionais declarativos em **Preact**:
+A interface do StudyTrack adota uma arquitetura declarativa em **Preact 11**, com cascata CSS explícita (`@layer theme, legacy, components, utilities;`), iconografia **Lucide Icons (`1.5px`)** e Top Layer nativo (`<dialog>`):
 
-- **Catálogo de Componentes Base (`src/ui/primitives/*.tsx`):**
-  - `<Button />`: variantes primária, secundária (`ghost`), destrutiva (`danger`), tamanhos compacto/padrão e botões de ícone com foco acessível.
-  - `<Badge />`: sinalizadores de status (`success`, `warning`, `danger`, `info`, `insufficient`).
-  - `<Card />`: superfície modular de conteúdo com variantes `insight`, `attention` e `muted`.
-  - `<SectionHeader />`: títulos estruturais com eyebrow e suporte a slots de ações contextuais.
+- **Catálogo de Componentes Base e Compostos (`src/ui/primitives/*.tsx`):**
+  - `<Button />`: variantes primária, tonal, terciária (`tertiary`), secundária (`ghost`), destrutiva (`danger`), tamanhos compacto/padrão e botões de ícone com foco acessível.
+  - `<Badge />` / `<StatusPill />`: sinalizadores de status (`success`, `warning`, `danger`, `info`, `insufficient`) acompanhados de ícone Lucide semântico.
+  - `<Card />` e `<SectionHeader />`: superfície modular de conteúdo com variantes `insight`, `attention` e `muted`, mais títulos estruturais com eyebrow e slot de ações.
   - `<ProgressBar />`: barra de progresso determinística com suporte nativo a ARIA (`valuenow`, `valuemin`, `valuemax`).
-  - `<Dialog />`: diálogos modais acessíveis com trap focus, tecla `Esc` e restauração de foco no fechamento.
-  - `<EmptyState />`: mensagens de ausência de dados explicativas e orientadas à próxima ação.
-  - `<MetricCard />`: visualização destacada de KPIs com rótulo, valor principal e tendência semântica.
-  - `<Tabs />`: barra de alternância de abas acessível com `role="tablist"` e navegação por teclado.
-  - `<StackedColumnChart />`: gráfico de colunas verticais empilhadas por dia com segmentos nas cores semânticas oficiais das disciplinas (`--subject-1` a `--subject-8`).
-  - `<DonutChart />`: gráfico circular (estilo Donut) com fatias coloridas por disciplina, centro informativo e legenda de carga horária.
-  - `<MultiLineChart />`: gráfico multilinear vetorial em SVG para trajetória de precisão por matéria com marcadores e tooltips.
-  - `<PedagogicalMatrixChart />`: gráfico de dispersão em 4 quadrantes cruzando Retenção (Eixo X) e Domínio (Eixo Y) com bolhas dimensionadas pelas horas estudadas.
+  - `<Dialog />` e `<BottomSheet />`: diálogos modais e planilhas responsivas sobre `<dialog.showModal()>` nativo no Top Layer, com `isBackdropClick`, fechamento por `Escape`, trap focus e restauração segura de foco via `queueMicrotask` após `syncModalShell` liberar `#mainContent.inert`.
+  - `<DropdownMenu />` e `<Popover />`: menus e painéis flutuantes com fechamento por clique externo/`Escape`, restauração de foco no gatilho e navegação completa por teclado (`ArrowUp`/`ArrowDown`/`Home`/`End`).
+  - `<SelectField />` e `<Combobox />`: seletores nativos padronizados com rótulo/erro acessível (`aria-invalid`/`aria-describedby`) e combobox filtrável sem acentos (`normalizeComboboxQuery`, `filterComboboxOptions`, `SubjectCombobox.tsx`).
+  - `<Tabs />` e `<SegmentedControl />`: alternadores horizontais (`underline` e `contained`) e controles segmentados com `role="tablist"`, roving tabindex (`getRovingTabIndex`) e preservação de foco.
+  - `<Tooltip />`: dicas acessíveis por foco/hover com `aria-describedby` e fechamento por `Escape`.
+  - `<Toast />` e `<ToastViewport />`: avisos e confirmação com `Desfazer` (`Ctrl+Z`), alternando `role="status"` e `role="alert"` em `#toastViewportMount`.
+  - `<EmptyState />`, `<MetricCard />`, `<LedgerLine />` e `<Icon />`: estados vazios, KPIs, linhas contábeis de razão e vetores **Lucide Icons (`1.5px`)** (`lucide-icons-data.ts`).
+  - **Gráficos SVG (`src/ui/primitives/charts/*.tsx`):** `RingGauge`, `Sparkline`, `BulletBar`, `StackedBar`, `ColumnChart`, `StackedColumnChart`, `DonutChart`, `MultiLineChart`, `PedagogicalMatrixChart`, `GroupedBarChart`, `AllocationBar`, `PhaseRoadmapTimeline`, `WeeklyTrendChart`, `ErrorParetoChart`, `SimulationTrendChart`, `SimulationBreakdownBarChart` e `ActivityHeatmap`.
+
+- **Modais Declarativos (`src/ui/modals/*.tsx` e `src/ui/components/`):**
+  - **Onda 1:** `<ToastViewport />`, `<RemoteSyncModal />` e `<ConfirmPromptModal />` com suporte nativo a `dialog[open]` em `shell-ui-controller.ts`.
+  - **Onda 2:** `<MobileMoreMenu />`, `<ImportActionMenu />`, `<ReviewRatingSheet />` (`BottomSheet`), `<SubjectCombobox />`, `<SelectField />` e `<Tooltip />` nos indicadores analíticos.
+  - **Onda 3:** `<TodayExecutionModeSwitch />`, `<CalendarViewSwitch />`, `<SubjectsTab />` (`SegmentedControl`), `<SessionModalSheet />` (`BottomSheet` + `SelectField`), `<PerformancePageNav />` e `<PlanningSubtabsNav />` (`Tabs`).
+  - **Onda 4:** `<DataManagementModal />`, `<ExamClassificationModal />`, `<StructuredImportModal />`, `<QuestionsImportModal />`, `<ExamImportModal />` e `<GuidedOnboardingModal />` (em `src/ui/modals/`) sobre `<Dialog>` nativo, removendo os antigos overlays `.modal-overlay` de `index.html` e consolidando `styles/app.css` em `@layer legacy`.
 
 - **Componentes de Abas Funcionais (`src/ui/tabs/**/*.tsx`):**
-  - **Onda 1:** Disciplinas e Tópicos (`SubjectTopicManager.tsx`), Histórico de Questões (`QuestionsTable.tsx`) e Registro de Simulados (`SimulationsTable.tsx`).
-  - **Onda 2:** Agenda de Revisões Espaçadas (`ReviewsSchedule.tsx`), Visualização Mensal do Calendário (`CalendarView.tsx`) e Grade Operacional (`CalendarTable.tsx`).
-  - **Onda 3:** Metas Semanais e Capacidade (`WeeklyGoals.tsx`), Execução de Hoje e Próxima Melhor Ação (`TodaySchedule.tsx`) e Visão Geral com Indicadores de Prontidão (`DashboardOverview.tsx`).
+  - **Disciplinas (`subjects/`):** `SubjectsTab.tsx`, `SubjectBlock.tsx`, `SubjectTopicRow.tsx` e `VerticalizedSyllabusView.tsx`.
+  - **Questões & Simulados (`questions/`):** `QuestionLogTable.tsx`, `SimulationLogTable.tsx`, `PlateauDetectorCard.tsx` e `ErrorNotebookView.tsx`.
+  - **Revisões & Calendário (`reviews/`, `calendar/`):** `ReviewsTable.tsx`, `CalendarTable.tsx` e `CalendarViewSwitch.tsx`.
+  - **Planejamento, Hoje, Desempenho & Visão Geral (`goals/`, `today/`, `performance/`, `dashboard/`):** `WeeklyAvailabilityGrid.tsx`, `PlanExecutionCard.tsx`, `WeekReconciliationSummary.tsx`, `TodayAgendaSections.tsx`, `TodayExecutionSummary.tsx`, `TodayGoalsCard.tsx`, `TodayWeeklyRhythmCard.tsx`, `TodayExecutionModeSwitch.tsx`, `ShiftEnergyCard.tsx`, `NextActionCard.tsx`, `CockpitSidebarCards.tsx`, `SyllabusHealthCard.tsx`, `PerformanceTrendCard.tsx`, `AllocationBalanceGrid.tsx`, `CriticalVulnerabilitiesGrid.tsx` e `VolatileMasteryGrid.tsx`.
 
 ## Checagem estática de tipos e compilação (TypeScript + JSDoc)
 

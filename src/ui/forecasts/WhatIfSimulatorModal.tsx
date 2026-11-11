@@ -3,6 +3,7 @@ import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
 import { Icon } from '../primitives/icon.js';
+import { Tooltip } from '../primitives/tooltip.js';
 import {
   simulateWhatIfScenario,
   type WhatIfSimulationInput,
@@ -135,7 +136,22 @@ export function WhatIfSimulatorModal({
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           {/* Card Prontidão */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
-            <span class="text-xs text-muted block mb-1">Prontidão Geral</span>
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="text-xs text-muted">Prontidão Geral</span>
+              <Tooltip
+                placement="top"
+                align="start"
+                content="Estimativa em memória combinando consistência, cobertura do edital, revisões e precisão simulada."
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  aria-label="Como a Prontidão Geral é calculada"
+                >
+                  <Icon name="info-circle" size={14} />
+                </button>
+              </Tooltip>
+            </div>
             <div class="text-xl font-semibold text-primary">{simulated.readinessScore}%</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.readinessScore}%</div>
             {delta.readinessScoreDelta !== 0 && (
@@ -152,7 +168,22 @@ export function WhatIfSimulatorModal({
 
           {/* Card Carga Semanal */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
-            <span class="text-xs text-muted block mb-1">Carga Semanal</span>
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="text-xs text-muted">Carga Semanal</span>
+              <Tooltip
+                placement="top"
+                align="end"
+                content="Projeção semanal somando o ajuste diário em minutos à sua média atual de estudo."
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  aria-label="Como a Carga Semanal é calculada"
+                >
+                  <Icon name="info-circle" size={14} />
+                </button>
+              </Tooltip>
+            </div>
             <div class="text-xl font-semibold text-primary">{simulated.weeklyStudyHours}h</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.weeklyStudyHours}h</div>
             {delta.weeklyStudyHoursDelta !== 0 && (
@@ -169,7 +200,22 @@ export function WhatIfSimulatorModal({
 
           {/* Card Cobertura do Edital */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
-            <span class="text-xs text-muted block mb-1">Cobertura do Edital</span>
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="text-xs text-muted">Cobertura do Edital</span>
+              <Tooltip
+                placement="top"
+                align="start"
+                content="Avanço estimado nos tópicos ativos ao manter a nova carga pelo horizonte selecionado."
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  aria-label="Como a Cobertura do Edital é calculada"
+                >
+                  <Icon name="info-circle" size={14} />
+                </button>
+              </Tooltip>
+            </div>
             <div class="text-xl font-semibold text-primary">{simulated.coveragePercent}%</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.coveragePercent}%</div>
             {delta.coveragePercentDelta !== 0 && (
@@ -186,7 +232,22 @@ export function WhatIfSimulatorModal({
 
           {/* Card Dias até a Meta */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
-            <span class="text-xs text-muted block mb-1">Prazo para a Meta</span>
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="text-xs text-muted">Prazo para a Meta</span>
+              <Tooltip
+                placement="top"
+                align="end"
+                content="Estimativa de dias para atingir a meta alvo de acerto mantendo a dedicação simulada."
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  aria-label="Como o Prazo para a Meta é estimado"
+                >
+                  <Icon name="info-circle" size={14} />
+                </button>
+              </Tooltip>
+            </div>
             <div class="text-xl font-semibold text-primary">
               {simulated.estimatedDaysToTarget != null
                 ? `${simulated.estimatedDaysToTarget} d`

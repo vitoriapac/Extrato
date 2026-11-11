@@ -124,7 +124,7 @@ export function TodayGoalsCard({
         <div class="mt-1.5 text-right">
           <a
             href="#planejamento/semana"
-            class="text-xs text-ink-soft hover:text-brand hover:underline inline-flex items-center min-h-8 focus-visible:outline-2 focus-visible:outline-accent rounded px-1"
+            class="text-xs text-ink-soft hover:text-brand dark:hover:text-accent hover:underline inline-flex items-center min-h-8 focus-visible:outline-2 focus-visible:outline-accent rounded px-1"
             title="Ajustar disponibilidade e capacidade no Planejamento"
           >
             Ajustar na semana &rarr;

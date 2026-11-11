@@ -10,6 +10,11 @@
  * - Antes de substituir os dados locais, um snapshot verificado do estado atual precisa ser criado.
  */
 
+import { h } from 'preact';
+import { mountPreact } from '../preact-mount.js';
+import { RemoteSyncModal, type RemoteSyncField } from '../components/RemoteSyncModal.js';
+import { syncDialogOpen } from '../primitives/dialog.js';
+
 export const REMOTE_SYNC_CONFIG_KEY = 'studytrack_remote_sync_config';
 
 export const MIN_PASSPHRASE_LENGTH = 12;
@@ -29,7 +34,7 @@ export function evaluatePassphrase(passphrase: string): {
       strength: 'invalida',
       message: `A frase precisa ter pelo menos ${MIN_PASSPHRASE_LENGTH} caracteres (faltam ${MIN_PASSPHRASE_LENGTH - value.length}).`,
     };
-  const classes = [/[a-z]/, /[A-Z]/, /d/, /[^A-Za-z0-9]/].filter(re => re.test(value)).length;
+  const classes = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter(re => re.test(value)).length;
   const unique = new Set(value).size;
   if (unique < 6 || (classes < 2 && value.length < 20))
     return {
@@ -139,38 +144,57 @@ export function createRemoteSyncController({
     );
   }
 
-  const overlay = document?.getElementById('remoteSyncOverlay');
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    document === globalThis.document &&
+    typeof document?.createElement === 'function'
+      ? document.getElementById('remoteSyncMount')
+      : null;
+
   const openBtn = document?.getElementById('openRemoteSyncBtn');
-  const closeBtn = document?.getElementById('closeRemoteSyncBtn');
-  const saveBtn = document?.getElementById('saveRemoteSyncConfigBtn');
-  const testBtn = document?.getElementById('testRemoteSyncBtn');
-  const reconcileBtn = document?.getElementById('reconcileRemoteSyncBtn');
-  const pushBtn = document?.getElementById('pushRemoteSyncBtn');
-  const pullBtn = document?.getElementById('pullRemoteSyncBtn');
 
-  const urlInput = document?.getElementById('remoteSyncUrl') as HTMLInputElement | null;
-  const userInput = document?.getElementById('remoteSyncUsername') as HTMLInputElement | null;
-  const passInput = document?.getElementById('remoteSyncPassword') as HTMLInputElement | null;
-  const phraseInput = document?.getElementById('remoteSyncPassphrase') as HTMLInputElement | null;
+  const overlay = mountNode ? null : document?.getElementById('remoteSyncOverlay');
+  const closeBtn = mountNode ? null : document?.getElementById('closeRemoteSyncBtn');
+  const saveBtn = mountNode ? null : document?.getElementById('saveRemoteSyncConfigBtn');
+  const testBtn = mountNode ? null : document?.getElementById('testRemoteSyncBtn');
+  const reconcileBtn = mountNode ? null : document?.getElementById('reconcileRemoteSyncBtn');
+  const pushBtn = mountNode ? null : document?.getElementById('pushRemoteSyncBtn');
+  const pullBtn = mountNode ? null : document?.getElementById('pullRemoteSyncBtn');
 
-  const statusBox = document?.getElementById('remoteSyncStatusBox');
-  const statusMsg = document?.getElementById('remoteSyncStatusMsg');
+  const urlInput = mountNode
+    ? null
+    : (document?.getElementById('remoteSyncUrl') as HTMLInputElement | null);
+  const userInput = mountNode
+    ? null
+    : (document?.getElementById('remoteSyncUsername') as HTMLInputElement | null);
+  const passInput = mountNode
+    ? null
+    : (document?.getElementById('remoteSyncPassword') as HTMLInputElement | null);
+  const phraseInput = mountNode
+    ? null
+    : (document?.getElementById('remoteSyncPassphrase') as HTMLInputElement | null);
+
+  const statusBox = mountNode ? null : document?.getElementById('remoteSyncStatusBox');
+  const statusMsg = mountNode ? null : document?.getElementById('remoteSyncStatusMsg');
+
+  const formatPassphraseHint = (value: string) =>
+    value
+      ? `${evaluatePassphrase(value).message} ${PASSPHRASE_LOSS_WARNING}`
+      : `Mínimo de ${MIN_PASSPHRASE_LENGTH} caracteres. ${PASSPHRASE_LOSS_WARNING}`;
 
   const passphraseHint = (() => {
-    if (!phraseInput || !document?.createElement || !phraseInput.parentNode) return null;
+    if (mountNode || !phraseInput || !document?.createElement || !phraseInput.parentNode)
+      return null;
     const hint = document.createElement('small');
     hint.id = 'remoteSyncPassphraseHint';
     hint.setAttribute('aria-live', 'polite');
-    hint.style.cssText = 'display:block;margin-top:4px;color:var(--text-muted);';
+    hint.className = 'block mt-1 text-xs text-secondary';
     phraseInput.parentNode.insertBefore(hint, phraseInput.nextSibling);
     return hint;
   })();
   const updatePassphraseHint = () => {
     if (!passphraseHint) return;
-    const value = phraseInput?.value || '';
-    passphraseHint.textContent = value
-      ? `${evaluatePassphrase(value).message} ${PASSPHRASE_LOSS_WARNING}`
-      : `Mínimo de ${MIN_PASSPHRASE_LENGTH} caracteres. ${PASSPHRASE_LOSS_WARNING}`;
+    passphraseHint.textContent = formatPassphraseHint(phraseInput?.value || '');
   };
 
   const storage = (() => {
@@ -183,22 +207,92 @@ export function createRemoteSyncController({
 
   let previousFocus: any = null;
 
+  const viewState = {
+    open: false,
+    serverUrl: '',
+    username: '',
+    password: '',
+    passphrase: '',
+    statusText: '',
+    statusError: false,
+    statusVisible: false,
+  };
+
+  const renderModal = () => {
+    if (!mountNode) return;
+    mountPreact(
+      h(RemoteSyncModal, {
+        open: viewState.open,
+        serverUrl: viewState.serverUrl,
+        username: viewState.username,
+        password: viewState.password,
+        passphrase: viewState.passphrase,
+        passphraseHint: formatPassphraseHint(viewState.passphrase),
+        statusText: viewState.statusText,
+        statusError: viewState.statusError,
+        statusVisible: viewState.statusVisible,
+        onFieldChange: (field: RemoteSyncField, value: string) => {
+          viewState[field] = value;
+          if (field === 'passphrase') renderModal();
+        },
+        onClose: () => close(),
+        onSaveConfig: () => saveConfig(),
+        onTestConnection: () => testConnection(),
+        onReconcile: () => reconcile(),
+        onPush: () => push(),
+        onPull: () => pull(),
+      }),
+      mountNode
+    );
+    syncDialogOpen(document, 'remoteSyncOverlay', viewState.open);
+  };
+
   const showStatus = (text: string, isError = false) => {
+    if (mountNode) {
+      viewState.statusVisible = true;
+      viewState.statusError = isError;
+      viewState.statusText = text;
+      renderModal();
+      return;
+    }
     if (!statusBox || !statusMsg) return;
     statusBox.hidden = false;
-    statusBox.style.color = isError ? 'var(--critical, #e63946)' : 'var(--text-primary)';
+    statusBox.style.color = isError ? 'var(--status-negative)' : 'var(--text-primary)';
     statusMsg.textContent = text;
   };
 
-  const getConfig = () => ({
-    serverUrl: urlInput?.value?.trim() || '',
-    username: userInput?.value?.trim() || '',
-    password: passInput?.value || '',
-    passphrase: phraseInput?.value || '',
-  });
+  const getConfig = () => {
+    if (mountNode) {
+      const liveUrl = (document?.getElementById('remoteSyncUrl') as HTMLInputElement | null)?.value;
+      const liveUser = (document?.getElementById('remoteSyncUsername') as HTMLInputElement | null)
+        ?.value;
+      const livePass = (document?.getElementById('remoteSyncPassword') as HTMLInputElement | null)
+        ?.value;
+      const livePhrase = (
+        document?.getElementById('remoteSyncPassphrase') as HTMLInputElement | null
+      )?.value;
+      return {
+        serverUrl: (liveUrl ?? viewState.serverUrl).trim(),
+        username: (liveUser ?? viewState.username).trim(),
+        password: livePass ?? viewState.password,
+        passphrase: livePhrase ?? viewState.passphrase,
+      };
+    }
+    return {
+      serverUrl: urlInput?.value?.trim() || '',
+      username: userInput?.value?.trim() || '',
+      password: passInput?.value || '',
+      passphrase: phraseInput?.value || '',
+    };
+  };
 
   const loadSavedConfig = () => {
     const preferences = readRemoteSyncPreferences(storage);
+    if (mountNode) {
+      if (preferences.serverUrl) viewState.serverUrl = preferences.serverUrl;
+      if (preferences.username) viewState.username = preferences.username;
+      return;
+    }
     if (urlInput && preferences.serverUrl) urlInput.value = preferences.serverUrl;
     if (userInput && preferences.username) userInput.value = preferences.username;
   };
@@ -220,12 +314,32 @@ export function createRemoteSyncController({
     }
     previousFocus = document?.activeElement;
     loadSavedConfig();
+    if (mountNode) {
+      viewState.statusVisible = false;
+      viewState.open = true;
+      renderModal();
+      (document?.getElementById('remoteSyncPassphrase') as HTMLElement | null)?.focus();
+      return;
+    }
     if (statusBox) statusBox.hidden = true;
     overlay?.classList.add('show');
     phraseInput?.focus();
   };
 
   const close = ({ restoreFocus = true } = {}) => {
+    if (mountNode) {
+      if (!viewState.open) return;
+      viewState.open = false;
+      renderModal();
+      if (!document?.querySelector?.('.modal-overlay.show,.onboarding-overlay.show,dialog[open]')) {
+        document?.getElementById('mainContent')?.removeAttribute('inert');
+      }
+      if (restoreFocus && previousFocus && typeof previousFocus['focus'] === 'function') {
+        previousFocus['focus']();
+      }
+      previousFocus = null;
+      return;
+    }
     overlay?.classList.remove('show');
     if (restoreFocus && previousFocus && typeof previousFocus['focus'] === 'function') {
       previousFocus['focus']();
@@ -436,6 +550,10 @@ export function createRemoteSyncController({
 
   const mount = () => {
     openBtn?.addEventListener('click', open);
+    if (mountNode) {
+      renderModal();
+      return api;
+    }
     closeBtn?.addEventListener('click', () => close());
     saveBtn?.addEventListener('click', saveConfig);
     testBtn?.addEventListener('click', testConnection);

@@ -27,10 +27,14 @@ for (const width of [320, 600, 900, 1100, 1280])
       await page.keyboard.press('Escape');
       await expect(menu).not.toHaveAttribute('open', '');
       await expect(menu.locator('summary')).toBeFocused();
-      await page.locator('.subjects-import-menu summary').click();
-      await expect(page.locator('.subjects-import-menu')).toHaveAttribute('open', '');
+      const importTrigger = page.locator('.subjects-import-menu > button');
+      const importMenu = page.locator('.subjects-import-menu [role="menu"]');
+      await importTrigger.click();
+      await expect(importTrigger).toHaveAttribute('aria-expanded', 'true');
+      await expect(importMenu).toBeVisible();
       await expectNoPageOverflow(page);
       await page.keyboard.press('Escape');
-      await expect(page.locator('.subjects-import-menu')).not.toHaveAttribute('open', '');
+      await expect(importTrigger).toHaveAttribute('aria-expanded', 'false');
+      await expect(importMenu).toBeHidden();
     });
   }

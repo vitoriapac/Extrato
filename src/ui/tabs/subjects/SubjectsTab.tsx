@@ -1,4 +1,5 @@
 import { SubjectBlock } from './SubjectBlock.js';
+import { SegmentedControl } from '../../primitives/tabs.js';
 
 export interface SubjectsTabProps {
   subjects: any[];
@@ -89,22 +90,28 @@ export function SubjectsTab({
           value={searchQuery}
           placeholder="Nome da disciplina ou tópico"
         />
-        <p role="status">{subjects.length} {subjects.length === 1 ? 'disciplina encontrada' : 'disciplinas encontradas'}.</p>
+        <p role="status">
+          {subjects.length}{' '}
+          {subjects.length === 1 ? 'disciplina encontrada' : 'disciplinas encontradas'}.
+        </p>
       </div>
 
       {showExamFilter && (
-        <div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">
-          {EXAM_FILTER_BUTTONS.map(item => (
-            <button
-              key={item.value}
-              type="button"
-              class={`btn ghost small ${subjectExamFilter === item.value ? 'active' : ''}`}
-              data-delegated-click={`setSubjectExamFilter('${item.value}')`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Filtrar conteúdo por concurso"
+          size="sm"
+          className="exam-scope-filter"
+          value={subjectExamFilter}
+          onChange={() => {}}
+          options={EXAM_FILTER_BUTTONS.map(item => ({
+            value: item.value,
+            label: item.label,
+            buttonProps: {
+              'data-delegated-click': `setSubjectExamFilter('${item.value}')`,
+              'data-exam-filter': item.value,
+            },
+          }))}
+        />
       )}
       {subjects.length === 0 ? (
         <div class="empty-state">

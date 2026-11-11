@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-321 arquivos Node e 70 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+332 arquivos Node e 71 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -50,6 +50,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/legacy-backup.spec.js | browser | Backup | critical | 2.9 | journey | none |
 | tests/e2e/navigation-hash.spec.js | browser | Aplicação | functional | — | journey | none |
 | tests/e2e/onboarding.spec.js | browser | Onboarding | functional | 60.1 | journey, viewport | none |
+| tests/e2e/performance-preparation-reading.spec.js | browser | Desempenho | functional | — | journey, demo, viewport | none |
 | tests/e2e/performance-tablist.spec.js | browser | Desempenho | functional | — | journey, demo | none |
 | tests/e2e/planning-subtabs.spec.js | browser | Planejamento | critical | — | journey, demo, viewport | none |
 | tests/e2e/planning-sustainability.spec.js | browser | Sustentabilidade | critical | 168.8 | journey, visual-comparison, demo, viewport | windows-only |
@@ -175,6 +176,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/error-notebook-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/error-notebook-view.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/essential-mode.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/evidence-badge.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-quality.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-scope-migration.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/exam-evidence-scope.test.js | node | Inteligência da prova | critical | — | contract | none |
@@ -240,13 +242,20 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/onboarding-modal-controller.test.js | node | Onboarding | functional | — | contract, viewport | none |
 | tests/unit/onboarding-renderer.test.js | node | Onboarding | functional | — | contract | none |
 | tests/unit/onboarding-view-model.test.js | node | Onboarding | functional | — | contract | none |
+| tests/unit/onda1-modals.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/onda2-primitives-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
+| tests/unit/onda3-primitives-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
+| tests/unit/onda4-modals-and-css.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/opportunity-cost-analytics.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/overview-standing.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/overview-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/performance-accuracy-delta.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-analytics-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-charts.test.js | node | Desempenho | functional | — | contract | none |
+| tests/unit/performance-executive-summary.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-forecast.test.js | node | Desempenho | functional | — | contract | none |
+| tests/unit/performance-subject-comparison-plan.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/performance-tab-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-trend-view-model.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/period-comparison-insights.test.js | node | Aplicação | functional | — | contract | none |
@@ -264,6 +273,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/practice-link-generator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/practice-visual-charts.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/preact-mount.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/preparation-reading.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/preparation-signals.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/priority-history.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/priority-view-model.test.js | node | Aplicação | critical | — | contract | none |
@@ -389,6 +399,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/topic-strategy-renderer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-strategy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ui-presentation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/ui-primitives-composed.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ui-primitives.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/utils.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/validated-exam-impact.test.js | node | Inteligência da prova | critical | — | contract | none |
@@ -410,6 +421,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/weekly-performance-brief.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/window-badge.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/wire-dependencies.test.js | node | Aplicação | functional | — | contract, demo | none |
 | tests/unit/xss-escape.test.js | node | Aplicação | functional | — | contract | none |
 

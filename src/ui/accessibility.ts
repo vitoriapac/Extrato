@@ -29,6 +29,9 @@ export function labelDynamicControls(root = document) {
 
 export function trapModalTab(event: KeyboardEvent, modals: Array<HTMLElement | null>) {
   if (event.key !== 'Tab') return false;
+  if (typeof document !== 'undefined' && document.querySelector?.('dialog[open]')) {
+    return false;
+  }
   const modal = modals.find((item: any) => item?.classList.contains('show'));
   if (!modal) return false;
   const selector =

@@ -50,11 +50,14 @@ export function getRovingTabIndex(
 
 export interface TabItem {
   id: string;
+  tabId?: string;
   label: string;
   icon?: IconName;
   badge?: string | number;
   disabled?: boolean;
   panel?: ComponentChildren;
+  className?: string;
+  buttonProps?: JSX.IntrinsicElements['button'] & Record<string, any>;
 }
 
 export type TabsProps = Omit<JSX.IntrinsicElements['div'], 'onChange'> & {
@@ -67,6 +70,7 @@ export type TabsProps = Omit<JSX.IntrinsicElements['div'], 'onChange'> & {
   keepMounted?: boolean;
   className?: string;
   listClassName?: string;
+  listProps?: JSX.IntrinsicElements['div'] & Record<string, any>;
   panelClassName?: string;
 };
 
@@ -80,6 +84,7 @@ export function Tabs({
   keepMounted = false,
   className = '',
   listClassName = '',
+  listProps,
   panelClassName = '',
   ...rest
 }: TabsProps) {
@@ -109,11 +114,19 @@ export function Tabs({
     tabRefs.current[nextIndex]?.focus();
   };
 
+  const {
+    className: listExtraClass,
+    class: listExtraClassAlias,
+    ...restListProps
+  } = listProps || {};
+
   const rootClass = ['ui-tabs', className].filter(Boolean).join(' ');
   const listClass = [
     'ui-tabs__list',
     variant === 'contained' ? 'ui-tabs__list--contained' : '',
     listClassName,
+    listExtraClass,
+    listExtraClassAlias,
   ]
     .filter(Boolean)
     .join(' ');
@@ -121,32 +134,50 @@ export function Tabs({
 
   return (
     <div class={rootClass} {...rest}>
-      <div role="tablist" aria-label={label} class={listClass}>
+      <div role="tablist" aria-label={label} {...restListProps} class={listClass}>
         {items.map((item, index) => {
           const isSelected = item.id === activeId;
-          const tabId = `${generatedId}-tab-${item.id}`;
+          const resolvedTabId = item.tabId ?? `${generatedId}-tab-${item.id}`;
           const panelId = `${generatedId}-panel-${item.id}`;
+          const {
+            className: btnExtraClass,
+            class: btnExtraClassAlias,
+            onClick: btnExtraOnClick,
+            onKeyDown: btnExtraOnKeyDown,
+            'aria-controls': explicitAriaControls,
+            ...restBtnProps
+          } = item.buttonProps || {};
           const controlsPanel =
             hasPanels && (isSelected || keepMounted) && item.panel !== undefined
               ? panelId
-              : undefined;
+              : explicitAriaControls;
+          const tabClass = ['ui-tabs__tab', item.className, btnExtraClass, btnExtraClassAlias]
+            .filter(Boolean)
+            .join(' ');
 
           return (
             <button
+              {...restBtnProps}
               key={item.id}
               ref={el => {
                 tabRefs.current[index] = el;
               }}
               type="button"
               role="tab"
-              id={tabId}
+              id={resolvedTabId}
               aria-selected={isSelected ? 'true' : 'false'}
               aria-controls={controlsPanel}
               tabIndex={isSelected ? 0 : -1}
               disabled={item.disabled}
-              class="ui-tabs__tab"
-              onClick={() => selectTab(item.id)}
-              onKeyDown={event => handleKeyDown(index, event)}
+              class={tabClass}
+              onClick={event => {
+                selectTab(item.id);
+                btnExtraOnClick?.(event as any);
+              }}
+              onKeyDown={event => {
+                handleKeyDown(index, event);
+                btnExtraOnKeyDown?.(event as any);
+              }}
             >
               {item.icon && <Icon name={item.icon} size={15} class="shrink-0" />}
               <span>{item.label}</span>
@@ -161,7 +192,7 @@ export function Tabs({
           if (item.panel === undefined) return null;
           const isSelected = item.id === activeId;
           if (!keepMounted && !isSelected) return null;
-          const tabId = `${generatedId}-tab-${item.id}`;
+          const resolvedTabId = item.tabId ?? `${generatedId}-tab-${item.id}`;
           const panelId = `${generatedId}-panel-${item.id}`;
 
           return (
@@ -169,7 +200,7 @@ export function Tabs({
               key={item.id}
               role="tabpanel"
               id={panelId}
-              aria-labelledby={tabId}
+              aria-labelledby={resolvedTabId}
               tabIndex={0}
               hidden={!isSelected}
               class={panelBaseClass}
@@ -187,6 +218,9 @@ export interface SegmentedOption<T extends string = string> {
   label: string;
   icon?: IconName;
   disabled?: boolean;
+  id?: string;
+  className?: string;
+  buttonProps?: JSX.IntrinsicElements['button'] & Record<string, any>;
 }
 
 export type SegmentedControlProps<T extends string = string> = Omit<
@@ -239,18 +273,41 @@ export function SegmentedControl<T extends string = string>({
     <div role="group" aria-label={label} class={rootClass} {...rest}>
       {options.map((option, index) => {
         const isPressed = option.value === value;
+        const {
+          className: btnExtraClass,
+          class: btnExtraClassAlias,
+          onClick: btnExtraOnClick,
+          onKeyDown: btnExtraOnKeyDown,
+          ...restBtnProps
+        } = option.buttonProps || {};
+        const itemClass = [
+          'ui-segmented__item',
+          option.className,
+          btnExtraClass,
+          btnExtraClassAlias,
+        ]
+          .filter(Boolean)
+          .join(' ');
         return (
           <button
+            {...restBtnProps}
             key={option.value}
             ref={el => {
               buttonRefs.current[index] = el;
             }}
             type="button"
+            id={option.id}
             aria-pressed={isPressed ? 'true' : 'false'}
             disabled={option.disabled}
-            class="ui-segmented__item"
-            onClick={() => onChange(option.value)}
-            onKeyDown={event => handleKeyDown(index, event)}
+            class={itemClass}
+            onClick={event => {
+              onChange(option.value);
+              btnExtraOnClick?.(event as any);
+            }}
+            onKeyDown={event => {
+              handleKeyDown(index, event);
+              btnExtraOnKeyDown?.(event as any);
+            }}
           >
             {option.icon && <Icon name={option.icon} size={14} class="shrink-0" />}
             <span>{option.label}</span>

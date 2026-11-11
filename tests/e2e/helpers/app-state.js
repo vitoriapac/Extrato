@@ -7,8 +7,8 @@ export async function waitForAppReady(page) {
 }
 
 export async function waitForImportReady(page) {
-  await expect(page.locator('.subjects-import-menu summary')).toBeVisible();
-  await expect(page.locator('.subjects-import-menu summary')).toBeEnabled();
+  await expect(page.locator('.subjects-import-menu > button')).toBeVisible();
+  await expect(page.locator('.subjects-import-menu > button')).toBeEnabled();
 }
 
 export async function waitForStatePersisted(page, predicate = state => Boolean(state?.updatedAt)) {

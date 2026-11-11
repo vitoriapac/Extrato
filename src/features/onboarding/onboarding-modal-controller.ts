@@ -9,6 +9,8 @@ import { applySundayRestDay } from '../../domain/onboarding/routine-sustainabili
 import { syncOnboardingPhase } from '../../ui/controllers/onboarding-phase-controller.js';
 import { h } from 'preact';
 import { mountPreact, unmountPreact } from '../../ui/preact-mount.js';
+import { GuidedOnboardingModal } from '../../ui/modals/GuidedOnboardingModal.js';
+import { syncDialogOpen } from '../../ui/primitives/dialog.js';
 import { ManualSubjects } from './ManualSubjects.js';
 import { validateManualSubjects, type ManualSubjectDraft } from '../../application/onboarding/manual-subject-drafts.js';
 import {
@@ -71,9 +73,6 @@ export interface OnboardingModalControllerDependencies {
 }
 
 export function createOnboardingModalController(deps: OnboardingModalControllerDependencies) {
-  let manualDrafts: ManualSubjectDraft[] = [];
-  let manualOpen = false;
-  let pasteSyllabusOpen = false;
   const {
     document,
     getState,
@@ -105,6 +104,18 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     requestFrame = (cb: () => void) =>
       typeof requestAnimationFrame === 'function' ? requestAnimationFrame(cb) : cb(),
   } = deps;
+
+  const mountNode =
+    typeof globalThis.document !== 'undefined' &&
+    document === (globalThis.document as unknown) &&
+    typeof document?.createElement === 'function'
+      ? document.getElementById('guidedOnboardingMount')
+      : null;
+
+  let manualDrafts: ManualSubjectDraft[] = [];
+  let manualOpen = false;
+  let pasteSyllabusOpen = false;
+  let lastModalOpen: boolean | null = null;
 
   function onboardingModel() {
     const state = getState();
@@ -160,8 +171,25 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     next.setAttribute('aria-describedby', 'guidedActionHint');
   }
 
+  function syncGuidedModal(open: boolean) {
+    if (!mountNode) return;
+    if (lastModalOpen === open) return;
+    lastModalOpen = open;
+    mountPreact(
+      h(GuidedOnboardingModal, {
+        open,
+        onClose: () => closeGuidedOnboarding(),
+      }),
+      mountNode
+    );
+    syncDialogOpen(document as unknown as Document, 'guidedOnboardingOverlay', open);
+  }
+
   function renderGuidedOnboarding() {
     const entry = document.getElementById('guidedOnboarding');
+    if (mountNode && lastModalOpen === null) {
+      syncGuidedModal(false);
+    }
     const overlay = document.getElementById('guidedOnboardingOverlay');
     if (!entry || !overlay) return;
     const uiState = getUiState();
@@ -184,12 +212,17 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       entryInner.innerHTML = visible ? renderOnboardingEntry(model, { escapeHtml }) : '';
     }
     syncOnboardingPhase(document, { visible });
-    overlay.hidden = !visible || !uiState.onboarding.open;
-    overlay.classList.toggle('show', visible && uiState.onboarding.open);
+    const modalOpen = Boolean(visible && uiState.onboarding.open);
+    if (!mountNode) {
+      overlay.hidden = !modalOpen;
+      overlay.classList.toggle('show', modalOpen);
+    }
     if (!visible) {
       uiState.onboarding.open = false;
+      syncGuidedModal(false);
       return;
     }
+    syncGuidedModal(modalOpen);
     const progressEl = document.getElementById('guidedOnboardingProgress');
     if (progressEl) progressEl.innerHTML = renderOnboardingProgress(model);
 
@@ -389,6 +422,7 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     uiState.onboarding.currentStep = 'plan';
     uiState.onboarding.open = false;
     document.body.classList.remove('onboarding-open');
+    renderGuidedOnboarding();
     render();
     activateTab('hoje');
     showToast(
@@ -601,10 +635,15 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
   }
 
   function bindEvents() {
+    if (mountNode) {
+      syncGuidedModal(false);
+    }
     const overlay = document.getElementById('guidedOnboardingOverlay');
     if (overlay) {
       overlay.addEventListener('click', handleOverlayClick);
-      overlay.addEventListener('keydown', handleOverlayKeydown);
+      if (!mountNode) {
+        overlay.addEventListener('keydown', handleOverlayKeydown);
+      }
       overlay.addEventListener('change', (event: any) => {
         const target = event.target as HTMLElement;
         if (target?.id === 'guidedExamPreset') {
@@ -644,9 +683,11 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
         }
       });
     }
-    document
-      .getElementById('guidedOnboardingClose')
-      ?.addEventListener('click', () => closeGuidedOnboarding());
+    if (!mountNode) {
+      document
+        .getElementById('guidedOnboardingClose')
+        ?.addEventListener('click', () => closeGuidedOnboarding());
+    }
     // Boas-vindas (Visão geral) e cartão de configuração abrem o mesmo assistente.
     for (const id of ['overviewNextAction', 'guidedOnboarding'])
       document.getElementById(id)?.addEventListener('click', (event: any) => {
