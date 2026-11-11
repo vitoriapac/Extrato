@@ -31,7 +31,7 @@ export function BookmarkBadge({
 
   return (
     <span
-      className={`bookmark-badge inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-data bg-surface-subtle text-primary border border-border-default/80 ${
+      className={`bookmark-badge inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-data bg-surface-subtle text-primary border border-border-default/80 ${
         onClick ? 'cursor-pointer hover:border-border-emphasis' : ''
       } ${className}`}
       title={`Ponto de parada: ${label}`}

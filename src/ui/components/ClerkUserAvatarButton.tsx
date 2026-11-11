@@ -91,7 +91,7 @@ export function ClerkUserAvatarButton({
           if (onOpenSignIn) onOpenSignIn();
         }}
         aria-label="Entrar ou criar conta no Extrato de Estudos"
-        class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium cursor-pointer transition-colors bg-surface-subtle hover:bg-surface-elevated text-text border border-border-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${className}`.trim()}
+        class={`inline-flex items-center gap-2 px-3 py-2 min-h-control rounded text-xs font-medium cursor-pointer transition-colors bg-surface-subtle hover:bg-surface-elevated text-text border border-border-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${className}`.trim()}
       >
         <Icon name="user-circle" size={16} class="text-secondary" />
         <span>Entrar</span>
@@ -126,7 +126,7 @@ export function ClerkUserAvatarButton({
           )}
           {profile?.planTier === 'pro' && (
             <span
-              class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-accent ring-2 ring-surface-card"
+              class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-accent ring-2 ring-surface-card"
               aria-hidden="true"
             />
           )}
@@ -153,10 +153,10 @@ export function ClerkUserAvatarButton({
         <div
           role="menu"
           aria-label="Opções do usuário"
-          class="absolute right-0 mt-1.5 w-64 rounded-default border border-border-default bg-surface-card shadow-lg z-50 p-1 flex flex-col gap-1 text-text"
+          class="absolute right-0 mt-2 w-64 rounded-default border border-border-default bg-surface-card shadow-lg z-50 p-1 flex flex-col gap-1 text-text"
         >
           {/* Cabeçalho do Perfil */}
-          <div class="p-3 border-b border-border-default flex items-center gap-2.5">
+          <div class="p-3 border-b border-border-default flex items-center gap-3">
             <div class="w-10 h-10 rounded-full overflow-hidden bg-surface-subtle border border-border-default flex items-center justify-center shrink-0">
               {profile?.avatarUrl && !imgError ? (
                 <img
@@ -196,7 +196,7 @@ export function ClerkUserAvatarButton({
                   setIsOpen(false);
                   onOpenUserProfile();
                 }}
-                class="w-full text-left px-3 py-2 text-xs text-text hover:bg-surface-subtle rounded flex items-center gap-2.5 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full text-left px-3 py-2 text-xs text-text hover:bg-surface-subtle rounded flex items-center gap-3 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <Icon name="photo" size={16} class="text-secondary shrink-0" />
                 <span>Gerenciar Perfil e Foto</span>
@@ -211,7 +211,7 @@ export function ClerkUserAvatarButton({
                   setIsOpen(false);
                   onOpenUserProfile();
                 }}
-                class="w-full text-left px-3 py-2 text-xs text-text hover:bg-surface-subtle rounded flex items-center gap-2.5 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full text-left px-3 py-2 text-xs text-text hover:bg-surface-subtle rounded flex items-center gap-3 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <Icon name="devices" size={16} class="text-secondary shrink-0" />
                 <span>Dispositivos e Sessões</span>
@@ -226,7 +226,7 @@ export function ClerkUserAvatarButton({
                   setIsOpen(false);
                   onOpenSubscription();
                 }}
-                class="w-full text-left px-3 py-2 text-xs text-text hover:bg-surface-subtle rounded flex items-center gap-2.5 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full text-left px-3 py-2 text-xs text-text hover:bg-surface-subtle rounded flex items-center gap-3 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <Icon name="bolt" size={16} class="text-accent shrink-0" />
                 <span>Minha Assinatura</span>
@@ -241,7 +241,7 @@ export function ClerkUserAvatarButton({
                   setIsOpen(false);
                   onOpenAdminPanel();
                 }}
-                class="w-full text-left px-3 py-2 text-xs font-semibold text-accent hover:bg-surface-subtle rounded flex items-center gap-2.5 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full text-left px-3 py-2 text-xs font-semibold text-accent hover:bg-surface-subtle rounded flex items-center gap-3 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <Icon name="shield-check" size={16} class="text-accent shrink-0" />
                 <span>Painel Administrativo</span>
@@ -259,7 +259,7 @@ export function ClerkUserAvatarButton({
                   setIsOpen(false);
                   onSignOut();
                 }}
-                class="w-full text-left px-3 py-2 text-xs text-secondary hover:text-text hover:bg-surface-subtle rounded flex items-center gap-2.5 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full text-left px-3 py-2 text-xs text-secondary hover:text-text hover:bg-surface-subtle rounded flex items-center gap-3 cursor-pointer bg-transparent border-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <Icon name="logout" size={16} class="text-secondary shrink-0" />
                 <span>Sair da conta</span>

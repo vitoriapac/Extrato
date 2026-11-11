@@ -172,7 +172,7 @@ export function renderOnboardingContent(
       const subjectsBadges = (pack.subjects || [])
         .map(
           (subject: any) =>
-            `<span class="guided-pack-subject-tag text-xs px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(subject.name)}</span>`
+            `<span class="guided-pack-subject-tag text-xs px-2 py-1 rounded bg-surface-subtle text-content-secondary border border-border-subtle inline-block mr-1 mt-1">${escapeHtml(subject.name)}</span>`
         )
         .join('');
       const subjectsList = subjectsBadges
@@ -210,7 +210,7 @@ export function renderOnboardingContent(
   const feasibilityHtml = model.planFeasibility
     ? `<div class="guided-feasibility-card" data-feasibility="${escapeAttr(model.planFeasibility.status)}"><div class="guided-feasibility-header"><span class="status-badge ${model.planFeasibility.status === 'comfortable' || model.planFeasibility.status === 'balanced' ? 'status-badge--success' : 'status-badge--warning'}">${escapeHtml(model.planFeasibility.badgeText)}</span><p class="guided-feasibility-message">${escapeHtml(model.planFeasibility.verdictMessage)}</p></div></div>`
     : '';
-  const flexibilityNote = `<p class="guided-flexibility-note text-xs text-content-secondary mt-2.5 leading-relaxed">${renderIconSvg('info-circle', { size: 14, className: 'inline-block align-middle mr-1' })}<strong>Total flexibilidade:</strong> Você poderá adicionar novas matérias, editar tópicos ou ajustar sua rotina semanal a qualquer momento na aba Disciplinas.</p>`;
+  const flexibilityNote = `<p class="guided-flexibility-note text-xs text-content-secondary mt-3 leading-relaxed">${renderIconSvg('info-circle', { size: 14, className: 'inline-block align-middle mr-1' })}<strong>Total flexibilidade:</strong> Você poderá adicionar novas matérias, editar tópicos ou ajustar sua rotina semanal a qualquer momento na aba Disciplinas.</p>`;
   const title = model.hasGoal ? copy.title : 'Sua configuração está pronta para explorar';
   const help = model.hasGoal
     ? copy.help

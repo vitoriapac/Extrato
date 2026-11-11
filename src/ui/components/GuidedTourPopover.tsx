@@ -146,7 +146,7 @@ export function GuidedTourPopover({
           variant="primary"
           className="shadow-xl border-2 border-accent rounded-default p-4 bg-brand text-on-brand"
         >
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3">
             {/* Cabeçalho */}
             <div className="flex items-center justify-between gap-2">
               <Badge
@@ -188,7 +188,7 @@ export function GuidedTourPopover({
                 ← Anterior
               </Button>
 
-              <div className="flex items-center gap-1.5" aria-hidden="true">
+              <div className="flex items-center gap-2" aria-hidden="true">
                 {Array.from({ length: totalSteps }).map((_, idx) => (
                   <span
                     key={idx}

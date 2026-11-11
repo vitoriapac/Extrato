@@ -89,7 +89,7 @@ export function renderPerformanceQuestions({
     const subRows = msp.series
       .map(
         (s: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-1.5 min-w-0"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${s.totalCorrect}/${s.totalResolved} <strong class="text-content-primary">(${s.overallAccuracy ?? '—'}%)</strong></div></li>`
+          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${s.totalCorrect}/${s.totalResolved} <strong class="text-content-primary">(${s.overallAccuracy ?? '—'}%)</strong></div></li>`
       )
       .join('');
 

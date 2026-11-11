@@ -39,19 +39,19 @@ export function GroupedBarChart({
 
   return (
     <div
-      class={`chart-grouped-bars chart-card-interactive space-y-3.5 ${className}`}
+      class={`chart-grouped-bars chart-card-interactive space-y-4 ${className}`}
       role="region"
       aria-label={label}
     >
       <div class="flex items-center justify-between text-xs text-content-secondary pb-1 border-b border-border-subtle">
         <span class="font-medium">Disciplina</span>
         <div class="flex items-center gap-4">
-          <span class="flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-sm bg-surface-sunken border border-border-default"></span>
+          <span class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-xs bg-surface-sunken border border-border-default"></span>
             Planejado
           </span>
-          <span class="flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-sm bg-accent-emphasis"></span>
+          <span class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-xs bg-accent-emphasis"></span>
             Realizado
           </span>
         </div>
@@ -83,12 +83,12 @@ export function GroupedBarChart({
           return (
             <div
               key={row.subjectId}
-              class="group p-2 rounded-lg transition-colors hover:bg-surface-sunken/50"
+              class="group p-2 rounded-default transition-colors hover:bg-surface-sunken/50"
             >
-              <div class="flex items-center justify-between gap-2 mb-1.5 text-xs">
+              <div class="flex items-center justify-between gap-2 mb-2 text-xs">
                 <div class="flex items-center gap-2 min-w-0">
                   <span
-                    class={`w-2.5 h-2.5 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
+                    class={`w-2 h-2 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
                     aria-hidden="true"
                   />
                   <span class="font-medium text-content-primary truncate">
@@ -100,7 +100,7 @@ export function GroupedBarChart({
                     {formatMinutes(row.studiedMinutes)} / {formatMinutes(row.plannedMinutes)}
                   </span>
                   <span
-                    class={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ${statusBadgeClass}`}
+                    class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}
                     title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${row.diffMinutes} min`}
                   >
                     <Icon name={statusIcon} size={11} />

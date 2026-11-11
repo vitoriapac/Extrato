@@ -55,9 +55,9 @@ export function TodayWeeklyRhythmCard({
           target={dailyTargetMinutes > 0 ? dailyTargetMinutes : undefined}
           height={48}
         />
-        <div class="plan-execution-axis mt-1.5" aria-hidden="true">
+        <div class="plan-execution-axis mt-2" aria-hidden="true">
           {days.map(day => (
-            <span class={day.isToday ? 'font-bold text-content-primary' : 'text-content-secondary'}>
+            <span class={day.isToday ? 'font-semibold text-content-primary' : 'text-content-secondary'}>
               {day.dayName}
             </span>
           ))}

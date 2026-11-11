@@ -59,7 +59,7 @@ export function PerformanceTrendCard({
 
   return (
     <article
-      class="chart-card p-5 flex flex-col justify-between h-full"
+      class="chart-card p-card flex flex-col justify-between h-full"
       aria-labelledby="performanceTrendTitle"
     >
       <div>
@@ -71,7 +71,7 @@ export function PerformanceTrendCard({
             >
               Evolução de Acertos &amp; Simulados
             </h3>
-            <p class="text-xs text-content-secondary m-0 mt-0.5">
+            <p class="text-xs text-content-secondary m-0 mt-1">
               Tendência semanal de questões e notas dos simulados vs. meta de aprovação
             </p>
           </div>
@@ -241,17 +241,17 @@ export function PerformanceTrendCard({
 
       {/* Legenda Informativa */}
       {hasData && (
-        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-2.5 mt-2 border-t border-border-subtle text-xs text-content-secondary font-medium">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-3 mt-2 border-t border-border-subtle text-xs text-content-secondary font-medium">
           <div class="flex items-center gap-3">
-            <span class="inline-flex items-center gap-1.5">
-              <span class="w-2.5 h-0.5 bg-green rounded-full inline-block" />
+            <span class="inline-flex items-center gap-2">
+              <span class="w-3 h-0.5 bg-green rounded-full inline-block" />
               <span>Questões</span>
             </span>
-            <span class="inline-flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-warning-emphasis inline-block" />
               <span>Simulados / atenção</span>
             </span>
-            <span class="inline-flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-2">
               <span class="w-3 border-b border-dashed border-amber inline-block" />
               <span>Meta ({formatDecimal(targetScore)}%)</span>
             </span>

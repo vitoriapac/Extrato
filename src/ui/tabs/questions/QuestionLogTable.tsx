@@ -63,7 +63,7 @@ export function QuestionLogTable({
             <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-3">
               Cadastre os acertos e erros das baterias feitas nos seus bancos favoritos (QConcursos, Tec, Gran) para calibrar seu índice de prontidão e mapa de lacunas.
             </p>
-            <button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-delegated-click="addQuestaoRow()">
+            <button type="button" class="btn ghost small inline-flex items-center gap-2" data-delegated-click="addQuestaoRow()">
               <Icon name="plus" size={14} class="icon-inline" />
               <span>Registrar sessão</span>
             </button>
@@ -225,7 +225,7 @@ export function QuestionLogTable({
                     <div class="mobile-card-head">
                       <div>
                         <div class="mobile-card-date">{vm.date}</div>
-                        <div class="mobile-card-title flex items-center gap-1.5">
+                        <div class="mobile-card-title flex items-center gap-2">
                           {colorSlot && (
                             <span
                               class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
@@ -258,7 +258,7 @@ export function QuestionLogTable({
               <tr key={q.id} class="history-read-row history-desktop-row" data-id={q.id}>
                 <td>{vm.date}</td>
                 <td>
-                  <div class="row-primary flex items-center gap-1.5">
+                  <div class="row-primary flex items-center gap-2">
                     {colorSlot && (
                       <span
                         class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}

@@ -34,7 +34,7 @@ export function ErrorParetoChart({
 
   return (
     <div
-      class={`chart-error-pareto chart-card-interactive space-y-3.5 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
+      class={`chart-error-pareto chart-card-interactive space-y-4 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
       role="region"
       aria-label={label}
     >
@@ -48,9 +48,9 @@ export function ErrorParetoChart({
         </div>
 
         {predominantCause && (
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle border border-warning-subtle">
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle border border-warning-subtle">
             <Icon name="alert-triangle" size={13} />
-            Causa principal: <strong class="font-bold">{predominantCause}</strong>
+            Causa principal: <strong class="font-semibold">{predominantCause}</strong>
           </span>
         )}
       </div>
@@ -63,17 +63,17 @@ export function ErrorParetoChart({
       )}
 
       {/* Lista de Barras de Pareto */}
-      <div class="space-y-2.5 pt-1">
+      <div class="space-y-3 pt-1">
         {items.map(item => {
           const barWidthPct = Math.min(100, Math.max(2, (item.count / maxVal) * 100));
 
           return (
             <div
               key={item.id}
-              class="error-profile-item group flex flex-col gap-1.5 min-w-0 p-2 rounded-default bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
+              class="error-profile-item group flex flex-col gap-2 min-w-0 p-2 rounded-default bg-surface-ground/50 border border-border-subtle transition-colors hover:bg-surface-sunken/40"
             >
               <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-1 text-xs min-w-0">
-                <div class="flex flex-wrap items-center gap-1.5 min-w-0 max-w-full">
+                <div class="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
                   <span class="text-content-secondary shrink-0">
                     <Icon name={item.icon || 'alert-circle'} size={14} />
                   </span>
@@ -82,7 +82,7 @@ export function ErrorParetoChart({
                   </span>
                   {item.isVital && (
                     <span
-                      class="shrink-0 px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider text-warning-emphasis bg-warning-subtle"
+                      class="shrink-0 px-2 py-1 rounded text-xs font-semibold uppercase tracking-wider text-warning-emphasis bg-warning-subtle"
                       title="Item dentro dos 80% prioritários do Princípio de Pareto"
                     >
                       Vital (80/20)
@@ -90,7 +90,7 @@ export function ErrorParetoChart({
                   )}
                 </div>
 
-                <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 max-w-full text-xs">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 max-w-full text-xs">
                   <span class="font-mono font-semibold text-content-primary">
                     {item.count}
                   </span>

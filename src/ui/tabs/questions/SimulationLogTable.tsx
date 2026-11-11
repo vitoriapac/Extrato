@@ -63,7 +63,7 @@ export function SimulationLogTable({
             <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-3">
               Registre simulados completos ou parciais para alimentar a curva de tendência de pontuação de 30 dias e diagnósticos pós-simulado.
             </p>
-            <button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-delegated-click="addSimuladoRow()">
+            <button type="button" class="btn ghost small inline-flex items-center gap-2" data-delegated-click="addSimuladoRow()">
               <Icon name="plus" size={14} class="icon-inline" />
               <span>Registrar simulado</span>
             </button>
@@ -241,7 +241,7 @@ export function SimulationLogTable({
                         return (
                           <div key={row.id} class="breakdown-line">
                             <label class="breakdown-subject">
-                              <span class="flex items-center gap-1.5">
+                              <span class="flex items-center gap-2">
                                 <span
                                   class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
                                   aria-hidden="true"

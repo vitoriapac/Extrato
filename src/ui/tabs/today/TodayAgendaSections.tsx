@@ -56,13 +56,13 @@ export function TodayAgendaSections({
       </section>
 
       <section>
-        <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="flex items-center justify-between gap-2 mb-2">
           <h4 class="m-0">Revisões atrasadas</h4>
           {onOpenRecoveryMission && overdueReviews.length > 0 && (
             <Button
               variant="secondary"
               size="small"
-              className="inline-flex items-center gap-1.5 text-xs text-heading font-medium hover:border-border-hover"
+              className="inline-flex items-center gap-2 text-xs text-heading font-medium hover:border-border-hover"
               onClick={onOpenRecoveryMission}
               aria-label="Abrir missão de recuperação de revisões atrasadas"
             >

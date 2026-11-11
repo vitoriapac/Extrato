@@ -72,7 +72,7 @@ export function VerticalizedSyllabusView({
             <Icon name="clipboard-text" size={18} class="text-primary shrink-0" />
             <span>Edital Verticalizado Interativo</span>
           </h3>
-          <p class="text-xs text-secondary mt-0.5">
+          <p class="text-xs text-secondary mt-1">
             Acompanhe cada etapa de estudo (Teoria, Resumo, Lei Seca e Questões) por tópico do
             edital.
           </p>
@@ -81,7 +81,7 @@ export function VerticalizedSyllabusView({
         <div class="flex items-center gap-2 w-full sm:w-auto">
           {/* Seletor de Disciplina */}
           <select
-            class="select-control text-xs py-1.5 px-3 rounded border border-border-default bg-surface-card text-primary"
+            class="select-control min-h-control text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-primary"
             value={selectedSubjectId}
             onChange={e => setSelectedSubjectId((e.target as HTMLSelectElement).value)}
             aria-label="Filtrar por disciplina no edital verticalizado"
@@ -97,7 +97,7 @@ export function VerticalizedSyllabusView({
           {/* Botão de Importar do PDF */}
           <Button
             variant="secondary"
-            className="text-xs shrink-0 inline-flex items-center gap-1.5"
+            className="text-xs shrink-0 inline-flex items-center gap-2"
             onClick={() => {
               setImportModalOpen(true);
               setParsedPreview(null);
@@ -179,10 +179,10 @@ export function VerticalizedSyllabusView({
                     {/* Checklists das 4 Etapas */}
                     <div class="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 text-xs">
                       {/* Teoria */}
-                      <label class="inline-flex items-center gap-1.5 cursor-pointer text-secondary select-none">
+                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
                         <input
                           type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                           checked={Boolean(checklist.theoryDone)}
                           onChange={e =>
                             onToggleStage?.(
@@ -196,10 +196,10 @@ export function VerticalizedSyllabusView({
                       </label>
 
                       {/* Resumo */}
-                      <label class="inline-flex items-center gap-1.5 cursor-pointer text-secondary select-none">
+                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
                         <input
                           type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                           checked={Boolean(checklist.summaryDone)}
                           onChange={e =>
                             onToggleStage?.(
@@ -213,10 +213,10 @@ export function VerticalizedSyllabusView({
                       </label>
 
                       {/* Lei / Notas */}
-                      <label class="inline-flex items-center gap-1.5 cursor-pointer text-secondary select-none">
+                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
                         <input
                           type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                           checked={Boolean(checklist.lawOrNotesDone)}
                           onChange={e =>
                             onToggleStage?.(
@@ -230,10 +230,10 @@ export function VerticalizedSyllabusView({
                       </label>
 
                       {/* Questões */}
-                      <label class="inline-flex items-center gap-1.5 cursor-pointer text-secondary select-none">
+                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
                         <input
                           type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                           checked={Boolean(checklist.questionsDone)}
                           onChange={e =>
                             onToggleStage?.(
@@ -282,7 +282,7 @@ export function VerticalizedSyllabusView({
                             href={practiceLinks.qcUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="px-1.5 py-1 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-subtle inline-flex items-center no-underline transition-colors"
+                            class="px-2 py-1 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-subtle inline-flex items-center no-underline transition-colors"
                             title={`Abrir questões de ${topic.name} no QConcursos`}
                             aria-label={`Praticar questões de ${topic.name} no QConcursos (abre em nova aba)`}
                           >
@@ -292,7 +292,7 @@ export function VerticalizedSyllabusView({
 
                         <button
                           type="button"
-                          class="px-2.5 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary inline-flex items-center gap-1 cursor-pointer"
+                          class="px-3 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary inline-flex items-center gap-1 cursor-pointer"
                           onClick={() => onStartStudy?.(subject.id, topic.id)}
                           aria-label={`Iniciar estudo de ${topic.name}`}
                         >
@@ -339,7 +339,7 @@ export function VerticalizedSyllabusView({
               variant="secondary"
               onClick={handleParseText}
               disabled={!rawText.trim()}
-              className="inline-flex items-center gap-1.5"
+              className="inline-flex items-center gap-2"
             >
               <Icon name="search" size={14} class="shrink-0" />
               <span>Analisar Texto</span>
@@ -362,7 +362,7 @@ export function VerticalizedSyllabusView({
                   <div class="font-semibold text-primary">
                     {sub.name} ({sub.topics.length} tópicos)
                   </div>
-                  <ul class="pl-4 list-disc text-secondary space-y-0.5">
+                  <ul class="pl-4 list-disc text-secondary space-y-1">
                     {sub.topics.slice(0, 5).map((top, j) => (
                       <li key={j}>
                         {top.code ? `${top.code} ` : ''}

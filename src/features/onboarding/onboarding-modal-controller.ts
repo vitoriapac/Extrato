@@ -256,7 +256,7 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
           <label for="guidedPasteSyllabusText" class="font-medium text-sm text-content-primary">
             Cole o texto do edital copiado do PDF:
           </label>
-          <textarea id="guidedPasteSyllabusText" rows="6" class="w-full text-xs p-2.5 rounded-default border border-border-default bg-surface-card text-content-primary font-mono focus:border-brand focus:ring-1 focus:ring-brand" placeholder="Exemplo:&#10;LÍNGUA PORTUGUESA:&#10;1. Compreensão de texto.&#10;2. Ortografia.&#10;DIREITO CONSTITUCIONAL:&#10;1. Direitos Fundamentais..."></textarea>
+          <textarea id="guidedPasteSyllabusText" rows="6" class="w-full text-xs p-3 rounded-default border border-border-default bg-surface-card text-content-primary font-mono focus:border-brand focus:ring-1 focus:ring-brand" placeholder="Exemplo:&#10;LÍNGUA PORTUGUESA:&#10;1. Compreensão de texto.&#10;2. Ortografia.&#10;DIREITO CONSTITUCIONAL:&#10;1. Direitos Fundamentais..."></textarea>
           <div class="flex flex-wrap items-center gap-2">
             <button type="button" class="btn small" data-guided-action="parse-syllabus-submit">Interpretar e Carregar</button>
             <button type="button" class="btn ghost small" data-guided-action="parse-syllabus-cancel">Cancelar</button>

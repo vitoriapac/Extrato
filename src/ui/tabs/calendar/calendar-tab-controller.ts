@@ -474,7 +474,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     ul.innerHTML = items
       .map(
         x =>
-          `<li><span class="dias-pill dias-hoje" style="margin-right:6px">hoje</span><span style="flex:1">${escapeHtml(x.subject || '—')} · ${escapeHtml(defaultUnifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`
+          `<li><span class="dias-pill dias-hoje mr-2">hoje</span><span style="flex:1">${escapeHtml(x.subject || '—')} · ${escapeHtml(defaultUnifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`
       )
       .join('');
   }
@@ -526,7 +526,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     }
 
     ul.innerHTML =
-      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${overdueOrigin(items)}${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small" style="margin-top:8px;width:100%" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
+      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${overdueOrigin(items)}${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
       visible
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);

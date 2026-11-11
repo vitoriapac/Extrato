@@ -29,7 +29,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
     <article class="chart-card shift-energy-card" aria-labelledby="shiftEnergyTitle">
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
-          <div class="p-1.5 rounded bg-surface-subtle text-accent">
+          <div class="p-2 rounded bg-surface-subtle text-accent">
             <Icon name="sun" size={20} />
           </div>
           <div>
@@ -39,7 +39,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
               </h4>
               {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
-            <p class="text-xs text-content-secondary m-0 mt-0.5">
+            <p class="text-xs text-content-secondary m-0 mt-1">
               <WindowBadge kind="history" title="Todo o histórico registrado" /> Todo o histórico
               registrado, sem o filtro de período ({totalStudyHours.toLocaleString('pt-BR')}h no
               total). O foco profundo por turno, logo abaixo, usa só o período escolhido.
@@ -54,14 +54,14 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
           return (
             <div
               key={shift.shift}
-              class={`p-3.5 rounded-default border-t transition-all ${
+              class={`p-card rounded-default border-t transition-all ${
                 shift.isPeak
                   ? 'border-brand bg-surface-subtle/60 ring-1 ring-brand/20'
                   : 'border-border-subtle bg-surface-subtle/30'
               }`}
             >
               <div class="flex items-center justify-between gap-1 mb-2">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2">
                   <div
                     class={`p-1 rounded ${shift.isPeak ? 'text-accent bg-accent/10' : 'text-content-secondary bg-surface-subtle'}`}
                   >
@@ -72,7 +72,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
                 {shift.isPeak && <Badge variant="success">Melhor</Badge>}
               </div>
 
-              <div class="space-y-1.5 text-xs">
+              <div class="space-y-2 text-xs">
                 <div class="flex justify-between items-center text-content-secondary">
                   <span>Horas de estudo:</span>
                   <span class="font-mono font-medium text-content-primary">
@@ -81,7 +81,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
                   </span>
                 </div>
 
-                <div class="w-full h-1.5 bg-surface-subtle rounded overflow-hidden">
+                <div class="w-full h-2 bg-surface-subtle rounded overflow-hidden">
                   <div
                     class={`h-full rounded ${shift.isPeak ? 'bg-brand' : 'bg-brand-secondary/60'}`}
                     style={{ width: `${shift.timePercent}%` }}
@@ -106,17 +106,21 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
       </div>
 
       {fatigueAlert && (
-        <div class="p-2.5 rounded-md bg-amber-bg border border-amber/30 text-amber text-xs mb-3 flex items-start gap-2">
-          <Icon name="alert-triangle" size={16} className="shrink-0 mt-0.5" />
+        <div class="p-3 rounded-default bg-amber-bg border border-amber/30 text-amber text-xs mb-3 flex items-start gap-2">
+          <span class="inline-flex h-4 items-center shrink-0">
+            <Icon name="alert-triangle" size={16} />
+          </span>
           <span>{fatigueAlert}</span>
         </div>
       )}
 
       {recommendations.length > 0 && isSampleSufficient && (
-        <div class="p-2.5 rounded-md bg-surface-subtle text-xs text-content-secondary space-y-1">
+        <div class="p-3 rounded-default bg-surface-subtle text-xs text-content-secondary space-y-1">
           {recommendations.map((rec, i) => (
-            <div key={i} class="flex items-start gap-1.5">
-              <Icon name="check" size={14} className="shrink-0 text-accent mt-0.5" />
+            <div key={i} class="flex items-start gap-2">
+              <span class="inline-flex h-4 items-center shrink-0 text-accent">
+                <Icon name="check" size={14} />
+              </span>
               <span>{rec}</span>
             </div>
           ))}
@@ -124,7 +128,7 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
       )}
 
       <footer class="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-content-secondary">
-        <span class="flex items-center gap-1.5">
+        <span class="flex items-center gap-2">
           <Icon name="info-circle" size={14} />
           <span>{summary}</span>
         </span>

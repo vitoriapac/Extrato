@@ -19,13 +19,13 @@ export function SyllabusHealthCard({
   const attentionCount = subjects.filter(subject => subject.status === 'attention').length;
 
   return (
-    <article class="chart-card p-5 flex flex-col justify-between h-full" aria-labelledby="syllabusHealthTitle">
+    <article class="chart-card p-card flex flex-col justify-between h-full" aria-labelledby="syllabusHealthTitle">
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
         <div>
           <h3 id="syllabusHealthTitle" class="font-semibold text-base text-content-primary m-0">
             Saúde do Edital por Disciplina
           </h3>
-          <p class="text-xs text-content-secondary m-0 mt-0.5">
+          <p class="text-xs text-content-secondary m-0 mt-1">
             Progresso de cobertura e taxa de acerto nas últimas 4 semanas
             {attentionCount > 0 && (
               <>
@@ -56,7 +56,7 @@ export function SyllabusHealthCard({
       </div>
 
       {subjects.length === 0 ? (
-        <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md">
+        <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-default">
           <p class="m-0">Cadastre disciplinas e tópicos para visualizar a saúde do edital.</p>
         </div>
       ) : (
@@ -68,10 +68,10 @@ export function SyllabusHealthCard({
             return (
               <div
                 key={subject.id}
-                class="py-2.5 first:pt-0 last:pb-0"
+                class="py-3 first:pt-0 last:pb-0"
               >
-                <div class="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-xs mb-1.5 font-medium">
-                  <span class="font-semibold text-content-primary flex items-center gap-1.5">
+                <div class="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-xs mb-2 font-medium">
+                  <span class="font-semibold text-content-primary flex items-center gap-2">
                     <span>{subject.name}</span>
                   </span>
                   <span class="font-data text-content-secondary whitespace-nowrap">
@@ -107,7 +107,7 @@ export function SyllabusHealthCard({
                   </div>
 
                   {/* Aproveitamento em Questões (Bullet Bar com marcador de meta) */}
-                  <div class="col-span-4 flex items-center gap-1.5">
+                  <div class="col-span-4 flex items-center gap-2">
                     <div class="w-full h-2 bg-surface-card rounded-full overflow-hidden relative">
                       {hasAccuracy && (
                         <div
@@ -122,7 +122,7 @@ export function SyllabusHealthCard({
                       />
                     </div>
                     <span
-                      class={`text-xs font-data font-semibold min-w-[28px] shrink-0 whitespace-nowrap text-right ${
+                      class={`text-xs font-data font-semibold min-w-8 shrink-0 whitespace-nowrap text-right ${
                         !hasAccuracy
                           ? 'text-content-secondary'
                           : isAttention

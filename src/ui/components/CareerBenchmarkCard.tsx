@@ -34,11 +34,11 @@ function MetricBulletBar({
   const isCompetitive = comparison.status === 'competitive' || comparison.status === 'advanced';
 
   return (
-    <div class="space-y-1.5 w-full">
+    <div class="space-y-2 w-full">
       <div class="flex justify-between items-baseline text-xs gap-2">
         <span class="font-medium text-content-primary">{comparison.label}</span>
-        <div class="flex items-center gap-1.5 font-mono">
-          <span class="font-bold text-sm text-content-primary">
+        <div class="flex items-center gap-2 font-mono">
+          <span class="font-semibold text-sm text-content-primary">
             {formatDecimal(currentValue)} {unit}
           </span>
           <span class="text-content-secondary text-xs">
@@ -51,7 +51,7 @@ function MetricBulletBar({
           >
             <button
               type="button"
-              class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+              class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
               aria-label={`Explicar faixa competitiva de ${comparison.label}`}
             >
               <Icon name="info-circle" size={14} />
@@ -85,7 +85,7 @@ function MetricBulletBar({
       </div>
 
       {/* Rótulo de Status e Comentário */}
-      <div class="flex justify-between items-start gap-2 pt-0.5">
+      <div class="flex justify-between items-start gap-2 pt-1">
         <span
           class={`text-xs font-semibold ${
             isCompetitive ? 'text-accent' : 'text-content-secondary'
@@ -128,13 +128,13 @@ export function CareerBenchmarkCard({
 
   return (
     <article
-      class="card bg-surface-card border border-border-default rounded-default p-4 sm:p-5 shadow-xs space-y-4"
+      class="card bg-surface-card border border-border-default rounded-default p-card sm:p-panel shadow-xs space-y-4"
       aria-labelledby="careerBenchmarkTitle"
       data-career-benchmark-card="true"
     >
       {/* Cabeçalho com Seletor e Badge */}
       <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-border-subtle">
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-3">
           <div class="p-2 rounded bg-surface-subtle text-accent shrink-0">
             <Icon name="chart-bar" size={20} />
           </div>
@@ -148,7 +148,7 @@ export function CareerBenchmarkCard({
               </h3>
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>
-            <p class="text-xs text-content-secondary m-0 mt-0.5">
+            <p class="text-xs text-content-secondary m-0 mt-1">
               Faixas de referência internas para <strong>{career.name}</strong>, sem fonte oficial ·
               últimos 7 dias · 100% privado no seu aparelho
             </p>
@@ -173,7 +173,7 @@ export function CareerBenchmarkCard({
       {/* Grid com os 3 Indicadores Principais */}
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
         {/* 1. Horas Líquidas */}
-        <div class="p-3.5 rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+        <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
           <MetricBulletBar
             comparison={weeklyHours}
             maxDisplay={Math.max(40, career.weeklyHours.advanced + 5)}
@@ -181,7 +181,7 @@ export function CareerBenchmarkCard({
         </div>
 
         {/* 2. Questões Semanais */}
-        <div class="p-3.5 rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+        <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
           <MetricBulletBar
             comparison={weeklyQuestions}
             maxDisplay={Math.max(400, career.weeklyQuestions.advanced + 50)}
@@ -189,13 +189,13 @@ export function CareerBenchmarkCard({
         </div>
 
         {/* 3. Precisão em Questões */}
-        <div class="p-3.5 rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+        <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
           <MetricBulletBar comparison={accuracy} maxDisplay={100} />
         </div>
       </div>
 
       {/* Mix de Tempo: Atual vs Recomendado */}
-      <div class="p-3.5 rounded border border-border-subtle bg-surface-subtle/25 space-y-2">
+      <div class="p-card rounded border border-border-subtle bg-surface-subtle/25 space-y-2">
         <div class="flex justify-between items-center text-xs">
           <span class="font-medium text-content-primary">
             Mix de Estudo (Teoria / Questões / Revisão)
@@ -230,7 +230,7 @@ export function CareerBenchmarkCard({
         </div>
 
         {/* Legenda do Mix */}
-        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary pt-0.5">
+        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary pt-1">
           <div class="flex flex-wrap items-center gap-3">
             <Tooltip
               content={`Teoria: ${measuredMix.theoryPercent}% do tempo medido (referência recomendada: ${career.targetMix.theoryPercent}%)`}
@@ -287,7 +287,9 @@ export function CareerBenchmarkCard({
 
       {/* Nota de Orientação Pedagógica */}
       <footer class="flex items-start gap-2 p-3 rounded bg-surface-subtle text-xs text-content-secondary leading-relaxed">
-        <Icon name="info-circle" size={16} class="text-accent shrink-0 mt-0.5" />
+        <span class="inline-flex h-4 items-center shrink-0">
+          <Icon name="info-circle" size={16} class="text-accent shrink-0" />
+        </span>
         <div>
           <strong class="text-content-primary">Leitura: </strong>
           <span>{guidanceNote}</span>

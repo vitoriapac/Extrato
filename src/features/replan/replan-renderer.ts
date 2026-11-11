@@ -36,13 +36,13 @@ export function renderReplanProposal(
     .join('');
 
   const empathyHeader = `
-    <div class="replan-empathy-header mb-3 p-3 rounded-lg bg-surface-subtle border border-border-default flex items-start gap-3">
-      <div class="p-1.5 rounded bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent shrink-0">
+    <div class="replan-empathy-header mb-3 p-3 rounded-default bg-surface-subtle border border-border-default flex items-start gap-3">
+      <div class="p-2 rounded bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent shrink-0">
         ${renderIconSvg('heart-handshake', { size: 18 })}
       </div>
       <div>
         <h4 class="text-xs font-semibold text-content-primary m-0">Sua semana mudou? Reajuste sua capacidade sem culpa nem perda de histórico</h4>
-        <p class="text-xs text-content-secondary mt-0.5 mb-0">Imprevistos acontecem. O plano redistribui o saldo de horas pendente respeitando seus limites diários futuros.</p>
+        <p class="text-xs text-content-secondary mt-1 mb-0">Imprevistos acontecem. O plano redistribui o saldo de horas pendente respeitando seus limites diários futuros.</p>
       </div>
     </div>
   `;

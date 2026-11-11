@@ -151,14 +151,14 @@ export function CloudExamCatalogModal({
               placeholder="Buscar por concurso, banca organizadora (Cesgranrio, FGV, Cebraspe...)"
               value={searchQuery}
               onInput={e => setSearchQuery((e.target as HTMLInputElement).value)}
-              class="w-full pl-9 pr-8 py-2 rounded-lg border border-border-default bg-surface-subtle text-text text-sm focus:outline-none focus:border-brand transition-colors"
+              class="w-full min-h-touch sm:min-h-control pl-10 pr-10 py-2 rounded-default border border-border-control bg-surface-subtle text-text text-sm focus:outline-none focus:border-brand transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
                 aria-label="Limpar busca"
                 onClick={() => setSearchQuery('')}
-                class="absolute right-2.5 p-1 text-secondary hover:text-text cursor-pointer"
+                class="absolute right-2 inline-flex items-center justify-center min-h-8 min-w-8 p-1 text-secondary hover:text-text cursor-pointer"
               >
                 <Icon name="x" size={14} />
               </button>
@@ -166,7 +166,7 @@ export function CloudExamCatalogModal({
           </div>
 
           {/* Abas de categorias */}
-          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             {CATEGORY_TABS.map(tab => {
               const active = selectedCategory === tab.id;
               return (
@@ -175,7 +175,7 @@ export function CloudExamCatalogModal({
                   type="button"
                   aria-pressed={active}
                   onClick={() => setSelectedCategory(tab.id)}
-                  class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  class={`inline-flex items-center gap-2 px-3 py-2 min-h-control rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     active
                       ? 'bg-brand text-on-brand shadow-sm'
                       : 'bg-surface-subtle text-secondary hover:text-text hover:bg-surface-card border border-border-subtle'
@@ -193,7 +193,7 @@ export function CloudExamCatalogModal({
         {error && (
           <div
             role="alert"
-            class="flex items-center gap-2 p-3 rounded-lg bg-red-bg text-red text-xs border border-red/20"
+            class="flex items-center gap-2 p-3 rounded-default bg-red-bg text-red text-xs border border-red/20"
           >
             <Icon name="alert-circle" size={16} />
             <span class="flex-1">{error}</span>
@@ -234,13 +234,13 @@ export function CloudExamCatalogModal({
                 return (
                   <article
                     key={item.slug}
-                    class="flex flex-col justify-between p-3.5 rounded-lg border border-border-default bg-surface-card hover:border-border-strong transition-all shadow-sm"
+                    class="flex flex-col justify-between p-card rounded-default border border-border-default bg-surface-card hover:border-border-strong transition-all shadow-sm"
                   >
                     <div>
                       {/* Metadados Superiores */}
                       <div class="flex items-center justify-between gap-2 mb-2">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                          <span class="px-2 py-0.5 rounded text-xs font-medium bg-surface-subtle text-secondary border border-border-subtle capitalize">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span class="px-2 py-1 rounded text-xs font-medium bg-surface-subtle text-secondary border border-border-subtle capitalize">
                             {item.category}
                           </span>
                           <span class="text-xs text-muted">
@@ -248,7 +248,7 @@ export function CloudExamCatalogModal({
                           </span>
                         </div>
                         {item.isPremium && (
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                          <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-amber-bg text-amber border border-amber/30">
                             <Icon name="crown" size={12} />
                             PRO
                           </span>
@@ -266,7 +266,7 @@ export function CloudExamCatalogModal({
                       </p>
 
                       {/* Métricas: Disciplinas e Tópicos */}
-                      <div class="mt-2.5 flex items-center gap-4 text-xs text-secondary">
+                      <div class="mt-3 flex items-center gap-4 text-xs text-secondary">
                         <span class="inline-flex items-center gap-1">
                           <Icon name="books" size={13} class="text-secondary" />
                           <span>{item.subjectsCount} disciplinas</span>
@@ -279,13 +279,13 @@ export function CloudExamCatalogModal({
                     </div>
 
                     {/* Ação: Importar ou Desbloquear Pro */}
-                    <div class="mt-3.5 pt-2.5 border-t border-border-subtle flex items-center justify-end">
+                    <div class="mt-4 pt-3 border-t border-border-subtle flex items-center justify-end">
                       {!canAccess ? (
                         <Button
                           variant="tonal"
                           size="small"
                           iconLeft="crown"
-                          className="bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border-transparent"
+                          className="bg-amber-bg text-amber hover:opacity-90 border-transparent"
                           onClick={() => onUpgradeRequired && onUpgradeRequired(item)}
                         >
                           Desbloquear no Pro

@@ -97,15 +97,25 @@ spacing:
   space-5: "20px"
   space-6: "24px"
   space-8: "32px"
+  space-10: "40px"
   space-12: "48px"
+  space-14: "56px"
   space-16: "64px"
+  inline: "8px"
+  stack: "16px"
+  card: "16px"
+  panel: "24px"
+  action: "12px"
+  content-action: "24px"
+  block: "32px"
+  section: "48px"
 components:
   button-primary:
     backgroundColor: "{colors.brand}"
     textColor: "{colors.on-brand}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
-    padding: "9px 16px"
+    padding: "8px 16px"
     height: "36px"
   button-primary-hover:
     backgroundColor: "{colors.brand-secondary}"
@@ -114,24 +124,24 @@ components:
     textColor: "{colors.brand}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
-    padding: "9px 16px"
+    padding: "8px 16px"
   button-tonal-hover:
     backgroundColor: "{colors.heat-1}"
   button-tertiary:
     textColor: "{colors.brand}"
     typography: "{typography.action}"
-    padding: "9px 4px"
+    padding: "8px 4px"
   button-ghost:
     textColor: "{colors.brand}"
     rounded: "{rounded.control}"
-    padding: "9px 16px"
+    padding: "8px 16px"
   button-ghost-hover:
     backgroundColor: "{colors.brand}"
     textColor: "{colors.on-brand}"
   button-danger:
     textColor: "{colors.red}"
     rounded: "{rounded.control}"
-    padding: "7px 11px"
+    padding: "8px 12px"
   button-danger-hover:
     backgroundColor: "{colors.red}"
     textColor: "{colors.white}"
@@ -139,7 +149,7 @@ components:
     backgroundColor: "{colors.slate-bg}"
     textColor: "{colors.ink-soft}"
     typography: "{typography.action}"
-    padding: "11px 18px"
+    padding: "8px 16px"
   tab-hover:
     backgroundColor: "{colors.tab-hover-bg}"
   tab-active:
@@ -149,17 +159,17 @@ components:
     backgroundColor: "{colors.white}"
     textColor: "{colors.ink}"
     rounded: "{rounded.card}"
-    padding: "20px 22px"
+    padding: "16px"
   kpi-cell:
     backgroundColor: "{colors.brand}"
     textColor: "{colors.brand-on-header}"
     typography: "{typography.value}"
-    padding: "16px 18px"
+    padding: "16px"
   select:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
-    padding: "7px 32px 7px 10px"
+    padding: "4px 32px 4px 12px"
     height: "36px"
   status-badge-success:
     backgroundColor: "{colors.green-bg}"
@@ -290,7 +300,7 @@ Pesos permitidos: 400, 500, 600. O 700 existe como token mas não é a voz do si
 
 ## Layout
 
-Coluna única centralizada de até 1280px, com gutter fluido `clamp(16px, 2.5vw, 32px)` e respiro inferior de 80px. Escala de espaço em 4px: 4, 8, 12, 16, 20, 24, 32, 48, 64 (`--space-1` a `--space-16`), com aliases semânticos: ação 12px, conteúdo→ação 24px, bloco 32px, seção 48px.
+Coluna única centralizada de até 1280px, com gutter na grade híbrida `clamp(16px, 2.5vw, 32px)` (`16 / 24 / 32px` via `--space-page-x`) e respiro inferior de 80px. Sistema de Grade Híbrida de 8 Pontos: malha estrutural em `8px` (`8, 16, 24, 32, 40, 48, 56, 64px` via `--space-2`, `--space-4`, `--space-6`, `--space-8`, `--space-10`, `--space-12`, `--space-14`, `--space-16`) e subgrade micro/óptica em `4px` (`4, 12px` via `--space-1`, `--space-3`; `--space-5` `20px` fica em transição para legado), com papéis semânticos: inline `8px`, stack `16px`, card `16px`, panel `24px`, action `12px`, conteúdo→ação `24px`, bloco `32px`, seção `48px`.
 
 O cabeçalho do extrato vira uma barra compacta fixa (`sticky-shell`) ao rolar, com a sequência de dias (chama) quando ela existe. Abas no topo em todas as larguras do desktop (uma barra lateral acima de 1280px foi testada e descartada); entre 761px e 1050px o respiro lateral da aba cai de 12px para 8px para as oito caberem sem cortar "Instruções". Abaixo de 760px viram navegação inferior com Início, Desempenho, Hoje, Matérias e Mais (Agenda, Questões e Simulados, Planejamento e Instruções ficam em Mais); voltar ao topo e o aviso de salvamento ficam acima dela, medidos por `--bottom-nav-height`. Controles têm 36px de altura com ponteiro fino e 44px em toque (`pointer: coarse` ou abaixo de 760px); as subabas de Desempenho e os resumos de disclosure ficam sempre em 44px. Breakpoints principais: 760px (mobile/desktop), 900px e 1100px (densidade de grades), 430px e 375px (ajustes finos). Tudo funciona a partir de 320px sem rolagem horizontal global; listas, diagnósticos e formulários empilham antes de encolher a área de toque.
 
@@ -303,7 +313,7 @@ As oito abas, na ordem do app (Início, Desempenho, Hoje, Disciplinas, Agenda, Q
 
 Seções recolhíveis (`details[data-remember]`) ficam abertas no desktop e fechadas no celular quando têm `data-default-open="wide"`, e fechadas sempre quando não têm; a escolha é lembrada pelo navegador. O Planejamento agrupa as seções em cinco blocos recolhíveis (`details.metas-subpanel`): Plano da semana (aberto por padrão), Prova e ritmo, Metas por disciplina, Fechamento semanal e Histórico. A barra de atalhos (botões no desktop, lista no celular) abre o bloco escolhido e rola até ele, sem fechar os outros; o atalho aberto fica na URL (`#planejamento/fechamento`). Saltos e âncoras abrem a seção e o bloco do destino.
 
-A densidade compacta (`html[data-density="compact"]`) aperta a escala de espaço sem mudar tipografia nem alvos de toque.
+A densidade compacta (`html[data-density="compact"]`) aperta a escala de espaço mantendo múltiplos estritos de 4/8px (8, 12, 16, 24, 32, 40, 48 px) sem mudar tipografia nem alvos de toque.
 
 ### Named Rules
 **A Regra do Card como Agrupamento.** Um card agrupa um assunto. Dentro dele, use linhas, espaço e tipo; nunca aninhe cards para criar hierarquia.
@@ -336,13 +346,13 @@ Uma duração só para transições de interface: `--motion-duration` (160ms) em
 ### Buttons
 Três níveis, um primário por card: o primário é a próxima ação; o tonal repete ações em lista; o terciário é um link de ação.
 - **Shape:** 6px, altura 36px.
-- **Primary:** musgo com texto papel, Sans 500 13px, padding 9px 16px.
+- **Primary:** musgo com texto papel, Sans 500 13px, padding 8px 16px.
 - **Tonal:** fundo `--action-tonal-bg` (sálvia suave), texto título, sem borda; para "Iniciar" e "Revisar" repetidos em listas.
 - **Tertiary:** sem fundo nem borda, sublinhado, texto título; para ações de leitura ("ver detalhes").
 - **Hover / Focus:** hover troca para Sálvia Tinta (o tonal escurece um tom); foco é contorno sálvia de 2px com offset 2px; active desce 1px. Transições de 150ms.
 - **Ghost (secundário):** transparente com borda e texto título; hover preenche.
 - **Danger:** transparente com borda e texto vermelho; hover preenche de vermelho.
-- **Small:** padding 6px 10px.
+- **Small:** padding 8px 12px (altura mínima 36px em `.ui-btn.btn-small`).
 - **Icon-btn:** ações só com ícone; sempre com nome acessível.
 
 ### Chips (status-badge)
@@ -354,10 +364,10 @@ Três níveis, um primário por card: o primário é a próxima ação; o tonal 
 - **Background:** papel branco; variantes ardósia (`--muted`), hover-bg (`--interactive`), destaque (`--attention`) e musgo (`--primary`, texto papel).
 - **Shadow Strategy:** nenhuma (ver Elevation).
 - **Border:** 1px `paper-line`; faixa de 3px sálvia (ação, insight) ou âmbar (atenção).
-- **Internal Padding:** 20–24px; título do card em Label, cinza tinta-suave.
+- **Internal Padding:** `16px` (`--space-card`) em cards padrão e `24px` (`--space-panel`) em painéis destacados; título do card em Label, cinza tinta-suave.
 
 ### Inputs / Fields
-- **Style:** fundo de card, borda 1px `border-control`, 6px de raio, Sans, padding 7px 32px 7px 10px, altura 36px.
+- **Style:** fundo de card, borda 1px `border-control`, 6px de raio, Sans, padding 4px 32px 4px 12px, altura 36px.
 - **Focus:** borda sálvia e contorno sálvia de 3px com offset 1px.
 - **Hover:** borda escurece para tinta-suave.
 - **Disabled:** opacidade 50%, cursor not-allowed.

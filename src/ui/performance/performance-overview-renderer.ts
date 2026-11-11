@@ -134,7 +134,7 @@ export function renderPerformanceOverview(
         : executiveSummary.base.smallSample
           ? 'small'
           : null;
-  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${renderEvidenceBadge(summaryEvidence)}${renderCopyBlockLink('resumo')}${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
+  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${renderEvidenceBadge(summaryEvidence)}${renderCopyBlockLink('resumo')}${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-3 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
   const preparationHtml = renderPreparationReading(preparationReading, {
     escapeHtml,
     escapeAttr,

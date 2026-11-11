@@ -38,7 +38,7 @@ export function Badge({
   };
 
   const baseClass =
-    'status-pill badge inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-body font-medium';
+    'status-pill badge inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-body font-medium';
 
   const combinedClass = [baseClass, variantClasses[variant] || variantClasses.default, className]
     .filter(Boolean)

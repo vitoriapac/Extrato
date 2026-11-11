@@ -11,6 +11,7 @@ import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
 import { Icon } from '../primitives/icon.js';
+import { SegmentedControl } from '../primitives/tabs.js';
 
 export interface SubjectWithTopics {
   id: string;
@@ -187,38 +188,23 @@ export function ErrorNotebookView({
           </p>
         </div>
 
-        <div class="flex items-center gap-2">
-          <div class="inline-flex rounded-default" role="group">
-            <button
-              type="button"
-              aria-pressed={viewMode === 'deck'}
-              class={`px-3 py-1.5 text-xs font-semibold rounded-l border border-border-default inline-flex items-center gap-1.5 ${
-                viewMode === 'deck'
-                  ? 'bg-primary text-primary-contrast border-primary'
-                  : 'bg-surface-card text-secondary hover:text-primary'
-              }`}
-              onClick={() => {
-                setViewMode('deck');
+        <div class="flex flex-wrap items-center gap-2">
+          <SegmentedControl
+            size="sm"
+            label="Modo de visualização do caderno"
+            value={viewMode}
+            onChange={mode => {
+              const nextMode = mode as 'deck' | 'catalog';
+              setViewMode(nextMode);
+              if (nextMode === 'deck') {
                 setIsRevealed(false);
-              }}
-            >
-              <Icon name="cards" size={14} class="shrink-0" />
-              <span>Deck ({stats.dueCount})</span>
-            </button>
-            <button
-              type="button"
-              aria-pressed={viewMode === 'catalog'}
-              class={`px-3 py-1.5 text-xs font-semibold rounded-r border-t border-b border-r border-border-default inline-flex items-center gap-1.5 ${
-                viewMode === 'catalog'
-                  ? 'bg-primary text-primary-contrast border-primary'
-                  : 'bg-surface-card text-secondary hover:text-primary'
-              }`}
-              onClick={() => setViewMode('catalog')}
-            >
-              <Icon name="file-text" size={14} class="shrink-0" />
-              <span>Todos ({stats.total})</span>
-            </button>
-          </div>
+              }
+            }}
+            options={[
+              { value: 'deck', label: `Deck (${stats.dueCount})`, icon: 'cards' },
+              { value: 'catalog', label: `Todos (${stats.total})`, icon: 'file-text' },
+            ]}
+          />
 
           <Button
             variant="primary"
@@ -248,7 +234,7 @@ export function ErrorNotebookView({
               ? '1 registro de questões com erros ainda não virou flashcard'
               : `${questionDrafts.length} registros de questões com erros ainda não viraram flashcard`}
           </p>
-          <ul class="m-0 p-0 list-none space-y-1.5">
+          <ul class="m-0 p-0 list-none space-y-2">
             {questionDrafts.slice(0, MAX_VISIBLE_DRAFTS).map(draft => (
               <li key={draft.questionId} class="flex flex-wrap items-center justify-between gap-2">
                 <span class="text-secondary">
@@ -271,27 +257,27 @@ export function ErrorNotebookView({
 
       {/* Resumo de Métricas do Deck */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div class="p-3 rounded-default border border-border-default bg-surface-card">
+        <div class="p-card rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Revisões Hoje</span>
-          <span class="text-lg font-semibold text-amber font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-amber font-display mt-1 block">
             {stats.dueCount} {stats.dueCount === 1 ? 'card' : 'cards'}
           </span>
         </div>
-        <div class="p-3 rounded-default border border-border-default bg-surface-card">
+        <div class="p-card rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Novos / Pendentes</span>
-          <span class="text-lg font-semibold text-brand-secondary font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-brand-secondary font-display mt-1 block">
             {stats.pendingCount}
           </span>
         </div>
-        <div class="p-3 rounded-default border border-border-default bg-surface-card">
+        <div class="p-card rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Em Fixação</span>
-          <span class="text-lg font-semibold text-primary font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-primary font-display mt-1 block">
             {stats.reviewingCount}
           </span>
         </div>
-        <div class="p-3 rounded-default border border-border-default bg-surface-card">
+        <div class="p-card rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Dominados</span>
-          <span class="text-lg font-semibold text-green font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-green font-display mt-1 block">
             {stats.masteredCount}
           </span>
         </div>
@@ -329,13 +315,13 @@ export function ErrorNotebookView({
               {/* CARD PRINCIPAL */}
               <div class="rounded-default border border-border-default bg-surface-card overflow-hidden">
                 {/* Frente: Enunciado / Pergunta */}
-                <div class="p-6 space-y-3">
-                  <div class="flex items-center justify-between">
+                <div class="p-panel space-y-3">
+                  <div class="flex items-center justify-between gap-2">
                     <span class="text-xs font-semibold uppercase tracking-wider text-secondary">
                       Enunciado / Contexto da Questão
                     </span>
                     {activeCard.errorCategory && (
-                      <span class="text-xs px-2 py-0.5 rounded bg-surface-subtle text-secondary font-medium">
+                      <span class="text-xs px-2 py-1 rounded bg-surface-subtle text-secondary font-medium">
                         {ERROR_CATEGORY_LABELS[activeCard.errorCategory] ||
                           activeCard.errorCategory}
                       </span>
@@ -348,10 +334,10 @@ export function ErrorNotebookView({
 
                 {/* Verso Revelado: Pegadinha e Conceito */}
                 {isRevealed ? (
-                  <div class="border-t border-border-default p-6 space-y-4 bg-surface-subtle">
+                  <div class="border-t border-border-default p-panel space-y-4 bg-surface-subtle">
                     {activeCard.bancaTrap && (
                       <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
-                        <span class="font-semibold text-amber flex items-center gap-1.5 mb-1">
+                        <span class="font-semibold text-amber flex items-center gap-2 mb-1">
                           <Icon name="alert-triangle" size={14} class="shrink-0" />
                           <span>Pegadinha da Banca / Armadilha:</span>
                         </span>
@@ -360,7 +346,7 @@ export function ErrorNotebookView({
                     )}
 
                     <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
-                      <span class="font-semibold text-green flex items-center gap-1.5 mb-1">
+                      <span class="font-semibold text-green flex items-center gap-2 mb-1">
                         <Icon name="circle-check" size={14} class="shrink-0" />
                         <span>Conceito Correto / Fundamento:</span>
                       </span>
@@ -377,7 +363,7 @@ export function ErrorNotebookView({
                       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-red/30 bg-red/10 text-red hover:bg-red/20 transition-colors flex flex-col items-center gap-0.5"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-red/30 bg-red/10 text-red hover:bg-red/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('again')}
                         >
                           <span class="inline-flex items-center gap-1">
@@ -388,7 +374,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-amber/30 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex flex-col items-center gap-0.5"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-amber/30 bg-amber/10 text-amber hover:bg-amber/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('hard')}
                         >
                           <span class="inline-flex items-center gap-1">
@@ -399,7 +385,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary/20 transition-colors flex flex-col items-center gap-0.5"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('good')}
                         >
                           <span class="inline-flex items-center gap-1">
@@ -410,7 +396,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-green/30 bg-green/10 text-green hover:bg-green/20 transition-colors flex flex-col items-center gap-0.5"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-green/30 bg-green/10 text-green hover:bg-green/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('easy')}
                         >
                           <span class="inline-flex items-center gap-1">
@@ -423,14 +409,13 @@ export function ErrorNotebookView({
                     </div>
                   </div>
                 ) : (
-                  <div class="border-t border-border-default p-4 bg-surface-subtle text-center">
+                  <div class="border-t border-border-default p-card bg-surface-subtle text-center">
                     <Button
                       variant="primary"
+                      iconLeft="search"
                       onClick={() => setIsRevealed(true)}
-                      className="inline-flex items-center gap-1.5"
                     >
-                      <Icon name="search" size={14} class="shrink-0" />
-                      <span>Revelar Pegadinha &amp; Resposta</span>
+                      Revelar Pegadinha &amp; Resposta
                     </Button>
                   </div>
                 )}
@@ -446,7 +431,7 @@ export function ErrorNotebookView({
           <div class="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
             <div class="flex flex-wrap items-center gap-2">
               <select
-                class="text-xs p-2 rounded border border-border-default bg-surface-card text-primary"
+                class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={filterSubjectId}
                 onChange={e => setFilterSubjectId((e.target as HTMLSelectElement).value)}
                 aria-label="Filtrar por disciplina"
@@ -460,7 +445,7 @@ export function ErrorNotebookView({
               </select>
 
               <select
-                class="text-xs p-2 rounded border border-border-default bg-surface-card text-primary"
+                class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={filterStatus}
                 onChange={e => setFilterStatus((e.target as HTMLSelectElement).value as any)}
                 aria-label="Filtrar por status"
@@ -474,7 +459,7 @@ export function ErrorNotebookView({
 
             <input
               type="text"
-              class="text-xs p-2 rounded border border-border-default bg-surface-card text-primary w-full sm:w-64"
+              class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-primary w-full sm:w-64 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               placeholder="Buscar em enunciados e conceitos..."
               value={searchQuery}
               onInput={e => setSearchQuery((e.target as HTMLInputElement).value)}
@@ -491,16 +476,16 @@ export function ErrorNotebookView({
               {catalogFiltered.map(card => (
                 <div
                   key={card.id}
-                  class="p-4 rounded-default border border-border-default bg-surface-card space-y-2 relative group text-xs"
+                  class="p-card rounded-default border border-border-default bg-surface-card space-y-2 relative group text-xs"
                 >
                   <div class="flex justify-between items-start gap-2">
                     <span class="font-semibold text-primary">
                       {resolveSubjectName(card.subjectId)} ·{' '}
                       {resolveTopicName(card.subjectId, card.topicId)}
                     </span>
-                    <div class="flex items-center gap-1.5 shrink-0">
+                    <div class="flex items-center gap-2 shrink-0">
                       <span
-                        class={`px-1.5 py-0.5 rounded text-xs font-semibold ${
+                        class={`px-2 py-1 rounded text-xs font-semibold ${
                           card.status === 'mastered'
                             ? 'bg-green/20 text-green'
                             : card.status === 'pending'
@@ -517,7 +502,7 @@ export function ErrorNotebookView({
                       {onDeleteFlashcard && (
                         <button
                           type="button"
-                          class="text-muted hover:text-red p-1 flex items-center justify-center"
+                          class="text-muted hover:text-red min-h-control min-w-control p-2 rounded hover:bg-red/10 flex items-center justify-center cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                           onClick={() => onDeleteFlashcard(card.id)}
                           aria-label="Excluir flashcard"
                         >
@@ -555,9 +540,12 @@ export function ErrorNotebookView({
         <div class="space-y-4 text-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block font-medium text-primary mb-1">Disciplina:</label>
+              <label for="errCardSubject" class="block font-medium text-primary mb-1">
+                Disciplina:
+              </label>
               <select
-                class="w-full p-2 rounded border border-border-default bg-surface-card text-primary text-xs"
+                id="errCardSubject"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newSubjectId}
                 onChange={e => handleSubjectChange((e.target as HTMLSelectElement).value)}
               >
@@ -570,9 +558,12 @@ export function ErrorNotebookView({
             </div>
 
             <div>
-              <label class="block font-medium text-primary mb-1">Tópico:</label>
+              <label for="errCardTopic" class="block font-medium text-primary mb-1">
+                Tópico:
+              </label>
               <select
-                class="w-full p-2 rounded border border-border-default bg-surface-card text-primary text-xs"
+                id="errCardTopic"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newTopicId}
                 onChange={e => setNewTopicId((e.target as HTMLSelectElement).value)}
                 disabled={currentSubjectTopics.length === 0}
@@ -587,9 +578,12 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-primary mb-1">Motivo do Erro:</label>
+            <label for="errCardCategory" class="block font-medium text-primary mb-1">
+              Motivo do Erro:
+            </label>
             <select
-              class="w-full p-2 rounded border border-border-default bg-surface-card text-primary text-xs"
+              id="errCardCategory"
+              class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               value={newErrorCategory}
               onChange={e => setNewErrorCategory((e.target as HTMLSelectElement).value)}
             >
@@ -602,11 +596,12 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-primary mb-1">
+            <label for="errCardStatement" class="block font-medium text-primary mb-1">
               Enunciado / Contexto da Questão:*
             </label>
             <textarea
-              class="w-full h-20 p-2.5 rounded border border-border-default bg-surface-card text-primary text-xs focus:ring-primary focus:border-primary"
+              id="errCardStatement"
+              class="w-full h-20 p-3 rounded border border-border-default bg-surface-card text-primary text-xs focus:ring-primary focus:border-primary"
               placeholder="Ex.: Em contratos administrativos, a alteração unilateral quantitativa pode ultrapassar 25%?"
               value={newStatement}
               onInput={e => setNewStatement((e.target as HTMLTextAreaElement).value)}
@@ -614,11 +609,12 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-amber mb-1">
+            <label for="errCardTrap" class="block font-medium text-amber mb-1">
               Pegadinha da Banca / Distrator (Opcional):
             </label>
             <textarea
-              class="w-full h-16 p-2.5 rounded border border-amber/30 bg-amber/5 text-primary text-xs focus:ring-amber focus:border-amber"
+              id="errCardTrap"
+              class="w-full h-16 p-3 rounded border border-amber/30 bg-amber/5 text-primary text-xs focus:ring-amber focus:border-amber"
               placeholder="Ex.: Confundir reforma de edifício (até 50%) com compras comuns de bens e serviços (limite de 25%)."
               value={newBancaTrap}
               onInput={e => setNewBancaTrap((e.target as HTMLTextAreaElement).value)}
@@ -626,9 +622,12 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-green mb-1">Conceito Correto / Fundamento:*</label>
+            <label for="errCardConcept" class="block font-medium text-green mb-1">
+              Conceito Correto / Fundamento:*
+            </label>
             <textarea
-              class="w-full h-20 p-2.5 rounded border border-green/30 bg-green/5 text-primary text-xs focus:ring-green focus:border-green"
+              id="errCardConcept"
+              class="w-full h-20 p-3 rounded border border-green/30 bg-green/5 text-primary text-xs focus:ring-green focus:border-green"
               placeholder="Ex.: Não, para compras comuns o limite é estrito em 25%. Apenas reformas admitem até 50% (Lei 14.133/21)."
               value={newCorrectConcept}
               onInput={e => setNewCorrectConcept((e.target as HTMLTextAreaElement).value)}

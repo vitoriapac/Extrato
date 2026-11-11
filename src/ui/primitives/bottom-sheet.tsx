@@ -134,7 +134,7 @@ export function BottomSheet({
             size="small"
             onClick={onClose}
             aria-label="Fechar"
-            className="shrink-0 p-1.5 text-secondary hover:text-text"
+            className="shrink-0 p-2 text-secondary hover:text-text"
           >
             <Icon name="x" size={16} />
           </Button>

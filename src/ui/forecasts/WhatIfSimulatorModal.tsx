@@ -73,7 +73,7 @@ export function WhatIfSimulatorModal({
                   <button
                     key={mins}
                     type="button"
-                    class={`px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                    class={`min-h-control px-3 py-1 rounded text-xs font-semibold border transition-colors ${
                       isSelected
                         ? 'bg-primary text-white border-primary shadow-sm'
                         : 'bg-surface-card text-secondary border-border-default hover:border-primary'
@@ -96,7 +96,7 @@ export function WhatIfSimulatorModal({
                   <button
                     key={days}
                     type="button"
-                    class={`px-3 py-1 rounded text-xs font-semibold border transition-colors ${
+                    class={`min-h-control px-3 py-1 rounded text-xs font-semibold border transition-colors ${
                       horizonDays === days
                         ? 'bg-primary text-white border-primary shadow-sm'
                         : 'bg-surface-card text-secondary border-border-default hover:border-primary'
@@ -117,7 +117,7 @@ export function WhatIfSimulatorModal({
                   <button
                     key={score}
                     type="button"
-                    class={`px-3 py-1 rounded text-xs font-semibold border transition-colors ${
+                    class={`min-h-control px-3 py-1 rounded text-xs font-semibold border transition-colors ${
                       targetScore === score
                         ? 'bg-primary text-white border-primary shadow-sm'
                         : 'bg-surface-card text-secondary border-border-default hover:border-primary'
@@ -145,7 +145,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como a Prontidão Geral é calculada"
                 >
                   <Icon name="info-circle" size={14} />
@@ -177,7 +177,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como a Carga Semanal é calculada"
                 >
                   <Icon name="info-circle" size={14} />
@@ -209,7 +209,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como a Cobertura do Edital é calculada"
                 >
                   <Icon name="info-circle" size={14} />
@@ -241,7 +241,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-0.5 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como o Prazo para a Meta é estimado"
                 >
                   <Icon name="info-circle" size={14} />
@@ -269,11 +269,11 @@ export function WhatIfSimulatorModal({
         {/* Lista de Insights da Simulação */}
         {insights.length > 0 && (
           <div class="rounded-default bg-brand/5 dark:bg-brand/20 p-4 border border-brand/10 dark:border-brand/30">
-            <h4 class="font-semibold text-primary mb-2 flex items-center gap-1.5">
+            <h4 class="font-semibold text-primary mb-2 flex items-center gap-2">
               <Icon name="bulb" size={16} class="shrink-0" />
               <span>Conclusões da Simulação:</span>
             </h4>
-            <ul class="space-y-1.5 text-secondary pl-5 list-disc">
+            <ul class="space-y-2 text-secondary pl-6 list-disc">
               {insights.map((insight, idx) => (
                 <li key={idx} class="leading-relaxed">
                   {insight}

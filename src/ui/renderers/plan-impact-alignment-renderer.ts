@@ -25,11 +25,11 @@ export function renderPlanImpactAlignment(
   const rowsHtml = visual.rows.map(row => {
     let statusBadge = '';
     if (row.alignmentStatus === 'underallocated') {
-      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle" title="Menos tempo planejado do que o peso proporcional no edital">${alertIcon} Subalocada (${row.gapShare}% p.p.)</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle" title="Menos tempo planejado do que o peso proporcional no edital">${alertIcon} Subalocada (${row.gapShare}% p.p.)</span>`;
     } else if (row.alignmentStatus === 'overallocated') {
-      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-accent-emphasis bg-accent-subtle" title="Mais tempo planejado do que o peso proporcional no edital">${trendingIcon} Sobrealocada (+${row.gapShare}% p.p.)</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-accent-emphasis bg-accent-subtle" title="Mais tempo planejado do que o peso proporcional no edital">${trendingIcon} Sobrealocada (+${row.gapShare}% p.p.)</span>`;
     } else {
-      statusBadge = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-success-emphasis bg-success-subtle">${checkIcon} Alinhada</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-success-emphasis bg-success-subtle">${checkIcon} Alinhada</span>`;
     }
 
     const maxShare = Math.max(1, row.plannedShare, row.impactShare);
@@ -37,10 +37,10 @@ export function renderPlanImpactAlignment(
     const impactPct = Math.min(100, (row.impactShare / Math.max(50, maxShare)) * 100);
 
     return `
-      <div class="p-2.5 rounded-default border border-border-subtle bg-surface-elevated/40 space-y-2">
+      <div class="p-3 rounded-default border border-border-subtle bg-surface-elevated/40 space-y-2">
         <div class="flex items-center justify-between gap-2 text-xs">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}" aria-hidden="true"></span>
+            <span class="w-2 h-2 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}" aria-hidden="true"></span>
             <span class="font-medium text-content-primary truncate">${escapeHtml(row.name)}</span>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
@@ -48,23 +48,23 @@ export function renderPlanImpactAlignment(
           </div>
         </div>
 
-        <div class="space-y-1.5 text-xs">
+        <div class="space-y-2 text-xs">
           <div>
-            <div class="flex justify-between text-content-secondary mb-0.5">
+            <div class="flex justify-between text-content-secondary mb-1">
               <span>Plano semanal</span>
               <span class="font-mono font-medium text-content-primary">${row.plannedShare}%</span>
             </div>
-            <div class="h-1.5 w-full bg-surface-sunken rounded-full overflow-hidden flex">
+            <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
               <div class="h-full subject-bg-${row.colorSlot} rounded-full" style="width:${plannedPct}%"></div>
             </div>
           </div>
 
           <div>
-            <div class="flex justify-between text-content-secondary mb-0.5">
+            <div class="flex justify-between text-content-secondary mb-1">
               <span>Impacto relativo no edital</span>
               <span class="font-mono font-medium text-content-primary">${row.impactShare}%</span>
             </div>
-            <div class="h-1.5 w-full bg-surface-sunken rounded-full overflow-hidden flex">
+            <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
               <div class="h-full bg-content-secondary/40 rounded-full" style="width:${impactPct}%"></div>
             </div>
           </div>
@@ -87,7 +87,7 @@ export function renderPlanImpactAlignment(
         </p>
       </details>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         ${rowsHtml}
       </div>
     </div>

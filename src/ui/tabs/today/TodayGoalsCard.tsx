@@ -94,7 +94,7 @@ export function TodayGoalsCard({
               de {metaHorasFormatado} · {pctTempo}%
             </div>
             {paginasHoje > 0 && (
-              <div class="text-xs text-secondary mt-0.5 font-medium">
+              <div class="text-xs text-secondary mt-1 font-medium">
                 {paginasHoje} {paginasHoje === 1 ? 'página lida' : 'páginas lidas'}
               </div>
             )}
@@ -121,7 +121,7 @@ export function TodayGoalsCard({
             label="Tempo estudado hoje"
           />
         </div>
-        <div class="mt-1.5 text-right">
+        <div class="mt-2 text-right">
           <a
             href="#planejamento/semana"
             class="text-xs text-ink-soft hover:text-brand dark:hover:text-accent hover:underline inline-flex items-center min-h-8 focus-visible:outline-2 focus-visible:outline-accent rounded px-1"

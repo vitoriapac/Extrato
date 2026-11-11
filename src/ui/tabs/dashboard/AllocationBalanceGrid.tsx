@@ -24,7 +24,7 @@ export function AllocationBalanceGrid({
     <article class="chart-card cockpit-analytics-card" aria-labelledby="allocationGridTitle">
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
-          <div class="p-1.5 rounded bg-surface-subtle text-accent">
+          <div class="p-2 rounded bg-surface-subtle text-accent">
             <Icon name="scale" size={20} />
           </div>
           <div>
@@ -34,7 +34,7 @@ export function AllocationBalanceGrid({
               </h3>
               <Badge variant="default">Janela fixa · 30 dias</Badge>
             </div>
-            <p class="text-xs text-content-secondary m-0 mt-0.5">
+            <p class="text-xs text-content-secondary m-0 mt-1">
               Últimos 30 dias ({totalHours.toLocaleString('pt-BR')}h) comparados com a relevância na
               prova (independente do filtro de período acima)
             </p>
@@ -54,13 +54,13 @@ export function AllocationBalanceGrid({
       </header>
 
       {rows.length === 0 ? (
-        <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md">
+        <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-default">
           <p class="m-0">
             Cadastre disciplinas e registre suas horas de estudo para ver o balanço.
           </p>
         </div>
       ) : noEvidence ? (
-        <div class="p-4 text-sm text-content-secondary bg-surface-subtle rounded-md">
+        <div class="p-4 text-sm text-content-secondary bg-surface-subtle rounded-default">
           <p class="m-0">
             {hasBlueprint
               ? 'Sem horas de estudo registradas nos últimos 30 dias.'
@@ -92,22 +92,22 @@ export function AllocationBalanceGrid({
 
                 return (
                   <tr key={row.subjectId} class="hover:bg-surface-hover transition-colors">
-                    <td class="py-2.5 px-3 font-medium text-content-primary">
+                    <td class="py-3 px-3 font-medium text-content-primary">
                       {row.subjectName}
                       <div class="sm:hidden mt-1 font-normal">
                         <Badge variant={row.statusVariant}>{row.statusLabel}</Badge>
                       </div>
                     </td>
-                    <td class="py-2.5 px-3 text-right text-content-secondary font-mono hidden sm:table-cell">
+                    <td class="py-3 px-3 text-right text-content-secondary font-mono hidden sm:table-cell">
                       {row.hoursSpent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}h
                     </td>
-                    <td class="py-2.5 px-3 text-right font-medium text-content-primary font-mono">
+                    <td class="py-3 px-3 text-right font-medium text-content-primary font-mono">
                       {row.timePercent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}%
                     </td>
-                    <td class="py-2.5 px-3 text-right text-content-secondary font-mono">
+                    <td class="py-3 px-3 text-right text-content-secondary font-mono">
                       {row.examWeightPercent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}%
                     </td>
-                    <td class="py-2.5 px-3 hidden sm:table-cell">
+                    <td class="py-3 px-3 hidden sm:table-cell">
                       <div
                         class="relative w-full h-3 bg-surface-subtle rounded overflow-hidden"
                         title={`Tempo: ${row.timePercent}% | Peso: ${row.examWeightPercent}%`}
@@ -129,7 +129,7 @@ export function AllocationBalanceGrid({
                         />
                       </div>
                     </td>
-                    <td class="py-2.5 px-3 text-center hidden sm:table-cell">
+                    <td class="py-3 px-3 text-center hidden sm:table-cell">
                       <Badge variant={row.statusVariant}>{row.statusLabel}</Badge>
                     </td>
                   </tr>
@@ -138,10 +138,10 @@ export function AllocationBalanceGrid({
             </tbody>
           </table>
           {rows.length > 5 && (
-            <div class="mt-2.5 flex justify-center">
+            <div class="mt-3 flex justify-center">
               <button
                 type="button"
-                class="btn ghost small flex items-center gap-1.5 text-xs text-content-secondary hover:text-content-primary"
+                class="btn ghost small flex items-center gap-2 text-xs text-content-secondary hover:text-content-primary"
                 onClick={() => setExpanded(!expanded)}
                 aria-expanded={expanded}
               >
@@ -157,7 +157,7 @@ export function AllocationBalanceGrid({
 
       {rows.length > 0 && !noEvidence && (
         <footer class="mt-3 pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary">
-          <span class="flex items-center gap-1.5">
+          <span class="flex items-center gap-2">
             <Icon name="info-circle" size={14} />
             <span>{summary}</span>
           </span>

@@ -59,7 +59,7 @@ export function SimulatedRemediationModal({
             <h3 class="text-base font-semibold text-content-primary">
               {diagnostic.simulationName}
             </h3>
-            <p class="text-xs text-content-secondary mt-0.5">
+            <p class="text-xs text-content-secondary mt-1">
               Data: {diagnostic.simulationDate} · Total: {diagnostic.totalQuestions} questões
             </p>
           </div>
@@ -158,7 +158,7 @@ export function SimulatedRemediationModal({
               <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
                 Plano de Remediação — 7 Dias
               </h4>
-              <p class="text-xs text-content-muted mt-0.5">
+              <p class="text-xs text-content-muted mt-1">
                 Realocação estratégica de 60% da carga horária para estancar os tópicos com maior
                 sangria.
               </p>
@@ -177,7 +177,7 @@ export function SimulatedRemediationModal({
             {diagnostic.remediationPlan7Days.dailySchedule.map((item: RemediationDailyAction) => (
               <div
                 key={item.day}
-                class={`p-2.5 rounded border text-xs flex flex-col justify-between gap-1.5 ${
+                class={`p-3 rounded border text-xs flex flex-col justify-between gap-2 ${
                   item.day <= 5
                     ? 'border-status-info/30 bg-surface-subtle'
                     : 'border-border-subtle bg-surface-elevated'
@@ -213,7 +213,7 @@ export function SimulatedRemediationModal({
               aria-label="Criar 7 dias de Remediação"
             >
               {appliedPlan ? (
-                <span class="inline-flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-2">
                   <Icon name="check" size={14} />
                   Plano Criado na Agenda
                 </span>
@@ -230,7 +230,7 @@ export function SimulatedRemediationModal({
               aria-label="Gerar rascunhos para o Caderno de Erros"
             >
               {generatedCards ? (
-                <span class="inline-flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-2">
                   <Icon name="check" size={14} />
                   Rascunhos Gerados
                 </span>

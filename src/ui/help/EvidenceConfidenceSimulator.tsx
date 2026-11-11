@@ -11,12 +11,12 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
 
   const badgeStyle =
     simulation.badgeTone === 'success'
-      ? 'status-badge status-badge--success !rounded-full !px-2.5 !py-0.5 !text-xs !font-semibold'
+      ? 'status-badge status-badge--success !rounded-full !px-3 !py-1 !text-xs !font-semibold'
       : simulation.badgeTone === 'info'
-        ? 'status-badge status-badge--info !rounded-full !px-2.5 !py-0.5 !text-xs !font-semibold'
+        ? 'status-badge status-badge--info !rounded-full !px-3 !py-1 !text-xs !font-semibold'
         : simulation.badgeTone === 'warning'
-          ? 'status-badge status-badge--warning !rounded-full !px-2.5 !py-0.5 !text-xs !font-semibold'
-          : 'status-badge status-badge--danger !rounded-full !px-2.5 !py-0.5 !text-xs !font-semibold';
+          ? 'status-badge status-badge--warning !rounded-full !px-3 !py-1 !text-xs !font-semibold'
+          : 'status-badge status-badge--danger !rounded-full !px-3 !py-1 !text-xs !font-semibold';
 
   return (
     <div
@@ -96,7 +96,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
         </div>
 
         {/* Painel de Resultados */}
-        <div class="rounded-default border border-border bg-surface p-3 space-y-2.5">
+        <div class="rounded-default border border-border bg-surface p-3 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span class="text-xs font-medium text-text-muted">
@@ -147,8 +147,10 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
           </div>
         </div>
 
-        <p class="text-xs leading-relaxed text-text-muted flex items-start gap-1.5">
-          <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
+        <p class="text-xs leading-relaxed text-text-muted flex items-start gap-2">
+          <span class="inline-flex h-4 items-center shrink-0">
+            <Icon name="bulb" size={14} class="shrink-0 text-amber" />
+          </span>
           <span>
             <strong>Princípio da Amostragem:</strong> Uma taxa de 100% com apenas 2 questões não
             prova maestria; assim como 0% em 1 questão não significa que você deve desistir do tópico.

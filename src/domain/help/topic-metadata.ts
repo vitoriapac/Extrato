@@ -37,7 +37,7 @@ export function computeTopicMetadata(topic: {
   // Determinação do nível didático
   let level: 'Iniciante' | 'Estratégico' | 'Avançado' = 'Iniciante';
   let levelBadgeClass =
-    'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-xs font-semibold text-text';
+    'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-2 py-1 text-xs font-semibold text-text';
 
   const id = topic.id || '';
   const isAdvanced =
@@ -58,15 +58,15 @@ export function computeTopicMetadata(topic: {
   if (isAdvanced) {
     level = 'Avançado';
     levelBadgeClass =
-      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-xs font-semibold text-text';
+      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-2 py-1 text-xs font-semibold text-text';
   } else if (isStrategic) {
     level = 'Estratégico';
     levelBadgeClass =
-      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-xs font-semibold text-text';
+      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-2 py-1 text-xs font-semibold text-text';
   } else {
     level = 'Iniciante';
     levelBadgeClass =
-      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-xs font-semibold text-text';
+      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-2 py-1 text-xs font-semibold text-text';
   }
 
   return {

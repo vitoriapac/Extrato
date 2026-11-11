@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=f4e0971de15f">
-<link rel="stylesheet" href="styles/app.css?v=f4e0971de15f">
+<link rel="stylesheet" href="styles/tailwind.css?v=912f44fe01aa">
+<link rel="stylesheet" href="styles/app.css?v=912f44fe01aa">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -269,7 +269,7 @@
         <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
       </div>
       <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-filter icon-inline" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"></path></svg>Filtros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-down icon-inline--end icon-inline" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
-      <div class="cal-filters responsive-filters mt-3.5" id="studySessionsFilters">
+      <div class="cal-filters responsive-filters mt-4" id="studySessionsFilters">
         <label for="studySessionsPeriod" class="sr-only">Período do histórico de sessões</label>
         <select class="select-control ui-select-field__control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
@@ -448,7 +448,7 @@
       </div>
     </header>
     <p class="helper-text helper-text--compact">
-      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas. <a href="#instrucoes" class="text-brand dark:text-accent hover:underline inline-flex items-center gap-0.5 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a>
+      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas. <a href="#instrucoes" class="text-brand dark:text-accent hover:underline inline-flex items-center gap-1 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a>
     </p>
 
     <div class="kpi-grid" id="calIndicadores"></div>
@@ -784,7 +784,7 @@
 <div id="reviewRatingMount"></div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=f4e0971de15f"></script>
+  <script src="src/app.bundle.js?v=912f44fe01aa"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

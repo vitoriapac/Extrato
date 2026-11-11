@@ -24,7 +24,7 @@ function chip(s: WeeklyAllocationBarVisualModel['subjects'][number]): JSX.Elemen
   return (
     <div
       key={s.subjectId}
-      class="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
+      class="flex items-center gap-2 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
     >
       <span class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`} aria-hidden="true" />
       <span class="font-medium truncate max-w-[120px]">{s.subjectName}</span>
@@ -69,7 +69,7 @@ export function AllocationBar({
           </div>
         </div>
         {flexMinutes > 0 && (
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle">
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-warning-emphasis bg-warning-subtle">
             <Icon name="clock" size={12} />
             {formatMinutes(flexMinutes)} livres
           </span>
@@ -123,7 +123,7 @@ export function AllocationBar({
             <span>Divisão por tipo de estudo</span>
             <span>{formatDecimal(mix.theoryPercentage)}% teoria · {formatDecimal(mix.questionsPercentage)}% questões · {formatDecimal(mix.reviewsPercentage)}% revisões</span>
           </div>
-          <div class="h-1.5 w-full bg-surface-sunken rounded-full overflow-hidden flex">
+          <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
             {mix.theoryPercentage > 0 && (
               <div
                 class="h-full bg-info-emphasis transition-all"
@@ -146,17 +146,17 @@ export function AllocationBar({
               />
             )}
           </div>
-          <div class="flex items-center justify-between text-xs text-content-secondary mt-1.5 px-0.5">
+          <div class="flex items-center justify-between text-xs text-content-secondary mt-2 px-1">
             <span class="flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-info-emphasis"></span>
+              <span class="w-2 h-2 rounded-full bg-info-emphasis"></span>
               Teoria: {formatMinutes(mix.theoryMinutes)}
             </span>
             <span class="flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-accent-emphasis"></span>
+              <span class="w-2 h-2 rounded-full bg-accent-emphasis"></span>
               Questões: {formatMinutes(mix.questionsMinutes)}
             </span>
             <span class="flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-success-emphasis"></span>
+              <span class="w-2 h-2 rounded-full bg-success-emphasis"></span>
               Revisões: {formatMinutes(mix.reviewsMinutes)}
             </span>
           </div>

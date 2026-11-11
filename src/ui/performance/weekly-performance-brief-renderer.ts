@@ -38,7 +38,7 @@ export function renderMiniComparisonChart(
       return `<div class="weekly-brief-chart__item space-y-1" role="group" aria-label="${escapeHtml(`${metric.label}: ${metric.currentFormatted} nos últimos 7 dias contra ${metric.previousFormatted} na semana passada (${metric.deltaFormatted})`)}">
         <div class="flex items-baseline justify-between gap-2 text-xs">
           <span class="font-medium text-content-primary">${escapeHtml(metric.label)}</span>
-          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-medium ${trendToneClass}">
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded font-medium ${trendToneClass}">
             ${renderIconSvg(trendIcon, { size: 12, className: 'shrink-0' })}
             <span>${escapeHtml(metric.deltaFormatted)}</span>
           </span>
@@ -60,16 +60,16 @@ export function renderMiniComparisonChart(
     })
     .join('');
 
-  return `<aside class="weekly-brief-chart bg-surface-subtle/50 border border-border-subtle rounded-default p-3.5 space-y-3" aria-label="Comparativo visual com a semana passada">
+  return `<aside class="weekly-brief-chart bg-surface-subtle/50 border border-border-subtle rounded-default p-card space-y-3" aria-label="Comparativo visual com a semana passada">
     <div class="flex items-center justify-between gap-2 border-b border-border-subtle pb-2">
       <p class="text-xs font-semibold text-content-primary m-0">Últimos 7 dias × semana anterior</p>
       <div class="flex items-center gap-2 text-xs text-content-secondary" aria-hidden="true">
-        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-primary"></span>Atual</span>
-        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-warning-emphasis"></span>Em queda</span>
-        <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-xs bg-content-primary/25"></span>Anterior</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-primary"></span>Atual</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-warning-emphasis"></span>Em queda</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-content-primary/25"></span>Anterior</span>
       </div>
     </div>
-    <div class="space-y-2.5">
+    <div class="space-y-3">
       ${rowsHtml}
     </div>
   </aside>`;
@@ -89,7 +89,7 @@ function renderBriefLinkButton(
       : `data-performance-open="${escapeAttr(link.target)}"`;
 
   // Dentro da leitura da preparação o único botão é "Abrir em Hoje"; estes são links de análise.
-  return `<button type="button" class="${primary === null ? 'performance-topic-link' : `btn${primary ? '' : ' ghost'} small`} inline-flex items-center gap-1.5" ${attrs}>${renderIconSvg(
+  return `<button type="button" class="${primary === null ? 'performance-topic-link' : `btn${primary ? '' : ' ghost'} small`} inline-flex items-center gap-2" ${attrs}>${renderIconSvg(
     link.icon,
     { size: 14, className: 'shrink-0' }
   )}<span>${escapeHtml(link.label)}</span></button>`;
@@ -110,7 +110,7 @@ export function renderWeeklyPerformanceBriefCard(
   const paragraphsHtml =
     paragraph(firstParagraph) +
     (otherParagraphs.length
-      ? `<details class="performance-more"><summary>Ler o resumo completo</summary><div class="space-y-2.5 mt-2">${otherParagraphs.map(paragraph).join('')}</div></details>`
+      ? `<details class="performance-more"><summary>Ler o resumo completo</summary><div class="space-y-3 mt-2">${otherParagraphs.map(paragraph).join('')}</div></details>`
       : '');
 
   const linksHtml = brief.links.length
@@ -131,21 +131,21 @@ export function renderWeeklyPerformanceBriefCard(
     ? `<details class="performance-more performance-weekly-brief__tips"><summary>Como ler este resumo</summary><div class="space-y-3 mt-2">${tipsBody}</div></details>`
     : '';
 
-  const inner = `<div class="space-y-2.5">
+  const inner = `<div class="space-y-3">
       ${paragraphsHtml}
       ${linksHtml}
       ${tipsHtml}
     </div>`;
   if (options.embedded)
-    return `<div class="performance-executive__week" aria-label="Seu resumo da última semana"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h4 class="module-heading__title">Últimos 7 dias</h4><span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span></div>${inner}</div>`;
+    return `<div class="performance-executive__week" aria-label="Seu resumo da última semana"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h4 class="module-heading__title">Últimos 7 dias</h4><span class="text-xs font-medium text-content-secondary bg-surface-subtle px-3 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span></div>${inner}</div>`;
   return `<section class="performance-weekly-brief chart-card mb-4" aria-label="Seu resumo da última semana">
     <header class="module-heading module-heading--compact mb-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h3 class="module-heading__title">Seu resumo da última semana</h3>
-        <span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span>
+        <span class="text-xs font-medium text-content-secondary bg-surface-subtle px-3 py-1 rounded-xs">${escapeHtml(brief.periodLabel)}</span>
       </div>
     </header>
-    <div class="space-y-2.5">
+    <div class="space-y-3">
       ${paragraphsHtml}
       ${linksHtml}
       ${tipsHtml}

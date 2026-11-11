@@ -121,7 +121,7 @@ export function renderQuestionImport(model: Record<string, any>) {
           ? `
         <details class="structured-conflicts" open>
           <summary>Amostra dos registros (${p.recordsSample.length} de ${p.totalSessions})</summary>
-          <table class="log" style="width:100%;font-size:12px;margin-top:8px;">
+          <table class="log w-full text-xs mt-2">
             <thead>
               <tr>
                 <th>Data</th>

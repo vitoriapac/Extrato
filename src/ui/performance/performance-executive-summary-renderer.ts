@@ -62,7 +62,7 @@ export function renderPerformanceExecutiveSummary(
   const lead = (text: string) =>
     `<p class="performance-executive__lead" data-status="${escapeHtml(summary.situation.status)}">${renderWindowBadge('history', 'Simulados comparáveis, todo o histórico')}${escapeHtml(text)}</p>`;
   const row = (term: string, text: string) =>
-    `<div class="space-y-0.5"><dt class="text-xs font-semibold text-content-secondary">${escapeHtml(term)}</dt><dd class="m-0 text-sm text-content-primary leading-relaxed">${escapeHtml(text)}</dd></div>`;
+    `<div class="space-y-1"><dt class="text-xs font-semibold text-content-secondary">${escapeHtml(term)}</dt><dd class="m-0 text-sm text-content-primary leading-relaxed">${escapeHtml(text)}</dd></div>`;
   const body = `${lead(situationText(summary.situation))}
     <dl class="m-0 grid grid-cols-1 md:grid-cols-2 gap-4">${row('No período', changeText(summary.change))}${row('Base da leitura', baseText(summary.base))}</dl>
     <nav class="ui-filter-bar flex flex-wrap gap-2 pt-3" aria-label="Aprofundar o resumo"><button type="button" class="btn ghost small" data-performance-investigate="diagnosis">Ver diagnóstico</button></nav>`;
@@ -74,7 +74,7 @@ export function renderPerformanceExecutiveSummary(
     <header class="module-heading module-heading--compact mb-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h3 class="module-heading__title">Resumo executivo</h3>
-        ${summary.rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(summary.rangeLabel)}</span>` : ''}
+        ${summary.rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-3 py-1 rounded-xs">${escapeHtml(summary.rangeLabel)}</span>` : ''}
       </div>
     </header>
     ${body}

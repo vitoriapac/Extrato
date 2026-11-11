@@ -48,9 +48,9 @@ const questions = [
 
 const pageWidth = 'mx-auto w-full max-w-[1280px] px-4 sm:px-8';
 const primaryLink =
-  'inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-brand-primary px-5 font-semibold text-primary-contrast no-underline transition-colors hover:bg-brand-secondary motion-reduce:transition-none';
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-primary px-6 font-semibold text-primary-contrast no-underline transition-colors hover:bg-brand-secondary motion-reduce:transition-none';
 const navLink =
-  'inline-flex min-h-[44px] items-center px-2 text-content-secondary no-underline hover:text-brand hover:underline underline-offset-4';
+  'inline-flex min-h-touch items-center px-2 text-content-secondary no-underline hover:text-brand hover:underline underline-offset-4';
 const sectionTitle =
   'm-0 font-display text-[clamp(2rem,5vw,3.25rem)] leading-[1.08] tracking-[-0.025em] text-brand';
 
@@ -105,7 +105,7 @@ function LandingPricing() {
           <div
             role="group"
             aria-label="Ciclo do plano Pro"
-            class="mt-5 inline-flex gap-1 rounded-default border border-border-default bg-surface-card p-1"
+            class="mt-6 inline-flex gap-1 rounded-default border border-border-default bg-surface-card p-1"
           >
             {(['monthly', 'annual'] as const).map(option => (
               <Button
@@ -115,7 +115,7 @@ function LandingPricing() {
                 aria-pressed={option === cycle}
                 aria-controls="pro-price"
                 onClick={() => setCycle(option)}
-                className="min-h-[44px] border-transparent px-4"
+                className="min-h-touch border-transparent px-4"
               >
                 {option === 'monthly' ? 'Mensal' : 'Anual'}
               </Button>
@@ -123,16 +123,16 @@ function LandingPricing() {
           </div>
         </div>
         <div class="mx-auto mt-6 grid max-w-[920px] gap-4 sm:grid-cols-2">
-          <article class="flex flex-col rounded-default border border-border-default bg-surface-card p-5 sm:p-8">
+          <article class="flex flex-col rounded-default border border-border-default bg-surface-card p-6 sm:p-8">
             <h3 class="m-0 font-display text-2xl text-brand">Gratuito</h3>
             <p class="mt-2 mb-0 text-content-secondary">
               Para organizar seus estudos no navegador.
             </p>
-            <p class="mt-5 mb-0 flex items-baseline gap-2">
+            <p class="mt-6 mb-0 flex items-baseline gap-2">
               <strong class="font-display text-4xl leading-none text-brand">R$ 0</strong>
               <span class="text-sm text-content-secondary">sem cadastro</span>
             </p>
-            <ul class="mt-5 mb-5 list-none space-y-3 border-t border-border-default p-0 pt-5">
+            <ul class="my-6 list-none space-y-3 border-t border-border-default p-0 pt-6">
               <li class="flex gap-2">
                 <Icon name="check" size={18} class="mt-1 shrink-0 text-accent" />{' '}
                 <span>
@@ -155,7 +155,7 @@ function LandingPricing() {
               Começar no gratuito <Icon name="arrow-right" size={18} />
             </a>
           </article>
-          <article class="rounded-default border border-border-default bg-surface-subtle p-5 sm:p-8">
+          <article class="rounded-default border border-border-default bg-surface-subtle p-6 sm:p-8">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 class="m-0 font-display text-2xl text-brand">Pro</h3>
               <Badge variant="info">Em preparação</Badge>
@@ -164,7 +164,7 @@ function LandingPricing() {
               Para editais maiores e análises avançadas.
             </p>
             <div id="pro-price" aria-live="polite" aria-atomic="true">
-              <p class="mt-5 mb-0 flex flex-wrap items-baseline gap-2">
+              <p class="mt-6 mb-0 flex flex-wrap items-baseline gap-2">
                 <strong class="font-display text-4xl leading-none text-brand">
                   {offer.monthlyEquivalentFormatted}
                 </strong>
@@ -178,7 +178,7 @@ function LandingPricing() {
             </div>
             <ul
               aria-label="Recursos previstos para o Pro"
-              class="mt-5 mb-0 list-none space-y-3 border-t border-border-default p-0 pt-5"
+              class="mt-6 mb-0 list-none space-y-3 border-t border-border-default p-0 pt-6"
             >
               <li class="flex gap-2">
                 <Icon name="check" size={18} class="mt-1 shrink-0 text-accent" />{' '}
@@ -274,11 +274,11 @@ function LandingPage() {
         <header class={`${pageWidth} pt-3 sm:pt-6`}>
           <nav
             aria-label="Navegação principal"
-            class="flex min-h-[64px] items-center justify-between gap-2 rounded-full border border-border-default bg-surface-card px-2 sm:gap-6 sm:px-4"
+            class="flex min-h-16 items-center justify-between gap-2 rounded-full border border-border-default bg-surface-card px-2 sm:gap-6 sm:px-4"
           >
             <a
               href="#inicio"
-              class="inline-flex min-h-[44px] items-center gap-2 pl-1 font-display text-base font-semibold text-brand no-underline sm:text-lg"
+              class="inline-flex min-h-touch items-center gap-2 pl-1 font-display text-base font-semibold text-brand no-underline sm:text-lg"
             >
               <img
                 src="/icons/app-icon.svg"
@@ -303,7 +303,7 @@ function LandingPage() {
                 Dúvidas
               </a>
             </div>
-            <a href="/app" class={`${primaryLink} shrink-0 min-h-[44px]! px-3! text-sm sm:px-5!`}>
+            <a href="/app" class={`${primaryLink} shrink-0 min-h-touch! px-3! text-sm sm:px-6!`}>
               <span class="sm:hidden">Abrir app</span>
               <span class="hidden sm:inline">Abrir aplicativo</span>
               <Icon name="arrow-right" class="hidden sm:block" />
@@ -313,7 +313,7 @@ function LandingPage() {
         <main id="conteudo" tabIndex={-1}>
           <section
             aria-labelledby="landing-title"
-            class={`${pageWidth} pt-9 pb-8 sm:pt-12 sm:pb-12 lg:pt-14`}
+            class={`${pageWidth} pt-8 pb-8 sm:pt-12 sm:pb-12 lg:pt-16`}
           >
             <div class="mb-6 sm:mb-8">
               <h1
@@ -326,13 +326,13 @@ function LandingPage() {
                 Planeje sua semana para o concurso, registre o que estudou e veja onde concentrar
                 seu tempo.
               </p>
-              <div class="mt-5 flex flex-wrap gap-2 sm:gap-3">
+              <div class="mt-6 flex flex-wrap gap-2 sm:gap-3">
                 <a href="/app" class={primaryLink}>
                   Começar grátis <Icon name="arrow-right" size={18} />
                 </a>
                 <a
                   href="#painel"
-                  class="inline-flex min-h-[48px] items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 font-semibold text-brand no-underline transition-colors hover:bg-surface-subtle motion-reduce:transition-none sm:px-5"
+                  class="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 font-semibold text-brand no-underline transition-colors hover:bg-surface-subtle motion-reduce:transition-none sm:px-6"
                 >
                   Ver o painel <Icon name="chevron-down" />
                 </a>
@@ -396,7 +396,7 @@ function LandingPage() {
               <div class="divide-y divide-border-default border-y border-border-default">
                 {questions.map(item => (
                   <details key={item.title} class="group">
-                    <summary class="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-4 rounded py-3 text-brand hover:underline [&::-webkit-details-marker]:hidden">
+                    <summary class="flex min-h-touch sm:min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded py-3 text-brand hover:underline [&::-webkit-details-marker]:hidden">
                       {item.title}
                       <Icon
                         name="chevron-down"
@@ -412,7 +412,7 @@ function LandingPage() {
           </section>
           <section class="bg-surface-card pb-8">
             <div class={pageWidth}>
-              <div class="flex flex-wrap items-center justify-between gap-5 rounded-default bg-surface-subtle px-5 py-8 sm:px-10 sm:py-12">
+              <div class="flex flex-wrap items-center justify-between gap-6 rounded-default bg-surface-subtle px-6 py-8 sm:px-10 sm:py-12">
                 <div>
                   <h2 class={sectionTitle}>Monte sua primeira semana.</h2>
                   <p class="mt-3 mb-0 text-content-secondary">Comece no navegador, sem cadastro.</p>
@@ -431,7 +431,7 @@ function LandingPage() {
             <div class="text-left">
               <a
                 href="#inicio"
-                class="inline-flex min-h-[44px] items-center gap-3 rounded font-display text-xl font-semibold text-brand no-underline"
+                class="inline-flex min-h-touch items-center gap-3 rounded font-display text-xl font-semibold text-brand no-underline"
               >
                 <img
                   src="/icons/app-icon.svg"

@@ -113,10 +113,10 @@ export function NextActionCard({
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
-                className="btn inline-flex items-center gap-1.5"
+                className="btn inline-flex items-center gap-2"
                 data-guided-action="open"
                 onClick={emptyState.onOpenOnboarding}
                 aria-label="Montar meu plano de estudos agora"
@@ -126,7 +126,7 @@ export function NextActionCard({
               </button>
               <button
                 type="button"
-                className="btn ghost text-secondary hover:text-primary inline-flex items-center gap-1.5"
+                className="btn ghost text-secondary hover:text-primary inline-flex items-center gap-2"
                 id="enterDemoHeroBtn"
                 onClick={() => {
                   if (emptyState.onOpenDemo) {
@@ -272,7 +272,7 @@ export function NextActionCard({
 
           {/* Ponto de parada (Bookmark) */}
           {Boolean(bookmark || resumeLabel) && (
-            <p className="overview-action-resume flex items-center gap-1.5">
+            <p className="overview-action-resume flex items-center gap-2">
               <span>Continuar de: {resumeLabel || ''}</span>
               {bookmark && !resumeLabel && <BookmarkBadge bookmark={bookmark} />}
             </p>
@@ -298,7 +298,7 @@ export function NextActionCard({
           {renderActionButton()}
           {(practiceLinks || model.practiceLinks) && (
             <div
-              className="practice-action-links inline-flex items-center gap-1.5"
+              className="practice-action-links inline-flex items-center gap-2"
               role="group"
               aria-label="Atalhos para resolução de questões"
             >
@@ -306,7 +306,7 @@ export function NextActionCard({
                 href={(practiceLinks || model.practiceLinks)!.tecUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn--subtle text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-primary transition-colors no-underline font-medium"
+                className="btn btn--subtle text-xs inline-flex items-center gap-1 px-3 py-2 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-primary transition-colors no-underline font-medium"
                 title={`Resolver questões de ${what.topicName} no TEC Concursos`}
                 aria-label={`Resolver questões de ${what.topicName} no TEC Concursos (abre em nova aba)`}
               >
@@ -317,7 +317,7 @@ export function NextActionCard({
                 href={(practiceLinks || model.practiceLinks)!.qcUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn--subtle text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-secondary hover:text-primary transition-colors no-underline"
+                className="btn btn--subtle text-xs inline-flex items-center gap-1 px-3 py-2 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-secondary hover:text-primary transition-colors no-underline"
                 title={`Resolver questões de ${what.topicName} no QConcursos`}
                 aria-label={`Resolver questões de ${what.topicName} no QConcursos (abre em nova aba)`}
               >
@@ -329,7 +329,7 @@ export function NextActionCard({
                   href={(practiceLinks || model.practiceLinks)!.customUrl!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn--subtle text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-accent font-medium transition-colors no-underline"
+                  className="btn btn--subtle text-xs inline-flex items-center gap-1 px-3 py-2 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-accent font-medium transition-colors no-underline"
                   title="Abrir caderno personalizado do tópico"
                   aria-label={`Abrir caderno personalizado de ${what.topicName} (abre em nova aba)`}
                 >

@@ -117,7 +117,7 @@ export function AuthAccountModal({
       {isAuthenticated ? (
         <div class="flex flex-col gap-4 text-text">
           {/* Card Principal do Usuário */}
-          <div class="p-3.5 rounded-default border border-border-default bg-surface-subtle flex items-center justify-between gap-3">
+          <div class="p-card rounded-default border border-border-default bg-surface-subtle flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full overflow-hidden bg-surface-card border border-border-default flex items-center justify-center shrink-0">
                 {avatarUrl && !imgError ? (
@@ -132,7 +132,7 @@ export function AuthAccountModal({
                   <span class="text-xs font-semibold text-text select-none">{initials}</span>
                 )}
               </div>
-              <div class="flex flex-col gap-0.5">
+              <div class="flex flex-col gap-1">
                 <span class="text-xs text-secondary">Conectado como</span>
                 <strong class="text-sm font-semibold text-text">
                   {displayName || userEmail}
@@ -163,9 +163,11 @@ export function AuthAccountModal({
           {isInGracePeriod && (
             <div
               role="alert"
-              class="p-3 rounded-default border border-amber-border bg-amber-bg text-amber flex items-start gap-2.5 text-xs"
+              class="p-3 rounded-default border border-amber-border bg-amber-bg text-amber flex items-start gap-3 text-xs"
             >
-              <Icon name="alert-triangle" size={18} class="shrink-0 mt-0.5" />
+              <span class="inline-flex h-4 items-center shrink-0">
+                <Icon name="alert-triangle" size={18} class="shrink-0" />
+              </span>
               <div class="flex flex-col gap-1">
                 <strong class="font-semibold">Período de tolerância ativo (3 dias)</strong>
                 <p class="m-0 leading-relaxed">
@@ -187,7 +189,7 @@ export function AuthAccountModal({
 
           {/* Painel de Autoatendimento da Assinatura Pro */}
           {isPaid && (
-            <div class="p-3.5 rounded-default border border-border-default bg-surface-card flex flex-col gap-3">
+            <div class="p-card rounded-default border border-border-default bg-surface-card flex flex-col gap-3">
               <div class="flex items-center justify-between gap-2 border-b border-border-default pb-2">
                 <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
                   Detalhes do Plano Pro
@@ -298,7 +300,7 @@ export function AuthAccountModal({
             <div class="flex-grow border-t border-border-default" />
           </div>
 
-          <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-2">
             <label for="saasAuthEmailInput" class="text-xs font-medium text-text">
               Seu e-mail de estudante
             </label>
@@ -309,16 +311,18 @@ export function AuthAccountModal({
               value={emailInput}
               onInput={e => setEmailInput((e.target as HTMLInputElement).value)}
               placeholder="voce@exemplo.com.br"
-              class="min-h-[44px] sm:min-h-[38px] px-3 py-2 text-sm rounded border border-border-default bg-surface-card text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="min-h-touch sm:min-h-control px-3 py-2 text-sm rounded border border-border-default bg-surface-card text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             />
           </div>
 
           {statusMessage && (
             <div
               role="status"
-              class="p-2.5 rounded bg-green-bg text-green text-xs flex items-start gap-2"
+              class="p-3 rounded bg-green-bg text-green text-xs flex items-start gap-2"
             >
-              <Icon name="circle-check" size={16} class="shrink-0 mt-0.5" />
+              <span class="inline-flex h-4 items-center shrink-0">
+                <Icon name="circle-check" size={16} class="shrink-0" />
+              </span>
               <span>{statusMessage}</span>
             </div>
           )}
@@ -326,10 +330,12 @@ export function AuthAccountModal({
           {errorMessage && (
             <div
               role="alert"
-              class="p-2.5 rounded bg-red-bg text-red text-xs flex items-start gap-2"
+              class="p-3 rounded bg-red-bg text-red text-xs flex items-start gap-2"
             >
-              <Icon name="alert-circle" size={16} class="shrink-0 mt-0.5" />
-              <div class="flex flex-col gap-0.5">
+              <span class="inline-flex h-4 items-center shrink-0">
+                <Icon name="alert-circle" size={16} class="shrink-0" />
+              </span>
+              <div class="flex flex-col gap-1">
                 <span>{errorMessage}</span>
                 <span class="text-secondary">
                   Confira o formato do e-mail digitado ou tente entrar com Clerk acima.

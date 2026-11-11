@@ -11,7 +11,12 @@ O Extrato de Estudos usa a linguagem visual de um extrato: verde-musgo para estr
 
 ## Espaçamento
 
-A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1` a `--space-8`.
+O sistema adota a **Grade Híbrida de 8 Pontos** (`8px` estrutural + `4px` micro/óptico):
+
+- **Grade estrutural (8pt):** `8, 16, 24, 32, 40, 48, 56, 64 px` (`--space-2`, `--space-4`, `--space-6`, `--space-8`, `--space-10`, `--space-12`, `--space-14`, `--space-16`). Utilizada em gaps principais, padding de painéis/cards, margens entre blocos, ritmos de página e alturas de linhas/seções.
+- **Subgrade micro/óptica (4pt):** `4, 12 px` (`--space-1`, `--space-3`). Reservada para agrupamentos internos compactos, ícones/badges e controles de densidade média (`28, 36, 44 px`). `--space-5` (`20px`) permanece exclusivamente como alias de transição durante a migração do CSS legado.
+- **Proibição de frações sub-4pt em UI/UX:** evitar valores de `2px`, `6px`, `10px`, `14px`, `18px`, `22px`, `26px` e utilitários Tailwind `.5` (`p-1.5`, `gap-2.5`, `mt-0.5`, etc.) em novos componentes.
+- **Papéis semânticos responsivos à densidade (`styles/tokens.css` + `@theme`):** `--space-inline` (`8px`), `--space-stack-tight` (`8px`), `--space-stack-sm` (`12px`), `--space-stack` (`16px`), `--space-card` (`16px`), `--space-panel` (`24px`), `--space-action` (`12px`), `--space-content-action` (`24px`), `--space-block` (`32px`), `--space-section` (`48px`), e `--space-page-x` (`16px` mobile ≤760px, `24px` tablet, `32px` desktop ≥1100px). Expostos no Tailwind v4 como `p-card`, `p-panel`, `gap-stack`, `gap-inline`, `space-y-block`, `px-page-x`, `min-h-control` (`36px`) e `min-h-touch` (`44px`). Em `html[data-density="compact"]`, a escala comprime mantendo múltiplos estritos de `4px`/`8px` (zero frações como `18px`).
 
 As superfícies, textos, divisores e estados semânticos também têm aliases (`--surface-*`, `--text-*`, `--border-subtle`, `--border-control` e `--status-*`). Use esses papéis em componentes novos ou revisados; os aliases continuam ligados às cores do tema ativo. `--surface-card`, `--surface-card-muted`, `--surface-interactive`, `--text-inverse` e `--status-insufficient` completam os papéis de superfície, texto e evidência insuficiente nos dois temas.
 
@@ -191,6 +196,7 @@ Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes
 - **Textos:** `text-primary`, `text-secondary`, `text-muted`, `text-on-brand`, `text-green`, `text-amber`, `text-red`.
 - **Laranja secundário (CSS):** tokens `--secondary`, `--secondary-strong`, `--secondary-text`, `--secondary-bg`, `--secondary-hover`, `--on-secondary` em `styles/tokens.css`; classes `.btn.secondary`, `.card--secondary`, `.status-badge--highlight`. Usar um único `.btn.secondary` por tela. Regras em `DESIGN.md` (Regra do Laranja).
 - **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default` (raio de card), `rounded` (raio de controle).
+- **Espaçamento e Densidade (Grade Híbrida 8pt):** `p-card`, `p-panel`, `gap-stack`, `gap-stack-sm`, `gap-inline`, `space-y-block`, `px-page-x`, `min-h-control` (`36px`), `min-h-touch` (`44px`), evitando frações sub-4pt (`.5`).
 - **Tipografia:** `font-body` (IBM Plex Sans), `font-display` (Fraunces), `font-data` (IBM Plex Mono).
 
 ## Padrão de Cockpit Panorâmico em 3 Camadas Temáticas

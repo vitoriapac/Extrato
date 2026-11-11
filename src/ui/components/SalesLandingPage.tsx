@@ -274,25 +274,25 @@ export function SalesLandingPage({
           >
             <a
               href="#comparativo"
-              class="hover:text-text no-underline rounded px-1 py-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="hover:text-text no-underline rounded px-2 py-2 min-h-control inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
               Por que funciona
             </a>
             <a
               href="#motores"
-              class="hover:text-text no-underline rounded px-1 py-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="hover:text-text no-underline rounded px-2 py-2 min-h-control inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
               Motores analíticos
             </a>
             <a
               href="#precos"
-              class="hover:text-text no-underline rounded px-1 py-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="hover:text-text no-underline rounded px-2 py-2 min-h-control inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
               Planos Free & Pro
             </a>
             <a
               href="#duvidas"
-              class="hover:text-text no-underline rounded px-1 py-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="hover:text-text no-underline rounded px-2 py-2 min-h-control inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
               Dúvidas
             </a>
@@ -336,7 +336,7 @@ export function SalesLandingPage({
         <section class="py-10 sm:py-16 border-b border-border-default">
           <div class="max-w-[1200px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* Coluna Esquerda: Proposta de Valor */}
-            <div class="lg:col-span-6 flex flex-col gap-5 pt-2">
+            <div class="lg:col-span-6 flex flex-col gap-6 pt-2">
               <h1 class="font-display font-semibold text-3xl sm:text-4xl leading-tight tracking-tight text-text m-0">
                 Saiba o que estudar hoje e por quê.
               </h1>
@@ -400,7 +400,7 @@ export function SalesLandingPage({
                     boxShadow: '0 1px 0 var(--accent)',
                     color: 'var(--on-brand)',
                   }}
-                  class="p-5 flex flex-col gap-4"
+                  class="p-panel flex flex-col gap-4"
                 >
                   <div class="flex flex-wrap items-center justify-between gap-2">
                     <span
@@ -415,7 +415,7 @@ export function SalesLandingPage({
                       style={{
                         borderColor: 'color-mix(in srgb, var(--on-brand) 22%, transparent)',
                       }}
-                      class="inline-flex rounded border p-0.5 text-xs"
+                      class="inline-flex rounded border p-1 gap-1 text-xs"
                     >
                       <button
                         type="button"
@@ -432,7 +432,7 @@ export function SalesLandingPage({
                                 color: 'var(--on-brand)',
                               }
                         }
-                        class="min-h-[44px] sm:min-h-[34px] px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                        class="min-h-touch sm:min-h-8 px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                       >
                         Semana 01
                       </button>
@@ -451,7 +451,7 @@ export function SalesLandingPage({
                                 color: 'var(--on-brand)',
                               }
                         }
-                        class="min-h-[44px] sm:min-h-[34px] px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                        class="min-h-touch sm:min-h-8 px-3 py-1 rounded cursor-pointer font-data font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                       >
                         Semana 14
                       </button>
@@ -459,7 +459,7 @@ export function SalesLandingPage({
                   </div>
 
                   <div class="flex flex-wrap items-center justify-between gap-4 pt-1">
-                    <div class="flex items-center gap-3.5">
+                    <div class="flex items-center gap-4">
                       <div class="balance-ring shrink-0">
                         <RingGauge
                           value={snapshot.readinessScore}
@@ -492,7 +492,7 @@ export function SalesLandingPage({
                                 'color-mix(in srgb, var(--on-brand) 14%, transparent)',
                               color: 'var(--on-brand)',
                             }}
-                            class="font-data text-xs px-2 py-0.5 rounded"
+                            class="font-data text-xs px-2 py-1 rounded"
                           >
                             {snapshot.readinessDelta}
                           </span>
@@ -502,7 +502,7 @@ export function SalesLandingPage({
 
                     <div class="text-left sm:text-right font-data">
                       <div class="text-xs opacity-80">Aderência · Carga</div>
-                      <div class="text-sm font-semibold mt-0.5">
+                      <div class="text-sm font-semibold mt-1">
                         {snapshot.adherencePercent} · {snapshot.weeklyHours}
                       </div>
                     </div>
@@ -511,7 +511,7 @@ export function SalesLandingPage({
 
                 {/* Prescrição de Próxima Ação */}
                 <div class="p-4 border-b border-border-default bg-surface-subtle flex items-start justify-between gap-3">
-                  <div class="flex flex-col gap-0.5">
+                  <div class="flex flex-col gap-1">
                     <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
                       Próxima melhor ação calculada
                     </span>
@@ -532,11 +532,11 @@ export function SalesLandingPage({
                       key={row.id}
                       class="px-4 py-3 flex items-center justify-between gap-3 text-xs"
                     >
-                      <div class="flex items-center gap-2.5 min-w-0">
+                      <div class="flex items-center gap-3 min-w-0">
                         <span
                           aria-hidden="true"
                           style={{ backgroundColor: row.swatchVar }}
-                          class="w-2.5 h-2.5 rounded-full shrink-0"
+                          class="w-2 h-2 rounded-full shrink-0"
                         />
                         <span class="font-medium text-text truncate">{row.subject}</span>
                       </div>
@@ -592,11 +592,11 @@ export function SalesLandingPage({
 
             <div class="rounded-default border border-border-default overflow-hidden bg-surface-page">
               <div class="grid grid-cols-1 md:grid-cols-12 border-b border-border-default bg-surface-subtle text-xs font-semibold uppercase tracking-wide text-secondary">
-                <div class="p-3.5 md:col-span-3">Cenário Real</div>
-                <div class="p-3.5 md:col-span-4 border-t md:border-t-0 md:border-l border-border-default">
+                <div class="p-4 md:col-span-3">Cenário Real</div>
+                <div class="p-4 md:col-span-4 border-t md:border-t-0 md:border-l border-border-default">
                   Planilhas e Cronogramas Fixos
                 </div>
-                <div class="p-3.5 md:col-span-5 border-t md:border-t-0 md:border-l border-border-default text-text">
+                <div class="p-4 md:col-span-5 border-t md:border-t-0 md:border-l border-border-default text-text">
                   Extrato de Estudos Auditável
                 </div>
               </div>
@@ -608,11 +608,15 @@ export function SalesLandingPage({
                       {item.criterion}
                     </div>
                     <div class="p-4 md:col-span-4 text-secondary border-t md:border-t-0 md:border-l border-border-default flex items-start gap-2">
-                      <Icon name="x" size={16} class="text-secondary shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="x" size={16} class="text-secondary" />
+                      </span>
                       <span>{item.spreadsheetWay}</span>
                     </div>
                     <div class="p-4 md:col-span-5 text-text bg-surface-card border-t md:border-t-0 md:border-l border-border-default flex items-start gap-2">
-                      <Icon name="circle-check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="circle-check" size={16} class="text-accent" />
+                      </span>
                       <span>{item.studyTrackWay}</span>
                     </div>
                   </div>
@@ -639,7 +643,7 @@ export function SalesLandingPage({
               {ENGINE_SPECS.map(spec => (
                 <div
                   key={spec.title}
-                  class="p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  class="p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div class="flex flex-col gap-1 max-w-[75ch]">
                     <h3 class="font-display font-semibold text-lg text-text m-0">
@@ -677,13 +681,13 @@ export function SalesLandingPage({
               <div
                 role="group"
                 aria-label="Escolher periodicidade do Plano Pro"
-                class="inline-flex rounded border border-border-default bg-surface-subtle p-1 self-start"
+                class="inline-flex rounded border border-border-default bg-surface-subtle p-1 gap-1 self-start"
               >
                 <button
                   type="button"
                   onClick={() => setSelectedCycle('annual')}
                   aria-pressed={selectedCycle === 'annual'}
-                  class={`min-h-[44px] sm:min-h-[36px] px-3 py-1.5 rounded text-xs font-medium cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
+                  class={`min-h-touch sm:min-h-control inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
                     selectedCycle === 'annual'
                       ? 'bg-surface-card text-text border border-border-default'
                       : 'bg-transparent text-secondary hover:text-text border border-transparent'
@@ -695,7 +699,7 @@ export function SalesLandingPage({
                   type="button"
                   onClick={() => setSelectedCycle('monthly')}
                   aria-pressed={selectedCycle === 'monthly'}
-                  class={`min-h-[44px] sm:min-h-[36px] px-3 py-1.5 rounded text-xs font-medium cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
+                  class={`min-h-touch sm:min-h-control inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
                     selectedCycle === 'monthly'
                       ? 'bg-surface-card text-text border border-border-default'
                       : 'bg-transparent text-secondary hover:text-text border border-transparent'
@@ -717,7 +721,7 @@ export function SalesLandingPage({
                     <Badge variant="default">Sem cadastro obrigatório</Badge>
                   </div>
 
-                  <div class="flex items-baseline gap-1.5">
+                  <div class="flex items-baseline gap-2">
                     <span class="font-display font-semibold text-3xl text-text">R$ 0</span>
                     <span class="text-xs font-data text-secondary">/ para sempre neste navegador</span>
                   </div>
@@ -727,29 +731,37 @@ export function SalesLandingPage({
                     edital enxuto.
                   </p>
 
-                  <ul class="list-none m-0 p-0 pt-3 border-t border-border-default flex flex-col gap-2.5 text-sm">
+                  <ul class="list-none m-0 p-0 pt-3 border-t border-border-default flex flex-col gap-3 text-sm">
                     <li class="flex items-start gap-2">
-                      <Icon name="check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         Até <strong>{FREE_TIER_LIMITS.maxActiveSubjects} disciplinas ativas</strong> e{' '}
                         <strong>{FREE_TIER_LIMITS.maxActiveExams} concurso ativo</strong>
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         Até <strong>{FREE_TIER_LIMITS.maxErrorFlashcards} flashcards</strong> no Caderno
                         de Erros com repetição espaçada
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         Cronômetro com Picture-in-Picture, Planejamento Semanal e Ciclo Rotativo
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         Armazenamento local seguro no navegador com exportação e importação de backup JSON
                       </span>
@@ -774,8 +786,8 @@ export function SalesLandingPage({
                     </Badge>
                   </div>
 
-                  <div class="flex flex-col gap-0.5">
-                    <div class="flex items-baseline gap-1.5">
+                  <div class="flex flex-col gap-1">
+                    <div class="flex items-baseline gap-2">
                       <span class="font-display font-semibold text-3xl text-text">
                         {activeOffer.monthlyEquivalentFormatted}
                       </span>
@@ -789,36 +801,46 @@ export function SalesLandingPage({
                     entre computador e celular e inteligência preditiva.
                   </p>
 
-                  <ul class="list-none m-0 p-0 pt-3 border-t border-border-default flex flex-col gap-2.5 text-sm">
+                  <ul class="list-none m-0 p-0 pt-3 border-t border-border-default flex flex-col gap-3 text-sm">
                     <li class="flex items-start gap-2">
-                      <Icon name="circle-check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="circle-check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         <strong>Sincronização automática na nuvem</strong> entre PC, notebook e celular
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="circle-check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="circle-check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         <strong>Disciplinas, concursos e flashcards ilimitados</strong> (desbloqueie
                         editais completos com 15+ matérias)
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="circle-check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="circle-check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         <strong>Simulador de Cenários "E se?"</strong> e política automática de Reta
                         Final
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="circle-check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="circle-check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         <strong>Importador de Edital via PDF</strong> e importação em lote de questões{' '}
                         <strong>CSV (QConcursos / Tec)</strong>
                       </span>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Icon name="circle-check" size={16} class="text-accent shrink-0 mt-0.5" />
+                      <span class="inline-flex h-5 items-center shrink-0">
+                        <Icon name="circle-check" size={16} class="text-accent" />
+                      </span>
                       <span>
                         <strong>Análise Cronobiológica de Energia por Turno</strong>, Detector de Platô
                         e <strong>Relatório Estratégico PDF A4</strong>
@@ -850,7 +872,7 @@ export function SalesLandingPage({
 
             <div class="rounded-default border border-border-default bg-surface-card divide-y divide-border-default">
               {FAQ_ITEMS.map(faq => (
-                <details key={faq.question} class="p-4 sm:p-5 group">
+                <details key={faq.question} class="p-4 sm:p-6 group">
                   <summary class="font-medium text-sm sm:text-base text-text cursor-pointer list-none flex items-center justify-between gap-3 rounded p-1 -m-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
                     <span>{faq.question}</span>
                     <Icon
@@ -868,7 +890,7 @@ export function SalesLandingPage({
       </main>
 
       {/* Barra Fixa Mobile (Zona do Polegar) */}
-      <div class="sm:hidden sticky bottom-0 z-30 border-t border-border-default bg-surface-card px-4 py-2.5 flex items-center gap-2">
+      <div class="sm:hidden sticky bottom-0 z-30 border-t border-border-default bg-surface-card px-4 py-3 flex items-center gap-2">
         <Button
           variant="secondary"
           size="touch"

@@ -791,8 +791,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     const subjectsDistributionHtml =
       subjectList.length > 0
         ? `
-      <div class="today-plan-distribution mb-3 p-2.5 rounded bg-surface-subtle border border-border-subtle">
-        <div class="flex items-center justify-between text-xs text-content-secondary mb-1.5 font-medium">
+      <div class="today-plan-distribution mb-3 p-3 rounded bg-surface-subtle border border-border-subtle">
+        <div class="flex items-center justify-between text-xs text-content-secondary mb-2 font-medium">
           <span>Disciplinas planejadas hoje</span>
           <span class="font-data">${subjectList.length} ${subjectList.length === 1 ? 'matéria' : 'matérias'}</span>
         </div>
@@ -801,7 +801,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
             .map(s => {
               const slot = subjectColorOf(s, state.subjects || []);
               return `
-              <span class="inline-flex items-center gap-1.5 text-xs bg-surface-card px-2 py-1 rounded border border-border-subtle">
+              <span class="inline-flex items-center gap-2 text-xs bg-surface-card px-2 py-1 rounded border border-border-subtle">
                 <span class="subject-color-swatch subject-color-${slot}" aria-hidden="true"></span>
                 <strong class="font-medium text-content-primary">${escapeHtml(s.name)}</strong>
                 <span class="text-content-secondary font-data">${formatPlanMinutes(s.minutes)}</span>
@@ -848,11 +848,11 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
               : '';
         return `
       <div class="plano-item ${active ? 'is-active' : ''} ${item.status === 'completed' ? 'is-completed' : ''}">
-        <div class="plano-item-head flex items-center gap-1.5">
+        <div class="plano-item-head flex items-center gap-2">
           <span class="inline-flex shrink-0 ${statusIconClass}">${renderIconSvg(statusIconName, { size: 13 })}</span>
           <span>${escapeHtml(item.statusLabel || planItemStatusLabel(item.status))}${Number.isFinite(Number(item.score)) ? ' · ' + Math.round(Number(item.score)) + '/100' : ''}</span>
         </div>
-        <div class="plano-item-title flex items-center gap-1.5 flex-wrap">
+        <div class="plano-item-title flex items-center gap-2 flex-wrap">
           <span class="subject-color-swatch subject-color-${colorSlot} shrink-0" aria-hidden="true"></span>
           <span>${escapeHtml(item.subjectName || getSubjectName(item.subjectId) || 'Disciplina')} — ${escapeHtml(item.topicName || getTopicName(item.topicId) || 'Tópico')}</span>
         </div>
@@ -878,7 +878,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         : 0;
 
     const executionHint = `
-      <div class="today-plan-hint text-xs text-content-secondary mb-3 p-2.5 rounded bg-surface-subtle border border-border-subtle flex items-center gap-2">
+      <div class="today-plan-hint text-xs text-content-secondary mb-3 p-3 rounded bg-surface-subtle border border-border-subtle flex items-center gap-2">
         <span class="text-brand dark:text-accent shrink-0 inline-flex">${renderIconSvg('bulb', { size: 15 })}</span>
         <span>Clique em <strong>Iniciar</strong> no bloco para estudar com o cronômetro integrado ou registre seu tempo após finalizar a sessão.</span>
       </div>

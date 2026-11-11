@@ -261,7 +261,7 @@ test('TodayWeeklyRhythmCard Preact Component — renderiza gráfico de colunas p
   assert.match(html, /3h 30m total/);
   assert.match(html, /chart-columns/);
   assert.match(html, /plan-execution-axis/);
-  assert.match(html, /font-bold text-content-primary/); // today highlighted
+  assert.match(html, /font-semibold text-content-primary/); // today highlighted
 });
 
 test('resumo mostra excedente com texto quando o plano passa da disponibilidade', () => {

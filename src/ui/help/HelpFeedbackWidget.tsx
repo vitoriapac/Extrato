@@ -49,7 +49,7 @@ export function HelpFeedbackWidget({
         role="status"
         aria-live="polite"
       >
-        <span class="flex items-center gap-1.5 font-medium text-text">
+        <span class="flex items-center gap-2 font-medium text-text">
           <Icon name="check" size={14} class="text-success-emphasis" />
           <span>
             {feedback
@@ -71,12 +71,12 @@ export function HelpFeedbackWidget({
 
   return (
     <div
-      class="mt-3 flex items-center justify-between border-t border-border/40 pt-2.5 text-xs text-text-muted"
+      class="mt-3 flex items-center justify-between border-t border-border/40 pt-3 text-xs text-text-muted"
       data-testid={`help-feedback-${topicId}`}
     >
       <span class="font-medium text-text-muted">Esta explicação foi útil?</span>
       <div
-        class="inline-flex items-center gap-1.5"
+        class="inline-flex items-center gap-2"
         role="group"
         aria-label="Avaliar utilidade da instrução"
       >

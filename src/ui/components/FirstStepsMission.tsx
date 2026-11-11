@@ -34,7 +34,7 @@ export function FirstStepsMission({
           data-first-steps-restore="true"
           onClick={onRestore}
           aria-label="Reexibir checklist de primeiros passos"
-          className="text-xs font-medium text-content-primary hover:underline inline-flex items-center gap-1.5"
+          className="text-xs font-medium text-content-primary hover:underline inline-flex items-center gap-2"
         >
           <Icon name="refresh" size={14} aria-hidden={true} />
           <span>Reexibir guia de ativação</span>
@@ -117,7 +117,7 @@ export function FirstStepsMission({
             return (
               <li
                 key={mission.id}
-                className={`flex flex-wrap items-center justify-between gap-3 p-2.5 rounded border transition-colors ${
+                className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded border transition-colors ${
                   isDone
                     ? 'bg-surface-subtle/50 border-border-default/60 opacity-80'
                     : isActive
@@ -127,9 +127,9 @@ export function FirstStepsMission({
                 data-mission-id={mission.id}
                 data-mission-done={String(isDone)}
               >
-                <div className="flex items-start gap-2.5 min-w-[200px] flex-1">
+                <div className="flex items-start gap-3 min-w-[200px] flex-1">
                   <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold mt-0.5 shrink-0 ${
+                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold shrink-0 ${
                       isDone
                         ? 'bg-green text-white'
                         : isActive
@@ -155,7 +155,7 @@ export function FirstStepsMission({
                 </div>
 
                 {!isDone && (
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
                     {Boolean(mission.quickAction && mission.quickActionLabel) && (
                       <Button
                         variant="secondary"

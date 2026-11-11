@@ -86,11 +86,13 @@ export function PaywallModal({
       maxWidth="lg"
       aria-label="Conhecer o Plano Extrato de Estudos Pro"
     >
-      <div class="flex flex-col gap-4 text-text">
+      <div class="flex flex-col gap-stack text-text">
         {featureTitle && (
-          <div class="p-3 rounded-default border border-border-default bg-surface-subtle flex items-start gap-2.5">
-            <Icon name="bolt" size={18} class="text-accent shrink-0 mt-0.5" />
-            <div class="flex flex-col gap-0.5">
+          <div class="p-card rounded-default border border-border-default bg-surface-subtle flex items-start gap-3">
+            <span class="inline-flex h-4 items-center shrink-0">
+              <Icon name="bolt" size={18} class="text-accent" />
+            </span>
+            <div class="flex flex-col gap-1">
               <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
                 Recurso exclusivo do Plano Pro
               </span>
@@ -117,7 +119,7 @@ export function PaywallModal({
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => setSelectedCycle(cycle)}
-                class={`text-left p-3.5 rounded-default border transition-colors cursor-pointer flex flex-col justify-between gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
+                class={`text-left p-card rounded-default border transition-colors cursor-pointer flex flex-col justify-between gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
                   isSelected
                     ? 'border-border-default border-t-[3px] border-t-accent bg-surface-elevated'
                     : 'border-border-default border-t-[3px] border-t-transparent bg-surface-card hover:bg-surface-subtle'
@@ -144,7 +146,7 @@ export function PaywallModal({
         </div>
 
         {/* Seletor de Forma de Pagamento (PIX vs Cartão) */}
-        <div class="p-3.5 rounded-default border border-border-default bg-surface-card flex flex-col gap-3">
+        <div class="p-card rounded-default border border-border-default bg-surface-card flex flex-col gap-3">
           <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
             Forma de Pagamento
           </span>
@@ -152,7 +154,7 @@ export function PaywallModal({
           <div
             role="group"
             aria-label="Forma de pagamento"
-            class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-3"
           >
             {/* Botão PIX */}
             <button
@@ -165,8 +167,10 @@ export function PaywallModal({
                   : 'border-border-default bg-surface-subtle hover:bg-surface-page'
               }`}
             >
-              <Icon name="bolt" size={18} class="text-accent shrink-0 mt-0.5" />
-              <div class="flex flex-col gap-0.5">
+              <span class="inline-flex h-4 items-center shrink-0">
+                <Icon name="bolt" size={18} class="text-accent" />
+              </span>
+              <div class="flex flex-col gap-1">
                 <span class="text-xs font-semibold text-text">PIX Instantâneo</span>
                 <span class="text-xs text-secondary">
                   Liberação imediata via AbacatePay com QR Code e Copia e Cola
@@ -185,8 +189,10 @@ export function PaywallModal({
                   : 'border-border-default bg-surface-subtle hover:bg-surface-page'
               }`}
             >
-              <Icon name="credit-card" size={18} class="text-accent shrink-0 mt-0.5" />
-              <div class="flex flex-col gap-0.5">
+              <span class="inline-flex h-4 items-center shrink-0">
+                <Icon name="credit-card" size={18} class="text-accent" />
+              </span>
+              <div class="flex flex-col gap-1">
                 <span class="text-xs font-semibold text-text">Cartão de Crédito</span>
                 <span class="text-xs text-secondary">
                   {isAnnual ? 'Em até 12x sem juros (R$ 14,90/mês)' : 'Renovação mensal automática sem interrupção'}
@@ -205,7 +211,7 @@ export function PaywallModal({
                 id="cardInstallmentsSelect"
                 value={selectedInstallments}
                 onChange={e => setSelectedInstallments(Number((e.target as HTMLSelectElement).value))}
-                class="min-h-[36px] px-3 py-1.5 text-xs rounded border border-border-default bg-surface-page text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="min-h-control px-3 py-1 text-xs rounded border border-border-default bg-surface-page text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 {selectedPlan.installments.map(opt => (
                   <option key={opt.installments} value={opt.installments}>
@@ -218,7 +224,7 @@ export function PaywallModal({
         </div>
 
         {/* Destaques do Plano Pro */}
-        <div class="rounded-default border border-border-default bg-surface-subtle p-3.5 flex flex-col gap-2.5">
+        <div class="rounded-default border border-border-default bg-surface-subtle p-card flex flex-col gap-3">
           <div class="flex flex-wrap items-center justify-between gap-1">
             <span class="text-xs font-semibold uppercase tracking-wide text-secondary">
               O que você desbloqueia no Plano Pro
@@ -231,7 +237,9 @@ export function PaywallModal({
           <ul class="list-none m-0 p-0 flex flex-col gap-2">
             {PRO_HIGHLIGHTS.map(item => (
               <li key={item.label} class="flex items-start gap-2 text-xs">
-                <Icon name="check" size={15} class="text-accent shrink-0 mt-0.5" />
+                <span class="inline-flex h-4 items-center shrink-0">
+                  <Icon name="check" size={15} class="text-accent" />
+                </span>
                 <div>
                   <strong class="text-text font-medium">{item.label}:</strong>{' '}
                   <span class="text-secondary">{item.detail}</span>
@@ -244,10 +252,12 @@ export function PaywallModal({
         {errorMessage && (
           <div
             role="alert"
-            class="p-2.5 rounded bg-red-bg text-red text-xs flex items-start gap-2"
+            class="p-3 rounded bg-red-bg text-red text-xs flex items-start gap-2"
           >
-            <Icon name="alert-circle" size={16} class="shrink-0 mt-0.5" />
-            <div class="flex flex-col gap-0.5">
+            <span class="inline-flex h-4 items-center shrink-0">
+              <Icon name="alert-circle" size={16} />
+            </span>
+            <div class="flex flex-col gap-1">
               <span>{errorMessage}</span>
               <span class="text-secondary">
                 Verifique sua conexão e tente novamente. Seus dados locais permanecem intactos.
@@ -270,7 +280,7 @@ export function PaywallModal({
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-border-default">
-          <div class="flex items-center gap-1.5 text-xs text-secondary">
+          <div class="flex items-center gap-2 text-xs text-secondary">
             <Icon name="shield-check" size={16} class="text-accent shrink-0" />
             <span>
               {paymentMethod === 'pix'

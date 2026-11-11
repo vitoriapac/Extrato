@@ -25,14 +25,14 @@ export function SimulationBreakdownBarChart({
 
   return (
     <div
-      class={`chart-simulation-breakdown space-y-3 p-3.5 rounded-default bg-surface-ground/70 border border-border-subtle ${className}`}
+      class={`chart-simulation-breakdown space-y-3 p-card rounded-default bg-surface-ground/70 border border-border-subtle ${className}`}
       role="region"
       aria-label={label}
     >
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Raio-X do Simulado</span>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-data font-semibold text-warning-emphasis bg-warning-subtle">
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-data font-semibold text-warning-emphasis bg-warning-subtle">
             Média da prova: {overallScore}%
           </span>
         </div>
@@ -61,9 +61,9 @@ export function SimulationBreakdownBarChart({
           return (
             <div key={row.id} class="space-y-1">
               <div class="flex items-center justify-between text-xs">
-                <div class="flex items-center gap-1.5 min-w-0">
+                <div class="flex items-center gap-2 min-w-0">
                   <span
-                    class={`w-2.5 h-2.5 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
+                    class={`w-2 h-2 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
                     aria-hidden="true"
                   />
                   <span class="font-medium text-content-primary truncate">
@@ -75,11 +75,11 @@ export function SimulationBreakdownBarChart({
                   <span class="text-content-secondary text-xs">
                     {row.correct}/{row.total}
                   </span>
-                  <span class="font-bold text-content-primary">
+                  <span class="font-semibold text-content-primary">
                     {row.score}%
                   </span>
                   <span
-                    class={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                    class={`text-xs font-medium px-2 py-1 rounded ${
                       isAbove
                         ? 'text-success-emphasis bg-success-subtle'
                         : 'text-warning-emphasis bg-warning-subtle'

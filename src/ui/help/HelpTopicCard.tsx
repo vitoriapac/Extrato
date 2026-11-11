@@ -54,7 +54,7 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
       data-help-keywords={allKeywords}
       data-help-search={searchIndex}
     >
-      <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-1.5 text-xs">
+      <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-2 text-xs">
         <div class="flex items-center gap-2">
           <span class={metadata.levelBadgeClass}>{metadata.level}</span>
           <span class="text-xs text-text-muted inline-flex items-center gap-1">

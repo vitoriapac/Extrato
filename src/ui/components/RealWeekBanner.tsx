@@ -28,8 +28,8 @@ export function RealWeekBanner({
       role="region"
       aria-label="Acolhimento da Semana Real"
     >
-      <div class="flex items-start gap-3.5">
-        <div class="p-2 rounded-default bg-accent/10 text-accent shrink-0 mt-0.5">
+      <div class="flex items-start gap-4">
+        <div class="p-2 rounded-default bg-accent/10 text-accent shrink-0">
           <Icon name="heart-handshake" size={20} class="shrink-0" />
         </div>
         <div class="space-y-1">
@@ -37,7 +37,7 @@ export function RealWeekBanner({
             <h4 class="font-semibold text-sm text-content-primary m-0 tracking-tight">
               Sua semana não saiu como planejada? Tudo bem.
             </h4>
-            <span class="text-xs px-2 py-0.5 rounded font-medium bg-accent/10 text-accent">
+            <span class="text-xs px-2 py-1 rounded font-medium bg-accent/10 text-accent">
               Semana Real
             </span>
           </div>
@@ -56,7 +56,7 @@ export function RealWeekBanner({
           <Button
             variant="secondary"
             size="small"
-            className="inline-flex items-center gap-1.5 text-xs text-heading font-medium hover:border-border-hover"
+            className="inline-flex items-center gap-2 text-xs text-heading font-medium hover:border-border-hover"
             onClick={onOpenRecoveryMission}
             aria-label="Abrir missão de recuperação de revisões atrasadas"
           >
@@ -68,7 +68,7 @@ export function RealWeekBanner({
           <Button
             variant="ghost"
             size="small"
-            className="inline-flex items-center gap-1.5 text-xs text-content-secondary hover:text-content-primary"
+            className="inline-flex items-center gap-2 text-xs text-content-secondary hover:text-content-primary"
             onClick={onRecalibrateWeek}
             aria-label="Recalibrar planejamento da semana real"
           >

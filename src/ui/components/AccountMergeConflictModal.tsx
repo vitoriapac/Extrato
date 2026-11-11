@@ -38,7 +38,7 @@ export function AccountMergeConflictModal({
         {/* Comparativo de Versões */}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Card Este Dispositivo */}
-          <div class="p-3.5 rounded-default border border-border-default bg-surface-subtle flex flex-col gap-2">
+          <div class="p-card rounded-default border border-border-default bg-surface-subtle flex flex-col gap-2">
             <div class="flex items-center gap-2">
               <Icon name="device-laptop" size={16} class="text-secondary shrink-0" />
               <strong class="text-xs font-semibold text-text">Este Dispositivo (Navegador)</strong>
@@ -59,7 +59,7 @@ export function AccountMergeConflictModal({
           </div>
 
           {/* Card Nuvem */}
-          <div class="p-3.5 rounded-default border border-border-default bg-surface-subtle flex flex-col gap-2">
+          <div class="p-card rounded-default border border-border-default bg-surface-subtle flex flex-col gap-2">
             <div class="flex items-center gap-2">
               <Icon name="cloud" size={16} class="text-accent shrink-0" />
               <strong class="text-xs font-semibold text-text">Dados na Nuvem</strong>
@@ -84,7 +84,7 @@ export function AccountMergeConflictModal({
         <div class="p-3 rounded-default border border-border-default bg-surface-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <Icon name="shield-check" size={18} class="text-accent shrink-0" />
-            <div class="flex flex-col gap-0.5">
+            <div class="flex flex-col gap-1">
               <span class="text-xs font-semibold text-text">Prefere se prevenir?</span>
               <span class="text-xs text-secondary">
                 Baixe um arquivo JSON com todos os dados deste dispositivo antes de sincronizar.

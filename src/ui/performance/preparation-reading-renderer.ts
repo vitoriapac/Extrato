@@ -71,7 +71,7 @@ export function renderPreparationReading(
     : '';
 
   return `<section class="performance-reading chart-card mb-4" id="bloco-leitura" aria-labelledby="performanceReadingTitle">
-    <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3>${renderCopyBlockLink('leitura')}${rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-2.5 py-1 rounded-xs">${escapeHtml(rangeLabel)}</span>` : ''}</div></header>
+    <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3>${renderCopyBlockLink('leitura')}${rangeLabel ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-3 py-1 rounded-xs">${escapeHtml(rangeLabel)}</span>` : ''}</div></header>
     <div class="performance-reading__grid">
       <section class="performance-reading__how" aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>${howPrimary}</section>
       <section class="performance-reading__support-block" aria-label="Números de apoio">${howSupport}</section>

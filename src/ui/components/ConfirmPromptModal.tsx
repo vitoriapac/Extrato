@@ -50,7 +50,7 @@ export function ConfirmPromptModal({
           {message}
         </p>
 
-        <div id="modalPromptGroup" hidden={!hasPrompt} class="flex flex-col gap-1.5 mt-4">
+        <div id="modalPromptGroup" hidden={!hasPrompt} class="flex flex-col gap-2 mt-4">
           <label
             htmlFor="modalPromptInput"
             id="modalPromptLabel"
@@ -76,12 +76,12 @@ export function ConfirmPromptModal({
               }
             }}
           />
-          <span id="modalPromptError" role="alert" class="block min-h-[17px] text-red text-xs">
+          <span id="modalPromptError" role="alert" class="block min-h-4 text-red text-xs">
             {promptError}
           </span>
         </div>
 
-        <div class="flex flex-wrap justify-end gap-2.5 mt-5">
+        <div class="flex flex-wrap justify-end gap-3 mt-6">
           <Button id="modalCancelBtn" variant="ghost" size="small" onClick={onCancel}>
             {cancelLabel}
           </Button>

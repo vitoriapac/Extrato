@@ -32,7 +32,7 @@ export function TodayGoalCard({
 
   if (!hasConfiguredPlan) {
     return (
-      <article class="chart-card p-5" aria-labelledby="todayGoalTitle">
+      <article class="chart-card p-card" aria-labelledby="todayGoalTitle">
         <div class="flex items-center justify-between mb-2">
           <h3 id="todayGoalTitle" class="font-semibold text-base text-content-primary m-0">
             Meta de Hoje
@@ -50,7 +50,7 @@ export function TodayGoalCard({
   const strokeDashoffset = circumference - (circumference * Math.min(100, Math.max(0, percent))) / 100;
 
   return (
-    <article class="chart-card p-5" aria-labelledby="todayGoalTitle">
+    <article class="chart-card p-card" aria-labelledby="todayGoalTitle">
       <div class="flex items-center justify-between mb-3">
         <h3 id="todayGoalTitle" class="font-semibold text-base text-content-primary m-0">
           Meta de Hoje
@@ -88,7 +88,7 @@ export function TodayGoalCard({
           </div>
         </div>
 
-        <div class="space-y-1.5 text-xs">
+        <div class="space-y-2 text-xs">
           <div>
             <span class="text-content-secondary">Estudo realizado:</span>
             <div class="font-data font-semibold text-sm text-content-primary">
@@ -122,13 +122,13 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
   const { days, overdueCount, tip } = data;
 
   return (
-    <article class="chart-card p-5" aria-labelledby="reviewLoadTitle">
+    <article class="chart-card p-card" aria-labelledby="reviewLoadTitle">
       <div class="flex items-center justify-between mb-2">
         <div>
           <h3 id="reviewLoadTitle" class="font-semibold text-base text-content-primary m-0">
             Carga de Revisões
           </h3>
-          <p class="text-xs text-content-secondary m-0 mt-0.5">Próximos 7 dias</p>
+          <p class="text-xs text-content-secondary m-0 mt-1">Próximos 7 dias</p>
         </div>
         <span
           class={`text-xs font-data font-semibold ${
@@ -139,15 +139,15 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
         </span>
       </div>
 
-      <div class="grid grid-cols-7 gap-1.5 items-end h-20 pt-3 pb-1 border-b border-border-default">
+      <div class="grid grid-cols-7 gap-2 items-end h-20 pt-3 pb-1 border-b border-border-default">
         {days.map(d => (
           <div key={d.dateISO} class="flex flex-col items-center gap-1 h-full justify-end">
             <span
               class={`text-xs font-data ${
                 d.isPeak
-                  ? 'font-bold text-content-primary'
+                  ? 'font-semibold text-content-primary'
                   : d.isToday
-                    ? 'font-bold text-content-primary'
+                    ? 'font-semibold text-content-primary'
                     : 'text-content-secondary'
               }`}
             >
@@ -168,7 +168,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             />
             <span
               class={`text-xs font-data ${
-                d.isToday ? 'font-bold text-content-primary' : 'text-content-secondary'
+                d.isToday ? 'font-semibold text-content-primary' : 'text-content-secondary'
               }`}
             >
               {d.dayName}
@@ -189,7 +189,7 @@ export function ConsistencyMiniHeatmapCard({
   const { days, activeDaysCount, totalDays } = data;
 
   return (
-    <article class="chart-card p-5" aria-labelledby="consistencyTitle">
+    <article class="chart-card p-card" aria-labelledby="consistencyTitle">
       <div class="flex items-center justify-between mb-2">
         <h3 id="consistencyTitle" class="font-semibold text-base text-content-primary m-0">
           Consistência (4 Semanas)
@@ -199,7 +199,7 @@ export function ConsistencyMiniHeatmapCard({
         </span>
       </div>
 
-      <div class="grid grid-cols-7 gap-1.5 pt-1">
+      <div class="grid grid-cols-7 gap-2 pt-1">
         {days.map(d => (
           <div
             key={d.dateISO}

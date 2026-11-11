@@ -32,10 +32,10 @@ export function EbbinghausSimulator(): JSX.Element {
             Simulador de Retenção e Curva de Ebbinghaus
           </h5>
         </div>
-        <div class="inline-flex rounded-default border border-border bg-surface p-0.5 text-xs">
+        <div class="inline-flex rounded-default border border-border bg-surface p-1 text-xs">
           <button
             type="button"
-            class={`rounded-default px-2.5 py-1 font-medium transition-colors ${
+            class={`rounded-default px-3 py-1 font-medium transition-colors ${
               withReviews
                 ? 'bg-primary text-primary-contrast shadow-xs'
                 : 'text-text-muted hover:text-text'
@@ -47,7 +47,7 @@ export function EbbinghausSimulator(): JSX.Element {
           </button>
           <button
             type="button"
-            class={`rounded-default px-2.5 py-1 font-medium transition-colors ${
+            class={`rounded-default px-3 py-1 font-medium transition-colors ${
               !withReviews
                 ? 'bg-danger text-danger-contrast shadow-xs'
                 : 'text-text-muted hover:text-text'
@@ -95,7 +95,7 @@ export function EbbinghausSimulator(): JSX.Element {
             <span class="text-base font-semibold text-text">{simulation.retentionPct}%</span>
           </div>
 
-          <div class="mt-1.5 h-3 w-full overflow-hidden rounded-full bg-surface-muted">
+          <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-surface-muted">
             <div
               class={`h-full transition-all duration-300 ${barColor}`}
               style={{ width: `${simulation.retentionPct}%` }}
@@ -106,8 +106,8 @@ export function EbbinghausSimulator(): JSX.Element {
             />
           </div>
 
-          <div class="mt-2.5 flex items-start gap-2">
-            <span class="mt-0.5 inline-block text-xs">
+          <div class="mt-3 flex items-start gap-2">
+            <span class="inline-flex h-4 items-center shrink-0 text-xs">
               <Icon
                 name={
                   simulation.decayStage === 'consolidated'
@@ -133,8 +133,10 @@ export function EbbinghausSimulator(): JSX.Element {
           </div>
         </div>
 
-        <p class="text-xs leading-relaxed text-text-muted flex items-start gap-1.5">
-          <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
+        <p class="text-xs leading-relaxed text-text-muted flex items-start gap-2">
+          <span class="inline-flex h-4 items-center shrink-0">
+            <Icon name="bulb" size={14} class="shrink-0 text-amber" />
+          </span>
           <span>
             <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará
             reaprender a matéria do zero perto da prova. O Extrato de Estudos calcula automaticamente esses

@@ -93,7 +93,7 @@ export function SubjectTopicRow({
               </option>
             ))}
           </select>
-          <span class="stamp inline-flex items-center gap-0.5"><Icon name="check" size={11} /> ok</span>
+          <span class="stamp inline-flex items-center gap-1"><Icon name="check" size={11} /> ok</span>
         </td>
         <td>
           <select

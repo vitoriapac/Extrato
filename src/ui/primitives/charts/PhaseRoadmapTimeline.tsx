@@ -34,7 +34,7 @@ export function PhaseRoadmapTimeline({
   if (phase === 'undated' || !examDate) {
     return (
       <div class={`p-4 rounded-default bg-surface-elevated border border-border-default text-center ${className}`}>
-        <div class="inline-flex p-2.5 rounded-full bg-surface-sunken text-content-secondary mb-2">
+        <div class="inline-flex p-3 rounded-full bg-surface-sunken text-content-secondary mb-2">
           <Icon name="calendar-event" size={20} stroke={1.5} />
         </div>
         <p class="text-sm font-medium text-content-primary">Data da Prova Não Definida</p>
@@ -54,7 +54,7 @@ export function PhaseRoadmapTimeline({
       {/* Top Banner com Dias Restantes e Fase Ativa */}
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="p-2.5 rounded-default bg-accent-subtle text-accent-emphasis flex items-center justify-center">
+          <div class="p-3 rounded-default bg-accent-subtle text-accent-emphasis flex items-center justify-center">
             <Icon name="flag" size={20} />
           </div>
           <div>
@@ -66,14 +66,14 @@ export function PhaseRoadmapTimeline({
                 • Prova em {formatDate(examDate)}
               </span>
             </div>
-            <h4 class="text-sm font-bold text-content-primary">
+            <h4 class="text-sm font-semibold text-content-primary">
               {phaseLabel}
             </h4>
           </div>
         </div>
 
         <div class="text-right">
-          <div class="text-2xl font-black font-mono tracking-tight text-content-primary">
+          <div class="text-2xl font-semibold font-mono tracking-tight text-content-primary">
             {daysRemaining}
             <span class="text-xs font-normal text-content-secondary ml-1">dias</span>
           </div>
@@ -84,14 +84,14 @@ export function PhaseRoadmapTimeline({
       </div>
 
       {/* Régua de Progresso Visual */}
-      <div class="space-y-1.5 pt-1">
+      <div class="space-y-2 pt-1">
         <div class="relative w-full h-3 bg-surface-sunken rounded-full overflow-hidden flex">
           <div
             class="h-full bg-accent-emphasis rounded-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
-        <div class="flex justify-between text-xs text-content-secondary px-0.5">
+        <div class="flex justify-between text-xs text-content-secondary px-1">
           <span>Início</span>
           <span class="font-medium text-content-primary font-mono">{progressPercentage}%</span>
           <span>Dia da Prova</span>
@@ -118,13 +118,13 @@ export function PhaseRoadmapTimeline({
           return (
             <div
               key={item.key}
-              class={`p-2.5 rounded-default border flex flex-col justify-between transition-all ${cardClass}`}
+              class={`p-3 rounded-default border flex flex-col justify-between transition-all ${cardClass}`}
             >
               <div>
                 <div class="flex items-center justify-between gap-1 mb-1">
                   <span class="text-xs font-semibold truncate">{item.label}</span>
                   {isCurrent && (
-                    <span class={`px-1.5 py-0.5 rounded text-xs uppercase tracking-wider ${badgeClass}`}>
+                    <span class={`px-2 py-1 rounded text-xs uppercase tracking-wider ${badgeClass}`}>
                       Agora
                     </span>
                   )}

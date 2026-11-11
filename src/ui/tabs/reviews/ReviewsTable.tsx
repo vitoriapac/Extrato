@@ -74,7 +74,7 @@ export function ReviewsTable({
                 <Icon name="refresh" size={14} class="icon-inline" />
                 Gerar a partir dos concluídos
               </button>
-              <button type="button" class="btn ghost small inline-flex items-center gap-1.5" data-delegated-click="addAgendaRow()">
+              <button type="button" class="btn ghost small inline-flex items-center gap-2" data-delegated-click="addAgendaRow()">
                 <Icon name="plus" size={14} class="icon-inline" />
                 <span>Adicionar manualmente</span>
               </button>

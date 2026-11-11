@@ -24,7 +24,7 @@ export function SubjectProgressList({ subjects }: SubjectProgressListProps): JSX
     <>
       {subjects.map(s => (
         <div key={s.id} class="bar-row">
-          <div class="bar-label flex items-center gap-1.5" title={s.name}>
+          <div class="bar-label flex items-center gap-2" title={s.name}>
             {s.colorSlot ? (
               <span
                 class={`subject-color-swatch subject-color-${s.colorSlot}`}

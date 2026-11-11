@@ -60,9 +60,9 @@ export function renderErrorProfileChart({
   const rowsHtml = allParts
     .map(part => {
       const share = Math.round((part.count / totalErrors) * 100);
-      return `<div class="error-profile-row flex items-center justify-between text-xs py-1.5 border-b border-surface-subtle last:border-0">
+      return `<div class="error-profile-row flex items-center justify-between text-xs py-2 border-b border-surface-subtle last:border-0">
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${part.color}; opacity:${part.tone === 'neutral' ? '0.35' : '1'}"></span>
+          <span class="w-2 h-2 rounded-full shrink-0" style="background-color:${part.color}; opacity:${part.tone === 'neutral' ? '0.35' : '1'}"></span>
           <span class="font-medium text-content-primary">${escapeHtml(part.label)}</span>
         </div>
         <div class="flex items-center gap-3">

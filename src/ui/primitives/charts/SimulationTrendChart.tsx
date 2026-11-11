@@ -39,37 +39,37 @@ export function SimulationTrendChart({
 
   return (
     <div
-      class={`chart-simulation-trend chart-card-interactive space-y-3.5 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
+      class={`chart-simulation-trend chart-card-interactive space-y-4 p-4 rounded-default bg-surface-elevated border border-border-default ${className}`}
       role="region"
       aria-label={label}
     >
       {/* Cards de KPIs Rápidos */}
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-0.5">Média Recente</span>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-1">Média Recente</span>
           <div class="text-base font-semibold font-data text-content-primary">
             {averageScore !== null ? `${averageScore}%` : '—'}
           </div>
         </div>
 
-        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-0.5">Melhor Nota</span>
+        <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-1">Melhor Nota</span>
           <div class="text-base font-semibold font-data text-success-emphasis">
             {bestScore !== null ? `${bestScore}%` : '—'}
           </div>
         </div>
 
-        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-0.5">
+        <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-1">
             Último Simulado
           </span>
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-2">
             <span class="text-base font-semibold font-data text-content-primary">
               {latestScore !== null ? `${latestScore}%` : '—'}
             </span>
             {scoreDelta !== null && (
               <span
-                class={`inline-flex items-center gap-0.5 text-xs font-data font-medium ${
+                class={`inline-flex items-center gap-1 text-xs font-data font-medium ${
                   scoreDelta > 0
                     ? 'text-success-emphasis'
                     : scoreDelta < 0
@@ -90,8 +90,8 @@ export function SimulationTrendChart({
           </div>
         </div>
 
-        <div class="p-2.5 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-0.5">
+        <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
+          <span class="text-content-secondary text-xs block font-medium mb-1">
             Na Meta (≥ {targetScore}%)
           </span>
           <div class="text-base font-semibold font-data text-amber">
@@ -247,15 +247,15 @@ export function SimulationTrendChart({
       </div>
 
       <div class="flex items-center justify-between text-xs text-content-secondary pt-1 border-t border-border-subtle">
-        <span class="flex items-center gap-1.5">
+        <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-success-emphasis"></span>
           Atingiu a meta
         </span>
-        <span class="flex items-center gap-1.5">
+        <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-warning-emphasis"></span>
           Abaixo da meta
         </span>
-        <span class="flex items-center gap-1.5">
+        <span class="flex items-center gap-2">
           <span class="w-3 h-0.5 border-t border-dashed border-amber"></span>
           Linha de aprovação ({targetScore}%)
         </span>

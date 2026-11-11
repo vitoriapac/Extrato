@@ -3,7 +3,12 @@
 @import 'tailwindcss/utilities' layer(utilities) source(none);
 
 @source "../src";
+@source not "../src/app.bundle.js";
 @source not "../src/landing.bundle.js";
+@source not "../src/exam-catalog.bundle.js";
+@source not "../src/report.bundle.js";
+@source not "../src/help.bundle.js";
+@source not "../src/demo.bundle.js";
 @source "../index.html";
 @source "../landing.html";
 
@@ -105,25 +110,40 @@
 
   --radius-default: var(--radius-card);
   --radius: var(--radius-control);
+
+  /* Escala semântica de espaçamento da Grade Híbrida 8pt (responsiva a html[data-density="compact"]) */
+  --spacing-inline: var(--space-inline);
+  --spacing-stack-tight: var(--space-stack-tight);
+  --spacing-stack-sm: var(--space-stack-sm);
+  --spacing-stack: var(--space-stack);
+  --spacing-card: var(--space-card);
+  --spacing-panel: var(--space-panel);
+  --spacing-page-x: var(--space-page-x);
+  --spacing-action: var(--space-action);
+  --spacing-content-action: var(--space-content-action);
+  --spacing-block: var(--space-block);
+  --spacing-section: var(--space-section);
+  --spacing-control: var(--control-height);
+  --spacing-touch: var(--touch-target);
 }
 
 @layer components {
   /* Botão base Preact: garante paridade de área de toque e permite overrides de utilitários (@layer utilities) sem !important. */
   .ui-btn {
     min-height: var(--control-height);
-    padding: 9px 16px;
+    padding: var(--space-2) var(--space-4);
   }
 
   .ui-btn.btn-small {
     min-height: var(--control-height);
-    padding: 7px 11px;
+    padding: var(--space-2) var(--space-3);
     font-size: var(--text-xs);
   }
 
   .ui-btn.ui-btn--touch {
     min-height: var(--touch-target);
     min-width: var(--touch-target);
-    padding: 8px 16px;
+    padding: var(--space-2) var(--space-4);
   }
 
   @media (pointer: coarse), (max-width: 760px) {
@@ -232,7 +252,7 @@
     justify-content: center;
     gap: var(--space-2);
     min-height: var(--control-height);
-    padding: 8px 14px;
+    padding: var(--space-2) var(--space-4);
     border: 0;
     border-bottom: 2px solid transparent;
     border-radius: var(--radius-control) var(--radius-control) 0 0;
@@ -264,7 +284,7 @@
   .ui-tabs__list--contained .ui-tabs__tab {
     border-bottom: 0;
     border-radius: var(--radius-control);
-    padding: 7px 12px;
+    padding: var(--space-2) var(--space-3);
   }
 
   .ui-tabs__list--contained .ui-tabs__tab[aria-selected='true'] {
@@ -287,7 +307,7 @@
   .ui-tabs__badge {
     display: inline-flex;
     align-items: center;
-    padding: 1px 6px;
+    padding: 0 var(--space-2);
     border-radius: var(--radius-control);
     background-color: var(--surface-subtle);
     color: var(--text-secondary);
@@ -303,9 +323,9 @@
   .ui-segmented {
     display: inline-flex;
     align-items: stretch;
-    gap: 2px;
+    gap: var(--space-1);
     max-width: 100%;
-    padding: 3px;
+    padding: var(--space-1);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-card);
     background-color: var(--surface-subtle);
@@ -323,7 +343,7 @@
     justify-content: center;
     gap: var(--space-2);
     min-height: var(--control-height);
-    padding: 6px 12px;
+    padding: var(--space-1) var(--space-3);
     border: 1px solid transparent;
     border-radius: var(--radius-control);
     background: transparent;
@@ -339,8 +359,8 @@
   }
 
   .ui-segmented--sm .ui-segmented__item {
-    min-height: 30px;
-    padding: 4px 10px;
+    min-height: 32px;
+    padding: var(--space-1) var(--space-3);
     font-size: var(--text-micro);
   }
 
@@ -382,7 +402,7 @@
   .ui-menu__panel {
     position: absolute;
     z-index: 60;
-    min-width: 220px;
+    min-width: 224px;
     max-width: min(22rem, calc(100vw - 24px));
     padding: var(--space-3);
     border: 1px solid var(--border-default);
@@ -395,9 +415,9 @@
   .ui-menu__panel {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 5px;
-    min-width: 210px;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    min-width: 208px;
     max-width: min(20rem, calc(100vw - 24px));
   }
 
@@ -406,22 +426,22 @@
   }
 
   .ui-popover__panel--bottom-start {
-    top: calc(100% + 6px);
+    top: calc(100% + var(--space-2));
     left: 0;
   }
 
   .ui-popover__panel--bottom-end {
-    top: calc(100% + 6px);
+    top: calc(100% + var(--space-2));
     right: 0;
   }
 
   .ui-popover__panel--top-start {
-    bottom: calc(100% + 6px);
+    bottom: calc(100% + var(--space-2));
     left: 0;
   }
 
   .ui-popover__panel--top-end {
-    bottom: calc(100% + 6px);
+    bottom: calc(100% + var(--space-2));
     right: 0;
   }
 
@@ -431,7 +451,7 @@
     gap: var(--space-2);
     width: 100%;
     min-height: var(--control-height);
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
     border: 0;
     border-radius: var(--radius-control);
     background: transparent;
@@ -472,8 +492,8 @@
   }
 
   .ui-menu__hint {
-    margin: 4px 0 0;
-    padding: 8px 12px 6px;
+    margin: var(--space-1) 0 0;
+    padding: var(--space-2) var(--space-3);
     border-top: 1px solid var(--border-default);
     color: var(--text-secondary);
     font-family: var(--font-body);
@@ -511,7 +531,7 @@
 
   .ui-select-field__control {
     min-height: var(--control-height);
-    padding: 7px 32px 7px 10px;
+    padding: var(--space-1) var(--space-8) var(--space-1) var(--space-3);
     border: 1px solid var(--border-control);
     border-radius: var(--radius-control);
     background-color: var(--surface-card);
@@ -522,7 +542,7 @@
   }
 
   .ui-select-field__control--compact {
-    min-height: 34px;
+    min-height: 32px;
     font-size: var(--text-micro);
   }
 
@@ -568,7 +588,7 @@
   .ui-combobox__input {
     width: 100%;
     min-height: var(--control-height);
-    padding: 7px 64px 7px 12px;
+    padding: var(--space-1) var(--space-16) var(--space-1) var(--space-3);
     border: 1px solid var(--border-control);
     border-radius: var(--radius-control);
     background-color: var(--surface-card);
@@ -579,10 +599,10 @@
 
   .ui-combobox__actions {
     position: absolute;
-    right: 4px;
+    right: var(--space-1);
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: var(--space-1);
   }
 
   .ui-combobox__icon-btn {
@@ -611,13 +631,13 @@
 
   .ui-combobox__listbox {
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + var(--space-1));
     left: 0;
     right: 0;
     z-index: 65;
     max-height: 260px;
     margin: 0;
-    padding: 4px;
+    padding: var(--space-1);
     overflow-y: auto;
     list-style: none;
     border: 1px solid var(--border-default);
@@ -632,7 +652,7 @@
     justify-content: space-between;
     gap: var(--space-2);
     min-height: var(--control-height);
-    padding: 7px 10px;
+    padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-control);
     color: var(--text-primary);
     font-family: var(--font-body);
@@ -656,7 +676,7 @@
   }
 
   .ui-combobox__empty {
-    padding: 10px 12px;
+    padding: var(--space-3);
     color: var(--text-secondary);
     font-family: var(--font-body);
     font-size: var(--text-micro);
@@ -768,7 +788,7 @@
 
     .ui-bottom-sheet__handle {
       display: block;
-      width: 36px;
+      width: 32px;
       height: 4px;
       margin: var(--space-2) auto 0;
       border-radius: var(--radius-control);
@@ -794,7 +814,7 @@
     z-index: 70;
     width: max-content;
     max-width: min(18rem, calc(100vw - 24px));
-    padding: 6px 10px;
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border-control);
     border-radius: var(--radius-control);
     background-color: var(--brand);
@@ -809,11 +829,11 @@
   }
 
   .ui-tooltip__bubble--top {
-    bottom: calc(100% + 6px);
+    bottom: calc(100% + var(--space-2));
   }
 
   .ui-tooltip__bubble--bottom {
-    top: calc(100% + 6px);
+    top: calc(100% + var(--space-2));
   }
 
   .ui-tooltip__bubble--start {
@@ -830,8 +850,8 @@
   /* Toast & ToastViewport */
   .ui-toast-viewport {
     position: fixed;
-    top: max(16px, env(safe-area-inset-top));
-    right: max(18px, env(safe-area-inset-right));
+    top: max(var(--space-4), env(safe-area-inset-top));
+    right: max(var(--space-4), env(safe-area-inset-right));
     z-index: 1100;
     display: flex;
     flex-direction: column;
@@ -868,7 +888,7 @@
     gap: var(--space-2);
     width: max-content;
     max-width: min(34rem, calc(100vw - 32px));
-    padding: 7px 14px;
+    padding: var(--space-2) var(--space-4);
     font-family: var(--font-body);
     font-size: var(--text-small);
     font-weight: var(--font-weight-semibold);
@@ -919,7 +939,7 @@
   }
 
   .ui-toast__icon {
-    margin-top: 2px;
+    margin-top: 0;
     flex-shrink: 0;
   }
 
@@ -944,7 +964,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-1);
   }
 
   .ui-toast__title {
@@ -974,9 +994,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 30px;
-    min-height: 30px;
-    padding: 4px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: var(--space-1);
     border: 0;
     border-radius: var(--radius-control);
     background: transparent;
@@ -1084,7 +1104,7 @@
     flex-shrink: 0;
     min-height: var(--control-height);
     min-width: var(--control-height);
-    padding: 6px;
+    padding: var(--space-2);
   }
 
   .ui-dialog__body {
@@ -1119,7 +1139,7 @@
     max-width: none;
     max-height: 88vh;
     overflow: auto;
-    padding: 24px 26px;
+    padding: var(--space-6);
     box-shadow: none;
   }
 
@@ -1127,7 +1147,7 @@
     font-size: var(--text-body);
     color: var(--text-primary);
     line-height: 1.5;
-    margin: 0 0 20px;
+    margin: 0 0 var(--space-4);
   }
 
   .ui-dialog__body.exam-import-body {
@@ -1228,7 +1248,7 @@
   .metas-priority-summary > .ui-progress {
     display: block;
     width: min(100%, 34rem);
-    height: 9px;
+    height: var(--space-2);
     margin: var(--space-4) 0;
     background: var(--surface-subtle);
   }
@@ -1241,7 +1261,7 @@
 
   .metas-distribution-bars .ui-progress {
     display: block;
-    height: 9px;
+    height: var(--space-2);
     background: var(--surface-subtle);
   }
 
@@ -1258,7 +1278,7 @@
   .performance-subject-previews .ui-progress,
   .performance-sample-state .ui-progress {
     display: block;
-    height: 9px;
+    height: var(--space-2);
     background: var(--surface-subtle);
   }
 
@@ -1330,8 +1350,8 @@
   }
 
   .ui-state--empty {
-    margin: 12px 0;
-    padding: 14px 16px;
+    margin: var(--space-3) 0;
+    padding: var(--space-4);
     background: var(--surface-subtle);
     color: var(--text-secondary);
     font: var(--text-small) / 1.55 var(--font-body);
@@ -1342,13 +1362,13 @@
   }
 
   .help-no-results.ui-state--empty {
-    margin: 18px 0;
-    padding: 14px 16px;
+    margin: var(--space-4) 0;
+    padding: var(--space-4);
   }
 
   .calendar-view-switch {
     display: none;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
   }
 
   .mobile-more-menu,
@@ -1386,10 +1406,10 @@
     .mobile-more-menu {
       position: absolute;
       z-index: 40;
-      right: 12px;
+      right: var(--space-3);
       display: grid;
       min-width: 220px;
-      padding: 6px;
+      padding: var(--space-2);
       background: var(--surface-card);
       border: 1px solid var(--border-default);
       box-shadow: 0 10px 24px color-mix(in srgb, var(--shadow-color) 50%, transparent);
@@ -1404,18 +1424,18 @@
       z-index: 120;
       left: auto;
       top: auto;
-      right: 8px;
-      bottom: calc(100% + 6px);
+      right: var(--space-2);
+      bottom: calc(100% + var(--space-2));
     }
 
     .mobile-more-menu button {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-3);
       border: 0;
       background: transparent;
       color: var(--text-primary);
-      padding: 12px;
+      padding: var(--space-3);
       text-align: left;
       font: var(--text-xs) var(--font-body);
       cursor: pointer;
@@ -1449,7 +1469,7 @@
     }
 
     .ui-combobox__input {
-      padding-right: 98px;
+      padding-right: 96px;
     }
 
     .ui-combobox__icon-btn,
@@ -1461,9 +1481,9 @@
 
     .ui-toast-viewport {
       top: auto;
-      right: 12px;
-      left: 12px;
-      bottom: calc(var(--bottom-nav-height, 64px) + 8px + env(safe-area-inset-bottom));
+      right: var(--space-3);
+      left: var(--space-3);
+      bottom: calc(var(--bottom-nav-height, 64px) + var(--space-2) + env(safe-area-inset-bottom));
       width: auto;
     }
 
@@ -1504,7 +1524,7 @@
 
   @media (max-width: 600px) {
     .performance-nav-stack .ui-tabs__tab {
-      padding: 8px 10px;
+      padding: var(--space-2);
       font-size: var(--text-micro);
       min-height: var(--touch-target);
     }

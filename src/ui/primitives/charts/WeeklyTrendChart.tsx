@@ -49,7 +49,7 @@ export function WeeklyTrendChart({
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-content-primary">Evolução Semanal</span>
-          <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${trendBadgeClass}`}>
+          <span class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${trendBadgeClass}`}>
             <Icon name={trendIcon} size={12} />
             {trendLabel}
             {trendDelta !== null && ` (${trendDelta > 0 ? '+' : ''}${trendDelta} p.p.)`}
@@ -57,12 +57,12 @@ export function WeeklyTrendChart({
         </div>
 
         <div class="flex items-center gap-3 text-xs text-content-secondary">
-          <span class="flex items-center gap-1.5">
-            <span class={`inline-block w-2.5 h-2.5 rounded-sm subject-bg-${colorSlot} opacity-50`}></span>
+          <span class="flex items-center gap-2">
+            <span class={`inline-block w-3 h-3 rounded-xs subject-bg-${colorSlot} opacity-50`}></span>
             Volume
           </span>
-          <span class="flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-0.5 bg-warning-emphasis"></span>
+          <span class="flex items-center gap-2">
+            <span class="inline-block w-3 h-0.5 bg-warning-emphasis"></span>
             Precisão
           </span>
           {averageAccuracy !== null && (

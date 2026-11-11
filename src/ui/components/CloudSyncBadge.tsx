@@ -91,7 +91,7 @@ export function CloudSyncBadge({
         onClick={onSyncNow}
         title={ariaLabel}
         aria-label={ariaLabel}
-        class={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer bg-surface-subtle hover:bg-surface-elevated border border-border-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${className}`.trim()}
+        class={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors cursor-pointer bg-surface-subtle hover:bg-surface-elevated border border-border-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${className}`.trim()}
       >
         {content}
       </button>
@@ -103,7 +103,7 @@ export function CloudSyncBadge({
       role="status"
       title={ariaLabel}
       aria-label={ariaLabel}
-      class={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs bg-surface-subtle border border-border-default select-none ${className}`.trim()}
+      class={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs bg-surface-subtle border border-border-default select-none ${className}`.trim()}
     >
       {content}
     </div>

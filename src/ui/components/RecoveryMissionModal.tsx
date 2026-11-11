@@ -130,11 +130,11 @@ export function RecoveryMissionModal({
       maxWidth="md"
       className="recovery-mission-modal"
     >
-      <div className="space-y-5 text-sm text-content-primary">
+      <div className="space-y-6 text-sm text-content-primary">
         {/* ETAPA 1: SETUP E SELEÇÃO DE TEMPO */}
         {stage === 'setup' && (
           <>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <p className="text-xs text-content-secondary m-0 leading-relaxed">
                 Quanto tempo você pode dedicar agora para recuperar atrasos? O Extrato selecionará
                 as revisões de maior urgência e risco de esquecimento que cabem no seu tempo.
@@ -142,7 +142,7 @@ export function RecoveryMissionModal({
             </div>
 
             {/* Seletores rápidos de tempo */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1" role="group" aria-label="Opções de tempo disponível">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1" role="group" aria-label="Opções de tempo disponível">
               {[30, 45, 60, 90].map(mins => {
                 const count = Math.min(overdueItems.length, Math.floor(mins / 15));
                 const isSelected = availableMinutes === mins;
@@ -152,7 +152,7 @@ export function RecoveryMissionModal({
                     type="button"
                     onClick={() => setAvailableMinutes(mins)}
                     aria-pressed={isSelected}
-                    className={`p-3 rounded-default border text-left transition-colors flex flex-col justify-between gap-1.5 ${
+                    className={`p-3 rounded-default border text-left transition-colors flex flex-col justify-between gap-2 ${
                       isSelected
                         ? 'border-brand bg-brand/10 text-brand dark:border-accent dark:bg-accent/15 dark:text-accent font-medium'
                         : 'border-border-default bg-surface-card hover:border-border-hover text-content-primary'
@@ -178,7 +178,7 @@ export function RecoveryMissionModal({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-content-secondary px-0.5">
+                <div className="flex items-center justify-between text-xs text-content-secondary px-1">
                   <span>
                     Ordem de maior impacto pedagógico ({plan.rescuedReviewsCount} de{' '}
                     {plan.totalReviewsInDebt} atrasadas):
@@ -195,10 +195,10 @@ export function RecoveryMissionModal({
                       className="p-3 rounded-default border border-border-default bg-surface-card flex items-start justify-between gap-3"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent text-xs font-bold shrink-0 mt-0.5">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent text-xs font-semibold shrink-0">
                           {idx + 1}
                         </span>
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <div className="text-sm font-semibold text-content-primary">
                             {block.topicName}
                           </div>
@@ -217,7 +217,7 @@ export function RecoveryMissionModal({
             )}
 
             {/* Rodapé do Setup */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border-subtle">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-subtle">
               <Button variant="secondary" onClick={handleCloseModal}>
                 Cancelar
               </Button>
@@ -225,7 +225,7 @@ export function RecoveryMissionModal({
                 variant="primary"
                 disabled={plan.blocks.length === 0}
                 onClick={handleStartMission}
-                className="inline-flex items-center gap-1.5"
+                className="inline-flex items-center gap-2"
                 aria-label="Iniciar missão de resgate de atrasos com cronômetro"
               >
                 <Icon name="player-play" size={16} class="shrink-0" />
@@ -239,16 +239,16 @@ export function RecoveryMissionModal({
         {stage === 'running' && currentBlock && (
           <div className="space-y-6">
             {/* Card do Bloco Ativo */}
-            <div className="p-5 rounded-default border-2 border-brand bg-brand/5 dark:border-accent dark:bg-accent/10 space-y-4">
+            <div className="p-card sm:p-panel rounded-default border-2 border-brand bg-brand/5 dark:border-accent dark:bg-accent/10 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-accent">
                     Revisão Ativa ({currentBlockIndex + 1} de {plan.blocks.length})
                   </span>
-                  <h3 className="text-lg font-bold text-content-primary mt-1 m-0">
+                  <h3 className="text-lg font-semibold text-content-primary mt-1 m-0">
                     {currentBlock.topicName}
                   </h3>
-                  <p className="text-xs text-content-secondary mt-0.5 m-0">
+                  <p className="text-xs text-content-secondary mt-1 m-0">
                     {currentBlock.subjectName} · {currentBlock.urgencyReason}
                   </p>
                 </div>
@@ -260,10 +260,10 @@ export function RecoveryMissionModal({
               {/* Timer do Bloco */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-default bg-surface-card border border-border-default">
                 <div>
-                  <div className="text-3xl font-mono font-bold tracking-tight text-content-primary">
+                  <div className="text-3xl font-mono font-semibold tracking-tight text-content-primary">
                     {formatTimer(secondsRemaining)}
                   </div>
-                  <div className="text-xs text-content-secondary mt-0.5">
+                  <div className="text-xs text-content-secondary mt-1">
                     {secondsRemaining === 0
                       ? 'Tempo esgotado para este bloco!'
                       : 'Tempo recomendado para recall ativo'}
@@ -300,7 +300,7 @@ export function RecoveryMissionModal({
               <Button
                 variant="primary"
                 onClick={handleCompleteCurrentBlock}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                 aria-label="Concluir esta revisão e avançar para o próximo bloco"
               >
                 <Icon name="check" size={16} class="shrink-0" />
@@ -316,13 +316,13 @@ export function RecoveryMissionModal({
 
         {/* ETAPA 3: CONCLUSÃO DA MISSÃO */}
         {stage === 'completed' && (
-          <div className="py-4 text-center space-y-5">
+          <div className="py-4 text-center space-y-6">
             <div className="inline-flex p-3 rounded-full bg-brand/10 dark:bg-accent/15 text-brand dark:text-accent">
               <Icon name="circle-check" size={40} />
             </div>
 
-            <div className="space-y-1.5 max-w-md mx-auto">
-              <h3 className="text-lg font-bold text-content-primary m-0">
+            <div className="space-y-2 max-w-md mx-auto">
+              <h3 className="text-lg font-semibold text-content-primary m-0">
                 Missão de Resgate Cumprida!
               </h3>
               <p className="text-xs text-content-secondary m-0 leading-relaxed">
@@ -333,19 +333,19 @@ export function RecoveryMissionModal({
 
             <div className="grid grid-cols-3 gap-3 p-4 rounded-default bg-surface-subtle border border-border-subtle max-w-md mx-auto">
               <div>
-                <div className="text-2xl font-bold text-content-primary">
+                <div className="text-2xl font-semibold text-content-primary">
                   {completedBlocks.length}
                 </div>
                 <div className="text-xs text-content-secondary">Revisões salvas</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-brand dark:text-accent">
+                <div className="text-2xl font-semibold text-brand dark:text-accent">
                   {completedBlocks.length * (plan.blockDurationMinutes || 15)}m
                 </div>
                 <div className="text-xs text-content-secondary">Tempo investido</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-content-primary">
+                <div className="text-2xl font-semibold text-content-primary">
                   {debtReductionPercent}%
                 </div>
                 <div className="text-xs text-content-secondary">Déficit aliviado</div>

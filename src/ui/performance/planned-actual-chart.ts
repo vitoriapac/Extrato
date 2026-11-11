@@ -95,9 +95,9 @@ export function renderPlannedVsActualChart(
 
   return `<div class="planned-actual-chart" role="region" aria-label="Gráfico semanal de planejado e realizado">
     <div class="planned-actual-chart__legend flex items-center justify-end gap-4 text-xs text-content-secondary mb-2" aria-hidden="true">
-      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-content-primary/25"></span> Planejado</span>
-      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-primary"></span> Realizado (na meta)</span>
-      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-warning-emphasis"></span> Em curso / abaixo</span>
+      <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-content-primary/25"></span> Planejado</span>
+      <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-primary"></span> Realizado (na meta)</span>
+      <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-warning-emphasis"></span> Em curso / abaixo</span>
     </div>
     <div class="planned-actual-chart__canvas overflow-x-auto">
       <svg viewBox="0 0 ${width} ${height}" class="w-full min-w-[540px] max-w-full" role="img" aria-label="Comparação semanal entre carga planejada e realizada">

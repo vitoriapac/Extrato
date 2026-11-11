@@ -23,7 +23,7 @@ export function VolatileMasteryGrid({
     >
       <header class="section-head mb-3 flex items-start justify-between">
         <div class="flex items-center gap-2">
-          <div class="p-1.5 rounded bg-surface-subtle text-red">
+          <div class="p-2 rounded bg-surface-subtle text-red">
             <Icon name="brain" size={20} />
           </div>
           <div>
@@ -33,7 +33,7 @@ export function VolatileMasteryGrid({
               </h3>
               {volatileTopics.length > 0 && <Badge variant="danger">Retenção em risco</Badge>}
             </div>
-            <p class="text-xs text-content-secondary m-0 mt-0.5">
+            <p class="text-xs text-content-secondary m-0 mt-1">
               Tópicos com acerto alto logo após o estudo e queda depois de 14 dias sem revisão
             </p>
           </div>
@@ -52,7 +52,7 @@ export function VolatileMasteryGrid({
       </header>
 
       {volatileTopics.length === 0 ? (
-        <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-md">
+        <div class="p-6 text-center text-sm text-content-secondary bg-surface-subtle rounded-default">
           <div class="inline-flex p-2 rounded-full bg-surface-card text-content-secondary mb-2">
             <Icon name="info-circle" size={24} />
           </div>
@@ -70,7 +70,7 @@ export function VolatileMasteryGrid({
               class="p-3 rounded-default border-t border-border-subtle bg-surface-subtle/50 flex flex-col justify-between"
             >
               <div>
-                <div class="flex items-start justify-between gap-2 mb-1.5">
+                <div class="flex items-start justify-between gap-2 mb-2">
                   <span class="text-xs font-medium text-content-primary truncate max-w-[65%]">
                     {item.subjectName}
                   </span>
@@ -114,7 +114,7 @@ export function VolatileMasteryGrid({
                 {onScheduleReview && (
                   <button
                     type="button"
-                    class="btn small ghost flex items-center gap-1 text-xs py-1 px-2.5"
+                    class="btn small ghost flex items-center gap-1 text-xs py-1 px-3"
                     onClick={() => onScheduleReview(item.topicId, item.subjectId)}
                     aria-label={`${item.actionText}: ${item.topicName}`}
                     title={`Agendar revisão de ${item.topicName} na Agenda`}
@@ -131,7 +131,7 @@ export function VolatileMasteryGrid({
 
       {volatileTopics.length > 0 && (
         <footer class="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-content-secondary">
-          <span class="flex items-center gap-1.5">
+          <span class="flex items-center gap-2">
             <Icon name="info-circle" size={14} />
             <span>{summary}</span>
           </span>

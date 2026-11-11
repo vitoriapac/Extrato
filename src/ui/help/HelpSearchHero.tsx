@@ -25,7 +25,7 @@ export function HelpSearchHero({ chips = DEFAULT_CHIPS }: HelpSearchHeroProps = 
             <h2 class="module-heading__title">Como usar o Extrato de Estudos</h2>
           </div>
           <button
-            class="btn ghost small help-tour-btn inline-flex items-center gap-1.5"
+            class="btn ghost small help-tour-btn inline-flex items-center gap-2"
             type="button"
             data-guided-tour-start="true"
             aria-label="Iniciar tour guiado pelo aplicativo"
@@ -65,7 +65,7 @@ export function HelpSearchHero({ chips = DEFAULT_CHIPS }: HelpSearchHeroProps = 
       </div>
 
       <div
-        class="help-search-chips flex flex-wrap gap-1.5 mt-2"
+        class="help-search-chips flex flex-wrap gap-2 mt-2"
         role="group"
         aria-label="Filtros rápidos de busca"
       >
@@ -74,7 +74,7 @@ export function HelpSearchHero({ chips = DEFAULT_CHIPS }: HelpSearchHeroProps = 
           <button
             key={index}
             type="button"
-            class="btn ghost small help-chip text-xs py-0.5 px-2 rounded-full border border-border-default hover:border-accent hover:text-accent transition-colors"
+            class="btn ghost small help-chip text-xs py-1 px-2 rounded-full border border-border-default hover:border-accent hover:text-accent transition-colors"
             data-help-chip={chip.query}
             aria-label={`Filtrar instruções por ${chip.query}`}
           >
