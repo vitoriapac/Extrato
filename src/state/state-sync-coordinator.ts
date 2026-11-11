@@ -166,7 +166,7 @@ export function createStateSyncCoordinator(options: StateSyncCoordinatorOptions)
 
   return {
     appStateStore,
-    scheduleSave: () => appStateStore.scheduleSave(),
+    scheduleSave: (options?: { silent?: boolean }) => appStateStore.scheduleSave(options),
     enqueueStateTransaction: (task: () => any) => appStateStore.enqueueStateTransaction(task),
     isPersistenceBlocked,
     setPersistenceBlocked,

@@ -47,10 +47,10 @@ As superfícies, textos, divisores e estados semânticos também têm aliases (`
 - `data-row`: histórico traduzido com título, ação e estado.
 - `weekly-assessment` e `period-comparison`: interpretação semanal e deltas por unidade.
 - `Header`: um único modelo alimenta as apresentações hero e compacta.
-- `exam-subject-row`: nome e quatro campos estratégicos alinhados em uma linha no desktop e empilhados no mobile; valores ausentes comunicam herança da meta geral.
+- `exam-subject-row` e `exam-subject-item`: checkbox de seleção para edição em lote (`.exam-subject-bulk`), resumo recolhível e campos estratégicos alinhados em grade no desktop e empilhados no mobile; valores ausentes comunicam herança da meta geral.
 - `consistency-strip`: últimos 28 dias em quatro níveis (as mesmas faixas do mapa de calor de Desempenho), no topo de Hoje, com contagem em texto.
 - `number-stepper` e `stepper-field`: campo numérico com botões de menos e mais (alvo de 44px), `inputmode="numeric"` e rótulo ligado ao campo; usado no registro de questões, onde acertos nunca passam de resolvidas.
-- `metas-subtab` e `metas-subpanel`: atalhos e blocos recolhíveis do Planejamento (`src/ui/planning-subtabs.ts` e [`PlanningSubtabsNav.tsx`](src/ui/components/PlanningSubtabsNav.tsx)).
+- `metas-subtab` e `metas-subpanel`: sub-abas exclusivas (`role="tab"` e `section[role="tabpanel"]` com `hidden`) do Planejamento (`src/ui/planning-subtabs.ts` e [`PlanningSubtabsNav.tsx`](src/ui/components/PlanningSubtabsNav.tsx)).
 - `advanced-reveal` e `term-hint`: botões do modo Essencial (`src/ui/essential-mode.ts`).
 - `backup-export-status`: "Último backup exportado há N dias", em `--warn-text` depois de 7 dias ou quando nunca houve exportação.
 
@@ -64,7 +64,7 @@ Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e
 
 - Desktop: abas no topo em todas as larguras. A barra lateral acima de 1280 px foi descartada.
 - Celular (até 760 px): barra inferior com Início, Hoje, Matérias, Agenda e Mais. A altura medida fica em `--bottom-nav-height`; voltar ao topo, "Salvo" e o aviso usam esse valor.
-- Planejamento: cinco blocos recolhíveis, com Plano da semana aberto por padrão. O atalho escolhido abre o bloco sem fechar os demais e fica em `#planejamento/<semana|prova|metas|fechamento|historico>`. `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida da Visão Geral ou o bloco do Planejamento que contém o alvo; todo salto programático para dentro deles passa por ele antes de rolar.
+- Planejamento: cinco sub-abas exclusivas (`role="tabpanel"`), com Plano da semana ativo por padrão. Apenas o painel selecionado permanece visível e a sub-aba ativa fica em `#planejamento/<semana|prova|metas|fechamento|historico>` (sincronizada com `#metasSubtabSelect` no mobile). `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida da Visão Geral ou seleciona o painel oculto (`[data-metas-subpanel]`) e abre o `details[data-remember]` correspondente antes de rolar. Painéis internos em ajustes (`.metas-adjust-panel`) e histórico (`#metasHistoryIntro` separado de `#metasHistorySection[data-advanced]`) evitam aninhamento de cards.
 - Hoje: ação primeiro. A lista de atividades com Iniciar vem antes da distribuição por disciplina; o resumo do dia é uma faixa compacta (`.today-statement-ledger` em `auto-fit`). Em toque (`pointer:coarse` ou até 760 px), links e selects têm alvo mínimo de `--touch-target`.
 - Cronômetro: mora em Hoje (`#study-timer`); iniciar uma atividade do plano abre o modo foco, e sair dele volta à aba de origem.
 
@@ -87,7 +87,7 @@ Preferências de interface ficam no `localStorage`, nunca no estado nem no backu
   - `captureUndo` (`src/application/undo/state-undo.ts`) restaura os dados persistentes exatamente como eram.
   - `updatedAt`, `lastBackupAt`, `lastExportAt` e o cronômetro ativo ficam como estão.
   - Se qualquer outro dado mudou depois da exclusão, o desfazer é recusado com aviso.
-- **Viram desfazer:** item do calendário, registro de questões, simulado, revisão, sessão com questões vinculadas e tópico arquivado sem vínculos.
+- **Viram desfazer:** item do calendário, registro de questões, simulado, revisão, sessão com questões vinculadas, meta semanal de questões por disciplina e tópico arquivado sem vínculos.
 - **Mantêm "Tem certeza?":**
   - exclusão de disciplina;
   - limpeza de todos os dados;
@@ -107,7 +107,7 @@ Listas de registros usam DEFAULT_LIST_VISIBLE_ITEMS (5), definido em `src/ui/pro
 
 Aplicar escopo, filtros, busca e ordenação antes da apresentação. Sessões, questões, simulados e decisões priorizam os mais recentes; revisões mantêm urgência; lacunas mantêm prioridade. Filtros e navegação recolhem as listas. O estado é transitório e não integra armazenamento ou backups. Atualizações de dados recalculam a contagem.
 
-Categorias: progressive-list para registros; always-visible para indicadores, gráficos, matrizes, comparações, navegação e conquistas; paginated-list para grandes coleções. A revisão de classificações históricas mantém paginação de 100 questões. As três recomendações escolhidas para hoje são uma seleção do motor, não uma lista de registros.
+Categorias: progressive-list para registros; always-visible para indicadores, gráficos, matrizes, comparações, navegação e conquistas; paginated-list para grandes coleções. A revisão de classificações históricas mantém paginação de 100 questões; em Planejamento → Histórico, `Evolução das prioridades` (`.priority-history-topics`, `strategic-history-renderer.ts` + `weekly-close-modal-controller.ts`) pagina em lotes de 12 tópicos por página e renderiza as observações sob demanda ao expandir (`.priority-history-topic__toggle`, com 5 observações iniciais e "Mostrar mais"). As três recomendações escolhidas para hoje são uma seleção do motor, não uma lista de registros.
 
 O adaptador mountProgressiveLists usa uma relação explícita de seletores e registros, sem aplicar limites a cards arbitrários. Novos módulos devem aderir à mesma constante e controles. Botões reais expõem aria-expanded e aria-controls, foco visível e área mínima de 44 px. Recolhimento só rola quando o controle fica fora da viewport, respeitando prefers-reduced-motion.
 
@@ -171,7 +171,7 @@ A migração incremental da interface consolidou componentes funcionais Preact t
 | **Desempenho**    | `<ShiftEnergyCard />` / `<PerformancePageNav />` | `src/ui/tabs/performance/` e `src/ui/performance/` | Energia por turno, sub-abas (`Tabs` em 2 níveis) e selos `<Tooltip>`    |
 | **Revisões**      | `<ReviewsTable />`                          | `src/ui/tabs/reviews/ReviewsTable.tsx`              | Fila de revisões adaptativas com `<ReviewRatingSheet />`                 |
 | **Calendário**    | `<CalendarTable />` / `<CalendarViewSwitch />` | `src/ui/tabs/calendar/`                          | Grade operacional e alternador Mês/Lista (`SegmentedControl`)            |
-| **Metas**         | `<WeeklyAvailabilityGrid />` / `<PlanningSubtabsNav />` | `src/ui/tabs/goals/` e `src/ui/components/` | Capacidade, plano, conciliação e barra de sub-abas (`Tabs`)              |
+| **Metas**         | `<WeeklyAvailabilityGrid />`, `<PlanExecutionCard />`, `<WeekReconciliationSummary />`, `<FinalStretchBanner />` / `<PlanningSubtabsNav />` | `src/ui/tabs/goals/` e `src/ui/components/` | Capacidade, plano, execução, conciliação, reta final e sub-abas (`Tabs`) |
 | **Hoje**          | `<TodayAgendaSections />`, `<TodayGoalsCard />`, `<TodayExecutionModeSwitch />` | `src/ui/tabs/today/`   | Execução (`Agenda`/`Sequência`), metas (`BulletBar`) e Extrato do Dia    |
 | **Visão Geral**   | `<NextActionCard />`, `<CockpitSidebarCards />`, `<SyllabusHealthCard />`, `<PerformanceTrendCard />`, `<AllocationBalanceGrid />` | `src/ui/tabs/dashboard/` | Cockpit em camadas: próxima ação, sidebar 28d, radar saúde, tendência e balanço |
 | **Modais/Sheets** | `<DataManagementModal />`, `<ExamClassificationModal />`, `<StructuredImportModal />`, `<QuestionsImportModal />`, `<ExamImportModal />`, `<GuidedOnboardingModal />`, `<SessionModalSheet />`, `<ReviewRatingSheet />`, `<ConfirmPromptModal />`, `<RemoteSyncModal />`, `<FirstAccessModal />`, `<WhatIfSimulatorModal />` | `src/ui/modals/`, `src/ui/components/` e `src/ui/forecasts/` | Modais e sheets em Top Layer nativo (`<Dialog>` / `<BottomSheet>`) montados em `*Mount` |

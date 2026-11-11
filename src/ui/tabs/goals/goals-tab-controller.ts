@@ -183,12 +183,21 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     const executionViewHtml = renderPlanExecutionView(model, {
       formatDate: ctx.formatDatePt,
     });
-    const distributionHtml = distribution
-      ? renderStudyDistribution(distribution, { escapeHtml: ctx.escapeHtml, subjects: state.subjects })
-      : '';
-    const alignmentHtml = alignment
-      ? renderPlanImpactAlignment(alignment, { escapeHtml: ctx.escapeHtml, subjects: state.subjects })
-      : '';
+    // Sem dados prontos não há o que abrir: o bloco some em vez de oferecer um disclosure vazio.
+    const distributionHtml =
+      distribution?.state === 'ready' && distribution.rows?.length
+        ? renderStudyDistribution(distribution, {
+            escapeHtml: ctx.escapeHtml,
+            subjects: state.subjects,
+          })
+        : '';
+    const alignmentHtml =
+      alignment?.state === 'ready' && alignment.rows?.length
+        ? renderPlanImpactAlignment(alignment, {
+            escapeHtml: ctx.escapeHtml,
+            subjects: state.subjects,
+          })
+        : '';
 
     return h(PlanExecutionCard, {
       executionViewHtml,
@@ -331,7 +340,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     weeks = lived;
 
     container.innerHTML = `${renderGoalHistoryCharts(weeks, state.metas || {}, { formatDate })}
-    <div class="weekly-history-table-wrap">
+    <div class="weekly-history-table-wrap" tabindex="0" role="region" aria-label="Histórico de metas das últimas semanas; use as setas para percorrer as colunas">
     <table class="weekly-history-table">
       <thead>
         <tr>
@@ -346,10 +355,10 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
           .map(
             w => `
           <tr>
-            <td>${formatDate(w.weekStart)} – ${formatDate(w.weekEnd)}</td>
-            <td>${w.topicsConcl}/${state.metas?.semanal ?? 0} ${badge(w.semanalOk, w.current)}</td>
-            <td>${w.questoesResolved}/${state.metas?.questoesSemanal ?? 0} ${badge(w.questoesOk, w.current)}</td>
-            <td>${w.simuladosCount}/${state.metas?.simuladosSemanal ?? 0} ${badge(w.simuladosOk, w.current)}</td>
+            <td data-label="Semana">${formatDate(w.weekStart)} – ${formatDate(w.weekEnd)}</td>
+            <td data-label="Tópicos">${w.topicsConcl}/${state.metas?.semanal ?? 0} ${badge(w.semanalOk, w.current)}</td>
+            <td data-label="Questões">${w.questoesResolved}/${state.metas?.questoesSemanal ?? 0} ${badge(w.questoesOk, w.current)}</td>
+            <td data-label="Simulados">${w.simuladosCount}/${state.metas?.simuladosSemanal ?? 0} ${badge(w.simuladosOk, w.current)}</td>
           </tr>
         `
           )

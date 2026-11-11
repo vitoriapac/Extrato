@@ -158,6 +158,9 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     persistAndRender,
     captureReadinessBeforeStrategy: approvalReadinessService.captureReadinessBeforeStrategy,
     invalidatePlanPreview: () => studyPlanBuilderController.clearStudyPlanPreviewState(),
+    somarQuestoesDisciplinaNaSemana: (subjectId: string | null) =>
+      subjectId ? studyMetricsSelectors.somarQuestoesDisciplinaNaSemana(subjectId) : 0,
+    subjectGoalService: services.subjectGoalService,
   });
   subjectTargetEditorController.bindEvents();
 

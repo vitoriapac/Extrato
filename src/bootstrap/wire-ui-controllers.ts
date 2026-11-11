@@ -30,7 +30,7 @@ export interface WireUiControllersDeps {
   ensureExamCatalog: () => Promise<any>;
   openExamImport: (presetId?: string, source?: string) => void;
   openStructuredImportFromOnboarding: () => void;
-  scheduleSave: () => void;
+  scheduleSave: (options?: { silent?: boolean }) => void;
   render: (scope?: string) => void;
   persistAndRender: () => void;
   renderAll: () => void;
@@ -260,6 +260,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       setRetentionFilter: (field: string, value: any) =>
         analyticsUi.approvalTabController.setRetentionFilter(field, value),
       updateExamSubject: analytics.goalsBlueprintService.updateExamSubject,
+      openWhatIfSimulator: () => executionUi.whatIfController?.open?.(),
     },
     specialConfig: {
       onSetPerformanceSubject: value => practiceUi.questionAnalyticsController.setSubjectId(value),

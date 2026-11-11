@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=1a6dc1b77720">
-<link rel="stylesheet" href="styles/app.css?v=1a6dc1b77720">
+<link rel="stylesheet" href="styles/tailwind.css?v=59b8d2eca389">
+<link rel="stylesheet" href="styles/app.css?v=59b8d2eca389">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -660,11 +660,11 @@
   <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
     <header class="page-header"><div class="page-header__text"><h2>Planejamento</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p></div></header>
     <nav class="overview-nav metas-nav" aria-label="Seções do Planejamento">
-      <div id="metasSubtabsMount" class="overview-nav-links"></div><button type="button" class="btn ghost small metas-collapse-others-btn" id="metasCollapseOthersBtn" hidden aria-hidden="true">Recolher outros</button>
+      <div id="metasSubtabsMount" class="overview-nav-links"></div>
       <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e ritmo</option><option value="metas">Metas por disciplina</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
     </nav>
 
-    <details class="metas-subpanel" id="metasSub-semana" data-metas-subpanel="semana" aria-labelledby="metasTab-semana" open><summary class="metas-subpanel__summary">Plano da semana</summary>
+    <section class="metas-subpanel active" id="metasSub-semana" data-metas-subpanel="semana" role="tabpanel" aria-labelledby="metasTab-semana" tabindex="0">
     <section class="chart-card card--default metas-execution" id="planExecutionCard" aria-labelledby="planExecutionTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo planejado e estudo realizado no período atual.</p></header>
       <div id="planExecutionResults"></div>
@@ -673,10 +673,10 @@
 
     <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância do edital e sua necessidade pedagógica.</p></header><p class="helper-text">Nada é salvo nem entra no calendário sem a sua confirmação. <a href="#instrucoes">Como calculamos a confiança &rarr;</a></p><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
 
-    <details class="decision-fold metas-adjust" id="metasAdjust" data-remember="planning-week-adjust"><summary>Ajustar metas e disponibilidade</summary>
-    <section class="chart-card card--default metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Metas de rendimento e volume semanal desejado. Ajuste os valores conforme a sua fase de estudo.</p></header><div id="metasContainer"></div></section>
+    <details class="chart-card decision-fold metas-adjust" id="metasAdjust" data-remember="planning-week-adjust"><summary>Ajustar metas e disponibilidade</summary>
+    <section class="metas-adjust-panel metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Metas de rendimento e volume semanal desejado. Ajuste os valores conforme a sua fase de estudo.</p></header><div id="metasContainer"></div></section>
 
-    <section class="chart-card card--default metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo você tem disponível em cada dia. Esse total é a base que abastece o cálculo de horas de cada disciplina.</p></header><div id="weeklyHoursGoals"></div></section>
+    <section class="metas-adjust-panel metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo você tem disponível em cada dia. Esse total é a base que abastece o cálculo de horas de cada disciplina.</p></header><div id="weeklyHoursGoals"></div></section>
     </details>
 
 
@@ -686,8 +686,8 @@
       <div id="periodComparisonResults" aria-live="polite"></div>
     </details>
 
-    </details>
-    <details class="metas-subpanel" id="metasSub-prova" data-metas-subpanel="prova" aria-labelledby="metasTab-prova"><summary class="metas-subpanel__summary">Prova e ritmo</summary>
+    </section>
+    <section class="metas-subpanel" id="metasSub-prova" data-metas-subpanel="prova" role="tabpanel" aria-labelledby="metasTab-prova" tabindex="0" hidden>
     <div class="chart-card" id="metasExamStrategy" data-metas-section>
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
       <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline--end icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
@@ -700,44 +700,31 @@
       <div id="ritmoContainer"></div>
     </div>
 
-    </details>
-    <details class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas" aria-labelledby="metasTab-metas"><summary class="metas-subpanel__summary">Metas por disciplina</summary>
-    <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
-    <div class="section-head">
-      <h3 class="section-title">Metas de questões por disciplina</h3>
-    </div>
-    <p class="helper-text">
-      Meta de questões resolvidas por semana, específica por disciplina.
-    </p>
-    <form class="meta-disciplina-add" id="metaDisciplinaForm">
-      <label for="novaMetaDisciplinaSelect" class="sr-only">Disciplina da nova meta</label>
-      <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
-      <label for="novaMetaDisciplinaValor" class="sr-only">Quantidade de questões da nova meta</label>
-      <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" class="w-20">
-      <span class="metadata-text">questões/semana</span>
-      <button class="btn small" type="submit" id="addMetaDisciplinaBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Adicionar meta</button>
-    </form>
-    <div id="metasPorDisciplinaContainer"></div>
+    </section>
+    <section class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas" role="tabpanel" aria-labelledby="metasTab-metas" tabindex="0" hidden>
+    <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas por disciplina</h3><p class="module-heading__description">Configure a meta de acerto (%) e a meta semanal de questões de cada disciplina em uma única tabela.</p></header><div id="subjectTargetEditor"></div></div>
 
     <div class="chart-card">
       <h3>Histórico de metas (últimas 8 semanas)</h3>
       <div id="historicoMetasContainer"></div>
     </div>
-    </details>
-    <details class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" aria-labelledby="metasTab-fechamento"><summary class="metas-subpanel__summary">Fechamento semanal</summary>
+    </section>
+    <section class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento" tabindex="0" hidden>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasCloseTitle">Fechamento semanal</h3><p class="module-heading__description">Leia a semana, salve o retrato e decida a próxima.</p></header>
       <div id="weeklyCloseDashboard"></div>
     </section>
 
-    </details>
-    <details class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico" aria-labelledby="metasTab-historico"><summary class="metas-subpanel__summary">Histórico de retratos e decisões</summary>
-    <section class="chart-card metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões" data-metas-section aria-labelledby="metasHistoryTitle">
-      <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Retratos e Histórico de Decisões</h3><p class="module-heading__description">Retratos semanais salvos, decisões e trajetória das prioridades. Registros congelados e imutáveis.</p></header>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Retratos semanais</h3></header><div id="weeklyCloseHistoryDashboard"></div></section>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Linha do Tempo Estratégica</h3><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Evolução das prioridades</h3><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
     </section>
-    </details>
+    <section class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico" role="tabpanel" aria-labelledby="metasTab-historico" tabindex="0" hidden>
+    <section class="chart-card metas-history-intro" id="metasHistoryIntro" data-metas-section aria-labelledby="metasHistoryTitle">
+      <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Retratos e Histórico de Decisões</h3><p class="module-heading__description">Retratos semanais salvos, decisões e trajetória das prioridades. Registros congelados e imutáveis.</p></header>
+    </section>
+    <div class="metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões">
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Retratos semanais</h4></header><div id="weeklyCloseHistoryDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Histórico de decisões</h4></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Linha do Tempo Estratégica</h4><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Evolução das prioridades</h4><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
+    </div>
+    </section>
   </div>
 
   <!-- INSTRUÇÕES -->
@@ -783,7 +770,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=1a6dc1b77720"></script>
+  <script src="src/app.bundle.js?v=59b8d2eca389"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

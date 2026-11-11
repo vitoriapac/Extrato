@@ -22,18 +22,13 @@ export function PhaseRoadmapTimeline({
   label = 'Linha do tempo e fases de preparação para a prova',
   className = '',
 }: PhaseRoadmapTimelineProps): JSX.Element {
-  const {
-    phase,
-    phaseLabel,
-    daysRemaining,
-    examDate,
-    progressPercentage,
-    phasesList,
-  } = visual;
+  const { phase, phaseLabel, daysRemaining, examDate, progressPercentage, phasesList } = visual;
 
   if (phase === 'undated' || !examDate) {
     return (
-      <div class={`p-4 rounded-default bg-surface-elevated border border-border-default text-center ${className}`}>
+      <div
+        class={`p-4 rounded-default bg-surface-elevated border border-border-default text-center ${className}`}
+      >
         <div class="inline-flex p-3 rounded-full bg-surface-sunken text-content-secondary mb-2">
           <Icon name="calendar-event" size={20} stroke={1.5} />
         </div>
@@ -66,9 +61,7 @@ export function PhaseRoadmapTimeline({
                 • Prova em {formatDate(examDate)}
               </span>
             </div>
-            <h4 class="text-sm font-semibold text-content-primary">
-              {phaseLabel}
-            </h4>
+            <h4 class="text-sm font-semibold text-content-primary">{phaseLabel}</h4>
           </div>
         </div>
 
@@ -108,7 +101,7 @@ export function PhaseRoadmapTimeline({
           let badgeClass = 'bg-surface-elevated text-content-secondary border border-border-subtle';
 
           if (isCurrent) {
-            cardClass = 'bg-amber-subtle/40 border-amber/50 text-content-primary ring-1 ring-amber/30';
+            cardClass = 'bg-amber-subtle/40 border-amber/50 text-content-primary border-amber/70';
             badgeClass = 'bg-warning-emphasis text-surface-ground font-semibold';
           } else if (isPassed) {
             cardClass = 'bg-surface-sunken border-border-subtle text-content-secondary';
@@ -122,9 +115,11 @@ export function PhaseRoadmapTimeline({
             >
               <div>
                 <div class="flex items-center justify-between gap-1 mb-1">
-                  <span class="text-xs font-semibold truncate">{item.label}</span>
+                  <span class="text-xs font-semibold leading-tight break-words">{item.label}</span>
                   {isCurrent && (
-                    <span class={`px-2 py-1 rounded text-xs uppercase tracking-wider ${badgeClass}`}>
+                    <span
+                      class={`px-2 py-1 rounded text-xs uppercase tracking-wider ${badgeClass}`}
+                    >
                       Agora
                     </span>
                   )}

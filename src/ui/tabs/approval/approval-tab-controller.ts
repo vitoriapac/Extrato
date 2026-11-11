@@ -37,7 +37,7 @@ export interface ApprovalTabControllerOptions {
   escapeAttr: (text: string) => string;
   formatDatePt: (date: string) => string;
   formatPlanMinutes?: (mins: number) => string;
-  scheduleSave: () => void;
+  scheduleSave: (options?: { silent?: boolean }) => void;
   computeApprovalMetrics: () => any;
   readinessResult: (metrics: any) => any;
   classifyApprovalScore?: (score: number) => any;
@@ -161,7 +161,7 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
         activeExamTags: state.examBlueprint?.activeExamTags || [],
       })
     ) {
-      scheduleSave();
+      scheduleSave({ silent: true });
     }
     const achievement = currentAchievementProjection(m, readiness);
     if (
@@ -174,7 +174,7 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
         activeExamTags: state.examBlueprint?.activeExamTags || [],
       })
     ) {
-      scheduleSave();
+      scheduleSave({ silent: true });
     }
     const projectionHistory = buildProjectionCalibration({
       snapshots: state.projectionSnapshots,

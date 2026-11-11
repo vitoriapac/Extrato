@@ -91,9 +91,7 @@ export function GroupedBarChart({
                     class={`w-2 h-2 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
                     aria-hidden="true"
                   />
-                  <span class="font-medium text-content-primary truncate">
-                    {row.name}
-                  </span>
+                  <span class="font-medium text-content-primary break-words">{row.name}</span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <span class="text-content-secondary font-mono text-xs">

@@ -15,15 +15,19 @@ export function PlanExecutionCard({
     <>
       <div dangerouslySetInnerHTML={{ __html: executionViewHtml }} />
 
-      <details class="study-distribution" id="studyDistribution">
-        <summary>Distribuição entre disciplinas</summary>
-        <div dangerouslySetInnerHTML={{ __html: distributionHtml }} />
-      </details>
+      {distributionHtml && (
+        <details class="study-distribution" id="studyDistribution">
+          <summary>Distribuição entre disciplinas</summary>
+          <div dangerouslySetInnerHTML={{ __html: distributionHtml }} />
+        </details>
+      )}
 
-      <details class="study-distribution" id="planImpactAlignment">
-        <summary>Plano × impacto na prova</summary>
-        <div dangerouslySetInnerHTML={{ __html: alignmentHtml }} />
-      </details>
+      {alignmentHtml && (
+        <details class="study-distribution" id="planImpactAlignment">
+          <summary>Plano × impacto na prova</summary>
+          <div dangerouslySetInnerHTML={{ __html: alignmentHtml }} />
+        </details>
+      )}
     </>
   );
 }

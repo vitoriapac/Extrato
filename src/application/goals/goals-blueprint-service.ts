@@ -2,6 +2,7 @@ import { parseLocalDate } from '../../core/date-utils.js';
 import type { AppState } from '../../core/types.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { EXAM_PRIORITIES } from '../../state/strategic.js';
+import { runUndoable } from '../../ui/undoable.js';
 
 export interface GoalsBlueprintServiceDependencies {
   getState: () => AppState;
@@ -222,8 +223,9 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
   }
 
   function deleteMetaDisciplina(id: string) {
-    subjectGoalService.remove?.(id);
-    persistAndRender();
+    runUndoable('Meta de questões removida.', () => {
+      subjectGoalService.remove?.(id);
+    });
   }
 
   return {

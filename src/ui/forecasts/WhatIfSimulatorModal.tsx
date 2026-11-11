@@ -75,10 +75,11 @@ export function WhatIfSimulatorModal({
                     type="button"
                     class={`min-h-control px-3 py-1 rounded text-xs font-semibold border transition-colors ${
                       isSelected
-                        ? 'bg-primary text-white border-primary shadow-sm'
+                        ? 'bg-primary text-primary-contrast border-primary'
                         : 'bg-surface-card text-secondary border-border-default hover:border-primary'
                     }`}
                     onClick={() => setDailyMinutesDelta(mins)}
+                    aria-pressed={isSelected}
                   >
                     {label}
                   </button>
@@ -98,10 +99,11 @@ export function WhatIfSimulatorModal({
                     type="button"
                     class={`min-h-control px-3 py-1 rounded text-xs font-semibold border transition-colors ${
                       horizonDays === days
-                        ? 'bg-primary text-white border-primary shadow-sm'
+                        ? 'bg-primary text-primary-contrast border-primary'
                         : 'bg-surface-card text-secondary border-border-default hover:border-primary'
                     }`}
                     onClick={() => setHorizonDays(days)}
+                    aria-pressed={horizonDays === days}
                   >
                     {days} dias
                   </button>
@@ -119,10 +121,11 @@ export function WhatIfSimulatorModal({
                     type="button"
                     class={`min-h-control px-3 py-1 rounded text-xs font-semibold border transition-colors ${
                       targetScore === score
-                        ? 'bg-primary text-white border-primary shadow-sm'
+                        ? 'bg-primary text-primary-contrast border-primary'
                         : 'bg-surface-card text-secondary border-border-default hover:border-primary'
                     }`}
                     onClick={() => setTargetScore(score)}
+                    aria-pressed={targetScore === score}
                   >
                     {score}%
                   </button>
@@ -135,7 +138,7 @@ export function WhatIfSimulatorModal({
         {/* Quadro Comparativo: Atual vs. Simulado */}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           {/* Card Prontidão */}
-          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3">
             <div class="flex items-center justify-center gap-1 mb-1">
               <span class="text-xs text-muted">Prontidão Geral</span>
               <Tooltip
@@ -145,7 +148,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como a Prontidão Geral é calculada"
                 >
                   <Icon name="info-circle" size={14} />
@@ -167,7 +170,7 @@ export function WhatIfSimulatorModal({
           </div>
 
           {/* Card Carga Semanal */}
-          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3">
             <div class="flex items-center justify-center gap-1 mb-1">
               <span class="text-xs text-muted">Carga Semanal</span>
               <Tooltip
@@ -177,7 +180,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como a Carga Semanal é calculada"
                 >
                   <Icon name="info-circle" size={14} />
@@ -199,7 +202,7 @@ export function WhatIfSimulatorModal({
           </div>
 
           {/* Card Cobertura do Edital */}
-          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3">
             <div class="flex items-center justify-center gap-1 mb-1">
               <span class="text-xs text-muted">Cobertura do Edital</span>
               <Tooltip
@@ -209,7 +212,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como a Cobertura do Edital é calculada"
                 >
                   <Icon name="info-circle" size={14} />
@@ -231,7 +234,7 @@ export function WhatIfSimulatorModal({
           </div>
 
           {/* Card Dias até a Meta */}
-          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3">
             <div class="flex items-center justify-center gap-1 mb-1">
               <span class="text-xs text-muted">Prazo para a Meta</span>
               <Tooltip
@@ -241,7 +244,7 @@ export function WhatIfSimulatorModal({
               >
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center rounded-full p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
+                  class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
                   aria-label="Como o Prazo para a Meta é estimado"
                 >
                   <Icon name="info-circle" size={14} />
@@ -269,10 +272,10 @@ export function WhatIfSimulatorModal({
         {/* Lista de Insights da Simulação */}
         {insights.length > 0 && (
           <div class="rounded-default bg-brand/5 dark:bg-brand/20 p-4 border border-brand/10 dark:border-brand/30">
-            <h4 class="font-semibold text-primary mb-2 flex items-center gap-2">
+            <h3 class="font-semibold text-primary mb-2 flex items-center gap-2">
               <Icon name="bulb" size={16} class="shrink-0" />
               <span>Conclusões da Simulação:</span>
-            </h4>
+            </h3>
             <ul class="space-y-2 text-secondary pl-6 list-disc">
               {insights.map((insight, idx) => (
                 <li key={idx} class="leading-relaxed">

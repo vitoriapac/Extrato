@@ -27,7 +27,7 @@ function chip(s: WeeklyAllocationBarVisualModel['subjects'][number]): JSX.Elemen
       class="flex items-center gap-2 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
     >
       <span class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`} aria-hidden="true" />
-      <span class="font-medium truncate max-w-[120px]">{s.subjectName}</span>
+      <span class="font-medium break-words min-w-0">{s.subjectName}</span>
       <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
       <span class="text-content-secondary text-xs">({formatDecimal(s.percentage)}%)</span>
     </div>
@@ -51,7 +51,8 @@ export function AllocationBar({
   }
 
   const capacityTotal = Math.max(totalWeeklyMinutes, weeklyCapacityMinutes, 1);
-  const flexPct = capacityTotal > 0 && flexMinutes > 0 ? +((flexMinutes / capacityTotal) * 100).toFixed(1) : 0;
+  const flexPct =
+    capacityTotal > 0 && flexMinutes > 0 ? +((flexMinutes / capacityTotal) * 100).toFixed(1) : 0;
 
   return (
     <div
@@ -65,7 +66,8 @@ export function AllocationBar({
           <span class="font-semibold text-content-primary">Capacidade Semanal Alocada</span>
           <div class="text-xs text-content-secondary">
             {formatMinutes(totalWeeklyMinutes)} divididos entre as disciplinas
-            {weeklyCapacityMinutes > 0 && ` · meta semanal de ${formatMinutes(weeklyCapacityMinutes)}`}
+            {weeklyCapacityMinutes > 0 &&
+              ` · meta semanal de ${formatMinutes(weeklyCapacityMinutes)}`}
           </div>
         </div>
         {flexMinutes > 0 && (
@@ -121,7 +123,11 @@ export function AllocationBar({
         <div class="pt-2 border-t border-border-subtle">
           <div class="flex items-center justify-between text-xs font-medium text-content-secondary mb-2">
             <span>Divisão por tipo de estudo</span>
-            <span>{formatDecimal(mix.theoryPercentage)}% teoria · {formatDecimal(mix.questionsPercentage)}% questões · {formatDecimal(mix.reviewsPercentage)}% revisões</span>
+            <span>
+              {formatDecimal(mix.theoryPercentage)}% teoria ·{' '}
+              {formatDecimal(mix.questionsPercentage)}% questões ·{' '}
+              {formatDecimal(mix.reviewsPercentage)}% revisões
+            </span>
           </div>
           <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
             {mix.theoryPercentage > 0 && (

@@ -151,9 +151,9 @@ Revisar e confirmar cria nova versão com mudanças, evidências e prontidão co
   - *Semana de Revisão Final (0–7 dias):* Manutenção rápida e descanso ativo.
 - **Interatividade:** Destaque dinâmico da fase ativa com badge "Agora", indicação das fases já ultrapassadas e régua de progresso com gradiente.
 
-### 5. Cores Oficiais nas Metas por Disciplina e Configuração Estratégica
-- **Metas de Acerto por Disciplina (`#subjectTargetEditor`):** Cada linha da tabela agora apresenta o swatch de cor da disciplina ao lado da caixa de seleção e nome, harmonizando com os gráficos da aba Desempenho.
-- **Configuração da Prova por Disciplina (`.exam-subject-config`):** Cada disciplina expansível recebe seu swatch oficial `subject-bg-X`, facilitando a identificação imediata ao revisar pesos e prioridades.
+### 5. Metas Unificadas por Disciplina e Configuração Estratégica
+- **Metas por Disciplina (`#subjectTargetEditor`):** Tabela única que reúne meta de acerto (%), acerto atual, diferença vs. meta, tendência (30 dias) e meta semanal de questões por disciplina (`Questões / semana`), com swatch oficial `subject-bg-X`, comparativo entre meta global semanal e soma das metas por disciplina, barra de rascunho pendente (`Salvar alterações` / `Descartar`), confirmação via `Enter` ou em lote, exclusão reversível via `runUndoable` e empilhamento via `data-label` abaixo de 640 px.
+- **Configuração da Prova por Disciplina (`.exam-subject-item` e `.exam-subject-config`):** Cada disciplina exibe swatch oficial `subject-bg-X`, resumo estratégico e checkbox para alteração em lote de prioridade e meta de domínio (`.exam-subject-bulk`), além de fluxo inline para definir a data da prova quando ausente (`#examUndatedDateInput`).
 
 ## Gráficos Visuais da Aba de Questões e Simulados (Modernização Visual)
 

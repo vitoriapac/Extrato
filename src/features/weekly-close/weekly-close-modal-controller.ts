@@ -113,6 +113,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   let strategicTimelineFilter = 'all';
   let strategicTimelineGroup = 'none';
   let priorityHistorySubject = '';
+  let priorityHistoryPage = 0;
+  const expandedPriorityTopics = new Set<string>();
+  const expandedPriorityObservations = new Set<string>();
 
   function recordedExamPhase() {
     const state = deps.getState();
@@ -169,9 +172,14 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       appliedSummary = {
         ids: allocations.map((item: any) => item.priorityId).filter(Boolean),
         names: [
-          ...new Set(allocations.map((item: any) => deps.getTopicName(item.topicId)).filter(Boolean)),
+          ...new Set(
+            allocations.map((item: any) => deps.getTopicName(item.topicId)).filter(Boolean)
+          ),
         ] as string[],
-        minutes: allocations.reduce((sum: number, item: any) => sum + (Number(item.minutes) || 0), 0),
+        minutes: allocations.reduce(
+          (sum: number, item: any) => sum + (Number(item.minutes) || 0),
+          0
+        ),
         days: new Set(allocations.map((item: any) => item.date)).size,
       };
       lastAppliedSnapshotId = result?.snapshot?.id || null;
@@ -234,7 +242,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     const allocated = proposal?.allocations?.length || 0,
       left = Number(proposal?.unallocatedMinutes) || 0;
     const previewHtml = proposal
-      ? `<div class="weekly-action-preview"><strong>${allocated ? `${allocated} ${allocated === 1 ? 'bloco entra' : 'blocos entram'} na agenda dos próximos 7 dias` : 'Nada coube na capacidade livre dos próximos 7 dias'}${left ? ` · ${formatPlanMinutes(left)} não couberam` : ''}</strong>${allocated ? '<button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button>' : '<p class="analytics-note">Libere horas em Disponibilidade semanal ou escolha outra prioridade.</p>'}</div>`
+      ? `<div class="weekly-action-preview"><strong>${allocated ? `${allocated} ${allocated === 1 ? 'bloco entra' : 'blocos entram'} na agenda dos próximos 7 dias` : 'Nada coube na capacidade livre dos próximos 7 dias'}${left ? ` · ${formatPlanMinutes(left)} não couberam` : ''}</strong>${allocated ? '<button class="btn small" type="button" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button>' : '<p class="analytics-note">Libere horas em Disponibilidade semanal ou escolha outra prioridade.</p>'}</div>`
       : '';
     const applied = appliedSummary
       ? `<div class="weekly-applied" id="weeklyAppliedStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Agendado</span></span><p>Próxima semana: ${escapeHtml(appliedSummary.names.join(', ') || 'prioridades escolhidas')} · ${formatPlanMinutes(appliedSummary.minutes)} reservados em ${appliedSummary.days} ${appliedSummary.days === 1 ? 'dia' : 'dias'}. Os blocos já estão no plano diário; o retrato e a prontidão desta semana foram registrados junto.</p>${lastAppliedSnapshotId ? '<button class="btn ghost small" type="button" data-delegated-click="undoWeeklyCloseApply()">Desfazer</button>' : ''}</div>`
@@ -242,8 +250,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     const undone = undoneNote
       ? `<div class="weekly-applied weekly-applied--undone" id="weeklyUndoneStatus" role="status" tabindex="-1"><span class="weekly-record-stamp" aria-hidden="true"><span>Desfeito</span></span><p>${undoneNote.kept ? 'Blocos ainda não estudados foram removidos; os que já têm tempo registrado continuam no plano.' : 'As prioridades foram desfeitas: os blocos saíram do plano e a revisão aplicada foi removida.'} Você pode escolher de novo.</p></div>`
       : '';
-    if (!priorities.length) return `<section class="weekly-close-actions">${applied}${undone}</section>`;
-    return `<section class="weekly-close-actions">${applied}${undone}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; a próxima ação de hoje continua no plano. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
+    if (!priorities.length)
+      return `<section class="weekly-close-actions">${applied}${undone}</section>`;
+    return `<section class="weekly-close-actions">${applied}${undone}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; a próxima ação de hoje continua no plano. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" type="button" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
   }
 
   // Desfaz só o que ainda não foi estudado: blocos com tempo registrado ficam, e com eles a revisão.
@@ -256,13 +265,17 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       const items = plan.items || [];
       const next = items.filter((item: any) => {
         if (item.weeklyCloseSnapshotId !== id) return true;
-        const executed = (Number(item.executedSeconds) || 0) > 0 || (item.sessionIds || []).length > 0;
+        const executed =
+          (Number(item.executedSeconds) || 0) > 0 || (item.sessionIds || []).length > 0;
         if (executed) kept++;
         return executed;
       });
       if (next.length === items.length) continue;
       plan.items = next;
-      plan.plannedMinutes = next.reduce((sum: number, row: any) => sum + (Number(row.plannedMinutes) || 0), 0);
+      plan.plannedMinutes = next.reduce(
+        (sum: number, row: any) => sum + (Number(row.plannedMinutes) || 0),
+        0
+      );
       plan.flexMinutes = Math.max(0, (Number(plan.availableMinutes) || 0) - plan.plannedMinutes);
       plan.updatedAt = nowISO();
     }
@@ -555,7 +568,12 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
           activeExamTags: state.examBlueprint?.activeExamTags || [],
           today: todayISO(),
           subjectId: priorityHistorySubject,
-        })
+        }),
+        {
+          expandedTopics: expandedPriorityTopics,
+          expandedObservations: expandedPriorityObservations,
+          page: priorityHistoryPage,
+        }
       );
     }
 
@@ -589,6 +607,36 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
 
   function setPriorityHistorySubject(value: string) {
     priorityHistorySubject = value;
+    priorityHistoryPage = 0;
+    expandedPriorityTopics.clear();
+    expandedPriorityObservations.clear();
+    renderStudyTrack32Insights();
+  }
+
+  function togglePriorityTopic(topicKey: string) {
+    const key = String(topicKey || '');
+    if (!key) return;
+    if (expandedPriorityTopics.has(key)) {
+      expandedPriorityTopics.delete(key);
+    } else {
+      expandedPriorityTopics.add(key);
+    }
+    renderStudyTrack32Insights();
+  }
+
+  function togglePriorityTopicObservations(topicKey: string) {
+    const key = String(topicKey || '');
+    if (!key) return;
+    if (expandedPriorityObservations.has(key)) {
+      expandedPriorityObservations.delete(key);
+    } else {
+      expandedPriorityObservations.add(key);
+    }
+    renderStudyTrack32Insights();
+  }
+
+  function showMorePriorityHistoryTopics() {
+    priorityHistoryPage += 1;
     renderStudyTrack32Insights();
   }
 
@@ -611,6 +659,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     setStrategicTimelineFilter,
     setStrategicTimelineGroup,
     setPriorityHistorySubject,
+    togglePriorityTopic,
+    togglePriorityTopicObservations,
+    showMorePriorityHistoryTopics,
     getCurrentStudyTrackModel,
     weeklyCloseController,
     sustainabilityController,

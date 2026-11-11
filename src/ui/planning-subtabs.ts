@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import { mountPreact } from './preact-mount.js';
 import { PlanningSubtabsNav } from './components/PlanningSubtabsNav.js';
+import { scrollBehavior } from './accessibility.js';
 
 // Planejamento agrupa as seções em blocos recolhíveis; o atalho aberto fica na URL como "#planejamento/<sub-aba>".
 export const PLANNING_SUBTABS = ['semana', 'prova', 'metas', 'fechamento', 'historico'] as const;
@@ -48,17 +49,10 @@ export function selectPlanningSubtab(
     });
   }
   doc.querySelectorAll<HTMLElement>('[data-metas-subpanel]').forEach(panel => {
-    // Sub-abas exclusivas: apenas o bloco ativo fica aberto/visível, eliminando a sobrecarga do Tabcordion.
+    // Sub-abas exclusivas: apenas o painel ativo fica visível (role="tabpanel").
     const active = panel.dataset.metasSubpanel === key;
-    if ('open' in panel) {
-      (panel as HTMLDetailsElement).open = active;
-    }
-    if (active) {
-      panel.removeAttribute('hidden');
-      panel.classList.add('active');
-    } else {
-      panel.classList.remove('active');
-    }
+    panel.hidden = !active;
+    panel.classList.toggle('active', active);
   });
   const select = doc.getElementById('metasSubtabSelect') as HTMLSelectElement | null;
   if (select) select.value = key;
@@ -81,7 +75,7 @@ export function initPlanningSubtabs(doc: Document = document) {
     selectPlanningSubtab(key, { doc, focus, updateHash: true });
     // Below the sticky bar, a new sub-tab starts at its top instead of mid-page.
     const panel = doc.getElementById(`metasSub-${key}`);
-    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (panel) panel.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
   };
 
   if (mountNode) {
@@ -122,28 +116,6 @@ export function initPlanningSubtabs(doc: Document = document) {
   doc
     .getElementById('metasSubtabSelect')
     ?.addEventListener('change', event => choose((event.target as HTMLSelectElement).value));
-  doc.getElementById('metasCollapseOthersBtn')?.addEventListener('click', () => {
-    const currentTab = doc.querySelector<HTMLElement>(
-      '[data-metas-subtab][aria-selected="true"], [data-metas-subtab][aria-current="true"]'
-    );
-    const activeKey = currentTab?.dataset.metasSubtab || 'semana';
-    doc.querySelectorAll<HTMLElement>('[data-metas-subpanel]').forEach(panel => {
-      (panel as HTMLDetailsElement).open = panel.dataset.metasSubpanel === activeKey;
-    });
-    const activePanel = doc.getElementById(`metasSub-${activeKey}`);
-    if (activePanel) activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-  doc.querySelectorAll<HTMLDetailsElement>('[data-metas-subpanel]').forEach(panel => {
-    panel.addEventListener('toggle', () => {
-      const key = panel.dataset.metasSubpanel;
-      if (!key || !isPlanningSubtab(key)) return;
-      if (panel.open) {
-        selectPlanningSubtab(key, { doc, updateHash: true });
-      } else if (panel.classList.contains('active')) {
-        panel.open = true;
-      }
-    });
-  });
   const fromHash = () => {
     const key = subtabFromHash(doc.defaultView?.location.hash || '');
     if (key) selectPlanningSubtab(key, { doc });

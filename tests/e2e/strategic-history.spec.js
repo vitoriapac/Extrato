@@ -56,10 +56,10 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   const history = page.locator('#priorityHistoryDashboard');
   await history.locator('select').selectOption('cycle-s0');
   const juros = history
-    .locator('details')
+    .locator('.priority-history-topic')
     .filter({ has: page.getByText('Matemática Financeira — Juros Compostos', { exact: true }) })
     .first();
-  await juros.locator(':scope > summary').click();
+  await juros.locator('.priority-history-topic__toggle').click();
   await expect(juros.locator('ol > li:visible')).toHaveCount(5);
   await juros.getByRole('button', { name: /Mostrar mais/ }).click();
   await expect(juros.locator('ol > li:visible')).toHaveCount(9);

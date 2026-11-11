@@ -24,7 +24,7 @@ import { renderIconSvg } from '../../primitives/icon.js';
 export interface DiagnosticsTabControllerOptions {
   document: any;
   getState: () => any;
-  scheduleSave: () => void;
+  scheduleSave: (options?: { silent?: boolean }) => void;
   todayISO: () => string;
   addDays: (iso: string, days: number) => string;
   startOfWeek: (iso: string) => string;
@@ -107,7 +107,8 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
 
     if (JSON.stringify(reconciliation.states) !== JSON.stringify(state.alertStates)) {
       state.alertStates = reconciliation.states;
-      opts.scheduleSave();
+      // Reconciliação feita ao renderizar: grava sem acender o aviso "Salvo".
+      opts.scheduleSave({ silent: true });
     }
 
     const alertas = reconciliation.visible;

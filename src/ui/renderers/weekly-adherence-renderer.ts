@@ -35,7 +35,7 @@ export function renderWeeklyAdherence(
 }
 export function renderAdherenceCloseHistory(rows: any[] = []) {
   if (!rows.length) return '';
-  return `<section class="weekly-adherence-history" aria-label="Histórico da aderência registrada"><h4>Aderência nos fechamentos salvos</h4><p>Valores e interpretações preservados na data do fechamento. Versões anteriores continuam nos registros.</p><ol>${rows
+  return `<section class="weekly-adherence-history" aria-label="Histórico da aderência registrada"><h5>Aderência nos fechamentos salvos</h5><p>Valores e interpretações preservados na data do fechamento. Versões anteriores continuam nos registros.</p><ol>${rows
     .map((row, index) => {
       const frame = row.adherence,
         summary = frame.model?.summary,

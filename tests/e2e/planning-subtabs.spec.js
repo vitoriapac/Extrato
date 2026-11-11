@@ -6,20 +6,20 @@ test('Planejamento agrupa as seções em blocos recolhíveis e o link profundo a
 }) => {
   await openDemo(page);
   await activateTab(page, 'metas');
-  await expect(page.locator('#metasSub-semana')).toHaveAttribute('open', '');
-  await expect(page.locator('#metasSub-fechamento')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-semana')).toBeVisible();
+  await expect(page.locator('#metasSub-fechamento')).toBeHidden();
 
   await page.getByRole('tab', { name: 'Fechamento semanal', exact: true }).click();
-  await expect(page.locator('#metasSub-fechamento')).toHaveAttribute('open', '');
-  await expect(page.locator('#metasSub-semana')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-fechamento')).toBeVisible();
+  await expect(page.locator('#metasSub-semana')).toBeHidden();
   await expect(page).toHaveURL(/#planejamento\/fechamento$/);
 
   await page.getByRole('tab', { name: 'Fechamento semanal', exact: true }).press('ArrowRight');
   await expect(page.getByRole('tab', { name: 'Histórico', exact: true })).toBeFocused();
-  await expect(page.locator('#metasSub-historico')).toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-historico')).toBeVisible();
 
   await page.reload();
-  await expect(page.locator('#metasSub-historico')).toHaveAttribute('open', '');
+  await expect(page.locator('#metasSub-historico')).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Histórico', exact: true })).toHaveAttribute(
     'aria-selected',
     'true'

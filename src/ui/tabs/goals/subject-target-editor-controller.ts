@@ -2,6 +2,7 @@ import { buildPerformanceSubjectComparison } from '../../../application/performa
 import { resolvePerformanceRange } from '../../../application/performance/performance-view-state.js';
 import { updateSubjectAccuracyTargets } from '../../../application/goals/update-subject-accuracy-targets.js';
 import { renderSubjectTargetEditor as renderSubjectTargetEditorView } from '../../renderers/subject-target-editor-renderer.js';
+import { runUndoable } from '../../undoable.js';
 
 export interface SubjectTargetEditorContext {
   document: Document;
@@ -17,9 +18,18 @@ export interface SubjectTargetEditorContext {
   persistAndRender: () => void;
   captureReadinessBeforeStrategy: (reason: string) => void;
   invalidatePlanPreview: () => void;
+  somarQuestoesDisciplinaNaSemana?: (subjectId: string | null) => number;
+  subjectGoalService?: {
+    create: (payload: { subjectId: string; meta: number }) => any;
+    update?: (id: string, patch: { meta: number }) => any;
+    remove?: (id: string) => any;
+  };
 }
 
 export function createSubjectTargetEditorController(ctx: SubjectTargetEditorContext) {
+  const draftAccuracy = new Map<string, string>();
+  const draftWeeklyGoals = new Map<string, string>();
+
   function renderSubjectTargetEditor() {
     const container = ctx.document.getElementById('subjectTargetEditor');
     if (!container) return;
@@ -44,11 +54,28 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       globalTarget: state.metas?.metaAprovacao,
     });
 
+    const weeklyGoalsBySubject = new Map<string, { id: string; meta: number; solved: number }>();
+    for (const md of state.metasPorDisciplina || []) {
+      const subjectId = ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId;
+      if (!subjectId) continue;
+      weeklyGoalsBySubject.set(subjectId, {
+        id: md.id,
+        meta: Number(md.meta) || 0,
+        solved: ctx.somarQuestoesDisciplinaNaSemana
+          ? ctx.somarQuestoesDisciplinaNaSemana(subjectId)
+          : 0,
+      });
+    }
+
     container.innerHTML = renderSubjectTargetEditorView(
       {
         rows: comparison.rows,
         globalTarget: state.metas?.metaAprovacao,
+        globalWeeklyQuestions: state.metas?.questoesPorSemana,
         blueprint: state.examBlueprint,
+        weeklyGoalsBySubject,
+        draftAccuracy,
+        draftWeeklyGoals,
       },
       { escapeHtml: ctx.escapeHtml, escapeAttr: ctx.escapeAttr }
     );
@@ -77,6 +104,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       return;
     }
 
+    for (const id of ids) draftAccuracy.delete(id);
     ctx.captureReadinessBeforeStrategy('Antes de alterar metas de acerto por disciplina');
     Object.assign(state.examBlueprint, updated, { configuredAt: ctx.nowISO() });
     ctx.invalidatePlanPreview();
@@ -84,9 +112,166 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     ctx.showToast('Metas de acerto atualizadas.');
   }
 
+  function saveWeeklyQuestionGoal(subjectId: string, rawValue: any) {
+    const state = ctx.getState();
+    const trimmed = String(rawValue ?? '').trim();
+    const existing = (state.metasPorDisciplina || []).find(
+      (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
+    );
+    draftWeeklyGoals.delete(subjectId);
+
+    if (trimmed === '' || Number(trimmed) <= 0) {
+      if (existing) {
+        removeWeeklyQuestionGoal(subjectId);
+      } else {
+        ctx.persistAndRender();
+      }
+      return;
+    }
+
+    const meta = Math.max(1, Math.round(Number(trimmed) || 1));
+    if (existing) {
+      if (ctx.subjectGoalService?.update) {
+        ctx.subjectGoalService.update(existing.id, { meta });
+      } else {
+        existing.meta = meta;
+      }
+    } else if (ctx.subjectGoalService?.create) {
+      ctx.subjectGoalService.create({ subjectId, meta });
+    } else {
+      state.metasPorDisciplina = state.metasPorDisciplina || [];
+      state.metasPorDisciplina.push({ id: `md-${subjectId}`, subjectId, meta });
+    }
+    ctx.persistAndRender();
+    ctx.showToast('Meta semanal de questões atualizada.');
+  }
+
+  function removeWeeklyQuestionGoal(subjectId: string) {
+    const state = ctx.getState();
+    const existing = (state.metasPorDisciplina || []).find(
+      (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
+    );
+    draftWeeklyGoals.delete(subjectId);
+    if (!existing) return;
+    runUndoable('Meta de questões removida.', () => {
+      if (ctx.subjectGoalService?.remove) {
+        ctx.subjectGoalService.remove(existing.id);
+      } else {
+        state.metasPorDisciplina = (state.metasPorDisciplina || []).filter(
+          (md: any) => md.id !== existing.id
+        );
+      }
+    });
+  }
+
+  function commitAllPendingDrafts() {
+    const state = ctx.getState();
+    let changed = false;
+
+    for (const [subjectId, rawAcc] of [...draftAccuracy.entries()]) {
+      const val = rawAcc.trim() === '' ? null : Number(rawAcc);
+      const updated = updateSubjectAccuracyTargets(state.examBlueprint, [subjectId], val);
+      if (!updated) {
+        ctx.showToast('Informe uma meta entre 0% e 100%.');
+        return;
+      }
+      if (JSON.stringify(updated.subjects) !== JSON.stringify(state.examBlueprint?.subjects)) {
+        if (!changed) {
+          ctx.captureReadinessBeforeStrategy('Antes de alterar metas de acerto por disciplina');
+        }
+        Object.assign(state.examBlueprint, updated, { configuredAt: ctx.nowISO() });
+        ctx.invalidatePlanPreview();
+        changed = true;
+      }
+      draftAccuracy.delete(subjectId);
+    }
+
+    for (const [subjectId, rawWk] of [...draftWeeklyGoals.entries()]) {
+      const trimmed = rawWk.trim();
+      const existing = (state.metasPorDisciplina || []).find(
+        (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
+      );
+      if (trimmed === '' || Number(trimmed) <= 0) {
+        if (existing) {
+          if (ctx.subjectGoalService?.remove) {
+            ctx.subjectGoalService.remove(existing.id);
+          } else {
+            state.metasPorDisciplina = (state.metasPorDisciplina || []).filter(
+              (md: any) => md.id !== existing.id
+            );
+          }
+          changed = true;
+        }
+      } else {
+        const meta = Math.max(1, Math.round(Number(trimmed) || 1));
+        if (existing) {
+          if (existing.meta !== meta) {
+            if (ctx.subjectGoalService?.update) {
+              ctx.subjectGoalService.update(existing.id, { meta });
+            } else {
+              existing.meta = meta;
+            }
+            changed = true;
+          }
+        } else {
+          if (ctx.subjectGoalService?.create) {
+            ctx.subjectGoalService.create({ subjectId, meta });
+          } else {
+            state.metasPorDisciplina = state.metasPorDisciplina || [];
+            state.metasPorDisciplina.push({ id: `md-${subjectId}`, subjectId, meta });
+          }
+          changed = true;
+        }
+      }
+      draftWeeklyGoals.delete(subjectId);
+    }
+
+    ctx.persistAndRender();
+    if (changed) {
+      ctx.showToast('Metas por disciplina atualizadas.');
+    }
+  }
+
   function bindEvents() {
     const container = ctx.document.getElementById('subjectTargetEditor');
     if (!container) return;
+
+    const syncPendingBar = () => {
+      const bar = container.querySelector<HTMLElement>('[data-targets-pending-bar]');
+      if (bar) {
+        bar.hidden = draftAccuracy.size === 0 && draftWeeklyGoals.size === 0;
+      }
+    };
+
+    container.addEventListener('input', event => {
+      const target = event.target as HTMLElement;
+      if (target.matches('[data-accuracy-value]')) {
+        const input = target as HTMLInputElement;
+        const subjectId = input.dataset.accuracyValue!;
+        draftAccuracy.set(subjectId, input.value);
+        syncPendingBar();
+      } else if (target.matches('[data-weekly-goal-value]')) {
+        const input = target as HTMLInputElement;
+        const subjectId = input.dataset.weeklyGoalValue!;
+        draftWeeklyGoals.set(subjectId, input.value);
+        syncPendingBar();
+      }
+    });
+
+    container.addEventListener('keydown', event => {
+      const keyEvent = event as KeyboardEvent;
+      if (keyEvent.key !== 'Enter') return;
+      const target = keyEvent.target as HTMLElement;
+      if (target.matches('[data-accuracy-value]')) {
+        keyEvent.preventDefault();
+        const input = target as HTMLInputElement;
+        saveSubjectAccuracyTargets([input.dataset.accuracyValue!], input.value);
+      } else if (target.matches('[data-weekly-goal-value]')) {
+        keyEvent.preventDefault();
+        const input = target as HTMLInputElement;
+        saveWeeklyQuestionGoal(input.dataset.weeklyGoalValue!, input.value);
+      }
+    });
 
     container.addEventListener('click', event => {
       const target = event.target as HTMLElement;
@@ -109,6 +294,24 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       const restore = target.closest<HTMLElement>('[data-accuracy-restore]');
       if (restore) {
         saveSubjectAccuracyTargets([restore.dataset.accuracyRestore!], '');
+        return;
+      }
+
+      const removeWeekly = target.closest<HTMLElement>('[data-weekly-goal-remove]');
+      if (removeWeekly) {
+        removeWeeklyQuestionGoal(removeWeekly.dataset.weeklyGoalRemove!);
+        return;
+      }
+
+      if (target.closest('[data-targets-save-all]')) {
+        commitAllPendingDrafts();
+        return;
+      }
+
+      if (target.closest('[data-targets-discard]')) {
+        draftAccuracy.clear();
+        draftWeeklyGoals.clear();
+        renderSubjectTargetEditor();
         return;
       }
 
@@ -142,6 +345,8 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
   return {
     renderSubjectTargetEditor,
     saveSubjectAccuracyTargets,
+    saveWeeklyQuestionGoal,
+    removeWeeklyQuestionGoal,
     bindEvents,
   };
 }

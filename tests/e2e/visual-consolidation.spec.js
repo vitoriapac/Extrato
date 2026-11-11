@@ -730,20 +730,12 @@ test('alvos de toque móveis, modo foco inerte, envio de metas e indicador de sa
   await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
   await expect(page.locator('.global-search-row')).toBeHidden();
   await expect(page.locator('main > footer')).toBeHidden();
-  expect(
-    await page.locator('.today-layout-grid__side').evaluate(el => el.inert)
-  ).toBe(true);
-  expect(
-    await page.locator('main > footer').evaluate(el => el.inert)
-  ).toBe(true);
+  expect(await page.locator('.today-layout-grid__side').evaluate(el => el.inert)).toBe(true);
+  expect(await page.locator('main > footer').evaluate(el => el.inert)).toBe(true);
   await page.keyboard.press('Escape');
   await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);
-  expect(
-    await page.locator('.today-layout-grid__side').evaluate(el => el.inert)
-  ).toBe(false);
-  expect(
-    await page.locator('main > footer').evaluate(el => el.inert)
-  ).toBe(false);
+  expect(await page.locator('.today-layout-grid__side').evaluate(el => el.inert)).toBe(false);
+  expect(await page.locator('main > footer').evaluate(el => el.inert)).toBe(false);
 
   // Scrim do menu Mais no mobile aparece quando aberto e fecha ao tocar fora
   await page.locator('#moreTabButton').click();
@@ -751,20 +743,21 @@ test('alvos de toque móveis, modo foco inerte, envio de metas e indicador de sa
   await page.locator('.mobile-more-scrim').click({ position: { x: 20, y: 120 } });
   await expect(page.locator('.mobile-more-scrim')).toHaveCount(0);
 
-  // Envio sem inline onsubmit adiciona meta por disciplina via Enter no form
+  // Tabela unificada de metas por disciplina remove e restaura meta semanal de questões via Enter
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'metas');
-  await expect(page.locator('#metaDisciplinaForm')).not.toHaveAttribute('onsubmit', /./);
-  const metaCards = page.locator('#metasPorDisciplinaContainer .meta-card');
-  const initialCount = await metaCards.count();
+  const removeButtons = page.locator('#subjectTargetEditor [data-weekly-goal-remove]');
+  const initialCount = await removeButtons.count();
   expect(initialCount).toBeGreaterThan(0);
-  const removedSubject = (await metaCards.first().locator('.meta-name').innerText()).trim();
-  await metaCards.first().getByRole('button', { name: 'Remover meta de questões' }).click();
-  await expect(metaCards).toHaveCount(initialCount - 1);
-  await page.locator('#novaMetaDisciplinaSelect').selectOption({ label: removedSubject });
-  await page.locator('#novaMetaDisciplinaValor').fill('45');
-  await page.locator('#novaMetaDisciplinaValor').press('Enter');
-  await expect(metaCards).toHaveCount(initialCount);
+  const removedSubjectId = await removeButtons.first().getAttribute('data-weekly-goal-remove');
+  await removeButtons.first().click();
+  await expect(removeButtons).toHaveCount(initialCount - 1);
+  const weeklyInput = page.locator(
+    `#subjectTargetEditor [data-weekly-goal-value="${removedSubjectId}"]`
+  );
+  await weeklyInput.fill('45');
+  await weeklyInput.press('Enter');
+  await expect(removeButtons).toHaveCount(initialCount);
 
   // Indicador de salvamento e botão Sair da demonstração nunca colidem no desktop
   await page.setViewportSize({ width: 1280, height: 800 });

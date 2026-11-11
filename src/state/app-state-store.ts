@@ -20,7 +20,10 @@ export interface AppStateStoreOptions {
 export function createAppStateStore(opts: AppStateStoreOptions) {
   let saveTimeout: any = null;
   let saveQueue: Promise<any> = Promise.resolve();
-  let pendingSave: { serialized: string; previousRaw: string | null } | null = null;
+  let pendingSave: { serialized: string; previousRaw: string | null; notify: boolean } | null =
+    null;
+  // Um aviso "Salvo" pedido por qualquer gravação agrupada vale para o grupo inteiro.
+  let pendingNotify = false;
   let stateTransactionActive = false;
   let transactionDeferredSave = false;
   // The previous state for automatic backups comes from memory: a full localStorage stops
@@ -35,14 +38,18 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
     return true;
   };
 
-  async function enqueueSave(serialized: string, previousRaw: string | null = null): Promise<any> {
-    pendingSave = { serialized, previousRaw };
+  async function enqueueSave(
+    serialized: string,
+    previousRaw: string | null = null,
+    notify = true
+  ): Promise<any> {
+    pendingSave = { serialized, previousRaw, notify: Boolean(pendingSave?.notify || notify) };
     saveQueue = saveQueue
       .then(async () => {
         while (pendingSave) {
           const job = pendingSave;
           pendingSave = null;
-          await saveState(job.serialized, job.previousRaw);
+          await saveState(job.serialized, job.previousRaw, job.notify);
         }
       })
       .catch(error => {
@@ -54,11 +61,14 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
     return saveQueue;
   }
 
-  function scheduleSave(): void {
+  /** `silent` grava sem acender o aviso "Salvo": reconciliações feitas durante a renderização. */
+  function scheduleSave(options: { silent?: boolean } = {}): void {
+    const notify = !options.silent;
     const state = opts.getState();
     if (stateTransactionActive) {
       state.updatedAt = opts.nowISO();
       transactionDeferredSave = true;
+      pendingNotify = pendingNotify || notify;
       return;
     }
     if (blocked()) return;
@@ -68,7 +78,12 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
     lastSerialized = serialized;
     opts.writeLocalState(serialized);
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => enqueueSave(serialized, previousRaw), 350);
+    pendingNotify = pendingNotify || notify;
+    saveTimeout = setTimeout(() => {
+      const flash = pendingNotify;
+      pendingNotify = false;
+      enqueueSave(serialized, previousRaw, flash);
+    }, 350);
   }
 
   function persistAndRender(): void {
@@ -93,7 +108,7 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
         stateTransactionActive = false;
         if (transactionDeferredSave) {
           transactionDeferredSave = false;
-          scheduleSave();
+          scheduleSave({ silent: !pendingNotify });
         }
       }
     });
@@ -103,7 +118,8 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
 
   async function saveState(
     serialized: string = JSON.stringify(opts.pickPersistentState(opts.getState())),
-    previousRaw: string | null = null
+    previousRaw: string | null = null,
+    notify = true
   ): Promise<void> {
     if (blocked()) return;
     const state = opts.getState();
@@ -136,7 +152,7 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
         if (typeof opts.notifyRemoteState === 'function') {
           opts.notifyRemoteState(serialized);
         }
-        if (typeof opts.onSaved === 'function') {
+        if (notify && typeof opts.onSaved === 'function') {
           opts.onSaved();
         }
         if (backupWarning) {

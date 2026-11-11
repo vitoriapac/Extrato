@@ -31,8 +31,8 @@ const write = (storage: SectionStore, value: Record<string, boolean>) => {
 export function openSectionFor(target: Element | null | undefined) {
   const section = target?.closest?.('details[data-remember]') as HTMLDetailsElement | null;
   if (section && !section.open) section.open = true;
-  const subpanel = target?.closest?.('[data-metas-subpanel]') as HTMLDetailsElement | null;
-  if (subpanel && !subpanel.open && isPlanningSubtab(subpanel.dataset.metasSubpanel))
+  const subpanel = target?.closest?.('[data-metas-subpanel]') as HTMLElement | null;
+  if (subpanel && subpanel.hidden && isPlanningSubtab(subpanel.dataset.metasSubpanel))
     selectPlanningSubtab(subpanel.dataset.metasSubpanel);
 }
 
@@ -49,13 +49,21 @@ export function initRememberedSections({
       return null;
     }
   })(),
-  wide = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(min-width: 901px)').matches),
+  wide = typeof window !== 'undefined' &&
+    Boolean(window.matchMedia?.('(min-width: 901px)').matches),
 }: { root?: ParentNode; storage?: SectionStore; wide?: boolean } = {}) {
   const saved = read(storage);
   root.querySelectorAll<HTMLDetailsElement>('details[data-remember]').forEach(section => {
     const key = section.dataset.remember!;
-    section.open = key in saved ? Boolean(saved[key]) : section.dataset.defaultOpen === 'wide' ? wide : section.dataset.defaultOpen === 'open';
-    section.addEventListener('toggle', () => write(storage, { ...read(storage), [key]: section.open }));
+    section.open =
+      key in saved
+        ? Boolean(saved[key])
+        : section.dataset.defaultOpen === 'wide'
+          ? wide
+          : section.dataset.defaultOpen === 'open';
+    section.addEventListener('toggle', () =>
+      write(storage, { ...read(storage), [key]: section.open })
+    );
   });
   root.addEventListener?.('click', (event: Event) => {
     const link = (event.target as Element | null)?.closest?.('a[href^="#"]');

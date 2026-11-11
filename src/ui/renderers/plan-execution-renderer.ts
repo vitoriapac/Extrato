@@ -10,8 +10,11 @@ import { buildWeekReconciliation } from '../tabs/goals/week-reconciliation.js';
 const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
 
 export function renderPlanExecution(model: Record<string, any>, { formatDate }: any) {
-  const range = (start: string, end: string) => `${formatDate(start).slice(0, 5)} a ${formatDate(end).slice(0, 5)}`;
-  const periodLabel = model.days.length ? range(model.days[0].date, model.days.at(-1).date) : 'esta semana';
+  const range = (start: string, end: string) =>
+    `${formatDate(start).slice(0, 5)} a ${formatDate(end).slice(0, 5)}`;
+  const periodLabel = model.days.length
+    ? range(model.days[0].date, model.days.at(-1).date)
+    : 'esta semana';
   const summary = render(
     h(WeekReconciliationSummary, {
       data: buildWeekReconciliation({
@@ -34,7 +37,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
             message: `Capacidade disponível: ${fmt(model.capacityMinutes)}. Monte o plano semanal e distribua os dias para acompanhar a execução.`,
           }),
           actions: [
-            { href: '#metasPlanning', label: 'Montar planejamento', className: 'btn small' },
+            { href: '#metasPlanning', label: 'Montar planejamento', className: 'btn ghost small' },
           ],
           className: 'plan-execution-next-step',
         })
@@ -44,7 +47,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
   const days = model.days
     .map(
       (item: any) =>
-        `<li><span>${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</span><small>Capacidade ${fmt(item.capacityMinutes || 0)}</small><strong>${item.plannedMinutes === null ? 'Sem plano' : fmt(item.plannedMinutes)} / ${item.future ? '—' : fmt(item.studiedMinutes)}</strong></li>`
+        `<li><span>${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</span><small>Capacidade ${fmt(item.capacityMinutes || 0)}</small><strong>${item.plannedMinutes === null ? 'Sem plano' : fmt(item.plannedMinutes)} / ${item.future ? '—' : item.studiedMinutes ? fmt(item.studiedMinutes) : 'Sem estudo'}</strong></li>`
     )
     .join('');
   // Three columns per day: capacity, planned (amber only when it exceeds capacity) and studied.
@@ -53,9 +56,25 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
     className: 'plan-execution-columns',
     height: 64,
     columns: model.days.flatMap((item: any, index: number) => [
-      { value: item.capacityMinutes || 0, title: `${formatDate(item.date).slice(0, 5)} · capacidade ${fmt(item.capacityMinutes || 0)}`, tone: 'muted' as const, separated: index > 0 },
-      { value: item.plannedMinutes || 0, title: `${formatDate(item.date).slice(0, 5)} · ${item.plannedMinutes === null ? 'sem plano' : 'planejado ' + fmt(item.plannedMinutes)}`, tone: (item.plannedMinutes || 0) > (item.capacityMinutes || 0) ? ('attention' as const) : ('soft' as const) },
-      { value: item.future ? 0 : item.studiedMinutes, title: `${formatDate(item.date).slice(0, 5)} · estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`, tone: 'primary' as const },
+      {
+        value: item.capacityMinutes || 0,
+        title: `${formatDate(item.date).slice(0, 5)} · capacidade ${fmt(item.capacityMinutes || 0)}`,
+        tone: 'muted' as const,
+        separated: index > 0,
+      },
+      {
+        value: item.plannedMinutes || 0,
+        title: `${formatDate(item.date).slice(0, 5)} · ${item.plannedMinutes === null ? 'sem plano' : 'planejado ' + fmt(item.plannedMinutes)}`,
+        tone:
+          (item.plannedMinutes || 0) > (item.capacityMinutes || 0)
+            ? ('attention' as const)
+            : ('soft' as const),
+      },
+      {
+        value: item.future ? 0 : item.studiedMinutes,
+        title: `${formatDate(item.date).slice(0, 5)} · estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`,
+        tone: 'primary' as const,
+      },
     ]),
   });
   const axis = `<div class="plan-execution-axis" aria-hidden="true">${model.days.map((item: any) => `<span>${formatDate(item.date).slice(0, 5)}</span>`).join('')}</div>`;
@@ -91,40 +110,45 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         `<li><span>${formatDate(item.start).slice(0, 5)} a ${formatDate(item.end).slice(0, 5)}</span><strong>${item.adherence === null ? 'Sem plano' : item.adherence + '%'}</strong><small>${fmt(item.studiedMinutes)} estudados${item.strategic ? ' · aderência estratégica ' + (item.strategic.strategicAdherence === null ? 'sem base' : item.strategic.strategicAdherence + '%') : ''} · ${item.plannedMinutes ? fmt(item.plannedMinutes) + ' planejados' : 'nenhum plano registrado'}</small></li>`
     )
     .join('');
+  // Sem plano, sem estudo e sem semanas medidas, o histórico só repetiria zeros: o bloco não aparece.
+  const showHistory = !(
+    model.state === 'unplanned' &&
+    !(model.studiedMinutes || 0) &&
+    !measured.length
+  );
+  const history = showHistory
+    ? `<details class="metas-execution-history"><summary>Ver execução diária e histórico</summary>` +
+      renderChartFrame({
+        title: 'Planejado × realizado nesta semana',
+        description:
+          'Sessões registradas incluem estudo fora do plano. Dias sem plano permanecem sem percentual.',
+        period: model.days.length
+          ? formatDate(model.days[0].date) + ' a ' + formatDate(model.days.at(-1).date)
+          : '',
+        legend: [
+          { label: 'Capacidade', tone: 'muted' },
+          { label: 'Planejado', tone: 'soft' },
+          { label: 'Estudado', tone: 'primary' },
+        ],
+        chart: dayChart + axis,
+        records: '<ol class="plan-execution-days">' + days + '</ol>',
+      }) +
+      renderChartFrame({
+        title: 'Cumprimento nas semanas concluídas',
+        description:
+          'Minutos estudados ÷ minutos planejados nos dias. Semanas sem plano não entram na tendência.',
+        evidence: measured.length + ' semanas concluídas com plano · período atual em andamento',
+        legend: [
+          { label: 'Cumprimento', tone: 'primary' },
+          { label: 'Referência de 100%', tone: 'target' },
+        ],
+        chart: trend,
+        emptyMessage: 'São necessárias duas semanas concluídas com plano para mostrar a tendência.',
+        records: '<ol class="plan-adherence-list">' + weeks + '</ol>',
+      }) +
+      '</details>'
+    : '';
   return (
-    summary +
-    warning +
-    unplanned +
-    renderStrategicExecution(model.strategic, periodLabel) +
-    `<details class="metas-execution-history"><summary>Ver execução diária e histórico</summary>` +
-    renderChartFrame({
-      title: 'Planejado × realizado nesta semana',
-      description:
-        'Sessões registradas incluem estudo fora do plano. Dias sem plano permanecem sem percentual.',
-      period: model.days.length
-        ? formatDate(model.days[0].date) + ' a ' + formatDate(model.days.at(-1).date)
-        : '',
-      legend: [
-        { label: 'Capacidade', tone: 'muted' },
-        { label: 'Planejado', tone: 'soft' },
-        { label: 'Estudado', tone: 'primary' },
-      ],
-      chart: dayChart + axis,
-      records: '<ol class="plan-execution-days">' + days + '</ol>',
-    }) +
-    renderChartFrame({
-      title: 'Cumprimento nas semanas concluídas',
-      description:
-        'Minutos estudados ÷ minutos planejados nos dias. Semanas sem plano não entram na tendência.',
-      evidence: measured.length + ' semanas concluídas com plano · período atual em andamento',
-      legend: [
-        { label: 'Cumprimento', tone: 'primary' },
-        { label: 'Referência de 100%', tone: 'target' },
-      ],
-      chart: trend,
-      emptyMessage: 'São necessárias duas semanas concluídas com plano para mostrar a tendência.',
-      records: '<ol class="plan-adherence-list">' + weeks + '</ol>',
-    }) +
-    '</details>'
+    summary + warning + unplanned + renderStrategicExecution(model.strategic, periodLabel) + history
   );
 }

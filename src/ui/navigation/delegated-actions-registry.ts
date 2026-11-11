@@ -64,6 +64,11 @@ export function buildDelegatedActionHandlers(
       c.weeklyClose?.setStrategicTimelineGroup?.(...args),
     setPriorityHistorySubject: (...args: any[]) =>
       c.weeklyClose?.setPriorityHistorySubject?.(...args),
+    togglePriorityTopic: (...args: any[]) => c.weeklyClose?.togglePriorityTopic?.(...args),
+    togglePriorityTopicObservations: (...args: any[]) =>
+      c.weeklyClose?.togglePriorityTopicObservations?.(...args),
+    showMorePriorityHistoryTopics: (...args: any[]) =>
+      c.weeklyClose?.showMorePriorityHistoryTopics?.(...args),
     saveWeeklyCloseSnapshot: (...args: any[]) => c.weeklyClose?.saveWeeklyCloseSnapshot?.(...args),
     openWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.openWeeklyCloseRecord?.(...args),
     closeWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.closeWeeklyCloseRecord?.(...args),
@@ -201,6 +206,7 @@ export function buildDelegatedActionHandlers(
     confirmDailyPlanPreview: (...args: any[]) => c.studyPlan?.confirmDailyPlanPreview?.(...args),
     undoLatestDailyPlanGeneration: (...args: any[]) =>
       c.studyPlan?.undoLatestDailyPlanGeneration?.(...args),
+    openWhatIfSimulator: (...args: any[]) => custom?.['openWhatIfSimulator']?.(...args),
 
     // Study Recommendations & Replan
     calculateReplanPreview: (...args: any[]) =>
@@ -257,7 +263,9 @@ export function buildDelegatedActionHandlers(
       deps.document
         ?.getElementById('questoesBody')
         ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
-      const input = deps.document?.getElementById('questionDraft-resolved') as HTMLInputElement | null;
+      const input = deps.document?.getElementById(
+        'questionDraft-resolved'
+      ) as HTMLInputElement | null;
       input?.focus?.();
     },
 
@@ -347,6 +355,10 @@ export function buildDelegatedActionHandlers(
     },
     saveExamSubjectConfig: (...args: any[]) => c.examMatrix?.saveExamSubjectConfig?.(...args),
     cancelExamSubjectConfig: (...args: any[]) => c.examMatrix?.cancelExamSubjectConfig?.(...args),
+    applyUndatedExamDate: (...args: any[]) => c.examMatrix?.applyUndatedExamDate?.(...args),
+    toggleAllExamSubjects: (...args: any[]) => c.examMatrix?.toggleAllExamSubjects?.(...args),
+    applyBulkExamSubjectConfig: (...args: any[]) =>
+      c.examMatrix?.applyBulkExamSubjectConfig?.(...args),
 
     // Today Tab / Timer Runtime
     startPlannedActivity: (...args: any[]) =>

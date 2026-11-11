@@ -207,9 +207,9 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     backupRestoreCoordinator,
     demoController,
     appStateStore: stateSyncCoordinator.appStateStore,
-    scheduleSave: () => {
+    scheduleSave: (options?: { silent?: boolean }) => {
       demoController.sync();
-      stateSyncCoordinator.scheduleSave();
+      stateSyncCoordinator.scheduleSave(options);
     },
     enqueueStateTransaction: stateSyncCoordinator.enqueueStateTransaction,
     loadState: stateSyncCoordinator.loadState,

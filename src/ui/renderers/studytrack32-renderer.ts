@@ -63,7 +63,13 @@ export function renderWeeklyCloseKpis(model: Record<string, any>, { formatMinute
     return '<div class="upcoming-empty ui-state--empty">Ainda não há evidência suficiente para fechar a semana.</div>';
   const summary = model.adherence?.model?.summary,
     adherence = summary ? summary.temporalAdherence : model.investment?.adherence;
-  return `<section class="weekly-kpis" aria-label="Resultado da semana"><div><strong>${(summary?.plannedMinutes ?? model.investment?.plannedMinutes) == null ? '—' : formatMinutes(summary?.plannedMinutes ?? model.investment.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(summary?.executedMinutes ?? model.investment?.executedMinutes ?? 0)}</strong><span>Realizado</span></div><div><strong>${adherence == null ? '—' : formatDecimal(adherence) + '%'}</strong><span>${summary ? 'Crédito ao plano' : 'Volume de carga'}</span></div></section>`;
+  const plannedMin = summary?.plannedMinutes ?? model.investment?.plannedMinutes;
+  const executedMin = summary?.executedMinutes ?? model.investment?.executedMinutes ?? 0;
+  const zeroCreditNote =
+    summary && Number(plannedMin) > 0 && Number(executedMin) > 0 && Number(adherence) === 0
+      ? '<p class="analytics-note">Sessões sem vínculo com as tarefas planejadas entram no tempo realizado, mas não geram crédito ao plano.</p>'
+      : '';
+  return `<section class="weekly-kpis" aria-label="Resultado da semana"><div><strong>${plannedMin == null ? '—' : formatMinutes(plannedMin)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(executedMin)}</strong><span>Realizado</span></div><div><strong>${adherence == null ? '—' : formatDecimal(adherence) + '%'}</strong><span>${summary ? 'Crédito ao plano' : 'Volume de carga'}</span></div></section>${zeroCreditNote}`;
 }
 export function renderWeeklyClose(
   model: Record<string, any>,
@@ -130,7 +136,7 @@ export function renderDecisionHistory(model: Record<string, any>, { escapeHtml }
                 : item.examImpact != null || item.masteryBefore != null
                   ? `<small>Prova: impacto ${item.examImpact ?? '—'}/100 · Você: domínio ${item.masteryBefore ?? '—'}/100</small>`
                   : ''
-            }<small>${safe(escapeHtml, item.outcomeLabel)}</small>${renderRecommendationExplanation(item.explanationSnapshot)}</article>`
+            }<small>${safe(escapeHtml, item.outcomeLabel)}</small>${renderRecommendationExplanation(item.explanationSnapshot, { headingLevel: 4 })}</article>`
         )
         .join('')
     : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
