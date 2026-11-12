@@ -65,7 +65,7 @@ test('card mostra múltiplo e linha fora do plano, nunca só percentual', () => 
   const html = renderPlanExecution(model, {
     formatDate: iso => iso.split('-').reverse().join('/'),
   });
-  assert.match(html, /Realizado acima do distribuído/);
+  assert.match(html, /Volume acima da distribuição/);
   assert.match(html, /4,2× o tempo distribuído nos dias/);
   assert.match(html, /03\/11 a 09\/11/);
   assert.doesNotMatch(html, /Infinity|NaN/);

@@ -12,26 +12,27 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
   return (
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
       <p class="week-reconciliation__period">{data.periodLabel}</p>
-      <p class="week-reconciliation__note">
-        <a href="#metasPlanning">Ir para as ações do plano semanal</a>
-      </p>
       <LedgerLine label="Capacidade" value={fmt(data.capacityMin)} />
-      <LedgerLine label="Distribuído nos dias" value={fmt(data.plannedMin)} />
       <LedgerLine
-        label="Realizado acima do distribuído"
-        value={fmt(data.offPlanMin)}
-        tone={data.offPlanMin > 0 ? 'positive' : 'neutral'}
+        label="Distribuído na semana inteira"
+        hint="Inclui dias futuros"
+        value={fmt(data.plannedMin)}
       />
-      <LedgerLine label="Realizado" value={fmt(data.studiedMin)} total />
-      <p class="week-reconciliation__note">
-        Distribuído cobre a semana inteira e inclui dias futuros. Realizado soma as sessões até
-        hoje, em todas as provas.
-      </p>
+      <LedgerLine
+        label="Estudado até hoje"
+        hint="Todas as provas"
+        value={fmt(data.studiedMin)}
+        total
+      />
+      <LedgerLine
+        label="Volume acima da distribuição"
+        hint="Diferença entre o estudo até hoje e a distribuição da semana inteira"
+        value={fmt(data.offPlanMin)}
+      />
       {multiple !== null && (
         <p class="week-reconciliation__note">
           Você estudou {multiple.toFixed(1).replace('.', ',')}× o tempo distribuído nos dias: só{' '}
-          {fmt(data.plannedMin)} dos {fmt(data.capacityMin)} de capacidade têm tarefa marcada.{' '}
-          <a href="#metasPlanning">Distribuir a semana nos dias</a>
+          {fmt(data.plannedMin)} dos {fmt(data.capacityMin)} de capacidade têm tarefa marcada.
         </p>
       )}
     </section>

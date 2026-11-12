@@ -1,3 +1,6 @@
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+
 import {
   applyAdaptivePlanningAdvice,
   buildAdaptivePlanningAdvice,
@@ -14,6 +17,9 @@ import { buildRecommendationExplanation } from '../../../application/recommendat
 import { renderRecommendationExplanation } from '../../renderers/recommendation-explanation-renderer.js';
 import { buildWeeklyAllocationBarVisual } from '../../../domain/planning/planning-visual-models.js';
 import { renderAllocationBar } from '../../primitives/charts/charts.js';
+
+const previewHeading = (title: string) =>
+  render(h('h4', { tabIndex: -1, 'data-plan-preview-title': '' }, title));
 
 export interface StudyPlanBuilderControllerDeps {
   document?: any;
@@ -76,6 +82,12 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
 
   let studyPlanPreview: any = null;
   let dailyPlanPreview: any = null;
+
+  function focusPlanControl(selector: string) {
+    const control = doc?.getElementById('examStudyPlan')?.querySelector?.(selector);
+    control?.focus?.({ preventScroll: true });
+    control?.scrollIntoView?.({ block: 'start' });
+  }
 
   function latestStudyPlan() {
     return deps.studyPlanService.getActive();
@@ -229,6 +241,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     phaseStrategyController.cancel();
     studyPlanPreview = buildCurrentStudyPlanProposal();
     renderStudyPlanBuilder();
+    focusPlanControl('[data-plan-preview-title]');
   }
 
   function recordAdaptiveDecision(
@@ -318,6 +331,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     adjusted.adaptiveHistoryId = entry?.id || null;
     studyPlanPreview = adjusted;
     renderStudyPlanBuilder();
+    focusPlanControl('[data-plan-preview-title]');
   }
 
   function rejectAdaptivePlanAdvice() {
@@ -332,6 +346,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       reason: 'Sugestão recusada. O plano calculado continua disponível para confirmação.',
     };
     renderStudyPlanBuilder();
+    focusPlanControl('[data-plan-preview-title]');
   }
 
   function clearStudyPlanPreview() {
@@ -346,6 +361,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     }
     studyPlanPreview = null;
     renderStudyPlanBuilder();
+    focusPlanControl('[data-delegated-click="calculateStudyPlanPreview()"]');
   }
 
   function confirmStudyPlan() {
@@ -375,6 +391,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     dailyPlanPreview = null;
     scheduleSave();
     renderStudyPlanBuilder();
+    focusPlanControl('[data-delegated-click="calculateDailyPlanPreview()"]');
     showToast('Plano semanal confirmado e salvo.');
   }
 
@@ -422,11 +439,13 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
         .map((item: any) => item.topicId),
     });
     renderStudyPlanBuilder();
+    focusPlanControl('[data-plan-preview-title]');
   }
 
   function clearDailyPlanPreview() {
     dailyPlanPreview = null;
     renderStudyPlanBuilder();
+    focusPlanControl('[data-delegated-click="calculateDailyPlanPreview()"]');
   }
 
   function confirmDailyPlanPreview() {
@@ -436,6 +455,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     dailyPlanPreview = null;
     scheduleSave();
     renderStudyPlanBuilder();
+    focusPlanControl('[data-delegated-click="calculateDailyPlanPreview()"]');
     showToast(
       `${pluralize(result.createdItems, 'atividade')} criada${result.createdItems === 1 ? '' : 's'} no plano diário.`
     );
@@ -495,7 +515,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
               `<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`
           )
           .join('');
-        container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" type="button" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" type="button" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
+        container.innerHTML =
+          previewHeading('Prévia dos próximos 7 dias') +
+          `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes + proposal.unallocatedMinutes)}</strong><span>Tempo a distribuir (plano e revisões)</span></div><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Sem espaço nos 7 dias</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" type="button" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" type="button" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
         return;
       }
       const activeOperation = [...(latest?.dailyPlanOperations || [])]
@@ -515,7 +537,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
             label: 'Distribuição da capacidade semanal do plano confirmado',
           })
         : '';
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}<div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest ? '<button class="btn ghost" type="button" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ''}${activeOperation ? '<button class="btn ghost" type="button" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}<button class="btn ghost small" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></div>${allocationBarHtml}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}`;
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}<div class="study-plan-actions">${latest ? '<button class="btn" type="button" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ''}<button class="btn${latest ? ' ghost' : ''}" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${activeOperation ? '<button class="btn ghost" type="button" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}<button class="btn ghost small" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></div>${allocationBarHtml}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}`;
       return;
     }
 
@@ -537,7 +559,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       : '';
 
     if (plan.state === 'insufficient') {
-      container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" type="button" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
+      container.innerHTML =
+        previewHeading('Plano semanal indisponível') +
+        `<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" type="button" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
       return;
     }
 
@@ -569,7 +593,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     const allocatedSubjectIds = new Set((plan.subjects || []).map((s: any) => s.subjectId));
     const omittedSubjectsCount = Math.max(0, allExamSubjects.length - allocatedSubjectIds.size);
 
-    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? '-' : '+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === 'deficit' ? 'ritmo insuficiente' : plan.paceState === 'surplus' ? 'capacidade disponível' : 'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div>${planAllocationBarHtml}${plan.paceState === 'deficit' ? `<p class="context-note context-note--attention">A necessidade estimada até a prova passa a sua capacidade em ${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))} por semana. A proposta distribui só o que cabe na disponibilidade atual${omittedSubjectsCount > 0 ? ` (${omittedSubjectsCount} disciplina${omittedSubjectsCount === 1 ? ' ficou' : 's ficaram'} com 0 min nesta rodada)` : ''}. <a class="btn ghost small" href="#metasCapacity">Revisar disponibilidade</a> <button type="button" class="btn ghost small" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>` : ''}<div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% (preenchimento do edital) · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || 'não avaliada'}${plan.missingEffort?.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? '' : 's'} sem esforço estimado` : ''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" type="button" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+    container.innerHTML =
+      previewHeading('Prévia do plano semanal') +
+      `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? '-' : '+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === 'deficit' ? 'ritmo insuficiente' : plan.paceState === 'surplus' ? 'capacidade disponível' : 'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div>${plan.paceState === 'deficit' ? `<p class="context-note context-note--attention">A necessidade estimada até a prova passa a sua capacidade em ${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))} por semana. A proposta distribui só o que cabe na disponibilidade atual${omittedSubjectsCount > 0 ? ` (${omittedSubjectsCount} disciplina${omittedSubjectsCount === 1 ? ' ficou' : 's ficaram'} com 0 min nesta rodada)` : ''}. <a class="btn ghost small" href="#metasCapacity">Revisar disponibilidade</a> <button type="button" class="btn ghost small" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>` : ''}<div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% (preenchimento do edital) · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || 'não avaliada'}${plan.missingEffort?.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? '' : 's'} sem esforço estimado` : ''}</div>${blockedNote}<div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" type="button" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>${planAllocationBarHtml}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details>`;
 
     const phase = plan.examPhase;
     const advice = plan.adaptiveAdvice;

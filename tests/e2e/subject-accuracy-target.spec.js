@@ -46,6 +46,14 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
     '75'
   );
   await expectNoPageOverflow(page);
+  const edit = page
+    .locator('#subjectTargetEditor tr')
+    .filter({ has: page.locator('[data-accuracy-value="cycle-s0"]') })
+    .locator('summary');
+  await expect(
+    page.locator('#subjectTargetEditor [data-accuracy-restore="cycle-s0"]')
+  ).toBeHidden();
+  await edit.click();
   await page.locator('#subjectTargetEditor [data-accuracy-restore="cycle-s0"]').click();
   expect(
     await page.evaluate(

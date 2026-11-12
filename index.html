@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=7a98dea87836">
-<link rel="stylesheet" href="styles/app.css?v=7a98dea87836">
+<link rel="stylesheet" href="styles/tailwind.css?v=1e665cc40640">
+<link rel="stylesheet" href="styles/app.css?v=1e665cc40640">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -665,13 +665,13 @@
     </nav>
 
     <section class="metas-subpanel active" id="metasSub-semana" data-metas-subpanel="semana" role="tabpanel" aria-labelledby="metasTab-semana" tabindex="0">
+    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3></header><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><p class="helper-text">Nada é salvo nem entra no calendário sem a sua confirmação. <a href="#instrucoes">Como calculamos a confiança &rarr;</a></p><div id="adaptivePlanningHistory"></div></section>
+
     <section class="chart-card card--default metas-execution" id="planExecutionCard" aria-labelledby="planExecutionTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo planejado e estudo realizado no período atual.</p></header>
       <div id="planExecutionResults"></div>
       <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline--end icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
     </section>
-
-    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância do edital e sua necessidade pedagógica.</p></header><p class="helper-text">Nada é salvo nem entra no calendário sem a sua confirmação. <a href="#instrucoes">Como calculamos a confiança &rarr;</a></p><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
 
     <details class="chart-card decision-fold metas-adjust" id="metasAdjust" data-remember="planning-week-adjust"><summary>Ajustar metas e disponibilidade</summary>
     <section class="metas-adjust-panel metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Metas de rendimento e volume semanal desejado. Ajuste os valores conforme a sua fase de estudo.</p></header><div id="metasContainer"></div></section>
@@ -770,7 +770,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=7a98dea87836"></script>
+  <script src="src/app.bundle.js?v=1e665cc40640"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

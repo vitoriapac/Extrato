@@ -1,3 +1,4 @@
+import { formatDecimal } from '../../core/format-number.js';
 import { useState } from 'preact/hooks';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
@@ -155,8 +156,12 @@ export function WhatIfSimulatorModal({
                 </button>
               </Tooltip>
             </div>
-            <div class="text-xl font-semibold text-primary">{simulated.readinessScore}%</div>
-            <div class="text-xs text-secondary mt-1">Atual: {baseline.readinessScore}%</div>
+            <div class="text-xl font-semibold text-primary">
+              {formatDecimal(simulated.readinessScore)}/100
+            </div>
+            <div class="text-xs text-secondary mt-1">
+              Atual: {formatDecimal(baseline.readinessScore)}/100
+            </div>
             {delta.readinessScoreDelta !== 0 && (
               <Badge
                 variant={delta.readinessScoreDelta > 0 ? 'success' : 'default'}
@@ -187,16 +192,20 @@ export function WhatIfSimulatorModal({
                 </button>
               </Tooltip>
             </div>
-            <div class="text-xl font-semibold text-primary">{simulated.weeklyStudyHours}h</div>
-            <div class="text-xs text-secondary mt-1">Atual: {baseline.weeklyStudyHours}h</div>
+            <div class="text-xl font-semibold text-primary">
+              {formatDecimal(simulated.weeklyStudyHours)} h
+            </div>
+            <div class="text-xs text-secondary mt-1">
+              Atual: {formatDecimal(baseline.weeklyStudyHours)} h
+            </div>
             {delta.weeklyStudyHoursDelta !== 0 && (
               <Badge
                 variant={delta.weeklyStudyHoursDelta > 0 ? 'success' : 'default'}
                 className="mt-1"
               >
                 {delta.weeklyStudyHoursDelta > 0
-                  ? `+${delta.weeklyStudyHoursDelta}h`
-                  : `${delta.weeklyStudyHoursDelta}h`}
+                  ? `+${formatDecimal(delta.weeklyStudyHoursDelta)} h`
+                  : `${formatDecimal(delta.weeklyStudyHoursDelta)} h`}
               </Badge>
             )}
           </div>

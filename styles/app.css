@@ -2935,6 +2935,10 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .priority-history-topic__toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .subject-accuracy-chart__name{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .subject-target-cell{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2)}
+.subject-target-editor summary{cursor:pointer;color:var(--heading);white-space:normal}
+.subject-target-cell label{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2)}
+.subject-target-cell + .subject-target-cell{margin-top:var(--space-2)}
+[data-plan-preview-title]{scroll-margin-top:calc(var(--sticky-stack-height,52px) + var(--overview-nav-height,54px) + var(--space-4))}
 .subject-target-pending-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-2) var(--space-3);margin:var(--space-2) 0;border:1px solid var(--border-default);border-radius:var(--radius-control);background:var(--surface-subtle)}
 .subject-target-pending-bar[hidden]{display:none}
 .exam-undated-cta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-3);margin:0 0 var(--space-4);border:1px solid var(--border-default);border-radius:var(--radius-control);background:var(--surface-subtle)}
@@ -2962,6 +2966,10 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 }
 @media(max-width:640px){
   .weekly-history-table-wrap .weekly-history-table,.subject-target-table-wrap table,.phase-comparison-table-wrap table{min-width:0}
+  .subject-target-table-wrap{max-height:none;overflow:visible}
+  .subject-target-table-wrap td:last-child{white-space:normal}
+  .subject-target-editor summary{min-height:var(--touch-target,44px);align-content:center}
+  .subject-target-table-wrap td{overflow-wrap:anywhere}
   :is(.weekly-history-table-wrap,.subject-target-table-wrap,.phase-comparison-table-wrap) thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
   :is(.weekly-history-table-wrap,.subject-target-table-wrap,.phase-comparison-table-wrap) tr{display:block;padding:var(--space-2) 0;border-bottom:1px solid var(--paper-line)}
   :is(.weekly-history-table-wrap,.subject-target-table-wrap,.phase-comparison-table-wrap) td{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-2);border-bottom:0;white-space:normal}

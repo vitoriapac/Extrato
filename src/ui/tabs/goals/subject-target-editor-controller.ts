@@ -67,18 +67,15 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       });
     }
 
-    container.innerHTML = renderSubjectTargetEditorView(
-      {
-        rows: comparison.rows,
-        globalTarget: state.metas?.metaAprovacao,
-        globalWeeklyQuestions: state.metas?.questoesPorSemana,
-        blueprint: state.examBlueprint,
-        weeklyGoalsBySubject,
-        draftAccuracy,
-        draftWeeklyGoals,
-      },
-      { escapeHtml: ctx.escapeHtml, escapeAttr: ctx.escapeAttr }
-    );
+    container.innerHTML = renderSubjectTargetEditorView({
+      rows: comparison.rows,
+      globalTarget: state.metas?.metaAprovacao,
+      globalWeeklyQuestions: state.metas?.questoesPorSemana,
+      blueprint: state.examBlueprint,
+      weeklyGoalsBySubject,
+      draftAccuracy,
+      draftWeeklyGoals,
+    });
   }
 
   function saveSubjectAccuracyTargets(subjectIds: string[], rawValue: any) {
@@ -294,6 +291,15 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       const restore = target.closest<HTMLElement>('[data-accuracy-restore]');
       if (restore) {
         saveSubjectAccuracyTargets([restore.dataset.accuracyRestore!], '');
+        return;
+      }
+
+      const saveWeekly = target.closest<HTMLElement>('[data-weekly-goal-save]');
+      if (saveWeekly) {
+        const input = saveWeekly
+          .closest('details')
+          ?.querySelector<HTMLInputElement>('[data-weekly-goal-value]');
+        if (input) saveWeeklyQuestionGoal(input.dataset.weeklyGoalValue!, input.value);
         return;
       }
 

@@ -30,9 +30,9 @@ test('aviso de plano curto usa o múltiplo exibido (2,04 não mostra; 2,06 mostr
 
 test('resumo diferencia a semana inteira do realizado até hoje', () => {
   const out = html(400, 231);
-  assert.match(out, /inclui dias futuros/);
-  assert.match(out, /Realizado acima do distribuído/);
-  assert.match(out, /ações do plano semanal/);
+  assert.match(out, /Inclui dias futuros/);
+  assert.match(out, /Volume acima da distribuição/);
+  assert.match(out, /Estudado até hoje/);
 });
 
 test('fechamento identifica o corte temporal e o escopo da aderência', async () => {

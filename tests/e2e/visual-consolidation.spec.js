@@ -750,13 +750,18 @@ test('alvos de toque móveis, modo foco inerte, envio de metas e indicador de sa
   const initialCount = await removeButtons.count();
   expect(initialCount).toBeGreaterThan(0);
   const removedSubjectId = await removeButtons.first().getAttribute('data-weekly-goal-remove');
+  const weeklyEditor = page.locator('#subjectTargetEditor details').filter({
+    has: page.locator(`[data-weekly-goal-value="${removedSubjectId}"]`),
+  });
+  await weeklyEditor.locator('summary').click();
   await removeButtons.first().click();
   await expect(removeButtons).toHaveCount(initialCount - 1);
   const weeklyInput = page.locator(
     `#subjectTargetEditor [data-weekly-goal-value="${removedSubjectId}"]`
   );
+  await weeklyEditor.locator('summary').click();
   await weeklyInput.fill('45');
-  await weeklyInput.press('Enter');
+  await weeklyEditor.getByRole('button', { name: 'Salvar questões' }).click();
   await expect(removeButtons).toHaveCount(initialCount);
 
   // Indicador de salvamento e botão Sair da demonstração nunca colidem no desktop

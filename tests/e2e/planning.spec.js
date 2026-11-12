@@ -12,6 +12,7 @@ test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ 
   await expect(page.getByText('Plano confirmado', { exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias' }).click();
+  await expect(page.getByRole('heading', { name: 'Prévia dos próximos 7 dias' })).toBeFocused();
   const confirmDaily = page.getByRole('button', { name: 'Confirmar planos diários' });
   await expect(confirmDaily).toBeVisible();
   await confirmDaily.click();
@@ -32,13 +33,14 @@ test('prévia explica fase da prova e sugere adaptação sem salvar automaticame
   await activateTab(page, 'metas');
   await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();
   const preview = page.locator('#examStudyPlan');
+  await expect(preview.getByRole('heading', { name: 'Prévia do plano semanal' })).toBeFocused();
   await expect(preview).toContainText('Fase até a prova');
   await expect(preview.locator('.adaptive-advice')).toContainText(
     /Ajuste sugerido|Adaptação de carga|Distribuição entre disciplinas mantida/
   );
   await expect(preview.getByRole('button', { name: 'Confirmar e salvar plano' })).toBeVisible();
   await preview.getByRole('button', { name: 'Descartar proposta' }).click();
-  await expect(preview.getByRole('button', { name: 'Calcular proposta semanal' })).toBeVisible();
+  await expect(preview.getByRole('button', { name: 'Calcular proposta semanal' })).toBeFocused();
 });
 
 test('fase e redistribuição do plano se organizam em tela móvel', async ({ page }) => {
