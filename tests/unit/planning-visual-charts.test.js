@@ -188,7 +188,9 @@ test('buildPhaseRoadmapVisual — determina fases de preparação e contagem reg
 test('renderGroupedBarChart, renderAllocationBar, renderPhaseRoadmapTimeline — geram marcação acessível', () => {
   const subjects = [{ id: 's1', name: 'Informática' }];
   const distributionVisual = buildSubjectStudyDistributionVisual({
-    distributionRows: [{ subjectId: 's1', name: 'Informática', plannedMinutes: 120, studiedMinutes: 120 }],
+    distributionRows: [
+      { subjectId: 's1', name: 'Informática', plannedMinutes: 120, studiedMinutes: 120 },
+    ],
     subjects,
   });
 
@@ -214,4 +216,17 @@ test('renderGroupedBarChart, renderAllocationBar, renderPhaseRoadmapTimeline —
   assert.ok(roadmapHtml.includes('chart-phase-roadmap'));
   assert.ok(roadmapHtml.includes('Fase Atual'));
   assert.ok(roadmapHtml.includes('dias'));
+});
+
+test('alocação mostra ranking legível de todas as disciplinas', () => {
+  const subjects = Array.from({ length: 7 }, (_, i) => ({ id: `s${i}`, name: `Disciplina ${i}` }));
+  const visual = buildWeeklyAllocationBarVisual({
+    subjects,
+    planItems: subjects.map((subject, i) => ({ subjectId: subject.id, minutes: (i + 1) * 10 })),
+    weeklyCapacityMinutes: 280,
+  });
+  const html = renderAllocationBar({ visual });
+  assert.match(html, /Distribuição por disciplina/);
+  assert.ok(html.indexOf('Disciplina 6') < html.indexOf('Disciplina 0'));
+  assert.match(html, /Disciplina 0/);
 });

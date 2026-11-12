@@ -1,81 +1,81 @@
-# Graph Report - Extrato  (2026-11-10)
+# Graph Report - Extrato  (2026-11-11)
 
 ## Corpus Check
-- 1400 files · ~1,698,444 words
+- 1437 files · ~1,734,571 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 32 file(s) not represented in the graph (top: (none) 9, .woff2 6, .css 6)
 
 ## Summary
-- 10047 nodes · 27582 edges · 460 communities (380 shown, 80 thin omitted)
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 3270 edges (avg confidence: 0.87)
+- 10399 nodes · 29128 edges · 462 communities (385 shown, 77 thin omitted)
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 3609 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `474c06b7`
+- Built from commit: `7c54c773`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - app.ts
 - app.bundle.js
-- subjectColorOf
+- preact-render-to-string
 - createStudyTimerRuntimeController
 - createSubjectsTabController
 - wire-import-controllers.ts
 - app-selectors.ts
 - Plano: Desempenho que responde "como estou" e "como melhoro"
 - wire-practice-and-catalog-ui.ts
-- ig
+- report-data.ts
 - createGoalsTabController
-- o
+- i
 - study-recommendation-controller.ts
 - demo-generator.ts
 - wire-import-controllers.ts
 - weekly-close-modal-controller.ts
-- t
+- n
 - types.ts
-- product-consolidation.test.js
+- adaptive-planning.ts
 - formatDecimal
 - dashboard-tab-controller.ts
 - live-browser.js
-- openPerformanceSection
+- ref_node_assert
 - plan-execution-snapshot.ts
-- build-strategic-timeline.ts
+- recommendation-history.ts
 - preact
 - demo.bundle.js
 - createStudyMetricsSelectors
 - build-performance-page-model.ts
-- @playwright/test
+- helpers.js
 - build-achievement-projection.ts
 - approval-tab-controller.ts
 - reconcile-daily-execution.ts
 - today-tab-controller.ts
-- h
+- r
 - landing.bundle.js
-- Aa
+- Zg
 - charts.tsx
-- subject-accuracy-target.test.js
+- error-notebook-controller.ts
 - createExamImportModalController
-- buildStudyCandidates
+- study-candidate-service.ts
 - connectSSE
 - renderEvidenceQuality
 - Plano: redistribuir o conteúdo de Desempenho para subir a nota (meta 32/40)
 - help-controller.ts
 - Lista de tarefas (índice; detalhes em `tasks/todo-visual.md`)
 - check-test-tiers.mjs
-- buildTopicExamProfile
+- topic-strategy.ts
 - build-onboarding-view-model.ts
 - build-sustainability-model.ts
-- readiness-history.ts
+- createDashboardTabController
 - error-notebook-engine.ts
-- n
+- t
 - Plano de implementação: correções da auditoria de segurança
 - Recovery e execução diária
 - onboarding-modal-controller.ts
-- planning-visual-models.ts
+- subjectColorOf
 - planning-sustainability.spec.js
 - expectNoPageOverflow
-- error-flashcards-persistence.test.js
+- study-plan-builder-controller.ts
 - exam-matrix-controller.ts
 - exam-import-service.ts
 - StudyTrack — Extrato de Estudos
@@ -85,23 +85,23 @@
 - calculatePlanFeasibility
 - wire-domain-analytics.ts
 - Recomendações de melhorias --- StudyTrack
-- ref_node_assert
+- collection-repository.ts
 - achievements-controller.ts
 - product-profiles.js
-- performance-overview-renderer.ts
+- performance-subject-comparison-renderer.ts
 - resumeSession
-- exam-catalog.ts
-- exam-intelligence-stress.test.js
-- adapt-diagnostic-signals.ts
+- createSubjectService
+- diagnostics-tab-controller.ts
+- ref_node_fs
 - resolveExamPhase
 - pip-timer-controller.ts
-- analytics.test.js
+- repository.ts
 - performance-tab-controller.ts
 - Gráficos de desempenho e planejamento
 - Cenário da demonstração 2.0
 - Spec: remote-sync
-- subject-target-editor-controller.ts
-- study-session.ts
+- runUndoable
+- undoable.ts
 - Plano Detalhado de Transformação em SaaS — Extrato de Estudos
 - modern-screenshot.umd.js
 - Consolidação da experiência — ciclo iniciado em c28b51d
@@ -111,7 +111,7 @@
 - build-weekly-performance-brief.ts
 - run-test-gate.mjs
 - help.bundle.js
-- calendar-tab-controller.ts
+- wire-practice-and-catalog-ui.ts
 - apply-recovery-plan.ts
 - achievement-projection-renderer.ts
 - help-feedback.ts
@@ -119,10 +119,10 @@
 - build.mjs
 - el
 - syncPageChatFocus
-- report.bundle.js
+- build-cockpit-sidebar-view-model.ts
 - applyEditing
 - learning-cycle.ts
-- format-date.ts
+- questions-tab-controller.ts
 - wire-storage-and-sync.ts
 - select-affected-tests.mjs
 - What Makes a Logo "High-End"?
@@ -132,19 +132,19 @@
 - createSimulationsTabController
 - Contrato da experiência de decisão
 - Inventário de propriedade das informações
-- unmountPreact
+- mountPreact
 - ref_node_path
 - createFirstAccessModalController
-- consolidated-signal.ts
+- build-exam-matrix.ts
 - remote-sync-provider.ts
 - package.json
 - Pacotes de implementação
 - Hierarquia visual do StudyTrack
-- i
+- overview-standing-renderer.ts
 - audit-test-suite.mjs
 - compilerOptions
 - overview-renderer.ts
-- remote-sync-controller.test.js
+- build-performance-overview.ts
 - Contrato de hierarquia da informação
 - scripts
 - createAppStateStore
@@ -153,51 +153,51 @@
 - cloud-catalog-service.test.js
 - build-plateau-detector-view-model.ts
 - application-bootstrap.ts
-- initGlobalBar
-- openSectionFor
+- captureElementToBlob
+- scrollBehavior
 - live.md
 - createReviewsTabController
-- study-plan-builder-controller.ts
+- recommendation-action.ts
 - Plano do dia, sugestões e metas iniciais
 - Refinamento visual: referência inicial
 - shell-ui-controller.test.js
-- recommendations-controller.ts
-- pluralize
-- timer-controller.ts
+- study-session.ts
+- format-number.ts
+- study-timer-runtime-controller.ts
 - createStudyPlanBuilderController
 - Plano de Próximas Evoluções: Inteligência Analítica, Experiência e Engenharia
 - Histórico de Planos Concluídos — StudyTrack
 - utils.ts
 - mountSvelteComponentVariant
-- volatile-mastery.ts
+- create-test-bridge-api.ts
 - help-content.ts
 - Navegação de conteúdo e leitura dos indicadores
 - Evidência de retenção e composição da execução
-- subject-accuracy-target.test.js
-- buildProjectionCalibration
+- readiness-history-renderer.ts
+- build-adherence-model.ts
 - createTopicDiagnosisService
-- plan-execution-renderer.ts
-- scrollBehavior
-- analytical-presentation.ts
+- LedgerLine
+- table.tsx
+- formatDateBR
 - Desempenho: análise de conteúdo, personas e críticas, e como distribuir para subir a nota
-- outcome-service.ts
+- plan-execution-renderer.ts
 - Design System do Extrato de Estudos
 - tests.js
 - Fechamento da auditoria de confiança e acessibilidade
 - run-experience-gate.mjs
-- daily-execution.test.js
+- Plano: o que falta da crítica de Desempenho, Agenda e Calendário, e as personas
 - report-template.ts
-- build-period-comparison-view-model.ts
-- session-result.test.js
-- expectNoPageOverflow
-- Foco de revisão
-- topic-strategy.ts
-- createTimerUiController
-- topic-bookmark.ts
 - escapeHtml
+- session-result.test.js
+- admin-service.ts
+- Foco de revisão
+- 3. Fases de Implementação Técnica no Código
+- build-period-comparison-view-model.ts
+- timer-coordinator.ts
+- build-volatile-mastery-view-model.ts
 - AGENTS.md
 - Escopo analítico por concurso
-- scrollBehavior
+- session-modal-controller.ts
 - Testes
 - Contrato do Algoritmo SM-2 Adaptado — Caderno de Erros
 - README.md
@@ -206,31 +206,31 @@
 - .prettierrc.json
 - Operate mode depth (and Read notes)
 - createSessionHistoryController
-- Decisões do usuário (bloqueiam tarefas marcadas)
-- critical-responsive.js
+- simulated-remediation.ts
+- renderIconSvg
 - 6. Manual Prático de Conexão e Ativação com Supabase, Clerk e AbacatePay
-- wire-analytics-and-shell-ui.ts
+- analysis-navigation-controller.ts
 - updatePendingCounter
 - Plano consolidado de implementação — Extrato de Estudos
 - story.mjs
 - 7. Auditoria Completa e Refinamento de UX, UI & Acessibilidade (Fases 1, 2 e 3)
-- capturePlanPriority
-- planning-sustainability.spec.js
+- exam-matrix-renderer.ts
+- tabs.tsx
 - createSessionModalController
 - Conversion & Landing Pages
-- createDefaultState
+- Plano: Onboarding e primeiro uso para iniciantes (ciclo 2)
 - distribute-study-plan.ts
-- demo-intelligence-scenarios.test.js
+- createQuestionsTabController
 - adapt.md
-- r
+- v
 - exam-catalog.bundle.js
 - document.md
 - Inteligência consolidada
 - onboard.md
 - createApprovalReadinessService
 - createDialogFeedback
-- createShellUiController
-- analysis-navigation-controller.ts
+- ht
+- syncEditBadgeHitProxies
 - Roteiro de Auditoria Manual com NVDA — StudyTrack
 - practice-link-generator.ts
 - refresh_meta.py
@@ -239,7 +239,7 @@
 - Product
 - build-analytics-view-model.ts
 - createKeyboardShortcutsController
-- parseRawSyllabusText
+- Spec: modo-sessao
 - Plano: pendências da crítica de design (28/40)
 - Auditoria de segurança — StudyTrack
 - Plano de implementação — referências visuais e experiência
@@ -252,8 +252,8 @@
 - navigation-controller.test.js
 - formatDuration
 - Arquitetura
-- onAnnotDown
-- study-history.ts
+- header-renderer.ts
+- parseRawSyllabusText
 - Onboarding & Activation
 - createLiveBrowserDomHelpers
 - devDependencies
@@ -267,25 +267,25 @@
 - React Best Practices
 - analytics/opportunity-cost.ts
 - Seleção por impacto e métricas
-- ref_node_fs
-- Extrato de Estudos — Governança, Engenharia e Estratégia de Testes
+- Fase 5 — Fluxos, clareza e confiança
+- document.md
 - Colors
-- 3. As Cinco Fases de Implementação
+- createExamImportModalController
 - Responsive Design
-- collection-repository.ts
+- 4. Roteiro de Execução em 10 Fases (100% Concluído ✅)
 - Logo Generator
 - skill_lib.py
 - reviews-tab-controller.ts
 - Contrato das evidências da projeção
 - animate.md
 - Handle `generate`
-- dependencies
+- 8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 10 — 100% Concluído)
 - generate_showcase.py
 - 5. Re-render Optimization
 - Pricing & Monetization Psychology
-- engines
+- n1
 - Unslop
-- Plano: o que falta da crítica de Desempenho, Agenda e Calendário, e as personas
+- s
 - affected-test-plan.js
 - Fase 4 — Conforto
 - Generate Report
@@ -314,11 +314,12 @@
 - scheduleAcceptCleanup
 - 3. Server-Side Performance
 - Signs of slop
+- help-controller.test.js
 - Demo e validação da trajetória
-- createMasterRenderer
+- 3. As Cinco Fases de Implementação
 - Init flow
 - 中文
-- renderRingGauge
+- build-recommendation-outcome-view-model.ts
 - Sections
 - readiness-overview.tsx
 - parseLocalDate
@@ -327,27 +328,28 @@
 - error-analysis.ts
 - Common Cognitive Load Violations
 - iOS platform
-- recommendation-calibration.ts
+- report-bundle-size.mjs
 - Shape
 - study-candidate-service.ts
 - Positioning, ICP & Go-to-Market
 - updater/ — maintaining the Revenue-Centric Design skill
 - Region map
 - trends.ts
-- 8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 10 — 100% Concluído)
-- Persuade and Experience
+- MemoryStorage
+- 6.5. Acesso ao Painel de Administração e Deep-Linking via URL
 - Fase 2 — Ícones
-- No-argument routing: the context-aware menu
+- 9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4)
 - Android platform
 - Persona-Based Design Testing
 - discover_new.py
 - $impeccable hooks
+- Microcopy das análises
 - Changelog
 - Revenue-Centric Design — an Agent Skill
 - AI-Era Differentiation & Moats
 - Behavioral Science & Persuasion
 - request-validation.ts
-- MemoryStorage
+- AppState
 - Prefer Statically Analyzable Paths
 - Audit: first-use onboarding
 - Generate Report
@@ -361,35 +363,41 @@
 - unslop/SKILL.md
 - Effects
 - Visuals
-- Consolidação da Visão Geral e Central de Ajuda
+- onboarding-modal-controller.test.js
 - Visualize: Direction Comps & Asset Production
 - React Best Practices
 - Checkout & Forms (Conversion-Completion Layer)
 - Revenue-Centric Design
-- Plano Diretor de Modularização do `src/app.ts`
-- 9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4)
-- cloud-saas-provider.ts
-- 8. Advanced Patterns
+- cloud-saas-provider.test.js
+- 4. Como deixar Desempenho analítico e ligado ao planejamento
+- No-argument routing: the context-aware menu
+- Consolidação da Visão Geral e Central de Ajuda
 - vercel.json
 - Installation
 - 安装方式
-- Do's and Don'ts
+- 7. Infraestrutura de Produção, DNS, Custom Domain e Entregabilidade
 - Publicação da landing e da rota /app
-- Elevation & Depth
-- ref_node_fs
+- 3. Plano Unificado de Implementação e Evolução (Fases 1 a 4)
+- ref_node_url
+- Fase 1 — Fazer o primeiro uso que já existe funcionar
 - Extract Flow
 - Heuristics Scoring Guide
 - async-cheap-condition-before-await.md
+- 10. Refinamento de Usabilidade & Experiência do Iniciante (10 Pontos de Atrito)
 - server-hoist-static-io.md
 - Dashboards & Data Visualization (Retention Surface)
 - Fase 2 — Menos atrito para iniciantes
-- check-test-selection.mjs
+- 1. Plano de Modernização Tecnológica (TypeScript, Preact e Tailwind CSS)
+- 2.2. Arquitetura em 3 Camadas Implementada
+- 6. Modernização e Didática Interativa da Central de Ajuda (Instruções 2.0)
 - API Configuration
 - API 配置
 - Background Styles
 - Usage
 - 使用方法
 - 背景风格
+- Inventário da suíte de testes
+- 12. Plano de Enriquecimento do Modo Demonstração (Novembro 2026)
 - advanced-effect-event-deps.md
 - advanced-event-handler-refs.md
 - advanced-init-once.md
@@ -405,7 +413,7 @@
 - bundle-preload.md
 - client-event-listeners.md
 - client-localstorage-schema.md
-- client-passive-event-listeners.md
+- 4. Client-Side Data Fetching
 - client-swr-dedup.md
 - js-batch-dom-css.md
 - js-cache-function-results.md
@@ -431,6 +439,7 @@
 - rendering-resource-hints.md
 - rendering-script-defer-async.md
 - rendering-svg-precision.md
+- 13. Plano de Melhorias do Primeiro Acesso, Reorganização da Visão Geral e Estabilização do CI (Novembro 2026)
 - rerender-defer-reads.md
 - rerender-dependencies.md
 - rerender-derived-state.md
@@ -454,47 +463,43 @@
 - server-parallel-nested-fetching.md
 - server-serialization.md
 - _template.md
-- filter-panel.ts
 - calibrated-score-projection.ts
 - Fase 1 — Fundação visual (um PR, um commit por tarefa; snapshots só na V6)
 - impeccable/SKILL.md
 - Diagnostic Scan
 - calculateSubjectRadar
 - Jornada do StudyTrack
-- HelpVisualRenderer.tsx
-- Microcopy das análises
-- help-runtime.ts
-- study-recommendation-controller.test.js
-- Validação da inteligência da prova e do planejamento V4
+- HelpTopicCard.tsx
+- retention-simulator.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `t()` - 264 edges
-2. `a()` - 259 edges
-3. `r()` - 225 edges
-4. `n()` - 192 edges
-5. `o()` - 178 edges
-6. `s()` - 171 edges
-7. `c()` - 165 edges
-8. `l()` - 138 edges
-9. `preact` - 126 edges
-10. `d()` - 124 edges
+2. `a()` - 255 edges
+3. `n()` - 231 edges
+4. `o()` - 198 edges
+5. `r()` - 178 edges
+6. `preact` - 175 edges
+7. `i()` - 171 edges
+8. `l()` - 158 edges
+9. `Icon()` - 148 edges
+10. `c()` - 141 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Setup` --references--> `sh()`  [INFERRED]
-  .agents/skills/impeccable/SKILL.md → src/app.bundle.js
-- `Flow` --references--> `on()`  [INFERRED]
-  .agents/skills/impeccable/reference/hooks.md → src/app.bundle.js
-- `Preferências do navegador` --references--> `on()`  [INFERRED]
-  DESIGN-SYSTEM.md → src/app.bundle.js
-- `R3 — Data padrão local (#6)` --references--> `todayISO()`  [INFERRED]
-  docs/SPEC-question-import.md → src/app.ts
-- `Consolidação de produto — pacotes 3–5` --references--> `compareReadinessSnapshots()`  [INFERRED]
-  docs/CONSOLIDATED-INTELLIGENCE.md → src/application/analytics/build-readiness-evolution.ts
+- `Actions and navigation` --references--> `No()`  [INFERRED]
+  .agents/skills/impeccable/reference/clarify.md → src/app.bundle.js
+- `Lote 1 — Pequenos e independentes (acessibilidade e repetição)` --references--> `h2()`  [INFERRED]
+  docs/PLANO-IMPECCABLE-DESEMPENHO-AGENDA-PERSONAS.md → src/app.bundle.js
+- `3. Observações menores para correção` --references--> `h2()`  [INFERRED]
+  tasks/plan-desempenho-analitico.md → src/app.bundle.js
+- `Fase 1 — Correções menores` --references--> `h2()`  [INFERRED]
+  tasks/plan-desempenho-analitico.md → src/app.bundle.js
+- `Metas pessoais e sinais de preparação` --references--> `buildPreparationSignals()`  [INFERRED]
+  ARCHITECTURE.md → src/application/analytics/build-preparation-signals.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (460 total, 80 thin omitted)
+## Communities (462 total, 77 thin omitted)
 
 ### Community 0 - "app.ts"
 Cohesion: 0.05
@@ -502,167 +507,167 @@ Nodes (40): activateInitialTab(), appClock, applicationRenderer, appSelectors, c
 
 ### Community 1 - "app.bundle.js"
 Cohesion: 0.01
-Nodes (332): $0(), $1(), a1(), aC(), Ad(), ag(), ah(), AM() (+324 more)
+Nodes (370): $a(), a0(), A2(), o(), ac(), AE(), Af(), ah() (+362 more)
 
-### Community 2 - "subjectColorOf"
-Cohesion: 0.08
-Nodes (40): 5. Harmonização Cromática nas Listagens e Tabelas, buildPedagogicalMatrixModel(), BuildPedagogicalMatrixOptions, classifyPedagogicalQuadrant(), PedagogicalMatrixItem, PedagogicalMatrixModel, PedagogicalQuadrant, BuildStudyDistributionOptions (+32 more)
+### Community 2 - "preact-render-to-string"
+Cohesion: 0.06
+Nodes (41): 17. Modernização Visual da Aba de Planejamento com Cores das Disciplinas, preact-render-to-string, buildPlanImpactAlignment(), buildPhaseRoadmapVisual(), buildPlanImpactAlignmentVisual(), buildSubjectStudyDistributionVisual(), PhaseRoadmapVisualModel, PlanImpactAlignmentRowVisual (+33 more)
 
 ### Community 3 - "createStudyTimerRuntimeController"
 Cohesion: 0.13
-Nodes (38): R5 — Título da aba como cronômetro (todos os navegadores), R6 — Janela flutuante (Document Picture-in-Picture), R7 — Janela aberta não conta como "aba esquecida", Requisitos, session-pip, shouldMarkHidden(), createStudyTimerRuntimeController(), activeTimerMatchesRecommendation() (+30 more)
+Nodes (38): R5 — Título da aba como cronômetro (todos os navegadores), R6 — Janela flutuante (Document Picture-in-Picture), R7 — Janela aberta não conta como "aba esquecida", Requisitos, session-pip, buildCompletedSessionRecord(), shouldMarkHidden(), createStudyTimerRuntimeController() (+30 more)
 
 ### Community 4 - "createSubjectsTabController"
 Cohesion: 0.08
 Nodes (33): createSubjectsTabController(), addHistoryEvent(), addSubject(), addTopic(), archiveTopic(), bindEvents(), changeSubjectTopicLimit(), completedReviewsForTopic() (+25 more)
 
 ### Community 5 - "wire-import-controllers.ts"
-Cohesion: 0.11
-Nodes (26): Transição de escopo, DERIVED_FIELDS, setActiveExamTags(), wireImportControllers(), WireImportControllersDeps, EXAM_TAGS, filterTopicsByExamScope(), isCommonTopic() (+18 more)
+Cohesion: 0.22
+Nodes (11): createExamImportService(), wireImportControllers(), WireImportControllersDeps, renderQuestionImport(), safe(), buildQuestionImportTemplate(), QUESTION_IMPORT_TEMPLATE_FILE_NAME, renderStructuredImport() (+3 more)
 
 ### Community 6 - "app-selectors.ts"
 Cohesion: 0.16
 Nodes (35): buildUnifiedReviews(), getSubjectWeeklyTrend(), activeSubjects(), activeTopics(), addDays(), allTopics(), AppSelectorsDependencies, collectMonthKeys() (+27 more)
 
 ### Community 7 - "Plano: Desempenho que responde "como estou" e "como melhoro""
-Cohesion: 0.07
-Nodes (27): 10. Pendências fora da Fase 5 (levantadas em 10/11/2026), 11. Fase 5 (crítica final, 10/11/2026): 27/40, meta de 32 não atingida, 12. Lote P2 e distill (10/11/2026, sem commit), 1. Onde estamos, 2. Análise das personas, 3. Observações menores para correção, 4. Como deixar Desempenho analítico e ligado ao planejamento, 5. Tarefas (+19 more)
+Cohesion: 0.10
+Nodes (20): 10. Pendências fora da Fase 5 (levantadas em 10/11/2026), 11. Fase 5 (crítica final, 10/11/2026): 27/40, meta de 32 não atingida, 12. Lote P2 e distill (10/11/2026, sem commit), 1. Onde estamos, 2. Análise das personas, 3. Observações menores para correção, 5. Tarefas, 6. Ordem e dependências (+12 more)
 
 ### Community 8 - "wire-practice-and-catalog-ui.ts"
-Cohesion: 0.08
-Nodes (35): buildErrorAnalysisViewModel(), ICONS, LABELS, buildErrorParetoVisual(), buildSimulationTrendVisual(), buildSubjectWeeklyTrendVisual(), ErrorParetoItemVisual, ErrorParetoVisualModel (+27 more)
+Cohesion: 0.12
+Nodes (22): buildErrorAnalysisViewModel(), ICONS, LABELS, renderQuestionAnalyticsSummary(), renderQuestionErrorToolbar(), renderTopicQuestionPerformance(), renderWeeklyQuestionTrend(), createQuestionAnalyticsController() (+14 more)
 
-### Community 9 - "ig"
-Cohesion: 0.07
-Nodes (22): bn(), U(), Cr(), $d(), Dj(), eo(), ig(), c() (+14 more)
+### Community 9 - "report-data.ts"
+Cohesion: 0.05
+Nodes (70): buildRecoveryTimelineDetail(), minutes(), Row, trajectoryLabels, Row, TRAJECTORY_LABELS, groupStrategicTimeline(), localLabel() (+62 more)
 
 ### Community 10 - "createGoalsTabController"
-Cohesion: 0.06
-Nodes (41): buildPlanImpactAlignment(), buildResultGoalsViewModel(), number(), buildWeeklyAvailability(), clampHours(), INITIAL_GOAL_VALUES, initialGoalSuggestions(), renderColumnChart() (+33 more)
+Cohesion: 0.09
+Nodes (29): buildResultGoalsViewModel(), number(), buildWeeklyAvailability(), clampHours(), INITIAL_GOAL_VALUES, initialGoalSuggestions(), BurnupInput, fmt() (+21 more)
 
-### Community 11 - "o"
+### Community 11 - "i"
 Cohesion: 0.03
-Nodes (197): af(), H(), P(), bf(), bg(), c(), bh(), p() (+189 more)
+Nodes (196): $0(), c(), f(), g(), l(), m(), u(), v() (+188 more)
 
 ### Community 12 - "study-recommendation-controller.ts"
 Cohesion: 0.07
-Nodes (49): createReplanController(), buildRecommendationOutcomeViewModel(), LABELS, numeric(), STATE_LABELS, STATE_MAP, createRecommendationController(), asBoolean() (+41 more)
+Nodes (46): createReplanController(), createRecommendationController(), asBoolean(), canReuseRecommendationPresentation(), completeRecommendationFeedback(), createRecommendationPresentation(), rateRecommendationFeedback(), recordRecommendationDecision() (+38 more)
 
 ### Community 13 - "demo-generator.ts"
 Cohesion: 0.08
-Nodes (31): addDemoEssays(), buildDemoReviews(), buildDemoSimulations(), clamp(), stamp(), BuildDemoFlashcardOptions, buildDemoFlashcards(), RAW_DEMO_CARDS (+23 more)
+Nodes (38): addLocalDays(), addDemoEssays(), buildDemoReviews(), buildDemoSimulations(), clamp(), stamp(), BuildDemoFlashcardOptions, buildDemoFlashcards() (+30 more)
 
 ### Community 14 - "wire-import-controllers.ts"
 Cohesion: 0.17
-Nodes (18): createQuestionImportService(), calendarDate(), clean(), detectDelimiter(), ERROR_CATEGORY_MAP, finite(), HEADER_ALIASES, normalizeKey() (+10 more)
+Nodes (18): Estilo, R2 — Datas inválidas são rejeitadas (#5), createQuestionImportService(), calendarDate(), clean(), detectDelimiter(), ERROR_CATEGORY_MAP, finite() (+10 more)
 
 ### Community 15 - "weekly-close-modal-controller.ts"
-Cohesion: 0.06
-Nodes (72): buildAdherenceCloseHistory(), buildCloseComparison(), captureCloseComparisonMetrics(), number(), Row, buildStrategicFocusHistory(), minutes(), percent() (+64 more)
+Cohesion: 0.05
+Nodes (82): buildCloseComparison(), captureCloseComparisonMetrics(), number(), Row, buildPhaseComparison(), finite(), phaseOrder, rounded() (+74 more)
 
-### Community 16 - "t"
+### Community 16 - "n"
 Cohesion: 0.03
-Nodes (93): av(), A(), ce(), ee(), G(), le(), q(), re() (+85 more)
+Nodes (133): n(), aA(), ab(), O(), $b(), ae(), Bu(), bv() (+125 more)
 
 ### Community 17 - "types.ts"
-Cohesion: 0.04
-Nodes (57): RawSyllabusParsedResult, AdaptivePlanningEntry, CalendarItem, DailyPlan, DailyPlanItem, DocumentPictureInPictureOptions, ExamBlueprint, ExamMetric (+49 more)
+Cohesion: 0.06
+Nodes (35): AdaptivePlanningEntry, CalendarItem, DailyPlan, DailyPlanItem, DocumentPictureInPictureOptions, ExamBlueprint, ExamBlueprintSubject, ExamMetric (+27 more)
 
-### Community 18 - "product-consolidation.test.js"
-Cohesion: 0.12
-Nodes (15): buildDecisionCoherenceReport(), buildNextBestAction(), NEXT_BEST_ACTION_STATES, DECISION_REASON_CODES, DECISION_REASON_LABELS, decisionReasonCode(), base, dates (+7 more)
+### Community 18 - "adaptive-planning.ts"
+Cohesion: 0.09
+Nodes (41): buildStrategicAchievements(), buildWeeklyStrategicFocus(), seconds(), buildExamDataQuality(), EXAM_INTELLIGENCE_CONFIG, ExamRecord, examsInScope(), ADAPTIVE_TRANSFER_MAX_MINUTES (+33 more)
 
 ### Community 19 - "formatDecimal"
-Cohesion: 0.07
-Nodes (54): formatDecimal(), formatDelta(), formatters, ENTITIES, escape(), renderChartEmptyState(), renderChartFrame(), renderChartLegend() (+46 more)
+Cohesion: 0.09
+Nodes (38): formatDecimal(), ErrorCategoryRecord, ErrorProfileChartProps, renderErrorProfileChart(), renderPedagogicalMatrixSection(), Row, value(), delta() (+30 more)
 
 ### Community 20 - "dashboard-tab-controller.ts"
-Cohesion: 0.03
-Nodes (118): 5. Histórico e Conclusão das Fases, 23. Reestruturação do Cockpit da Visão Geral em 3 Camadas Simétricas & Heatmap GitHub Full-Width, 9.1. Fase 1: Hero Welcome State no Dashboard & Eliminação de Links Quebrados, todayISO(), AllocationBalanceRow, AllocationBalanceViewModel, BuildAllocationBalanceParams, buildAllocationBalanceViewModel() (+110 more)
+Cohesion: 0.07
+Nodes (37): AllocationBalanceRow, AllocationBalanceViewModel, BuildAllocationBalanceParams, buildAllocationBalanceViewModel(), BuildCriticalVulnerabilitiesParams, buildCriticalVulnerabilitiesViewModel(), CriticalVulnerabilitiesViewModel, CriticalVulnerabilityItem (+29 more)
 
 ### Community 21 - "live-browser.js"
 Cohesion: 0.03
-Nodes (124): applyGlobalBarLabelState(), applyLiveBarPreference(), applyPlaceholderSizingStyles(), averageRgb01(), bindEditBadgeProxy(), bufferToBase64(), buildCollapsible(), buildColorModels() (+116 more)
+Nodes (139): absolutizeUrls(), applyGlobalBarLabelState(), applyLiveBarPreference(), applyOriginalAttrsToSvelteAnchor(), applyPlaceholderDimensions(), applyPlaceholderSizingStyles(), beginEditPin(), bufferToBase64() (+131 more)
 
-### Community 22 - "openPerformanceSection"
-Cohesion: 0.12
-Nodes (12): prepare(), openPerformanceFold(), openPerformanceHistory(), openPerformanceSection(), openPlanningAdjust(), showSessions(), screenshotOptions, sections (+4 more)
+### Community 22 - "ref_node_assert"
+Cohesion: 0.04
+Nodes (24): clamp(), generateDiagnosis(), renderTopicAnalyticsState(), TopicAnalyticsStateOptions, PRIORITY_FACTOR_LABELS, createMockDocument(), demo, topics (+16 more)
 
 ### Community 23 - "plan-execution-snapshot.ts"
 Cohesion: 0.08
-Nodes (31): ADHERENCE_STATUS_POLICY, adherenceStatus(), labels, buildAdherenceTarget(), normalizeAdherenceTarget(), validAdherenceTarget(), buildAdherenceChangeExplanation(), direction() (+23 more)
+Nodes (35): ADHERENCE_STATUS_POLICY, buildAdherenceTarget(), normalizeAdherenceTarget(), validAdherenceTarget(), buildRecurringPriorities(), gaps(), Row, savedAdherencePeriods() (+27 more)
 
-### Community 24 - "build-strategic-timeline.ts"
-Cohesion: 0.10
-Nodes (31): Composição atual da aba (10/11/2026), buildPhaseComparison(), finite(), phaseOrder, rounded(), validPhase(), buildPriorityHistory(), number() (+23 more)
+### Community 24 - "recommendation-history.ts"
+Cohesion: 0.12
+Nodes (27): buildPriorityHistory(), number(), strategicRecordInScope(), attachRecommendationSession(), ensureRecommendationRecord(), localDate(), migrateRecommendationHistory(), RECOMMENDATION_HISTORY_STATUSES (+19 more)
 
 ### Community 25 - "preact"
 Cohesion: 0.04
-Nodes (98): 4. Matriz de Entregas e Status de Execução, Fase 2: Iconografia Tabler em Escala, Fase 2: Controle de Planos e Feature Gates (`src/domain/billing/entitlements.ts`) [CONCLUÍDA], 2. Matriz de Auditoria por Fluxo, preact, BillingCycle, calculateCardInstallments(), CardInstallmentOption (+90 more)
+Nodes (100): 4. Matriz de Entregas e Status de Execução, Fase 2: Iconografia Tabler em Escala, Fase 2: Controle de Planos e Feature Gates (`src/domain/billing/entitlements.ts`) [CONCLUÍDA], 11.1. Entregas Realizadas, 2. Matriz de Auditoria por Fluxo, preact, PlateauDetectorViewModel, GuidedTourStep (+92 more)
 
 ### Community 26 - "demo.bundle.js"
-Cohesion: 0.06
-Nodes (84): _a(), aa(), an(), At(), ba(), bt(), Ca(), ci() (+76 more)
+Cohesion: 0.07
+Nodes (70): _a(), aa(), At(), ba(), bt(), Ca(), ci(), cn() (+62 more)
 
 ### Community 27 - "createStudyMetricsSelectors"
-Cohesion: 0.06
-Nodes (47): createStudyMetricsSelectors(), addHistoryEvent(), computeStreak(), computeWeeklyHistory(), contarTopicosConcluidosNoPeriodo(), eventLocalDate(), evidenceScopeForTopic(), examEvidenceContext() (+39 more)
+Cohesion: 0.07
+Nodes (37): createStudyMetricsSelectors(), addHistoryEvent(), computeStreak(), computeWeeklyHistory(), contarTopicosConcluidosNoPeriodo(), eventLocalDate(), evidenceScopeForTopic(), examEvidenceContext() (+29 more)
 
 ### Community 28 - "build-performance-page-model.ts"
-Cohesion: 0.10
-Nodes (30): buildPerformancePageModel(), buildSubjectsMatrix(), buildPerformanceSubjects(), correct(), difference(), inRange(), precision(), Row (+22 more)
+Cohesion: 0.08
+Nodes (39): Composição atual da aba (10/11/2026), buildSubjectAccuracy(), buildPerformancePageModel(), buildSubjectsMatrix(), buildPerformanceSubjectComparison(), inRange(), PERFORMANCE_SUBJECT_SORTS, rounded() (+31 more)
 
-### Community 29 - "@playwright/test"
-Cohesion: 0.10
-Nodes (13): @playwright/test, activateTab(), openDemo(), openExamImport(), openPerformanceFilters(), openPlanningSubtab(), overviewRecommendationId(), PERFORMANCE_GROUP (+5 more)
+### Community 29 - "helpers.js"
+Cohesion: 0.05
+Nodes (50): @axe-core/playwright, @playwright/test, generateDemoData(), createDefaultState(), AUDIT_PROFILES, AUDIT_TODAY, buildJourneyProfile(), prepare() (+42 more)
 
 ### Community 30 - "build-achievement-projection.ts"
-Cohesion: 0.20
-Nodes (14): buildAchievementProjection(), percent(), buildProjectionConfidence(), buildProjectionExplanation(), buildProjectionRecovery(), ACHIEVEMENT_PROJECTION_VERSION, daysBetweenCalendarDates(), PROJECTION_STATUS (+6 more)
+Cohesion: 0.18
+Nodes (15): buildAchievementProjection(), percent(), buildProjectionConfidence(), buildProjectionExplanation(), buildProjectionRecovery(), ACHIEVEMENT_PROJECTION_VERSION, daysBetweenCalendarDates(), PROJECTION_STATUS (+7 more)
 
 ### Community 31 - "approval-tab-controller.ts"
-Cohesion: 0.12
-Nodes (23): getMetricDataState(), metricStateLabel(), buildRecommendationOutcomeAudit(), resultOf(), Row, typeOf(), TYPES, classifyApprovalScore() (+15 more)
+Cohesion: 0.07
+Nodes (42): getMetricDataState(), metricStateLabel(), buildProjectionCalibration(), captureProjection(), projectionComposition(), Row, scope(), buildPerformanceSimulations() (+34 more)
 
 ### Community 32 - "reconcile-daily-execution.ts"
-Cohesion: 0.11
-Nodes (35): Definições para os primeiros três pacotes, buildDailyExecutionModel(), buildDailyPriority(), buildDailyProgress(), dailyItemEligible(), reconcileDailyExecution(), Row, scopeKey() (+27 more)
+Cohesion: 0.12
+Nodes (29): Definições para os primeiros três pacotes, buildDailyExecutionModel(), buildDailyPriority(), buildDailyProgress(), dailyItemEligible(), reconcileDailyExecution(), Row, scopeKey() (+21 more)
 
 ### Community 33 - "today-tab-controller.ts"
 Cohesion: 0.05
-Nodes (59): preact-render-to-string, buildFirstStepsMission(), FirstStepsMissionModel, MissionItem, buildTodayViewModel(), canGenerateAutomaticTodayPlan(), buildFinalStretchBanner(), calculateFinalStretchWeightMultiplier() (+51 more)
+Nodes (60): buildNextBestAction(), buildFirstStepsMission(), FirstStepsMissionModel, MissionItem, buildTodayViewModel(), canGenerateAutomaticTodayPlan(), FirstStepsMissionProps, RealWeekBanner() (+52 more)
 
-### Community 34 - "h"
+### Community 34 - "r"
 Cohesion: 0.03
-Nodes (167): B(), D(), E(), R(), B1(), U(), p(), D() (+159 more)
+Nodes (126): w(), ai(), l(), n(), aP(), c(), G(), Q() (+118 more)
 
 ### Community 35 - "landing.bundle.js"
-Cohesion: 0.12
-Nodes (37): _a(), Aa(), ae(), B(), ba(), Ca(), D(), Da() (+29 more)
+Cohesion: 0.06
+Nodes (65): Ae(), be(), Ce(), De(), Ee(), et(), F(), Fe() (+57 more)
 
-### Community 36 - "Aa"
-Cohesion: 0.11
-Nodes (20): a$(), Aa(), ab(), j(), k(), $b(), cb(), Db() (+12 more)
+### Community 36 - "Zg"
+Cohesion: 0.08
+Nodes (14): bt(), $g(), Hg(), ll(), Mn(), mr(), Ps(), Zg() (+6 more)
 
 ### Community 37 - "charts.tsx"
-Cohesion: 0.06
-Nodes (85): Estrutura, Gráficos, Primitivos de gráfico (SVG puro), 1. Resumo do Status Atual das Fases e Marcos Técnicos, Contratos de migração, Desempenho — inventário e regras de composição, Situação após os pacotes 4–9, Fase 3: Gráficos em SVG Puro & Cockpit da Visão Geral (+77 more)
+Cohesion: 0.04
+Nodes (130): Estrutura, Migração incremental para Preact (.tsx), Gráficos, Componentes de tela das abas e modais (Preact `.tsx`), Primitivos de gráfico (SVG puro), 1. Resumo do Status Atual das Fases e Marcos Técnicos, Contratos de migração, Desempenho — inventário e regras de composição (+122 more)
 
-### Community 38 - "subject-accuracy-target.test.js"
-Cohesion: 0.26
-Nodes (12): buildSubjectAccuracy(), buildSubjectWeeklyAccuracy(), dayNumber(), summarize(), resolveSubjectAccuracyTarget(), createSubjectsController(), getActiveSubjects(), getArchivedSubjects() (+4 more)
+### Community 38 - "error-notebook-controller.ts"
+Cohesion: 0.12
+Nodes (19): 2.4. Fase 4 & Melhorias Pós-Fase 4: Caderno de Erros, Acessibilidade Real, Onboarding 2.0 & Base SaaS, 4.1. Detalhamento das Fases, Task 4: Agenda em filas rotuladas (calendário mantido), buildReviewQueueSummary(), addErrorFlashcard(), dominantErrorCategory(), findQuestionsAwaitingFlashcard(), flashcardKey() (+11 more)
 
 ### Community 39 - "createExamImportModalController"
-Cohesion: 0.17
-Nodes (21): createEditalImportFacade(), Row, selectExamTopics(), toggleExamSubject(), toggleExamTopic(), createExamImportController(), createExamImportModalController(), openExamImport() (+13 more)
+Cohesion: 0.22
+Nodes (14): EXAM_CATALOG, validateExamCatalog(), getExamPreset(), Row, selectExamTopics(), toggleExamSubject(), toggleExamTopic(), createExamImportController() (+6 more)
 
-### Community 40 - "buildStudyCandidates"
-Cohesion: 0.14
-Nodes (25): buildStudyCandidates(), buildStudyPlan(), positive(), RECOMMENDATION_WEIGHTS, recommendStudy(), scoreStudyDecision(), calculatePriorityScore(), PRIORITY_WEIGHTS (+17 more)
+### Community 40 - "study-candidate-service.ts"
+Cohesion: 0.08
+Nodes (48): buildStudyCandidates(), buildStudyPlan(), positive(), topicRetentionScore(), topicReviewHealthScore(), RECOMMENDATION_WEIGHTS, recommendStudy(), scoreStudyDecision() (+40 more)
 
 ### Community 41 - "connectSSE"
 Cohesion: 0.08
-Nodes (84): abandonForeignSession(), abandonSupersededGo(), abortSvelteComponentInjection(), beginNewLiveConfiguration(), buildInsertPlaceholderSnapshotFromDom(), buildPickedAnchorSnapshot(), cancelEditing(), cancelEditingToPicking() (+76 more)
+Nodes (80): agentStatusText(), barPaletteForTheme(), beginNewLiveConfiguration(), brandMarkSvg(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure(), cleanup() (+72 more)
 
 ### Community 42 - "renderEvidenceQuality"
 Cohesion: 0.28
@@ -673,40 +678,40 @@ Cohesion: 0.07
 Nodes (27): Andamento (10/11/2026), Andamento: Fase C (10/11/2026, sem commit), Andamento: Fases D e E (10/11/2026), Decisões já tomadas, F10. "O que fazer" logo abaixo da Prontidão, F11. Inteligência da prova: filtros recolhidos, F1. Preservar o estado aberto das dobras, F2. Componente de selo de janela (+19 more)
 
 ### Community 44 - "help-controller.ts"
-Cohesion: 0.44
-Nodes (10): createHelpController(), DESTINATIONS, highlightMatches(), loadHelpBundle(), buildHelpSearchIndex(), matchesHelpSearch(), normalizeHelpText(), rankHelpSearch() (+2 more)
+Cohesion: 0.28
+Nodes (16): HELP_CATEGORIES, createHelpController(), DESTINATIONS, highlightMatches(), renderHelpCenter(), runtime, StudyTrackHelpRuntime, buildHelpSearchIndex() (+8 more)
 
 ### Community 45 - "Lista de tarefas (índice; detalhes em `tasks/todo-visual.md`)"
 Cohesion: 0.11
 Nodes (18): Ajustes à estrutura do plano, Checkpoint 0 — Decisões (sem código) — fechado em 01/11/2026, Checkpoint 1, Checkpoint 2, Checkpoint 3 (decidir quais gráficos de média e baixa prioridade entram), Checkpoint 4, Checkpoint 5, Decisões que vêm antes do código (Checkpoint 0 — fechado em 01/11/2026; só o item 8 fica para o Checkpoint 4) (+10 more)
 
 ### Community 46 - "check-test-tiers.mjs"
-Cohesion: 0.12
-Nodes (20): impact, selection, visualFiles, cases, classified, collect(), discovery, evidence (+12 more)
+Cohesion: 0.09
+Nodes (26): impact, selection, visualFiles, all, discover(), visit(), impact, root (+18 more)
 
-### Community 47 - "buildTopicExamProfile"
-Cohesion: 0.25
-Nodes (12): buildExamConfigurationAudit(), order, sourceLabels, buildExamIntelligenceViewModel(), buildTopicExamProfile(), ExamImpactProfile, historicalImpactEstimate(), isHistoricalImpactUsable() (+4 more)
+### Community 47 - "topic-strategy.ts"
+Cohesion: 0.23
+Nodes (9): finite(), resolveTopicExamImpact(), TOPIC_IMPACT_SOURCES, wouldCreatePrerequisiteCycle(), createTopicStrategyController(), buildTopicStrategyViewModel(), renderTopicStrategyEditor(), TopicStrategyEditorViewOptions (+1 more)
 
 ### Community 48 - "build-onboarding-view-model.ts"
 Cohesion: 0.14
 Nodes (17): applyOnboardingDateShortcut(), AVAILABILITY_PRESETS, AvailabilityPreset, buildOnboardingViewModel(), CONTENT_PATHS, EXAM_DATE_SHORTCUTS, ExamDateShortcut, isValidOnboardingTopic() (+9 more)
 
 ### Community 49 - "build-sustainability-model.ts"
-Cohesion: 0.13
-Nodes (23): buildStudyTrack32ViewModel(), inRange(), Row, selectWeeklyPlans(), buildWeeklyDecisionCycle(), buildCapacityPattern(), quantile(), Row (+15 more)
+Cohesion: 0.18
+Nodes (18): buildCapacityPattern(), quantile(), Row, buildExecutionPattern(), Row, buildSustainabilityInsights(), messages, buildSustainabilityModel() (+10 more)
 
-### Community 50 - "readiness-history.ts"
-Cohesion: 0.08
-Nodes (34): recentPerformance(), availableKeys(), buildReadinessEvolution(), compareReadinessSnapshots(), finite(), labels, Row, weightsFor() (+26 more)
+### Community 50 - "createDashboardTabController"
+Cohesion: 0.10
+Nodes (35): readinessWeeklyTrend(), renderCollectionFooter(), renderMiniComparisonChart(), renderExamPhaseCompact(), renderCompactHeader(), AllocationBalanceGrid(), createDashboardTabController(), bindHeatmapKeys() (+27 more)
 
 ### Community 51 - "error-notebook-engine.ts"
-Cohesion: 0.07
-Nodes (42): 2. Parâmetros e Variáveis de Estado, 2.4. Fase 4 & Melhorias Pós-Fase 4: Caderno de Erros, Acessibilidade Real, Onboarding 2.0 & Base SaaS, 4.1. Detalhamento das Fases, Task 4: Agenda em filas rotuladas (calendário mantido), buildReviewQueueSummary(), ErrorFlashcard, ErrorFlashcardStatus, FlashcardRating (+34 more)
+Cohesion: 0.12
+Nodes (23): 2. Parâmetros e Variáveis de Estado, ErrorFlashcard, ErrorFlashcardStatus, FlashcardRating, addDaysToDate(), AddFlashcardResult, calculateFlashcardDeckStats(), createErrorFlashcard() (+15 more)
 
-### Community 52 - "n"
-Cohesion: 0.05
-Nodes (49): Aj(), bA(), d(), c1(), cc(), e0(), Fi(), gf() (+41 more)
+### Community 52 - "t"
+Cohesion: 0.02
+Nodes (204): S(), a1(), a(), aD(), aM(), AN(), Ar(), ay() (+196 more)
 
 ### Community 53 - "Plano de implementação: correções da auditoria de segurança"
 Cohesion: 0.09
@@ -717,36 +722,36 @@ Cohesion: 0.15
 Nodes (12): Análise semanal — pacote 4, Card Hoje e sessões, Consolidação da aderência — pacotes 1 e 2, Demo e regressão — pacote 7, Desempenho — pacote 5, Fechamento e pendências recorrentes — pacote 6, Meta pessoal opcional — pacote 8, Modelo compartilhado da execução diária (+4 more)
 
 ### Community 55 - "onboarding-modal-controller.ts"
-Cohesion: 0.15
-Nodes (17): ManualSubjectDraft, validateManualSubjects(), ManualSubjects(), OnboardingModalControllerDependencies, BLOCKED_REASONS, entryStepLabels, onboardingBlockedReason(), renderOnboardingActions() (+9 more)
+Cohesion: 0.19
+Nodes (16): ManualSubjectDraft, validateManualSubjects(), ManualSubjects(), OnboardingModalControllerDependencies, BLOCKED_REASONS, entryStepLabels, onboardingBlockedReason(), renderOnboardingActions() (+8 more)
 
-### Community 56 - "planning-visual-models.ts"
-Cohesion: 0.09
-Nodes (29): 17. Modernização Visual da Aba de Planejamento com Cores das Disciplinas, buildPhaseRoadmapVisual(), buildPlanImpactAlignmentVisual(), buildSubjectStudyDistributionVisual(), PhaseRoadmapVisualModel, PlanImpactAlignmentRowVisual, PlanImpactAlignmentVisualModel, PreparationPhase (+21 more)
+### Community 56 - "subjectColorOf"
+Cohesion: 0.04
+Nodes (64): 5. Harmonização Cromática nas Listagens e Tabelas, buildSubjectWeeklyAccuracy(), dayNumber(), summarize(), RawSyllabusParsedResult, TopicBookmark, TopicStageChecklist, TopicStatus (+56 more)
 
 ### Community 57 - "planning-sustainability.spec.js"
-Cohesion: 0.14
-Nodes (14): Atualização das referências após auditoria tipográfica e de contraste (`f1bbf09` / `bf12d2e`), Atualização das referências após clarify, distill, harden e layout (2026-11-02), Atualização das referências após o refinamento de interface do branch `fix/theming-drift`, Atualização das referências após typeset e layout pós-crítica (2026-10-31), Consolidação da experiência — captura de sustentabilidade, Encerramento da consolidação — aderência, Plataforma oficial de comparação de pixels, Política de coexistência — Preact e Tailwind CSS (+6 more)
+Cohesion: 0.12
+Nodes (17): Atualização das referências após auditoria tipográfica e de contraste (`f1bbf09` / `bf12d2e`), Atualização das referências após clarify, distill, harden e layout (2026-11-02), Atualização das referências após o refinamento de interface do branch `fix/theming-drift`, Atualização das referências após typeset e layout pós-crítica (2026-10-31), Atualização das referências Windows após adoção da Grade Híbrida de 8 Pontos (11/11/2026), Cascata `@layer legacy` e Onda 4 de primitivos (11/11/2026), Consolidação da experiência — captura de sustentabilidade, Encerramento da consolidação — aderência (+9 more)
 
 ### Community 58 - "expectNoPageOverflow"
 Cohesion: 0.17
 Nodes (18): clean(), compareTopic(), createStructuredContentImportService(), DIFFICULTIES, fieldLabel, finite(), headerAliases, IMPORTABLE_FIELDS (+10 more)
 
-### Community 59 - "error-flashcards-persistence.test.js"
-Cohesion: 0.10
-Nodes (14): APP_SHELL, APP_SHELL, createIndexedDbProvider(), IndexedDbProvider, IndexedDbProviderConfig, createLocalStorageProvider(), LocalStorageProvider, createStorageManager() (+6 more)
+### Community 59 - "study-plan-builder-controller.ts"
+Cohesion: 0.15
+Nodes (20): buildRecommendationExplanation(), IMPACT_SOURCE_LABELS, number(), row(), buildOpportunityCost(), Row, renderBadgeIcon(), PHASES (+12 more)
 
 ### Community 60 - "exam-matrix-controller.ts"
 Cohesion: 0.10
-Nodes (34): Fase 4: Migração das Telas Pesadas, Matrizes e Editores para seus Respectivos Módulos de UI — CONCLUÍDA ✅, buildSavedSubjectConfig(), confidenceLabel(), escape(), renderExamClassificationReview(), escape(), labels, renderExamConfigurationAudit() (+26 more)
+Nodes (29): Fase 4: Migração das Telas Pesadas, Matrizes e Editores para seus Respectivos Módulos de UI — CONCLUÍDA ✅, dismissAlert(), reconcileAlerts(), Row, severityOrder, buildSavedSubjectConfig(), AlertState, escape() (+21 more)
 
 ### Community 61 - "exam-import-service.ts"
-Cohesion: 0.27
-Nodes (13): buildCatalogMetadata(), canonical(), clone(), createExamImportService(), findMatch(), matchesCatalogItem(), needsMetadataUpdate(), normalizeName() (+5 more)
+Cohesion: 0.29
+Nodes (12): buildCatalogMetadata(), canonical(), clone(), findMatch(), matchesCatalogItem(), needsMetadataUpdate(), normalizeName(), previewExamStructureImport() (+4 more)
 
 ### Community 62 - "StudyTrack — Extrato de Estudos"
-Cohesion: 0.10
-Nodes (21): Atalhos, Caderno de Erros Ativo & Flashcards de Bolso, Como funciona o planejamento adaptativo, Como o Extrato de Estudos funciona, Como o planejamento decide o que estudar, Da análise ao fechamento, Desenvolvimento e validação, Do estudo à recomendação (+13 more)
+Cohesion: 0.09
+Nodes (22): Arquitetura, Atalhos, Caderno de Erros Ativo & Flashcards de Bolso, Como funciona o planejamento adaptativo, Como o Extrato de Estudos funciona, Como o planejamento decide o que estudar, Da análise ao fechamento, Desenvolvimento e validação (+14 more)
 
 ### Community 63 - "createGuidedTourController"
 Cohesion: 0.25
@@ -754,71 +759,71 @@ Nodes (19): closeTour(), createGuidedTourState(), ESSENTIAL_TOUR_STEPS, GUIDED_T
 
 ### Community 64 - "createStateMigrator"
 Cohesion: 0.06
-Nodes (66): Cor por disciplina, ensureStateDefaults(), nowISO(), buildTopicScopeIndex(), snapshotEvidenceScopes(), topicIdOf(), ExamBlueprintSubject, ExamPriority (+58 more)
+Nodes (63): Cor por disciplina, ensureStateDefaults(), nowISO(), TopicDifficulty, nowISO(), uid(), PRIORITY_ALGORITHM_VERSION, EXAM_INTELLIGENCE_VERSION (+55 more)
 
 ### Community 65 - "createOnboardingModalController"
-Cohesion: 0.32
-Nodes (17): createOnboardingModalController(), applyGuidedEffortDefaults(), bindEvents(), closeGuidedOnboarding(), createGuidedInitialPlan(), handleOverlayClick(), handleOverlayKeydown(), loadStarterPack() (+9 more)
+Cohesion: 0.28
+Nodes (21): createOnboardingModalController(), applyGuidedEffortDefaults(), bindEvents(), closeGuidedOnboarding(), createGuidedInitialPlan(), handleOverlayClick(), handleOverlayKeydown(), isFocusableCandidate() (+13 more)
 
 ### Community 66 - "calculatePlanFeasibility"
 Cohesion: 0.12
-Nodes (17): 2.1. Fase 1: Decisão Rápida, UX do Painel & Primeiro Uso, 2.2. Fase 2: Inteligência Preditiva, Modo Reta Final & Explicabilidade, 2.3. Fase 3: Hub Completo de Estudos & Flexibilidade, 2.5. Central de Ajuda & Instruções 2.0 (Micro-Simuladores & Code-Splitting), 2.6. Enriquecimento do Modo Demonstração (Dados Fictícios de Alta Fidelidade), 2.7. Primeiro Acesso, Reorganização da Visão Geral & Estabilização CI, 2. Detalhamento dos Componentes Entregues nas 4 Fases Master, 3.1. Trilha Local-First: Inteligência, Experiência e Engenharia (+9 more)
+Nodes (16): 2.1. Fase 1: Decisão Rápida, UX do Painel & Primeiro Uso, 2.2. Fase 2: Inteligência Preditiva, Modo Reta Final & Explicabilidade, 2.3. Fase 3: Hub Completo de Estudos & Flexibilidade, 2.6. Enriquecimento do Modo Demonstração (Dados Fictícios de Alta Fidelidade), 2.7. Primeiro Acesso, Reorganização da Visão Geral & Estabilização CI, 2. Detalhamento dos Componentes Entregues nas 4 Fases Master, 3.1. Trilha Local-First: Inteligência, Experiência e Engenharia, 3.2. Trilha SaaS: Infraestrutura de Nuvem e Assinaturas (Backlog de Escala) (+8 more)
 
 ### Community 67 - "wire-domain-analytics.ts"
 Cohesion: 0.13
-Nodes (17): createRecoveryStateCommitter(), revision(), captureUndo(), userData(), VOLATILE, wireDomainAnalytics(), WireDomainAnalyticsDeps, createUiState() (+9 more)
+Nodes (17): Avisos, confirmação e desfazer, createRecoveryStateCommitter(), revision(), captureUndo(), userData(), VOLATILE, wireDomainAnalytics(), WireDomainAnalyticsDeps (+9 more)
 
 ### Community 68 - "Recomendações de melhorias --- StudyTrack"
 Cohesion: 0.11
 Nodes (18): 🔵 Arquitetura e qualidade, 🟡 Demo 2.0, 🟡 Design e UI, Direção estratégica, 🟡 Fechamento semanal, 🔵 Funcionalidades futuras de alto potencial, 🟠 Inteligência da Prova, 🟠 Metas e produtividade (+10 more)
 
-### Community 69 - "ref_node_assert"
-Cohesion: 0.03
-Nodes (33): createGuidedStudyService(), GUIDED_STUDY_VERSION, createQuestionController(), buildSimulatedRemediationDiagnostic(), DeficitTopicItem, ErrorCardDraft, generate7DayRemediationPlan(), generateDraftErrorCards() (+25 more)
+### Community 69 - "collection-repository.ts"
+Cohesion: 0.20
+Nodes (14): createReviewService(), REVIEW_TYPES, reviewTypeForDays(), Row, createSessionService(), CollectionRepository, createAppRepositories(), createCollectionRepository() (+6 more)
 
 ### Community 70 - "achievements-controller.ts"
 Cohesion: 0.26
 Nodes (9): buildAchievementViewModel(), AchievementsControllerOptions, CONSISTENCY_BADGE_IDS, createAchievementsController(), evaluateAchievements(), getBadgesDefinitions(), render(), STRATEGIC_BADGES (+1 more)
 
 ### Community 71 - "product-profiles.js"
-Cohesion: 0.12
-Nodes (23): achievementProjectionHistory(), captureAchievementProjection(), scope(), validAchievementProjectionSnapshot(), validPercent(), buildProjectionCloseContext(), buildProjectionPageModel(), buildProjectionTopicRisks() (+15 more)
+Cohesion: 0.10
+Nodes (24): achievementProjectionHistory(), captureAchievementProjection(), scope(), validAchievementProjectionSnapshot(), validPercent(), buildProjectionCloseContext(), buildProjectionPageModel(), buildProjectionTopicRisks() (+16 more)
 
-### Community 72 - "performance-overview-renderer.ts"
+### Community 72 - "performance-subject-comparison-renderer.ts"
 Cohesion: 0.11
-Nodes (30): formatStudyMinuteDelta(), formatStudyMinutes(), renderCopyBlockLink(), coverageEvidence(), EVIDENCE_LABELS, EvidenceState, renderEvidenceBadge(), card() (+22 more)
+Nodes (24): buildPreparationReading(), finite(), impactOrigin(), PreparationLink, PreparationReading, ReadinessVerdict, Row, renderCopyBlockLink() (+16 more)
 
 ### Community 73 - "resumeSession"
-Cohesion: 0.06
-Nodes (62): applyParamDefaults(), applyParamValue(), applySavedParamValues(), applySavedSessionMeta(), buildParamsPanel(), checkpointPayload(), clampVariantIndex(), clearHandled() (+54 more)
+Cohesion: 0.05
+Nodes (103): abandonForeignSession(), abandonSupersededGo(), abortSvelteComponentInjection(), applyParamDefaults(), applyParamValue(), applySavedParamValues(), applySavedSessionMeta(), buildParamsPanel() (+95 more)
 
-### Community 74 - "exam-catalog.ts"
-Cohesion: 0.10
-Nodes (27): cleanName(), createSubjectService(), DEFAULT_SUBJECT_NAMES, CATALOG_METADATA, catalogForExamTags(), clone(), CURATED_TI_TOPICS, enrichedSubjects (+19 more)
-
-### Community 75 - "exam-intelligence-stress.test.js"
-Cohesion: 0.08
-Nodes (42): buildStrategicAchievements(), buildWeeklyStrategicFocus(), seconds(), buildExamDataQuality(), buildExamMatrix(), byName(), options(), percentage() (+34 more)
-
-### Community 76 - "adapt-diagnostic-signals.ts"
+### Community 74 - "createSubjectService"
 Cohesion: 0.46
-Nodes (7): adaptDiagnosticSignals(), identity(), Row, rows(), scope(), strength(), signalNumber()
+Nodes (6): cleanName(), createSubjectService(), DEFAULT_SUBJECT_NAMES, createSubjectsRepository(), fixture(), fixture()
+
+### Community 75 - "diagnostics-tab-controller.ts"
+Cohesion: 0.12
+Nodes (17): buildPreparationSignals(), count(), inRange(), Row, totals(), buildExecutiveSummary(), buildDiagnosisPageModel(), buildReviewDebt() (+9 more)
+
+### Community 76 - "ref_node_fs"
+Cohesion: 0.14
+Nodes (19): RemoteSyncField, RemoteSyncModal(), RemoteSyncModalProps, createRemoteSyncController(), evaluatePassphrase(), MIN_PASSPHRASE_LENGTH, PASSPHRASE_LOSS_WARNING, readRemoteSyncPreferences() (+11 more)
 
 ### Community 77 - "resolveExamPhase"
-Cohesion: 0.11
-Nodes (29): updateExamBlueprint(), buildPhasePlanningPreview(), scope(), createPhaseStrategyController(), signature(), createStudyPlanService(), ADAPTIVE_COOLDOWN_DAYS, ADAPTIVE_TRANSFER_MAX_MINUTES (+21 more)
+Cohesion: 0.18
+Nodes (16): updateExamBlueprint(), buildPhasePlanningPreview(), scope(), createPhaseStrategyController(), signature(), createStudyPlanService(), ADAPTIVE_COOLDOWN_DAYS, resolveExamPhase() (+8 more)
 
 ### Community 78 - "pip-timer-controller.ts"
 Cohesion: 0.12
 Nodes (21): Testes, DocumentPictureInPicture, buildTimerMiniView(), BuildTimerMiniViewParams, createPipTimerController(), build(), cleanup(), close() (+13 more)
 
-### Community 79 - "analytics.test.js"
-Cohesion: 0.25
-Nodes (10): calculateGoalConsistency(), calculateReadinessScore(), calculateWeightedConfidence(), calculateWeightedScore(), clampMetric(), READINESS_WEIGHTS, extractMetricsFromClonedState(), simulateWhatIfScenario() (+2 more)
+### Community 79 - "repository.ts"
+Cohesion: 0.10
+Nodes (14): APP_SHELL, APP_SHELL, createIndexedDbProvider(), IndexedDbProvider, IndexedDbProviderConfig, createLocalStorageProvider(), LocalStorageProvider, createStorageManager() (+6 more)
 
 ### Community 80 - "performance-tab-controller.ts"
-Cohesion: 0.10
-Nodes (34): buildShiftEnergyViewModel(), createPerformanceViewState(), updatePerformanceViewState(), aggregateRecentActivity(), BenchmarkMetricComparison, BenchmarkStatus, calculateCareerBenchmarkComparison(), CAREER_BENCHMARKS (+26 more)
+Cohesion: 0.13
+Nodes (27): buildShiftEnergyViewModel(), createPerformanceViewState(), PERFORMANCE_PERIODS, PERFORMANCE_SECTIONS, resolvePerformanceRange(), updatePerformanceViewState(), aggregateRecentActivity(), detectCareerCluster() (+19 more)
 
 ### Community 81 - "Gráficos de desempenho e planejamento"
 Cohesion: 0.06
@@ -829,24 +834,24 @@ Cohesion: 0.22
 Nodes (9): Avaliações, planejamento e histórico, Balanço de Alocação e Navegação do Tour, Caderno de Erros e Flashcards, Cenário da demonstração 2.0, Conteúdo já migrado, Detector de Platô e Prescrições de Quebra, Eficiência Cronobiológica e Análise de Fadiga, Jornada do modo demonstração (+1 more)
 
 ### Community 83 - "Spec: remote-sync"
-Cohesion: 0.11
-Nodes (18): Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-20), Estilo, Estrutura, Fora de escopo, Limites, Objetivo (+10 more)
+Cohesion: 0.09
+Nodes (19): Capability Map: correções da revisão (sync WebDAV, importação de questões, tipagem), Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-20), Estilo, Estrutura, Fora de escopo, Limites (+11 more)
 
-### Community 84 - "subject-target-editor-controller.ts"
-Cohesion: 0.15
-Nodes (15): updateSubjectAccuracyTargets(), buildPerformanceSubjectComparison(), inRange(), PERFORMANCE_SUBJECT_SORTS, rounded(), Row, STUDY_VERBS, createSubjectTargetEditorController() (+7 more)
+### Community 84 - "runUndoable"
+Cohesion: 0.23
+Nodes (14): 28. Refinamento Impeccable da Aba Planejamento — adapt, distill, harden, clarify, layout e polish (11/11/2026), updateSubjectAccuracyTargets(), deleteCalRow(), applyUndatedExamDate(), createSubjectTargetEditorController(), bindEvents(), commitAllPendingDrafts(), removeWeeklyQuestionGoal() (+6 more)
 
-### Community 85 - "study-session.ts"
-Cohesion: 0.18
-Nodes (15): ENERGY_LEVEL_VALUES, finiteOrNull(), FOCUS_LEVEL_VALUES, isLocalDate(), nonNegative(), nonNegativeInteger(), normalizeStudySession(), normalizeStudySessions() (+7 more)
+### Community 85 - "undoable.ts"
+Cohesion: 0.10
+Nodes (4): configureUndo(), UndoDeps, createMockDom(), createMockDom()
 
 ### Community 86 - "Plano Detalhado de Transformação em SaaS — Extrato de Estudos"
-Cohesion: 0.07
-Nodes (27): 10.1. D-7: Validação de Qualidade e Congelamento de Código, 10.2. D-3: Infraestrutura, Domínio e Entregabilidade, 10.3. D-1: Virada de Chaves de Produção (*Secrets Switch*), 10.4. D-Zero: Smoke Test Financeiro Real & Abertura ao Público, 10. Checklist e Runbook Operacional de Lançamento (Go-Live D-Day), 2.1. Tabelas Principais, 2.2. Políticas de Segurança (RLS com Clerk JWT) e Funções Atômicas, 2. Estrutura do Banco de Dados e Segurança (PostgreSQL + RLS + Clerk Third-Party Auth) (+19 more)
+Cohesion: 0.08
+Nodes (24): 10.1. D-7: Validação de Qualidade e Congelamento de Código, 10.2. D-3: Infraestrutura, Domínio e Entregabilidade, 10.3. D-1: Virada de Chaves de Produção (*Secrets Switch*), 10.4. D-Zero: Smoke Test Financeiro Real & Abertura ao Público, 10. Checklist e Runbook Operacional de Lançamento (Go-Live D-Day), 1. Arquitetura Alvo: "Local-First SaaS", 2.1. Tabelas Principais, 2.2. Políticas de Segurança (RLS com Clerk JWT) e Funções Atômicas (+16 more)
 
 ### Community 87 - "modern-screenshot.umd.js"
 Cohesion: 0.09
-Nodes (55): ae(), be(), bt(), Ce(), s(), Ct(), de(), dt() (+47 more)
+Nodes (54): ae(), be(), bt(), Ce(), Ct(), de(), dt(), _e() (+46 more)
 
 ### Community 89 - "Consolidação da experiência — ciclo iniciado em c28b51d"
 Cohesion: 0.14
@@ -865,24 +870,24 @@ Cohesion: 0.19
 Nodes (16): clean(), identity(), key(), mergeExamImport(), parseExamImportJson(), previewExamImport(), Row, unique() (+8 more)
 
 ### Community 93 - "build-weekly-performance-brief.ts"
-Cohesion: 0.09
-Nodes (30): buildHeaderViewModel(), displayReadinessValue(), hasEnoughReadinessEvidence(), MIN_READINESS_FACTORS, STRUCTURAL_READINESS_FACTORS, buildPreparationReading(), finite(), impactOrigin() (+22 more)
+Cohesion: 0.18
+Nodes (17): buildAdherenceMetric(), buildChartMetrics(), buildWeeklyPerformanceBrief(), BuildWeeklyPerformanceBriefInput, buildWeeklyReadingTips(), computeWindowStats(), findSubjectHighlights(), formatReadableMinutes() (+9 more)
 
 ### Community 94 - "run-test-gate.mjs"
-Cohesion: 0.12
-Nodes (15): allUnitFiles, browserOnly, dirty, dryRun, impact, phases, playwright, results (+7 more)
+Cohesion: 0.08
+Nodes (16): allUnitFiles, browserOnly, dirty, dryRun, impact, phases, playwright, results (+8 more)
 
 ### Community 95 - "help.bundle.js"
-Cohesion: 0.07
-Nodes (59): fa(), _a(), Aa(), Ae(), at(), Ba(), be(), bt() (+51 more)
+Cohesion: 0.08
+Nodes (55): fa(), _a(), Aa(), Ae(), at(), B(), ba(), Be() (+47 more)
 
-### Community 96 - "calendar-tab-controller.ts"
-Cohesion: 0.09
-Nodes (23): unifiedReviewLabel(), wirePracticeAndCatalogUi(), DIFFICULTY_CLASS, DIFFICULTY_OPTIONS, REVIEW_OPTIONS, STATUS_CLASS, STATUS_OPTIONS, createCalendarController() (+15 more)
+### Community 96 - "wire-practice-and-catalog-ui.ts"
+Cohesion: 0.13
+Nodes (14): wirePracticeAndCatalogUi(), DIFFICULTY_CLASS, STATUS_CLASS, createCalendarController(), createCalendarState(), initialCalendarView(), renderGroupHeader(), createProgressiveList() (+6 more)
 
 ### Community 97 - "apply-recovery-plan.ts"
 Cohesion: 0.11
-Nodes (31): applyRecoveryPlan(), confirmRecoveryDraft(), rejectRecovery(), buildRecoveryAllocation(), buildRecoveryCandidates(), buildRecoveryDecisionRecord(), base(), buildRecoveryPlan() (+23 more)
+Nodes (31): Prévia de recuperação, applyRecoveryPlan(), confirmRecoveryDraft(), rejectRecovery(), buildRecoveryAllocation(), buildRecoveryCandidates(), buildRecoveryDecisionRecord(), base() (+23 more)
 
 ### Community 98 - "achievement-projection-renderer.ts"
 Cohesion: 0.11
@@ -901,28 +906,28 @@ Cohesion: 0.12
 Nodes (14): buildVersion, bundles, checkOnly, filesUnder(), generatedIndex, generatedServiceWorker, indexPath, normalizedIndex (+6 more)
 
 ### Community 102 - "el"
-Cohesion: 0.07
-Nodes (55): actionLabel(), applyConfigureBarChrome(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow() (+47 more)
+Cohesion: 0.08
+Nodes (54): actionLabel(), applyConfigureBarChrome(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow() (+46 more)
 
 ### Community 103 - "syncPageChatFocus"
-Cohesion: 0.08
-Nodes (55): agentHasWorkInFlight(), armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), buildSteerQueueHint(), clearSteerAwaitTimer(), clearSteerFocusRecoverTimer() (+47 more)
+Cohesion: 0.07
+Nodes (58): agentHasWorkInFlight(), armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), buildSteerQueueHint(), clearSteerAwaitTimer(), clearSteerFocusRecoverTimer() (+50 more)
 
-### Community 104 - "report.bundle.js"
-Cohesion: 0.12
-Nodes (32): xa(), Qe(), at(), Be(), cn(), _e(), Fe(), Ge() (+24 more)
+### Community 104 - "build-cockpit-sidebar-view-model.ts"
+Cohesion: 0.16
+Nodes (18): 5. Histórico e Conclusão das Fases, 23. Reestruturação do Cockpit da Visão Geral em 3 Camadas Simétricas & Heatmap GitHub Full-Width, buildCockpitSidebarViewModel(), CockpitSidebarSources, CockpitSidebarViewModel, ConsistencyMiniHeatmapData, formatMinutesDuration(), MiniHeatmapDay (+10 more)
 
 ### Community 105 - "applyEditing"
 Cohesion: 0.05
-Nodes (49): addManualContextText(), applyEditing(), buildLocatorForLeaf(), canRestoreManualEditElement(), collectEditableTextRows(), visit(), collectManualContextPieces(), walk() (+41 more)
+Nodes (48): addManualContextText(), applyEditing(), buildLocatorForLeaf(), canRestoreManualEditElement(), collectEditableTextRows(), visit(), collectManualContextPieces(), walk() (+40 more)
 
 ### Community 106 - "learning-cycle.ts"
 Cohesion: 0.10
-Nodes (25): buildDemoWeeklyCloses(), candidatesAt(), inRange(), stamp(), buildGapMap(), finite(), GAP_MAP_VERSION, buildPeriodComparison() (+17 more)
+Nodes (29): captureRecommendationBaseline(), captureRecommendationSnapshot(), measureRecommendationOutcome(), recommendationOutcomeConfidence(), buildDemoRecommendations(), buildDemoWeeklyCloses(), candidatesAt(), inRange() (+21 more)
 
-### Community 107 - "format-date.ts"
-Cohesion: 0.19
-Nodes (15): buildCapacityReviewPreview(), formatPeriodBR(), renderContextualHelp(), createSustainabilityController(), escape(), renderExecutionBreakdown(), renderPeriodComparisonDetail(), escape() (+7 more)
+### Community 107 - "questions-tab-controller.ts"
+Cohesion: 0.16
+Nodes (9): createQuestionController(), createEditalImportFacade(), createEditableCollectionController(), calcAcertoPct(), cloneRecord(), QuestionsTabControllerContext, buildQuestionViewModel(), fixture() (+1 more)
 
 ### Community 108 - "wire-storage-and-sync.ts"
 Cohesion: 0.07
@@ -937,20 +942,20 @@ Cohesion: 0.04
 Nodes (47): 1.1 Dot Matrix System, 1.2 Geometric Shapes, 1.3 Line System, 1.4 Node Network, 1. Extreme Simplicity, 2.1 Dot Matrix + Geometric Shape (Filling), 2.2 Dot Matrix + Lines (Connected Dots), 2.3 Geometry + Lines (Outlined Shapes) (+39 more)
 
 ### Community 111 - "Spec: build-hygiene"
-Cohesion: 0.09
-Nodes (19): Capability Map: correções da revisão (sync WebDAV, importação de questões, tipagem), Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-20), Estilo, Estrutura afetada, Fora de escopo, Limites (+11 more)
+Cohesion: 0.11
+Nodes (18): Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-20), Estilo, Estrutura afetada, Fora de escopo, Limites, O que já foi resolvido em outros módulos (+10 more)
 
 ### Community 112 - "createCalendarTabController"
-Cohesion: 0.11
-Nodes (31): renderCalendarEdit(), renderCalendarFilterOptions(), renderCalendarRead(), createCalendarTabController(), addCalRow(), bindEvents(), calendarViewModel(), cancelCalendarEdit() (+23 more)
+Cohesion: 0.07
+Nodes (46): unifiedReviewLabel(), REVIEW_OPTIONS, CALENDAR_EVENT_STAGES, calendarEventStage(), renderCalendarEdit(), renderCalendarFilterOptions(), renderCalendarIndicators(), renderCalendarMonth() (+38 more)
 
 ### Community 113 - "AdminDashboardView.tsx"
-Cohesion: 0.09
-Nodes (46): 3. Fases de Implementação Técnica no Código, 4.1. Base Atual Implementada (PIX via AbacatePay), 4.2. Evolução Planejada: Adição do Pagamento com Cartão de Crédito, Fase 10: Arquitetura de E-mails Transacionais, Recuperação de Receita e Retenção (`Resend` + `Clerk`), Fase 1: Camada de Autenticação, Avatar do Usuário e Sessão com Clerk (`src/auth/`) [CONCLUÍDA], Fase 3: Sincronização Automática Local-Nuvem (`src/storage/cloud-saas-provider.ts`) [CONCLUÍDA], Fase 4: Integração de Pagamentos Híbrida (PIX + Cartão de Crédito) e Webhooks [CONCLUÍDA], Fase 5: Catálogo Dinâmico de Editais na Nuvem (`src/application/subjects/cloud-catalog-service.ts`) [CONCLUÍDA] (+38 more)
+Cohesion: 0.23
+Nodes (20): adminChangeUserRole(), adminExtendUserSubscription(), adminRefundOrder(), adminRestoreUserSnapshot(), fetchAdminDashboard(), MOCK_ADMIN_ORDERS, MOCK_ADMIN_PROFILES, AdminUserFilter (+12 more)
 
 ### Community 114 - "createSimulationsTabController"
-Cohesion: 0.10
-Nodes (38): Fase 6: Gestão de Conteúdo (Disciplinas, Editais, Questões e Simulados) — CONCLUÍDA ✅, applyPresetBlueprintDefaults(), closeExamImport(), renderSimulationTrendChart(), deleteCalRow(), calcAcertoPct(), createQuestionsTabController(), addQuestaoRow() (+30 more)
+Cohesion: 0.17
+Nodes (17): Fase 6: Gestão de Conteúdo (Disciplinas, Editais, Questões e Simulados) — CONCLUÍDA ✅, applyPresetBlueprintDefaults(), deleteQuestaoRow(), editQuestion(), createSimulationsTabController(), addSimuladoRow(), bindEvents(), cancelSimulationEdit() (+9 more)
 
 ### Community 115 - "Contrato da experiência de decisão"
 Cohesion: 0.18
@@ -960,29 +965,29 @@ Nodes (11): Contrato da experiência de decisão, Contratos comuns, Fluxo aprese
 Cohesion: 0.17
 Nodes (12): Achados para a próxima revisão, Backlog verificável, Contrato operacional — consolidação da experiência, Critério para reduzir uma ocorrência, Escopo da auditoria, Inventário de propriedade das informações, Inventário observado, Leitura da preparação em Desempenho (10/11/2026) (+4 more)
 
-### Community 117 - "unmountPreact"
-Cohesion: 0.11
-Nodes (22): WhatIfSimulationInput, BuildRecoveryMissionOptions, buildRecoveryMissionPlan(), calculateReviewUrgencyScore(), OverdueReviewItem, RecoveryMissionBlock, RecoveryMissionPlan, RecoveryMissionModal() (+14 more)
+### Community 117 - "mountPreact"
+Cohesion: 0.05
+Nodes (48): WhatIfSimulationInput, BuildRecoveryMissionOptions, buildRecoveryMissionPlan(), calculateReviewUrgencyScore(), OverdueReviewItem, RecoveryMissionBlock, RecoveryMissionPlan, createQuestionImportController() (+40 more)
 
 ### Community 118 - "ref_node_path"
 Cohesion: 0.13
 Nodes (8): args, chrome, flag(), [url, out, label], production, projectRoot, types, scanFiles()
 
 ### Community 119 - "createFirstAccessModalController"
-Cohesion: 0.12
-Nodes (30): createLegalAcceptancePayload(), CURRENT_LEGAL_VERSION, getLegalDocument(), hasUserAcceptedCurrentLegalVersion(), LEGAL_METADATA, LegalDocument, LegalMetadata, LegalSection (+22 more)
+Cohesion: 0.11
+Nodes (31): createLegalAcceptancePayload(), CURRENT_LEGAL_VERSION, getLegalDocument(), hasUserAcceptedCurrentLegalVersion(), LEGAL_METADATA, LegalDocument, LegalMetadata, LegalSection (+23 more)
 
-### Community 120 - "consolidated-signal.ts"
-Cohesion: 0.18
-Nodes (20): createConsolidatedSignal(), day(), distinct(), ordered(), ratio(), SIGNAL_CONTRACT_VERSION, SIGNAL_KINDS, signalEntityKey() (+12 more)
+### Community 120 - "build-exam-matrix.ts"
+Cohesion: 0.12
+Nodes (25): buildExamConfigurationAudit(), order, sourceLabels, buildExamIntelligenceViewModel(), buildExamMatrix(), byName(), options(), percentage() (+17 more)
 
 ### Community 121 - "remote-sync-provider.ts"
-Cohesion: 0.21
+Cohesion: 0.23
 Nodes (14): base64ToBytes(), bytesToBase64(), decryptPayload(), deriveKey(), EncryptedEnvelope, encryptPayload(), PBKDF2_ITERATIONS, basicAuthHeader() (+6 more)
 
 ### Community 122 - "package.json"
-Cohesion: 0.10
-Nodes (19): description, license, name, private, type, version, @babel/core, @babel/eslint-parser (+11 more)
+Cohesion: 0.08
+Nodes (25): dependencies, preact, preact-render-to-string, tailwindcss, description, engines, node, license (+17 more)
 
 ### Community 123 - "Pacotes de implementação"
 Cohesion: 0.22
@@ -992,9 +997,9 @@ Nodes (9): Evoluções posteriores, P1 — Entrada guiada completa — concluíd
 Cohesion: 0.20
 Nodes (10): Aplicação por pacote, Auditoria de dados densos, Central de Ajuda visual — ciclo concluído, Contratos e estados, Execução diária: hierarquia e estados, Hierarquia visual do StudyTrack, Mapa das áreas atuais, Níveis de informação (+2 more)
 
-### Community 125 - "i"
-Cohesion: 0.07
-Nodes (70): Ae(), Al(), ax(), Be(), Bx(), $c(), q(), cI() (+62 more)
+### Community 125 - "overview-standing-renderer.ts"
+Cohesion: 0.17
+Nodes (13): buildEvidence(), buildMatrix(), buildOverviewStanding(), buildTrajectory(), FACTOR_LABELS, OverviewStanding, Row, Options (+5 more)
 
 ### Community 126 - "audit-test-suite.mjs"
 Cohesion: 0.25
@@ -1005,12 +1010,12 @@ Cohesion: 0.07
 Nodes (27): compilerOptions, allowImportingTsExtensions, allowJs, allowUnreachableCode, allowUnusedLabels, alwaysStrict, checkJs, jsx (+19 more)
 
 ### Community 128 - "overview-renderer.ts"
-Cohesion: 0.08
-Nodes (33): 22. Modernização Impeccable: Migração Preact de Visão Geral/Prontidão e Extrato do Dia em Hoje, dismissAlert(), reconcileAlerts(), Row, severityOrder, buildExecutiveSummary(), AlertState, renderReplanProposal() (+25 more)
+Cohesion: 0.13
+Nodes (21): 22. Modernização Impeccable: Migração Preact de Visão Geral/Prontidão e Extrato do Dia em Hoje, Decisões do usuário (bloqueiam tarefas marcadas), Global Constraints, Lançamento e Consolidação Implementation Plan, Review Focus, Self-Review, Task 1: Alinhar documentação ao produto publicado, Task 2: Limpar a raiz do repositório (+13 more)
 
-### Community 129 - "remote-sync-controller.test.js"
-Cohesion: 0.18
-Nodes (16): createRemoteSyncController(), evaluatePassphrase(), MIN_PASSPHRASE_LENGTH, PASSPHRASE_LOSS_WARNING, readRemoteSyncPreferences(), REMOTE_SYNC_CONFIG_KEY, Row, sameServer() (+8 more)
+### Community 129 - "build-performance-overview.ts"
+Cohesion: 0.21
+Nodes (13): recentPerformance(), buildPlanExecution(), excluded, minutes(), plannedMinutesForPlan(), weekStart(), buildPerformanceOverview(), delta() (+5 more)
 
 ### Community 130 - "Contrato de hierarquia da informação"
 Cohesion: 0.22
@@ -1021,48 +1026,48 @@ Cohesion: 0.07
 Nodes (27): scripts, build, build:prod, check, check:all, check:bundle, check:format, check:syntax (+19 more)
 
 ### Community 132 - "createAppStateStore"
-Cohesion: 0.08
-Nodes (31): ApprovalReadinessServiceDependencies, TopicDiagnosisServiceDependencies, GoalsBlueprintServiceDependencies, StudyCandidateServiceDependencies, StudyMetricsSelectorsDependencies, AppState, AppStateStoreOptions, createAppStateStore() (+23 more)
+Cohesion: 0.11
+Nodes (21): structuredCloneSafe(), AppStateStoreOptions, createAppStateStore(), enqueueSave(), enqueueStateTransaction(), flushSaves(), persistAndRender(), saveState() (+13 more)
 
 ### Community 133 - "build-agenda-buckets.ts"
-Cohesion: 0.16
-Nodes (19): Use useTransition Over Manual Loading States, AgendaBucket, buildAgendaBuckets(), count(), describeBucket(), isNext7(), isOverdueItem(), isPending() (+11 more)
+Cohesion: 0.24
+Nodes (12): Use useTransition Over Manual Loading States, AgendaBucket, buildAgendaBuckets(), count(), describeBucket(), isNext7(), isOverdueItem(), isPending() (+4 more)
 
 ### Community 134 - "new-work.md"
-Cohesion: 0.05
-Nodes (32): Recommended Actions, Craft (deprecated alias), Impeccable Documenter, Input Contract, Output Contract, Workflow, Monorepo notes, Opting out of the boot check (+24 more)
+Cohesion: 0.06
+Nodes (28): Recommended Actions, Craft (deprecated alias), Impeccable Documenter, Input Contract, Output Contract, Workflow, Apply, Live-mode signature params (+20 more)
 
 ### Community 135 - "cloud-catalog-service.test.js"
 Cohesion: 0.13
 Nodes (20): BUILTIN_BLUEPRINTS, BUILTIN_EXAM_CATALOG, canUserAccessExam(), CLOUD_CATALOG_STORAGE_KEY, CloudExamCatalogItem, convertBlueprintToImportPreset(), ExamCatalogBlueprint, ExamCatalogBlueprintSubject (+12 more)
 
 ### Community 136 - "build-plateau-detector-view-model.ts"
-Cohesion: 0.16
-Nodes (16): BuildPlateauDetectorParams, buildPlateauDetectorViewModel(), CONFIDENCE_LABELS, PlateauDetectorViewModel, PlateauTopicItem, STRATEGY_LABELS, STRATEGY_VARIANTS, buildWeeklyRollingWindows() (+8 more)
+Cohesion: 0.19
+Nodes (14): BuildPlateauDetectorParams, buildPlateauDetectorViewModel(), CONFIDENCE_LABELS, PlateauTopicItem, STRATEGY_LABELS, STRATEGY_VARIANTS, buildWeeklyRollingWindows(), detectAllPlateaus() (+6 more)
 
 ### Community 137 - "application-bootstrap.ts"
 Cohesion: 0.09
 Nodes (21): 3. Arquitetura Alvo, createAppContext(), REQUIRED_STORAGE_METHODS, ApplicationLifecycleConfig, AppRuntimeConfig, bootstrapAppRuntime(), mountTestBridge(), ProgressiveListsConfig (+13 more)
 
-### Community 138 - "initGlobalBar"
-Cohesion: 0.09
-Nodes (41): agentStatusText(), barPaletteForTheme(), brandMarkSvg(), buildDesignHeader(), cursorForInsertAxis(), designPanelCss(), detectPageTheme(), ensureAgentPollTooltip() (+33 more)
+### Community 138 - "captureElementToBlob"
+Cohesion: 0.14
+Nodes (19): averageRgb01(), captureAndEmit(), captureElementFromRenderedAncestor(), captureElementToBlob(), compileShader(), cssColorToRgb01(), dominantRgb01(), findBackdropAncestor() (+11 more)
 
-### Community 139 - "openSectionFor"
-Cohesion: 0.18
-Nodes (13): initPlanningSubtabs(), isPlanningSubtab(), PLANNING_SUBTABS, PlanningSubtab, selectPlanningSubtab(), subtabFromHash(), initRememberedSections(), openSectionFor() (+5 more)
+### Community 139 - "scrollBehavior"
+Cohesion: 0.12
+Nodes (27): goToWeeklyDecision(), openWeeklyClose(), scrollBehavior(), initPlanningSubtabs(), isPlanningSubtab(), mountedNavSync, PLANNING_SUBTABS, PlanningSubtab (+19 more)
 
 ### Community 140 - "live.md"
 Cohesion: 0.05
 Nodes (34): Apply at system scale, Audit before choosing, Choose a strategy, Contrast and perception, Live-mode signature params, Verify, Visitor mode, Step 1: Parse the request (+26 more)
 
 ### Community 141 - "createReviewsTabController"
-Cohesion: 0.11
-Nodes (43): Fase 7: Desacoplamento do Fluxo Temporal (Calendário, Agenda de Revisões e Foco do Cronômetro) — CONCLUÍDA ✅, calculateAdaptiveInterval(), buildReviewLoad(), renderReviewEdit(), renderReviewLoad(), renderReviewRead(), shiftDate(), cloneRecord() (+35 more)
+Cohesion: 0.10
+Nodes (47): Fase 7: Desacoplamento do Fluxo Temporal (Calendário, Agenda de Revisões e Foco do Cronômetro) — CONCLUÍDA ✅, buildReviewLoad(), renderReviewEdit(), renderReviewLoad(), renderReviewRead(), shiftDate(), cloneRecord(), createReviewsTabController() (+39 more)
 
-### Community 142 - "study-plan-builder-controller.ts"
-Cohesion: 0.12
-Nodes (28): buildRecommendationExplanation(), IMPACT_SOURCE_LABELS, number(), row(), ACTION_LABELS, buildStudyAction(), finiteOrNull(), freezeDeep() (+20 more)
+### Community 142 - "recommendation-action.ts"
+Cohesion: 0.18
+Nodes (15): NEXT_BEST_ACTION_STATES, DECISION_REASON_CODES, DECISION_REASON_LABELS, decisionReasonCode(), ACTION_LABELS, buildStudyAction(), finiteOrNull(), freezeDeep() (+7 more)
 
 ### Community 143 - "Plano do dia, sugestões e metas iniciais"
 Cohesion: 0.33
@@ -1076,41 +1081,41 @@ Nodes (5): Contratos para os pacotes 1–3, Escopo protegido, Fechamento do paco
 Cohesion: 0.19
 Nodes (3): createMockEnvironment(), MockClassList, MockElement
 
-### Community 146 - "recommendations-controller.ts"
-Cohesion: 0.24
-Nodes (12): buildExcludedCandidates(), createRecommendationsController(), getExcluded(), getPendingOutcome(), ExcludedCandidateState, formatRecommendationHistoryLabel(), RecommendationFeedbackItem, RecommendationHistorySummary (+4 more)
+### Community 146 - "study-session.ts"
+Cohesion: 0.18
+Nodes (15): ENERGY_LEVEL_VALUES, finiteOrNull(), FOCUS_LEVEL_VALUES, isLocalDate(), nonNegative(), nonNegativeInteger(), normalizeStudySession(), normalizeStudySessions() (+7 more)
 
-### Community 147 - "pluralize"
-Cohesion: 0.13
-Nodes (28): buildPerformanceExecutiveSummary(), finite(), PerformanceExecutiveSummary, Row, pluralize(), renderDisclosure(), renderFocusByShift(), renderPerformanceConsistency() (+20 more)
+### Community 147 - "format-number.ts"
+Cohesion: 0.07
+Nodes (54): buildPerformanceComparison(), classify(), COMPARISON_THRESHOLDS, metric(), rounded(), buildPerformanceExecutiveSummary(), finite(), PerformanceExecutiveSummary (+46 more)
 
-### Community 148 - "timer-controller.ts"
+### Community 148 - "study-timer-runtime-controller.ts"
 Cohesion: 0.14
-Nodes (17): ActiveTimerData, activeTimerMatchesRecommendation(), advanceGuidedStrategyStep(), computeTimerSeconds(), createTimerController(), pause(), reset(), restore() (+9 more)
+Nodes (19): ActiveTimerState, StudyTimerViewControllerOptions, ActiveTimerData, activeTimerMatchesRecommendation(), advanceGuidedStrategyStep(), computeTimerSeconds(), createTimerController(), pause() (+11 more)
 
 ### Community 149 - "createStudyPlanBuilderController"
-Cohesion: 0.12
-Nodes (30): Fase 9: Desacoplamento Analítico, Planejamento & Fechamento Semanal — CONCLUÍDA ✅, buildWeeklyAllocationBarVisual(), renderAllocationBar(), activities(), escape(), renderPhaseStrategy(), createStudyPlanBuilderController(), buildCurrentStudyPlanProposal() (+22 more)
+Cohesion: 0.10
+Nodes (34): Fase 9: Desacoplamento Analítico, Planejamento & Fechamento Semanal — CONCLUÍDA ✅, buildWeeklyAllocationBarVisual(), previewWeeklyCloseActions(), renderAllocationBar(), activities(), renderPhaseStrategy(), getStreakView(), renderKPIs() (+26 more)
 
 ### Community 150 - "Plano de Próximas Evoluções: Inteligência Analítica, Experiência e Engenharia"
 Cohesion: 0.11
 Nodes (18): 1.1. Detecção de Platô de Desempenho (`src/domain/analytics/plateau-detector.ts`), 1.2. Custo de Oportunidade do Estudo (`src/domain/analytics/opportunity-cost.ts`), 1.3. Raio-X Pós-Simulado e Plano de Remediação (`src/domain/diagnostics/simulated-remediation.ts`), 1. Contexto e Objetivos, 2.1. Filtros por Banca Examinadora e Padrão de Armadilha, 2.2. Métricas de Retenção do Algoritmo SM-2, 2. Visão Geral das Frentes de Trabalho, 3.1. Extração de `src/features/onboarding/onboarding-modal-controller.ts` — CONCLUÍDA ✅ (+10 more)
 
 ### Community 151 - "Histórico de Planos Concluídos — StudyTrack"
-Cohesion: 0.05
-Nodes (43): 10.1. Bloco 1 (Itens #01 a #05) — Feedback, Ambientação e Registro de Sessões, 10.2. Bloco 2 (Itens #06 a #10) — Inteligência, Disciplinas, Revisões e Questões, 10.3. Resultados de Validação, 10. Refinamento de Usabilidade & Experiência do Iniciante (10 Pontos de Atrito), 11.2. Validação e Qualidade, 11. Plano de Modernização Visual e Cockpit Panorâmico (Novembro 2026), 12.1. Entregas Realizadas, 12.2. Validação e Qualidade (+35 more)
+Cohesion: 0.13
+Nodes (15): 11.2. Validação e Qualidade, 11. Plano de Modernização Visual e Cockpit Panorâmico (Novembro 2026), 14.2. Validação e Qualidade, 14. Modernização do Cockpit Hoje, Acessibilidade Estrita e Consolidação do CI (Fases Impeccable), 16.2. Validação e Qualidade, 16. Plano Concluído: Novos Gráficos e Cores das Disciplinas na Aba Desempenho, 19. Modernização da Busca Global: Command Palette (Estilo Prestige UI / Raycast / shadcn), 21. Micro-Transições e Animações Fluidas nos Gráficos (Padrão Amicro Nativo) (+7 more)
 
 ### Community 152 - "utils.ts"
-Cohesion: 0.09
-Nodes (40): reviewExamClassification(), createTestBridgeConfig(), CreateTestBridgeConfigOptions, HTML_ESCAPES, isFiniteNonNegative(), isISODate(), isOptionalTimestamp(), isPlainObject() (+32 more)
+Cohesion: 0.13
+Nodes (28): reviewExamClassification(), HTML_ESCAPES, isFiniteNonNegative(), isISODate(), isOptionalTimestamp(), isPlainObject(), isSafeId(), SAFE_ID_PATTERN (+20 more)
 
 ### Community 153 - "mountSvelteComponentVariant"
-Cohesion: 0.09
-Nodes (34): applyOriginalAttrsToSvelteAnchor(), buildSvelteExpressionTextMap(), buildSveltePropValuesFromLiveElement(), buildSveltePropValuesV2(), cloneWithoutElements(), collectTextNodes(), collectVisibleTexts(), commitAcceptedSvelteComponentToDom() (+26 more)
+Cohesion: 0.24
+Nodes (11): componentModuleCandidates(), describeMountFailure(), detectDevServerBase(), importFirstReachable(), loadSvelteRuntime(), maybePrefetchPage(), mountSvelteComponentVariant(), probePreviewTree() (+3 more)
 
-### Community 154 - "volatile-mastery.ts"
-Cohesion: 0.48
-Nodes (5): analyzeTopicVolatileMastery(), identifyVolatileTopics(), parseDayTimestamp(), QuestionEvent, VolatileMasteryDiagnostic
+### Community 154 - "create-test-bridge-api.ts"
+Cohesion: 0.14
+Nodes (24): createTestBridgeConfig(), CreateTestBridgeConfigOptions, calculateReadinessScore(), calculateWeightedScore(), clampMetric(), extractMetricsFromClonedState(), simulateWhatIfScenario(), WhatIfSimulationMetrics (+16 more)
 
 ### Community 155 - "help-content.ts"
 Cohesion: 0.10
@@ -1124,41 +1129,41 @@ Nodes (4): Disciplinas, Navegação de conteúdo e leitura dos indicadores, Temp
 Cohesion: 0.40
 Nodes (4): Evidência de retenção e composição da execução, Execução, Retenção, Validação
 
-### Community 158 - "subject-accuracy-target.test.js"
-Cohesion: 0.23
-Nodes (11): Execução diária compartilhada, Explicações e consequências das decisões, Metas pessoais e sinais de preparação, Prévia integrada da estratégia por fase, buildPreparationSignals(), count(), inRange(), Row (+3 more)
+### Community 158 - "readiness-history-renderer.ts"
+Cohesion: 0.11
+Nodes (30): buildHeaderViewModel(), displayReadinessValue(), hasEnoughReadinessEvidence(), MIN_READINESS_FACTORS, STRUCTURAL_READINESS_FACTORS, availableKeys(), buildReadinessEvolution(), compareReadinessSnapshots() (+22 more)
 
-### Community 159 - "buildProjectionCalibration"
-Cohesion: 0.24
-Nodes (12): buildProjectionCalibration(), captureProjection(), projectionComposition(), Row, scope(), buildPerformanceSimulations(), inRange(), score() (+4 more)
+### Community 159 - "build-adherence-model.ts"
+Cohesion: 0.12
+Nodes (18): adherenceStatus(), labels, buildAdherenceChangeExplanation(), direction(), finite(), buildAdherenceModel(), adherencePercent(), buildAdherenceSummary() (+10 more)
 
 ### Community 160 - "createTopicDiagnosisService"
 Cohesion: 0.08
 Nodes (54): createTopicDiagnosisService(), buildErrorProfile(), classifyAccuracy(), diagnoseTopic(), diasSemEstudarDisciplina(), dominantTopicError(), getSubjectPerformanceCounts(), getSubjectTopicPerformance() (+46 more)
 
-### Community 161 - "plan-execution-renderer.ts"
-Cohesion: 0.08
-Nodes (37): Componentes de tela das abas (Preact `.tsx`), Contrato compartilhado dos gráficos, Inventário de componentes primitivos (Preact), Linha de razão e conciliações, Estrutura de arquivos, Foco de revisão, Redesign visual do Extrato (conciliação, filas e livro-razão) — Plano de Implementação, Restrições globais (+29 more)
+### Community 161 - "LedgerLine"
+Cohesion: 0.13
+Nodes (18): Estrutura de arquivos, Foco de revisão, Redesign visual do Extrato (conciliação, filas e livro-razão) — Plano de Implementação, Restrições globais, Revisão própria, Task 1: Linha de razão (base visual reutilizável), Task 2: Conciliação de Hoje, Task 3: Conciliação da semana em Planejamento (+10 more)
 
-### Community 162 - "scrollBehavior"
-Cohesion: 0.31
-Nodes (11): createSearchController(), handleActionClick(), mount(), renderResults(), normalizeSearchText(), performGlobalSearch(), SEARCH_COMMANDS, SearchCommand (+3 more)
+### Community 162 - "table.tsx"
+Cohesion: 0.03
+Nodes (126): GlobalCommandPalette(), GlobalCommandPaletteProps, createSearchController(), executeCommandSpec(), filterCommandsForQuery(), mount(), normalizeSearchText(), performGlobalSearch() (+118 more)
 
-### Community 163 - "analytical-presentation.ts"
-Cohesion: 0.07
-Nodes (39): Componentes, Fundação, Hierarquia editorial — pacotes 1–6, Pacote 6 — revisão dirigida, Pacotes 4–5 — registros e microcopy, Validação local dos pacotes 1–3, Validação local dos pacotes 4–6, Visão Geral (+31 more)
+### Community 163 - "formatDateBR"
+Cohesion: 0.06
+Nodes (53): Componentes, Fundação, Hierarquia editorial — pacotes 1–6, Pacote 6 — revisão dirigida, Pacotes 4–5 — registros e microcopy, Validação local dos pacotes 1–3, Validação local dos pacotes 4–6, Visão Geral (+45 more)
 
 ### Community 164 - "Desempenho: análise de conteúdo, personas e críticas, e como distribuir para subir a nota"
 Cohesion: 0.17
 Nodes (11): 1. Por que a nota não passa de 27, 2. O conteúdo da aba hoje (inventário medido), 3. As personas e o que cada uma precisa da aba, 4. O que as críticas anteriores repetem (e o que já foi tratado), 5. Como o conteúdo deve ser distribuído, 6. Estimativa honesta, 7. Decisões que dependem de você, Desempenho: análise de conteúdo, personas e críticas, e como distribuir para subir a nota (+3 more)
 
-### Community 165 - "outcome-service.ts"
+### Community 165 - "plan-execution-renderer.ts"
 Cohesion: 0.29
-Nodes (11): captureRecommendationBaseline(), captureRecommendationSnapshot(), measureRecommendationOutcome(), recommendationOutcomeConfidence(), buildDemoRecommendations(), evaluateRecommendationOutcome(), METRICS, normalizeRecommendationMetrics() (+3 more)
+Nodes (11): fmt(), renderPlanExecution(), escape(), fmt(), renderStrategicExecution(), buildWeekReconciliation(), clean(), WeekReconciliation (+3 more)
 
 ### Community 166 - "Design System do Extrato de Estudos"
-Cohesion: 0.06
-Nodes (33): Carregamento sob demanda, Classes Utilitárias Semânticas do Tema, Componentes, Controles de Formulário e Acessibilidade (WCAG 2.1 AA 1.4.11), Design System do Extrato de Estudos, Escala Tipográfica e Piso de Legibilidade, Espaçamento, Explicações de recomendações (+25 more)
+Cohesion: 0.10
+Nodes (21): Classes Utilitárias Semânticas do Tema, Componentes, Contrato compartilhado dos gráficos, Controles de Formulário e Acessibilidade (WCAG 2.1 AA 1.4.11), Design System do Extrato de Estudos, Escala Tipográfica e Piso de Legibilidade, Espaçamento, Explicações de recomendações (+13 more)
 
 ### Community 167 - "tests.js"
 Cohesion: 0.53
@@ -1172,57 +1177,57 @@ Nodes (3): Fechamento da auditoria de confiança e acessibilidade, Pacote 7 — 
 Cohesion: 0.18
 Nodes (8): browser, phases, playwright, results, revision, root, started, summary
 
-### Community 170 - "daily-execution.test.js"
-Cohesion: 0.27
-Nodes (6): renderPlannedAction(), TYPE_LABELS, typeLabel(), PlannedActionCard(), planned(), render()
+### Community 170 - "Plano: o que falta da crítica de Desempenho, Agenda e Calendário, e as personas"
+Cohesion: 0.12
+Nodes (15): Alex, quem usa todo dia e quer velocidade, Análise por persona, Atualização do segundo ciclo (2026-11-03), Concurseira autodidata, uso diário, Decisões pendentes (confirmar antes), Lote 0 — Fechar o ciclo atual (bloqueia o resto), Lote 1 — Pequenos e independentes (acessibilidade e repetição), Lote 2 — Comportamento (+7 more)
 
 ### Community 171 - "report-template.ts"
-Cohesion: 0.14
-Nodes (25): summarizeRecommendationHistory(), EXAM_SOURCES, EXAM_TAG_LABELS, INSTITUTIONS, printStrategicReport(), buildStrategicReport(), inPeriod(), reportToday() (+17 more)
+Cohesion: 0.26
+Nodes (15): printStrategicReport(), bars(), comparisonValue(), date(), duration(), escape(), metricLabels, renderAdaptiveReport() (+7 more)
 
-### Community 172 - "build-period-comparison-view-model.ts"
-Cohesion: 0.23
-Nodes (10): aggregate(), buildPeriodComparisonViewModel(), entryDate(), resolveRange(), Row, shiftRange(), within(), buildPeriodComparisonInsights() (+2 more)
+### Community 172 - "escapeHtml"
+Cohesion: 0.13
+Nodes (20): escapeAttr, escapeHtml(), renderExamImport(), renderPresetStep(), renderPreviewStep(), renderSelectionStep(), syncExamSubjectCheckboxes(), renderTopicStrategyEditor() (+12 more)
 
 ### Community 173 - "session-result.test.js"
-Cohesion: 0.26
-Nodes (9): buildSessionResultViewModel(), sessionEffects(), showSessionResult(), renderEffects(), renderLedger(), renderSessionResult(), day, options (+1 more)
+Cohesion: 0.36
+Nodes (6): renderEffects(), renderLedger(), renderSessionResult(), day, options, session
 
-### Community 174 - "expectNoPageOverflow"
-Cohesion: 0.31
-Nodes (7): expectNoPageOverflow(), assertHistoryPreserved(), capacity(), getState(), prepare(), buildStrategicCycleFixture(), STRATEGIC_CYCLE_TODAY
+### Community 174 - "admin-service.ts"
+Cohesion: 0.17
+Nodes (13): AdminDashboardData, AdminServiceOptions, MOCK_ADMIN_AUDIT_LOGS, MOCK_ADMIN_SNAPSHOTS, resetAdminMockState(), runtimeAuditLogs, runtimeOrders, runtimeProfiles (+5 more)
 
 ### Community 175 - "Foco de revisão"
 Cohesion: 0.18
 Nodes (10): Critérios de aceite, Foco de revisão, Fora deste escopo, Plano de Implementação — Jornada do Modo Demonstração, Restrições globais, Tarefa 1: Normalizar a navegação ao entrar na Demo, Tarefa 2: Evitar que o tour obstrua a ação destacada, Tarefa 3: Manter a identificação fictícia no modo foco (+2 more)
 
-### Community 176 - "topic-strategy.ts"
-Cohesion: 0.24
-Nodes (9): finite(), resolveTopicExamImpact(), TOPIC_IMPACT_SOURCES, wouldCreatePrerequisiteCycle(), createTopicStrategyController(), buildTopicStrategyViewModel(), renderTopicStrategyEditor(), TopicStrategyEditorViewOptions (+1 more)
-
-### Community 177 - "createTimerUiController"
-Cohesion: 0.08
-Nodes (18): Pilha Tecnológica e Diretrizes Inegociáveis de Engenharia, Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-22), Estilo, Estrutura, Fora de escopo, Limites (+10 more)
-
-### Community 178 - "topic-bookmark.ts"
-Cohesion: 0.16
-Nodes (14): R1 — Um ponto de parada por tópico, R2 — Funções de domínio puras, R3 — "Onde você parou?" no check-out, R4 — Ponto de parada visível onde se decide estudar, session-bookmark, BookmarkResourceType, BOOKMARK_RESOURCE_TYPES, bookmarkProgress() (+6 more)
-
-### Community 179 - "escapeHtml"
+### Community 176 - "3. Fases de Implementação Técnica no Código"
 Cohesion: 0.15
-Nodes (18): escapeAttr, escapeHtml(), renderExamImport(), renderPresetStep(), renderPreviewStep(), renderSelectionStep(), renderTopicStrategyEditor(), createPerformanceAnalyticsController() (+10 more)
+Nodes (13): 3. Fases de Implementação Técnica no Código, 4.1. Base Atual Implementada (PIX via AbacatePay), 4.2. Evolução Planejada: Adição do Pagamento com Cartão de Crédito, Fase 10: Arquitetura de E-mails Transacionais, Recuperação de Receita e Retenção (`Resend` + `Clerk`), Fase 1: Camada de Autenticação, Avatar do Usuário e Sessão com Clerk (`src/auth/`) [CONCLUÍDA], Fase 3: Sincronização Automática Local-Nuvem (`src/storage/cloud-saas-provider.ts`) [CONCLUÍDA], Fase 4: Integração de Pagamentos Híbrida (PIX + Cartão de Crédito) e Webhooks [CONCLUÍDA], Fase 5: Catálogo Dinâmico de Editais na Nuvem (`src/application/subjects/cloud-catalog-service.ts`) [CONCLUÍDA] (+5 more)
+
+### Community 177 - "build-period-comparison-view-model.ts"
+Cohesion: 0.23
+Nodes (10): aggregate(), buildPeriodComparisonViewModel(), entryDate(), resolveRange(), Row, shiftRange(), within(), buildPeriodComparisonInsights() (+2 more)
+
+### Community 178 - "timer-coordinator.ts"
+Cohesion: 0.06
+Nodes (35): R1 — Um ponto de parada por tópico, R2 — Funções de domínio puras, R3 — "Onde você parou?" no check-out, R4 — Ponto de parada visível onde se decide estudar, session-bookmark, BuildSessionRecordInput, DailyPlanItemMatch, findDailyPlanItem() (+27 more)
+
+### Community 179 - "build-volatile-mastery-view-model.ts"
+Cohesion: 0.23
+Nodes (10): BuildVolatileMasteryParams, buildVolatileMasteryViewModel(), VolatileMasteryItem, VolatileMasteryViewModel, analyzeTopicVolatileMastery(), identifyVolatileTopics(), parseDayTimestamp(), QuestionEvent (+2 more)
 
 ### Community 180 - "AGENTS.md"
-Cohesion: 0.13
-Nodes (11): Contrato de leitura, Decisões e limites, Inventário de densidade — consolidação de produto, Inventário por área, Fechamento da fase, Gate de experiência do produto, Integração remota, Arquivos (+3 more)
+Cohesion: 0.12
+Nodes (11): Consolidação da experiência de decisão, Entregas, Pacote 7 — acessibilidade e responsividade, Pacote 8 — fechamento técnico, Contrato de leitura, Decisões e limites, Inventário de densidade — consolidação de produto, Inventário por área (+3 more)
 
 ### Community 181 - "Escopo analítico por concurso"
-Cohesion: 0.17
-Nodes (12): Checagem estática de tipos e compilação (TypeScript + JSDoc), Demo da trajetória e fechamento orientado à decisão, Endurecimento de tipagem estrita (TypeScript Compiler Options), Escopo analítico por concurso, Experiência de decisão, Fluxo do Edital Inteligente, Importação de histórico de questões (CSV), Migração incremental para Preact (.tsx) (+4 more)
+Cohesion: 0.13
+Nodes (15): Checagem estática de tipos e compilação (TypeScript + JSDoc), Demo da trajetória e fechamento orientado à decisão, Endurecimento de tipagem estrita (TypeScript Compiler Options), Escopo analítico por concurso, Execução diária compartilhada, Experiência de decisão, Explicações e consequências das decisões, Fluxo do Edital Inteligente (+7 more)
 
-### Community 182 - "scrollBehavior"
-Cohesion: 0.17
-Nodes (18): buildCompletedSessionRecord(), BuildSessionRecordInput, DailyPlanItemMatch, findDailyPlanItem(), formatTimer(), preparePlannedActivityStart(), releaseActivePlanItem(), resolveSessionBookmark() (+10 more)
+### Community 182 - "session-modal-controller.ts"
+Cohesion: 0.07
+Nodes (31): BenchmarkMetricComparison, BenchmarkStatus, calculateCareerBenchmarkComparison(), CAREER_BENCHMARKS, CareerBenchmark, CareerBenchmarkComparisonResult, CareerClusterId, MetricAggregates (+23 more)
 
 ### Community 183 - "Testes"
 Cohesion: 0.50
@@ -1233,12 +1238,12 @@ Cohesion: 0.18
 Nodes (10): 1. Visão Geral e Propósito Pedagógico, 3.1. `again` (Errei), 3.2. `hard` (Difícil), 3.3. `good` (Bom), 3.4. `easy` (Fácil), 3. Classificações e Regras de Agendamento, 4. Diagrama de Transição de Estados, 5. Regras de Elegibilidade e Agendamento Diário (+2 more)
 
 ### Community 185 - "README.md"
-Cohesion: 0.11
-Nodes (10): Contribuindo, Consolidação da experiência de decisão, Entregas, Pacote 7 — acessibilidade e responsividade, Pacote 8 — fechamento técnico, Estratégia por fase e prévia integrada, Integração e confirmação, Política preservada (+2 more)
+Cohesion: 0.12
+Nodes (9): Contribuindo, Contratos versionados, Decisões observadas, Validação da inteligência da prova e do planejamento V4, Estratégia por fase e prévia integrada, Integração e confirmação, Política preservada, Validação local (+1 more)
 
 ### Community 186 - "wire-dependencies.ts"
-Cohesion: 0.07
-Nodes (31): createTopicHistoryService(), historyEventLocalDate(), IGNORED_ACTIVITY_TYPES, Row, ToLocalDate, createDailyPlanService(), createReplanService(), createRecordService() (+23 more)
+Cohesion: 0.06
+Nodes (36): Carregamento sob demanda, createGuidedStudyService(), GUIDED_STUDY_VERSION, createTopicHistoryService(), historyEventLocalDate(), IGNORED_ACTIVITY_TYPES, Row, ToLocalDate (+28 more)
 
 ### Community 187 - "compilerOptions"
 Cohesion: 0.18
@@ -1253,28 +1258,28 @@ Cohesion: 0.22
 Nodes (9): Color, Components, Layout, Motion, Operate mode depth (and Read notes), Product constraints, Product permissions, The product slop test (+1 more)
 
 ### Community 190 - "createSessionHistoryController"
-Cohesion: 0.09
-Nodes (35): openPerformanceSection(), performanceGroupOf(), buildSessionHistoryPresentation(), renderStudySessionDayHeader(), renderStudySessionEdit(), renderStudySessionRead(), SESSION_TYPE_ICONS, sessionTypeIcon() (+27 more)
+Cohesion: 0.07
+Nodes (42): Fase 8: Desacoplamento do Hub de Execução Diária & Onboarding — CONCLUÍDA ✅, openPerformanceSection(), performanceGroupOf(), buildSessionHistoryPresentation(), renderStudySessionDayHeader(), renderStudySessionEdit(), renderStudySessionRead(), SESSION_TYPE_ICONS (+34 more)
 
-### Community 191 - "Decisões do usuário (bloqueiam tarefas marcadas)"
-Cohesion: 0.18
-Nodes (10): Decisões do usuário (bloqueiam tarefas marcadas), Global Constraints, Lançamento e Consolidação Implementation Plan, Review Focus, Self-Review, Task 1: Alinhar documentação ao produto publicado, Task 2: Limpar a raiz do repositório, Task 3: Validar de ponta a ponta o que está no ar (+2 more)
+### Community 191 - "simulated-remediation.ts"
+Cohesion: 0.20
+Nodes (12): buildSimulatedRemediationDiagnostic(), DeficitTopicItem, ErrorCardDraft, generate7DayRemediationPlan(), generateDraftErrorCards(), RemediationDailyAction, RemediationPlan7Days, SimulatedRemediationDiagnostic (+4 more)
 
-### Community 192 - "critical-responsive.js"
-Cohesion: 0.27
-Nodes (3): waitForAppReady(), waitForImportReady(), assertCriticalResponsive()
+### Community 192 - "renderIconSvg"
+Cohesion: 0.20
+Nodes (6): renderReplanProposal(), createDensityController(), createEssentialController(), createPreferencesController(), escapeSvgAttr(), renderIconSvg()
 
 ### Community 196 - "6. Manual Prático de Conexão e Ativação com Supabase, Clerk e AbacatePay"
-Cohesion: 0.10
-Nodes (21): 1. Acesso Direto por Parâmetros de URL (Deep-Linking Nativo), 2. Acesso ao Painel Admin pelo Menu do Usuário (Header / Avatar), 3. Como Promover um Usuário a Administrador (Passo a Passo), 4. Arquitetura de Segurança e Defesa em Profundidade, 6.1. Configuração do Supabase (PostgreSQL, RLS e Edge Functions), 6.2. Configuração do Clerk (Autenticação, JWT Template e Avatar), 6.3. Configuração da AbacatePay (Gateway Híbrido PIX & Cartão), 6.4. Configuração do Cliente Frontend (`window.APP_CONFIG`) (+13 more)
+Cohesion: 0.14
+Nodes (14): 6.1. Configuração do Supabase (PostgreSQL, RLS e Edge Functions), 6.2. Configuração do Clerk (Autenticação, JWT Template e Avatar), 6.3. Configuração da AbacatePay (Gateway Híbrido PIX & Cartão), 6.4. Configuração do Cliente Frontend (`window.APP_CONFIG`), 6. Manual Prático de Conexão e Ativação com Supabase, Clerk e AbacatePay, Passo 1: Criar Aplicativo e Obter Chaves, Passo 1: Obter a API Key, Passo 1: Obter Credenciais do Projeto (+6 more)
 
-### Community 197 - "wire-analytics-and-shell-ui.ts"
+### Community 197 - "analysis-navigation-controller.ts"
 Cohesion: 0.24
-Nodes (8): clamp(), generateDiagnosis(), wireAnalyticsAndShellUi(), createDiagnosisController(), createReportController(), loadReportEngine(), initLazyDetails(), initSearchableSelects()
+Nodes (13): analysisContextInScope(), createAnalysisContext(), scope(), decorateAdvancedReveals(), decorateTermHints(), revealAdvanced(), TERM_HINTS, hydrateLazy() (+5 more)
 
 ### Community 198 - "updatePendingCounter"
 Cohesion: 0.17
-Nodes (26): clearStoredManualApplyState(), dismissToast(), fetchPendingCount(), handleManualEditActivity(), hidePendingApplyDock(), manualApplyLoadingText(), manualApplyStateKey(), manualEditEventForCurrentPage() (+18 more)
+Nodes (27): clearStoredManualApplyState(), dismissToast(), fetchPendingCount(), handleManualEditActivity(), hidePendingApplyDock(), manualApplyLoadingText(), manualApplyStateKey(), manualEditEventForCurrentPage() (+19 more)
 
 ### Community 199 - "Plano consolidado de implementação — Extrato de Estudos"
 Cohesion: 0.08
@@ -1288,45 +1293,45 @@ Nodes (17): args, chrome, file, frames, [frameX = 0, frameY = 0, frameWidth = 96
 Cohesion: 0.18
 Nodes (11): 7.10. Hierarquia Visual no Banner de Demonstração, 7.1. Contraste de Controles e Formulários (WCAG 2.1 AA 1.4.11), 7.2. Normalização de Bordas e Identidade Sharp-Radius, 7.3. Formatação Tipográfica Unificada de Deltas, 7.4. Ergonomia da Pilha Sticky e Eliminação de Vazamento de Conteúdo, 7.5. Densidade Mobile e Performance na Aba Disciplinas, 7.6. Deduplicação Visual de Conquistas, 7.7. Desacoplamento do Gerenciamento de Dados e Backup (+3 more)
 
-### Community 202 - "capturePlanPriority"
-Cohesion: 0.31
-Nodes (7): buildWeeklyCloseActionProposal(), createWeeklyCloseController(), capturePlanPriority(), numeric(), PLAN_PRIORITY_POLICY_VERSION, PLAN_PRIORITY_THRESHOLD, setup()
+### Community 202 - "exam-matrix-renderer.ts"
+Cohesion: 0.19
+Nodes (13): cellText(), escape(), level(), options(), renderExamMatrix(), renderExamOpportunity(), tagLabel(), escape() (+5 more)
 
-### Community 203 - "planning-sustainability.spec.js"
-Cohesion: 0.29
-Nodes (4): @axe-core/playwright, prepare(), withPixelAlignedCapture(), history
+### Community 203 - "tabs.tsx"
+Cohesion: 0.16
+Nodes (11): PLANNING_SUBTAB_DEFS, PlanningSubtabKey, PlanningSubtabsNavProps, PERFORMANCE_GROUPS, PerformanceGroupDef, PerformancePageNavProps, RovingOrientation, SegmentedControlProps (+3 more)
 
 ### Community 204 - "createSessionModalController"
-Cohesion: 0.41
-Nodes (10): createSessionModalController(), bindEvents(), clearSessionBookmarkFields(), fillSessionBookmarkFields(), hide(), populateSessionTopicSelect(), readFormValues(), show() (+2 more)
+Cohesion: 0.29
+Nodes (18): formatTimer(), createSessionModalController(), bindEvents(), buildBookmarkState(), buildSubjectOptions(), buildTopicOptions(), clearSessionBookmarkFields(), fillSessionBookmarkFields() (+10 more)
 
 ### Community 205 - "Conversion & Landing Pages"
 Cohesion: 0.08
 Nodes (25): Aim for 4.2–4.5 stars, not a perfect 5, Click triggers: one line of risk-reducing microcopy next to the CTA, Compliments aren't validation — "what's missing for you to PIX now?" is, Compress the decision window — shorten the path to action below the path to doubt, Conversion & Landing Pages, Converting pages are often ugly — design for performance, not applause, Cut CAC by filtering on the landing page, not the media, Debug ICP and awareness level before touching design (+17 more)
 
-### Community 206 - "createDefaultState"
-Cohesion: 0.09
-Nodes (21): createDefaultState(), Checkpoint 1, Checkpoint 2, Decisões de arquitetura, Fase 1 — Fazer o primeiro uso que já existe funcionar, Fase 2 — Menos atrito para iniciantes, Fase 3 — Opcional (decidir no checkpoint 2), Grafo de dependências (+13 more)
+### Community 206 - "Plano: Onboarding e primeiro uso para iniciantes (ciclo 2)"
+Cohesion: 0.15
+Nodes (12): Checkpoint 1, Checkpoint 2, Decisões de arquitetura, Fase 1 — Fazer o primeiro uso que já existe funcionar, Fase 2 — Menos atrito para iniciantes, Fase 3 — Opcional (decidir no checkpoint 2), Grafo de dependências, Lista de tarefas (+4 more)
 
 ### Community 207 - "distribute-study-plan.ts"
 Cohesion: 0.38
 Nodes (7): ACTIVE_STATUSES, applyDailyPlanProposal(), buildDailyPlanProposal(), clampMinutes(), existingSourceKeys(), undoDailyPlanGeneration(), studyPlan
 
-### Community 208 - "demo-intelligence-scenarios.test.js"
-Cohesion: 0.12
-Nodes (25): topicReviewHealthScore(), CONFIDENCE_THRESHOLDS, confidenceLabel(), createMetricEvidence(), calculateReviewHealth(), clamp(), REVIEW_HEALTH_ALGORITHM_VERSION, REVIEW_HEALTH_WEIGHTS (+17 more)
+### Community 208 - "createQuestionsTabController"
+Cohesion: 0.29
+Nodes (14): createQuestionsTabController(), addQuestaoRow(), bindEvents(), cancelQuestionEdit(), clampDraftCorrect(), emptyErrorBreakdown(), normalizeErrorBreakdown(), questionCategorizedErrors() (+6 more)
 
 ### Community 209 - "adapt.md"
 Cohesion: 0.08
 Nodes (22): Assess Adaptation Challenge, Content Adaptation, Desktop Adaptation (Mobile → Desktop), Email Adaptation (Web → Email), Implement Adaptations, Layout Adaptation Techniques, Mobile Adaptation (Desktop → Mobile), Adaptation Strategies (+14 more)
 
-### Community 210 - "r"
-Cohesion: 0.02
-Nodes (205): a0(), aI(), ue(), r(), bl(), A(), b(), be() (+197 more)
+### Community 210 - "v"
+Cohesion: 0.04
+Nodes (142): $1(), aw(), j(), Bn(), bP(), ce(), P(), V() (+134 more)
 
 ### Community 212 - "document.md"
-Cohesion: 0.08
-Nodes (23): Component translation rules, Narrative mapping, Pitfalls, Scan mode (approach C: auto-extract, then confirm descriptive language), Schema, Seed mode, Step 1: Find the design assets, Step 1: Route through new-work's workshop (+15 more)
+Cohesion: 0.15
+Nodes (13): Component translation rules, Narrative mapping, Scan mode (approach C: auto-extract, then confirm descriptive language), Schema, Step 1: Find the design assets, Step 2: Auto-extract what can be auto-extracted, Step 2b: Stage the frontmatter, Step 3: Ask the user for qualitative language (+5 more)
 
 ### Community 213 - "Inteligência consolidada"
 Cohesion: 0.17
@@ -1337,20 +1342,20 @@ Cohesion: 0.09
 Nodes (22): Assess Onboarding Needs, Context Over Ceremony, Contextual Help, Design Onboarding Experiences, Documentation & Help, Empty State Design, Feature Discovery & Adoption, Guided Tours & Walkthroughs (+14 more)
 
 ### Community 215 - "createApprovalReadinessService"
-Cohesion: 0.11
-Nodes (47): createApprovalReadinessService(), approvalAcertosMetric(), approvalConhecimentoMetric(), approvalConsistenciaMetric(), approvalDominioMetric(), approvalEditalMetric(), approvalPrazoMetric(), approvalRetencaoMetric() (+39 more)
+Cohesion: 0.10
+Nodes (51): createApprovalReadinessService(), approvalAcertosMetric(), approvalConhecimentoMetric(), approvalConsistenciaMetric(), approvalDominioMetric(), approvalEditalMetric(), approvalPrazoMetric(), approvalRetencaoMetric() (+43 more)
 
 ### Community 216 - "createDialogFeedback"
-Cohesion: 0.20
-Nodes (10): Avisos, confirmação e desfazer, createDialogFeedback(), flashSaved(), showConfirm(), showPrompt(), showToast(), showUndoToast(), DialogFeedbackDocumentLike (+2 more)
+Cohesion: 0.22
+Nodes (12): createDialogFeedback(), flashSaved(), hideDeclarativeToast(), renderToast(), showConfirm(), showPrompt(), showToast(), showUndoToast() (+4 more)
 
-### Community 217 - "createShellUiController"
-Cohesion: 0.38
-Nodes (10): createShellUiController(), getModalLayers(), initBackToTop(), initExecutionModeSwitchers(), initGoHomeNavigation(), initGuidedTourAndFirstSteps(), initModalObserver(), jumpToTopic() (+2 more)
+### Community 217 - "ht"
+Cohesion: 0.25
+Nodes (11): an(), Ee(), ht(), ni(), qa(), Ra(), Re(), Ue() (+3 more)
 
-### Community 218 - "analysis-navigation-controller.ts"
-Cohesion: 0.30
-Nodes (11): analysisContextInScope(), createAnalysisContext(), scope(), decorateAdvancedReveals(), decorateTermHints(), revealAdvanced(), TERM_HINTS, hydrateLazy() (+3 more)
+### Community 218 - "syncEditBadgeHitProxies"
+Cohesion: 0.27
+Nodes (10): bindEditBadgeProxy(), editBadgeProxyTargets(), initEditBadge(), initEditBadgeHitProxies(), positionEditBadge(), proxyMouseEvent(), setImportantStyle(), styleEditBadgeProxy() (+2 more)
 
 ### Community 219 - "Roteiro de Auditoria Manual com NVDA — StudyTrack"
 Cohesion: 0.25
@@ -1384,9 +1389,9 @@ Nodes (11): buildDiagnosisViewModel(), buildHeatmapViewModel(), evidenceRow(), n
 Cohesion: 0.31
 Nodes (8): createKeyboardShortcutsController(), handleActionMenuClick(), handleActionMenuKeydown(), handlePrimaryActionKeydown(), handleTimerFocusKeydown(), register(), KeyboardShortcutsDocumentLike, KeyboardShortcutsOptions
 
-### Community 227 - "parseRawSyllabusText"
-Cohesion: 0.14
-Nodes (14): Key Assumptions to Validate, MVP Scope, Not Doing (and Why), Open Questions, Problem Statement, Recommended Direction, StudyTrack: a planilha morre, cleanDisciplineName() (+6 more)
+### Community 227 - "Spec: modo-sessao"
+Cohesion: 0.07
+Nodes (25): Antes de concluir uma tarefa normal, Durante a implementação, Escolha de cobertura nova, Extrato de Estudos — Governança, Engenharia e Estratégia de Testes, Integridade de Dados, Contratos e Fusos Horários, Orçamentos, Pilha Tecnológica e Diretrizes Inegociáveis de Engenharia, Quando executar Full (+17 more)
 
 ### Community 228 - "Plano: pendências da crítica de design (28/40)"
 Cohesion: 0.29
@@ -1397,16 +1402,16 @@ Cohesion: 0.13
 Nodes (13): meta(), Auditoria de segurança — StudyTrack, Backend SaaS (`supabase/`, ainda não lançado), Cabeçalhos HTTP, Cache PWA, Escape de HTML, Estado atual, Pendência de CSP (+5 more)
 
 ### Community 230 - "Plano de implementação — referências visuais e experiência"
-Cohesion: 0.20
+Cohesion: 0.15
 Nodes (10): Encerramento de cada fase, Fase 1 — Visão geral: decisão primeiro, Fase 2 — Hoje: começar e continuar, Fase 3 — Landing: mostrar o produto em situações reais, Fase 4 — Desempenho: conclusão e evidência, Fase 5 — Primeiro uso e demonstração, Limites e decisões, Plano de implementação — referências visuais e experiência (+2 more)
 
 ### Community 231 - "createGoalsBlueprintService"
-Cohesion: 0.27
-Nodes (12): Fatiamento arquitetural do orquestrador (`src/app.ts`), Fase 10: Desacoplamento Final (Ondas 1, 2 e 3) e Purificação Definitiva do `src/app.ts` — CONCLUÍDA ✅, createGoalsBlueprintService(), applyTodayGoalToAllDays(), clearWeekendGoals(), deleteMetaDisciplina(), metaHoursForDate(), metaHoursToday() (+4 more)
+Cohesion: 0.19
+Nodes (15): Fatiamento arquitetural do orquestrador (`src/app.ts`), Transição de escopo, Fase 10: Desacoplamento Final (Ondas 1, 2 e 3) e Purificação Definitiva do `src/app.ts` — CONCLUÍDA ✅, DERIVED_FIELDS, setActiveExamTags(), createGoalsBlueprintService(), applyTodayGoalToAllDays(), clearWeekendGoals() (+7 more)
 
 ### Community 232 - "Spec: question-import"
 Cohesion: 0.11
-Nodes (19): Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-20), Estilo, Estrutura, Fora de escopo, Limites, Objetivo (+11 more)
+Nodes (18): Comandos, Critérios de sucesso, Decisões (aprovadas em 2026-10-20), Estrutura, Fora de escopo, Limites, Objetivo, R1 — Categorias de erro na taxonomia do app (#1) (+10 more)
 
 ### Community 233 - "actOnAgentTarget"
 Cohesion: 0.19
@@ -1417,8 +1422,8 @@ Cohesion: 0.12
 Nodes (16): Avisos e Desfazer, Buttons, Cabeçalho do Extrato (signature), Cards / Containers, Chips (status-badge), Components, Conciliação, Célula de KPI (signature) (+8 more)
 
 ### Community 235 - "fetch_posts.py"
-Cohesion: 0.16
-Nodes (18): main(), api_get(), best_media_url(), chunked(), download(), full_text(), index_includes(), load_bearer() (+10 more)
+Cohesion: 0.18
+Nodes (15): api_get(), best_media_url(), chunked(), full_text(), index_includes(), load_bearer(), main(), media_block() (+7 more)
 
 ### Community 236 - "The Toolkit"
 Cohesion: 0.10
@@ -1426,23 +1431,23 @@ Nodes (20): Animate complex properties, Assess What "Extraordinary" Means Here, 
 
 ### Community 237 - "navigation-controller.test.js"
 Cohesion: 0.08
-Nodes (21): wireUiControllers(), WireUiControllersDeps, goToWeeklyDecision(), openWeeklyClose(), scrollBehavior(), trapModalTab(), createNavigationController(), MAIN_TABS (+13 more)
+Nodes (19): wirePlanningAndGoalsUi(), wireUiControllers(), WireUiControllersDeps, labelDynamicControls(), trapModalTab(), createNavigationController(), MAIN_TABS, nextNavigationIndex() (+11 more)
 
 ### Community 238 - "formatDuration"
-Cohesion: 0.16
-Nodes (19): Fase 3: Desacoplamento do Cronômetro de Estudos (Timer) — CONCLUÍDA ✅, 8.3. Fase 3: Desacoplamento do Cronômetro de Estudos (Timer), wireExecutionAndOnboardingUi(), wirePlanningAndGoalsUi(), formatDuration(), formatPlanMinutes(), ActiveTimerState, formatTimerTitle() (+11 more)
+Cohesion: 0.12
+Nodes (24): Fase 3: Desacoplamento do Cronômetro de Estudos (Timer) — CONCLUÍDA ✅, 8.3. Fase 3: Desacoplamento do Cronômetro de Estudos (Timer), wireAnalyticsAndShellUi(), wireExecutionAndOnboardingUi(), formatDuration(), formatPlanMinutes(), createDiagnosisController(), formatTimerTitle() (+16 more)
 
 ### Community 239 - "Arquitetura"
 Cohesion: 0.11
 Nodes (18): Checks, in order, Disposition, Impeccable Finish Reviewer, Input Contract, Output Contract, Verdict Pass, Arquitetura, Auditoria final da modularização (+10 more)
 
-### Community 240 - "onAnnotDown"
-Cohesion: 0.15
-Nodes (21): applyPlaceholderDimensions(), beginEditPin(), buildAnnotationsForCapture(), buildPinElement(), cancelEditingPin(), clampPlaceholderSize(), finalizeEditingPin(), initAnnotOverlay() (+13 more)
+### Community 240 - "header-renderer.ts"
+Cohesion: 0.22
+Nodes (9): READINESS_ON_TRACK_MIN, buildConsistencyStrip(), renderConsistencyStrip(), shiftDate(), READINESS_FACTOR_ACTIONS, renderHeroHeader(), renderReadinessSub(), reviews (+1 more)
 
-### Community 241 - "study-history.ts"
-Cohesion: 0.42
-Nodes (8): allocateErrors(), buildDemoStudyHistory(), clamp(), dateAt(), genericErrors, narrativeAccuracy(), narrativeQuestionSlots(), phaseSlots()
+### Community 241 - "parseRawSyllabusText"
+Cohesion: 0.33
+Nodes (7): cleanDisciplineName(), extractTopicsFromText(), isDisciplineHeader(), ParsedSyllabusSubject, ParsedSyllabusTopic, parseRawSyllabusText(), handleParseText()
 
 ### Community 242 - "Onboarding & Activation"
 Cohesion: 0.10
@@ -1457,8 +1462,8 @@ Cohesion: 0.12
 Nodes (16): devDependencies, @axe-core/playwright, @babel/core, @babel/eslint-parser, @babel/preset-react, @babel/preset-typescript, esbuild, eslint (+8 more)
 
 ### Community 245 - "Design System: Extrato de Estudos — Cada estudo soma"
-Cohesion: 0.22
-Nodes (9): Design System: Extrato de Estudos — Cada estudo soma, Hierarchy, Layout, Motion, Named Rules, Named Rules, Overview, Shapes (+1 more)
+Cohesion: 0.13
+Nodes (15): Design System: Extrato de Estudos — Cada estudo soma, Do:, Do's and Don'ts, Don't:, Elevation & Depth, Hierarchy, Layout, Motion (+7 more)
 
 ### Community 246 - "createLiveBrowserSessionState"
 Cohesion: 0.19
@@ -1473,20 +1478,20 @@ Cohesion: 0.15
 Nodes (22): 20. Modernização do Activity Heatmap no Padrão EasyUI (Dual Modes: Calendário e Horários 24h), ActivityCalendarHeatmapVisualModel, ActivityHoursHeatmapVisualModel, buildActivityCalendarHeatmapVisual(), buildActivityHoursHeatmapVisual(), CalendarHeatmapDayVisual, getMondayFirstWeekday(), HoursHeatmapCellVisual (+14 more)
 
 ### Community 249 - "HelpTab.tsx"
-Cohesion: 0.14
-Nodes (16): computeTopicMetadata(), TopicMetadata, HelpCategoryItem, HelpCategoryNav(), HelpCategoryNavProps, HelpReferenceSection(), HelpReferenceSectionProps, DEFAULT_CHIPS (+8 more)
+Cohesion: 0.18
+Nodes (14): HELP_FAQ, HELP_GLOSSARY, HelpCategoryItem, HelpCategoryNav(), HelpCategoryNavProps, HelpReferenceSection(), HelpReferenceSectionProps, DEFAULT_CHIPS (+6 more)
 
 ### Community 250 - "delegated-actions-registry.ts"
-Cohesion: 0.22
-Nodes (10): createDelegatedEventsController(), splitArguments(), composeDelegatedActionHandlers(), createDelegatedArgumentResolver(), createSpecialActionResolver(), DelegatedArgumentOptions, DelegatedSpecialOptions, buildDelegatedActionHandlers() (+2 more)
+Cohesion: 0.15
+Nodes (15): createDelegatedEventsController(), splitArguments(), composeDelegatedActionHandlers(), createDelegatedArgumentResolver(), createSpecialActionResolver(), DelegatedArgumentOptions, DelegatedSpecialOptions, countActiveFilters() (+7 more)
 
 ### Community 251 - "build-shift-energy-view-model.ts"
-Cohesion: 0.20
+Cohesion: 0.18
 Nodes (13): BuildShiftEnergyParams, ShiftCardItem, ShiftEnergyViewModel, analyzeFocusAndEnergy(), DayShift, FocusEnergyDiagnostic, resolveDayShift(), SessionEnergyRecord (+5 more)
 
 ### Community 252 - "React Best Practices"
 Cohesion: 0.20
-Nodes (9): 4.1 Deduplicate Global Event Listeners, 4.2 Use Passive Event Listeners for Scrolling Performance, 4.3 Use SWR for Automatic Deduplication, 4.4 Version and Minimize localStorage Data, 4. Client-Side Data Fetching, Abstract, React Best Practices, References (+1 more)
+Nodes (9): 8.1 Do Not Put Effect Events in Dependency Arrays, 8.2 Initialize App Once, Not Per Mount, 8.3 Store Event Handlers in Refs, 8.4 useEffectEvent for Stable Callback Refs, 8. Advanced Patterns, Abstract, React Best Practices, References (+1 more)
 
 ### Community 253 - "analytics/opportunity-cost.ts"
 Cohesion: 0.36
@@ -1496,29 +1501,29 @@ Nodes (8): calculateOpportunityCostMatrix(), calculateSubjectOpportunity(), comp
 Cohesion: 0.29
 Nodes (6): Integração com os gates e CI, Mapa e dependências, Métricas, Seleção por impacto e métricas, Uso local, Validação do pacote 6
 
-### Community 255 - "ref_node_fs"
-Cohesion: 0.25
-Nodes (5): rows, srcDir, total, totalGzip, width
+### Community 255 - "Fase 5 — Fluxos, clareza e confiança"
+Cohesion: 0.17
+Nodes (12): Checkpoint 5, F10: Modo Essencial, F1: Planejamento em sub-abas, F2: Aviso compacto, F3: Busca no celular, F4: Registrar questões em poucos toques, F5: Resultado da sessão, F6: Desfazer no lugar de confirmar (+4 more)
 
-### Community 256 - "Extrato de Estudos — Governança, Engenharia e Estratégia de Testes"
-Cohesion: 0.29
-Nodes (7): Antes de concluir uma tarefa normal, Durante a implementação, Escolha de cobertura nova, Extrato de Estudos — Governança, Engenharia e Estratégia de Testes, Integridade de Dados, Contratos e Fusos Horários, Orçamentos, Quando executar Full
+### Community 256 - "document.md"
+Cohesion: 0.18
+Nodes (10): Pitfalls, Seed mode, Step 1: Route through new-work's workshop, Step 2: Write seed DESIGN.md, Step 3: Confirm, Style guidelines, The frontmatter: token schema, The markdown body: eight sections (canonical order) (+2 more)
 
 ### Community 257 - "Colors"
 Cohesion: 0.29
 Nodes (7): Colors, Cor por disciplina, Named Rules, Neutral, Primary, Secondary, Tertiary (semânticos)
 
-### Community 258 - "3. As Cinco Fases de Implementação"
-Cohesion: 0.20
-Nodes (8): 1. Visão Geral e Princípios Inegociáveis, 2. Mapa Estrutural da Nova Visão Geral (Cockpit), 3. As Cinco Fases de Implementação, Fase 1: Preservação das Cores Existentes nos Tokens + Fundação Visual (4.1 a 4.4), Fase 4: Grids Analíticos, Arquitetura de Telas e Conforto (4.5 a 4.12), Fase 5: Fluxos Ágeis, Confiança e PWA, Plano Diretor: Modernização Visual, Cockpit Panorâmico e Experiência do Usuário, Regras Globais para Todas as Fases
+### Community 258 - "createExamImportModalController"
+Cohesion: 0.35
+Nodes (10): createExamImportModalController(), closeExamImport(), openExamImport(), renderExamImport(), renderModal(), selectedExamPreset(), syncExamSubjectCheckboxes(), resetExamImportState() (+2 more)
 
 ### Community 259 - "Responsive Design"
 Cohesion: 0.20
 Nodes (10): Breakpoints: Content-Driven, Detect Input Method, Not Just Screen Size, Layout Adaptation Patterns, Mobile-First: Write It Right, Picture Element for Art Direction, Responsive Design, Responsive Images: Get It Right, Safe Areas: Handle the Notch (+2 more)
 
-### Community 260 - "collection-repository.ts"
+### Community 260 - "4. Roteiro de Execução em 10 Fases (100% Concluído ✅)"
 Cohesion: 0.20
-Nodes (13): createReviewService(), REVIEW_TYPES, reviewTypeForDays(), Row, CollectionRepository, createAppRepositories(), createCollectionRepository(), createPlanningRepository() (+5 more)
+Nodes (10): 1. Contexto e Motivação, 2.1 Distribuição de Linhas por Domínio / Responsabilidade, 2.2 Principais Anti-Patterns Diagnosticados, 2. Diagnóstico Estrutural, 4. Roteiro de Execução em 10 Fases (100% Concluído ✅), 5. Governança e Validação Contínua, Fase 1: Extração do Domínio Puro (Sem Risco de Regressão Visual) — CONCLUÍDA ✅, Fase 2: Extração de Eventos Globais, Atalhos e Diálogos — CONCLUÍDA ✅ (+2 more)
 
 ### Community 261 - "Logo Generator"
 Cohesion: 0.11
@@ -1529,8 +1534,8 @@ Cohesion: 0.18
 Nodes (7): coverage(), included_ids(), included_ids_by_theme(), principle_counts(), reference_files(), snowflake_date(), totals()
 
 ### Community 263 - "reviews-tab-controller.ts"
-Cohesion: 0.14
-Nodes (14): applyReviewMoves(), buildReviewRedistribution(), MINUTES_PER_REVIEW, revertReviewMoves(), ReviewMove, shiftDate(), weekday(), createReviewsController() (+6 more)
+Cohesion: 0.13
+Nodes (15): applyReviewMoves(), buildReviewRedistribution(), MINUTES_PER_REVIEW, revertReviewMoves(), ReviewMove, shiftDate(), weekday(), DIFFICULTY_WEIGHT (+7 more)
 
 ### Community 264 - "Contrato das evidências da projeção"
 Cohesion: 0.33
@@ -1544,9 +1549,9 @@ Nodes (14): Accessibility and control, Choose material by meaning, Find the job,
 Cohesion: 0.12
 Nodes (16): 1. Read the screenshot (if present), 2. Wrap the element, 3. Load the action's reference, 4. Plan three variants: identity first, then mode, then axes, 5. Apply the freeform prompt (if present), 6. Deliver variants, 7. Parameters (composition-sized, 0-4 per variant), 8. Signal done (+8 more)
 
-### Community 267 - "dependencies"
-Cohesion: 0.50
-Nodes (4): dependencies, preact, preact-render-to-string, tailwindcss
+### Community 267 - "8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 10 — 100% Concluído)"
+Cohesion: 0.20
+Nodes (10): 8.10. Fase 10: Desacoplamento Final (Ondas 1, 2 e 3) e Purificação do Composition Root, 8.1. Fase 1: Extração do Domínio Puro, 8.2. Fase 2: Extração de Eventos Globais, Atalhos e Diálogos, 8.4. Fase 4: Telas Pesadas, Matrizes e Editores de UI, 8.5. Fase 5: Refatoração do Bootstrap e Master Renderer, 8.6. Fase 6: Gestão de Conteúdo (Disciplinas, Editais, Questões e Simulados), 8.7. Fase 7: Desacoplamento do Fluxo Temporal (Calendário, Agenda de Revisões e Foco do Cronômetro), 8.8. Fase 8: Desacoplamento do Hub de Execução Diária & Onboarding (+2 more)
 
 ### Community 268 - "generate_showcase.py"
 Cohesion: 0.16
@@ -1560,21 +1565,25 @@ Nodes (16): 5.10 Subscribe to Derived State, 5.11 Use Functional setState Update
 Cohesion: 0.12
 Nodes (16): 1% on price beats 1% on acquisition — you raise prices too little and too late, Ask for the card in trial — but optimize for the right ICP, not raw conversion, Build a single value axis, then tune the decoy's distance to your target plan, Competing on price is adverse selection — you filter in the worst client, Engineer the comparison frame with a decoy and a high anchor — and drop Free from the top, Engineer the pricing page with Good-Better-Best and control the comparison, Frame the upgrade as a loss at the moment of value, not a feature you're selling, Make the middle plan the one you actually want to sell (+8 more)
 
+### Community 271 - "n1"
+Cohesion: 0.22
+Nodes (4): E1(), Jv(), n1(), p()
+
 ### Community 272 - "Unslop"
 Cohesion: 0.12
 Nodes (16): 1. Spacing, 2. Color, 3. Icons, 4. Copy, 5. Type, 6. Layout, 7. Details, 8. Visuals (+8 more)
 
-### Community 273 - "Plano: o que falta da crítica de Desempenho, Agenda e Calendário, e as personas"
-Cohesion: 0.12
-Nodes (15): Alex, quem usa todo dia e quer velocidade, Análise por persona, Atualização do segundo ciclo (2026-11-03), Concurseira autodidata, uso diário, Decisões pendentes (confirmar antes), Lote 0 — Fechar o ciclo atual (bloqueia o resto), Lote 1 — Pequenos e independentes (acessibilidade e repetição), Lote 2 — Comportamento (+7 more)
+### Community 273 - "s"
+Cohesion: 0.32
+Nodes (8): s(), ea(), Gt(), ia(), ta(), Xt(), da(), He()
 
 ### Community 274 - "affected-test-plan.js"
 Cohesion: 0.31
 Nodes (8): buildAffectedTestPlan(), experienceSources, matchPath(), globalImpactSources, impactAreas, impactMapVersion, plan(), tierManifest
 
 ### Community 275 - "Fase 4 — Conforto"
-Cohesion: 0.15
-Nodes (13): C1: Cronômetro fora da Visão Geral (4.5.1), C3: Seções recolhíveis com estado lembrado (4.5.3), C4: Navegação no celular (4.6), C6: Motivação (4.8), C7: Redistribuir revisões atrasadas (4.9), C8: Atalhos do PWA (4.10.1), C9: Transições e densidade (4.10.3–4), Checkpoint 0 — Decisões (sem código) — FECHADO em 01/11/2026 (+5 more)
+Cohesion: 0.11
+Nodes (18): C1: Cronômetro fora da Visão Geral (4.5.1), C2: Conquistas e progresso vão para Desempenho (4.5.2), C3: Seções recolhíveis com estado lembrado (4.5.3), C4: Navegação no celular (4.6), C6: Motivação (4.8), C7: Redistribuir revisões atrasadas (4.9), C8: Atalhos do PWA (4.10.1), C9: Transições e densidade (4.10.3–4) (+10 more)
 
 ### Community 276 - "Generate Report"
 Cohesion: 0.13
@@ -1601,8 +1610,8 @@ Cohesion: 0.14
 Nodes (13): Animation Performance, Assess Performance Issues, Core Web Vitals Optimization, Cumulative Layout Shift (CLS < 0.1), Interaction to Next Paint (INP < 200ms), Largest Contentful Paint (LCP < 2.5s), Loading Performance, Network Optimization (+5 more)
 
 ### Community 282 - "build-consolidated-signals.ts"
-Cohesion: 0.19
-Nodes (17): buildTopicGapInputs(), buildConsolidatedDiagnosis(), archived(), buildConsolidatedSignals(), distinct(), identity(), Row, scopeKey() (+9 more)
+Cohesion: 0.08
+Nodes (46): buildTopicGapInputs(), adaptDiagnosticSignals(), identity(), Row, rows(), scope(), strength(), buildConsolidatedDiagnosis() (+38 more)
 
 ### Community 284 - "Churn & Retention"
 Cohesion: 0.14
@@ -1621,8 +1630,8 @@ Cohesion: 0.14
 Nodes (14): Accent, App layout, Buttons, Dark, Depth, Icons, Light, Motion (+6 more)
 
 ### Community 288 - "saas-auth-service.ts"
-Cohesion: 0.06
-Nodes (36): AbacatePayCheckoutResult, CachedUserProfile, clearCachedProfile(), CLERK_PROFILE_CACHE_KEY, ClerkClient, ClerkUser, createSaaSAuthService(), buildSupabaseHeaders() (+28 more)
+Cohesion: 0.04
+Nodes (67): AbacatePayCheckoutResult, CachedUserProfile, clearCachedProfile(), CLERK_PROFILE_CACHE_KEY, ClerkClient, ClerkUser, createSaaSAuthService(), buildSupabaseHeaders() (+59 more)
 
 ### Community 289 - "critique.md"
 Cohesion: 0.17
@@ -1669,8 +1678,8 @@ Cohesion: 0.18
 Nodes (10): Assess Current State, Color Refinement, Composition Refinement, Motion Reduction, Plan Refinement, Refine the Design, Simplification, Verify Quality (+2 more)
 
 ### Community 301 - "scheduleAcceptCleanup"
-Cohesion: 0.31
-Nodes (11): acceptedDomAlreadyClean(), clearHandledWrapperReloadStamp(), deferredRecoverySuperseded(), ensureAcceptedDomClean(), findAcceptedRuntimeWrappers(), handledWrapperReloadKey(), reloadAfterMissingAcceptedDom(), restoreAcceptedDomFromSnapshot() (+3 more)
+Cohesion: 0.18
+Nodes (17): acceptedDomAlreadyClean(), clearHandledWrapperReloadStamp(), commitAcceptedSvelteComponentToDom(), commitAcceptedVariantToDom(), deferredRecoverySuperseded(), ensureAcceptedDomClean(), findAcceptedRuntimeWrappers(), handledWrapperReloadKey() (+9 more)
 
 ### Community 302 - "3. Server-Side Performance"
 Cohesion: 0.18
@@ -1684,9 +1693,9 @@ Nodes (11): Components, Copy, Icons, Landing pages and heroes, Motion, Signs of 
 Cohesion: 0.40
 Nodes (4): Demo e validação da trajetória, Evidência local (2026-10-04, Windows/Chromium), Jornada integrada, Perfis determinísticos
 
-### Community 306 - "createMasterRenderer"
-Cohesion: 0.27
-Nodes (7): createMasterRenderer(), persistAndRender(), render(), renderAll(), renderScope(), MasterRenderer, MasterRendererOptions
+### Community 306 - "3. As Cinco Fases de Implementação"
+Cohesion: 0.25
+Nodes (8): 1. Visão Geral e Princípios Inegociáveis, 2. Mapa Estrutural da Nova Visão Geral (Cockpit), 3. As Cinco Fases de Implementação, Fase 1: Preservação das Cores Existentes nos Tokens + Fundação Visual (4.1 a 4.4), Fase 4: Grids Analíticos, Arquitetura de Telas e Conforto (4.5 a 4.12), Fase 5: Fluxos Ágeis, Confiança e PWA, Plano Diretor: Modernização Visual, Cockpit Panorâmico e Experiência do Usuário, Regras Globais para Todas as Fases
 
 ### Community 307 - "Init flow"
 Cohesion: 0.20
@@ -1696,24 +1705,24 @@ Nodes (10): Completion gate, Init flow, Step 1: Load current state, Step 2: Expl
 Cohesion: 0.20
 Nodes (10): 中文, 关于本项目, 功能特性, 工作流程阶段, 开源协议, 文件结构, 系统要求, 致谢 (+2 more)
 
-### Community 309 - "renderRingGauge"
-Cohesion: 0.70
-Nodes (4): escape(), minutes(), renderHelpVisual(), renderRingGauge()
+### Community 309 - "build-recommendation-outcome-view-model.ts"
+Cohesion: 0.38
+Nodes (5): buildRecommendationOutcomeViewModel(), LABELS, numeric(), STATE_LABELS, STATE_MAP
 
 ### Community 310 - "Sections"
 Cohesion: 0.20
 Nodes (9): 1. Eliminating Waterfalls (async), 2. Bundle Size Optimization (bundle), 3. Server-Side Performance (server), 4. Client-Side Data Fetching (client), 5. Re-render Optimization (rerender), 6. Rendering Performance (rendering), 7. JavaScript Performance (js), 8. Advanced Patterns (advanced) (+1 more)
 
 ### Community 311 - "readiness-overview.tsx"
-Cohesion: 0.21
+Cohesion: 0.16
 Nodes (13): AnyRecord, FactorBar(), forecastText(), levelTone(), projectionGapText(), Raw(), ReadinessOverviewView(), ReadinessOverviewViewProps (+5 more)
 
 ### Community 312 - "parseLocalDate"
 Cohesion: 0.06
-Nodes (68): Auditoria de datas, Datas civis, Instantes absolutos, Regra para novas alterações, Arquitetura, buildWeeklyAdherence(), buildCockpitSidebarViewModel(), CockpitSidebarSources (+60 more)
+Nodes (47): Auditoria de datas, Datas civis, Instantes absolutos, Regra para novas alterações, buildStudyTimeViewModel(), daySpan(), Row, buildStudyDistribution() (+39 more)
 
 ### Community 313 - "ref_node_fs"
-Cohesion: 0.16
+Cohesion: 0.15
 Nodes (10): buildProductionDist(), cloudflareHeaders(), collectFilesRecursively(), distRoot, projectRoot, ROOT_FILES, skipCompile, SRC_RUNTIME_FILES (+2 more)
 
 ### Community 314 - "Consolidação do ciclo estratégico"
@@ -1732,9 +1741,9 @@ Nodes (9): 1. The Wall of Options, 2. The Memory Bridge, 3. The Hidden Navigatio
 Cohesion: 0.22
 Nodes (9): Color & materials, Components & controls, iOS platform, Layout & structure, Motion, The iOS slop test, Touch targets, Typography (+1 more)
 
-### Community 318 - "recommendation-calibration.ts"
-Cohesion: 0.29
-Nodes (8): buildRecommendationCalibration(), confidence(), dateOf(), label(), priorityBand(), RECOMMENDATION_CALIBRATION_VERSION, Row, summarize()
+### Community 318 - "report-bundle-size.mjs"
+Cohesion: 0.25
+Nodes (5): rows, srcDir, total, totalGzip, width
 
 ### Community 319 - "Shape"
 Cohesion: 0.22
@@ -1757,24 +1766,20 @@ Cohesion: 0.40
 Nodes (4): Containment, Painted material, Region map, What varies independently
 
 ### Community 324 - "trends.ts"
+Cohesion: 0.22
+Nodes (12): buildTopicSignals(), finite(), accuracy(), aggregateTrendScores(), calculateWindowTrend(), clamp(), classification(), pool() (+4 more)
+
+### Community 326 - "6.5. Acesso ao Painel de Administração e Deep-Linking via URL"
 Cohesion: 0.29
-Nodes (9): accuracy(), aggregateTrendScores(), calculateWindowTrend(), clamp(), classification(), pool(), Row, Tally (+1 more)
-
-### Community 325 - "8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 10 — 100% Concluído)"
-Cohesion: 0.20
-Nodes (10): 8.10. Fase 10: Desacoplamento Final (Ondas 1, 2 e 3) e Purificação do Composition Root, 8.1. Fase 1: Extração do Domínio Puro, 8.2. Fase 2: Extração de Eventos Globais, Atalhos e Diálogos, 8.4. Fase 4: Telas Pesadas, Matrizes e Editores de UI, 8.5. Fase 5: Refatoração do Bootstrap e Master Renderer, 8.6. Fase 6: Gestão de Conteúdo (Disciplinas, Editais, Questões e Simulados), 8.7. Fase 7: Desacoplamento do Fluxo Temporal (Calendário, Agenda de Revisões e Foco do Cronômetro), 8.8. Fase 8: Desacoplamento do Hub de Execução Diária & Onboarding (+2 more)
-
-### Community 326 - "Persuade and Experience"
-Cohesion: 0.50
-Nodes (3): Comps, Directions, Persuade and Experience
+Nodes (7): 1. Acesso Direto por Parâmetros de URL (Deep-Linking Nativo), 2. Acesso ao Painel Admin pelo Menu do Usuário (Header / Avatar), 3. Como Promover um Usuário a Administrador (Passo a Passo), 4. Arquitetura de Segurança e Defesa em Profundidade, 6.5. Acesso ao Painel de Administração e Deep-Linking via URL, Opção A: Pelo Dashboard do Clerk (Recomendado para Usuários e Equipe), Opção B: Diretamente pelo SQL Editor do Supabase (Acesso Direto ao Banco)
 
 ### Community 327 - "Fase 2 — Ícones"
-Cohesion: 0.22
-Nodes (9): check(), Comandos e roteamento do CI, Checkpoint 2, Fase 2 — Ícones, I1: Ícones novos + medição do bundle, I2: Ícones nos primitivos, I3: Abas e barra inferior com ícones, I4: Cronômetro, sessões, revisão e botões de criar (+1 more)
+Cohesion: 0.20
+Nodes (10): check(), download(), Comandos e roteamento do CI, Checkpoint 2, Fase 2 — Ícones, I1: Ícones novos + medição do bundle, I2: Ícones nos primitivos, I3: Abas e barra inferior com ícones (+2 more)
 
-### Community 328 - "No-argument routing: the context-aware menu"
-Cohesion: 0.40
-Nodes (4): Command guidance, No-argument routing: the context-aware menu, Workflow questions, root()
+### Community 328 - "9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4)"
+Cohesion: 0.29
+Nodes (7): 9.1. Fase 1: Hero Welcome State no Dashboard & Eliminação de Links Quebrados, 9.2. Fase 2: Starter Packs de 1 Clique & Calibrador Anti-Sobrecarga, 9.3. Fase 3: Ativação Prática do Dia 1 (Sessão de Aquecimento de 15 Minutos), 9.4. Fase 4: Tour Essencial de 3 Paradas & Pedagogia de Estudo Sem Culpa, 9.5. Resultados e Métricas Homologadas, 9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4), mountNextActionCard()
 
 ### Community 329 - "Android platform"
 Cohesion: 0.25
@@ -1785,12 +1790,16 @@ Cohesion: 0.25
 Nodes (8): 1. Impatient Power User: "Alex", 2. Confused First-Timer: "Jordan", 3. Accessibility-Dependent User: "Sam", 4. Deliberate Stress Tester: "Riley", 5. Distracted Mobile User: "Casey", Persona-Based Design Testing, Project-Specific Personas, Selecting Personas
 
 ### Community 331 - "discover_new.py"
-Cohesion: 0.22
-Nodes (3): collect(), get(), rank()
+Cohesion: 0.21
+Nodes (5): collect(), get(), main(), rank(), post_url()
 
 ### Community 332 - "$impeccable hooks"
 Cohesion: 0.33
 Nodes (6): Constraints, Failure modes, Flow, $impeccable hooks, Routing, Triage findings
+
+### Community 333 - "Microcopy das análises"
+Cohesion: 0.33
+Nodes (6): Diretrizes de Tom Acolhedor e Semana Real (Pedagogia Anti-Culpa), Disclosure "Limites", Microcopy das análises, Revisão do pacote 7, Selos de janela e de evidência em Desempenho, Textos mantidos após a revisão
 
 ### Community 334 - "Changelog"
 Cohesion: 0.25
@@ -1812,9 +1821,9 @@ Nodes (8): Architect for what users fear losing, not just what they gain, Behavi
 Cohesion: 0.11
 Nodes (22): PLAN_CATALOG, buildCorsHeaders(), corsFor(), parseAllowedOrigins(), Customer, FORBIDDEN_KEYS, hasForbiddenKey(), MAX_CHECKOUT_BODY_BYTES (+14 more)
 
-### Community 339 - "MemoryStorage"
-Cohesion: 0.18
-Nodes (5): SyncStatus, CloudSyncBadge(), CloudSyncBadgeProps, formatRelativeSyncTime(), MemoryStorage
+### Community 339 - "AppState"
+Cohesion: 0.11
+Nodes (19): ApprovalReadinessServiceDependencies, TopicDiagnosisServiceDependencies, GoalsBlueprintServiceDependencies, StudyCandidateServiceDependencies, StudyMetricsSelectorsDependencies, AppState, EnsureStateDefaultsDependencies, StateSyncCoordinatorOptions (+11 more)
 
 ### Community 340 - "Prefer Statically Analyzable Paths"
 Cohesion: 0.50
@@ -1864,10 +1873,6 @@ Nodes (7): Dithering, Duotone, Effects, Glyphs, Halftone dots, Implementation, P
 Cohesion: 0.29
 Nodes (7): Decide what the visual is, Generate it, Objects for moments, Prompt recipe, Put it on the page, Styles that work, Visuals
 
-### Community 353 - "Consolidação da Visão Geral e Central de Ajuda"
-Cohesion: 0.40
-Nodes (5): Cobertura dirigida, Consolidação da Visão Geral e Central de Ajuda, Contratos preservados, Entregas, Fechamento local — 4 de outubro de 2026
-
 ### Community 354 - "Visualize: Direction Comps & Asset Production"
 Cohesion: 0.33
 Nodes (5): After approval: the comp becomes a spec, Generate three compositional options, One approval point, Plates and provenance, Visualize: Direction Comps & Asset Production
@@ -1884,21 +1889,21 @@ Nodes (6): 97% of visitors buy nothing — the leaks are known and fixable, Chec
 Cohesion: 0.33
 Nodes (6): How to use it, Provenance, Reference library, Revenue-Centric Design, The spine: Revenue-Centric Design in 9 principles, Usage boundary (required)
 
-### Community 358 - "Plano Diretor de Modularização do `src/app.ts`"
-Cohesion: 0.13
-Nodes (17): 1. Contexto e Motivação, 2.1 Distribuição de Linhas por Domínio / Responsabilidade, 2.2 Principais Anti-Patterns Diagnosticados, 2. Diagnóstico Estrutural, 4. Roteiro de Execução em 10 Fases (100% Concluído ✅), 5. Governança e Validação Contínua, Fase 1: Extração do Domínio Puro (Sem Risco de Regressão Visual) — CONCLUÍDA ✅, Fase 2: Extração de Eventos Globais, Atalhos e Diálogos — CONCLUÍDA ✅ (+9 more)
+### Community 358 - "cloud-saas-provider.test.js"
+Cohesion: 0.53
+Nodes (4): SyncStatus, CloudSyncBadge(), CloudSyncBadgeProps, formatRelativeSyncTime()
 
-### Community 359 - "9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4)"
+### Community 359 - "4. Como deixar Desempenho analítico e ligado ao planejamento"
+Cohesion: 0.33
+Nodes (6): 4. Como deixar Desempenho analítico e ligado ao planejamento, Estrutura da faixa, Fecho do ciclo (planejar, estudar, medir, ajustar), O que NÃO entra, Plano contra realidade, no vocabulário do extrato, Princípio
+
+### Community 360 - "No-argument routing: the context-aware menu"
 Cohesion: 0.40
-Nodes (5): 9.2. Fase 2: Starter Packs de 1 Clique & Calibrador Anti-Sobrecarga, 9.3. Fase 3: Ativação Prática do Dia 1 (Sessão de Aquecimento de 15 Minutos), 9.4. Fase 4: Tour Essencial de 3 Paradas & Pedagogia de Estudo Sem Culpa, 9.5. Resultados e Métricas Homologadas, 9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4)
+Nodes (4): Command guidance, No-argument routing: the context-aware menu, Workflow questions, root()
 
-### Community 360 - "cloud-saas-provider.ts"
-Cohesion: 0.18
-Nodes (10): 1. Arquitetura Alvo: "Local-First SaaS", CloudPullResult, CloudPushResult, CloudSaaSConfig, CloudSaaSProvider, CloudVersionResult, LAST_SYNCED_KEY, PENDING_SYNC_KEY (+2 more)
-
-### Community 361 - "8. Advanced Patterns"
+### Community 361 - "Consolidação da Visão Geral e Central de Ajuda"
 Cohesion: 0.40
-Nodes (5): 8.1 Do Not Put Effect Events in Dependency Arrays, 8.2 Initialize App Once, Not Per Mount, 8.3 Store Event Handlers in Refs, 8.4 useEffectEvent for Stable Callback Refs, 8. Advanced Patterns
+Nodes (5): Cobertura dirigida, Consolidação da Visão Geral e Central de Ajuda, Contratos preservados, Entregas, Fechamento local — 4 de outubro de 2026
 
 ### Community 362 - "vercel.json"
 Cohesion: 0.33
@@ -1912,21 +1917,25 @@ Nodes (5): Installation, Method 1: Automatic Installation (Recommended), Method 
 Cohesion: 0.40
 Nodes (5): 安装后配置, 安装方式, 方法 1：自动安装（推荐）, 方法 2：Git 克隆, 方法 3：手动安装
 
-### Community 365 - "Do's and Don'ts"
-Cohesion: 0.67
-Nodes (3): Do:, Do's and Don'ts, Don't:
+### Community 365 - "7. Infraestrutura de Produção, DNS, Custom Domain e Entregabilidade"
+Cohesion: 0.40
+Nodes (5): 7.1. Configuração do Domínio e Apontamentos DNS (Cloudflare / Registro.br), 7.2. Custom Domain no Clerk (Resolução de ITP e Cookies no Safari/iOS), 7.3. Entregabilidade de E-mails Transacionais (SPF, DKIM, DMARC no Resend), 7. Infraestrutura de Produção, DNS, Custom Domain e Entregabilidade, Solução: Ativação de Domínio Próprio de Autenticação (*First-Party Cookies*)
 
 ### Community 366 - "Publicação da landing e da rota /app"
 Cohesion: 0.40
 Nodes (4): Evidência local e limites, Preparação, Publicação da landing e da rota /app, Retorno
 
-### Community 367 - "Elevation & Depth"
-Cohesion: 0.67
-Nodes (3): Elevation & Depth, Named Rules, Shadow Vocabulary
+### Community 367 - "3. Plano Unificado de Implementação e Evolução (Fases 1 a 4)"
+Cohesion: 0.40
+Nodes (5): 3.1. Fase 1: Decisão Rápida, UX do Painel & Primeiro Uso, 3.2. Fase 2: Inteligência Preditiva & Modo Reta Final, 3.3. Fase 3: Hub Completo de Estudos & Flexibilidade, 3.4. Fase 4: Caderno de Erros Ativo, Acessibilidade & Base SaaS, 3. Plano Unificado de Implementação e Evolução (Fases 1 a 4)
 
-### Community 368 - "ref_node_fs"
-Cohesion: 0.09
-Nodes (13): esbuild, collect(), files, ignored, roots, aliases, allNodes, iconList (+5 more)
+### Community 368 - "ref_node_url"
+Cohesion: 0.12
+Nodes (11): esbuild, collect(), files, ignored, roots, allNodes, iconMap, iconMapping (+3 more)
+
+### Community 369 - "Fase 1 — Fazer o primeiro uso que já existe funcionar"
+Cohesion: 0.40
+Nodes (5): Checkpoint 1, Fase 1 — Fazer o primeiro uso que já existe funcionar, T1: Estado inicial vazio e etapas concluídas só em ordem, T2: Teste E2E de primeiro acesso com armazenamento vazio, T3: Ligar o tour essencial de 3 paradas
 
 ### Community 370 - "Extract Flow"
 Cohesion: 0.25
@@ -1936,6 +1945,10 @@ Nodes (7): Extract Flow, Step 1: Discover the Design System, Step 2: Identify Pa
 Cohesion: 0.50
 Nodes (4): Heuristics Scoring Guide, Issue Severity (P0–P3), Reference Material, Score Summary
 
+### Community 373 - "10. Refinamento de Usabilidade & Experiência do Iniciante (10 Pontos de Atrito)"
+Cohesion: 0.50
+Nodes (4): 10.1. Bloco 1 (Itens #01 a #05) — Feedback, Ambientação e Registro de Sessões, 10.2. Bloco 2 (Itens #06 a #10) — Inteligência, Disciplinas, Revisões e Questões, 10.3. Resultados de Validação, 10. Refinamento de Usabilidade & Experiência do Iniciante (10 Pontos de Atrito)
+
 ### Community 375 - "Dashboards & Data Visualization (Retention Surface)"
 Cohesion: 0.50
 Nodes (4): A good dashboard informs at a glance — like a car dashboard, the user must focus on where they're going, Dashboards & Data Visualization (Retention Surface), Dashboards: not a pile of gauges — every extra indicator slows the scan for what's actionable, Removing information creates room for direction — the dashboard should say what to do with the data
@@ -1944,9 +1957,17 @@ Nodes (4): A good dashboard informs at a glance — like a car dashboard, the us
 Cohesion: 0.25
 Nodes (7): Checkpoint 2, Fase 2 — Menos atrito para iniciantes, Fase 3 — Opcional, T4: Rodapé do assistente fixo e sempre visível, T5: Etapa 1 com "Ainda não escolhi um concurso" e etapa 3 ligada à escolha, T6: Cabeçalho de métricas sem zeros no primeiro acesso, Tarefas: Onboarding e primeiro uso para iniciantes (ciclo 2)
 
-### Community 379 - "check-test-selection.mjs"
-Cohesion: 0.18
-Nodes (6): all, discover(), visit(), impact, root, selected
+### Community 377 - "1. Plano de Modernização Tecnológica (TypeScript, Preact e Tailwind CSS)"
+Cohesion: 0.50
+Nodes (4): 1.1. Contexto e Objetivos, 1.2. Fases Executadas, 1.3. Resultados e Métricas Alcançadas, 1. Plano de Modernização Tecnológica (TypeScript, Preact e Tailwind CSS)
+
+### Community 378 - "2.2. Arquitetura em 3 Camadas Implementada"
+Cohesion: 0.50
+Nodes (4): 2.1. Contexto e Objetivos, 2.2. Arquitetura em 3 Camadas Implementada, 2.3. Validação, 2. Plano de Primeiro Uso Guiado (Onboarding 2.0 & Ativação)
+
+### Community 379 - "6. Modernização e Didática Interativa da Central de Ajuda (Instruções 2.0)"
+Cohesion: 0.50
+Nodes (4): 6.1. Engenharia, Performance & Code-Splitting, 6.2. Didática Interativa e Micro-Simuladores, 6.3. Enriquecimento de Conteúdo e Metadados, 6. Modernização e Didática Interativa da Central de Ajuda (Instruções 2.0)
 
 ### Community 380 - "API Configuration"
 Cohesion: 0.67
@@ -1972,21 +1993,33 @@ Nodes (3): 使用方法, 基本工作流, 示例命令
 Cohesion: 0.67
 Nodes (3): 浅色风格（6 种）, 深色风格（6 种）, 背景风格
 
-### Community 455 - "filter-panel.ts"
-Cohesion: 0.48
-Nodes (5): countActiveFilters(), FILTER_PANELS, filterPanelLabel(), toggleFilterPanel(), renderSessionHistoryFilterControls()
+### Community 386 - "Inventário da suíte de testes"
+Cohesion: 0.50
+Nodes (4): Arquivos, Inventário da suíte de testes, Sobreposições a investigar, Tempos observados
+
+### Community 387 - "12. Plano de Enriquecimento do Modo Demonstração (Novembro 2026)"
+Cohesion: 0.67
+Nodes (3): 12.1. Entregas Realizadas, 12.2. Validação e Qualidade, 12. Plano de Enriquecimento do Modo Demonstração (Novembro 2026)
+
+### Community 403 - "4. Client-Side Data Fetching"
+Cohesion: 0.25
+Nodes (7): 4.1 Deduplicate Global Event Listeners, 4.2 Use Passive Event Listeners for Scrolling Performance, 4.3 Use SWR for Automatic Deduplication, 4.4 Version and Minimize localStorage Data, 4. Client-Side Data Fetching, Use Passive Event Listeners for Scrolling Performance, preventDefault()
+
+### Community 429 - "13. Plano de Melhorias do Primeiro Acesso, Reorganização da Visão Geral e Estabilização do CI (Novembro 2026)"
+Cohesion: 0.67
+Nodes (3): 13.1. Entregas Realizadas, 13.2. Validação e Qualidade, 13. Plano de Melhorias do Primeiro Acesso, Reorganização da Visão Geral e Estabilização do CI (Novembro 2026)
 
 ### Community 456 - "calibrated-score-projection.ts"
 Cohesion: 0.10
-Nodes (24): Cenários de regressão, Contexto estratégico e prazo, Estados, Fontes e limites, Histórico e apresentação, Projeção de atingimento — contrato V2, Prévia de recuperação, Regressão e CI (+16 more)
+Nodes (23): Cenários de regressão, Contexto estratégico e prazo, Estados, Fontes e limites, Histórico e apresentação, Projeção de atingimento — contrato V2, Regressão e CI, Simulador de cenário (+15 more)
 
 ### Community 457 - "Fase 1 — Fundação visual (um PR, um commit por tarefa; snapshots só na V6)"
 Cohesion: 0.29
 Nodes (7): Checkpoint 1, Fase 1 — Fundação visual (um PR, um commit por tarefa; snapshots só na V6), V1: Tokens Sálvia + cores fixas do app.css, V2: Marca fora do CSS, V4: Tipografia (4.1), V5: Botões em três níveis (4.3), V6: Documentação e snapshots
 
 ### Community 458 - "impeccable/SKILL.md"
-Cohesion: 0.13
-Nodes (12): Before you finish, Scope is sovereign, The amplification, The skeleton test, Why it reads flat, Craft floor, Refuse, Verify (+4 more)
+Cohesion: 0.09
+Nodes (19): Before you finish, Scope is sovereign, The amplification, The skeleton test, Why it reads flat, Craft floor, Refuse, Verify (+11 more)
 
 ### Community 459 - "Diagnostic Scan"
 Cohesion: 0.33
@@ -2000,41 +2033,33 @@ Nodes (4): subjectRadarModel(), calculateSubjectRadar(), clamp(), interpretRadar
 Cohesion: 0.40
 Nodes (4): Cenários de referência, Jornada do StudyTrack, Medidas mínimas, Percurso principal
 
-### Community 462 - "HelpVisualRenderer.tsx"
-Cohesion: 0.27
-Nodes (8): calculateEvidenceConfidence(), EvidenceSimulationResult, EbbinghausSimulator(), EvidenceConfidenceSimulator(), HelpVisualData, HelpVisualProps, HelpVisualRenderer(), num()
+### Community 462 - "HelpTopicCard.tsx"
+Cohesion: 0.18
+Nodes (12): calculateEvidenceConfidence(), EvidenceSimulationResult, computeTopicMetadata(), TopicMetadata, EbbinghausSimulator(), EvidenceConfidenceSimulator(), HelpTopicCard(), HelpTopicCardProps (+4 more)
 
-### Community 466 - "Microcopy das análises"
-Cohesion: 0.33
-Nodes (6): Diretrizes de Tom Acolhedor e Semana Real (Pedagogia Anti-Culpa), Disclosure "Limites", Microcopy das análises, Revisão do pacote 7, Selos de janela e de evidência em Desempenho, Textos mantidos após a revisão
-
-### Community 468 - "help-runtime.ts"
-Cohesion: 0.31
-Nodes (9): calculateEbbinghausRetention(), EbbinghausSimulationResult, SCHEDULED_REVIEW_DAYS, HELP_CATEGORIES, HELP_FAQ, HELP_GLOSSARY, renderHelpCenter(), runtime (+1 more)
-
-### Community 470 - "Validação da inteligência da prova e do planejamento V4"
-Cohesion: 0.50
-Nodes (3): Contratos versionados, Decisões observadas, Validação da inteligência da prova e do planejamento V4
+### Community 468 - "retention-simulator.ts"
+Cohesion: 0.60
+Nodes (3): calculateEbbinghausRetention(), EbbinghausSimulationResult, SCHEDULED_REVIEW_DAYS
 
 ## Knowledge Gaps
-- **11 isolated node(s):** `@babel/core`, `@babel/preset-react`, `@babel/preset-typescript`, `@tabler/icons`, `@tailwindcss/cli` (+6 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3317 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **80 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **11 isolated node(s):** `@babel/core`, `@babel/preset-react`, `@babel/preset-typescript`, `@tailwindcss/cli`, `@types/node` (+6 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3433 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **77 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `window()` connect `createTimerUiController` to `app.ts`, `app.bundle.js`, `o`, `pluralize`?**
-  _High betweenness centrality (0.221) - this node is a cross-community bridge._
-- **Are the 61 inferred relationships involving `t()` (e.g. with `bc()` and `a()`) actually correct?**
-  _`t()` has 61 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `window()` connect `Spec: modo-sessao` to `app.ts`, `app.bundle.js`, `i`, `timer-coordinator.ts`, `format-number.ts`?**
+  _High betweenness centrality (0.231) - this node is a cross-community bridge._
+- **Are the 64 inferred relationships involving `t()` (e.g. with `v()` and `a()`) actually correct?**
+  _`t()` has 64 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `@babel/core`, `@babel/preset-react`, `@babel/preset-typescript` to the rest of the system?**
   _11 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `app.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.046992481203007516 - nodes in this community are weakly interconnected._
-- **Why does `init()` connect `initGlobalBar` to `new-work.md`, `syncPageChatFocus`, `updatePendingCounter`, `connectSSE`, `applyEditing`, `resumeSession`, `live.md`, `impeccable/SKILL.md`, `createGoalsBlueprintService`, `onAnnotDown`, `Init flow`, `live-browser.js`?**
-  _High betweenness centrality (0.113) - this node is a cross-community bridge._
-- **Are the 76 inferred relationships involving `a()` (e.g. with `Ae()` and `n()`) actually correct?**
-  _`a()` has 76 INFERRED edges - model-reasoned connections that need verification._
+  _Cohesion score 0.052244897959183675 - nodes in this community are weakly interconnected._
+- **Why does `init()` connect `connectSSE` to `updatePendingCounter`, `syncPageChatFocus`, `createGoalsBlueprintService`, `resumeSession`, `impeccable/SKILL.md`, `live.md`, `Init flow`, `live-browser.js`, `syncEditBadgeHitProxies`?**
+  _High betweenness centrality (0.109) - this node is a cross-community bridge._
+- **Are the 71 inferred relationships involving `a()` (e.g. with `$0()` and `$a()`) actually correct?**
+  _`a()` has 71 INFERRED edges - model-reasoned connections that need verification._
 - **Should `app.bundle.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.014228407695456406 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.01247749790438499 - nodes in this community are weakly interconnected._

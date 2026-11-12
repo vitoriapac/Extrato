@@ -2532,6 +2532,7 @@ body:has(#moreTabButton[aria-expanded="true"]) .save-indicator{visibility:hidden
 .weekly-close-act{display:grid;gap:var(--space-4);padding-block:var(--space-6);border-top:1px solid var(--paper-line)}
 .weekly-close-act:first-child{padding-top:0;border-top:0}
 .weekly-close-act__title{margin:0;font:var(--font-weight-semibold) var(--text-card-title)/var(--line-height-heading) var(--font-display);color:var(--heading)}
+@media(max-width:480px){.weekly-close-act{gap:var(--space-2);padding-block:var(--space-4)}.weekly-close-act .weekly-kpis{grid-template-columns:repeat(3,minmax(0,1fr));margin-block:0}.weekly-close-act .weekly-kpis>div{min-width:0;padding:var(--space-2);border-right:1px solid var(--paper-line);border-bottom:0}.weekly-close-act .weekly-kpis>div:last-child{border-right:0}.weekly-close-act .weekly-kpis strong{font-size:var(--text-card-title)}}
 .weekly-close-analysis{border-top:1px solid var(--paper-line)}
 .weekly-close-analysis[open]>summary{margin-bottom:var(--space-4)}
 .weekly-close-empty{margin:0;max-width:75ch;color:var(--text-secondary)}

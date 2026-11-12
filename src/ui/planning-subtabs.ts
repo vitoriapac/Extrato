@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { mountPreact } from './preact-mount.js';
-import { PlanningSubtabsNav } from './components/PlanningSubtabsNav.js';
+import { PlanningSubtabsNav, PLANNING_SUBTAB_DEFS } from './components/PlanningSubtabsNav.js';
 import { scrollBehavior } from './accessibility.js';
 
 // Planejamento agrupa as seções em blocos recolhíveis; o atalho aberto fica na URL como "#planejamento/<sub-aba>".
@@ -60,6 +60,11 @@ export function selectPlanningSubtab(
 }
 
 export function initPlanningSubtabs(doc: Document = document) {
+  const select = doc.getElementById('metasSubtabSelect') as HTMLSelectElement | null;
+  PLANNING_SUBTAB_DEFS.forEach(({ id, label }) => {
+    const option = select?.querySelector<HTMLOptionElement>(`option[value="${id}"]`);
+    if (option) option.textContent = label;
+  });
   const mountNode =
     typeof globalThis.document !== 'undefined' &&
     doc === globalThis.document &&

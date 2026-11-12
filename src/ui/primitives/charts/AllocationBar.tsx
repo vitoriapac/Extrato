@@ -22,15 +22,12 @@ const VISIBLE_CHIPS = 5;
 
 function chip(s: WeeklyAllocationBarVisualModel['subjects'][number]): JSX.Element {
   return (
-    <div
-      key={s.subjectId}
-      class="flex items-center gap-2 px-2 py-1 rounded bg-surface-sunken/60 text-xs text-content-primary border border-border-subtle"
-    >
+    <li key={s.subjectId} class="flex items-center gap-2 py-1 text-xs text-content-primary">
       <span class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`} aria-hidden="true" />
       <span class="font-medium break-words min-w-0">{s.subjectName}</span>
       <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
       <span class="text-content-secondary text-xs">({formatDecimal(s.percentage)}%)</span>
-    </div>
+    </li>
   );
 }
 
@@ -49,10 +46,6 @@ export function AllocationBar({
       </div>
     );
   }
-
-  const capacityTotal = Math.max(totalWeeklyMinutes, weeklyCapacityMinutes, 1);
-  const flexPct =
-    capacityTotal > 0 && flexMinutes > 0 ? +((flexMinutes / capacityTotal) * 100).toFixed(1) : 0;
 
   return (
     <div
@@ -78,43 +71,17 @@ export function AllocationBar({
         )}
       </div>
 
-      {/* Barra segmentada contínua */}
-      <div
-        class="h-3 w-full bg-surface-sunken rounded-full overflow-hidden flex"
-        role="progressbar"
-        aria-label={label || 'Capacidade semanal alocada'}
-        aria-valuenow={Math.min(100, Math.round((totalWeeklyMinutes / capacityTotal) * 100))}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        {subjects.map(s => {
-          const slicePct = Math.max(1, (s.minutes / capacityTotal) * 100);
-          return (
-            <div
-              key={s.subjectId}
-              class={`h-full subject-bg-${s.colorSlot} transition-all duration-300 hover:brightness-110`}
-              style={{ width: `${slicePct}%` }}
-              title={`${s.subjectName}: ${formatMinutes(s.minutes)} (${formatDecimal(s.percentage)}%)`}
-            />
-          );
-        })}
-        {flexPct > 0 && (
-          <div
-            class="h-full bg-surface-sunken border-l border-border-subtle"
-            style={{ width: `${flexPct}%` }}
-            title={`Tempo livre: ${formatMinutes(flexMinutes)}`}
-          />
-        )}
-      </div>
-
+      <p class="text-xs font-semibold text-content-primary">Distribuição por disciplina</p>
       {/* Fatias das disciplinas (Badges com cores oficiais) */}
-      <div class="flex flex-wrap gap-2 pt-1">{subjects.slice(0, VISIBLE_CHIPS).map(chip)}</div>
+      <ol class="pt-1">{subjects.slice(0, VISIBLE_CHIPS).map(chip)}</ol>
       {subjects.length > VISIBLE_CHIPS && (
         <details class="allocation-more">
           <summary class="text-xs font-medium text-content-secondary cursor-pointer">
-            Mostrar mais · +{subjects.length - VISIBLE_CHIPS}
+            Ver outras {subjects.length - VISIBLE_CHIPS} disciplinas
           </summary>
-          <div class="flex flex-wrap gap-2 pt-2">{subjects.slice(VISIBLE_CHIPS).map(chip)}</div>
+          <ol start={VISIBLE_CHIPS + 1} class="pt-2">
+            {subjects.slice(VISIBLE_CHIPS).map(chip)}
+          </ol>
         </details>
       )}
 

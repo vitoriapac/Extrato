@@ -7561,7 +7561,7 @@
         "../../src/domain/planning/planning-visual-models.js",
         "../../src/ui/primitives/charts/charts.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -12025,7 +12025,7 @@
         "../../src/ui/tabs/goals/WeekReconciliationSummary.js",
         "../../src/ui/tabs/goals/week-reconciliation.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

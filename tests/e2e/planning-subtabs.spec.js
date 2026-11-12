@@ -15,12 +15,12 @@ test('Planejamento agrupa as seções em blocos recolhíveis e o link profundo a
   await expect(page).toHaveURL(/#planejamento\/fechamento$/);
 
   await page.getByRole('tab', { name: 'Fechamento semanal', exact: true }).press('ArrowRight');
-  await expect(page.getByRole('tab', { name: 'Histórico', exact: true })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Retratos e decisões', exact: true })).toBeFocused();
   await expect(page.locator('#metasSub-historico')).toBeVisible();
 
   await page.reload();
   await expect(page.locator('#metasSub-historico')).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'Histórico', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('tab', { name: 'Retratos e decisões', exact: true })).toHaveAttribute(
     'aria-selected',
     'true'
   );

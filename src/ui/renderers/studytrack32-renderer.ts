@@ -3,6 +3,9 @@ import { formatPeriodBR } from '../../core/format-date.js';
 import { renderSubjectAccuracy } from './subject-accuracy-renderer.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
 import { renderIconSvg } from '../primitives/icon.js';
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+import { WeeklyCloseKpis } from '../tabs/goals/WeeklyCloseKpis.js';
 const safe = (escapeHtml: (value: any) => string, value: unknown) =>
   escapeHtml(String(value ?? ''));
 const focusMinutes = (value: unknown) => {
@@ -61,15 +64,7 @@ export function renderWeeklyCloseNext(
 export function renderWeeklyCloseKpis(model: Record<string, any>, { formatMinutes }: any) {
   if (model.state === 'insufficient')
     return '<div class="upcoming-empty ui-state--empty">Ainda não há evidência suficiente para fechar a semana.</div>';
-  const summary = model.adherence?.model?.summary,
-    adherence = summary ? summary.temporalAdherence : model.investment?.adherence;
-  const plannedMin = summary?.plannedMinutes ?? model.investment?.plannedMinutes;
-  const executedMin = summary?.executedMinutes ?? model.investment?.executedMinutes ?? 0;
-  const zeroCreditNote =
-    summary && Number(plannedMin) > 0 && Number(executedMin) > 0 && Number(adherence) === 0
-      ? '<p class="analytics-note">Sessões sem vínculo com as tarefas planejadas entram no tempo realizado, mas não geram crédito ao plano.</p>'
-      : '';
-  return `<section class="weekly-kpis" aria-label="Resultado da semana"><div><strong>${plannedMin == null ? '—' : formatMinutes(plannedMin)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(executedMin)}</strong><span>Realizado</span></div><div><strong>${adherence == null ? '—' : formatDecimal(adherence) + '%'}</strong><span>${summary ? 'Crédito ao plano' : 'Volume de carga'}</span></div></section>${zeroCreditNote}`;
+  return render(h(WeeklyCloseKpis, { model, formatMinutes }));
 }
 export function renderWeeklyClose(
   model: Record<string, any>,
