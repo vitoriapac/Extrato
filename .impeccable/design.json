@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-10T03:06:33.301Z",
+  "generatedAt": "2026-11-12T19:24:31.802Z",
   "title": "Design System: StudyTrack — Extrato de Estudos",
   "extensions": {
     "colorMeta": {
@@ -39,15 +39,105 @@
         "displayName": "Sálvia Escuro",
         "canonical": "#2F5D4E"
       },
-      "brand-on-header": {
-        "role": "secondary",
-        "displayName": "Sálvia Claro",
-        "canonical": "#A8D3B8"
-      },
       "attention": {
         "role": "secondary",
         "displayName": "Âmbar Saldo",
         "canonical": "#E9953F"
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Laranja Destaque",
+        "canonical": "#E9953F",
+        "tonalRamp": [
+          "oklch(15% 0.078 63)",
+          "oklch(26% 0.113 63)",
+          "oklch(37% 0.141 63)",
+          "oklch(48% 0.141 63)",
+          "oklch(60% 0.141 63)",
+          "oklch(72% 0.120 63)",
+          "oklch(84% 0.078 63)",
+          "oklch(95% 0.028 63)"
+        ]
+      },
+      "secondary-strong": {
+        "role": "secondary",
+        "displayName": "Laranja Forte",
+        "canonical": "#D9701A",
+        "tonalRamp": [
+          "oklch(15% 0.087 53)",
+          "oklch(26% 0.126 53)",
+          "oklch(37% 0.158 53)",
+          "oklch(48% 0.158 53)",
+          "oklch(60% 0.158 53)",
+          "oklch(72% 0.134 53)",
+          "oklch(84% 0.087 53)",
+          "oklch(95% 0.032 53)"
+        ]
+      },
+      "secondary-text": {
+        "role": "secondary",
+        "displayName": "Laranja de Texto",
+        "canonical": "#A8480A",
+        "tonalRamp": [
+          "oklch(15% 0.078 46)",
+          "oklch(26% 0.113 46)",
+          "oklch(37% 0.142 46)",
+          "oklch(48% 0.142 46)",
+          "oklch(60% 0.142 46)",
+          "oklch(72% 0.121 46)",
+          "oklch(84% 0.078 46)",
+          "oklch(95% 0.028 46)"
+        ]
+      },
+      "secondary-bg": {
+        "role": "secondary",
+        "displayName": "Fundo Laranja Suave",
+        "canonical": "#FBEBDA",
+        "tonalRamp": [
+          "oklch(15% 0.016 69)",
+          "oklch(26% 0.023 69)",
+          "oklch(37% 0.029 69)",
+          "oklch(48% 0.029 69)",
+          "oklch(60% 0.029 69)",
+          "oklch(72% 0.024 69)",
+          "oklch(84% 0.016 69)",
+          "oklch(95% 0.006 69)"
+        ]
+      },
+      "secondary-hover": {
+        "role": "secondary",
+        "displayName": "Laranja Hover",
+        "canonical": "#F2A862",
+        "tonalRamp": [
+          "oklch(15% 0.068 63)",
+          "oklch(26% 0.098 63)",
+          "oklch(37% 0.123 63)",
+          "oklch(48% 0.123 63)",
+          "oklch(60% 0.123 63)",
+          "oklch(72% 0.105 63)",
+          "oklch(84% 0.068 63)",
+          "oklch(95% 0.025 63)"
+        ]
+      },
+      "on-secondary": {
+        "role": "secondary",
+        "displayName": "Tinta sobre Laranja",
+        "canonical": "#2A1704",
+        "tonalRamp": [
+          "oklch(15% 0.024 64)",
+          "oklch(26% 0.035 64)",
+          "oklch(37% 0.044 64)",
+          "oklch(48% 0.044 64)",
+          "oklch(60% 0.044 64)",
+          "oklch(72% 0.037 64)",
+          "oklch(84% 0.024 64)",
+          "oklch(95% 0.009 64)"
+        ]
+      },
+      "brand-on-header": {
+        "role": "secondary",
+        "displayName": "Sálvia Claro",
+        "canonical": "#A8D3B8"
       },
       "paper": {
         "role": "neutral",
@@ -89,20 +179,80 @@
         "displayName": "Tinta Suave",
         "canonical": "#4F6158"
       },
+      "on-brand": {
+        "role": "primary",
+        "displayName": "Papel sobre Musgo",
+        "canonical": "#F4F6F4",
+        "tonalRamp": [
+          "oklch(15% 0.002 0)",
+          "oklch(26% 0.003 0)",
+          "oklch(37% 0.003 0)",
+          "oklch(48% 0.003 0)",
+          "oklch(60% 0.003 0)",
+          "oklch(72% 0.003 0)",
+          "oklch(84% 0.002 0)",
+          "oklch(95% 0.001 0)"
+        ]
+      },
       "green": {
         "role": "tertiary",
         "displayName": "Verde Conta",
         "canonical": "#2F6B4F"
+      },
+      "green-bg": {
+        "role": "tertiary",
+        "displayName": "Fundo Verde Conta",
+        "canonical": "#E2EEE6",
+        "tonalRamp": [
+          "oklch(15% 0.009 157)",
+          "oklch(26% 0.013 157)",
+          "oklch(37% 0.017 157)",
+          "oklch(48% 0.017 157)",
+          "oklch(60% 0.017 157)",
+          "oklch(72% 0.014 157)",
+          "oklch(84% 0.009 157)",
+          "oklch(95% 0.003 157)"
+        ]
       },
       "amber": {
         "role": "tertiary",
         "displayName": "Âmbar Aviso",
         "canonical": "#9A4F0E"
       },
+      "amber-bg": {
+        "role": "tertiary",
+        "displayName": "Fundo Âmbar Aviso",
+        "canonical": "#F7E9D9",
+        "tonalRamp": [
+          "oklch(15% 0.014 71)",
+          "oklch(26% 0.021 71)",
+          "oklch(37% 0.026 71)",
+          "oklch(48% 0.026 71)",
+          "oklch(60% 0.026 71)",
+          "oklch(72% 0.022 71)",
+          "oklch(84% 0.014 71)",
+          "oklch(95% 0.005 71)"
+        ]
+      },
       "red": {
         "role": "tertiary",
         "displayName": "Vermelho Débito",
         "canonical": "#A23B2A"
+      },
+      "red-bg": {
+        "role": "tertiary",
+        "displayName": "Fundo Vermelho Débito",
+        "canonical": "#F5E3DE",
+        "tonalRamp": [
+          "oklch(15% 0.012 36)",
+          "oklch(26% 0.017 36)",
+          "oklch(37% 0.021 36)",
+          "oklch(48% 0.021 36)",
+          "oklch(60% 0.021 36)",
+          "oklch(72% 0.018 36)",
+          "oklch(84% 0.012 36)",
+          "oklch(95% 0.004 36)"
+        ]
       },
       "info-bg": {
         "role": "tertiary",
@@ -113,9 +263,182 @@
         "role": "neutral",
         "displayName": "Destaque",
         "canonical": "#FBF1E4"
+      },
+      "tab-hover-bg": {
+        "role": "neutral",
+        "displayName": "Fundo de Aba em Hover",
+        "canonical": "#DDE6DE",
+        "tonalRamp": [
+          "oklch(15% 0.008 149)",
+          "oklch(26% 0.012 149)",
+          "oklch(37% 0.014 149)",
+          "oklch(48% 0.014 149)",
+          "oklch(60% 0.014 149)",
+          "oklch(72% 0.012 149)",
+          "oklch(84% 0.008 149)",
+          "oklch(95% 0.003 149)"
+        ]
+      },
+      "heat-1": {
+        "role": "tertiary",
+        "displayName": "Mapa de Atividade Claro",
+        "canonical": "#CFE0D3",
+        "tonalRamp": [
+          "oklch(15% 0.014 153)",
+          "oklch(26% 0.020 153)",
+          "oklch(37% 0.025 153)",
+          "oklch(48% 0.025 153)",
+          "oklch(60% 0.025 153)",
+          "oklch(72% 0.021 153)",
+          "oklch(84% 0.014 153)",
+          "oklch(95% 0.005 153)"
+        ]
+      },
+      "border-control": {
+        "role": "neutral",
+        "displayName": "Borda de Controle",
+        "canonical": "#6F857A",
+        "tonalRamp": [
+          "oklch(15% 0.017 164)",
+          "oklch(26% 0.024 164)",
+          "oklch(37% 0.030 164)",
+          "oklch(48% 0.030 164)",
+          "oklch(60% 0.030 164)",
+          "oklch(72% 0.026 164)",
+          "oklch(84% 0.017 164)",
+          "oklch(95% 0.006 164)"
+        ]
+      },
+      "subject-1": {
+        "role": "tertiary",
+        "displayName": "Disciplina 1",
+        "canonical": "#3E7A5E",
+        "tonalRamp": [
+          "oklch(15% 0.043 162)",
+          "oklch(26% 0.062 162)",
+          "oklch(37% 0.078 162)",
+          "oklch(48% 0.078 162)",
+          "oklch(60% 0.078 162)",
+          "oklch(72% 0.066 162)",
+          "oklch(84% 0.043 162)",
+          "oklch(95% 0.016 162)"
+        ]
+      },
+      "subject-2": {
+        "role": "tertiary",
+        "displayName": "Disciplina 2",
+        "canonical": "#2F6690",
+        "tonalRamp": [
+          "oklch(15% 0.049 244)",
+          "oklch(26% 0.071 244)",
+          "oklch(37% 0.089 244)",
+          "oklch(48% 0.089 244)",
+          "oklch(60% 0.089 244)",
+          "oklch(72% 0.076 244)",
+          "oklch(84% 0.049 244)",
+          "oklch(95% 0.018 244)"
+        ]
+      },
+      "subject-3": {
+        "role": "tertiary",
+        "displayName": "Disciplina 3",
+        "canonical": "#4B4FA3",
+        "tonalRamp": [
+          "oklch(15% 0.073 278)",
+          "oklch(26% 0.106 278)",
+          "oklch(37% 0.133 278)",
+          "oklch(48% 0.133 278)",
+          "oklch(60% 0.133 278)",
+          "oklch(72% 0.113 278)",
+          "oklch(84% 0.073 278)",
+          "oklch(95% 0.027 278)"
+        ]
+      },
+      "subject-4": {
+        "role": "tertiary",
+        "displayName": "Disciplina 4",
+        "canonical": "#7350A0",
+        "tonalRamp": [
+          "oklch(15% 0.070 302)",
+          "oklch(26% 0.101 302)",
+          "oklch(37% 0.127 302)",
+          "oklch(48% 0.127 302)",
+          "oklch(60% 0.127 302)",
+          "oklch(72% 0.108 302)",
+          "oklch(84% 0.070 302)",
+          "oklch(95% 0.025 302)"
+        ]
+      },
+      "subject-5": {
+        "role": "tertiary",
+        "displayName": "Disciplina 5",
+        "canonical": "#1F7570",
+        "tonalRamp": [
+          "oklch(15% 0.043 189)",
+          "oklch(26% 0.063 189)",
+          "oklch(37% 0.079 189)",
+          "oklch(48% 0.079 189)",
+          "oklch(60% 0.079 189)",
+          "oklch(72% 0.067 189)",
+          "oklch(84% 0.043 189)",
+          "oklch(95% 0.016 189)"
+        ]
+      },
+      "subject-6": {
+        "role": "tertiary",
+        "displayName": "Disciplina 6",
+        "canonical": "#6B7330",
+        "tonalRamp": [
+          "oklch(15% 0.050 115)",
+          "oklch(26% 0.073 115)",
+          "oklch(37% 0.091 115)",
+          "oklch(48% 0.091 115)",
+          "oklch(60% 0.091 115)",
+          "oklch(72% 0.077 115)",
+          "oklch(84% 0.050 115)",
+          "oklch(95% 0.018 115)"
+        ]
+      },
+      "subject-7": {
+        "role": "tertiary",
+        "displayName": "Disciplina 7",
+        "canonical": "#5A6878",
+        "tonalRamp": [
+          "oklch(15% 0.017 252)",
+          "oklch(26% 0.025 252)",
+          "oklch(37% 0.031 252)",
+          "oklch(48% 0.031 252)",
+          "oklch(60% 0.031 252)",
+          "oklch(72% 0.026 252)",
+          "oklch(84% 0.017 252)",
+          "oklch(95% 0.006 252)"
+        ]
+      },
+      "subject-8": {
+        "role": "tertiary",
+        "displayName": "Disciplina 8",
+        "canonical": "#8A4570",
+        "tonalRamp": [
+          "oklch(15% 0.060 344)",
+          "oklch(26% 0.087 344)",
+          "oklch(37% 0.108 344)",
+          "oklch(48% 0.108 344)",
+          "oklch(60% 0.108 344)",
+          "oklch(72% 0.092 344)",
+          "oklch(84% 0.060 344)",
+          "oklch(95% 0.022 344)"
+        ]
       }
     },
     "typographyMeta": {
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "Título de cada aba (1.5rem, Fraunces 600)."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Título de card de análise (1.25rem, Fraunces 600)."
+      },
       "display": {
         "displayName": "Display",
         "purpose": "Título do extrato no cabeçalho."
@@ -136,13 +459,13 @@
         "displayName": "Body",
         "purpose": "Explicações e formulários; até 80ch; 15px até 600px de largura."
       },
-      "action": {
-        "displayName": "Action",
-        "purpose": "Botões e abas, Sans 500 sem caixa-alta."
-      },
       "label": {
         "displayName": "Label",
         "purpose": "Rótulos de seção, eyebrows e cabeçalhos de tabela, em maiúsculas."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Botões e abas, Sans 500 sem caixa-alta."
       },
       "data": {
         "displayName": "Data",
@@ -174,8 +497,8 @@
     "motion": [
       {
         "name": "state-change",
-        "value": "150ms ease",
-        "purpose": "Hover e foco de botões, abas e campos."
+        "value": "var(--motion-duration) = 160ms ease",
+        "purpose": "Hover e foco de botões, abas e controles; vai a zero com prefers-reduced-motion."
       },
       {
         "name": "press",
@@ -350,11 +673,27 @@
       "description": "Disclosure de página para uma camada de análise inteira; lembrada pelo navegador.",
       "html": "<details class=\"ds-decision-fold\" open><summary>Decisão pedagógica: balanço, radar e retenção</summary><p>Conteúdo da camada.</p></details>",
       "css": ".ds-decision-fold{margin:0}.ds-decision-fold>summary{cursor:pointer;color:var(--heading);font:600 var(--text-md) var(--font-display)}.ds-decision-fold[open]>summary{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--paper-line)}.ds-decision-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}"
+    },
+    {
+      "name": "Ledger Line",
+      "kind": "custom",
+      "refersTo": "ledger-line",
+      "description": "Linha de razão: rótulo, guia pontilhada e valor em mono tabular. É a forma de mostrar \"quanto\" em Hoje e em Planejamento.",
+      "html": "<div class=\"ds-ledger\"><div class=\"ds-ledger__line\"><span>Capacidade da semana</span><i class=\"ds-ledger__lead\"></i><b>12h</b></div><div class=\"ds-ledger__line\"><span>Com tarefa marcada</span><i class=\"ds-ledger__lead\"></i><b>5h20</b></div><div class=\"ds-ledger__line ds-ledger__line--total\"><span>Estudado até hoje</span><i class=\"ds-ledger__lead\"></i><b>6h08</b></div></div>",
+      "css": ".ds-ledger { display: grid; gap: 8px; font: 14px/1.5 'IBM Plex Sans', sans-serif; color: var(--ink, #17302A); max-width: 360px; } .ds-ledger__line { display: flex; align-items: baseline; gap: 12px; } .ds-ledger__lead { flex: 1; align-self: end; margin-bottom: .35em; min-width: 16px; border-bottom: 1px dotted var(--border-control, #6F857A); } .ds-ledger__line b { font: 400 13px 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-ledger__line--total { border-top: 2px solid var(--heading, #1E3F35); padding-top: 8px; font-weight: 600; }"
+    },
+    {
+      "name": "Window Badge",
+      "kind": "chip",
+      "refersTo": "status-badge-insufficient",
+      "description": "Selo de janela: diz a base de tempo de um número (7 dias, período, semana atual, todo o histórico). Sem ícone.",
+      "html": "<p class=\"ds-win-row\">6h08 total <span class=\"ds-window\">semana atual</span></p>",
+      "css": ".ds-win-row { margin: 0; font: 400 13px 'IBM Plex Mono', monospace; color: var(--ink, #17302A); } .ds-window { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 4px; background: var(--slate-bg, #E6EDE6); color: var(--text-secondary, #4F6158); font: 600 12px/1.5 'IBM Plex Sans', sans-serif; white-space: nowrap; }"
     }
   ],
   "narrative": {
     "northStar": "O Extrato Bancário",
-    "overview": "O StudyTrack apresenta o estudo como um extrato de conta: um cabeçalho verde-musgo com o saldo em serifa âmbar, lançamentos em papel separados por linhas finas, números e datas em mono como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.\n\nA densidade é de ferramenta de uso diário e prolongado. Cards agrupam; dentro deles, hierarquia vem de linha, espaço e tipografia, não de mais caixas. Componentes são precisos e contidos: cantos discretos (8px nos cards, 6px nos controles), mono só para números, datas e códigos, cor reservada para significado. A interface é plana por padrão; sombra existe apenas onde algo realmente flutua sobre a página.\n\nOs dois temas (claro \"papel\" e escuro \"noite musgo\", paleta Sálvia) são o mesmo sistema com valores trocados nos tokens; nenhum componente define cor literal.",
+    "overview": "O Extrato de Estudos apresenta o estudo como um extrato de conta: um cabeçalho verde-musgo com o saldo em serifa âmbar, lançamentos em papel separados por linhas finas, números e datas em mono como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.\n\nA densidade é de ferramenta de uso diário e prolongado. Cards agrupam; dentro deles, hierarquia vem de linha, espaço e tipografia, não de mais caixas. Componentes são precisos e contidos: cantos discretos (8px nos cards, 6px nos controles), mono só para números, datas e códigos, cor reservada para significado. A interface é plana por padrão; sombra existe apenas onde algo realmente flutua sobre a página.\n\nOs dois temas (claro \"papel\" e escuro \"noite musgo\", paleta Sálvia) são o mesmo sistema com valores trocados nos tokens; nenhum componente define cor literal.",
     "keyCharacteristics": [
       "Musgo estrutural, sálvia de destaque, âmbar só para atenção, papel como superfície.",
       "Três vozes tipográficas: Fraunces para marca e valores, IBM Plex Mono para números, datas, durações e códigos, IBM Plex Sans para leitura, rótulos e ações.",
@@ -415,22 +754,29 @@
       }
     ],
     "dos": [
-      "Do usar apenas tokens de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`) em componentes novos, para que funcionem nos dois temas.",
-      "Do manter Plex Mono para números, datas, durações e códigos, Fraunces para valores e marca, e Plex Sans para rótulos, estados e ações.",
-      "Do usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.",
-      "Do dar a todo badge de estado um rótulo textual.",
-      "Do funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px).",
-      "Do usar foco sálvia visível em tudo que é interativo, com `--accent` no anel: `--brand` quase coincide com o fundo no tema escuro (1,1:1).",
-      "Do manter um único botão primário por card; repetições em lista usam `tonal`."
+      "**Do** usar apenas tokens de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`) em componentes novos, para que funcionem nos dois temas.",
+      "**Do** manter Plex Mono para números, datas, durações e códigos, Fraunces para valores e marca, e Plex Sans para rótulos, estados e ações.",
+      "**Do** usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.",
+      "**Do** dar a todo badge de estado um rótulo textual.",
+      "**Do** escrever durações no formato único do app (`formatPlanMinutes`: `1h20`, `2h`, `48min`) e títulos em caixa de frase (\"Capacidade semanal alocada\", não \"Capacidade Semanal Alocada\").",
+      "**Do** manter um só botão cheio por tela de decisão. No Plano da semana é \"Distribuir nos próximos 7 dias\"; sem data de prova, é \"Definir data da prova\". \"Calcular proposta semanal\" e \"Simular E se?\" ficam como links terciários em \"Outras formas de planejar\".",
+      "**Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px em toque; links de tópico e disciplina em listas densas têm no mínimo 24px com ponteiro fino).",
+      "**Do** usar foco sálvia visível em tudo que é interativo, com `--accent` no anel: `--brand` quase coincide com o fundo no tema escuro (1,1:1).",
+      "**Do** manter um único botão primário por card; repetições em lista usam `tonal`.",
+      "**Do** usar `<Icon name=\"...\" />` ou `renderIconSvg(...)` do Lucide Icons (`1.5px`) para apoiar ações e sinalizações sem poluição visual.",
+      "**Do** oferecer \"Desfazer\" em vez de \"Tem certeza?\" quando a exclusão é de um único registro e pode ser revertida exatamente.",
+      "**Do** dar a todo gráfico uma descrição textual e, quando houver tabela, \"Ver dados\"."
     ],
     "donts": [
-      "Don't aninhar cards para criar hierarquia; use linha, espaço e tipo.",
-      "Don't pôr sombra em cards em repouso.",
-      "Don't usar `brand-on-header` sobre papel, âmbar como marca ou navegação, nem cor literal fora de `styles/tokens.css`.",
-      "Don't usar verde, âmbar ou vermelho como decoração.",
-      "Don't usar raios acima de 8px, pílulas em contêineres ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é discreto e plano.",
-      "Don't carregar fontes, scripts ou estilos de hosts externos; o app roda local e offline.",
-      "Don't usar peso 700 como voz padrão; a hierarquia vai até 600."
+      "**Don't** aninhar cards para criar hierarquia; use linha, espaço e tipo.",
+      "**Don't** pôr sombra em cards em repouso.",
+      "**Don't** usar `brand-on-header` sobre papel, âmbar como marca ou navegação, nem cor literal fora de `styles/tokens.css`.",
+      "**Don't** usar verde, âmbar ou vermelho como decoração.",
+      "**Don't** usar raios acima de 8px, pílulas em contêineres ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é discreto e plano.",
+      "**Don't** usar peso 700 como voz padrão; a hierarquia vai até 600.",
+      "**Don't** usar âmbar ou vermelho como cor de disciplina, nem animação contínua; movimento só para eventos e respeitando `prefers-reduced-motion`.",
+      "**Don't** carregar fontes, scripts ou estilos de hosts externos; o app roda local e offline.",
+      "**Don't** usar emojis Unicode na interface (`\\p{Extended_Pictographic}`); use estritamente ícones vetoriais Lucide (`1.5px`) via `src/ui/primitives/icon.tsx`."
     ]
   }
 }
