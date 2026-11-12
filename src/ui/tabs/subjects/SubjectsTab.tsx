@@ -116,8 +116,8 @@ export function SubjectsTab({
       {subjects.length === 0 ? (
         <div class="empty-state">
           <p>Nenhuma disciplina corresponde à busca e aos filtros atuais.</p>
-          <button type="button" class="btn" data-delegated-click="addSubject()">
-            + Adicionar disciplina
+          <button type="button" class="btn" data-delegated-click="clearSubjectFilters()">
+            Limpar busca e filtros
           </button>
         </div>
       ) : (

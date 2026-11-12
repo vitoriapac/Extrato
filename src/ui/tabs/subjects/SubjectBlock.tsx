@@ -110,8 +110,9 @@ export function SubjectBlock({
         </div>
         <div class="subject-header-actions">
           <span class="subject-progress-pill">
-            {progressPercent}% · {allVisibleTopicsCount} de {subjectTopics.length} tópico
-            {subjectTopics.length === 1 ? '' : 's'}
+            {progressPercent}% de progresso · {allVisibleTopicsCount === subjectTopics.length
+              ? `${subjectTopics.length} ${subjectTopics.length === 1 ? 'tópico' : 'tópicos'}`
+              : `${allVisibleTopicsCount} de ${subjectTopics.length} tópicos filtrados`}
           </span>
           <span
             class="subject-progress-bar"
@@ -125,7 +126,7 @@ export function SubjectBlock({
           </span>
           {recentAccuracy !== undefined && (
             <span class="subject-recent-accuracy">
-              Acerto recente <b>{recentAccuracy}%</b>
+              Acerto · última janela com questões <b>{recentAccuracy}%</b>
             </span>
           )}
           <button
@@ -208,7 +209,7 @@ export function SubjectBlock({
               width={72}
               height={22}
             />
-            <small>Acerto · 8 semanas</small>
+            <small>Acerto por janela de 7 dias · últimas 8 semanas</small>
           </span>
         </div>
       )}
@@ -221,6 +222,16 @@ export function SubjectBlock({
             Nenhum tópico ainda. Adicione o primeiro para começar a acompanhar esta disciplina.
           </p>
         )}
+        <div class="add-topic-row">
+          <button
+            type="button"
+            class="btn ghost small"
+            data-delegated-click={`addTopic('${subject.id}')`}
+          >
+            + Adicionar tópico
+          </button>
+        </div>
+
         {!isEmptySubject && (
         <div class="subject-topic-filters">
           <select
@@ -254,10 +265,9 @@ export function SubjectBlock({
             <thead>
               <tr>
                 <th style={{ width: '22%' }}>Tópico</th>
-                <th style={{ width: '15%' }}>Link / material</th>
                 <th style={{ width: '13%' }}>Status</th>
                 <th style={{ width: '13%' }}>Dificuldade</th>
-                <th style={{ width: '9%' }}>Notas</th>
+                <th style={{ width: '9%' }}>Detalhes</th>
                 <th style={{ width: '6%' }}>
                   <span class="sr-only">Ações</span>
                 </th>
@@ -289,16 +299,6 @@ export function SubjectBlock({
         )}
 
         {footerHtml && <div dangerouslySetInnerHTML={{ __html: footerHtml }} />}
-
-        <div class="add-topic-row">
-          <button
-            type="button"
-            class="btn ghost small"
-            data-delegated-click={`addTopic('${subject.id}')`}
-          >
-            + Adicionar tópico
-          </button>
-        </div>
 
         {archivedTopics.length > 0 && (
           <div class="archived-section">

@@ -67,18 +67,6 @@ export function SubjectTopicRow({
           )}
         </td>
         <td>
-          <input
-            type="url"
-            value={topic.link || ''}
-            placeholder="https://..."
-            aria-label={`Link ou material de ${topic.name || 'tópico sem nome'}`}
-            data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','link', this.value)`}
-            onBlur={e =>
-              onUpdateTopic?.(subjectId, topic.id, 'link', (e.target as HTMLInputElement).value)
-            }
-          />
-        </td>
-        <td>
           <select
             class={`status-select ${statusClass}`}
             aria-label={`Status de ${topic.name || 'tópico sem nome'}`}
@@ -120,11 +108,13 @@ export function SubjectTopicRow({
           <button
             type="button"
             class={`btn ghost small notes-toggle-btn ${hasNotes ? 'has-notes' : ''}`}
+            aria-expanded={isOpenNotes}
+            aria-controls={`topic-notes-${topic.id}`}
             data-delegated-click={`toggleNotes('${topic.id}')`}
-            aria-label={`${hasNotes ? 'Ver notas de' : 'Anotar'} ${topic.name || 'tópico sem nome'}`}
+            aria-label={`Detalhes de ${topic.name || 'tópico sem nome'}`}
             onClick={() => onToggleNotes?.(topic.id)}
           >
-            {hasNotes ? 'Ver' : 'Anotar'}
+            Detalhes
           </button>
         </td>
         <td>
@@ -141,13 +131,26 @@ export function SubjectTopicRow({
         </td>
       </tr>
       {isOpenNotes && (
-        <tr class="notes-row">
-          <td colSpan={6}>
+        <tr class="notes-row" id={`topic-notes-${topic.id}`}>
+          <td colSpan={5}>
+            <label>Link / material
+          <input
+            type="url"
+            value={topic.link || ''}
+            placeholder="https://..."
+            aria-label={`Link ou material de ${topic.name || 'tópico sem nome'}`}
+            data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','link', this.value)`}
+            onBlur={e =>
+              onUpdateTopic?.(subjectId, topic.id, 'link', (e.target as HTMLInputElement).value)
+            }
+          />
+            </label>
             {analyticsStateHtml && <div dangerouslySetInnerHTML={{ __html: analyticsStateHtml }} />}
             {strategyEditorHtml && <div dangerouslySetInnerHTML={{ __html: strategyEditorHtml }} />}
             <input
               type="text"
               class="topic-tags-input"
+              aria-label={`Tags de ${topic.name || 'tópico sem nome'}`}
               placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
               value={(topic.tags || []).join(', ')}
               data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
@@ -165,6 +168,7 @@ export function SubjectTopicRow({
             />
             <textarea
               class="topic-notes-textarea"
+              aria-label={`Notas de ${topic.name || 'tópico sem nome'}`}
               placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
               data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
               onBlur={e =>

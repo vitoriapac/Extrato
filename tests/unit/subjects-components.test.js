@@ -90,7 +90,7 @@ test('SubjectsTab Preact Component — renderiza disciplinas ativas e arquivadas
 
   assert.ok(html.includes('Direito Constitucional'));
   assert.ok(html.includes('Direitos Fundamentais'));
-  assert.ok(html.includes('100% · 1 de 1 tópico'));
+  assert.ok(html.includes('100% de progresso · 1 tópico'));
   assert.ok(html.includes('Disciplinas arquivadas'));
   assert.ok(html.includes('Direito Administrativo Legado'));
 });
@@ -125,6 +125,9 @@ test('SubjectTopicRow Preact Component — renderiza campos de input, seletores 
   assert.ok(html.includes('diff-dificil'));
   assert.ok(html.includes('revisar'));
   assert.ok(html.includes('Atenção aos requisitos de validade'));
+  assert.ok(html.includes('aria-expanded="true"'));
+  assert.ok(html.includes('aria-label="Tags de Atos Administrativos"'));
+  assert.ok(html.includes('aria-label="Notas de Atos Administrativos"'));
 });
 
 test('SubjectTopicRow Preact Component — renderiza BookmarkBadge quando houver ponto de parada', () => {
@@ -186,9 +189,9 @@ const compactSubject = (id, name, collapsed) => ({
 test('Disciplinas — linha fechada mostra nome, progresso, acerto recente e a ação, sem tabela de tópicos', () => {
   const html = render(h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)])));
   assert.ok(html.includes('Língua Portuguesa'));
-  assert.ok(html.includes('40% · 1 de 1 tópico'));
+  assert.ok(html.includes('40% de progresso · 1 tópico'));
   assert.ok(html.includes('role="progressbar"'));
-  assert.match(html, /Acerto recente[\s\S]*72%/);
+  assert.match(html, /Acerto · última janela com questões[\s\S]*72%/);
   assert.ok(html.includes('Abrir tópicos'));
   assert.ok(html.includes('aria-expanded="false"'));
   assert.ok(!html.includes('<table'), 'tabela de tópicos não é montada fechada');

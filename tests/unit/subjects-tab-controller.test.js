@@ -379,3 +379,16 @@ test('SubjectsTabController - excluir tópico arquivado não pergunta e o Desfaz
   assert.deepEqual(state.subjects, subjectsBefore);
   configureUndo(null);
 });
+
+test('limpar busca e concurso restaura todas as disciplinas', () => {
+  const { doc, win } = createMockDom();
+  const { context } = createBaseContext(doc, win);
+  let query = 'inexistente';
+  context.subjectSearchController = { get query() { return query; }, clear() { query = ''; } };
+  const controller = createSubjectsTabController(/** @type {any} */ (context));
+  controller.setSubjectExamFilter('bb');
+  controller.clearSubjectFilters();
+  assert.equal(query, '');
+  assert.equal(controller.getSubjectExamFilter(), 'all');
+  assert.match(doc.getElementById('subjectsContainer').innerHTML, /Português/);
+});

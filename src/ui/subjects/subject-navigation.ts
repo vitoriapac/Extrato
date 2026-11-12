@@ -31,6 +31,7 @@ export function createSubjectSearchController({
     input?.setSelectionRange(position, position);
   });
   return {
+    clear() { query = ''; },
     get query() {
       return query;
     },

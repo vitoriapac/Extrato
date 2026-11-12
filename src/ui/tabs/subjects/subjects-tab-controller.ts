@@ -106,6 +106,13 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     renderSubjects();
   }
 
+  function clearSubjectFilters(): void {
+    ctx.subjectSearchController?.clear();
+    subjectExamFilter = 'all';
+    renderSubjects();
+    (ctx.document.getElementById('subjectContentSearch') as HTMLInputElement | null)?.focus();
+  }
+
   function toggleNotes(topicId: string): void {
     if (openNotesIds.has(topicId)) {
       openNotesIds.clear();
@@ -114,6 +121,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       openNotesIds.add(topicId);
     }
     renderSubjects();
+    ctx.document.getElementById(`topic-row-${topicId}`)?.querySelector<HTMLButtonElement>('.notes-toggle-btn')?.focus({ preventScroll: true });
   }
 
   function changeSubjectTopicLimit(subjectId: string, delta: number): void {
@@ -757,6 +765,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     renderSubjects,
     getSubjectExamFilter,
     setSubjectExamFilter,
+    clearSubjectFilters,
     toggleNotes,
     changeSubjectTopicLimit,
     showAllSubjectTopics,

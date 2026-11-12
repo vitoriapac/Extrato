@@ -1236,12 +1236,11 @@ body:has(#overviewNextAction [data-welcome-hero]) #guidedOnboarding[data-fresh="
   table.ledger td{display:block!important;padding:0!important;border:0!important;min-width:0}
   table.ledger td:first-child{grid-column:1/-1}
   table.ledger td::before{display:block;margin-bottom:4px;font:var(--text-xs) var(--font-body);color:var(--ink-soft);text-transform:uppercase}
-  table.ledger td:nth-child(1)::before{content:'Tópico'}
-  table.ledger td:nth-child(2)::before{content:'Material'}
-  table.ledger td:nth-child(3)::before{content:'Status'}
-  table.ledger td:nth-child(4)::before{content:'Dificuldade'}
-  table.ledger td:nth-child(5)::before{content:'Notas'}
-  table.ledger td:nth-child(6){display:flex!important;justify-content:flex-end;align-items:flex-end}
+  table.ledger tr:not(.notes-row) td:nth-child(1)::before{content:'Tópico'}
+  table.ledger tr:not(.notes-row) td:nth-child(2)::before{content:'Status'}
+  table.ledger tr:not(.notes-row) td:nth-child(3)::before{content:'Dificuldade'}
+  table.ledger tr:not(.notes-row) td:nth-child(4)::before{content:'Detalhes'}
+  table.ledger tr:not(.notes-row) td:nth-child(5){display:flex!important;justify-content:flex-end;align-items:flex-end}
   table.ledger input,table.ledger select,table.ledger button{min-height:var(--touch-target)}
   tr.notes-row{display:block!important;background:var(--paper);padding:12px;margin:-12px 0 12px;border:1px solid var(--paper-line);border-top:0}
   .subject-header{padding:12px;align-items:flex-start;gap:12px}

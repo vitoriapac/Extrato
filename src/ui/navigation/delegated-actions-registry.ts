@@ -163,6 +163,7 @@ export function buildDelegatedActionHandlers(
     restoreSubject: (...args: any[]) => c.subjects?.restoreSubject?.(...args),
     restoreTopic: (...args: any[]) => c.subjects?.restoreTopic?.(...args),
     setSubjectExamFilter: (...args: any[]) => c.subjects?.setSubjectExamFilter?.(...args),
+    clearSubjectFilters: () => c.subjects?.clearSubjectFilters?.(),
     setSubjectTopicFilter: (...args: any[]) => c.subjects?.setSubjectTopicFilter?.(...args),
     showAllSubjectTopics: (...args: any[]) => c.subjects?.showAllSubjectTopics?.(...args),
     toggleNotes: (...args: any[]) => c.subjects?.toggleNotes?.(...args),
