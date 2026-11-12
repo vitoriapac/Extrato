@@ -3521,3 +3521,21 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .today-metas-section .meta-hoje-card p{margin:var(--space-1) 0 0;font-size:var(--text-micro);line-height:1.4;color:var(--ink-soft)}
 @media(max-width:359px){.today-metas-section .metas-hoje-grid{grid-template-columns:minmax(0,1fr)}}
 }
+
+/* Hoje: o plano vem primeiro; com a sessão em andamento o cronômetro sobe ao topo da coluna. */
+.today-layout-grid__main>#study-timer:not(.is-idle){order:-1}
+
+/* Agenda: filtros recolhidos atrás de "Filtros" em qualquer largura; a fila e o calendário ficam à frente. */
+#panel-agenda .mobile-filter-toggle{display:inline-flex;align-items:center;justify-content:center;width:auto;min-height:36px;margin-bottom:var(--space-3)}
+#panel-agenda #agendaFilters.responsive-filters{display:none}
+#panel-agenda #agendaFilters.responsive-filters.show{display:flex}
+@media(max-width:760px){#panel-agenda .mobile-filter-toggle{width:100%;min-height:44px}}
+
+/* Onde estou: o SVG nunca passa de 1:1, então o texto de eixo mantém os 12px do sistema. */
+.ovs-chart{max-width:300px}
+
+/* Ao finalizar, o cronômetro volta a ficar ocioso, mas o lançamento da sessão mora nele: mantém o cartão no topo. */
+.today-layout-grid__main>#study-timer:has(>#sessionResult:not([hidden])){order:-1}
+
+/* Texto auxiliar da Agenda: medida de leitura confortável em telas largas. */
+#panel-agenda .helper-text--compact{max-width:72ch}

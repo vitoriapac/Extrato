@@ -20,7 +20,7 @@ import { WhatIfSimulatorModal } from '../../src/ui/forecasts/WhatIfSimulatorModa
 test('MobileMoreMenu — preserva seletores móveis, itens keepMounted e estado ativo', () => {
   const html = render(
     h(MobileMoreMenu, {
-      activeTab: 'agenda',
+      activeTab: 'disciplinas',
       open: false,
       onOpenChange: () => {},
       onSelectTab: () => {},
@@ -30,7 +30,7 @@ test('MobileMoreMenu — preserva seletores móveis, itens keepMounted e estado 
   assert.ok(html.includes('id="moreTabButton"'));
   assert.ok(html.includes('id="mobileMoreMenu"'));
   assert.ok(html.includes('data-more-tab="questoes"'));
-  assert.ok(html.includes('data-more-tab="agenda"'));
+  assert.ok(html.includes('data-more-tab="disciplinas"'));
   assert.ok(html.includes('data-more-tab="metas"'));
   assert.ok(html.includes('data-more-tab="instrucoes"'));
   assert.ok(html.includes('aria-current="page"'));

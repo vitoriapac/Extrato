@@ -55,7 +55,11 @@ export function renderMiniComparisonChart(
             <div class="font-semibold text-content-primary">${escapeHtml(metric.currentFormatted)}</div>
             <div class="text-content-secondary">ant.: ${escapeHtml(metric.previousFormatted)}</div>
           </div>
-        </div>
+        </div>${
+          metric.label === 'Aderência ao plano' && metric.currentValue > 100
+            ? '<p class="text-xs text-content-secondary m-0">Acima de 100%: você estudou mais tempo do que o plano previa nos últimos 7 dias.</p>'
+            : ''
+        }
       </div>`;
     })
     .join('');
@@ -65,7 +69,7 @@ export function renderMiniComparisonChart(
       <p class="text-xs font-semibold text-content-primary m-0">Últimos 7 dias × semana anterior</p>
       <div class="flex items-center gap-2 text-xs text-content-secondary" aria-hidden="true">
         <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-primary"></span>Atual</span>
-        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-warning-emphasis"></span>Em queda</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-warning-emphasis"></span>Atual, abaixo do anterior</span>
         <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-content-primary/25"></span>Anterior</span>
       </div>
     </div>

@@ -18,7 +18,7 @@ test.describe('no celular', () => {
     expect(bar.y - (toast.y + toast.height)).toBeLessThan(16);
   });
 
-  test('botão Filtros abre e fecha os filtros da Agenda no celular', async ({ page }) => {
+  test('botão Filtros abre e fecha os filtros da Agenda', async ({ page }) => {
     await openDemo(page);
     await activateTab(page, 'agenda');
     const toggle = page.locator('#panel-agenda .mobile-filter-toggle');

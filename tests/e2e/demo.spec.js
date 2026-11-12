@@ -301,7 +301,9 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar', asy
   expect(await simulations.count()).toBeGreaterThan(5);
   await assertUnique(simulations);
   await page.locator('[data-tab="agenda"]').evaluate(button => button.click());
+  await page.locator('#panel-agenda .mobile-filter-toggle').click();
   await page.locator('#agendaFilterStatus').selectOption('Atrasadas');
+  await expect(page.locator('#panel-agenda .mobile-filter-toggle')).toHaveText('Filtros (1 ativo)');
   await expect(page.locator('#agendaBody')).toContainText('Atrasadas');
   await page.locator('[data-tab="metas"]').evaluate(button => button.click());
   await expect(page.locator('#weeklyCloseDashboard')).toContainText('Diagnóstico');
@@ -331,7 +333,8 @@ test('busca local de tópicos preserva consulta e filtros ao voltar de Hoje', as
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 390, height: 900 });
   await openDemo(page);
-  await page.locator('[data-tab="disciplinas"]').click();
+  await page.locator('#moreTabButton').click();
+  await page.locator('[data-more-tab="disciplinas"]').click();
   const search = page.getByRole('searchbox', { name: 'Buscar disciplina ou tópico' });
   await search.fill('matematica financeira juros');
   const groups = page.locator('#subjectsContainer .subject-block');
@@ -340,7 +343,8 @@ test('busca local de tópicos preserva consulta e filtros ao voltar de Hoje', as
   const filter = groups.getByRole('combobox', { name: /por dificuldade/ });
   await filter.selectOption('Médio');
   await page.locator('[data-tab="hoje"]').click();
-  await page.locator('[data-tab="disciplinas"]').click();
+  await page.locator('#moreTabButton').click();
+  await page.locator('[data-more-tab="disciplinas"]').click();
   await expect(search).toHaveValue('matematica financeira juros');
   await expect(filter).toHaveValue('Médio');
   await search.fill('conteudo inexistente');

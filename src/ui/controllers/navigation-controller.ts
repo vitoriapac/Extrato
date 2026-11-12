@@ -80,7 +80,7 @@ export function createNavigationController({
       renderMobileMore();
       return;
     }
-    const secondary = ['agenda', 'questoes', 'metas', 'instrucoes'].includes(tabName);
+    const secondary = ['disciplinas', 'questoes', 'metas', 'instrucoes'].includes(tabName);
     moreButton?.classList.toggle('active', secondary);
     moreMenu?.querySelectorAll('[data-more-tab]').forEach((item: any) => {
       const active = item.dataset.moreTab === tabName;
@@ -123,6 +123,8 @@ export function createNavigationController({
     document
       .querySelectorAll('.panel')
       .forEach((item: any) => item.classList.toggle('active', item === panel));
+    // Uma rota nova (clique, atalho ou hash) fecha o menu "Mais" e o véu que o acompanha.
+    mobileMoreOpen = false;
     syncMore(tabName);
     if (document.body?.dataset) document.body.dataset.activeTab = tabName;
     // A new area opens at its top; callers that target a section scroll to it afterwards.

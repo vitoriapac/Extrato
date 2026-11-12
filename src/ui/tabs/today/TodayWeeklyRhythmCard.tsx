@@ -1,6 +1,7 @@
 import { h, type JSX } from 'preact';
 import { render } from 'preact-render-to-string';
 import { ColumnChart, type ColumnChartColumn } from '../../primitives/charts/charts.js';
+import { WindowBadge } from '../../performance/window-badge.js';
 
 export interface WeeklyRhythmDay {
   dayName: string;
@@ -35,6 +36,10 @@ export function TodayWeeklyRhythmCard({
   }));
 
   const chartSummary = days.map(d => `${d.dayName}: ${d.studiedFormatted}`).join('; ');
+  const shortDate = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+  const weekTitle = days.length
+    ? `Semana de ${shortDate(days[0].dateISO)} a ${shortDate(days[days.length - 1].dateISO)}`
+    : 'Semana atual';
 
   return (
     <section class="chart-card today-rhythm-card" aria-labelledby="todayRhythmHeading">
@@ -42,11 +47,13 @@ export function TodayWeeklyRhythmCard({
         <span class="module-heading__eyebrow">Ritmo semanal</span>
         <h3 class="module-heading__title" id="todayRhythmHeading">Esforço na semana</h3>
       </header>
-      <div class="flex items-center justify-between text-xs text-content-secondary mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-content-secondary mb-3">
         <span>
           <strong class="text-content-primary font-medium">{activeDaysCount} de 7 dias</strong> com estudo
         </span>
-        <span class="font-data text-content-secondary font-medium">{totalWeekFormatted} total</span>
+        <span class="font-data text-content-secondary font-medium">
+          {totalWeekFormatted} total <WindowBadge kind="currentWeek" title={weekTitle} />
+        </span>
       </div>
       <div class="today-rhythm-plot">
         <ColumnChart

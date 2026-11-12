@@ -63,7 +63,7 @@ Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e
 ## Navegação
 
 - Desktop: abas no topo em todas as larguras. A barra lateral acima de 1280 px foi descartada.
-- Celular (até 760 px): barra inferior com Início, Hoje, Matérias, Agenda e Mais. A altura medida fica em `--bottom-nav-height`; voltar ao topo, "Salvo" e o aviso usam esse valor.
+- Celular (até 760 px): barra inferior com Início, Desempenho, Hoje, Agenda e Mais. A altura medida fica em `--bottom-nav-height`; voltar ao topo, "Salvo" e o aviso usam esse valor.
 - Planejamento: cinco sub-abas exclusivas (`role="tabpanel"`), com Plano da semana ativo por padrão. Apenas o painel selecionado permanece visível e a sub-aba ativa fica em `#planejamento/<semana|prova|metas|fechamento|historico>` (sincronizada com `#metasSubtabSelect` no mobile). `openSectionFor(alvo)` (`src/ui/remembered-sections.ts`) abre a seção recolhida da Visão Geral ou seleciona o painel oculto (`[data-metas-subpanel]`) e abre o `details[data-remember]` correspondente antes de rolar. Painéis internos em ajustes (`.metas-adjust-panel`) e histórico (`#metasHistoryIntro` separado de `#metasHistorySection[data-advanced]`) evitam aninhamento de cards.
 - Hoje: ação primeiro. A lista de atividades com Iniciar vem antes da distribuição por disciplina; o resumo do dia é uma faixa compacta (`.today-statement-ledger` em `auto-fit`). Em toque (`pointer:coarse` ou até 760 px), links e selects têm alvo mínimo de `--touch-target`.
 - Cronômetro: mora em Hoje (`#study-timer`); iniciar uma atividade do plano abre o modo foco, e sair dele volta à aba de origem.

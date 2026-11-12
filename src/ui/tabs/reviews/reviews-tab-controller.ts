@@ -39,6 +39,7 @@ import {
 import { parseLocalDate } from '../../../core/date-utils.js';
 import { isOverdueItem, isTodayItem } from '../../../application/reviews/build-agenda-buckets.js';
 import { runUndoable } from '../../undoable.js';
+import { countActiveFilters, filterPanelLabel } from '../../filter-panel.js';
 
 export interface ReviewsTabControllerContext {
   state: {
@@ -384,6 +385,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     const body = doc.getElementById('agendaBody');
     if (!body) return;
     body.innerHTML = renderHtml();
+    syncAgendaFilterToggle();
     const load = doc.getElementById('reviewLoad');
     if (load)
       load.innerHTML = renderReviewLoad(
@@ -505,6 +507,14 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       `<option value="">Todos os tipos</option>` +
       TIPO_AGENDA_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
     selTipo.value = currentTipo;
+
+    syncAgendaFilterToggle();
+  }
+
+  // Os filtros ficam recolhidos; o botão diz quantos estão valendo.
+  function syncAgendaFilterToggle() {
+    const toggle = getDoc()?.querySelector('[aria-controls="agendaFilters"]');
+    if (toggle) toggle.textContent = filterPanelLabel(countActiveFilters(getFilters()));
   }
 
   function toggleCompletedReviews() {
