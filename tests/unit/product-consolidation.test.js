@@ -140,7 +140,9 @@ test('visão geral de desempenho orienta investigação antes do histórico sem 
     escapeHtml: value => String(value),
   });
   assert.ok(html.indexOf('Resumo interpretativo') < html.indexOf('Prontidão ao longo do tempo'));
-  assert.ok(html.indexOf('Como sua preparação evoluiu') < html.indexOf('Índice de Prontidão'));
+  assert.ok(html.indexOf('Como sua preparação evoluiu') < html.indexOf('Volume de carga'));
+  // A Prontidão vive só na Leitura da preparação; o KPI duplicado saiu.
+  assert.doesNotMatch(html, /Histórico comparável indisponível/);
   assert.doesNotMatch(html, /Investigar o resultado/);
   assert.match(html, /não é uma probabilidade de aprovação/);
   assert.match(html, /Sem plano no período/);

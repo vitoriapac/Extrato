@@ -47,6 +47,9 @@ export interface PerformancePageNavProps {
   onSelectSection?: (section: string) => void;
 }
 
+// Última subseção vista em cada grupo: voltar ao grupo não manda para o primeiro item.
+const lastSectionByGroup = new Map<string, string>();
+
 export function PerformancePageNav({
   activeSection,
   onSelectSection,
@@ -54,6 +57,7 @@ export function PerformancePageNav({
   const activeGroup =
     PERFORMANCE_GROUPS.find(group => group.items.some(([key]) => key === activeSection)) ||
     PERFORMANCE_GROUPS[0];
+  lastSectionByGroup.set(activeGroup.key, activeSection);
 
   const primaryItems: TabItem[] = PERFORMANCE_GROUPS.map(group => {
     if (group.items.length === 1) {
@@ -109,7 +113,9 @@ export function PerformancePageNav({
         onValueChange={nextGroupKey => {
           const targetGroup = PERFORMANCE_GROUPS.find(group => group.key === nextGroupKey);
           if (targetGroup) {
-            onSelectSection?.(targetGroup.items[0][0]);
+            const remembered = lastSectionByGroup.get(targetGroup.key);
+            const isValid = targetGroup.items.some(([key]) => key === remembered);
+            onSelectSection?.(isValid && remembered ? remembered : targetGroup.items[0][0]);
           }
         }}
         listProps={{ className: 'performance-section-nav' }}

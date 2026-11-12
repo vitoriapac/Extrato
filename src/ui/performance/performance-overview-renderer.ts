@@ -5,7 +5,6 @@ import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
 import { formatStudyMinutes, formatStudyMinuteDelta } from '../format-study-time.js';
 import { renderReadinessHistory } from '../renderers/readiness-history-renderer.js';
-import { displayReadinessValue } from '../../application/analytics/build-header-view-model.js';
 import { renderPerformanceComparison } from './performance-comparison-renderer.js';
 import {
   renderPerformanceStory,
@@ -42,6 +41,10 @@ const glossaryItems: Array<[string, string]> = [
     'Tempo realizado que tem crédito compatível com uma atividade do plano. Difere do tempo total estudado.',
   ],
   ['Incidência', 'Percentual das provas do histórico em que o tópico aparece.'],
+  [
+    'Amostra',
+    'Precisão por disciplina exige 10 respostas. Comparar períodos e ver tendência exige 30 questões em cada período.',
+  ],
 ];
 const renderGlossary = (escapeHtml: (value: any) => string) =>
   `<p class="m-0"><button type="button" class="btn ghost small" data-performance-open="instrucoes">Abrir a Ajuda</button></p><dl class="performance-glossary">${glossaryItems.map(([term, text]) => `<div><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(text)}</dd></div>`).join('')}</dl>`;
@@ -78,8 +81,8 @@ export function renderPerformanceOverview(
     ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
     ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`) : ''}
   </section>`;
-  const secondaryKpis = `<section class="performance-kpis ui-metric-group" aria-label="Prontidão e carga no período">
-    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : 'Calculado agora; o último fechamento e a variação estão na Leitura da preparação')}
+  // A Prontidão aparece uma vez só, na Leitura da preparação; aqui fica apenas a carga do período.
+  const secondaryKpis = `<section class="performance-kpis ui-metric-group" aria-label="Carga no período">
     ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}
   </section>`;
   const history = renderReadinessHistory(model.history, {
@@ -138,7 +141,6 @@ export function renderPerformanceOverview(
   const preparationHtml = renderPreparationReading(preparationReading, {
     escapeHtml,
     escapeAttr,
-    rangeLabel: range?.label,
   });
   const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });
   return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
