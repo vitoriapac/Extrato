@@ -207,10 +207,11 @@ export function QuestionLogTable({
           <button
             type="button"
             class="error-toggle-btn"
+            aria-expanded={expanded}
+            aria-label={`${categorized} de ${vm.errors} erros categorizados`}
             data-delegated-click={`toggleQuestionErrors('${q.id}')`}
           >
-            {isMobile ? 'Erros ' : ''}
-            {categorized}/{vm.errors}
+            {categorized}/{vm.errors} categorizados
           </button>
         );
 

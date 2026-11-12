@@ -11,7 +11,7 @@ export interface SimulationTrendChartProps {
 
 export function SimulationTrendChart({
   visual,
-  label = 'Trajetória de notas de simulados e linha de meta de aprovação',
+  label = 'Trajetória de notas de simulados e meta configurada',
   className = '',
 }: SimulationTrendChartProps): JSX.Element {
   const {
@@ -154,15 +154,6 @@ export function SimulationTrendChart({
             stroke-dasharray="4 3"
             opacity={0.9}
           />
-          <text
-            x={geom.width - geom.padRight}
-            y={geom.targetY - 4}
-            text-anchor="end"
-            fill="var(--chart-series-secondary)"
-            class="text-xs font-data font-semibold"
-          >
-            Meta: {targetScore}%
-          </text>
 
           {/* Rótulos de escala Y */}
           <text
@@ -238,7 +229,7 @@ export function SimulationTrendChart({
                   text-anchor="middle"
                   class="text-xs fill-content-secondary font-mono truncate"
                 >
-                  {pt.date !== '—' && pt.date.length >= 5 ? pt.date.slice(5) : `S${pt.index + 1}`}
+                  {/^\d{4}-\d{2}-\d{2}$/.test(pt.date) ? `${pt.date.slice(8, 10)}/${pt.date.slice(5, 7)}` : `S${pt.index + 1}`}
                 </text>
               </g>
             );
@@ -257,7 +248,7 @@ export function SimulationTrendChart({
         </span>
         <span class="flex items-center gap-2">
           <span class="w-3 h-0.5 border-t border-dashed border-amber"></span>
-          Linha de aprovação ({targetScore}%)
+          Meta configurada ({targetScore}%)
         </span>
       </div>
     </div>

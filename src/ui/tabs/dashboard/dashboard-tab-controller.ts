@@ -469,11 +469,11 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const shown = (value: any) => (value == null ? '—' : `${formatDecimal(value)}%`);
 
     grid.innerHTML = `
-    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas</div></button>
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas · histórico</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
-    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis</div></button>
-    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
-    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de acerto</div></button>`;
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes','simulations')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis · estimativa · abrir</div></button>
+    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas · hoje</div></button>
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de acerto · atual</div></button>`;
   }
 
   function renderExamProgress(): void {
@@ -537,7 +537,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (!doc) return;
     // A lista unificada, na Agenda, soma Calendário + Agenda: o mesmo total do KPI.
     const target =
-      tab === 'agenda' && filter === 'overdue' ? doc.getElementById('agendaAtrasadasCard') : null;
+      tab === 'agenda' && filter === 'overdue' ? doc.getElementById('agendaAtrasadasCard') :
+      tab === 'questoes' && filter === 'simulations' ? doc.getElementById('addSimuladoRowBtn') : null;
     (target || doc.getElementById('panel-' + tab))?.scrollIntoView({
       behavior: scrollBehavior(),
       block: 'start',

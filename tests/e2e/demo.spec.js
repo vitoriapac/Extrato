@@ -1,6 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { openDemo, expectNoPageOverflow, activateTab, openPerformanceHistory } from './helpers.js';
 
+test('desempenho do simulado separa consulta e edição', async ({ page }) => {
+  await openDemo(page);
+  await page.locator('[data-tab="questoes"]').evaluate(button => button.click());
+  await page.locator('#simuladosBody').getByRole('button', { name: 'Ver desempenho' }).first().click();
+  const editor = page.locator('#simuladosBody .simulation-breakdown-edit').first();
+  await expect(editor).not.toHaveAttribute('open');
+  await expect(editor.locator('input').first()).toBeHidden();
+  await editor.locator('summary').click();
+  await expect(editor).toHaveAttribute('open');
+  await editor.getByRole('button', { name: /Adicionar disciplina/ }).click();
+  await expect(page.locator('#simuladosBody .simulation-breakdown-edit').first()).toHaveAttribute('open');
+});
+
 test('prévia e selo da demonstração funcionam no mobile sem alterar a base antes de carregar', async ({
   page,
 }) => {

@@ -159,6 +159,7 @@ export function SimulationLogTable({
           <button
             type="button"
             class={`btn ghost small ${hasBreakdown ? 'has-notes' : ''}`}
+            aria-expanded={expanded}
             data-delegated-click={`toggleBreakdown('${sim.id}')`}
           >
             {expanded ? 'Ocultar detalhes' : 'Ver desempenho'}
@@ -231,6 +232,10 @@ export function SimulationLogTable({
                         className="mb-3"
                       />
                     )}
+                    {!hasBreakdown && <p>Nenhuma disciplina registrada neste simulado.</p>}
+                    <details class="simulation-breakdown-edit">
+                    <summary>Editar disciplinas</summary>
+                    <p>As alterações são salvas automaticamente.</p>
                     <div class="breakdown-list">
                       {(sim.breakdown || []).map(row => {
                         const total = Number(row.total) || 0;
@@ -301,6 +306,9 @@ export function SimulationLogTable({
                       >
                         + Adicionar disciplina
                       </button>
+                    </div>
+                    </details>
+                    <div class="flex items-center gap-2 mt-2">
                       <button
                         type="button"
                         class="btn small breakdown-remediation-btn inline-flex items-center gap-1"

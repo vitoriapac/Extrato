@@ -71,6 +71,8 @@ test('QuestionLogTable Preact Component — renderiza linhas de questões e cate
   assert.match(html, /Direitos Fundamentais/);
   assert.match(html, /80%/);
   assert.match(html, /4\/4/); // Erros categorizados
+  assert.match(html, /aria-expanded="true"/);
+  assert.match(html, /4 de 4 erros categorizados/);
   assert.match(html, /Falta de atenção/);
   assert.match(html, /Interpretação/);
 });
@@ -107,6 +109,8 @@ test('SimulationLogTable Preact Component — renderiza simulados e breakdown ex
   assert.match(html, />70%</);
   assert.match(html, /Desempenho por disciplina/);
   assert.match(html, /Português/);
+  assert.match(html, /<details class="simulation-breakdown-edit"><summary>Editar disciplinas<\/summary>/);
+  assert.match(html, /As alterações são salvas automaticamente/);
 });
 
 test('createQuestionsController — coordena a renderização de questões e simulados', () => {

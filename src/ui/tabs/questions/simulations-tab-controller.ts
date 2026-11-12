@@ -183,6 +183,11 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   function renderSimulados(): void {
     const body = ctx.document.getElementById('simuladosBody');
     if (!body) return;
+    const editingBreakdowns = new Set(
+      Array.from(body.querySelectorAll?.('.simulation-breakdown-edit[open]') || [])
+        .map(details => details.closest('tr')?.previousElementSibling?.getAttribute('data-id'))
+        .filter(Boolean)
+    );
 
     const evolutionSlot = ctx.document.getElementById('simuladosEvolutionSlot');
     if (evolutionSlot) {
@@ -235,6 +240,10 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     });
 
     body.innerHTML = controller.renderSimulationsHtml();
+    body.querySelectorAll?.('.breakdown-row').forEach(row => {
+      const id = row.previousElementSibling?.getAttribute('data-id');
+      if (id && editingBreakdowns.has(id)) row.querySelector('details')?.setAttribute('open', '');
+    });
   }
 
   function addSimuladoRow() {

@@ -338,7 +338,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 11,
+      "staticTestDeclarations": 12,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 7,
       "observedCaseSeconds": 150,
