@@ -30,7 +30,7 @@ test('leitura da preparação: a ação é a de Hoje, com o mesmo ID, medida con
   assert.equal(reading.whatToDo.action.recommendationId, 'rec-1');
   assert.match(reading.whatToDo.action.planNote, /No plano da semana/);
   assert.match(reading.whatToDo.deficit, /Faltam/);
-  assert.match(reading.howAmI.rhythm.text, /70% do tempo planejado/);
+  assert.match(reading.howAmI.rhythm.text, /volume de carga de 70%/);
   assert.ok(reading.pulling.some(item => /revisões vencidas/.test(item.text)));
 });
 

@@ -75,7 +75,7 @@ export function renderPreparationReading(
     <div class="performance-reading__grid">
       <section class="performance-reading__how" aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>${howPrimary}</section>
       <section class="performance-reading__support-block" aria-label="Números de apoio">${howSupport}</section>
-      <section class="performance-reading__pull" aria-labelledby="performanceReadingPull"><h4 id="performanceReadingPull">O que mais pesa</h4>${pull}</section>
+      <section class="performance-reading__pull" aria-labelledby="performanceReadingPull"><h4 id="performanceReadingPull">O que mais pesa</h4><p class="m-0 performance-reading__support">Pontos de atenção, não a recomendação.</p>${pull}</section>
       <section class="performance-reading__todo" aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">O que fazer</h4>${todo}</section>
     </div>${evidenceHtml}
   </section>`;

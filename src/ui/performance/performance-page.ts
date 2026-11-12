@@ -69,14 +69,15 @@ export function renderPerformanceChromeHtml({
     : 'Todos os concursos';
   const prevStart = range.previous?.start;
   const prevEnd = range.previous?.end;
-  const scopeNote = [
+  const periodText =
     viewState.section === 'exam'
       ? 'Histórico de provas'
       : viewState.section === 'history'
         ? 'Período definido nos filtros de sessões'
         : viewState.section === 'diagnosis'
           ? 'Situação atual'
-          : escapeHtml(range.label),
+          : escapeHtml(range.label);
+  const restText = [
     // Com a barra de filtros visível, o escopo já aparece nela.
     hasToolbar ? '' : scopeLabel,
     viewState.section === 'exam' || viewState.section === 'diagnosis' || !prevStart || !prevEnd
@@ -85,6 +86,10 @@ export function renderPerformanceChromeHtml({
   ]
     .filter(Boolean)
     .join(' · ');
+  // No celular o resumo dos filtros já diz o período: o trecho do período some e sobra só a comparação.
+  const scopeNote = hasToolbar
+    ? `<span class="performance-scope-note__period">${periodText}${restText ? ' · ' : ''}</span>${restText}`
+    : [periodText, restText].filter(Boolean).join(' · ');
 
   const toolbarHtml = !hasToolbar
     ? ''

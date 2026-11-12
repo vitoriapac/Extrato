@@ -117,7 +117,7 @@ export function buildPreparationReading({
   const week = weeklyBrief?.current;
   const rhythmText =
     week && week.plannedMinutes > 0 && week.planFulfillmentPct != null
-      ? `${formatStudyMinutes(week.studiedMinutes)} estudados de ${formatStudyMinutes(week.plannedMinutes)} planejados nos últimos 7 dias (${week.planFulfillmentPct}% do tempo planejado).`
+      ? `${formatStudyMinutes(week.studiedMinutes)} estudados de ${formatStudyMinutes(week.plannedMinutes)} planejados nos últimos 7 dias (volume de carga de ${week.planFulfillmentPct}%).`
       : null;
   if (!rhythmText)
     evidence.push('Sem tempo planejado nos últimos 7 dias: o ritmo não tem referência.');

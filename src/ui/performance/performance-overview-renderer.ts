@@ -42,6 +42,10 @@ const glossaryItems: Array<[string, string]> = [
   ],
   ['Incidência', 'Percentual das provas do histórico em que o tópico aparece.'],
   [
+    'Volume de carga',
+    'Minutos estudados divididos pelos minutos planejados no mesmo intervalo. Pode superar 100%.',
+  ],
+  [
     'Amostra',
     'Precisão por disciplina exige 10 respostas. Comparar períodos e ver tendência exige 30 questões em cada período.',
   ],
