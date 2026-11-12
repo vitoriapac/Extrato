@@ -17,21 +17,21 @@ const html = (plannedMin, studiedMin, capacityMin = 720) =>
     })
   );
 
-test('minutos fracionários arredondam antes de virar horas (119,7 min = 2h00)', () => {
+test('minutos fracionários arredondam antes de virar horas (119,7 min = 2h)', () => {
   const out = html(100, 50, 119.7);
-  assert.match(out, />2h00</);
-  assert.doesNotMatch(out, /1h00/);
+  assert.match(out, />2h</);
+  assert.doesNotMatch(out, />1h</);
 });
 
 test('aviso de plano curto usa o múltiplo exibido (2,04 não mostra; 2,06 mostra)', () => {
-  assert.doesNotMatch(html(100, 204), /tempo distribuído nos dias/);
-  assert.match(html(100, 206), /tempo distribuído nos dias/);
+  assert.doesNotMatch(html(100, 204), /tempo com tarefa marcada/);
+  assert.match(html(100, 206), /tempo com tarefa marcada/);
 });
 
 test('resumo diferencia a semana inteira do realizado até hoje', () => {
   const out = html(400, 231);
-  assert.match(out, /Inclui dias futuros/);
-  assert.match(out, /Volume acima da distribuição/);
+  assert.match(out, /inclui dias futuros/);
+  assert.match(out, /Estudo extra, sem tarefa marcada/);
   assert.match(out, /Estudado até hoje/);
 });
 

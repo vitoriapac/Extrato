@@ -45,6 +45,7 @@ export function renderSubjectTargetEditor({
     if (Number.isFinite(numeric) && numeric > 0) sumWeekly += numeric;
   }
 
+  const globalQuestions = Number(globalWeeklyQuestions) || 0;
   const hasDirty = accDraftMap.size > 0 || wkDraftMap.size > 0;
 
   return render(
@@ -97,8 +98,14 @@ export function renderSubjectTargetEditor({
       >
         <table>
           <caption>
-            Meta global: {globalTarget}% de acerto · {Number(globalWeeklyQuestions) || 0}{' '}
-            questões/semana. Soma das metas por disciplina: {sumWeekly} questões/semana.
+            {globalQuestions > 0
+              ? `Meta global: ${globalTarget}% de acerto · ${globalQuestions} questões/semana.`
+              : `Meta global: ${globalTarget}% de acerto, sem meta global de questões: vale a soma das disciplinas.`}{' '}
+            Soma das metas por disciplina: {sumWeekly} questões/semana
+            {globalQuestions > 0 && sumWeekly !== globalQuestions
+              ? `, diferente da meta global (${globalQuestions})`
+              : ''}
+            .
           </caption>
           <thead>
             <tr>

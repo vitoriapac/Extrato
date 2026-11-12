@@ -18,7 +18,7 @@ export function weeklyCloseFigures(
     ['Planejado', planned == null ? '—' : formatMinutes(planned)],
     ['Realizado', formatMinutes(executed)],
     [
-      summary ? 'Crédito ao plano' : 'Volume de carga',
+      summary ? 'Aderência ao plano' : 'Volume de carga',
       credit == null ? '—' : `${formatDecimal(credit)}%`,
     ],
     [

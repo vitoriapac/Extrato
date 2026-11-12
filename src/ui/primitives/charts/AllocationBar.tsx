@@ -56,7 +56,7 @@ export function AllocationBar({
       {/* Header com totais */}
       <div class="flex items-center justify-between gap-3 text-xs">
         <div>
-          <span class="font-semibold text-content-primary">Capacidade Semanal Alocada</span>
+          <span class="font-semibold text-content-primary">Capacidade semanal alocada</span>
           <div class="text-xs text-content-secondary">
             {formatMinutes(totalWeeklyMinutes)} divididos entre as disciplinas
             {weeklyCapacityMinutes > 0 &&

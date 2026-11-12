@@ -3539,3 +3539,11 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 
 /* Texto auxiliar da Agenda: medida de leitura confortável em telas largas. */
 #panel-agenda .helper-text--compact{max-width:72ch}
+
+/* Plano da semana: um botão cheio e as outras formas de planejar como links. */
+.study-plan-more{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);margin:var(--space-2) 0 0;font-size:var(--text-small);color:var(--text-secondary)}
+
+/* Planejamento: alvo mínimo de 24 px (WCAG 2.5.8) nos checkboxes de seleção, sem mudar o desenho. */
+.exam-subject-bulk label,.exam-subject-check,.active-exams label,.subject-target-bulk label,.subject-target-table-wrap td[data-label="Disciplina"] label{display:inline-flex;align-items:center;gap:var(--space-2);min-height:24px}
+.exam-subject-check{min-width:24px;justify-content:center}
+.exam-subject-bulk input[type=checkbox],.exam-subject-check input[type=checkbox],.active-exams input[type=checkbox],.subject-target-bulk input[type=checkbox],.subject-target-table-wrap input[type=checkbox]{width:16px;height:16px;flex:none}

@@ -32,7 +32,7 @@ export function PhaseRoadmapTimeline({
         <div class="inline-flex p-3 rounded-full bg-surface-sunken text-content-secondary mb-2">
           <Icon name="calendar-event" size={20} stroke={1.5} />
         </div>
-        <p class="text-sm font-medium text-content-primary">Data da Prova Não Definida</p>
+        <p class="text-sm font-medium text-content-primary">Data da prova não definida</p>
         <p class="text-xs text-content-secondary mt-1">
           Defina a data prevista do seu concurso para ativar a régua de fases e o Modo Reta Final.
         </p>

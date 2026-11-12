@@ -386,7 +386,7 @@ Bloco musgo com eyebrow Sálvia Claro (11px, 0.14em), título Fraunces 28px, nú
 Rótulo à esquerda, guia pontilhada de 1px em `border-control` (decorativa, `aria-hidden`) e valor à direita em Mono pequeno com números tabulares, sem quebra. O total (`--total`, linha de 2px acima) e o estado (`is-negative`, `is-positive`) sempre vêm em texto, com sinal ou palavra; a cor nunca é a única leitura. É a forma de mostrar "quanto" em Hoje e em Planejamento; sem sombra nem moldura próprias.
 
 ### Conciliação
-Compara minutos em linhas de razão, só na apresentação (sem regra de domínio nova). No dia (Hoje): Disponível, Planejado, Estudado, Excedente (só quando o plano passa da disponibilidade) e Livre; sem plano calculado, nada é conciliado. Na semana (Planejamento): capacidade, planejado, fora do plano (estudado acima do planejado) e realizado, com o período explícito. O excedente diz o tempo em minutos e leva a "Ajustar o dia", sublinhado e com alvo de 44px em toque.
+Compara minutos em linhas de razão, só na apresentação (sem regra de domínio nova). No dia (Hoje): Disponível, Planejado, Estudado, Excedente (só quando o plano passa da disponibilidade) e Livre; sem plano calculado, nada é conciliado. Na semana (Planejamento) as quatro linhas têm nome e período fixos: "Capacidade da semana", "Com tarefa marcada" (semana inteira, inclui dias futuros), "Estudado até hoje" e "Estudo extra, sem tarefa marcada" (estudado além do que tinha tarefa). O aviso aparece quando o estudo passa de 2× o tempo marcado ou quando menos da metade da capacidade tem tarefa. O Fechamento e os Retratos usam esses mesmos nomes e "Aderência ao plano" para o tempo com vínculo seguro; "crédito" fica só no detalhe. O excedente diz o tempo em minutos e leva a "Ajustar o dia", sublinhado e com alvo de 44px em toque.
 
 ### Filas da Agenda
 Três filas rotuladas por tipo e período: Vencidas, Hoje e Próx. 7 dias, cada uma com o total e a divisão em Revisão espaçada e Tarefa de estudo. Vencidas só ganha ênfase quando há itens ("Nada atrasado" quando vazia). O calendário Mês continua visível no desktop, abaixo das filas.
@@ -419,6 +419,8 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Do** manter Plex Mono para números, datas, durações e códigos, Fraunces para valores e marca, e Plex Sans para rótulos, estados e ações.
 - **Do** usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.
 - **Do** dar a todo badge de estado um rótulo textual.
+- **Do** escrever durações no formato único do app (`formatPlanMinutes`: `1h20`, `2h`, `48min`) e títulos em caixa de frase ("Capacidade semanal alocada", não "Capacidade Semanal Alocada").
+- **Do** manter um só botão cheio por tela de decisão. No Plano da semana é "Distribuir nos próximos 7 dias"; sem data de prova, é "Definir data da prova". "Calcular proposta semanal" e "Simular E se?" ficam como links terciários em "Outras formas de planejar".
 - **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px em toque; links de tópico e disciplina em listas densas têm no mínimo 24px com ponteiro fino).
 - **Do** usar foco sálvia visível em tudo que é interativo, com `--accent` no anel: `--brand` quase coincide com o fundo no tema escuro (1,1:1).
 - **Do** manter um único botão primário por card; repetições em lista usam `tonal`.

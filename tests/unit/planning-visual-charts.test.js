@@ -206,7 +206,7 @@ test('renderGroupedBarChart, renderAllocationBar, renderPhaseRoadmapTimeline —
   });
   const allocHtml = renderAllocationBar({ visual: allocationVisual });
   assert.ok(allocHtml.includes('chart-allocation-bar'));
-  assert.ok(allocHtml.includes('Capacidade Semanal Alocada'));
+  assert.ok(allocHtml.includes('Capacidade semanal alocada'));
 
   const roadmapVisual = buildPhaseRoadmapVisual({
     examDate: '2026-12-01',

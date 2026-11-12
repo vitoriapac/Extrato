@@ -537,7 +537,14 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
             label: 'Distribuição da capacidade semanal do plano confirmado',
           })
         : '';
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}<div class="study-plan-actions">${latest ? '<button class="btn" type="button" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ''}<button class="btn${latest ? ' ghost' : ''}" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${activeOperation ? '<button class="btn ghost" type="button" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}<button class="btn ghost small" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></div>${allocationBarHtml}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}`;
+      // Um só botão cheio: o passo que o aluno precisa dar agora.
+      const calcIsPrimary = !latest && Boolean(deps.getState().examDate);
+      const primaryAction = latest
+        ? '<button class="btn" type="button" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>'
+        : deps.getState().examDate
+          ? '<button class="btn" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'
+          : '<a class="btn" href="#planejamento/prova">Definir data da prova</a>';
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}<div class="study-plan-actions">${primaryAction}${activeOperation ? '<button class="btn ghost" type="button" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}</div><p class="study-plan-more">Outras formas de planejar: ${calcIsPrimary ? '' : '<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'}<button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>${allocationBarHtml}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}`;
       return;
     }
 

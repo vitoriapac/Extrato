@@ -39,13 +39,13 @@ export function WeeklyCloseKpis({
         </div>
         <div>
           <strong>{credit == null ? '—' : `${formatDecimal(credit)}%`}</strong>
-          <span>{summary ? 'Crédito ao plano' : 'Volume de carga'}</span>
+          <span>{summary ? 'Aderência ao plano' : 'Volume de carga'}</span>
         </div>
       </section>
       {summary && Number(planned) > 0 && Number(executed) > 0 && Number(credit) === 0 && (
         <p class="analytics-note">
-          Sessões sem vínculo com as tarefas planejadas entram no tempo realizado, mas não geram
-          crédito ao plano.
+          Sessões sem vínculo com as tarefas planejadas entram no tempo realizado, mas não contam na
+          aderência ao plano.
         </p>
       )}
     </>

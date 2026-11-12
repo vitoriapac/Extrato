@@ -8,10 +8,10 @@ export const PLANNING_SUBTAB_DEFS: ReadonlyArray<{
   label: string;
 }> = [
   { id: 'semana', label: 'Plano da semana' },
-  { id: 'prova', label: 'Configuração da prova' },
+  { id: 'prova', label: 'Prova e ritmo' },
   { id: 'metas', label: 'Metas por disciplina' },
   { id: 'fechamento', label: 'Fechamento semanal' },
-  { id: 'historico', label: 'Retratos e decisões' },
+  { id: 'historico', label: 'Histórico' },
 ];
 
 export interface PlanningSubtabsNavProps {
