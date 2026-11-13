@@ -3557,3 +3557,5 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .exam-subject-bulk label,.exam-subject-check,.active-exams label,.subject-target-bulk label,.subject-target-table-wrap td[data-label="Disciplina"] label{display:inline-flex;align-items:center;gap:var(--space-2);min-height:24px}
 .exam-subject-check{min-width:24px;justify-content:center}
 .exam-subject-bulk input[type=checkbox],.exam-subject-check input[type=checkbox],.active-exams input[type=checkbox],.subject-target-bulk input[type=checkbox],.subject-target-table-wrap input[type=checkbox]{width:16px;height:16px;flex:none}
+
+.brand-home img{display:inline-block;vertical-align:middle;margin-right:.4em;width:1.1em;height:1.1em}

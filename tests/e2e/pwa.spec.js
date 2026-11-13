@@ -154,6 +154,8 @@ test('aplicativo em /app abre offline após atualização do service worker', as
 
 test('expõe manifest instalável com ícones completos', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /icons\/app-icon\.svg/);
+  await expect(page.locator('.statement-title img')).toHaveAttribute('src', 'icons/app-icon.svg');
   const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
   const manifest = await page.evaluate(async href => (await fetch(href)).json(), manifestHref);
   expect(manifest.start_url).toBe('/app');

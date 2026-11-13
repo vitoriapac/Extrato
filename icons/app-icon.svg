@@ -1,33 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <!-- Fundo oficial Verde-Musgo do App -->
-  <rect width="512" height="512" rx="108" fill="#1E3F35"/>
-  
-  <!-- The Golden Folio 'E' escalado no centro -->
-  <g transform="translate(80, 80) scale(3.52)">
-    <!-- Curva superior contínua do livro aberto -->
-    <path d="M14 28 C24 24 36 23 48 26 C60 23 72 24 82 28" stroke="#F4F6F4" stroke-width="3.2" stroke-linecap="round" />
-    
-    <!-- Curva inferior contínua do livro aberto -->
-    <path d="M14 70 C24 66 36 65 48 68 C60 65 72 66 75 67" stroke="#F4F6F4" stroke-width="3.2" stroke-linecap="round" />
-    
-    <!-- Borda externa esquerda da folha -->
-    <path d="M14 28 V70" stroke="#F4F6F4" stroke-width="3.2" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#1E3F35"/><g fill="none" transform="translate(20 20) scale(.6)">
+  <path d="M27 10h35l20 20v47a13 13 0 0 1-13 13H27a13 13 0 0 1-13-13V23a13 13 0 0 1 13-13Z" stroke="#F4F6F4" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M62 11v12a8 8 0 0 0 8 8h11" fill="#F4F6F4" stroke="#F4F6F4" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M31 40h29" stroke="#E9953F" stroke-width="6" stroke-linecap="round"/>
+  <g fill="#E9953F"><rect x="28" y="51" width="6" height="6" rx="2"/><rect x="28" y="63" width="6" height="6" rx="2"/><rect x="28" y="75" width="6" height="6" rx="2"/></g>
+  <path d="M43 54h25M43 66h25M43 78h25" stroke="#F4F6F4" stroke-width="6" stroke-linecap="round"/>
 
-    <!-- Vinco/Lombada central -->
-    <line x1="48" y1="26" x2="48" y2="68" stroke="#F4F6F4" stroke-width="3.2" stroke-linecap="round" />
-
-    <!-- Linhas contábeis fluidas na página esquerda -->
-    <path d="M22 39 C28 37 36 36.5 42 38.5" stroke="#A8D3B8" stroke-width="2.6" stroke-linecap="round" />
-    <path d="M22 49 C28 47 36 46.5 42 48.5" stroke="#A8D3B8" stroke-width="2.6" stroke-linecap="round" />
-    <path d="M22 59 C28 57 34 56.5 38 58.5" stroke="#A8D3B8" stroke-width="2.6" stroke-linecap="round" />
-
-    <!-- Monograma 'E' na página direita -->
-    <path d="M54 36 H74" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" />
-    <path d="M54 48.5 H68" stroke="#A8D3B8" stroke-width="3.6" stroke-linecap="round" />
-    <path d="M54 61 H64" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" />
-
-    <!-- Selo de Prontidão âmbar -->
-    <circle cx="78" cy="69" r="8" stroke="#E9953F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="39 10" transform="rotate(-90 78 69)" />
-    <circle cx="78" cy="69" r="1.8" fill="#E9953F" />
-  </g>
-</svg>
+</g></svg>

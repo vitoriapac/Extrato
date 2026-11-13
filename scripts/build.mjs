@@ -36,9 +36,24 @@ async function filesUnder(directory) {
 
 const indexPath = resolve(projectRoot, 'index.html');
 const indexSource = await readFile(indexPath, 'utf8');
-const normalizedIndex = indexSource.replace(assetVersionPattern, `$1${versionPlaceholder}`);
+const normalizedIndex = indexSource
+  .replace(assetVersionPattern, `$1${versionPlaceholder}`)
+  .replace(
+    /<link rel="icon"[^>]*>/,
+    '<link rel="icon" type="image/svg+xml" href="icons/app-icon.svg">'
+  )
+  .replace(
+    /(<button class="(?:statement-title|compact-brand) brand-home"[^>]*>)(?:<img[^>]*>)?Extrato de Estudos/g,
+    '$1<img src="icons/app-icon.svg" alt="" width="28" height="28">Extrato de Estudos'
+  );
 const landingSource = await readFile(resolve(projectRoot, 'landing.html'), 'utf8');
-const normalizedLanding = landingSource.replace(assetVersionPattern, `$1${versionPlaceholder}`);
+const normalizedLanding = landingSource
+  .replace(assetVersionPattern, `$1${versionPlaceholder}`)
+  .replace(/\s*<link rel="icon"[^>]*>/, '')
+  .replace(
+    '  <meta name="color-scheme"',
+    '  <link rel="icon" type="image/svg+xml" href="/icons/app-icon.svg">\n  <meta name="color-scheme"'
+  );
 const sourceFiles = [
   ...(await filesUnder('src')).filter(
     path => /\.(?:js|ts|tsx)$/.test(path) && !bundles.some(bundle => bundle.output === path)
@@ -61,7 +76,9 @@ for (const path of sourceFiles) {
   const isTextFile = /\.(?:css|html|js|ts|tsx|json|mjs|svg|webmanifest)$/i.test(path);
   const contents =
     path === 'index.html' || path === 'landing.html'
-      ? path === 'index.html' ? normalizedIndex : normalizedLanding
+      ? path === 'index.html'
+        ? normalizedIndex
+        : normalizedLanding
       : await readFile(resolve(projectRoot, path), isTextFile ? 'utf8' : undefined);
   const stableContents = typeof contents === 'string' ? contents.replace(/\r\n/g, '\n') : contents;
   versionHash.update(path).update('\0').update(stableContents).update('\0');

@@ -260,6 +260,7 @@ export function SalesLandingPage({
       >
         <div class="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
+            <img src="/icons/app-icon.svg" alt="" width="32" height="32" />
             <span class="font-display font-semibold text-lg tracking-tight text-text">
               Extrato de Estudos
             </span>
@@ -915,6 +916,7 @@ export function SalesLandingPage({
       <footer class="border-t border-border-default bg-surface-card py-8">
         <div class="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-secondary">
           <div class="flex items-center gap-2">
+            <img src="/icons/app-icon.svg" alt="" width="24" height="24" />
             <strong class="font-display text-text">Extrato de Estudos</strong>
             <span>· Copyright (c) 2026 Vitória Pac. Todos os direitos reservados.</span>
           </div>

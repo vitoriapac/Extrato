@@ -362,7 +362,7 @@ function LandingPage() {
               class="inline-flex min-h-touch items-center gap-2 pl-1 font-display text-base font-semibold text-brand no-underline sm:text-lg"
             >
               <img
-                src="/icons/app-icon.svg"
+                src="/assets/landing/logo-extrato.svg"
                 alt=""
                 width="32"
                 height="32"
@@ -705,7 +705,7 @@ function LandingPage() {
                 class="inline-flex min-h-touch items-center gap-3 rounded font-display text-xl font-semibold text-brand no-underline"
               >
                 <img
-                  src="/icons/app-icon.svg"
+                  src="/assets/landing/logo-extrato.svg"
                   alt=""
                   width="32"
                   height="32"
