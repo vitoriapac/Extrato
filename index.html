@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=594e7ce1432a">
-<link rel="stylesheet" href="styles/app.css?v=594e7ce1432a">
+<link rel="stylesheet" href="styles/tailwind.css?v=356f898364ff">
+<link rel="stylesheet" href="styles/app.css?v=356f898364ff">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -446,8 +446,12 @@
       </div>
     </header>
     <p class="helper-text helper-text--compact">
-      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico em Disciplinas (24h, 7 e 30 dias; o filtro de tipo também lista as de 3, 14 e 15 dias e as livres). <strong>Tarefas de estudo</strong> são as que você agenda. Os indicadores e as atrasadas somam as duas. <a href="#instrucoes" class="text-brand dark:text-accent hover:underline inline-flex items-center gap-1 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a>
+      <strong>Revisões espaçadas</strong> nascem quando você conclui um tópico; <strong>tarefas de estudo</strong> são as que você agenda.
     </p>
+    <details class="limits-disclosure">
+      <summary>Como as revisões e os indicadores são contados</summary>
+      <p class="helper-text helper-text--compact">As revisões nascem em Disciplinas, em 24h, 7 e 30 dias; o filtro de tipo também lista as de 3, 14 e 15 dias e as livres. Os indicadores e as atrasadas somam revisões e tarefas. <a href="#instrucoes" class="text-brand dark:text-accent hover:underline inline-flex items-center gap-1 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção &rarr;</a></p>
+    </details>
 
     <div class="kpi-grid" id="calIndicadores"></div>
 
@@ -770,7 +774,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=594e7ce1432a"></script>
+  <script src="src/app.bundle.js?v=356f898364ff"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

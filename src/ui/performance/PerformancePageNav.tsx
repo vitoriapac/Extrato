@@ -9,14 +9,8 @@ export interface PerformanceGroupDef {
 
 export const PERFORMANCE_GROUPS: ReadonlyArray<PerformanceGroupDef> = [
   { key: 'overview', label: 'Visão geral', items: [['overview', 'Visão geral']] },
-  {
-    key: 'subjects',
-    label: 'Disciplinas',
-    items: [
-      ['subjects', 'Por disciplina'],
-      ['diagnosis', 'Diagnóstico'],
-    ],
-  },
+  { key: 'subjects', label: 'Disciplinas', items: [['subjects', 'Por disciplina']] },
+  { key: 'diagnosis', label: 'Diagnóstico', items: [['diagnosis', 'Diagnóstico']] },
   {
     key: 'proofs',
     label: 'Questões e provas',
@@ -26,14 +20,8 @@ export const PERFORMANCE_GROUPS: ReadonlyArray<PerformanceGroupDef> = [
       ['exam', 'Inteligência da prova'],
     ],
   },
-  {
-    key: 'consistency',
-    label: 'Consistência',
-    items: [
-      ['consistency', 'Ritmo e aderência'],
-      ['history', 'Conquistas e histórico'],
-    ],
-  },
+  { key: 'consistency', label: 'Ritmo e aderência', items: [['consistency', 'Ritmo e aderência']] },
+  { key: 'history', label: 'Conquistas', items: [['history', 'Conquistas e histórico']] },
 ];
 
 export function performanceGroupOf(section: string): string | null {

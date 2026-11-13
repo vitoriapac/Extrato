@@ -20,7 +20,7 @@ export function PlannedActionCard({ next, own, blocked, minutes, typeLabel, reas
           <button type="button" class="btn" data-daily-start={next.id}>{next.status === 'partial' ? 'Continuar estudo' : 'Iniciar estudo'}</button>}
       </div>
       {matchesAction || aligned ? <p class="overview-action-suggestion">Prioridade principal prevista no plano.</p> : suggestion &&
-        <p class="overview-action-suggestion">Sugestão fora do plano: {suggestion.subjectName} · {suggestion.topicName}{Number.isFinite(Number(suggestion.score)) ? ` (prioridade ${Math.round(Number(suggestion.score))}/100)` : ''}. <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver por quê</button></p>}
+        <p class="overview-action-suggestion">Sugestão fora do plano: {suggestion.subjectName} · {suggestion.topicName}. Seu plano de hoje continua valendo. <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver por quê</button></p>}
       {reasons.length > 1 && <details class="daily-execution-reasons"><summary>Por que estudar isso agora?</summary><ul>{reasons.slice(1).map((reason, index) => <li key={index}>{reason}</li>)}</ul></details>}
     </article>
   );

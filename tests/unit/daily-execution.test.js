@@ -205,7 +205,7 @@ test('renderer não atribui motivos estratégicos a outra atividade do plano', (
   });
   assert.doesNotMatch(html, /Prioridade principal prevista no plano/);
   assert.doesNotMatch(html, /Lacuna prioritária/);
-  assert.match(html, /Sugestão fora do plano: Outra · Revisão \(prioridade 80\/100\)/);
+  assert.match(html, /Sugestão fora do plano: Outra · Revisão\. Seu plano de hoje continua valendo\./);
 });
 test('renderer apresenta dia concluído e orientação sem plano', () => {
   const input = fixture();

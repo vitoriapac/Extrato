@@ -15,16 +15,16 @@ export async function activateTab(page, name) {
   await page.locator(`[data-tab="${name}"]`).evaluate(button => button.click());
   await expect(page.locator(`#panel-${name}`)).toBeVisible();
 }
-// Subabas de Desempenho em dois níveis: o botão da seção só existe quando o grupo dela está ativo.
+// Só "Questões e provas" tem subabas; as demais seções são abas diretas.
 const PERFORMANCE_GROUP = {
   overview: 'overview',
   subjects: 'subjects',
-  diagnosis: 'subjects',
+  diagnosis: 'diagnosis',
   questions: 'proofs',
   simulations: 'proofs',
   exam: 'proofs',
   consistency: 'consistency',
-  history: 'consistency',
+  history: 'history',
 };
 export async function openPerformanceSection(page, section) {
   const button = page.locator(`[data-performance-section="${section}"]`);

@@ -341,6 +341,8 @@ Cantos discretos: 8px (`--radius-card`) em cards, painéis, modais e tabelas; 6p
 
 Uma duração só para transições de interface: `--motion-duration` (160ms) em botões, abas e controles. Animações são pontuais e comunicam um evento (o anel do plano cumprido pulsa uma vez; o lançamento da sessão entra uma vez). Com `prefers-reduced-motion: reduce`, transições e animações vão a zero.
 
+Exceção intencional: a faixa `.landing-marquee` da landing rola em loop contínuo por decisão da autora (confirmada em 2026-11-13). Vale só para a landing; o app não usa rolagem automática. O detector `marquee` está ignorado para `index.html` por isso (`.impeccable/config.json`).
+
 ## Components
 
 ### Buttons
@@ -375,7 +377,7 @@ Três níveis, um primário por card: o primário é a próxima ação; o tonal 
 ### Navigation
 - **Abas:** Sans 500 13px sem caixa-alta, fundo ardósia, texto tinta-suave; ativa em musgo com texto Sálvia Claro; hover em `tab-hover-bg`.
 - **Navegação de seções (Visão Geral):** barra fixa em papel com links Sans 12px; hover/foco ganham fundo ardósia e contorno sálvia de 1px.
-- **Subabas de Desempenho:** duas linhas de abas (`role="tablist"`). A primeira tem quatro grupos, com a ativa em musgo; a segunda, só do grupo ativo, usa fundo transparente e a ativa em `green-bg` com borda sálvia. Setas, Home e End funcionam em cada nível, e trocar de grupo abre a primeira seção dele. No celular os quatro grupos dividem a largura (padding de 8px, texto 13px) sem cortar "Consistência", e os filtros (período, comparação e escopo) viram uma linha de resumo com "Alterar filtros", que abre os controles. O hash da URL acompanha a seção, inclusive no botão Voltar.
+- **Subabas de Desempenho:** seis abas diretas (`role="tablist"`): Visão geral, Disciplinas, Diagnóstico, Questões e provas, Ritmo e aderência e Conquistas, com a ativa em musgo. Só "Questões e provas" abre uma segunda linha (Questões, Simulados, Inteligência da prova), de fundo transparente e ativa em `green-bg` com borda sálvia. Setas, Home e End funcionam em cada nível, e trocar de grupo abre a última seção vista nele. No celular as abas dividem a largura (padding de 8px, texto 13px) sem estourar a página, e os filtros (período, comparação e escopo) viram uma linha de resumo com "Alterar filtros", que abre os controles. O hash da URL acompanha a seção, inclusive no botão Voltar.
 - **Mobile (<760px):** navegação inferior fixa com Início, Desempenho, Hoje, Agenda e menu "Mais"; a busca vira uma lupa que abre a paleta de comandos.
 - **Atalhos dos blocos (Planejamento):** barra sublinhada de `Tabs` (`role="tablist"` em `PlanningSubtabsNav.tsx`), com abas (`role="tab"`, `aria-selected="true"` e `aria-controls`, fundo ardósia e sublinhado sálvia) vinculadas a cinco painéis exclusivos (`role="tabpanel"` e `hidden`); setas, Home e End passam de uma seção à outra no desktop, em sincronia com o seletor mobile `#metasSubtabSelect` e com a rota `#planejamento/<sub-aba>`.
 

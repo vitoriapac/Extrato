@@ -57,7 +57,7 @@ export function renderMiniComparisonChart(
           </div>
         </div>${
           metric.label === 'Aderência ao plano' && metric.currentValue > 100
-            ? '<p class="text-xs text-content-secondary m-0">Acima de 100%: você estudou mais tempo do que o plano previa nos últimos 7 dias.</p>'
+            ? `<p class="text-xs text-content-secondary m-0">Acima de 100%: você estudou mais tempo do que o plano previa nos últimos 7 dias.${metric.currentValue > 150 ? ' Com pouco tempo planejado, o percentual sobe rápido.' : ''}</p>`
             : ''
         }
       </div>`;

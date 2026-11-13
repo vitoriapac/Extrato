@@ -86,8 +86,8 @@ export function ExecutiveSummaryView({ summary }: { summary: AnyRecord }): JSX.E
       </div>
       <div class="executive-decision-grid">
         <section>
-          <h4>Próxima ação</h4>
-          <p>A prioridade do dia e o motivo ficam em Hoje.</p>
+          <h4>Prioridade do dia</h4>
+          <p>A atividade do plano e o motivo estão em Hoje.</p>
           <button
             class="btn ghost small"
             type="button"

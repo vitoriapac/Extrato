@@ -151,9 +151,9 @@ test('SessionModalSheet — usa BottomSheet + SelectField e alterna campos por a
 
 test('PerformancePageNav e renderPerformancePage — usa Tabs em dois níveis sem aria-current inválido', () => {
   assert.equal(performanceGroupOf('overview'), 'overview');
-  assert.equal(performanceGroupOf('diagnosis'), 'subjects');
+  assert.equal(performanceGroupOf('diagnosis'), 'diagnosis');
   assert.equal(performanceGroupOf('simulations'), 'proofs');
-  assert.equal(performanceGroupOf('history'), 'consistency');
+  assert.equal(performanceGroupOf('history'), 'history');
 
   const overviewNav = render(h(PerformancePageNav, { activeSection: 'overview' }));
   assert.equal((overviewNav.match(/role="tablist"/g) || []).length, 1);

@@ -505,7 +505,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     // A lista completa mora na Agenda; Hoje e Calendário mostram só a contagem com o caminho até ela.
     if (elId !== 'calAtrasadas') {
       ul.innerHTML = items.length
-        ? `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}</span><div class="flex items-center gap-2 mt-2"><button type="button" class="btn small" data-action="open-recovery-mission">Resgatar em 30 min</button><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></div></li>`
+        ? `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}</span><div class="flex items-center gap-2 mt-2">${elId === 'hojeAtrasadas' ? '' : '<button type="button" class="btn small" data-action="open-recovery-mission">Resgatar em 30 min</button>'}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></div></li>`
         : '<li class="upcoming-empty">Nenhuma pendência atrasada.</li>';
       return;
     }

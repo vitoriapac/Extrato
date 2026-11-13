@@ -7,8 +7,8 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
 
   const tablist = page.getByRole('tablist', { name: 'Análises de desempenho' });
   const tabs = tablist.getByRole('tab');
-  await expect(tabs).toHaveCount(4);
-  await expect(tabs.nth(2)).toHaveText('Questões e provas');
+  await expect(tabs).toHaveCount(6);
+  await expect(tabs.nth(3)).toHaveText('Questões e provas');
   await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
   await expect(tabs.first()).toHaveAttribute('tabindex', '0');
   await expect(tabs.nth(1)).toHaveAttribute('tabindex', '-1');
@@ -19,9 +19,7 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect(tabs.nth(1)).toBeFocused();
 
-  await expect(
-    page.getByRole('tablist', { name: 'Seções de Disciplinas' }).getByRole('tab')
-  ).toHaveCount(2);
+  await expect(page.getByRole('tablist', { name: 'Seções de Questões e provas' })).toHaveCount(0);
 
   await page.keyboard.press('End');
   await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
