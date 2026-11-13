@@ -3525,6 +3525,11 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .today-metas-section .meta-hoje-time-goal{justify-self:start;align-items:center}
 .today-metas-section .meta-hoje-card p{margin:var(--space-1) 0 0;font-size:var(--text-micro);line-height:1.4;color:var(--ink-soft)}
 @media(max-width:359px){.today-metas-section .metas-hoje-grid{grid-template-columns:minmax(0,1fr)}}
+.performance-reading__grid{grid-template-areas:"todo how pull" "todo support pull"}
+@media(max-width:760px){.performance-reading__grid{grid-template-areas:"todo" "how" "pull" "support"}}
+.study-plan-guidance{display:grid;gap:var(--space-2);margin:var(--space-2) 0 var(--space-3);max-width:72ch}
+.study-plan-guidance p{margin:0}
+.study-plan-guidance a{justify-self:start}
 }
 
 /* Hoje: o plano vem primeiro; com a sessão em andamento o cronômetro sobe ao topo da coluna. */

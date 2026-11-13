@@ -37,6 +37,10 @@ test('Leitura da preparação cabe em 375 px sem rolagem lateral', async ({ page
   await openDemo(page);
   await activateTab(page, 'desempenho');
   await expect(page.locator('.performance-reading')).toBeVisible();
+  const action = page.locator('.performance-reading__todo');
+  const readiness = page.locator('.performance-reading__how');
+  expect(await action.evaluate((node, other) => Boolean(node.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING), await readiness.elementHandle())).toBe(true);
+  expect((await action.boundingBox()).y).toBeLessThan((await readiness.boundingBox()).y);
   await expectNoPageOverflow(page);
 });
 

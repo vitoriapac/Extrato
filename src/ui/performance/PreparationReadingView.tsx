@@ -16,9 +16,6 @@ export function PreparationReadingView({ reading }: { reading: PreparationReadin
   return <section class="performance-reading chart-card mb-4" id="bloco-leitura" aria-labelledby="performanceReadingTitle">
     <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3><button type="button" class="btn ghost small performance-block-link" data-performance-copy-link="leitura" aria-label="Copiar link deste bloco">Copiar link</button></div></header>
     <div class="performance-reading__grid">
-      <section class="performance-reading__how" aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>
-        {readiness ? <><p class="m-0"><strong class="performance-reading__figure">Prontidão {readiness.value}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label={`Prontidão ${readiness.value} em uma escala de 0 a 100`}><i style={{ width: `${Math.max(0, Math.min(100, Number(readiness.value)))}%` }} /></div>{readiness.verdict && <p class="performance-reading__verdict m-0" data-state={readiness.verdict.state}>{readiness.verdict.text}</p>}</> : <p class="m-0">Ainda não há dados suficientes para esta leitura.</p>}
-      </section>
       <section class="performance-reading__todo" aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">O que fazer</h4>
         {action ? <><p class="m-0" data-recommendation-id={action.recommendationId ?? ''}><strong>{action.label}:</strong> {action.text}</p>
           {action.reason && <p class="m-0 performance-reading__support">{action.reason}</p>}
@@ -26,6 +23,9 @@ export function PreparationReadingView({ reading }: { reading: PreparationReadin
           <div class="performance-reading__actions"><LinkButton link={{ kind: 'tab', target: 'hoje', label: 'Abrir em Hoje' }} solid /><LinkButton link={{ kind: 'plan-adjust', target: 'metas', label: 'Ajustar plano' }} />{whatToDo.recovery && <LinkButton link={{ kind: 'reveal', target: 'trajectory', label: 'Ver plano de recuperação' }} />}</div>
         </> : <><p class="m-0">{whatToDo.reason || 'Nenhuma ação indicada agora.'}</p><div class="performance-reading__actions"><LinkButton link={{ kind: 'tab', target: 'hoje', label: 'Abrir Hoje' }} solid /></div></>}
         {whatToDo.deficit && <p class="m-0">{whatToDo.deficit}</p>}
+      </section>
+      <section class="performance-reading__how" aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>
+        {readiness ? <><p class="m-0"><strong class="performance-reading__figure">Prontidão {readiness.value}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label={`Prontidão ${readiness.value} em uma escala de 0 a 100`}><i style={{ width: `${Math.max(0, Math.min(100, Number(readiness.value)))}%` }} /></div>{readiness.verdict && <p class="performance-reading__verdict m-0" data-state={readiness.verdict.state}>{readiness.verdict.text}</p>}</> : <p class="m-0">Ainda não há dados suficientes para esta leitura.</p>}
       </section>
       <section class="performance-reading__pull" aria-labelledby="performanceReadingPull"><h4 id="performanceReadingPull">O que mais pesa</h4><p class="m-0 performance-reading__support">Pontos de atenção, não a recomendação.</p>
         {pulling.length ? <ol class="performance-reading__list">{pulling.map((item, index) => <li key={index}><span>{item.text}</span>{item.link && <> <LinkButton link={item.link} /></>}</li>)}</ol> : <p class="m-0">Nenhum ponto de atenção com evidência suficiente.</p>}

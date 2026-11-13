@@ -10,6 +10,9 @@ test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ 
   await expect(confirmPlan).toBeVisible();
   await confirmPlan.click();
   await expect(page.getByText('Plano confirmado', { exact: true })).toBeVisible();
+  await expect(page.locator('.study-plan-guidance')).toContainText('revise antes de confirmar');
+  await page.getByRole('link', { name: 'Ver resumo da semana' }).click();
+  await expect(page.locator('#planExecutionCard')).toBeInViewport();
 
   await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias' }).click();
   await expect(page.getByRole('heading', { name: 'Prévia dos próximos 7 dias' })).toBeFocused();
