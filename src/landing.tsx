@@ -12,16 +12,16 @@ import { Icon } from './ui/primitives/icon.js';
 
 const situations = [
   {
-    title: 'Saiba por onde começar',
-    text: 'Veja a próxima atividade do plano, o tempo previsto e as pendências do dia.',
-    image: '/assets/landing/demo-proxima-acao.png',
-    alt: 'Próxima ação e execução de hoje na Visão geral',
-  },
-  {
-    title: 'Ajuste a semana com segurança',
+    title: 'Planeje e ajuste sua semana',
     text: 'Confira uma prévia de recuperação e escolha se deseja aplicar a mudança ao planejamento.',
     image: '/assets/landing/demo-previa-recuperacao.png',
     alt: 'Prévia do plano de recuperação com mudanças e capacidade preservada',
+  },
+  {
+    title: 'Saiba o que fazer hoje',
+    text: 'Veja as atividades planejadas e inicie o estudo com o tempo previsto à mão.',
+    image: '/assets/landing/demo-execucao-hoje.png',
+    alt: 'Tela Hoje da demonstração com atividades planejadas e tempos previstos',
   },
   {
     title: 'Entenda sua evolução',
@@ -50,7 +50,7 @@ const pageWidth = 'mx-auto w-full max-w-[1280px] px-4 sm:px-8';
 const primaryLink =
   'inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-primary px-6 font-semibold text-primary-contrast no-underline transition-colors hover:bg-brand-secondary motion-reduce:transition-none';
 const navLink =
-  'inline-flex min-h-touch items-center px-2 text-content-secondary no-underline hover:text-brand hover:underline underline-offset-4';
+  'inline-flex min-h-touch items-center whitespace-nowrap px-2 text-content-secondary no-underline hover:text-brand hover:underline underline-offset-4';
 const sectionTitle =
   'm-0 font-display text-[clamp(2rem,5vw,3.25rem)] leading-[1.08] tracking-[-0.025em] text-brand';
 
@@ -70,13 +70,15 @@ function StudyPreview() {
         aria-label="Ampliar imagem da Visão geral (abre em nova aba)"
         class="block rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <img
-          src="/assets/landing/demo-proxima-acao.png"
-          alt="Visão geral com próxima ação, tempo planejado e revisões"
-          width="1216"
-          height="689"
-          class="block h-auto w-full rounded"
-        />
+        <span class="block overflow-hidden rounded">
+          <img
+            src="/assets/landing/demo-proxima-acao.png"
+            alt="Visão geral com próxima ação, tempo planejado e revisões"
+            width="1216"
+            height="689"
+            class="block h-auto w-[180%] max-w-none sm:w-full"
+          />
+        </span>
       </a>
       <p class="mt-2 mb-0 text-sm text-content-secondary">
         Toque ou clique na imagem para ampliar.
@@ -103,29 +105,13 @@ function LandingPricing() {
           <p class="mt-3 mb-0 text-content-secondary">
             O plano gratuito já está disponível. Veja também os valores previstos para o Pro.
           </p>
-          <div
-            role="group"
-            aria-label="Ciclo do plano Pro"
-            class="mt-6 inline-flex gap-1 rounded-default border border-border-default bg-surface-card p-1"
-          >
-            {(['monthly', 'annual'] as const).map(option => (
-              <Button
-                key={option}
-                variant={option === cycle ? 'tonal' : 'ghost'}
-                size="touch"
-                aria-pressed={option === cycle}
-                aria-controls="pro-price"
-                onClick={() => setCycle(option)}
-                className="min-h-touch border-transparent px-4"
-              >
-                {option === 'monthly' ? 'Mensal' : 'Anual'}
-              </Button>
-            ))}
-          </div>
         </div>
         <div class="mx-auto mt-6 grid max-w-[920px] gap-4 sm:grid-cols-2">
-          <article class="flex flex-col rounded-default border border-border-default bg-surface-card p-6 sm:p-8">
-            <h3 class="m-0 font-display text-2xl text-brand">Gratuito</h3>
+          <article class="flex flex-col rounded-default border-2 border-brand bg-surface-card p-6 sm:p-8">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="m-0 font-display text-2xl text-brand">Gratuito</h3>
+              <Badge variant="info">Disponível agora</Badge>
+            </div>
             <p class="mt-2 mb-0 text-content-secondary">
               Para organizar seus estudos no navegador.
             </p>
@@ -152,7 +138,11 @@ function LandingPricing() {
                 </span>
               </li>
             </ul>
-            <a href="/app" class={`${primaryLink} mt-auto self-start`}>
+            <p class="mt-auto mb-4 text-sm text-content-secondary">
+              Seus dados ficam neste navegador. Exporte um backup para guardar uma cópia ou
+              transferir seus registros.
+            </p>
+            <a href="/app" class={`${primaryLink} self-start`}>
               Começar no gratuito <Icon name="arrow-right" size={18} />
             </a>
           </article>
@@ -162,10 +152,30 @@ function LandingPricing() {
               <Badge variant="info">Em preparação</Badge>
             </div>
             <p class="mt-2 mb-0 text-content-secondary">
-              Para editais maiores e análises avançadas.
+              Para editais maiores e análises avançadas. Ainda não disponível para contratação.
             </p>
+            <div
+              role="group"
+              aria-label="Ciclo do plano Pro"
+              class="mt-6 inline-flex gap-1 rounded-default border border-border-default bg-surface-card p-1"
+            >
+              {(['monthly', 'annual'] as const).map(option => (
+                <Button
+                  key={option}
+                  variant={option === cycle ? 'tonal' : 'ghost'}
+                  size="touch"
+                  aria-pressed={option === cycle}
+                  aria-controls="pro-price"
+                  onClick={() => setCycle(option)}
+                  className="min-h-touch border-transparent px-4"
+                >
+                  {option === 'monthly' ? 'Mensal' : 'Anual'}
+                </Button>
+              ))}
+            </div>
             <div id="pro-price" aria-live="polite" aria-atomic="true">
-              <p class="mt-6 mb-0 flex flex-wrap items-baseline gap-2">
+              <p class="mt-4 mb-0 text-sm text-content-secondary">Valor previsto</p>
+              <p class="mt-1 mb-0 flex flex-wrap items-baseline gap-2">
                 <strong class="font-display text-4xl leading-none text-brand">
                   {offer.monthlyEquivalentFormatted}
                 </strong>
@@ -290,7 +300,7 @@ function LandingPage() {
               />
               Extrato de Estudos
             </a>
-            <div class="hidden items-center gap-4 md:flex">
+            <div class="hidden items-center gap-4 lg:flex">
               <a href="#painel" class={navLink}>
                 Ver o painel
               </a>
@@ -316,46 +326,41 @@ function LandingPage() {
             aria-labelledby="landing-title"
             class={`${pageWidth} pt-8 pb-8 sm:pt-12 sm:pb-12 lg:pt-16`}
           >
-            <div class="mb-6 sm:mb-8">
-              <h1
-                id="landing-title"
-                class="m-0 max-w-[20ch] font-display text-[clamp(2.5rem,6.1vw,5.25rem)] leading-[1.02] tracking-[-0.035em] text-brand"
-              >
-                Saiba o que estudar hoje.
-              </h1>
-              <p class="mt-4 mb-0 max-w-[53ch] text-base leading-relaxed text-content-secondary sm:text-lg">
-                Planeje sua semana para o concurso, registre o que estudou e veja onde concentrar
-                seu tempo.
-              </p>
-              <div class="mt-6 flex flex-wrap gap-2 sm:gap-3">
-                <a href="/app" class={primaryLink}>
-                  Começar grátis <Icon name="arrow-right" size={18} />
-                </a>
-                <a
-                  href="#painel"
-                  class="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 font-semibold text-brand no-underline transition-colors hover:bg-surface-subtle motion-reduce:transition-none sm:px-6"
+            <div class="grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12">
+              <div>
+                <h1
+                  id="landing-title"
+                  class="m-0 max-w-[20ch] font-display text-[clamp(2.5rem,6.1vw,5.25rem)] leading-[1.02] tracking-[-0.035em] text-brand"
                 >
-                  Ver o painel <Icon name="chevron-down" />
-                </a>
+                  Saiba o que estudar hoje.
+                </h1>
+                <p class="mt-4 mb-0 max-w-[53ch] text-base leading-relaxed text-content-secondary sm:text-lg">
+                  Planeje sua semana para o concurso e encontre a próxima atividade para estudar
+                  hoje.
+                </p>
+                <div class="mt-6 flex flex-wrap gap-2 sm:gap-3">
+                  <a href="/app" class={primaryLink}>
+                    Começar grátis <Icon name="arrow-right" size={18} />
+                  </a>
+                  <a
+                    href="/app"
+                    class="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 font-semibold text-brand no-underline transition-colors hover:bg-surface-subtle motion-reduce:transition-none sm:px-6"
+                  >
+                    Conhecer demonstração <Icon name="arrow-right" />
+                  </a>
+                </div>
+                <p class="mt-3 mb-0 text-sm text-content-secondary">No navegador, sem cadastro.</p>
+                <p class="mt-2 mb-0 max-w-[53ch] text-sm text-content-secondary">
+                  No aplicativo, escolha “Explorar demonstração” na tela inicial ou no rodapé. Os
+                  dados são fictícios e ficam separados dos seus registros.
+                </p>
               </div>
-            </div>
-            <div class="grid items-stretch gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] sm:gap-4">
               <StudyPreview />
-              <figure class="relative m-0 min-h-[220px] overflow-hidden rounded-default bg-surface-subtle sm:min-h-[300px]">
-                <img
-                  src="/assets/landing/estudo-na-mesa.webp"
-                  alt="Estudante com caderno aberto e notebook na mesa"
-                  width="800"
-                  height="1200"
-                  fetchPriority="high"
-                  class="absolute inset-0 size-full object-cover object-[50%_37%]"
-                />
-              </figure>
             </div>
           </section>
           <section id="como-funciona" class="border-y border-border-default bg-surface-card">
             <div class={`${pageWidth} py-12 sm:py-20`}>
-              <h2 class={sectionTitle}>Seu estudo, com mais clareza.</h2>
+              <h2 class={sectionTitle}>Da semana planejada ao estudo de hoje.</h2>
               <p class="mt-3 mb-0 max-w-[60ch] text-content-secondary">
                 Veja três momentos do aplicativo com dados fictícios da demonstração.
               </p>
@@ -374,14 +379,18 @@ function LandingPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`Ampliar: ${item.alt} (abre em nova aba)`}
-                      class="block rounded-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      class="block min-w-0 overflow-hidden rounded-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     >
                       <img
                         src={item.image}
                         alt={item.alt}
                         loading="lazy"
                         decoding="async"
-                        class="block h-auto max-w-full rounded-default border border-border-default"
+                        class={`block h-auto rounded-default border border-border-default ${
+                          item.image.endsWith('demo-desempenho.png')
+                            ? 'w-[180%] max-w-none sm:w-full sm:max-w-[560px]'
+                            : 'w-full max-w-[375px]'
+                        }`}
                       />
                     </a>
                   </article>
