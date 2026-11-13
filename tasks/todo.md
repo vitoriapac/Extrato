@@ -1,156 +1,362 @@
-# Tarefas: Onboarding e primeiro uso para iniciantes (ciclo 2)
+# Tarefas: enxugar e tornar coerente a aba Desempenho
 
-Contexto e evidências: `tasks/plan.md`. Antes de ler código, rodar `graphify query "<pergunta>"` (regra do CLAUDE.md); depois de editar, rodar `graphify update .`.
+Contexto: [plan.md](plan.md) e [analise-desempenho-enxugar.md](analise-desempenho-enxugar.md). Antes de ler código, rodar `graphify query "<pergunta>"` (regra do CLAUDE.md); depois de editar, `graphify update .`.
 
-Comandos de verificação usados abaixo:
-- Unit: `npm run test:fast`
-- E2E onboarding: `npx playwright test tests/e2e/onboarding.spec.js`
-- Tipos: `npm run check:types && npm run check:types:tests`
-- Bundle: `npm run build` (bundles são versionados; o E2E roda contra o bundle, então compile antes)
-- Navegador limpo: abrir `http://127.0.0.1:4173` num contexto Playwright novo (sem armazenamento)
+Verificação usada abaixo:
+- Unit: `npm test`
+- Tipos: `npm run check:types`
+- Build: `npm run build`
+- E2E: `npx playwright test <spec>`
+- Detector: `impeccable detect --json <alvos>`
 
 ---
 
-## Fase 1 — Fazer o primeiro uso que já existe funcionar
+## Fase 1: Conquistas em Hoje
 
-### T1: Estado inicial vazio e etapas concluídas só em ordem
-
-**Descrição:** Remover a matéria de exemplo de `createDefaultState()` (`subjects: []`) e fazer `buildOnboardingViewModel` marcar uma etapa como concluída só quando ela e todas as anteriores estiverem completas. Com isso, quem chega pela primeira vez vê o card de boas-vindas, "0 de 4 etapas" e os pacotes de matérias.
-
-**Critérios de aceite:**
-- [x] Num navegador sem dados, a Visão Geral mostra o card de boas-vindas com "Montar meu plano de estudos" e "Experimentar demonstração", e nenhuma recomendação de matéria
-- [x] O card de configuração mostra "Monte seu plano de estudos · 0 de 4 etapas", com Objetivo como etapa atual e nenhuma etapa marcada como concluída
-- [x] A etapa de conteúdo do assistente mostra os 3 pacotes de matérias (coberto pelo E2E da T2)
-- [x] Importar um backup antigo mantém as matérias do backup (conferido no código: `ensure-state-defaults.ts:43`; sem teste dedicado)
-
+### Tarefa 1: Registro de desbloqueio e migração 30 → 31
+**Descrição:** Cada conquista passa a ter um registro gravado no estado (`id`, `unlockedAt`, `source`). A migração grava como `migrated` o que já está cumprido, com data inferida quando o critério é cumulativo.
+**Aceite:**
+- [ ] `CURRENT_SCHEMA_VERSION` = 31 e migração idempotente (rodar duas vezes dá o mesmo estado)
+- [ ] Conquistas cumpridas antes da migração ficam `migrated`; nenhum registro é recalculado depois de gravado
+- [ ] Cumulativas (horas, questões, tópicos, simulados) recebem a data do registro que atingiu o critério; as demais ficam sem data
+- [ ] Importar backup v30 e entrar na demo passam pela mesma migração
 **Verificação:**
-- [x] Unit + tipos + bundle verdes
-- [x] Teste unitário novo em `tests/unit/` para a regra "etapa só conta como concluída em ordem" (data vazia + disponibilidade + conteúdo ⇒ 0 concluídas)
-- [x] E2E que dependiam da matéria padrão ajustados e verdes
-- [x] Conferência manual no navegador limpo
-
+- [ ] Unit: casos backup sem o campo, já migrado, cumprida sem data inferível, demo
+- [ ] Tipos e build limpos
 **Dependências:** nenhuma
-
-**Arquivos prováveis:** `src/state/defaults.ts`, `src/application/onboarding/build-onboarding-view-model.ts`, `tests/unit/onboarding-view-model.test.js`, `tests/e2e/product-consolidation.spec.js`, `tests/e2e/achievement-projection.spec.js`, `tests/e2e/action-first-mobile.spec.js`
-
+**Arquivos:** `src/state/schema.ts`, `src/state/migrations.ts`, `src/state/defaults.ts`, `src/ui/controllers/achievements-controller.ts`, `tests/unit/state-migrations.test.js`
 **Tamanho:** M
 
----
-
-### T2: Teste E2E de primeiro acesso com armazenamento vazio
-
-**Descrição:** Adicionar ao `tests/e2e/onboarding.spec.js` um caso que parte de armazenamento realmente vazio, sem seed, e garante os itens A–D do plano. Isso impede que um novo padrão volte a esconder o primeiro uso.
-
-**Critérios de aceite:**
-- [x] O teste verifica: card de boas-vindas visível, "0 de 4 etapas", pacotes visíveis na etapa de conteúdo
-- [x] O teste falha se a matéria de exemplo voltar ao `createDefaultState()` (conferir revertendo T1 localmente)
-
+### Tarefa 2: Aviso de conquista desbloqueada
+**Descrição:** Depois de salvar sessão, questões, simulado ou concluir tópico/recomendação, comparar o estado com os registros; cada conquista nova gera registro `live` e um aviso com emblema, nome e critério.
+**Aceite:**
+- [ ] Aviso não bloqueante, fecha sozinho, com Esc e com botão; `role="status"`; sem animação com `prefers-reduced-motion`
+- [ ] Várias conquistas na mesma ação geram um aviso só
+- [ ] Nenhum aviso para registros `migrated`
 **Verificação:**
-- [x] E2E onboarding verde (20/20, só no fuso local; UTC/`America/Sao_Paulo` ficam para o gate do CI)
-
+- [ ] Unit: detecção de novos desbloqueios e agrupamento
+- [ ] E2E: na demo, registrar sessão que completa uma conquista e ver o aviso uma vez
 **Dependências:** T1
+**Arquivos:** `src/ui/controllers/achievements-controller.ts`, `src/ui/primitives/toast.tsx` (ou componente novo), fiação em `src/bootstrap/wire-ui-controllers.ts`, teste unit e spec E2E
+**Tamanho:** M
 
-**Arquivos prováveis:** `tests/e2e/onboarding.spec.js`, `tests/config/test-inventory.json` / `docs/TEST-SUITE-INVENTORY.md` (se o inventário exigir registro)
-
+### Tarefa 3: Resultado da sessão mostra conquista ganha ou a mais perto
+**Descrição:** O resultado da sessão em Hoje mostra o que foi desbloqueado ou a conquista mais perto, com quanto falta, pela regra de "perto" (até 10% do critério ou cumprível hoje).
+**Aceite:**
+- [ ] Mostra desbloqueio da sessão quando houver; senão, a mais perto; senão, nada
+- [ ] Texto com quanto falta ("Faltam 37 questões para Mil questões")
+**Verificação:**
+- [ ] Unit: regra de "perto" nos limites (10%, 1 dia, 1 h, 30 questões)
+- [ ] Manual: salvar sessão na demo e ler o resultado
+**Dependências:** T1
+**Arquivos:** `src/ui/renderers/session-result-renderer.ts`, helper de conquistas próximas, teste unit
 **Tamanho:** S
 
----
-
-### T3: Ligar o tour essencial de 3 paradas
-
-**Descrição:** Em `guided-tour-controller.ts`, iniciar o tour com `ESSENTIAL_TOUR_STEPS`. Hoje `createGuidedTourState(0)` usa a lista antiga de 5 paradas, então o tour criado no ciclo anterior nunca roda.
-
-**Critérios de aceite:**
-- [x] "Fazer o tour" mostra "1 de 3 · Hoje", "2 de 3 · Visão Geral", "3 de 3 · Questões", e encerra com o aviso de conclusão
-- [x] Cada parada destaca um elemento existente, com plano criado e sem plano; se o alvo não existir, a parada não fica sem destaque (com plano: E2E confere o destaque em `.plano-hoje-card`; sem plano: o controller já mostra o balão centralizado, sem destaque)
-- [x] O foco volta ao elemento de origem ao fechar (código inalterado; E2E só confere o fechamento por Esc)
-
+### Tarefa 4: Subaba "Conquistas" em Hoje e redirecionamento
+**Descrição:** Galeria com emblemas ilustrados, desbloqueadas com data e próximas com barra de progresso, numa subaba de Hoje. Desempenho perde a subaba; `#desempenho/history` redireciona.
+**Aceite:**
+- [ ] Subaba acessível por teclado (tablist) e por URL
+- [ ] `#desempenho/history` abre a subaba de Hoje
+- [ ] Desempenho mostra 5 abas (sem Conquistas)
+- [ ] Cada desbloqueada mostra a data salva ("Desbloqueada em 02/10/2026"); sem data inferida: "Desbloqueada antes de <data da migração>"
 **Verificação:**
-- [x] Coberto pelo E2E (`onboarding.spec.js`: 3 paradas, rótulos "1 de 3" a "3 de 3"); `ESSENTIAL_TOUR_STEPS` já tem unit em `guided-first-run.test.js`. `GUIDED_TOUR_STEPS` (5 paradas) ficou sem uso no app
-- [x] E2E onboarding e demo verdes
+- [ ] E2E: `performance-tablist.spec.js` atualizado; spec novo da subaba
+- [ ] Manual: 375 px sem rolagem lateral
+**Dependências:** T1
+**Arquivos:** `src/ui/tabs/today/today-tab-controller.ts`, `index.html`, `src/ui/performance/PerformancePageNav.tsx`, roteamento, specs
+**Tamanho:** M
 
-**Dependências:** nenhuma
-
-**Arquivos prováveis:** `src/ui/controllers/guided-tour-controller.ts`, `tests/unit/guided-first-run.test.js`
-
-**Tamanho:** XS
-
----
+### Tarefa 5: Marca no plano do dia
+**Descrição:** Quando concluir uma atividade planejada completa uma conquista, a atividade mostra "conclui <conquista>"; no máximo uma por dia.
+**Aceite:**
+- [ ] No máximo uma marca por dia
+- [ ] Não muda a ordem nem a prioridade do plano
+**Verificação:**
+- [ ] Unit: escolha da atividade marcada
+**Dependências:** T3
+**Arquivos:** renderer do plano de Hoje, helper de conquistas próximas
+**Tamanho:** S
 
 ### Checkpoint 1
-- [ ] Unit, tipos, bundle e E2E onboarding verdes
-- [ ] Navegador limpo: card de boas-vindas, "0 de 4", pacotes, tour "1 de 3"
-- [ ] Corrigir em `docs/PLANOS-CONCLUIDOS.md` §9 o que só passou a funcionar agora
+- [ ] `npm test`, tipos e build limpos
+- [ ] E2E de sessão com aviso e resultado passa
 - [ ] Revisão humana antes da Fase 2
 
 ---
 
-## Fase 2 — Menos atrito para iniciantes
+## Fase 2: Origem e correção dos números
 
-### T4: Rodapé do assistente fixo e sempre visível
-
-**Descrição:** Fixar no fim do modal (`position: sticky; bottom: 0`) o rodapé com Voltar/Continuar e o aviso de motivo do bloqueio. Hoje, em telas baixas, ele fica no limite da tela.
-
-**Critérios de aceite:**
-- [x] A 375×667 e a 1280×600, os botões ficam visíveis em todas as 4 etapas sem rolar
-- [x] O rodapé não cobre o último campo da etapa (há espaço reservado ao fim do conteúdo)
-- [x] Contraste e foco visível mantidos nos dois temas (cores e foco inalterados; o rodapé já usava `--wizard-bg`)
-
+### Tarefa 6: Investigação demo × produto (T2)
+**Descrição:** Reproduzir as 8 incoerências da seção 13 da análise com fixture controlada e com a demo; classificar e escrever o plano de correção.
+**Aceite:**
+- [ ] Tabela com classificação, evidência e destino de cada item em `tasks/investigacao-demo-produto.md`
+- [ ] Defeitos do gerador da demo corrigidos em `src/demo` quando forem a causa
 **Verificação:**
-- [x] E2E onboarding + gate visual (`npm run test:visual`) verdes; nenhum snapshot mudou
-- [x] Conferência a 375×667 e 1280×600: botão principal visível nas 4 etapas sem rolar
-
+- [ ] Unit: um teste por item classificado como defeito de cálculo
 **Dependências:** nenhuma
-
-**Arquivos prováveis:** `styles/app.css` (bloco do modal de onboarding)
-
-**Tamanho:** XS
-
----
-
-### T5: Etapa 1 com "Ainda não escolhi um concurso" e etapa 3 ligada à escolha
-
-**Descrição:** Na etapa 1, deixar o seletor sem concurso pré-selecionado ("Selecione…") e adicionar a opção "Ainda não escolhi um concurso". Na etapa 3: se houver concurso do catálogo, o botão principal diz "Carregar edital: <nome do concurso>"; se for "ainda não escolhi", os pacotes de matérias aparecem primeiro e viram a ação principal.
-
-**Critérios de aceite:**
-- [x] ~~A etapa 1 não avança sem uma escolha no seletor~~ Decisão na implementação: em vez de bloquear, "Ainda não escolhi um concurso" vem marcado por padrão. Nenhum concurso aparece escolhido sem o usuário escolher (antes, `app.ts` pré-selecionava o 1º do catálogo) e não há bloqueio extra para iniciantes
-- [x] Com um concurso do catálogo, a etapa 3 mostra "Carregar edital: <nome>" e abre a importação desse concurso
-- [x] Com "Ainda não escolhi" (ou "Outro concurso"), a etapa 3 mostra os pacotes em destaque e o edital do catálogo como opção secundária
-
-**Verificação:**
-- [x] Unit para o renderer/view model (rótulo do botão por escolha) + E2E onboarding, exam-import e csp verdes
-- [x] Conferência num navegador limpo dos dois caminhos. Achado: os cartões dos pacotes não têm CSS nenhum (nenhuma regra `guided-starter-pack` em `styles/`) e aparecem como botões cinza do navegador
-
-**Dependências:** T1
-
-**Arquivos prováveis:** `src/features/onboarding/onboarding-renderer.ts`, `src/application/onboarding/build-onboarding-view-model.ts`, `src/app.ts` (removido o preset padrão), testes correspondentes
-
+**Arquivos:** `src/demo/*`, `tests/unit/*`, relatório
 **Tamanho:** M
 
----
+### Tarefa 7: Simulados com um arredondamento e contagem explicada
+**Aceite:**
+- [ ] Uma casa decimal para simulados em toda a aba
+- [ ] Toda contagem de simulados diz o critério e a janela ("3 comparáveis, todo o histórico")
+- [ ] Um nome por cálculo (resultado central, média do período), um por tela
+**Verificação:** Unit fixando valor e rótulo; manual na demo
+**Dependências:** T6
+**Arquivos:** renderers de simulados, resumo executivo, preparação
+**Tamanho:** S
+
+### Tarefa 8: Selos de janela e dois números de execução do plano
+**Aceite:**
+- [ ] Toda precisão, simulado, aderência e turno com selo de janela no número
+- [ ] Execução do plano com dois números (volume do plano e aderência) e definição em uma linha
+- [ ] Gráficos com recorte diferente do filtro dizem "semanas fechadas dentro do período"
+**Verificação:** Unit dos rótulos; `window-badge.test.js`; E2E de Desempenho
+**Dependências:** T6
+**Arquivos:** `window-badge.tsx`, `performance-consistency-renderer.ts`, `CareerBenchmarkCard.tsx`, `adherence-renderer.ts`
+**Tamanho:** M
 
 ### Checkpoint 2
-- [ ] Todos os gates verdes
-- [ ] Fluxo completo no navegador limpo, do primeiro acesso ao plano criado, a 375×667
-- [ ] Decidir se T6 entra
+- [ ] Relatório T6 revisado com você
+- [ ] Nenhum número com arredondamentos diferentes na demo
 
 ---
 
-## Fase 3 — Opcional
+## Fase 3: Coerência
 
-### T6: Cabeçalho de métricas sem zeros no primeiro acesso
+### Tarefa 9: Vocabulário de domínio, retenção, confiança e evidência
+**Aceite:**
+- [ ] Domínio e retenção sempre em /100
+- [ ] Fator da Prontidão chamado "fator Retenção"
+- [ ] "Confiança" só na faixa projetada; demais selos "Evidência"
+**Verificação:** Unit de formatação; busca no bundle por "domínio \d+%" sem ocorrências
+**Dependências:** Checkpoint 2
+**Tamanho:** M
 
-**Descrição:** Sem histórico nem plano, trocar a faixa "—/100 · 0 disciplinas · 0% · 0 dias" do cabeçalho por uma linha curta ("Seus números aparecem depois da primeira sessão"). Assim o iniciante não começa diante de um painel de zeros.
-
-**Critérios de aceite:**
-- [ ] No primeiro acesso, o cabeçalho mostra a linha curta; após a 1ª sessão ou o plano criado, volta ao normal
-- [ ] O campo "Data da prova" continua acessível
-
-**Verificação:**
-- [ ] Unit + E2E + visual verdes
-
-**Dependências:** T1
-
-**Arquivos prováveis:** componente/renderer do cabeçalho em `src/ui/`, estilos
-
+### Tarefa 10: Linha de comparação e "Copiar link" um por subaba
+**Aceite:**
+- [ ] Linha "comparação: dd/mm a dd/mm" só onde há comparação
+- [ ] Um "Copiar link" por subaba, no título; âncoras de bloco continuam funcionando
+**Verificação:** E2E "Copiar link gera a âncora" atualizado
+**Dependências:** nenhuma
 **Tamanho:** S
+
+### Tarefa 11: Turnos num bloco, uma leitura
+**Aceite:**
+- [ ] Rendimento e foco por turno num bloco com dois selos
+- [ ] Uma frase de leitura (hoje são três)
+**Verificação:** Unit do renderer; manual
+**Dependências:** T8
+**Arquivos:** `src/ui/tabs/performance/ShiftEnergyCard.tsx`
+**Tamanho:** S
+
+### Tarefa 12: "O que mais pesa" alinhado ao Diagnóstico
+**Aceite:**
+- [ ] Itens vêm do mesmo cálculo do Diagnóstico e linkam para ele
+- [ ] Tópico fraco em disciplina forte é dito ("tópico fraco dentro de Informática, 85% de precisão")
+**Verificação:** Unit `preparation-reading.test.js`
+**Dependências:** T9
+**Arquivos:** `src/application/performance/build-preparation-reading.ts`
+**Tamanho:** S
+
+### Checkpoint 3
+- [ ] `/impeccable critique` da aba; H4 e H6 ≥ 3
+
+---
+
+## Fase 4: Cortar repetições
+
+### Tarefa 13: Resumo da semana na Visão geral (seção 15)
+**Aceite:**
+- [ ] Três parágrafos (feito, sinal, ação) com selo "7 dias" e datas, até três números
+- [ ] Substitui "Resumo do período", a frase de "Como sua preparação evoluiu" e a linha de 7 dias da Leitura
+- [ ] Casos: normal, acima, abaixo, amostra pequena, sem estudo, sem plano
+**Verificação:** Unit dos seis casos e de não divergência; E2E na demo
+**Dependências:** T7, T8
+**Arquivos:** `build-weekly-performance-brief.ts`, `weekly-performance-brief-renderer.ts`, `performance-overview-renderer.ts`, `PreparationReadingView.tsx`
+**Tamanho:** M
+
+### Tarefa 14: Diagnóstico sem "Situação do preparo" nem sugestão duplicada
+**Aceite:**
+- [ ] "Situação do preparo" removida; dias e tópicos restantes no cabeçalho do Extrato
+- [ ] Sugestão fora do plano não repete o item 1
+**Verificação:** E2E do Diagnóstico atualizado
+**Dependências:** T12
+**Tamanho:** S
+
+### Tarefa 15: Faixa projetada só em Simulados
+**Aceite:**
+- [ ] Projeção e "Faixa emitida × resultado" só em Simulados
+- [ ] Visão geral mostra a faixa em uma linha com link
+**Verificação:** Unit do overview; E2E
+**Dependências:** T13
+**Tamanho:** S
+
+### Tarefa 16: Gráficos existentes com tamanho responsivo (T6.1)
+**Aceite:**
+- [ ] Largura 100% do cartão; proporções da seção 14.3; nenhum gráfico mais largo que o cartão em 1440, 1024, 375 e 320
+- [ ] Série com menos de 3 pontos vira texto
+- [ ] Rótulos lidos em 14 px; eixos 12–13 px
+**Verificação:** script de medição no navegador (como na análise); axe nos E2E
+**Dependências:** nenhuma (carregar skill `dataviz` antes)
+**Arquivos:** `src/ui/primitives/charts/charts.tsx`, `planned-actual-chart.ts`, renderers que desenham SVG
+**Tamanho:** M
+
+### Checkpoint 4
+- [ ] Visão geral ≤ 1.600 px no desktop
+- [ ] Medição de gráficos sem estouro
+
+---
+
+## Fase 5: Reorganizar as abas
+
+### Tarefa 17: Aba "Provas" sem segundo nível
+**Aceite:**
+- [ ] Questões, Simulados e Inteligência da prova numa página com três seções
+- [ ] `#desempenho/questions|simulations|exam` levam à seção certa
+**Verificação:** `performance-tablist.spec.js` e specs de questões atualizados
+**Dependências:** Checkpoint 4
+**Tamanho:** M
+
+### Tarefa 18: Modos da Comparação em Disciplinas
+**Aceite:**
+- [ ] Modos: precisão (padrão), tendência (antes × agora), progresso, radar
+- [ ] Mapa de estabilidade vira o modo tendência; progresso e radar saem de Conquistas
+**Verificação:** E2E de Disciplinas; unit dos modos
+**Dependências:** T4
+**Tamanho:** M
+
+### Tarefa 19: Diagnóstico agrupado por disciplina com filtro
+**Aceite:**
+- [ ] Extrato agrupado por disciplina, filtro por prioridade e evidência; 3 primeiros abertos
+- [ ] "+294" substituído por grupos com contagem
+**Verificação:** E2E do Diagnóstico
+**Dependências:** T14
+**Tamanho:** M
+
+### Tarefa 20: Matriz condicional; Balanço e Radar de vulnerabilidades como ordenações
+**Aceite:**
+- [ ] Matriz só aparece quando ao menos um quadrante não crítico tem disciplinas; senão, lista
+- [ ] Balanço e Radar viram ordenações do Extrato
+**Verificação:** Unit da condição da Matriz; E2E
+**Dependências:** T19
+**Tamanho:** M
+
+### Tarefa 21: Replanejamentos em Planejamento
+**Aceite:**
+- [ ] Replanejamento da semana e pós-simulado em Planejamento; Desempenho mantém um link
+- [ ] Prévia e confirmação continuam obrigatórias
+**Verificação:** E2E de planejamento e de "Ajustar plano"
+**Dependências:** Checkpoint 4
+**Tamanho:** M
+
+### Tarefa 22: Ritmo com extrato de sessões e tempo por disciplina
+**Aceite:**
+- [ ] Extrato de sessões e tempo por disciplina só em Ritmo
+- [ ] Referência de ritmo continua visível (decisão 4C)
+**Verificação:** E2E de Ritmo
+**Dependências:** T4, T8
+**Tamanho:** S
+
+### Checkpoint 5
+- [ ] 5 abas sem segundo nível; rotas antigas redirecionam; E2E e capturas atualizados
+- [ ] Revisão humana
+
+---
+
+## Fase 6: Referência de ritmo e notas de corte
+
+### Tarefa 23: Textos da referência sem afirmação sem fonte
+**Aceite:**
+- [ ] Comentário de `career-benchmarks.ts` corrigido; "Faixa Competitiva", "Nível Reta Final", "Padrão de nota de corte…" e "Recomendado" trocados
+- [ ] Horas e questões como "sugestão de cursinhos, sem pesquisa com aprovados", comparadas também com a capacidade do plano
+**Verificação:** Unit de `career-benchmarks`; busca pelos textos antigos sem ocorrências
+**Dependências:** nenhuma
+**Arquivos:** `src/domain/analytics/career-benchmarks.ts`, `src/ui/components/CareerBenchmarkCard.tsx`
+**Tamanho:** S
+
+### Tarefa 24: Campo de nota de corte no catálogo com validação de fonte
+**Aceite:**
+- [ ] Campo por concurso: banca, cargo, praça, ano, modalidade, nota, escala, link oficial
+- [ ] Validação recusa nota sem link oficial
+**Verificação:** Unit da validação do catálogo
+**Dependências:** T23
+**Arquivos:** `src/domain/exams/exam-catalog.ts`, `exam-catalog-data.json`, testes
+**Tamanho:** M
+
+### Tarefa 25: Notas de corte oficiais de BB, Caixa e CNU
+**Aceite:**
+- [ ] Valores lidos no resultado oficial (Cesgranrio, MGI), com link
+- [ ] O que não tiver fonte oficial fica "sem dado"
+**Verificação:** revisão manual das fontes; validação do catálogo passa
+**Dependências:** T24
+**Tamanho:** S (dados)
+
+### Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5)
+**Aceite:**
+- [ ] INSS, PF, PRF, Receita Federal, tribunais e demais editais do catálogo: link oficial, escala, cargos, praças, ano
+- [ ] Lista entregue para cadastro; sem fonte oficial = "sem dado"
+**Verificação:** revisão manual
+**Dependências:** T24 (pode correr em paralelo com o resto)
+**Tamanho:** M (pesquisa)
+
+### Tarefa 27: Precisão comparada com a nota de corte do concurso ativo
+**Aceite:**
+- [ ] Referência mostra "Nota de corte <concurso> <ano>, sua praça: X (<banca>)" quando houver
+- [ ] Sem nota cadastrada, compara com a meta do aluno e diz isso
+**Verificação:** Unit dos dois caminhos; E2E na demo
+**Dependências:** T25
+**Tamanho:** S
+
+### Checkpoint 6
+- [ ] Nenhum rótulo afirma dado de aprovados sem fonte
+
+---
+
+## Fase 7: Visual e iniciante
+
+### Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
+**Aceite:**
+- [ ] Régua com Prontidão, faixa projetada e meta, com texto alternativo
+- [ ] KPIs com tendência das últimas 4 a 6 semanas, valor atual em destaque
+**Verificação:** contraste nos dois temas; axe; manual em 375
+**Dependências:** T16, T13
+**Tamanho:** M
+
+### Tarefa 29: Gráficos de Disciplinas e Diagnóstico
+**Aceite:**
+- [ ] Barras de precisão com linha da meta; inclinação antes × agora
+- [ ] Barras de lacuna × impacto dos 10 primeiros tópicos
+**Verificação:** contraste, axe, alternativa em texto
+**Dependências:** T18, T20
+**Tamanho:** M
+
+### Tarefa 30: Gráficos de Provas
+**Aceite:**
+- [ ] Precisão com meta e amostra pequena sombreada; perfil de erros fora da dobra
+- [ ] Simulados com faixa projetada sobreposta; incidência por disciplina com domínio ao lado
+**Verificação:** contraste, axe, alternativa em texto
+**Dependências:** T17
+**Tamanho:** M
+
+### Tarefa 31: Gráficos de Ritmo
+**Aceite:**
+- [ ] Barras semanais planejado × realizado com linha da capacidade
+- [ ] Barras de tempo por disciplina (top 8 + outras) no lugar do donut; faixas por turno
+**Verificação:** contraste, axe, alternativa em texto
+**Dependências:** T22
+**Tamanho:** M
+
+### Tarefa 32: Estados vazios do modo iniciante
+**Aceite:**
+- [ ] Com menos de 30 questões pessoais ou 2 semanas de registro, abas analíticas mostram estado vazio que diz quando ficam úteis
+- [ ] Visão geral e Ritmo sempre completas
+**Verificação:** E2E com usuário novo; unit do limite
+**Dependências:** Checkpoint 5
+**Tamanho:** S
+
+### Checkpoint final
+- [ ] Todos os critérios atendidos
+- [ ] `/impeccable critique` ≥ 32/40
+- [ ] Pronto para revisão
