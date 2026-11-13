@@ -3561,3 +3561,11 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .exam-subject-bulk input[type=checkbox],.exam-subject-check input[type=checkbox],.active-exams input[type=checkbox],.subject-target-bulk input[type=checkbox],.subject-target-table-wrap input[type=checkbox]{width:16px;height:16px;flex:none}
 
 .brand-home img{display:inline-block;vertical-align:middle;margin-right:.4em;width:1.1em;height:1.1em}
+
+/* Desempenho: texto lido a partir de 13–14px (12px fica para rótulos de eixo) e números em colunas alinhadas. */
+#panel-desempenho{--text-micro:.8125rem;--text-caption:.8125rem;--text-label:.8125rem;--text-xs:.8125rem;--text-sm:.875rem}
+#panel-desempenho table,#panel-desempenho .font-data,#panel-desempenho .performance-reading__figure,#panel-desempenho .performance-kpis strong{font-variant-numeric:lining-nums tabular-nums}
+#panel-desempenho .performance-window{display:inline-flex;align-items:center;min-height:24px}
+#panel-desempenho small,#panel-desempenho caption,#panel-desempenho .performance-method-note,#panel-desempenho .bar-pct{font-size:.8125rem}
+/* Trocar de subaba não deve encolher o contêiner e deslocar o que vem depois (CLS medido em 0,036 por troca). */
+#panel-desempenho #performanceSectionContent{min-height:60vh}
