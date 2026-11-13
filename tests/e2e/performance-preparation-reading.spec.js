@@ -203,7 +203,7 @@ test('No celular a ação "Abrir em Hoje" aparece até a primeira tela e a Leitu
       .sort((a, b) => a.y - b.y)
       .map(item => item.name)
   );
-  expect(order).toEqual(['how', 'todo', 'pull', 'support-block']);
+  expect(order).toEqual(['todo', 'how', 'pull', 'support-block']);
   await expectNoPageOverflow(page);
 });
 

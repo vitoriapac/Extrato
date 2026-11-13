@@ -2675,12 +2675,23 @@
     }
   }
 
-  /* Em telas estreitas os quatro grupos viram grade 2×2: nenhum rótulo fica cortado pela rolagem. */
-  @media (max-width: 420px) {
+  /* Em telas estreitas as seis abas viram grade (3 colunas, 2 abaixo de 420px): nenhum rótulo fica cortado pela rolagem. */
+  @media (max-width: 600px) {
     .performance-nav-stack .performance-section-nav {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       overflow-x: visible;
+    }
+
+    .performance-nav-stack .performance-section-nav .ui-tabs__tab {
+      white-space: normal;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .performance-nav-stack .performance-section-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
