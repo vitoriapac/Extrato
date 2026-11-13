@@ -503,3 +503,40 @@ Antes de implementar, carregar a skill `dataviz` (forma, paleta, validação de 
 4. Aceite: cada gráfico com alternativa em texto ou tabela; contraste verificado nos dois temas; `/impeccable critique` antes e depois.
 
 Encaixe na ordem da seção 13: T6.1 entra logo depois de T3 (é ajuste de tamanho, sem mudar conteúdo); T6.2 e T6.3 acompanham as Fases 1 a 3.
+
+## 15. Resumo da semana na Visão geral (decidido em 13/11/2026)
+
+Entra na **Fase 2 (cortar repetições)**. Reaproveita o gerador existente (`build-weekly-performance-brief.ts` e `weekly-performance-brief-renderer.ts`), hoje numa dobra fechada.
+
+### O que é
+
+Um bloco aberto logo abaixo da Leitura da preparação, com três parágrafos curtos sobre os últimos 7 dias.
+
+### O que ele substitui
+
+- O cartão "Resumo do período" (o alerta de simulados vai para a Leitura ou para Simulados).
+- A frase "Como sua preparação evoluiu", que repete o KPI.
+- A linha de ritmo de 7 dias da Leitura ("12h 38min de 4h 25min… 286%"), que passa a viver só no resumo.
+
+Resultado: a Visão geral fica com Leitura (Prontidão e ação), Resumo da semana e três KPIs do período, e a janela de 7 dias aparece num lugar só.
+
+### Regras
+
+| Regra | Valor |
+|---|---|
+| Janela | Sempre os últimos 7 dias, independente do filtro; selo "7 dias" no título e as datas ("07/11 a 13/11") |
+| Tamanho | Três parágrafos de uma a duas frases cada |
+| Parágrafo 1: o que você fez | Fato, sem julgamento: tempo, dias com estudo, questões, cumprimento do plano ("Você estudou 12h 38min em 6 dias, mais do que o plano previa") |
+| Parágrafo 2: o que mudou | Um sinal só, o mais relevante (precisão, queda numa disciplina, conquista perto); nunca atribui causa |
+| Parágrafo 3: o que fazer | A mesma ação da Leitura, citada pelo nome; sem botão novo ("uma prioridade só") |
+| Números | No máximo três no texto todo; nenhum contradiz outro número da tela (mesmo arredondamento e mesma base) |
+| Pouca evidência | Com amostra pequena ou sem plano, uma frase diz isso e o parágrafo 2 some |
+| Sem estudo na semana | Um parágrafo só, sem culpa ("Nenhuma sessão nos últimos 7 dias. A próxima ação está em Hoje.") |
+| Geração | Regras determinísticas a partir dos dados, sem IA; mesmo estado gera o mesmo texto |
+| Tom | Sóbrio e encorajador; "Atenção" e "confiança baixa" ficam nos blocos de detalhe, não no resumo |
+
+### Aceite
+
+- Testes unitários dos casos: semana normal, acima do plano, abaixo do plano, amostra pequena, sem estudo, sem plano.
+- Teste que garante que o resumo não traz número diferente do mostrado em outro bloco da Visão geral.
+- E2E na demo: resumo visível abaixo da Leitura, três parágrafos, selo "7 dias", nenhum cartão "Resumo do período".
