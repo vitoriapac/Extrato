@@ -28,7 +28,7 @@ const STYLE_FILES = [
   'styles/print.css',
 ];
 
-const STATIC_DIRECTORIES = ['icons', 'fonts', 'assets/landing'];
+const STATIC_DIRECTORIES = ['icons', 'fonts', 'assets/landing', 'assets/achievements'];
 
 const cloudflareHeaders = csp => `/*
   Content-Security-Policy: ${csp}; frame-ancestors 'none'

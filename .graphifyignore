@@ -1,0 +1,10 @@
+.agents/
+.claude/
+.impeccable/
+.taste-skill/
+.test-gates/
+.tmp-*/
+test-results/
+playwright-report/
+node_modules/
+dist/
