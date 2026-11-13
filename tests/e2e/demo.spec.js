@@ -354,3 +354,19 @@ test('busca local de tópicos preserva consulta e filtros ao voltar de Hoje', as
   await expect(groups).toHaveCount(17);
   await expectNoPageOverflow(page);
 });
+
+test('Agenda e disciplinas mantêm contagens identificáveis e questões mostram evidência', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
+  await openDemo(page);
+  await activateTab(page, 'agenda');
+  await expect(page.locator('#calAtrasadas')).toContainText('pendências atrasadas');
+  await expect(page.locator('#calAtrasadas')).toContainText(/revisões? \+ \d+ tarefas?/);
+  await expect(page.locator('#upcomingTitle')).toContainText('Tarefas e revisões');
+  await activateTab(page, 'disciplinas');
+  for (const label of ['Não iniciados', 'Em andamento', 'Em revisão', 'Concluídos'])
+    await expect(page.locator('#quickStats')).toContainText(label);
+  await activateTab(page, 'questoes');
+  await expect(page.locator('#weakTopicsMount')).toContainText('questões');
+  await expect(page.locator('#weakTopicsMount')).toContainText('amostras menores são provisórias');
+  await expectNoPageOverflow(page);
+});

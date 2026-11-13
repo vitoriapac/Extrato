@@ -1,5 +1,7 @@
 # Mapeamento do que Falta ser Implementado — Extrato de Estudos
 
+> **Auditoria visual de novembro de 2026:** melhorias foram implementadas nas fases 1–4; alguns itens da fase 1 e a validação transversal da fase 5 continuam abertos. Restam zoom real a 200%, revisão abrangente de foco e alvos de toque, leitor de tela e teste em dispositivo físico. Veja o [plano e seus limites](superpowers/plans/2026-11-12-auditoria-visual-extrato.md) e o [relatório de evidências](../auditorias/2026-11-13-fase5-visual/RELATORIO.md).
+
 Este documento consolida o histórico de entregas e os próximos horizontes de evolução do **Extrato de Estudos**, registrando a conclusão das 4 Fases do Plano Master de Evolução, os fechamentos de cobertura, as especificações estruturantes para a transição **SaaS Local-First** e o backlog futuro mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
 
 > [!IMPORTANT]

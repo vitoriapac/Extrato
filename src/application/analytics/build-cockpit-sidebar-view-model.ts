@@ -178,8 +178,8 @@ export function buildCockpitSidebarViewModel(
   const overdueCount =
     sources.overdueCount ?? revisoes.filter((r: any) => r.date < todayISO).length;
 
-  let tip = 'Carga de revisões bem distribuída para a semana.';
-  if (maxCount === 0 && overdueCount === 0) tip = 'Nenhuma revisão agendada para esta semana.';
+  let tip = 'Tarefas e revisões distribuídas ao longo da semana.';
+  if (maxCount === 0 && overdueCount === 0) tip = 'Nenhuma tarefa ou revisão agendada para esta semana.';
   if (peakDayName && maxCount >= 3) {
     const fullDayName =
       peakDayName === 'Seg' ? 'Segunda-feira' :
@@ -188,9 +188,9 @@ export function buildCockpitSidebarViewModel(
       peakDayName === 'Qui' ? 'Quinta-feira' :
       peakDayName === 'Sex' ? 'Sexta-feira' :
       peakDayName === 'Sáb' ? 'Sábado' : 'Domingo';
-    tip = `${fullDayName} tem pico de ${maxCount} revisões agendadas.`;
+    tip = `${fullDayName} tem pico de ${maxCount} tarefas e revisões agendadas.`;
   } else if (overdueCount > 0) {
-    tip = `${overdueCount} ${overdueCount === 1 ? 'revisão atrasada' : 'revisões atrasadas'}.`;
+    tip = `${overdueCount} ${overdueCount === 1 ? 'pendência atrasada' : 'pendências atrasadas'}.`;
   }
 
   const reviewLoad: WeeklyReviewLoadData = {

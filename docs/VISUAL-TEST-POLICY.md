@@ -1,5 +1,9 @@
 # Superfícies e plataformas de regressão visual
 
+## Auditoria visual de novembro de 2026
+
+As melhorias das fases 1–4 e a validação parcial da fase 5 estão registradas no [plano da auditoria](superpowers/plans/2026-11-12-auditoria-visual-extrato.md). Na comparação Windows, as três referências móveis alteradas de Visão Geral e Desempenho tiveram imagens esperadas, atuais e diffs inspecionados antes da substituição, sem alteração de tolerância. Detalhes, capturas e verificações ainda pendentes constam no [relatório da fase 5](../auditorias/2026-11-13-fase5-visual/RELATORIO.md). Testes automatizados não comprovam conformidade global nem substituem zoom real, leitor de tela ou avaliação em dispositivo físico.
+
 ## Revisão dirigida — resumo de Desempenho
 
 Na revisão da hierarquia do resumo, as quatro referências Windows de Desempenho foram comparadas com as imagens atuais e seus diffs. A conclusão passou para antes dos indicadores; valores, evidências e ressalva sobre probabilidade de aprovação permaneceram. No celular, a captura anterior incluía o cabeçalho fixo sobre o conteúdo. A captura dirigida agora oculta temporariamente elementos flutuantes e aumenta a altura da janela para registrar o resumo inteiro, restaurando ambos em seguida. As quatro imagens foram substituídas individualmente após inspeção; a tolerância continua em 0,08.

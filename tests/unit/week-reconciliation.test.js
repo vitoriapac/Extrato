@@ -4,14 +4,14 @@ import { buildWeekReconciliation } from '../../src/ui/tabs/goals/week-reconcilia
 
 const period = '03 a 09 nov';
 
-test('números da auditoria: estudo 4x o plano vira fora do plano e múltiplo', () => {
+test('números da auditoria: o múltiplo não inventa tempo sem vínculo', () => {
   const r = buildWeekReconciliation({
     capacityMin: 720,
     plannedMin: 160,
     studiedMin: 664,
     periodLabel: period,
   });
-  assert.equal(r.offPlanMin, 504);
+  assert.equal(r.unlinkedMin, null);
   assert.ok(Math.abs(r.multiple - 4.15) < 0.001);
   assert.equal(r.periodLabel, period);
 });
@@ -24,17 +24,18 @@ test('plano zerado não gera múltiplo (sem Infinity/NaN)', () => {
     periodLabel: period,
   });
   assert.equal(r.multiple, null);
-  assert.equal(r.offPlanMin, 90);
+  assert.equal(r.unlinkedMin, null);
 });
 
-test('estudado abaixo do planejado não tem estudo fora do plano', () => {
+test('estudado abaixo do planejado pode ter estudo sem vínculo', () => {
   const r = buildWeekReconciliation({
     capacityMin: 720,
     plannedMin: 160,
     studiedMin: 60,
     periodLabel: period,
+    links: { studiedMinutes: 60, linkedMinutes: 0, additionalMinutes: 60, incompatibleMinutes: 0, otherPeriodMinutes: 0 },
   });
-  assert.equal(r.offPlanMin, 0);
+  assert.equal(r.unlinkedMin, 60);
   assert.ok(r.multiple < 1);
 });
 
@@ -45,7 +46,7 @@ test('periodLabel é obrigatório', () => {
 });
 
 import { renderPlanExecution } from '../../src/ui/renderers/plan-execution-renderer.js';
-test('card mostra múltiplo e linha fora do plano, nunca só percentual', () => {
+test('card mostra múltiplo e informa quando vínculos não estão disponíveis', () => {
   const day = (date, planned) => ({
     date,
     capacityMinutes: 60,
@@ -65,7 +66,7 @@ test('card mostra múltiplo e linha fora do plano, nunca só percentual', () => 
   const html = renderPlanExecution(model, {
     formatDate: iso => iso.split('-').reverse().join('/'),
   });
-  assert.match(html, /Estudo extra, sem tarefa marcada/);
+  assert.match(html, /Detalhamento dos vínculos indisponível/);
   assert.match(html, /4,2× o tempo com tarefa marcada/);
   assert.match(html, /03\/11 a 09\/11/);
   assert.doesNotMatch(html, /Infinity|NaN/);

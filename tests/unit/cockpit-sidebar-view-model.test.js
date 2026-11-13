@@ -34,7 +34,7 @@ test('buildCockpitSidebarViewModel: estado vazio não inventa meta nem revisões
   assert.equal(result.todayGoal.questionsDone, 0);
   assert.equal(result.reviewLoad.days.length, 7);
   assert.equal(result.reviewLoad.overdueCount, 0);
-  assert.match(result.reviewLoad.tip, /Nenhuma revisão agendada/);
+  assert.match(result.reviewLoad.tip, /Nenhuma tarefa ou revisão agendada/);
   assert.equal(result.consistency.days.length, 28);
   assert.equal(result.consistency.activeDaysCount, 0);
 });
@@ -52,7 +52,7 @@ test('buildCockpitSidebarViewModel: calcula meta do dia, revisões da semana e m
   const qui = result.reviewLoad.days.find(d => d.dayName === 'Qui');
   assert.equal(qui.count, 4);
   assert.equal(qui.isPeak, true);
-  assert.match(result.reviewLoad.tip, /Quinta-feira tem pico de 4 revisões/);
+  assert.match(result.reviewLoad.tip, /Quinta-feira tem pico de 4 tarefas e revisões/);
 
   assert.equal(result.consistency.activeDaysCount, 3);
   assert.equal(result.consistency.days.find(d => d.isToday).level, 3); // 135 min >= 120 min

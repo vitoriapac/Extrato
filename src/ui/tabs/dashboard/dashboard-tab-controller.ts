@@ -6,6 +6,7 @@ import {
   renderConsistencyStrip,
 } from '../../renderers/consistency-strip-renderer.js';
 import { QuickStatsGrid, type QuickStatsData } from './QuickStatsGrid.js';
+import { buildTopicStatusSummary } from '../../../application/subjects/build-topic-status-summary.js';
 import { SubjectProgressList, type SubjectProgressItem } from './SubjectProgressList.js';
 import { UpcomingReviewsList, type UpcomingReviewItem } from './UpcomingReviewsList.js';
 import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
@@ -472,7 +473,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas · histórico</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes','simulations')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis · estimativa · abrir</div></button>
-    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas · hoje</div></button>
+    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Pendências atrasadas · hoje</div></button>
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de acerto · atual</div></button>`;
   }
 
@@ -850,11 +851,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       });
     }
     const topics = deps.activeTopics ? deps.activeTopics() : [];
-    const total = topics.length;
-    const naoIniciado = topics.filter((t: any) => t.status === 'Não iniciado').length;
-
     const qs = doc.getElementById('quickStats');
-    if (qs) mountQuickStats(qs, { total, naoIniciado });
+    if (qs) mountQuickStats(qs, buildTopicStatusSummary(topics));
 
     const today = todayISO();
     const entitySubjectName = deps.entitySubjectName || ((item: any) => item?.subject || '—');
@@ -867,7 +865,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
         date: c.date,
         dateFormatted: formatDatePt(c.date),
         subject: entitySubjectName(c),
-        label: c.reviewType && c.reviewType !== '—' ? c.reviewType : 'Revisão',
+        label: c.reviewType && c.reviewType !== '—' ? c.reviewType : 'Tarefa de estudo',
         status: c.status,
         origem: 'Calendário',
       }));
@@ -889,7 +887,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const ul = doc.getElementById('upcomingList');
     const title = doc.getElementById('upcomingTitle');
     const footer = doc.getElementById('upcomingFooter');
-    if (title) title.textContent = `Próximas revisões · ${allUpcoming.length}`;
+    if (title) title.textContent = `Tarefas e revisões a partir de hoje · ${allUpcoming.length}`;
     if (ul) {
       mountUpcomingList(ul, upcoming);
     }
@@ -903,7 +901,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
             total: allUpcoming.length,
             visible: upcoming.length,
             step: 5,
-            label: 'revisões',
+            label: 'itens',
             showMoreAction: 'changeUpcomingLimit(5)',
             showAllAction: 'showAllUpcoming()',
             showLessAction: upcomingVisible > 5 ? 'resetUpcomingLimit()' : '',

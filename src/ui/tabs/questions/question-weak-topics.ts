@@ -1,3 +1,7 @@
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+import { WeakTopics } from './WeakTopics.js';
+
 // Presentation only: picks from the topic performance the app already computes
 // (getSubjectTopicPerformance); no new accuracy math lives here.
 // Same sample threshold used by "amostra pequena" in Desempenho and by the topic list in Questões.
@@ -36,7 +40,7 @@ export function selectWeakTopics({
     .filter(topic => topic.resolved > 0 && topic.accuracy !== null)
     .map((topic, index) => ({ topic, index }))
     // Array.prototype.sort is stable, the index tie-break just makes it explicit.
-    .sort((a, b) => a.topic.accuracy! - b.topic.accuracy! || a.index - b.index)
+    .sort((a, b) => Number(a.topic.resolved < MIN_TOPIC_EVIDENCE_QUESTIONS) - Number(b.topic.resolved < MIN_TOPIC_EVIDENCE_QUESTIONS) || a.topic.accuracy! - b.topic.accuracy! || a.index - b.index)
     .slice(0, limit)
     .map(({ topic }) => {
       const dates = records
@@ -59,27 +63,10 @@ export function selectWeakTopics({
 export function renderWeakTopics({
   topics,
   formatDate,
-  escapeHtml,
 }: {
   topics: WeakTopic[];
   formatDate: (iso: string) => string;
   escapeHtml: (text: string) => string;
 }): string {
-  const head =
-    '<h3 class="module-heading__title">Onde vale insistir</h3>';
-  if (!topics.length) {
-    return `<section class="weak-topics" aria-label="Onde vale insistir">${head}<p class="analytics-note">Registre questões com tópico para ver onde o acerto está mais baixo.</p></section>`;
-  }
-  const items = topics
-    .map(topic => {
-      const period =
-        topic.periodStart && topic.periodEnd
-          ? topic.periodStart === topic.periodEnd
-            ? formatDate(topic.periodStart)
-            : `${formatDate(topic.periodStart)} a ${formatDate(topic.periodEnd)}`
-          : '';
-      return `<li class="weak-topics__item"><span class="weak-topics__name">${escapeHtml(topic.name)}${topic.subjectName ? ` <small>${escapeHtml(topic.subjectName)}</small>` : ''}</span><span class="weak-topics__acc weak-topics__num">${String(topic.accuracy).replace('.', ',')}%</span><span class="weak-topics__meta"><span class="weak-topics__num">${topic.sampleSize}</span> questões${period ? ` · <span class="weak-topics__num">${escapeHtml(period)}</span>` : ''}${topic.insufficient ? ' · <strong class="weak-topics__flag">Evidência insuficiente</strong>' : ''}</span></li>`;
-    })
-    .join('');
-  return `<section class="weak-topics" aria-label="Onde vale insistir">${head}<ol class="weak-topics__list">${items}</ol></section>`;
+  return render(h(WeakTopics, { topics, formatDate }));
 }

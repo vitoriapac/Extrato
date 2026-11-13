@@ -1,0 +1,139 @@
+{
+  "before": {
+    "role": "planned",
+    "id": "recommendation-e545cc9f-847e-4356-9334-f24f47e4e896",
+    "text": "Língua Portuguesa · Interpretação e compreensão de textos\n\n45min · Teoria · prevista no plano de hoje\n\nIniciar estudo\n\nSugestão fora do plano: Redação · Introdução (prioridade 77/100).\nVer por quê"
+  },
+  "after": {
+    "active": "hoje",
+    "timer": "00:01",
+    "body": "Língua Portuguesa — Interpretação e compreensão de textos\n\nEstudo teórico · Meta de 45min\n\nDados fictícios · modo demonstração\nEsc · sair do modo foco\n00:01\nLíngua Portuguesa — Interpretação e compreensão de textos · meta 45min · 44min restantes\nPausar\nFinalizar sessão\nSair do modo foco\nJanela flutuante\nZerar\nCronômetro iniciado."
+  },
+  "focus": [
+    {
+      "tag": "BUTTON",
+      "text": "Mais",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Buscar ações, páginas e tópicos",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Dados e backups",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Modo essencial",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Densidade compacta",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Mudar para modo escuro",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Agenda",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Sequência flexível",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Retomar sessão",
+      "outline": "solid"
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "Personalizar disciplina e tópico (estudo avulso)",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Pausar",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Finalizar sessão",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Modo foco",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Janela flutuante",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Zerar",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Resgatar em 30 min",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Recalibrar Semana",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Dispensar aviso da semana real",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Retomar sessão",
+      "outline": "solid"
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "O quê, por quê, evidências e consequências",
+      "outline": "solid"
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "Prova × Você · composição da prioridade",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Seguir plano de hoje · Língua Portuguesa · Interpretação e compreensão de textos",
+      "outline": "solid"
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "Outras opções",
+      "outline": "solid"
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "Ver outras 2 prioridades",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Sim",
+      "outline": "solid"
+    }
+  ]
+}

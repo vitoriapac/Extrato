@@ -18,7 +18,7 @@ export function UpcomingReviewsList({ items }: UpcomingReviewsListProps): JSX.El
   if (items.length === 0) {
     return (
       <li class="upcoming-empty">
-        Nenhuma revisão futura cadastrada. Adicione datas no Calendário ou gere a Agenda de
+        Nenhuma tarefa ou revisão futura cadastrada. Adicione datas no Calendário ou gere a Agenda de
         Revisões.
       </li>
     );

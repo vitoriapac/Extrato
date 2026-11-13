@@ -208,7 +208,7 @@ export function QuestionLogTable({
             type="button"
             class="error-toggle-btn"
             aria-expanded={expanded}
-            aria-label={`${categorized} de ${vm.errors} erros categorizados`}
+            aria-label={`${categorized} de ${vm.errors} erros categorizados: ${vm.subject}, ${vm.topic}, ${vm.date}`}
             data-delegated-click={`toggleQuestionErrors('${q.id}')`}
           >
             {categorized}/{vm.errors} categorizados
@@ -241,7 +241,7 @@ export function QuestionLogTable({
                         type="button"
                         class="btn ghost small"
                         data-delegated-click={`editQuestion('${q.id}')`}
-                        aria-label="Editar registro"
+                        aria-label={`Editar registro: ${vm.subject}, ${vm.topic}, ${vm.date}`}
                       >
                         Editar
                       </button>

@@ -338,7 +338,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 12,
+      "staticTestDeclarations": 13,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 7,
       "observedCaseSeconds": 150,
@@ -3056,7 +3056,7 @@
         "../../src/ui/undoable.js",
         "../../src/ui/tabs/calendar/calendar-tab-controller.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3709,7 +3709,7 @@
         "../../src/application/analytics/build-cockpit-sidebar-view-model.js",
         "../../src/ui/tabs/dashboard/dashboard-tab-controller.js"
       ],
-      "staticTestDeclarations": 14,
+      "staticTestDeclarations": 19,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -7777,7 +7777,7 @@
         "../../src/application/performance/build-preparation-reading.js",
         "../../src/ui/performance/preparation-reading-renderer.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -8194,7 +8194,7 @@
         "node:assert/strict",
         "../../src/ui/tabs/questions/question-weak-topics.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -12025,7 +12025,7 @@
         "../../src/ui/tabs/goals/WeekReconciliationSummary.js",
         "../../src/ui/tabs/goals/week-reconciliation.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

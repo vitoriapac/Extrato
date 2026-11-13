@@ -126,9 +126,9 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
       <div class="flex items-center justify-between mb-2">
         <div>
           <h3 id="reviewLoadTitle" class="font-semibold text-base text-content-primary m-0">
-            Carga de Revisões
+            Tarefas e revisões
           </h3>
-          <p class="text-xs text-content-secondary m-0 mt-1">Próximos 7 dias</p>
+          <p class="text-xs text-content-secondary m-0 mt-1">Semana atual</p>
         </div>
         <span
           class={`text-xs font-data font-semibold ${
@@ -164,7 +164,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
                       : 'bg-surface-subtle'
               }`}
               style={{ height: `${d.heightPct}%` }}
-              title={`${d.dayName}: ${d.count} revisões`}
+              title={`${d.dayName}: ${d.count} tarefas e revisões`}
             />
             <span
               class={`text-xs font-data ${

@@ -38,15 +38,17 @@ export function AlertListItem({ alert }: { alert: AnyRecord }): JSX.Element {
 export function OverviewAlerts({
   alerts,
   currentAction,
+  additionalCount = 0,
 }: {
   alerts: AnyRecord[];
   currentAction: AnyRecord | null;
+  additionalCount?: number;
 }): JSX.Element {
-  const extra = alerts.length - 2;
+  const extra = alerts.length - 1 + additionalCount;
   return (
     <>
       <div class="overview-alert-list">
-        {alerts.slice(0, 2).map(alert => (
+        {alerts.slice(0, 1).map(alert => (
           <article key={alert.id} class={`overview-alert alerta-${alert.severity}`}>
             {alert.topicId &&
               alert.topicId === currentAction?.topicId &&

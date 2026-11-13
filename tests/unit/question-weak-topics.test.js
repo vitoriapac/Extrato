@@ -37,8 +37,8 @@ test('traz sampleSize e período de cada tópico', () => {
 test('amostra abaixo do limiar existente fica marcada como evidência insuficiente', () => {
   assert.equal(MIN_TOPIC_EVIDENCE_QUESTIONS, 30);
   const result = selectWeakTopics({ topics: [topic('a', 3, 0), topic('b', 30, 10)], records });
-  assert.equal(result[0].insufficient, true);
-  assert.equal(result[1].insufficient, false);
+  assert.equal(result.find(row => row.topicId === 'a').insufficient, true);
+  assert.equal(result.find(row => row.topicId === 'b').insufficient, false);
   const html = renderWeakTopics({ topics: result, formatDate: d => d, escapeHtml: s => s });
   assert.match(html, /Evidência insuficiente/);
   assert.equal(html.match(/Evidência insuficiente/g).length, 1);
@@ -54,4 +54,12 @@ test('lista vazia vira estado vazio útil, não texto mudo', () => {
 test('empates de acerto mantêm a ordem de entrada', () => {
   const topics = [topic('p', 40, 20), topic('q', 40, 20), topic('r', 40, 20), topic('s', 40, 20)];
   assert.deepEqual(selectWeakTopics({ topics, records: [] }).map(t => t.topicId), ['p', 'q', 'r']);
+});
+
+test('prioriza tópicos com amostra suficiente antes dos sinais provisórios', () => {
+  const result = selectWeakTopics({ topics: [topic('small', 2, 0), topic('enough', 40, 16)], records });
+  assert.deepEqual(result.map(t => t.topicId), ['enough', 'small']);
+  const html = renderWeakTopics({ topics: result, formatDate: d => d, escapeHtml: s => s });
+  assert.match(html, /Amostra a ampliar/);
+  assert.match(html, /Período não informado/);
 });

@@ -57,7 +57,7 @@ test('SubjectProgressList Preact Component — renderiza barras de progresso ou 
 
 test('UpcomingReviewsList Preact Component — renderiza itens ou vazio', () => {
   const emptyHtml = render(h(UpcomingReviewsList, { items: [] }));
-  assert.match(emptyHtml, /Nenhuma revisão futura cadastrada/);
+  assert.match(emptyHtml, /Nenhuma tarefa ou revisão futura cadastrada/);
 
   const html = render(
     h(UpcomingReviewsList, {
@@ -96,7 +96,7 @@ test('createDashboardTabController — gera HTML dos 3 blocos da visão geral', 
   assert.match(barsHtml, /100%/);
 
   const upcomingHtml = controller.renderUpcomingListHtml([]);
-  assert.match(upcomingHtml, /Nenhuma revisão futura cadastrada/);
+  assert.match(upcomingHtml, /Nenhuma tarefa ou revisão futura cadastrada/);
 });
 
 test('createDashboardTabController — renderKPIs e navegação de KPI', () => {
@@ -140,7 +140,7 @@ test('createDashboardTabController — renderKPIs e navegação de KPI', () => {
   assert.match(elements['kpiGrid'].innerHTML, /Questões resolvidas/);
   assert.match(elements['kpiGrid'].innerHTML, /88%/);
   assert.match(elements['kpiGrid'].innerHTML, /3/);
-  assert.match(elements['kpiGrid'].innerHTML, /Revisões atrasadas/);
+  assert.match(elements['kpiGrid'].innerHTML, /Pendências atrasadas/);
   // O total soma Calendário + Agenda; só a lista do Calendário mostra os dois.
   assert.match(elements['kpiGrid'].innerHTML, /navigateKpi\('agenda','overdue'\)/);
 
@@ -369,7 +369,7 @@ test('CockpitSidebarCards Preact Component — renderiza Meta de Hoje, Carga e M
 
   const html = render(h(CockpitSidebarCards, { model }));
   assert.match(html, /Meta de Hoje/);
-  assert.match(html, /Carga de Revisões/);
+  assert.match(html, /Tarefas e revisões/);
   assert.match(html, /Consistência \(4 Semanas\)/);
   assert.match(html, /25/);
 });
@@ -392,4 +392,44 @@ test('TodayGoalCard inline — mostra só meta diária e questões, e some sem p
   assert.match(html, /3 de 5/);
   assert.doesNotMatch(html, /Meta de Hoje|Estudo realizado/);
   assert.equal(render(h(TodayGoalCard, { data: { ...data, hasConfiguredPlan: false }, variant: 'inline' })), '');
+});
+
+test('resumo de atenção destaca um alerta e mantém os demais na lista completa', async () => {
+  const { renderIntelligentAlerts } = await import('../../src/ui/renderers/overview-renderer.js');
+  const alerts = ['Primeiro', 'Segundo', 'Terceiro'].map((reason, index) => ({ id: String(index), reason, severity: 'medium' }));
+  const result = renderIntelligentAlerts({ alerts, additional: [{ id: '3', reason: 'Quarto', severity: 'low' }] });
+  assert.match(result.overview, /Primeiro/);
+  assert.doesNotMatch(result.overview, /Segundo|Terceiro/);
+  assert.match(result.overview, /3 alertas ativos/);
+  assert.match(result.list, /Segundo/);
+  assert.match(result.list, /Terceiro/);
+  assert.match(result.list, /Quarto/);
+});
+
+test('resumo de tópicos distingue todos os estados e registra status desconhecido', async () => {
+  const { buildTopicStatusSummary } = await import('../../src/application/subjects/build-topic-status-summary.js');
+  assert.deepEqual(buildTopicStatusSummary([{ status: 'Não iniciado' }, { status: 'Em andamento' }, { status: 'Revisão' }, { status: 'Concluído' }, { status: 'outro' }]), { total: 5, naoIniciado: 1, andamento: 1, revisao: 1, concluido: 1, desconhecido: 1 });
+});
+
+test('carga da semana nomeia itens mistos e não os chama todos de revisões', () => {
+  const model = buildCockpitSidebarViewModel({}, '2026-11-12', { reviews: [{ date: '2026-11-12', origem: 'Calendário', status: 'Pendente' }], overdueCount: 1 });
+  const html = render(h(CockpitSidebarCards, { model }));
+  assert.match(html, /Tarefas e revisões/);
+  assert.match(html, /Semana atual/);
+  assert.match(html, /1 pendência atrasada/);
+});
+
+test('tópico legado sem status segue a mesma leitura não iniciado da disciplina', async () => {
+  const { buildTopicStatusSummary } = await import('../../src/application/subjects/build-topic-status-summary.js');
+  const summary = buildTopicStatusSummary([{}, { status: null }, { status: 'outro' }]);
+  assert.equal(summary.naoIniciado, 2);
+  assert.equal(summary.desconhecido, 1);
+});
+
+test('resumo de tópicos ignora tópicos e disciplinas arquivados', async () => {
+  const { buildTopicStatusSummary } = await import('../../src/application/subjects/build-topic-status-summary.js');
+  const summary = buildTopicStatusSummary([{ status: 'Concluído' }, { status: 'Concluído', subjectArchived: true }, { status: 'Revisão', topicArchived: true }]);
+  assert.equal(summary.total, 1);
+  assert.equal(summary.concluido, 1);
+  assert.equal(summary.revisao, 0);
 });

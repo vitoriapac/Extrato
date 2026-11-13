@@ -18,7 +18,7 @@ export function renderIntelligentAlerts({ alerts, additional, currentAction = nu
   const list = [...alerts, ...additional]
     .map(alert => renderToString(h(AlertListItem, { alert })))
     .join('');
-  const overview = renderToString(h(OverviewAlerts, { alerts, currentAction }));
+  const overview = renderToString(h(OverviewAlerts, { alerts, currentAction, additionalCount: additional.length }));
   return { list, overview };
 }
 

@@ -10,10 +10,10 @@ export async function assertCriticalResponsive(page, { width, theme }) {
   await expectNoPageOverflow(page);
   await expect(page.locator('.overview-now')).toBeVisible();
   await activateTab(page, 'desempenho');
-  // A prontidão aparece nos KPIs da Visão geral de Desempenho; o diagnóstico, na subaba Disciplinas.
+  // A leitura reúne a prontidão na Visão geral; o diagnóstico fica na subaba Disciplinas.
   await openPerformanceSection(page, 'overview');
   await expectNoPageOverflow(page);
-  await expect(page.locator('.performance-kpis[aria-label="Prontidão e carga no período"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Leitura da preparação' })).toBeVisible();
   await openPerformanceSection(page, 'diagnosis');
   await expectNoPageOverflow(page);
   await expect(page.locator('#diagnosisCenter')).toBeVisible();

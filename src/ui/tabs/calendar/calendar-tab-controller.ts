@@ -450,7 +450,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
   function quickReviewButton(item: Record<string, any>, elId: string) {
     if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') return '';
-    return `<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}Revisar</button>`;
+    return `<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}${item.origem === 'Calendário' ? 'Concluir tarefa' : 'Revisar'}</button>`;
   }
 
   function renderCalTarefasHoje(elId = 'calTarefasHoje') {
@@ -458,6 +458,10 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!doc) return;
     const ul = doc.getElementById(elId);
     if (!ul) return;
+    if (elId === 'calTarefasHoje') {
+      const title = ul.parentElement?.querySelector('h3');
+      if (title) title.textContent = 'Tarefas e revisões de hoje';
+    }
     const today = todayISO();
     const items = getRevisoesUnificadas()
       .filter(r => r.date === today && r.status !== 'Concluído')
@@ -467,7 +471,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       const emptyLabel =
         elId === 'hojeTarefasHoje'
           ? 'Nenhum evento avulso no calendário para hoje (siga o Plano de hoje acima).'
-          : 'Nenhuma tarefa para hoje.';
+          : 'Nenhuma tarefa ou revisão para hoje.';
       ul.innerHTML = `<li class="upcoming-empty">${emptyLabel}</li>`;
       return;
     }
@@ -485,7 +489,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       calendar = items.length - agenda;
     return agenda && calendar
       ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} + ${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · `
-      : '';
+      : agenda ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} · ` : calendar ? `${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · ` : '';
   }
 
   function renderCalAtrasadas(elId = 'calAtrasadas') {
@@ -501,14 +505,14 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     // A lista completa mora na Agenda; Hoje e Calendário mostram só a contagem com o caminho até ela.
     if (elId !== 'calAtrasadas') {
       ul.innerHTML = items.length
-        ? `<li class="overdue-summary"><strong>${items.length} ${items.length === 1 ? 'revisão atrasada' : 'revisões atrasadas'}</strong><span>${overdueOrigin(items)}</span><div class="flex items-center gap-2 mt-2"><button type="button" class="btn small" data-action="open-recovery-mission">Resgatar em 30 min</button><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></div></li>`
-        : '<li class="upcoming-empty">Nenhuma revisão atrasada.</li>';
+        ? `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}</span><div class="flex items-center gap-2 mt-2"><button type="button" class="btn small" data-action="open-recovery-mission">Resgatar em 30 min</button><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></div></li>`
+        : '<li class="upcoming-empty">Nenhuma pendência atrasada.</li>';
       return;
     }
     renderCalAtrasadas('calAtrasadasResumo');
 
     if (!items.length) {
-      ul.innerHTML = '<li class="upcoming-empty">Nenhuma revisão atrasada.</li>';
+      ul.innerHTML = '<li class="upcoming-empty">Nenhuma pendência atrasada.</li>';
       return;
     }
     const groups = new Map<string, any[]>();
@@ -526,11 +530,11 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     }
 
     ul.innerHTML =
-      `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${overdueOrigin(items)}${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
+      `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}${pluralize(entries.length, 'data', 'datas')} · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
       visible
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);
-          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'revisão', 'revisões')} · ${Math.abs(diasParaRevisao(date) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
+          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
         })
         .join('') +
       `<li class="overdue-list-footer">${renderCollectionFooter({ variant: 'block', total: entries.length, visible: visible.length, step: DEFAULT_LIST_VISIBLE_ITEMS, label: 'datas', showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > DEFAULT_LIST_VISIBLE_ITEMS ? `resetOverdueGroupLimit('${elId}')` : '' })}</li>`;
@@ -546,7 +550,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       if (!item || item.status === 'Concluído') return;
       updateCal(id, 'status', 'Concluído');
     }
-    showToast('Revisão concluída e indicadores atualizados.');
+    showToast(origin === 'Agenda de Revisões' ? 'Revisão concluída e indicadores atualizados.' : 'Tarefa concluída e indicadores atualizados.');
   }
 
   function bindEvents(doc?: any) {

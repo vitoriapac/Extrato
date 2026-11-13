@@ -142,10 +142,7 @@ export function renderPerformanceOverview(
           ? 'small'
           : null;
   const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo do período e da última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Resumo do período</h3>${renderEvidenceBadge(summaryEvidence)}${renderCopyBlockLink('resumo')}${range?.label ? `<span class="text-xs font-medium text-content-secondary bg-surface-subtle px-3 py-1 rounded-xs">${escapeHtml(range.label)}</span>` : ''}</div></header>${executiveHtml}${weeklyBriefHtml}</section>`;
-  const preparationHtml = renderPreparationReading(preparationReading, {
-    escapeHtml,
-    escapeAttr,
-  });
+  const preparationHtml = renderPreparationReading(preparationReading);
   const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });
   return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }) + secondaryKpis, kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
 }

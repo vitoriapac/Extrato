@@ -10,7 +10,7 @@ export function buildUnifiedReviews({
     date: item.date,
     subjectId: subjectIdOf(item),
     subject: subjectName(item),
-    label: item.reviewType && item.reviewType !== '—' ? item.reviewType : 'Revisão',
+    label: item.reviewType && item.reviewType !== '—' ? item.reviewType : 'Tarefa de estudo',
     status: item.status || 'Não iniciado',
     origem: 'Calendário',
   }));

@@ -21,6 +21,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         capacityMin: model.capacityMinutes,
         plannedMin: model.plannedMinutes,
         studiedMin: model.studiedMinutes,
+        links: model.strategic?.reconciliation,
         periodLabel,
       }),
     })

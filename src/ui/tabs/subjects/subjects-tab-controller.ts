@@ -3,6 +3,8 @@ import { getRovingTabIndex } from '../../primitives/tabs.js';
 import { isSubjectColor } from '../../../domain/subjects/subject-color.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { VerticalizedSyllabusView } from '../../views/VerticalizedSyllabusView.js';
+import { QuickStatsGrid } from '../dashboard/QuickStatsGrid.js';
+import { buildTopicStatusSummary } from '../../../application/subjects/build-topic-status-summary.js';
 import { createSubjectsController } from './subjects-controller.js';
 import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './topic-analytics-view.js';
 import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './topic-strategy-editor-view.js';
@@ -287,15 +289,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     const toggleBtn = ctx.document.getElementById('verticalizedSyllabusToggleBtn');
     const quickStatsEl = ctx.document.getElementById('quickStats');
     if (quickStatsEl && ctx.allTopics) {
-      const topics = ctx.allTopics();
-      const total = topics.length;
-      const naoIniciado = topics.filter((t: any) => t.status === 'Não iniciado').length;
-      const concluido = topics.filter((t: any) => t.status === 'Concluído').length;
-      quickStatsEl.innerHTML = `
-        <div class="stat-cell"><div class="n">${total}</div><div class="l">Tópicos totais</div></div>
-        <div class="stat-cell"><div class="n">${concluido}</div><div class="l">Concluídos</div></div>
-        <div class="stat-cell"><div class="n">${naoIniciado}</div><div class="l">Não iniciados</div></div>
-      `;
+      mountPreact(h(QuickStatsGrid, buildTopicStatusSummary(ctx.allTopics())), quickStatsEl);
     }
     if (!container) return;
 

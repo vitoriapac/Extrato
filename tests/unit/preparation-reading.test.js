@@ -59,7 +59,7 @@ test('leitura da preparação: o render tem um botão sólido, três blocos e ne
     weeklyBrief: { current: week(), overdueReviews: 1 },
     nextBestAction: action(),
   });
-  const html = renderPreparationReading(reading, { rangeLabel: 'Últimos 30 dias' });
+  const html = renderPreparationReading(reading);
   assert.match(html, /Como estou/);
   assert.match(html, /O que mais pesa/);
   assert.match(html, /O que fazer/);
@@ -116,4 +116,29 @@ test('leitura da preparação: a Prontidão traz barra e tendência, sem causa',
   assert.match(html, /Tendência: em queda frente ao período anterior/);
   assert.match(html, /data-window="sevenDays"[^>]*>7 dias</);
   assert.doesNotMatch(html, /porque|graças a|garante/i);
+});
+
+test('ação aparece com motivo e ressalvas antes dos controles e da análise detalhada', () => {
+  const reading = buildPreparationReading({
+    model: { readiness: { value: 46, availableFactors: ['coverage', 'mastery', 'retention'] } },
+    nextBestAction: action({ reasons: ['Revisão prevista para hoje'], evidence: 'Baixa', currentAllocationMinutes: null }),
+  });
+  const html = renderPreparationReading(reading);
+  assert.match(html, /Revisão prevista para hoje/);
+  assert.ok(html.indexOf('O que fazer') < html.indexOf('O que mais pesa'));
+  assert.ok(html.indexOf('No plano:') < html.indexOf('Abrir em Hoje'));
+  assert.match(html, /Evidência:.*baixa/);
+});
+
+test('projeção mantém intervalo, confiança e limite juntos; conteúdo da ação é escapado', () => {
+  const reading = buildPreparationReading({
+    projection: { projection: { calibratedSimulationBand: { low: 69, high: 93 } }, confidence: { level: 'low' }, current: { targetScore: 80 } },
+    nextBestAction: action({ topicName: '<script>conteúdo</script>', reasons: ['<img src=x>'] }),
+  });
+  const html = renderPreparationReading(reading);
+  assert.match(html, /69% a 93%, confiança baixa/);
+  assert.match(html, /Não é chance de aprovação/);
+  assert.match(html, /data-window="history"/);
+  assert.doesNotMatch(html, /<script>|<img src=x>/);
+  assert.match(html, /&lt;script>/);
 });

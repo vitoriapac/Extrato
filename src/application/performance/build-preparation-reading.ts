@@ -34,6 +34,7 @@ export interface PreparationReading {
       recommendationId: string | null;
       label: string;
       text: string;
+      reason: string | null;
       planNote: string;
       /** "No plano" e "Evidência" em pares rótulo/valor, para ler em diagonal. */
       facts: { inPlan: string; evidence: string };
@@ -182,6 +183,7 @@ export function buildPreparationReading({
       recommendationId: best.action.recommendationId || null,
       label: best.label || 'Abrir em Hoje',
       text: `${best.topicName}${best.subjectName ? ` (${best.subjectName})` : ''}${minutes ? `, ${formatStudyMinutes(minutes)}` : ''}`,
+      reason: Array.isArray(best.reasons) ? best.reasons.find((item: unknown) => typeof item === 'string' && item.trim()) || null : null,
       planNote,
     };
   }

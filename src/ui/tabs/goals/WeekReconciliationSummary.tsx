@@ -29,11 +29,17 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
         value={fmt(data.studiedMin)}
         total
       />
-      <LedgerLine
-        label="Estudo extra, sem tarefa marcada"
-        hint="Estudado até hoje além do que tinha tarefa marcada"
-        value={fmt(data.offPlanMin)}
-      />
+      {data.linkedMin !== null && data.unlinkedMin !== null ? (
+        <>
+          <LedgerLine label="Vinculado a atividades desta semana" hint="Tempo registrado, inclusive acima do previsto" value={fmt(data.linkedMin)} />
+          <LedgerLine label="Sem vínculo com atividade" value={fmt(data.unlinkedMin)} />
+          {data.incompatibleMin > 0 && <LedgerLine label="Vínculo incompatível ou inativo" value={fmt(data.incompatibleMin)} />}
+          {data.otherPeriodMin > 0 && <LedgerLine label="Vinculado a outro período" value={fmt(data.otherPeriodMin)} />}
+          {data.classifiedStudyMin !== null && Math.round(data.classifiedStudyMin) !== Math.round(data.studiedMin) && (
+            <p class="week-reconciliation__note">A análise de vínculos considera {fmt(data.classifiedStudyMin)} em sessões únicas, com data de execução válida; o total acima usa as datas registradas nas sessões.</p>
+          )}
+        </>
+      ) : <p class="week-reconciliation__note">Detalhamento dos vínculos indisponível.</p>}
       {multiple !== null && (
         <p class="week-reconciliation__note">
           Você estudou {multiple.toFixed(1).replace('.', ',')}× o tempo com tarefa marcada: só{' '}

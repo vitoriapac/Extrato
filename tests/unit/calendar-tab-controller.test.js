@@ -88,7 +88,7 @@ test('createCalendarTabController — gerencia atrasadas agrupadas e paginação
 
   controller.renderCalAtrasadas('calAtrasadas');
   assert.ok(elements.calAtrasadas);
-  assert.match(elements.calAtrasadas.innerHTML, /3 revisões atrasadas/);
+  assert.match(elements.calAtrasadas.innerHTML, /3 pendências atrasadas/);
   assert.match(elements.calAtrasadas.innerHTML, /2026-03-05/);
 
   // Toggle da data expandida
@@ -201,4 +201,26 @@ test('createCalendarTabController — CRUD e conclusões integradas', () => {
   undoToasts[0].onUndo();
   assert.deepEqual(state.calendar, calendarBefore);
   configureUndo(null);
+});
+
+test('fila mista identifica tarefas e revisões sem chamar tudo de revisão', () => {
+  const elements = {};
+  const doc = { getElementById(id) { return elements[id] ||= { id, innerHTML: '' }; } };
+  const controller = createCalendarTabController({
+    state: { calendar: [{ id: 'c', date: '2026-03-09', status: 'Não iniciado' }], reviewAgenda: [{ id: 'r', date: '2026-03-09', status: 'Pendente' }] },
+    document: doc, clock: { today: () => '2026-03-10' }, diasParaRevisao: () => -1, formatDatePt: d => d,
+  });
+  controller.renderCalAtrasadas('calAtrasadas');
+  assert.match(elements.calAtrasadas.innerHTML, /2 pendências atrasadas/);
+  assert.match(elements.calAtrasadas.innerHTML, /1 revisão \+ 1 tarefa/);
+  assert.doesNotMatch(elements.calAtrasadas.innerHTML, /2 revisões atrasadas/);
+});
+
+test('ação rápida distingue concluir tarefa de revisar tópico', () => {
+  const element = { innerHTML: '' };
+  const state = { calendar: [{ id: 'task', date: '2026-03-10', status: 'Não iniciado' }], reviewAgenda: [{ id: 'review', date: '2026-03-10', status: 'Pendente' }] };
+  const controller = createCalendarTabController({ state, clock: { today: () => '2026-03-10' }, document: { getElementById: () => element } });
+  controller.renderCalTarefasHoje('hojeTarefasHoje');
+  assert.match(element.innerHTML, /completeUnifiedReview\('task','Calendário'\)[\s\S]*?Concluir tarefa/);
+  assert.match(element.innerHTML, /completeUnifiedReview\('review','Agenda de Revisões'\)[\s\S]*?Revisar/);
 });

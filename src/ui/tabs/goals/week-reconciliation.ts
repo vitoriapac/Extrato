@@ -1,7 +1,11 @@
 export type WeekReconciliation = {
   capacityMin: number;
   plannedMin: number;
-  offPlanMin: number;
+  linkedMin: number | null;
+  unlinkedMin: number | null;
+  incompatibleMin: number;
+  otherPeriodMin: number;
+  classifiedStudyMin: number | null;
   studiedMin: number;
   multiple: number | null;
   periodLabel: string;
@@ -15,6 +19,7 @@ export function buildWeekReconciliation(input: {
   plannedMin: number;
   studiedMin: number;
   periodLabel: string;
+  links?: { studiedMinutes: number; linkedMinutes: number; additionalMinutes: number; incompatibleMinutes: number; otherPeriodMinutes: number } | null;
 }): WeekReconciliation {
   if (!input.periodLabel) throw new Error('periodLabel é obrigatório');
   const plannedMin = clean(input.plannedMin);
@@ -22,7 +27,11 @@ export function buildWeekReconciliation(input: {
   return {
     capacityMin: clean(input.capacityMin),
     plannedMin,
-    offPlanMin: Math.max(0, studiedMin - plannedMin),
+    linkedMin: input.links ? clean(input.links.linkedMinutes) : null,
+    unlinkedMin: input.links ? clean(input.links.additionalMinutes) : null,
+    incompatibleMin: clean(input.links?.incompatibleMinutes ?? 0),
+    otherPeriodMin: clean(input.links?.otherPeriodMinutes ?? 0),
+    classifiedStudyMin: input.links ? clean(input.links.studiedMinutes) : null,
     studiedMin,
     multiple: plannedMin > 0 ? studiedMin / plannedMin : null,
     periodLabel: input.periodLabel,

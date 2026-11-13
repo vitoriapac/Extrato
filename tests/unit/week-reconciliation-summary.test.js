@@ -31,7 +31,7 @@ test('aviso de plano curto usa o múltiplo exibido (2,04 não mostra; 2,06 mostr
 test('resumo diferencia a semana inteira do realizado até hoje', () => {
   const out = html(400, 231);
   assert.match(out, /inclui dias futuros/);
-  assert.match(out, /Estudo extra, sem tarefa marcada/);
+  assert.match(out, /Detalhamento dos vínculos indisponível/);
   assert.match(out, /Estudado até hoje/);
 });
 
@@ -68,4 +68,46 @@ test('prioridade informa a semana inteira e a necessidade de vínculo', async ()
   );
   assert.match(out, /semana inteira/);
   assert.match(out, /Só sessões com vínculo válido contam/);
+});
+
+test('extrato usa vínculos reais mesmo quando o estudo total é menor que o planejado', async () => {
+  const { buildPlanExecution } = await import('../../src/application/goals/build-plan-execution.js');
+  const { renderPlanExecution } = await import('../../src/ui/renderers/plan-execution-renderer.js');
+  const model = buildPlanExecution({
+    today: '2026-11-12', hoursByDay: { 1: 2 },
+    dailyPlans: [{ date: '2026-11-09', items: [{ id: 'a', subjectId: 's', topicId: 't', type: 'study', plannedMinutes: 80, status: 'planned', prioritySnapshot: { priority: true } }] }],
+    sessions: [{ id: 'extra', date: '2026-11-10', subjectId: 's', topicId: 't', type: 'study', durationSeconds: 1800 }],
+  });
+  const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
+  assert.match(out, /Sem vínculo com atividade/);
+  assert.match(out, /30min/);
+  assert.match(out, /0h00 de 1h20 prioritárias/);
+  assert.doesNotMatch(out, /Estudo extra, sem tarefa marcada/);
+});
+
+test('extrato separa vínculo válido, incompatível e de outro período', async () => {
+  const { buildPlanExecution } = await import('../../src/application/goals/build-plan-execution.js');
+  const { renderPlanExecution } = await import('../../src/ui/renderers/plan-execution-renderer.js');
+  const item = (id) => ({ id, subjectId: 's', topicId: 't', type: 'study', plannedMinutes: 60, status: 'planned' });
+  const model = buildPlanExecution({ today: '2026-11-12', hoursByDay: { 1: 2 },
+    dailyPlans: [{ date: '2026-11-09', items: [item('current')] }, { date: '2026-11-02', items: [item('past')] }],
+    sessions: [
+      { id: 'ok', date: '2026-11-10', subjectId: 's', topicId: 't', type: 'study', planItemId: 'current', durationSeconds: 1800 },
+      { id: 'bad', date: '2026-11-10', subjectId: 's', topicId: 'other', type: 'study', planItemId: 'current', durationSeconds: 600 },
+      { id: 'old', date: '2026-11-10', subjectId: 's', topicId: 't', type: 'study', planItemId: 'past', durationSeconds: 1200 },
+    ] });
+  const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
+  assert.match(out, /Vinculado a atividades desta semana[\s\S]*?30min/);
+  assert.match(out, /Vínculo incompatível ou inativo[\s\S]*?10min/);
+  assert.match(out, /Vinculado a outro período[\s\S]*?20min/);
+});
+
+test('quando os totais usam bases diferentes o extrato explica a diferença', async () => {
+  const { buildPlanExecution } = await import('../../src/application/goals/build-plan-execution.js');
+  const { renderPlanExecution } = await import('../../src/ui/renderers/plan-execution-renderer.js');
+  const session = { id: 'duplicada', date: '2026-11-10', durationSeconds: 1800 };
+  const model = buildPlanExecution({ today: '2026-11-12', hoursByDay: { 1: 1 }, sessions: [session, session] });
+  const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
+  assert.match(out, /análise de vínculos considera 30min em sessões únicas/);
+  assert.match(out, /total acima usa as datas registradas/);
 });
