@@ -7,7 +7,7 @@ test('landing apresenta recortes da demonstração e acesso ao aplicativo', asyn
     await page.goto('/landing.html');
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: 'Pular para o conteúdo' })).toBeFocused();
-    await expect(page.getByRole('heading', { name: 'Saiba o que estudar hoje.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Seu estudo merece um plano.' })).toBeVisible();
     const nav = page.getByRole('navigation', { name: 'Navegação principal' });
     for (const link of await nav.getByRole('link').all()) {
       if (await link.isVisible()) {
@@ -53,7 +53,7 @@ test('landing separada abre /app sem alterar dados armazenados', async ({ page }
   });
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await expect(page.getByRole('heading', { name: 'Saiba o que estudar hoje.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Seu estudo merece um plano.' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Extrato de Estudos', exact: true })).toHaveCount(
     0
   );
@@ -67,6 +67,7 @@ test('landing separada abre /app sem alterar dados armazenados', async ({ page }
     .poll(() => wordmark.evaluate(node => parseFloat(node.style.getPropertyValue('--spot-x'))))
     .toBeCloseTo(30, 0);
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  await expect(page.locator('.landing-hero-visual')).toHaveCSS('animation-name', 'none');
   await expect(spotlight).toHaveCSS('display', 'none');
   await page
     .getByRole('navigation', { name: 'Navegação do rodapé' })

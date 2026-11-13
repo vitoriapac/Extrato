@@ -46,9 +46,62 @@ const questions = [
   },
 ];
 
+const marqueeItems = [
+  { icon: 'calendar', label: 'Planejamento semanal' },
+  { icon: 'timer', label: 'Cronômetro de estudo' },
+  { icon: 'repeat', label: 'Revisão espaçada' },
+  { icon: 'file-text', label: 'Caderno de erros' },
+  { icon: 'target', label: 'Metas por disciplina' },
+  { icon: 'trending-up', label: 'Desempenho do período' },
+  { icon: 'lock', label: 'Dados no seu navegador' },
+  { icon: 'sparkles', label: 'Demonstração guiada' },
+];
+
+const benefits = [
+  {
+    icon: 'calendar',
+    title: 'Semana planejada',
+    text: 'Distribua as matérias conforme o tempo que você tem.',
+  },
+  { icon: 'repeat', title: 'Revisões em dia', text: 'O que você estudou volta para ser revisado.' },
+  {
+    icon: 'file-text',
+    title: 'Caderno de erros',
+    text: 'Transforme cada erro em flashcard para fixar.',
+  },
+  {
+    icon: 'lock',
+    title: 'Dados com você',
+    text: 'Tudo fica no navegador, com backup para exportar.',
+  },
+];
+
+const comparison = [
+  ['Anotações e planilhas espalhadas', 'Uma semana de estudo organizada em um só lugar'],
+  ['Dúvida diária sobre o que estudar', 'A próxima atividade pronta, com o tempo previsto'],
+  ['Matéria revisada só quando lembra', 'Revisões que voltam no momento certo'],
+  ['Sensação de estudar sem saber se evolui', 'Desempenho do período e limites da análise à vista'],
+];
+
+const steps = [
+  {
+    title: 'Cadastre suas matérias',
+    text: 'Adicione as disciplinas e a data da prova, se já souber o prazo.',
+  },
+  { title: 'Monte a semana', text: 'Defina o tempo disponível e veja o plano de estudo sugerido.' },
+  {
+    title: 'Estude e acompanhe',
+    text: 'Abra o Hoje, cronometre cada sessão e acompanhe a evolução.',
+  },
+];
+
 const pageWidth = 'mx-auto w-full max-w-[1280px] px-4 sm:px-8';
 const primaryLink =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-primary px-6 font-semibold text-primary-contrast no-underline transition-colors hover:bg-brand-secondary motion-reduce:transition-none';
+  'landing-action inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-primary px-6 font-semibold text-primary-contrast no-underline transition-colors hover:bg-brand-secondary motion-reduce:transition-none';
+const ctaLink =
+  'landing-action inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--secondary)] px-7 font-semibold text-[var(--on-secondary)] no-underline shadow-md hover:bg-[var(--secondary-hover)]';
+const eyebrow =
+  'm-0 text-sm font-semibold uppercase tracking-[0.08em] text-[var(--secondary-text)]';
 const navLink =
   'inline-flex min-h-touch items-center whitespace-nowrap px-2 text-content-secondary no-underline hover:text-brand hover:underline underline-offset-4';
 const sectionTitle =
@@ -58,7 +111,7 @@ function StudyPreview() {
   return (
     <figure
       id="painel"
-      class="m-0 min-w-0 rounded-default border border-border-default bg-surface-card p-3 sm:p-4"
+      class="m-0 min-w-0 overflow-hidden rounded-[28px] border border-border-default bg-surface-card p-3 shadow-2xl sm:p-5"
     >
       <figcaption class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-brand">
         Visão geral do Extrato <Badge variant="info">Dados fictícios da demonstração</Badge>
@@ -276,12 +329,29 @@ function FooterWordmark() {
 }
 
 function LandingPage() {
+  useLayoutEffect(() => {
+    const root = document.getElementById('inicio');
+    if (!root || !('IntersectionObserver' in window)) return;
+    root.classList.add('rv-ready');
+    const io = new IntersectionObserver(
+      entries =>
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }),
+      { threshold: 0.12 }
+    );
+    root.querySelectorAll('[data-rv]').forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
   return (
     <div id="inicio" class="min-h-screen bg-surface-card font-body text-base text-content-primary">
       <a href="#conteudo" class="skip-link">
         Pular para o conteúdo
       </a>
-      <div class="bg-surface-page">
+      <div class="landing-mesh bg-surface-page">
         <header class={`${pageWidth} pt-3 sm:pt-6`}>
           <nav
             aria-label="Navegação principal"
@@ -322,92 +392,276 @@ function LandingPage() {
           </nav>
         </header>
         <main id="conteudo" tabIndex={-1}>
-          <section
-            aria-labelledby="landing-title"
-            class={`${pageWidth} pt-8 pb-8 sm:pt-12 sm:pb-12 lg:pt-16`}
-          >
-            <div class="grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12">
-              <div>
-                <h1
-                  id="landing-title"
-                  class="m-0 max-w-[20ch] font-display text-[clamp(2.5rem,6.1vw,5.25rem)] leading-[1.02] tracking-[-0.035em] text-brand"
+          <section aria-labelledby="landing-title" class={`${pageWidth} pt-12 pb-8 sm:pt-20`}>
+            <div class="mx-auto flex max-w-[820px] flex-col items-center text-center">
+              <p
+                data-rv
+                class="m-0 inline-flex items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 py-1.5 text-sm font-medium text-brand"
+              >
+                <span class="size-2 rounded-full bg-[var(--secondary)]" aria-hidden="true" />
+                Grátis, no navegador e sem cadastro
+              </p>
+              <h1
+                id="landing-title"
+                data-rv
+                class="mt-6 mb-0 font-display text-[clamp(2.6rem,7vw,5.25rem)] leading-[1.03] tracking-[-0.035em] text-brand"
+              >
+                Seu estudo merece{' '}
+                <span class="landing-mark text-[var(--secondary-text)]">um plano.</span>
+              </h1>
+              <p
+                data-rv
+                class="mt-6 mb-0 max-w-[52ch] text-lg leading-relaxed text-content-secondary sm:text-xl"
+              >
+                Monte sua semana para o concurso, saiba exatamente o que estudar hoje e veja sua
+                evolução crescer a cada sessão.
+              </p>
+              <div data-rv class="mt-8 flex flex-wrap justify-center gap-3">
+                <a href="/app" class={ctaLink}>
+                  Começar grátis <Icon name="arrow-right" size={18} />
+                </a>
+                <a
+                  href="/app"
+                  class="landing-action inline-flex min-h-12 items-center gap-2 rounded-full border border-border-default bg-surface-card px-6 font-semibold text-brand no-underline hover:bg-surface-subtle"
                 >
-                  Saiba o que estudar hoje.
-                </h1>
-                <p class="mt-4 mb-0 max-w-[53ch] text-base leading-relaxed text-content-secondary sm:text-lg">
-                  Planeje sua semana para o concurso e encontre a próxima atividade para estudar
-                  hoje.
-                </p>
-                <div class="mt-6 flex flex-wrap gap-2 sm:gap-3">
-                  <a href="/app" class={primaryLink}>
-                    Começar grátis <Icon name="arrow-right" size={18} />
-                  </a>
-                  <a
-                    href="/app"
-                    class="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-default bg-surface-card px-4 font-semibold text-brand no-underline transition-colors hover:bg-surface-subtle motion-reduce:transition-none sm:px-6"
-                  >
-                    Conhecer demonstração <Icon name="arrow-right" />
-                  </a>
-                </div>
-                <p class="mt-3 mb-0 text-sm text-content-secondary">No navegador, sem cadastro.</p>
-                <p class="mt-2 mb-0 max-w-[53ch] text-sm text-content-secondary">
-                  No aplicativo, escolha “Explorar demonstração” na tela inicial ou no rodapé. Os
-                  dados são fictícios e ficam separados dos seus registros.
-                </p>
+                  Conhecer demonstração
+                </a>
               </div>
+              <p data-rv class="mt-4 mb-0 max-w-[56ch] text-sm text-content-secondary">
+                No aplicativo, escolha “Explorar demonstração” na tela inicial ou no rodapé. Os
+                dados são fictícios e ficam separados dos seus registros.
+              </p>
+            </div>
+            <div class="landing-hero-visual relative mx-auto mt-12 max-w-[1080px] sm:mt-16">
               <StudyPreview />
+              <div
+                aria-hidden="true"
+                class="landing-float absolute -left-6 top-16 hidden items-center gap-3 rounded-default border border-border-default bg-surface-card p-3 pr-5 shadow-xl lg:flex"
+              >
+                <span class="grid size-10 place-items-center rounded-full bg-surface-subtle text-brand">
+                  <Icon name="timer" size={20} />
+                </span>
+                <span class="text-left text-sm">
+                  <strong class="block font-display text-brand">Hoje</strong>
+                  <span class="text-content-secondary">atividades com tempo previsto</span>
+                </span>
+              </div>
+              <div
+                aria-hidden="true"
+                class="landing-float landing-float-late absolute -right-6 bottom-20 hidden items-center gap-3 rounded-default border border-border-default bg-surface-card p-3 pr-5 shadow-xl lg:flex"
+              >
+                <span class="grid size-10 place-items-center rounded-full bg-[var(--secondary-bg)] text-[var(--secondary-text)]">
+                  <Icon name="repeat" size={20} />
+                </span>
+                <span class="text-left text-sm">
+                  <strong class="block font-display text-brand">Revisões</strong>
+                  <span class="text-content-secondary">voltam no momento certo</span>
+                </span>
+              </div>
             </div>
           </section>
-          <section id="como-funciona" class="border-y border-border-default bg-surface-card">
-            <div class={`${pageWidth} py-12 sm:py-20`}>
-              <h2 class={sectionTitle}>Da semana planejada ao estudo de hoje.</h2>
-              <p class="mt-3 mb-0 max-w-[60ch] text-content-secondary">
-                Veja três momentos do aplicativo com dados fictícios da demonstração.
-              </p>
-              <div class="mt-8 grid gap-10">
-                {situations.map(item => (
+
+          <section aria-label="Recursos" class="overflow-hidden py-8">
+            <div class="landing-marquee flex w-max gap-3">
+              {[0, 1].map(copy => (
+                <ul
+                  key={copy}
+                  aria-hidden={copy === 1 ? 'true' : undefined}
+                  class="m-0 flex list-none gap-3 p-0"
+                >
+                  {marqueeItems.map(item => (
+                    <li
+                      key={item.label}
+                      class="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border-default bg-surface-card px-5 py-2.5 text-sm font-medium text-brand"
+                    >
+                      <Icon name={item.icon} size={16} class="text-accent" />
+                      {item.label}
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </section>
+
+          <section id="como-funciona" class="bg-surface-card">
+            <div class={`${pageWidth} py-16 sm:py-24`}>
+              <div data-rv class="mx-auto max-w-[720px] text-center">
+                <p class={eyebrow}>Como funciona</p>
+                <h2 class={`${sectionTitle} mt-3`}>Do plano da semana ao estudo de hoje.</h2>
+                <p class="mt-4 mb-0 text-lg text-content-secondary">
+                  Três momentos do app, com dados fictícios da demonstração.
+                </p>
+              </div>
+              <div class="mt-12 grid gap-5 md:grid-cols-3">
+                {situations.map((item, index) => (
                   <article
                     key={item.title}
-                    class="grid min-w-0 items-start gap-4 border-t border-border-default pt-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:gap-10"
+                    data-rv
+                    style={{ '--rv-delay': `${index * 90}ms` }}
+                    class="group flex min-w-0 flex-col overflow-hidden rounded-[28px] border border-border-default bg-surface-page"
                   >
-                    <div>
-                      <h3 class="m-0 font-display text-xl text-brand">{item.title}</h3>
-                      <p class="mt-2 mb-0 max-w-[50ch] text-content-secondary">{item.text}</p>
-                    </div>
-                    <a
-                      href={item.image}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Ampliar: ${item.alt} (abre em nova aba)`}
-                      class="block min-w-0 overflow-hidden rounded-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    >
+                    <div class="h-72 overflow-hidden bg-surface-subtle p-6 pb-0">
                       <img
                         src={item.image}
                         alt={item.alt}
                         loading="lazy"
                         decoding="async"
-                        class={`block h-auto rounded-default border border-border-default ${
-                          item.image.endsWith('demo-desempenho.png')
-                            ? 'w-[180%] max-w-none sm:w-full sm:max-w-[560px]'
-                            : 'w-full max-w-[375px]'
-                        }`}
+                        class="block h-auto w-full rounded-t-default border border-b-0 border-border-default shadow-xl transition-transform duration-500 group-hover:-translate-y-2 motion-reduce:transition-none"
                       />
-                    </a>
+                    </div>
+                    <div class="p-6 sm:p-8">
+                      <span class="font-display text-sm text-[var(--secondary-text)]">
+                        0{index + 1}
+                      </span>
+                      <h3 class="mt-1 mb-0 font-display text-2xl leading-tight text-brand">
+                        {item.title}
+                      </h3>
+                      <p class="mt-3 mb-0 text-content-secondary">{item.text}</p>
+                    </div>
                   </article>
                 ))}
               </div>
             </div>
           </section>
+
+          <section class="bg-surface-primary text-[var(--text-inverse)]">
+            <div
+              class={`${pageWidth} grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-[1fr_1.05fr] lg:gap-20`}
+            >
+              <div data-rv class="grid grid-cols-2 gap-4">
+                <img
+                  src="/assets/landing/estudo-na-mesa.webp"
+                  alt="Pessoa estudando com notebook, caderno e livros sobre uma mesa"
+                  loading="lazy"
+                  decoding="async"
+                  class="row-span-2 h-full min-h-[360px] w-full rounded-[28px] object-cover"
+                />
+                <img
+                  src="/assets/landing/livros-abertos.webp"
+                  alt="Mesa vista de cima com livros abertos, anotações e uma xícara de café"
+                  loading="lazy"
+                  decoding="async"
+                  class="aspect-square w-full rounded-[28px] object-cover"
+                />
+                <div class="grid place-items-center rounded-[28px] bg-[var(--secondary)] p-5 text-center text-[var(--on-secondary)]">
+                  <p class="m-0 font-display text-3xl leading-tight">Cada estudo soma.</p>
+                </div>
+              </div>
+              <div data-rv>
+                <p class={`${eyebrow} text-[var(--brand-on-header)]!`}>Feito para quem estuda</p>
+                <h2 class={`${sectionTitle} mt-3 text-[var(--text-inverse)]!`}>
+                  Menos planilha. Mais estudo de verdade.
+                </h2>
+                <p class="mt-5 mb-0 max-w-[50ch] text-lg leading-relaxed opacity-90">
+                  Sem planilhas soltas nem lembretes espalhados, você concentra a rotina em um só
+                  lugar e mantém o controle dos seus dados.
+                </p>
+                <ul class="mt-8 mb-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+                  {benefits.map(item => (
+                    <li
+                      key={item.title}
+                      class="rounded-default border border-white/15 bg-white/5 p-4"
+                    >
+                      <Icon name={item.icon} size={22} class="text-[var(--secondary)]" />
+                      <strong class="mt-3 block font-display text-lg">{item.title}</strong>
+                      <span class="mt-1 block text-sm opacity-80">{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="bg-surface-card">
+            <div class={`${pageWidth} py-16 sm:py-24`}>
+              <div data-rv class="mx-auto max-w-[720px] text-center">
+                <p class={eyebrow}>O que muda</p>
+                <h2 class={`${sectionTitle} mt-3`}>O seu dia de estudo, antes e depois.</h2>
+              </div>
+              <div class="mx-auto mt-12 grid max-w-[960px] gap-5 md:grid-cols-2">
+                {[
+                  { title: 'Sem o Extrato', icon: 'x', items: comparison.map(row => row[0]) },
+                  { title: 'Com o Extrato', icon: 'check', items: comparison.map(row => row[1]) },
+                ].map((column, index) => (
+                  <article
+                    key={column.title}
+                    data-rv
+                    style={{ '--rv-delay': `${index * 90}ms` }}
+                    class={`rounded-[28px] border p-6 sm:p-8 ${
+                      index === 1
+                        ? 'border-brand bg-surface-page shadow-xl'
+                        : 'border-border-default bg-surface-subtle'
+                    }`}
+                  >
+                    <h3 class="m-0 font-display text-2xl text-brand">{column.title}</h3>
+                    <ul class="mt-6 mb-0 grid list-none gap-4 p-0">
+                      {column.items.map(text => (
+                        <li key={text} class="flex gap-3">
+                          <span
+                            class={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full ${
+                              index === 1
+                                ? 'bg-brand-primary text-primary-contrast'
+                                : 'bg-border-default text-content-secondary'
+                            }`}
+                          >
+                            <Icon name={column.icon} size={14} stroke={2} />
+                          </span>
+                          <span
+                            class={index === 1 ? 'text-content-primary' : 'text-content-secondary'}
+                          >
+                            {text}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section class="bg-surface-highlight">
+            <div class={`${pageWidth} py-16 sm:py-24`}>
+              <div data-rv class="mx-auto max-w-[720px] text-center">
+                <p class={eyebrow}>Como você começa</p>
+                <h2 class={`${sectionTitle} mt-3`}>Em três passos, sua semana está pronta.</h2>
+              </div>
+              <ol class="mt-12 grid list-none gap-5 p-0 md:grid-cols-3">
+                {steps.map((step, index) => (
+                  <li
+                    key={step.title}
+                    data-rv
+                    style={{ '--rv-delay': `${index * 90}ms` }}
+                    class="rounded-[28px] bg-surface-card p-6 sm:p-8"
+                  >
+                    <span class="font-display text-6xl leading-none text-[var(--secondary)]">
+                      {index + 1}
+                    </span>
+                    <h3 class="mt-4 mb-0 font-display text-2xl text-brand">{step.title}</h3>
+                    <p class="mt-2 mb-0 text-content-secondary">{step.text}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+
           <LandingPricing />
+
           <section id="duvidas" class="bg-surface-card">
             <div
-              class={`${pageWidth} grid gap-6 py-12 sm:py-20 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)]`}
+              class={`${pageWidth} grid gap-8 py-16 sm:py-24 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)]`}
             >
-              <h2 class={sectionTitle}>Perguntas frequentes</h2>
-              <div class="divide-y divide-border-default border-y border-border-default">
+              <div>
+                <p class={eyebrow}>Dúvidas</p>
+                <h2 class={`${sectionTitle} mt-3`}>Perguntas frequentes</h2>
+              </div>
+              <div class="grid gap-3">
                 {questions.map(item => (
-                  <details key={item.title} class="group">
-                    <summary class="flex min-h-touch sm:min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded py-3 text-brand hover:underline [&::-webkit-details-marker]:hidden">
+                  <details
+                    key={item.title}
+                    class="group rounded-default border border-border-default bg-surface-page px-5"
+                  >
+                    <summary class="flex min-h-touch cursor-pointer list-none items-center justify-between gap-4 rounded py-4 font-medium text-brand [&::-webkit-details-marker]:hidden">
                       {item.title}
                       <Icon
                         name="chevron-down"
@@ -415,20 +669,26 @@ function LandingPage() {
                         class="shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none"
                       />
                     </summary>
-                    <p class="mt-0 mb-4 max-w-[60ch] text-content-secondary">{item.text}</p>
+                    <p class="mt-0 mb-5 max-w-[60ch] text-content-secondary">{item.text}</p>
                   </details>
                 ))}
               </div>
             </div>
           </section>
+
           <section class="bg-surface-card pb-8">
             <div class={pageWidth}>
-              <div class="flex flex-wrap items-center justify-between gap-6 rounded-default bg-surface-subtle px-6 py-8 sm:px-10 sm:py-12">
-                <div>
-                  <h2 class={sectionTitle}>Monte sua primeira semana.</h2>
-                  <p class="mt-3 mb-0 text-content-secondary">Comece no navegador, sem cadastro.</p>
-                </div>
-                <a href="/app" class={primaryLink}>
+              <div
+                data-rv
+                class="landing-cta-panel relative overflow-hidden rounded-[32px] bg-surface-primary px-6 py-16 text-center text-[var(--text-inverse)] sm:px-12 sm:py-24"
+              >
+                <h2 class={`${sectionTitle} mx-auto max-w-[18ch] text-[var(--text-inverse)]!`}>
+                  Monte sua primeira semana hoje.
+                </h2>
+                <p class="mx-auto mt-4 mb-0 max-w-[44ch] text-lg opacity-90">
+                  Comece no navegador, sem cadastro, e veja o que estudar já no primeiro dia.
+                </p>
+                <a href="/app" class={`${ctaLink} mt-8`}>
                   Começar grátis <Icon name="arrow-right" size={18} />
                 </a>
               </div>
