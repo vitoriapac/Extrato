@@ -1,3 +1,4 @@
+import { formatStudyMinutes } from '../../format-study-time.js';
 import { WindowBadge } from '../../performance/window-badge.js';
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
@@ -53,7 +54,7 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
               <WindowBadge kind="history" title="Todo o histórico registrado" /> Horas e precisão, sem o
-              filtro de período ({totalStudyHours.toLocaleString('pt-BR')}h no total).
+              filtro de período ({formatStudyMinutes(totalStudyHours * 60)} no total).
               {periodFocus && (
                 <>
                   {' '}
@@ -94,7 +95,7 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
                 <div class="flex justify-between items-center text-content-secondary">
                   <span>Horas de estudo:</span>
                   <span class="font-mono font-medium text-content-primary">
-                    {shift.hoursSpent.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}h (
+                    {formatStudyMinutes(shift.hoursSpent * 60)} (
                     {shift.timePercent}%)
                   </span>
                 </div>

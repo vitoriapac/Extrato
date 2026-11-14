@@ -1,6 +1,6 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { formatDateBR } from '../../core/format-date.js';
-import { formatPlanMinutes } from '../../core/format-duration.js';
+import { formatStudyMinutes as formatPlanMinutes } from '../format-study-time.js';
 
 /** Volume estudado sobre o previsto: percentual até 2×, depois "N,N×" (o mesmo corte do Resumo da semana). */
 export function volumeLabel(percent: number | null | undefined): string {

@@ -1,5 +1,5 @@
 import { NEXT_BEST_ACTION_STATES } from '../../application/diagnostics/build-next-best-action.js';
-import { formatPlanMinutes } from '../../core/format-duration.js';
+import { formatStudyMinutes as formatPlanMinutes } from '../format-study-time.js';
 
 const minutes = (value: number | null | undefined) =>
   value == null ? 'Não estimado' : formatPlanMinutes(value);

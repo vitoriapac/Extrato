@@ -155,9 +155,9 @@ test('60 previstos, 40 vinculados e 30 adicionais explicam 70 estudados sem cré
   );
   const before = JSON.stringify(result),
     html = renderExecutionBreakdown(result);
-  assert.match(html, /Tempo registrado: 1h10/);
-  assert.match(html, /crédito ao plano: 40min/);
-  assert.match(html, /pendente: 20min/);
-  assert.match(html, /Estudo sem vínculo ao plano: 30min/);
+  assert.match(html, /Tempo registrado: 1 h 10 min/);
+  assert.match(html, /crédito ao plano: 40 min/);
+  assert.match(html, /pendente: 20 min/);
+  assert.match(html, /Estudo sem vínculo ao plano: 30 min/);
   assert.equal(JSON.stringify(result), before);
 });

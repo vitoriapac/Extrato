@@ -177,7 +177,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   const history = page.locator('#weeklyCloseHistoryDashboard .weekly-adherence-history');
   await expect(history).toContainText('Aderência nos fechamentos salvos');
   await history.locator('details > summary').first().click();
-  await expect(history).toContainText('30min');
+  await expect(history).toContainText('30 min');
   expect(
     await history.getByRole('button', { name: 'Revisar planejamento', exact: true }).count()
   ).toBe(0);

@@ -187,7 +187,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     if (overview) {
       overview.hidden = !qualityModel.examCount;
       overview.innerHTML = qualityModel.examCount
-        ? `<strong>${qualityModel.mappedTopics} tópicos mapeados</strong><span>Provas, questões, cobertura e confiança estão em "Qualidade do histórico".</span>`
+        ? `<strong>${qualityModel.mappedTopics} tópicos mapeados ao histórico da banca</strong><span>Provas, questões, cobertura e confiança estão em "Qualidade do histórico".</span>`
         : '';
     }
 

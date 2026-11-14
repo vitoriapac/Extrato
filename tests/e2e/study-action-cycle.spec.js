@@ -46,6 +46,13 @@ for (const source of ['overview', 'today', 'diagnosis'])
     );
     if (source === 'diagnosis') {
       await openPerformanceSection(page, 'diagnosis');
+      // Ações de estudo da demo vêm de tópicos "sem evidência", que ficam em dobras sob demanda.
+      await page.evaluate(() => {
+        const root = document.querySelector('#diagnosisCenter');
+        for (let i = 0; i < 3; i++)
+          root.querySelectorAll('template[data-lazy]').forEach(t => t.replaceWith(t.content));
+        root.querySelectorAll('details').forEach(d => (d.open = true));
+      });
     }
     const action =
       source === 'overview'
