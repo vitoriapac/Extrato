@@ -66,9 +66,6 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
       );
       await expectNoPageOverflow(page);
       await expect(page.locator('.timer-actions')).toHaveAttribute('role', 'group');
-      await expect(page.locator('.study-distribution-heading')).toContainText(
-        'Ver evolução e consistência'
-      );
       await expect(page.locator('.strategic-timeline-method')).not.toHaveAttribute('open', '');
       const chrome = await page.evaluateHandle(() =>
         [

@@ -267,8 +267,9 @@ Verificação usada abaixo:
 
 ### Tarefa 22: Ritmo com extrato de sessões e tempo por disciplina
 **Aceite:**
-- [ ] Extrato de sessões e tempo por disciplina só em Ritmo
-- [ ] Referência de ritmo continua visível (decisão 4C)
+- [x] Extrato de sessões e tempo por disciplina só em Ritmo
+- [x] Referência de ritmo continua visível (decisão 4C)
+**Feito:** Ritmo já concentrava sessões e tempo por disciplina; removido o cartão "Tempo de estudo" (mounts sem renderer, com autolink para Ritmo); dobra virou "Extrato de sessões"; referência de ritmo segue visível.
 **Verificação:** E2E de Ritmo
 **Dependências:** T4, T8
 **Tamanho:** S

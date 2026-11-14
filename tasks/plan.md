@@ -72,7 +72,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 19: Diagnóstico agrupado por disciplina com filtro
 - [x] Tarefa 20: Matriz condicional; Balanço e Radar de vulnerabilidades como ordenações
 - [x] Tarefa 21: Replanejamentos em Planejamento
-- [ ] Tarefa 22: Ritmo com dois números, extrato de sessões e tempo por disciplina
+- [x] Tarefa 22: Ritmo com dois números, extrato de sessões e tempo por disciplina
 
 ### Checkpoint 5: Navegação
 - [ ] 5 abas sem segundo nível; rotas antigas redirecionam; E2E atualizados
