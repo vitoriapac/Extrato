@@ -155,10 +155,13 @@ export function renderSimulationTrendChart({
       { label: 'Nota do simulado', tone: 'primary' },
       ...(goal === null ? [] : [{ label: 'Meta configurada', tone: 'target' }]),
     ],
-    chart: items.length
+    // Série com menos de 3 pontos não desenha tendência: os resultados ficam em texto, logo abaixo.
+    chart: items.length >= 3
       ? `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}${goalLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`
       : '',
-    emptyMessage: 'Registre um simulado para acompanhar a evolução.',
+    emptyMessage: items.length
+      ? `Com ${items.length === 1 ? '1 simulado' : `${items.length} simulados`} ainda não há tendência para desenhar. Os resultados estão logo abaixo.`
+      : 'Registre um simulado para acompanhar a evolução.',
     records: items.length ? '<ol class="simulation-trend-list">' + history + '</ol>' : '',
   });
 }

@@ -18,6 +18,7 @@ import { createPerformanceController } from '../../controllers/performance-contr
 import { createPerformanceAnalyticsController } from '../../controllers/performance-analytics-controller.js';
 import { renderProgressChart as renderProgressChartView } from '../../renderers/study-charts-renderer.js';
 import { ShiftEnergyCard } from './ShiftEnergyCard.js';
+import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
 import {
@@ -387,6 +388,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             escapeHtml,
             escapeAttr,
           });
+        // Radar e progresso moram em painéis do mesmo painel de Desempenho, fora do conteúdo da subaba.
+        const panel = (target as Element).closest?.('#panel-desempenho') || target;
+        fitCharts(panel as Element);
+        watchCharts(panel as Element);
       }
     } else {
       target.innerHTML = renderPerformancePage({

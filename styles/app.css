@@ -3583,3 +3583,13 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .plano-item-achievement{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-1);font-size:var(--text-sm);font-weight:600;color:var(--heading)}
 /* No modo foco o aviso de conquista desce para o rodapé e não cobre o botão "Sair do modo foco". */
 body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--space-4),env(safe-area-inset-bottom))}
+
+/* Gráficos de Desempenho: sempre na largura do cartão, sem rolagem lateral. O texto mantém o tamanho em px:
+   --fit (largura renderizada ÷ viewBox) é calculado em chart-fit.ts e a fonte é dividida por ele. */
+#panel-desempenho svg.chart-fit{width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;flex:1 1 auto!important;margin:0!important}
+#panel-desempenho svg.chart-fit{overflow:visible}
+#panel-desempenho svg.chart-fit text{font-size:calc(var(--chart-font,12.5px)/var(--fit,1))!important}
+#panel-desempenho svg.chart-fit :is(path,line,polyline){vector-effect:non-scaling-stroke}
+#panel-desempenho svg.chart-fit.chart-matrix{max-width:480px!important;margin-inline:auto!important}
+#panel-desempenho svg.chart-fit.radar-svg{max-width:560px!important;margin-inline:auto!important}
+#panel-desempenho :is(.chart-scroll,.question-evolution-scroll,.achievement-trajectory__scroll,.planned-actual-chart__canvas,.chart-stacked-columns-wrap,.chart-multiline-wrap,.chart-matrix-wrap){overflow-x:visible;flex-direction:row}
