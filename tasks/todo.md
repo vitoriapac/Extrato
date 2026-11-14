@@ -169,9 +169,9 @@ Verificação usada abaixo:
 
 ### Tarefa 13: Resumo da semana na Visão geral (seção 15)
 **Aceite:**
-- [ ] Três parágrafos (feito, sinal, ação) com selo "7 dias" e datas, até três números
-- [ ] Substitui "Resumo do período", a frase de "Como sua preparação evoluiu" e a linha de 7 dias da Leitura
-- [ ] Casos: normal, acima, abaixo, amostra pequena, sem estudo, sem plano
+- [x] Três parágrafos (feito, sinal, ação) com selo "7 dias" e datas, até três números
+- [x] Substitui "Resumo do período", a frase de "Como sua preparação evoluiu" e a linha de 7 dias da Leitura
+- [x] Casos: normal, acima, abaixo, amostra pequena, sem estudo, sem plano
 **Verificação:** Unit dos seis casos e de não divergência; E2E na demo
 **Dependências:** T7, T8
 **Arquivos:** `build-weekly-performance-brief.ts`, `weekly-performance-brief-renderer.ts`, `performance-overview-renderer.ts`, `PreparationReadingView.tsx`

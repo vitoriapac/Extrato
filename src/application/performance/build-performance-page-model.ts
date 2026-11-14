@@ -1,6 +1,7 @@
 import { buildRecommendationFollowup } from '../recommendations/build-recommendation-followup.js';
 import { buildAdherenceModel } from '../adherence/build-adherence-model.js';
 import { buildPreparationReading } from './build-preparation-reading.js';
+import { buildWeekSummary } from './build-week-summary.js';
 import { buildQuestionEvolution } from '../questions/build-question-evolution.js';
 import { buildPerformanceAnalysis } from '../questions/build-performance-analysis.js';
 import { buildPerformanceOverview } from './build-performance-overview.js';
@@ -135,6 +136,7 @@ export function buildPerformancePageModel({
       section,
       model,
       weeklyBrief,
+      weekSummary: buildWeekSummary({ brief: weeklyBrief, nextBestAction }),
       recommendationFollowup: buildRecommendationFollowup({
         feedback: recommendationFeedback,
         sessions: allSessions,

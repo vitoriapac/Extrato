@@ -55,7 +55,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Nova crítica (14/11, 2ª rodada): 23/40, H4 = 1, H6 = 2; varredura final de escala feita. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 depois da Fase 4
 
 ### Fase 4: Cortar repetições
-- [ ] Tarefa 13: Resumo da semana na Visão geral
+- [x] Tarefa 13: Resumo da semana na Visão geral
 - [ ] Tarefa 14: Diagnóstico sem "Situação do preparo" nem sugestão duplicada
 - [ ] Tarefa 15: Faixa projetada só em Simulados
 - [ ] Tarefa 16: Gráficos existentes com tamanho responsivo

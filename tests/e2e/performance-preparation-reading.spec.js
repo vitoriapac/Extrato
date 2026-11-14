@@ -219,3 +219,27 @@ test('Blocos analíticos mostram o selo de evidência quando falta amostra', asy
   await openPerformanceSection(page, 'subjects');
   await expect(page.locator('#bloco-comparacao .performance-evidence')).toBeVisible();
 });
+
+test('Resumo dos últimos 7 dias aparece aberto abaixo da Leitura, com selo e sem cartões antigos', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const week = page.locator('#bloco-resumo');
+  await expect(week).toBeVisible();
+  await expect(week.locator('[data-window="sevenDays"]')).toBeVisible();
+  await expect(week.locator('p')).toHaveCount(3);
+  await expect(week).toContainText(/Você estudou .* em \d+ dias?/);
+  await expect(week).toContainText(/A próxima ação/);
+  await expect(page.locator('#panel-desempenho')).not.toContainText('Resumo do período');
+  await expect(page.locator('#panel-desempenho')).not.toContainText('Meta e última semana');
+  // A linha de ritmo de 7 dias vive só no resumo; a Leitura não a repete.
+  await expect(page.locator('.performance-reading [data-window="sevenDays"]')).toHaveCount(0);
+  const order = await page.evaluate(() => {
+    const reading = document.querySelector('.performance-reading');
+    const summary = document.querySelector('#bloco-resumo');
+    return Boolean(reading && summary && reading.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(order).toBe(true);
+});

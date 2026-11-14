@@ -33,7 +33,6 @@ export function PreparationReadingView({ reading }: { reading: PreparationReadin
       <section class="performance-reading__support-block" aria-label="Números de apoio">
         {readiness?.detail && <p class="m-0 performance-reading__support">{readiness.detail}</p>}
         {howAmI.projection && <p class="m-0 performance-reading__support"><span class="performance-window" data-window="ninetyDays" title="Simulados comparáveis dos últimos 90 dias">90 dias</span>{howAmI.projection.text}</p>}
-        {howAmI.rhythm && <p class="m-0 performance-reading__support"><span class="performance-window" data-window="sevenDays" title="Últimos 7 dias">7 dias</span>{howAmI.rhythm.text}</p>}
       </section>
     </div>{evidence.length > 0 && <ul class="performance-reading__evidence analytics-note">{evidence.map(item => <li key={item}>{item}</li>)}</ul>}
   </section>;

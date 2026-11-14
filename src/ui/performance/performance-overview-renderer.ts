@@ -1,5 +1,5 @@
 import { renderWindowBadge } from './window-badge.js';
-import { renderEvidenceBadge, type EvidenceState } from './evidence-badge.js';
+import { renderWeekSummary } from './week-summary-renderer.js';
 import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
 import { formatStudyMinutes, formatStudyMinuteDelta } from '../format-study-time.js';
@@ -14,13 +14,10 @@ import { renderReadinessChangeExplanation } from './readiness-change-explanation
 import { renderMetricCard, renderEmptyState } from '../components/presentation.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { renderPlannedVsActualChart } from './planned-actual-chart.js';
-import { renderWeeklyPerformanceBriefCard } from './weekly-performance-brief-renderer.js';
-import { buildPerformanceExecutiveSummary } from '../../application/performance/build-performance-executive-summary.js';
 import {
   renderPreparationReading,
   renderRecommendationFollowupSummary,
 } from './preparation-reading-renderer.js';
-import { renderPerformanceExecutiveSummary } from './performance-executive-summary-renderer.js';
 
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
 const change = (value: number | null | undefined) =>
@@ -65,7 +62,7 @@ export function renderPerformanceOverview(
     formatDate,
     escapeHtml,
     escapeAttr = escapeHtml,
-    weeklyBrief = null,
+    weekSummary = null,
     preparationReading = null,
     recommendationFollowup = [],
     comparisonModel = null,
@@ -112,37 +109,12 @@ export function renderPerformanceOverview(
     ? `<ul class="performance-changes">${model.changes.map((item: any) => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.unit === 'min' ? formatStudyMinuteDelta(item.delta) : `${item.delta > 0 ? '+' : ''}${shown(item.delta)} ${escapeHtml(item.unit)}`}</span></li>`).join('')}</ul>`
     : '<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';
   const insights = (comparisonModel?.insights || []).slice(0, 3);
-  // A principal mudança já abre a página no resumo executivo: aqui entra a segunda, sem repetir a notícia.
-  const secondChange = model.changes[1];
-  const summary = secondChange
-    ? `${secondChange.label}: ${change(secondChange.delta)} ${secondChange.unit} frente ao período anterior.`
-    : model.changes[0]
-      ? 'Os detalhes por indicador e o histórico de prontidão estão abaixo.'
-      : 'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
+  // O resumo dos últimos 7 dias abre a página; aqui a frase só orienta a leitura dos indicadores, sem repetir o KPI.
+  const summary = range.comparePrevious
+    ? 'Cada indicador mostra a mudança frente ao período anterior.'
+    : 'Indicadores do período escolhido.';
   const method = `<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>`;
-  const weeklyBriefHtml = renderWeeklyPerformanceBriefCard(weeklyBrief || model.weeklyBrief, {
-    escapeHtml,
-    escapeAttr,
-    embedded: true,
-  });
-  // Resumo executivo do período e leitura da semana antecedem as métricas; o comparativo semanal visual fica em Início.
-  const executiveSummary = buildPerformanceExecutiveSummary({
-    model,
-    range,
-    projection: achievementProjection,
-  });
-  const executiveHtml = renderPerformanceExecutiveSummary(executiveSummary, {
-    escapeHtml,
-    embedded: true,
-  });
-  const summaryEvidence: EvidenceState | null =
-    ['none', 'insufficient_data'].includes(executiveSummary.situation.status) ||
-    executiveSummary.situation.confidence === 'insufficient'
-      ? 'insufficient'
-      : executiveSummary.base.smallSample
-        ? 'small'
-        : null;
-  const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo: meta e última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Meta e última semana</h3>${renderEvidenceBadge(summaryEvidence)}</div></header>${executiveHtml}${weeklyBriefHtml ? `<div class="mt-3">${weeklyBriefHtml}</div>` : ''}</section>`;
+  const readingHtml = renderWeekSummary(weekSummary, { escapeHtml });
   const preparationHtml = renderPreparationReading(preparationReading);
   const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });
   return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
