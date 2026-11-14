@@ -19,7 +19,13 @@ export function buildWeekReconciliation(input: {
   plannedMin: number;
   studiedMin: number;
   periodLabel: string;
-  links?: { studiedMinutes: number; linkedMinutes: number; additionalMinutes: number; incompatibleMinutes: number; otherPeriodMinutes: number } | null;
+  links?: {
+    studiedMinutes: number;
+    linkedMinutes: number;
+    additionalMinutes: number;
+    incompatibleMinutes: number;
+    otherPeriodMinutes: number;
+  } | null;
 }): WeekReconciliation {
   if (!input.periodLabel) throw new Error('periodLabel é obrigatório');
   const plannedMin = clean(input.plannedMin);
@@ -36,4 +42,22 @@ export function buildWeekReconciliation(input: {
     multiple: plannedMin > 0 ? studiedMin / plannedMin : null,
     periodLabel: input.periodLabel,
   };
+}
+
+/** Mesma conciliação para o Resumo e o Fechamento: parte do modelo de `buildPlanExecution`. */
+export function buildWeekReconciliationFromExecution(
+  model: Record<string, any>,
+  formatDate: (iso: string) => string
+): WeekReconciliation {
+  const range = (start: string, end: string) =>
+    `${formatDate(start).slice(0, 5)} a ${formatDate(end).slice(0, 5)}`;
+  return buildWeekReconciliation({
+    capacityMin: model.capacityMinutes,
+    plannedMin: model.plannedMinutes,
+    studiedMin: model.studiedMinutes,
+    links: model.strategic?.reconciliation,
+    periodLabel: model.days.length
+      ? range(model.days[0].date, model.days.at(-1).date)
+      : 'esta semana',
+  });
 }

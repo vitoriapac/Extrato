@@ -6,7 +6,7 @@ import { renderActionCard } from '../components/analytical-presentation.js';
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
 import { WeekReconciliationSummary } from '../tabs/goals/WeekReconciliationSummary.js';
-import { buildWeekReconciliation } from '../tabs/goals/week-reconciliation.js';
+import { buildWeekReconciliationFromExecution } from '../tabs/goals/week-reconciliation.js';
 const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
 
 export function renderPlanExecution(model: Record<string, any>, { formatDate }: any) {
@@ -16,15 +16,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
     ? range(model.days[0].date, model.days.at(-1).date)
     : 'esta semana';
   const summary = render(
-    h(WeekReconciliationSummary, {
-      data: buildWeekReconciliation({
-        capacityMin: model.capacityMinutes,
-        plannedMin: model.plannedMinutes,
-        studiedMin: model.studiedMinutes,
-        links: model.strategic?.reconciliation,
-        periodLabel,
-      }),
-    })
+    h(WeekReconciliationSummary, { data: buildWeekReconciliationFromExecution(model, formatDate) })
   );
   const warning =
     model.plannedMinutes > model.capacityMinutes

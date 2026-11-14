@@ -68,7 +68,8 @@ test('demo: as metas de questões por disciplina somam a meta global da semana',
 });
 
 test('demo: a agenda dos próximos dias nasce do plano semanal confirmado e a distribuição não a repete', async () => {
-  const { buildDailyPlanProposal } = await import('../../src/application/planning/distribute-study-plan.js');
+  const { buildDailyPlanProposal } =
+    await import('../../src/application/planning/distribute-study-plan.js');
   const today = '2026-11-13';
   const state = generateDemoData({ today });
   const plan = state.studyPlans.at(-1);
@@ -80,7 +81,15 @@ test('demo: a agenda dos próximos dias nasce do plano semanal confirmado e a di
     assert.ok(source, `item ${item.id} aponta para um item do plano`);
     assert.equal(source.subjectId, item.subjectId);
   }
-  const days = Array.from({ length: 7 }, (_, index) => ({ date: addDays(today, index), availableMinutes: 120 }));
-  const proposal = buildDailyPlanProposal({ studyPlan: plan, existingPlans: state.dailyPlans, days, reserveRatio: 0.1 });
+  const days = Array.from({ length: 7 }, (_, index) => ({
+    date: addDays(today, index),
+    availableMinutes: 120,
+  }));
+  const proposal = buildDailyPlanProposal({
+    studyPlan: plan,
+    existingPlans: state.dailyPlans,
+    days,
+    reserveRatio: 0.1,
+  });
   assert.equal(proposal.existingLinkedItems, future.length);
 });

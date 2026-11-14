@@ -205,6 +205,7 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     planningRepository: services.planningRepository,
     examEvidenceContext: studyMetricsSelectors.examEvidenceContext,
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
+    entitySubjectId,
     getSubjectName,
     getTopicName,
     todayISO,

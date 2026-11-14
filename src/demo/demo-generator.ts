@@ -158,10 +158,12 @@ export function generateDemoData({
       };
     }),
   };
+  // Repartição da meta global de questões da semana (demoScenario.goals.weeklyQuestions = 220) entre as 17 disciplinas: a soma fecha.
+  const demoQuestionShares = [40, 20, 14, 25, 12, 14, 10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 9];
   state.metasPorDisciplina = state.subjects.map((subject: any, index: any) => ({
     id: `demo-subject-goal-${index + 1}`,
     subjectId: subject.id,
-    meta: 30 + index * 5,
+    meta: demoQuestionShares[index] ?? 8,
     createdAt,
   }));
   const candidates = buildDemoStrategyCandidates(demoScenario, {

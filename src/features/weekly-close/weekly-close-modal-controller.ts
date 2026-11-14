@@ -46,6 +46,9 @@ import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../ui/accessibility.js';
 import { renderWeeklyCloseRecord } from '../../ui/renderers/weekly-close-record-renderer.js';
 import { openSectionFor } from '../../ui/remembered-sections.js';
+import { buildPlanExecution } from '../../application/goals/build-plan-execution.js';
+import { buildWeekReconciliationFromExecution } from '../../ui/tabs/goals/week-reconciliation.js';
+import { formatDateBR } from '../../core/format-date.js';
 
 export interface WeeklyCloseModalControllerDeps {
   document?: any;
@@ -56,6 +59,7 @@ export interface WeeklyCloseModalControllerDeps {
   };
   examEvidenceContext: () => any;
   intelligenceCandidates: () => any[];
+  entitySubjectId?: (item: any) => string | null;
   getSubjectName: (id: string) => string;
   getTopicName: (id: string) => string;
   todayISO: () => string;
@@ -458,13 +462,29 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         today: todayISO(),
       });
       const candidate = weeklyCloseCandidate();
+      // Mesma fonte do Resumo da semana: o Fechamento só muda a apresentação.
+      const weekReconciliation = () =>
+        buildWeekReconciliationFromExecution(
+          buildPlanExecution({
+            today: todayISO(),
+            dailyPlans: state.dailyPlans,
+            sessions: (state.studySessions || []).map((item: any) => ({
+              ...item,
+              subjectId: deps.entitySubjectId ? deps.entitySubjectId(item) : item.subjectId,
+            })),
+            hoursByDay: state.metas?.horasPorDia,
+            subjects: state.subjects,
+            activeExamTags: state.examBlueprint?.activeExamTags || [],
+          }),
+          formatDateBR
+        );
       // Redesenhar depois de uma ação não pode fechar a análise que o estudante abriu.
       const analysisOpen = Boolean(
         (close.querySelector?.('.weekly-close-analysis') as HTMLDetailsElement | null)?.open
       );
       close.innerHTML =
         '<section class="weekly-close-act" aria-labelledby="weeklyWeekTitle"><h4 class="weekly-close-act__title" id="weeklyWeekTitle">A semana</h4>' +
-        renderWeeklyCloseKpis(model.weeklyClose, options) +
+        renderWeeklyCloseKpis(model.weeklyClose, { ...options, reconciliation: weekReconciliation() }) +
         // A semana lê-se nos três números; a análise inteira fica num único disclosure.
         `<details class="weekly-close-analysis editorial-disclosure"${analysisOpen ? ' open' : ''}><summary>Ver análise completa da semana</summary>` +
         renderWeeklyClose(model.weeklyClose, {

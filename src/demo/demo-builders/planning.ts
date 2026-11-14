@@ -4,6 +4,9 @@ import { freezePlanExecution } from '../../domain/planning/plan-execution-snapsh
 import { EXAM_TAGS } from '../../domain/exams/exam-constants.js';
 
 const stamp = (date: string) => `${date}T12:00:00.000Z`;
+// O plano semanal confirmado e os itens que a agenda dos próximos dias herda dele usam estes ids.
+const DEMO_STUDY_PLAN_ID = 'demo-study-plan-1';
+const demoPlanItemId = (subjectIndex: number) => `demo-study-plan-topic-${subjectIndex + 1}`;
 const subjectByName = (subjects: any[], name: string) =>
   subjects.find((item: any) => item.name === name);
 
@@ -76,6 +79,9 @@ export function buildDemoPlanning(
       second = subjects[(index * 2 + 1) % subjects.length];
     const items = [first, second].map((subject, itemIndex) => ({
       id: `demo-plan-item-${index + 1}-${itemIndex + 1}`,
+      // Vem do plano semanal confirmado: a distribuição não repete o que a agenda já tem.
+      studyPlanId: DEMO_STUDY_PLAN_ID,
+      studyPlanItemId: demoPlanItemId(subjects.indexOf(subject)),
       subjectId: subject.id,
       topicId: subject.topics[0].id,
       type: itemIndex ? 'questions' : 'study',
@@ -193,7 +199,7 @@ export function buildDemoPlanning(
                 : null)
         ) || subject.topics[0];
     return {
-      id: `demo-study-plan-topic-${index + 1}`,
+      id: demoPlanItemId(index),
       subjectId: subject.id,
       subjectName: subject.name,
       topicId: topic.id,
@@ -212,7 +218,7 @@ export function buildDemoPlanning(
   const planned = planItems.reduce((sum: any, item: any) => sum + item.minutes, 0);
   const studyPlans = [
     {
-      id: 'demo-study-plan-1',
+      id: DEMO_STUDY_PLAN_ID,
       state: 'ready',
       confirmedAt: stamp(addLocalDays(today, -9)!),
       examDate,

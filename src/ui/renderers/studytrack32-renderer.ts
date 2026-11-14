@@ -61,10 +61,13 @@ export function renderWeeklyCloseNext(
   return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4>${model.decisionCycle ? '' : `<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml, model.recommendedAction)}</p>`}${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ''}</section>`;
 }
 // The three figures of the week, kept apart so the close can show them before the analysis.
-export function renderWeeklyCloseKpis(model: Record<string, any>, { formatMinutes }: any) {
+export function renderWeeklyCloseKpis(
+  model: Record<string, any>,
+  { formatMinutes, reconciliation }: any
+) {
   if (model.state === 'insufficient')
     return '<div class="upcoming-empty ui-state--empty">Ainda não há evidência suficiente para fechar a semana.</div>';
-  return render(h(WeeklyCloseKpis, { model, formatMinutes }));
+  return render(h(WeeklyCloseKpis, { model, formatMinutes, reconciliation }));
 }
 export function renderWeeklyClose(
   model: Record<string, any>,

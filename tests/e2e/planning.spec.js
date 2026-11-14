@@ -120,3 +120,51 @@ test('Visão Geral mostra a fase compacta atual da preparação', async ({ page 
     /Construção|Consolidação|Reta final|Revisão final/
   );
 });
+
+test('a prévia de distribuição explica o que não coube e leva à disponibilidade', async ({
+  page,
+}) => {
+  await openDemo(page);
+  await openPlanningSubtab(page, 'semana');
+
+  await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias' }).click();
+  const note = page.locator('#examStudyPlan .helper-text', { hasText: 'Cabem' });
+  await expect(note).toContainText(
+    /Cabem .+ dos .+\. A disponibilidade dos 7 dias soma .+ ficam de reserva/
+  );
+  await expect(page.locator('#metasAdjust')).not.toHaveAttribute('open', '');
+
+  await note.getByRole('button', { name: 'Ajustar disponibilidade' }).click();
+  await expect(page.locator('#metasAdjust')).toHaveAttribute('open', '');
+  await expect(page.locator('#metasCapacity')).toBeInViewport();
+  // A prévia continua aberta: ajustar a disponibilidade não grava nem descarta nada.
+  await expect(page.getByRole('button', { name: 'Confirmar planos diários' })).toBeVisible();
+});
+
+test('Distribuição entre disciplinas mostra planejado e realizado na ordem da legenda e das barras', async ({
+  page,
+}) => {
+  await openDemo(page);
+  await openPlanningSubtab(page, 'semana');
+  await page.locator('#planExecutionCard').scrollIntoViewIfNeeded();
+  await page.locator('#studyDistribution > summary').click();
+
+  const chart = page.locator('#studyDistribution .chart-grouped-bars');
+  await expect(chart).toBeVisible();
+  const legend = (await chart.locator('.border-b').first().innerText()).replace(/\s+/g, ' ');
+  expect(legend.indexOf('Planejado')).toBeLessThan(legend.indexOf('Realizado'));
+
+  const rows = await chart.locator('.group').evaluateAll(nodes =>
+    nodes.map(node => ({
+      values: node.querySelector('.font-mono').textContent.replace(/\s+/g, ' ').trim(),
+      planned: node.querySelector('[title^="Planejado:"]').getAttribute('title'),
+      studied: node.querySelector('[title^="Realizado:"]').getAttribute('title'),
+    }))
+  );
+  expect(rows.length).toBeGreaterThan(0);
+  for (const row of rows) {
+    const planned = /Planejado: (.+?) \(/.exec(row.planned)[1];
+    const studied = /Realizado: (.+?) \(/.exec(row.studied)[1];
+    expect(row.values).toBe(`Planejado ${planned} / , realizado ${studied}`);
+  }
+});
