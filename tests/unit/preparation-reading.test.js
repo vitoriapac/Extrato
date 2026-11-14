@@ -192,7 +192,7 @@ test('"o que mais pesa" diz quando o tópico fraco está numa disciplina forte',
     buildPreparationReading({ candidates: [gap('a')], subjectAccuracy }).pulling[0].text;
   assert.match(
     read({ s1: { accuracy: 85, resolved: 120 } }),
-    /Tópico fraco dentro de Informática, que tem 85% de precisão em questões\./
+    /Tópico fraco dentro de Informática, que tem 85% de precisão em questões \(todo o histórico\)\./
   );
   assert.doesNotMatch(read({ s1: { accuracy: 55, resolved: 120 } }), /dentro de Informática/);
   assert.doesNotMatch(read({ s1: { accuracy: 85, resolved: 10 } }), /dentro de Informática/);

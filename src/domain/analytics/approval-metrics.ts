@@ -143,7 +143,7 @@ export function calculateApprovalSimuladosMetric(
     confidence,
     available: true,
     raw,
-    detail: `${window.length} ${window.length === 1 ? 'último simulado' : 'últimos simulados'}, todo o histórico · média ponderada ${String(Math.round(raw * 10) / 10).replace('.', ',')}%`,
+    detail: `${window.length === 1 ? 'último simulado' : `${window.length} últimos`}${completedSimulations.length > window.length ? ` de ${completedSimulations.length} simulados` : window.length === 1 ? '' : ' simulados'}, todo o histórico · média ponderada ${String(Math.round(raw * 10) / 10).replace('.', ',')}%`,
   };
 }
 

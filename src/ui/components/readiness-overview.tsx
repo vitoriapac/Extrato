@@ -148,8 +148,9 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
             />
           ))}
           <p>
-            Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e
-            nunca recebem nota zero.
+            Fatores do cálculo de hoje; os valores dos fechamentos ficam em “Por que a Prontidão mudou?”. Os
+            pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a evidência do
+            índice e nunca recebem nota zero.
           </p>
           <ul>
             {factors.map(([label, item]) => (

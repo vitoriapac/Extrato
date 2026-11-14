@@ -95,7 +95,8 @@ export function compareReadinessSnapshots(
     factors,
     rises: factors.filter(item => item.contribution > 0).slice(0, 3),
     falls: factors.filter(item => item.contribution < 0).slice(0, 3),
-    trend: delta > 0 ? 'Em alta' : delta < 0 ? 'Em queda' : 'Estável',
+    // Mesmo limiar da Leitura da preparação (±1 ponto é estável), para as duas telas não discordarem.
+    trend: delta > 1 ? 'Em alta' : delta < -1 ? 'Em queda' : 'Estável',
     reason:
       'Contribuições ponderadas, em pontos do índice; pequenas diferenças na soma decorrem do arredondamento.',
   };

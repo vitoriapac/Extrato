@@ -28,7 +28,7 @@ test('"confiança" fica só na faixa projetada; o selo de amostra usa "evidênci
 test('fator Simulados da Prontidão diz quantos e a janela', () => {
   const sims = Array.from({ length: 6 }, (_, i) => ({ nota: 70 + i, totalQuestions: 40 }));
   const result = calculateApprovalSimuladosMetric(sims);
-  assert.match(result.detail, /^5 últimos simulados, todo o histórico · média ponderada \d+(,\d)?%$/);
+  assert.match(result.detail, /^5 últimos de 6 simulados, todo o histórico · média ponderada \d+(,\d)?%$/);
 });
 
 test('resumo: contagem comparável diz de quantos simulados do histórico', () => {

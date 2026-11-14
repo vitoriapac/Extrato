@@ -153,7 +153,7 @@ export function buildPreparationReading({
   const strongSubjectNote = (gap: Row): string => {
     const stat = subjectAccuracy[gap.subjectId];
     return stat && stat.accuracy != null && stat.resolved >= 30 && stat.accuracy >= STRATEGY_THRESHOLDS.adequateMastery
-      ? ` Tópico fraco dentro de ${gap.subjectName}, que tem ${round(stat.accuracy)}% de precisão em questões.`
+      ? ` Tópico fraco dentro de ${gap.subjectName}, que tem ${round(stat.accuracy)}% de precisão em questões (todo o histórico).`
       : '';
   };
   for (const gap of gaps.slice(0, 3 - pulling.length))
