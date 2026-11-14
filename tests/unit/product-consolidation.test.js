@@ -60,7 +60,7 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
     metricStateLabel: () => {},
   });
   const visible = measuredHTML.slice(0, measuredHTML.indexOf('<details'));
-  assert.match(visible, /Faixa atual: 70–78%/);
+  assert.match(visible, /Faixa projetada: 70% a 78%/);
   assert.match(visible, /Confiança da projeção: baixa/);
   assert.match(visible, /5 simulados comparáveis/);
   assert.doesNotMatch(visible, /Média móvel|projection-calibration-list/);

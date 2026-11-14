@@ -237,7 +237,16 @@ export function createPerformanceAnalyticsController(ctx: PerformanceAnalyticsCo
       !radarView.subjectIds[0] ||
       !subjects.some(subject => subject.id === radarView.subjectIds[0])
     ) {
-      radarView.subjectIds[0] = subjects[0].id;
+      // Primeiro uso: as duas disciplinas de menor média nos eixos medidos, para o radar já mostrar onde olhar.
+      const mean = (subject: any) => {
+        const values = Object.values(ctx.getSubjectRadarModel(subject).axes || {}).filter(
+          (value): value is number => typeof value === 'number'
+        );
+        return values.length ? values.reduce((a, b) => a + b, 0) / values.length : Infinity;
+      };
+      const weakest = [...subjects].sort((a, b) => mean(a) - mean(b));
+      radarView.subjectIds[0] = weakest[0].id;
+      if (!radarView.subjectIds[1] && weakest[1]) radarView.subjectIds[1] = weakest[1].id;
     }
     radarView.subjectIds = radarView.subjectIds.slice(0, 2);
 

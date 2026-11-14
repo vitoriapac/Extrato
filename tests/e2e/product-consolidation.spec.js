@@ -313,7 +313,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
       .locator('.achievement-projection__metrics > div')
       .filter({ hasText: label })
       .locator('strong');
-  for (const label of ['Simulados comparáveis', 'Faixa atual', 'Tendência em 30 dias'])
+  for (const label of ['Simulados comparáveis', 'Faixa projetada', 'Tendência em 30 dias'])
     await expect(metric(label)).toHaveText('—');
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'diagnosis');

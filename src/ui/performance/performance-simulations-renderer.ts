@@ -38,7 +38,7 @@ export function renderPerformanceSimulations(
   const win = renderWindowBadge('period', range?.label || '');
   const kpis = `<section class="performance-kpis" aria-label="Indicadores de simulados">
     <article class="performance-kpi"><span>Último simulado ${win}</span><strong>${percent(model.latest)}</strong><small>${pluralize(model.count, 'simulado', 'simulados')} · ${escapeHtml(range?.label || 'período escolhido')}</small></article>
-    <article class="performance-kpi"><span>Média do período ${win}</span><strong>${percent(model.mean)}</strong><small>${range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso'}</small></article>
+    <article class="performance-kpi"><span>Média ${win}</span><strong>${percent(model.mean)}</strong><small>${range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso'}</small></article>
     <article class="performance-kpi"><span>Melhor resultado ${win}</span><strong>${percent(model.best)}</strong><small>No período selecionado</small></article>
     <article class="performance-kpi"><span>Tendência recente ${win}</span><strong>${signed(model.trend)}</strong><small>Último × penúltimo simulado</small></article>
   </section>`;

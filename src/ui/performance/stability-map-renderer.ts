@@ -1,5 +1,5 @@
 import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPoints } from '../../core/format-number.js';
 const cells = [
   ['attention', 'Atenção', 'Na meta, mas a precisão caiu'],
   ['maintain', 'Manter', 'Na meta e sem queda relevante'],
@@ -18,7 +18,7 @@ export function renderStabilityMap(
       .slice(0, 5)
       .map(
         (row: any) =>
-          `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${row.evolution > 0 ? '+' : ''}${formatDecimal(row.evolution)} p.p.</small></li>`
+          `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${formatPoints(row.evolution)}</small></li>`
       )
       .join('')}</ul>${
       model.groups[key].length > 5
@@ -28,7 +28,7 @@ export function renderStabilityMap(
             .slice(5)
             .map(
               (row: any) =>
-                `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${row.evolution > 0 ? '+' : ''}${formatDecimal(row.evolution)} p.p.</small></li>`
+                `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${formatPoints(row.evolution)}</small></li>`
             )
             .join('')}</ul></details>`
         : ''

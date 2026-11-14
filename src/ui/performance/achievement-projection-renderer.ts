@@ -90,7 +90,7 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
     )
     .join('');
   const bandSvg = bandOk
-    ? `<rect x="${left}" y="${y(band.high)}" width="${width - left - right}" height="${Math.max(2, y(band.low) - y(band.high))}" class="achievement-trajectory__band"><title>Faixa estimada: ${pct(band.low)} a ${pct(band.high)}</title></rect>`
+    ? `<rect x="${left}" y="${y(band.high)}" width="${width - left - right}" height="${Math.max(2, y(band.low) - y(band.high))}" class="achievement-trajectory__band"><title>Faixa projetada: ${pct(band.low)} a ${pct(band.high)}</title></rect>`
     : '';
   const historical = points
     .map((point: any, index: any) => `${x(index).toFixed(1)},${y(point.value).toFixed(1)}`)
@@ -115,7 +115,7 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
     ${points.map((point: any, index: any) => `<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot${index === points.length - 1 ? ' achievement-trajectory__dot--last' : ''}" aria-hidden="true"/><circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="12" class="achievement-trajectory__hit" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
     <text x="${left}" y="${height - 7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height - 7}" text-anchor="${forecast.available ? 'middle' : 'end'}">${escapeHtml(formatDateBR(last.date))}</text>
     ${forecast.available ? `<text x="${width - right}" y="${height - 7}" text-anchor="end">30 dias</text>` : ''}
-  </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span>${forecast.available ? `<span>┄ Tendência de 30 dias</span>` : ''}<span>─ Meta</span>${bandOk ? `<span>▒ Faixa estimada ${pct(band.low)} a ${pct(band.high)}</span>` : ''}</div>
+  </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span>${forecast.available ? `<span>┄ Tendência de 30 dias</span>` : ''}<span>─ Meta</span>${bandOk ? `<span>▒ Faixa projetada ${pct(band.low)} a ${pct(band.high)}</span>` : ''}</div>
   <details class="limits-disclosure"><summary aria-label="Limites da projeção">Limites</summary><p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p></details>
   <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
 }
@@ -197,7 +197,7 @@ export function renderAchievementProjection(
   return `<section class="performance-block achievement-projection" aria-labelledby="achievementProjectionTitle">
     <div class="achievement-projection__heading"><div><h3 id="achievementProjectionTitle">Projeção até a prova</h3></div><span class="achievement-projection__status achievement-projection__status--${model.status}">${status}</span></div>
     <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">${context} · fase ${phaseLabels[model.exam.phase] || phaseLabels.undated}</p>
-    <div class="achievement-projection__metrics"><div><span>Acerto em simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Faixa atual</span><strong>${band ? `${pct(band.low)}–${pct(band.high)}` : '—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available ? pct(forecast.central) : '—'}</strong></div></div>
+    <div class="achievement-projection__metrics"><div><span>Acerto em simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Faixa projetada</span><strong>${band ? `${pct(band.low)} a ${pct(band.high)}` : '—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available ? pct(forecast.central) : '—'}</strong></div></div>
     <p class="performance-method-note">Confiança da projeção: ${confidence.toLowerCase()}. Veja a base em “Entender esta projeção”.</p>
     ${model.status === 'insufficient_data' ? renderRequirements(model, escapeHtml) : renderTrajectory(model, escapeHtml)}
     ${renderAdherenceTarget(adherenceContext, { escapeHtml })}

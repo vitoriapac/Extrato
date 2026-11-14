@@ -119,7 +119,7 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
       <section class="readiness-projection-summary" aria-label="Resumo da projeção">
         <h3 class="analytical-title">Projeção atual</h3>
         <p class="analytical-result">
-          {projection.available ? `Faixa atual: ${projection.low}–${projection.high}%` : 'Dados insuficientes'}
+          {projection.available ? `Faixa projetada: ${projection.low}% a ${projection.high}%` : 'Dados insuficientes'}
         </p>
         <p class="supporting-text">
           {projection.available

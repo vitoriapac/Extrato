@@ -112,3 +112,14 @@ test('janela: o selo fica colado ao rótulo de cada número (cartão de métrica
   const adherence = renderAdherenceMetrics(model, { escapeHtml: String });
   assert.equal((adherence.match(/<span>(Aderência ao plano|Execução prioritária|Carga planejada|Tempo realizado) <span class="performance-window"/g) || []).length, 4);
 });
+
+test('mapa de estabilidade usa o formatador de p.p. (menos tipográfico) e a faixa projetada tem um formato', async () => {
+  const { renderStabilityMap } = await import('../../src/ui/performance/stability-map-renderer.js');
+  const row = { subjectId: 's', name: 'Português', accuracy: 53.7, evolution: -17.7 };
+  const html = renderStabilityMap(
+    { groups: { attention: [row], maintain: [], intervene: [], evolving: [], insufficient: [] }, total: 1, measured: 1 },
+    { escapeHtml: String, escapeAttr: String }
+  );
+  assert.match(html, /53,7% · −17,7 p\.p\./);
+  assert.doesNotMatch(html, /-17,7/);
+});
