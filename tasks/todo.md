@@ -224,8 +224,8 @@ Verificação usada abaixo:
 
 ### Tarefa 17: Aba "Provas" sem segundo nível
 **Aceite:**
-- [ ] Questões, Simulados e Inteligência da prova numa página com três seções
-- [ ] `#desempenho/questions|simulations|exam` levam à seção certa
+- [x] Questões, Simulados e Inteligência da prova numa página com três seções
+- [x] `#desempenho/questions|simulations|exam` levam à seção certa
 **Verificação:** `performance-tablist.spec.js` e specs de questões atualizados
 **Dependências:** Checkpoint 4
 **Tamanho:** M

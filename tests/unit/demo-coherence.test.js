@@ -59,3 +59,28 @@ for (const today of ['2026-11-13', '2026-11-15', '2026-11-16', '2026-11-18']) {
     assert.ok(completedRecently.length >= 1);
   });
 }
+
+test('demo: as metas de questões por disciplina somam a meta global da semana', () => {
+  const state = generateDemoData({ today: '2026-11-13' });
+  const sum = state.metasPorDisciplina.reduce((total, goal) => total + goal.meta, 0);
+  assert.equal(state.metas.questoesSemanal, 220);
+  assert.equal(sum, state.metas.questoesSemanal);
+});
+
+test('demo: a agenda dos próximos dias nasce do plano semanal confirmado e a distribuição não a repete', async () => {
+  const { buildDailyPlanProposal } = await import('../../src/application/planning/distribute-study-plan.js');
+  const today = '2026-11-13';
+  const state = generateDemoData({ today });
+  const plan = state.studyPlans.at(-1);
+  const future = state.dailyPlans.filter(item => item.date >= today).flatMap(item => item.items);
+  assert.ok(future.length > 0);
+  for (const item of future) {
+    assert.equal(item.studyPlanId, plan.id);
+    const source = plan.items.find(candidate => candidate.id === item.studyPlanItemId);
+    assert.ok(source, `item ${item.id} aponta para um item do plano`);
+    assert.equal(source.subjectId, item.subjectId);
+  }
+  const days = Array.from({ length: 7 }, (_, index) => ({ date: addDays(today, index), availableMinutes: 120 }));
+  const proposal = buildDailyPlanProposal({ studyPlan: plan, existingPlans: state.dailyPlans, days, reserveRatio: 0.1 });
+  assert.equal(proposal.existingLinkedItems, future.length);
+});

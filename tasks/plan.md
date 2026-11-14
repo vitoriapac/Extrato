@@ -67,7 +67,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Visão geral ≤ 1.600 px no desktop (conteúdo 1.412 px; painel inteiro 1.692 px); nenhum gráfico mais largo que o cartão em 375 e 320
 
 ### Fase 5: Reorganizar as abas
-- [ ] Tarefa 17: Aba "Provas" sem segundo nível
+- [x] Tarefa 17: Aba "Provas" sem segundo nível
 - [ ] Tarefa 18: Modos da Comparação em Disciplinas (precisão, tendência, progresso, radar)
 - [ ] Tarefa 19: Diagnóstico agrupado por disciplina com filtro
 - [ ] Tarefa 20: Matriz condicional; Balanço e Radar de vulnerabilidades como ordenações

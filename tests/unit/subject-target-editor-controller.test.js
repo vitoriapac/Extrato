@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { configureUndo } from '../../src/ui/undoable.js';
 import { createSubjectTargetEditorController } from '../../src/ui/tabs/goals/subject-target-editor-controller.js';
 
 function createMockDom() {
@@ -120,4 +121,108 @@ test('createSubjectTargetEditorController — saveSubjectAccuracyTargets rejeita
 
   assert.equal(persists(), 0);
   assert.ok(toasts.includes('Selecione ao menos uma disciplina do concurso ativo.'));
+});
+
+function createSplitContext() {
+  const doc = createMockDom();
+  const base = createBaseContext(doc);
+  base.state.metas.questoesSemanal = 220;
+  base.state.metasPorDisciplina = [
+    { id: 'g1', subjectId: 'sub-1', meta: 30 },
+    { id: 'g2', subjectId: 'sub-2', meta: 90 },
+  ];
+  base.ctx.examScopedSubjects = () => [
+    { id: 'sub-1', name: 'Português' },
+    { id: 'sub-2', name: 'Matemática' },
+  ];
+  base.ctx.somarQuestoesDisciplinaNaSemana = () => 0;
+  base.ctx.subjectGoalService = {
+    update: (id, patch) =>
+      Object.assign(
+        base.state.metasPorDisciplina.find(item => item.id === id),
+        patch
+      ),
+  };
+  return { ...base, doc };
+}
+
+test('renderSubjectTargetEditor usa a meta global de questões salva em metas.questoesSemanal', () => {
+  const { ctx, doc } = createSplitContext();
+  createSubjectTargetEditorController(ctx).renderSubjectTargetEditor();
+  const html = doc.getElementById('subjectTargetEditor').innerHTML;
+  assert.ok(html.includes('220 questões/semana'));
+  assert.ok(!html.includes('sem meta global de questões'));
+  assert.ok(html.includes('somam 120 questões por semana; a meta global é 220 (faltam 100)'));
+  assert.match(html, /data-questions-split-preview/);
+});
+
+test('a repartição mostra prévia sem gravar e só confirma com a ação explícita', () => {
+  const { ctx, state, doc } = createSplitContext();
+  const controller = createSubjectTargetEditorController(ctx);
+  controller.previewQuestionGoalSplit();
+  const html = doc.getElementById('subjectTargetEditor').innerHTML;
+  assert.match(html, /Prévia: repartir 220 questões por semana/);
+  assert.match(html, /30 → 55/);
+  assert.match(html, /90 → 165/);
+  assert.deepEqual(
+    state.metasPorDisciplina.map(item => item.meta),
+    [30, 90]
+  );
+  controller.cancelQuestionGoalSplit();
+  assert.deepEqual(
+    state.metasPorDisciplina.map(item => item.meta),
+    [30, 90]
+  );
+  assert.doesNotMatch(doc.getElementById('subjectTargetEditor').innerHTML, /Prévia: repartir/);
+});
+
+test('confirmar a repartição fecha na meta global e o Desfazer restaura as metas', () => {
+  const { ctx, state } = createSplitContext();
+  let undo = null;
+  configureUndo({
+    getState: ctx.getState,
+    persistAndRender: ctx.persistAndRender,
+    showToast: ctx.showToast,
+    showUndoToast: (_message, onUndo) => (undo = onUndo),
+  });
+  try {
+    const controller = createSubjectTargetEditorController(ctx);
+    controller.previewQuestionGoalSplit();
+    controller.confirmQuestionGoalSplit();
+    assert.deepEqual(
+      state.metasPorDisciplina.map(item => item.meta),
+      [55, 165]
+    );
+    assert.equal(
+      state.metasPorDisciplina.reduce((sum, item) => sum + item.meta, 0),
+      220
+    );
+    undo();
+    assert.deepEqual(
+      state.metasPorDisciplina.map(item => item.meta),
+      [30, 90]
+    );
+  } finally {
+    configureUndo(null);
+  }
+});
+
+test('repartir com alterações pendentes avisa e não calcula nada', () => {
+  const { ctx, toasts } = createSplitContext();
+  const container = ctx.document.getElementById('subjectTargetEditor');
+  let onInput;
+  container.addEventListener = (type, handler) => {
+    if (type === 'input') onInput = handler;
+  };
+  const controller = createSubjectTargetEditorController(ctx);
+  controller.bindEvents();
+  onInput({
+    target: {
+      matches: sel => sel === '[data-weekly-goal-value]',
+      dataset: { weeklyGoalValue: 'sub-1' },
+      value: '45',
+    },
+  });
+  controller.previewQuestionGoalSplit();
+  assert.ok(toasts.includes('Salve ou descarte as alterações pendentes antes de repartir a meta.'));
 });

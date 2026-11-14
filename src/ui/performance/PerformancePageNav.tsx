@@ -5,6 +5,8 @@ export interface PerformanceGroupDef {
   key: string;
   label: string;
   items: ReadonlyArray<[string, string]>;
+  /** Seções que moram na mesma página do item único (Provas: questões, simulados e prova). */
+  alsoSections?: ReadonlyArray<string>;
 }
 
 export const PERFORMANCE_GROUPS: ReadonlyArray<PerformanceGroupDef> = [
@@ -13,20 +15,18 @@ export const PERFORMANCE_GROUPS: ReadonlyArray<PerformanceGroupDef> = [
   { key: 'diagnosis', label: 'Diagnóstico', items: [['diagnosis', 'Diagnóstico']] },
   {
     key: 'proofs',
-    label: 'Questões e provas',
-    items: [
-      ['questions', 'Questões'],
-      ['simulations', 'Simulados'],
-      ['exam', 'Inteligência da prova'],
-    ],
+    label: 'Provas',
+    items: [['questions', 'Provas']],
+    alsoSections: ['simulations', 'exam'],
   },
   { key: 'consistency', label: 'Ritmo e aderência', items: [['consistency', 'Ritmo e aderência']] },
 ];
 
+const groupHas = (group: PerformanceGroupDef, section: string) =>
+  group.items.some(([key]) => key === section) || Boolean(group.alsoSections?.includes(section));
+
 export function performanceGroupOf(section: string): string | null {
-  return (
-    PERFORMANCE_GROUPS.find(group => group.items.some(([key]) => key === section))?.key ?? null
-  );
+  return PERFORMANCE_GROUPS.find(group => groupHas(group, section))?.key ?? null;
 }
 
 export interface PerformancePageNavProps {
@@ -42,14 +42,14 @@ export function PerformancePageNav({
   onSelectSection,
 }: PerformancePageNavProps): JSX.Element {
   const activeGroup =
-    PERFORMANCE_GROUPS.find(group => group.items.some(([key]) => key === activeSection)) ||
+    PERFORMANCE_GROUPS.find(group => groupHas(group, activeSection)) ||
     PERFORMANCE_GROUPS[0];
   lastSectionByGroup.set(activeGroup.key, activeSection);
 
   const primaryItems: TabItem[] = PERFORMANCE_GROUPS.map(group => {
     if (group.items.length === 1) {
       const [sectionKey] = group.items[0];
-      const active = activeSection === sectionKey;
+      const active = groupHas(group, activeSection);
       return {
         id: group.key,
         label: group.label,

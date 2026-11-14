@@ -163,14 +163,13 @@ test('PerformancePageNav e renderPerformancePage — usa Tabs em dois níveis se
   assert.ok(overviewNav.includes('aria-controls="performanceSectionContent"'));
   assert.ok(!overviewNav.includes('ui-tabs__list--contained'));
 
+  // Provas é uma aba só: questões, simulados e inteligência da prova são seções da mesma página.
   const proofsNav = render(h(PerformancePageNav, { activeSection: 'simulations' }));
-  assert.equal((proofsNav.match(/role="tablist"/g) || []).length, 2);
-  assert.ok(proofsNav.includes('ui-tabs__list--contained'));
-  assert.ok(proofsNav.includes('id="performanceGroupTab-proofs"'));
-  assert.ok(proofsNav.includes('aria-controls="performanceSubnav-proofs"'));
-  assert.ok(proofsNav.includes('id="performanceSubnav-proofs"'));
-  assert.ok(proofsNav.includes('aria-label="Seções de Questões e provas"'));
-  assert.ok(proofsNav.includes('id="performanceTab-simulations"'));
+  assert.equal((proofsNav.match(/role="tablist"/g) || []).length, 1);
+  assert.ok(!proofsNav.includes('ui-tabs__list--contained'));
+  assert.ok(proofsNav.includes('id="performanceTab-questions"'));
+  assert.ok(proofsNav.includes('>Provas<'));
+  assert.ok(!proofsNav.includes('performanceSubnav-proofs'));
   assert.ok(!proofsNav.includes('aria-current='));
 
   const fullPageHtml = renderPerformancePage({

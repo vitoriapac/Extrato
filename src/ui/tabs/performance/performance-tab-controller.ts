@@ -1,7 +1,9 @@
 import { h } from 'preact';
+import { scrollBehavior } from '../../accessibility.js';
 import { revealAdvanced } from '../../essential-mode.js';
 import { mountPreact } from '../../preact-mount.js';
 import {
+  PROOF_SECTIONS,
   createPerformanceViewState,
   resolvePerformanceRange,
   updatePerformanceViewState,
@@ -216,26 +218,27 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const range = resolvePerformanceRange({ today, ...performanceViewState });
     const scope = deps.examEvidenceContext();
     const activeExamTags = state.examBlueprint?.activeExamTags || [];
-    const examSection = performanceViewState.section === 'exam';
+    // Questões, Simulados e Inteligência da prova são seções de uma página só ("Provas"); a seção do estado
+    // é só a âncora para a qual a página rola.
+    const examSection = PROOF_SECTIONS.includes(performanceViewState.section);
     const achievement =
-      ['overview', 'simulations'].includes(performanceViewState.section) &&
+      (performanceViewState.section === 'overview' || examSection) &&
       deps.currentAchievementProjection
         ? deps.currentAchievementProjection()
         : null;
 
-    const pageModel = examSection
-      ? null
-      : buildPerformancePageModel({
-          viewState: performanceViewState,
+    const buildModelFor = (view: any) =>
+      buildPerformancePageModel({
+          viewState: view,
           range,
           today,
           activeExamTags,
           scope,
           subjects: deps.examScopedSubjects ? deps.examScopedSubjects() : [],
           simulations:
-            performanceViewState.section === 'overview' ||
-            performanceViewState.section === 'subjects' ||
-            performanceViewState.section === 'simulations'
+            view.section === 'overview' ||
+            view.section === 'subjects' ||
+            view.section === 'simulations'
               ? deps.examScopedSimulations
                 ? deps.examScopedSimulations()
                 : []
@@ -257,7 +260,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           projectionSnapshots: state.projectionSnapshots || [],
           readinessSnapshots: state.readinessSnapshots || [],
           readiness:
-            performanceViewState.section === 'overview' &&
+            view.section === 'overview' &&
             deps.readinessResult &&
             deps.computeApprovalMetrics
               ? deps.readinessResult(deps.computeApprovalMetrics())
@@ -267,15 +270,15 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           recommendationFeedback: state.recommendationFeedback || [],
           allSessions: state.studySessions || [],
           nextBestAction:
-            performanceViewState.section === 'overview' && deps.nextBestAction
+            view.section === 'overview' && deps.nextBestAction
               ? deps.nextBestAction()
               : null,
           diagnosisOrder:
-            performanceViewState.section === 'overview' && deps.diagnosisOrder
+            view.section === 'overview' && deps.diagnosisOrder
               ? deps.diagnosisOrder()
               : [],
           candidates:
-            ['subjects', 'overview'].includes(performanceViewState.section) &&
+            ['subjects', 'overview'].includes(view.section) &&
             deps.intelligenceCandidates
               ? deps.intelligenceCandidates()
               : [],
@@ -324,9 +327,33 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               ? deps.topicHistoryService.list({ topicId, includeLifecycle: false })
               : [],
         });
+    const proofModels = examSection
+      ? {
+          questions: buildModelFor({ ...performanceViewState, section: 'questions' }),
+          simulations: buildModelFor({ ...performanceViewState, section: 'simulations' }),
+        }
+      : null;
+    const pageModel = examSection ? null : buildModelFor(performanceViewState);
 
+    const renderOptions = {
+      range,
+      today,
+      activeExamTags,
+      formatDate: formatDatePt,
+      escapeHtml,
+      escapeAttr,
+      targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
+    };
+    const proofBlock = (key: string, title: string, inner: string) =>
+      `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
     const sectionHtml = examSection
-      ? '<div id="examIntelligenceMount"></div>'
+      ? proofBlock('questions', 'Questões', renderPerformanceSection(proofModels!.questions, renderOptions)) +
+        proofBlock('simulations', 'Simulados', renderPerformanceSection(proofModels!.simulations, renderOptions)) +
+        proofBlock(
+          'exam',
+          'Inteligência da prova',
+          '<p class="analytics-note">Histórico das provas da banca: não segue o filtro de período.</p><div id="examIntelligenceMount"></div>'
+        )
       : renderPerformanceSection(pageModel!, {
           range,
           today,
@@ -393,7 +420,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       if (sectionContent) {
         sectionContent.setAttribute(
           'aria-labelledby',
-          `performanceTab-${performanceViewState.section}`
+          `performanceTab-${examSection ? 'questions' : performanceViewState.section}`
         );
         sectionContent.innerHTML =
           fullSectionHtml ||
@@ -421,6 +448,11 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (examSection) {
       target.querySelector('#examIntelligenceMount')?.append(examHub!);
       if (deps.renderExamIntelligenceSection) deps.renderExamIntelligenceSection();
+      // Rotas antigas (#desempenho/simulations, /exam) e links entre seções levam à seção certa da página.
+      if (performanceViewState.section !== 'questions')
+        target
+          .querySelector(`#prova-${performanceViewState.section}`)
+          ?.scrollIntoView?.({ block: 'start', behavior: scrollBehavior() });
     } else if (performanceViewState.section === 'overview') {
       const readinessMount = target.querySelector('#performanceReadinessMount');
       if (readinessMount && readinessCard) readinessMount.append(readinessCard);

@@ -8,7 +8,7 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   const tablist = page.getByRole('tablist', { name: 'Análises de desempenho' });
   const tabs = tablist.getByRole('tab');
   await expect(tabs).toHaveCount(5);
-  await expect(tabs.nth(3)).toHaveText('Questões e provas');
+  await expect(tabs.nth(3)).toHaveText('Provas');
   await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
   await expect(tabs.first()).toHaveAttribute('tabindex', '0');
   await expect(tabs.nth(1)).toHaveAttribute('tabindex', '-1');
@@ -19,7 +19,7 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect(tabs.nth(1)).toBeFocused();
 
-  await expect(page.getByRole('tablist', { name: 'Seções de Questões e provas' })).toHaveCount(0);
+  await expect(page.locator('#panel-desempenho').getByRole('tablist')).toHaveCount(1);
 
   await page.keyboard.press('End');
   await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
@@ -35,17 +35,29 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   await expect(tabs.first()).toBeFocused();
 });
 
-test('Questões e provas reúne Questões, Simulados e Inteligência da prova, e a URL acompanha a subaba', async ({
+test('Provas é uma aba só com três seções, e as rotas antigas levam à seção certa', async ({
   page,
 }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.getByRole('tab', { name: 'Questões e provas', exact: true }).click();
-  const sections = page.getByRole('tablist', { name: 'Seções de Questões e provas' }).getByRole('tab');
-  await expect(sections).toHaveText(['Questões', 'Simulados', 'Inteligência da prova']);
-  await sections.nth(2).click();
-  await expect(page.locator('#panel-desempenho')).toHaveAttribute('data-performance-view', 'exam');
-  await expect(page).toHaveURL(/#desempenho\/exam$/);
+  await page.getByRole('tab', { name: 'Provas', exact: true }).click();
+  // Sem segundo nível de abas: Questões, Simulados e Inteligência da prova são seções da mesma página.
+  await expect(page.locator('#panel-desempenho').getByRole('tablist')).toHaveCount(1);
+  await expect(page.locator('#performanceSectionContent .performance-proof__title')).toHaveText([
+    'Questões',
+    'Simulados',
+    'Inteligência da prova',
+  ]);
+  for (const route of ['simulations', 'exam']) {
+    await page.evaluate(hash => {
+      window.location.hash = hash;
+    }, `#desempenho/${route}`);
+    await expect(page.getByRole('tab', { name: 'Provas', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await expect(page.locator(`#prova-${route}`)).toBeInViewport();
+  }
 });
 
 test('Ritmo e aderência: nenhum alvo interativo menor que 24 px (WCAG 2.5.8)', async ({ page }) => {

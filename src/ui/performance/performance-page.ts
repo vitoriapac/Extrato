@@ -64,22 +64,17 @@ export function renderPerformanceChromeHtml({
   activeExamCount?: number;
   escapeHtml: (text: any) => string;
 }): string {
-  const hasToolbar = !['exam', 'diagnosis'].includes(viewState.section);
+  const hasToolbar = viewState.section !== 'diagnosis';
   const scopeLabel = activeExamCount
     ? 'Concurso ativo · ' + pluralize(activeExamCount, 'escopo')
     : 'Todos os concursos';
   const prevStart = range.previous?.start;
   const prevEnd = range.previous?.end;
   const periodText =
-    viewState.section === 'exam'
-      ? 'Histórico de provas'
-      : viewState.section === 'diagnosis'
-        ? 'Situação atual'
-        : escapeHtml(range.label);
+    viewState.section === 'diagnosis' ? 'Situação atual' : escapeHtml(range.label);
   const restText = [
     // Com a barra de filtros visível, o escopo já aparece nela.
     hasToolbar ? '' : scopeLabel,
-    viewState.section === 'exam' ||
     viewState.section === 'diagnosis' ||
     !viewState.comparePrevious ||
     !prevStart ||

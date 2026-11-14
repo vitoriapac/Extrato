@@ -111,3 +111,27 @@ test('quando os totais usam bases diferentes o extrato explica a diferença', as
   assert.match(out, /análise de vínculos considera 30min em sessões únicas/);
   assert.match(out, /total acima usa as datas registradas/);
 });
+
+test('capacidade explica de onde vem o número e o estudado é a linha de total', () => {
+  const out = html(160, 623, 720);
+  assert.match(out, /Capacidade da semana<small>Soma da disponibilidade dos 7 dias<\/small>/);
+  // O estudado é o total do extrato: única linha com a marca de total.
+  assert.equal((out.match(/ledger-line--total/g) || []).length, 1);
+  assert.match(out, /ledger-line--total[^>]*>.*?Estudado até hoje/);
+});
+
+test('o aviso de plano acima da capacidade usa os nomes fixos da semana', async () => {
+  const { renderPlanExecution } = await import('../../src/ui/renderers/plan-execution-renderer.js');
+  const { buildPlanExecution } = await import('../../src/application/goals/build-plan-execution.js');
+  const model = buildPlanExecution({
+    today: '2026-11-12',
+    hoursByDay: { 1: 2 },
+    dailyPlans: [
+      { date: '2026-11-09', items: [{ id: 'a', subjectId: 's', topicId: 't', type: 'study', plannedMinutes: 300, status: 'planned' }] },
+    ],
+    sessions: [],
+  });
+  const out = renderPlanExecution(model, { formatDate: d => d.split('-').reverse().join('/') });
+  assert.match(out, /O tempo com tarefa marcada nos dias supera a capacidade semanal informada/);
+  assert.doesNotMatch(out, /tempo planejado nos dias/);
+});

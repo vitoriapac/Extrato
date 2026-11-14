@@ -10,6 +10,8 @@ export const PERFORMANCE_SECTIONS = Object.freeze([
   'consistency',
   'history',
 ]);
+/** Seções de uma página só ("Provas"): a do estado é a âncora para a qual a página rola. */
+export const PROOF_SECTIONS: readonly string[] = Object.freeze(['questions', 'simulations', 'exam']);
 export const PERFORMANCE_PERIODS = Object.freeze(['7', '30', '90', 'all']);
 
 export function createPerformanceViewState() {

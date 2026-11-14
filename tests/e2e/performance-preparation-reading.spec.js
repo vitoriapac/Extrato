@@ -254,7 +254,8 @@ test('A projeção até a prova mora em Simulados; a Visão geral mostra a faixa
   const line = page.locator('.performance-reading__support', { hasText: 'Faixa projetada' });
   await expect(line).toContainText(/\d+% a \d+%/);
   await line.getByRole('button', { name: 'Ver em Simulados' }).click();
-  await expect(page.locator('#performanceTab-simulations')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#performanceTab-questions')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#prova-simulations')).toBeInViewport();
   await expect(page.locator('.achievement-projection')).toBeVisible();
 });
 

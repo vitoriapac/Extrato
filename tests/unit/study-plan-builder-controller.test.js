@@ -145,3 +145,44 @@ test('StudyPlanBuilderController — calcula e confirma distribuição diária p
   assert.equal(controller.getDailyPlanPreview(), null);
   assert.match(getToasted(), /2 atividades criadas no plano diário/);
 });
+
+test('StudyPlanBuilderController — prévia diária explica o que não coube e oferece ajustar a disponibilidade', () => {
+  const { deps, elements } = createMockDeps();
+  deps.dailyPlanService.calculate = () => ({
+    state: 'proposal',
+    plannedMinutes: 140,
+    unallocatedMinutes: 730,
+    window: { availableMinutes: 720, reserveMinutes: 72, existingMinutes: 560 },
+    days: [{ date: '2026-10-28', plannedMinutes: 140, flexMinutes: 12, items: [{}] }],
+  });
+  const controller = createStudyPlanBuilderController(deps);
+  controller.calculateStudyPlanPreview();
+  controller.confirmStudyPlan();
+  controller.calculateDailyPlanPreview();
+  const html = elements['examStudyPlan'].innerHTML;
+  assert.match(html, /Cabem 140 min dos 870 min\./);
+  assert.match(html, /soma 720 min; 560 min já estão agendados e 72 min ficam de reserva/);
+  assert.match(html, /data-delegated-click="openAvailabilityAdjust\(\)"/);
+});
+
+test('StudyPlanBuilderController — prévia diária que cabe inteira não mostra a explicação', () => {
+  const { deps, elements } = createMockDeps();
+  const controller = createStudyPlanBuilderController(deps);
+  controller.calculateStudyPlanPreview();
+  controller.confirmStudyPlan();
+  controller.calculateDailyPlanPreview();
+  assert.doesNotMatch(elements['examStudyPlan'].innerHTML, /Cabem /);
+});
+
+test('StudyPlanBuilderController — Ajustar disponibilidade abre a dobra e leva ao bloco de capacidade', () => {
+  const { deps, elements } = createMockDeps();
+  const calls = [];
+  elements.metasAdjust = { open: false };
+  elements.metasCapacity = {
+    scrollIntoView: () => calls.push('scroll'),
+    querySelector: () => ({ focus: () => calls.push('focus') }),
+  };
+  createStudyPlanBuilderController(deps).openAvailabilityAdjust();
+  assert.equal(elements.metasAdjust.open, true);
+  assert.deepEqual(calls, ['scroll', 'focus']);
+});

@@ -82,3 +82,23 @@ test('confirma e desfaz somente itens ainda não executados', () => {
   assert.equal(undone.removedItems, 2);
   assert.equal(undone.protectedItems.length, 1);
 });
+test('agenda já marcada e reserva consomem a capacidade: a proposta devolve os totais da janela para explicar o que não coube', () => {
+  const days = Array.from({ length: 7 }, (_, index) => ({
+    date: `2026-11-${String(16 + index).padStart(2, '0')}`,
+    availableMinutes: 120,
+  }));
+  const existingPlans = days.map(day => ({
+    date: day.date,
+    items: [{ id: `x-${day.date}`, status: 'planned', plannedMinutes: 80 }],
+  }));
+  const plan = { id: 'week', items: [{ id: 'item', topicId: 't1', minutes: 720 }] };
+  const result = buildDailyPlanProposal({ studyPlan: plan, existingPlans, days, reserveRatio: 0.1 });
+  // 120 − 12 de reserva − 80 já agendados = 28 por dia.
+  assert.equal(result.plannedMinutes, 7 * 28);
+  assert.equal(result.unallocatedMinutes, 720 - 7 * 28);
+  assert.deepEqual(result.window, { availableMinutes: 840, reserveMinutes: 84, existingMinutes: 560 });
+  const empty = buildDailyPlanProposal({ studyPlan: plan, days, reserveRatio: 0.1 });
+  assert.equal(empty.window.existingMinutes, 0);
+  assert.equal(empty.plannedMinutes, 720);
+  assert.equal(empty.unallocatedMinutes, 0);
+});

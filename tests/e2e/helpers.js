@@ -25,7 +25,16 @@ const PERFORMANCE_GROUP = {
   exam: 'proofs',
   consistency: 'consistency',
 };
+const PROOF_SECTIONS = ['questions', 'simulations', 'exam'];
 export async function openPerformanceSection(page, section) {
+  // Questões, Simulados e Inteligência da prova são seções de uma página só ("Provas").
+  if (PROOF_SECTIONS.includes(section)) {
+    await page.locator('[data-performance-section="questions"]').evaluate(element => element.click());
+    const block = page.locator(`#prova-${section}`);
+    await block.waitFor();
+    await block.evaluate(element => element.scrollIntoView());
+    return;
+  }
   const button = page.locator(`[data-performance-section="${section}"]`);
   if (!(await button.count()))
     await page

@@ -230,3 +230,27 @@ test('alocação mostra ranking legível de todas as disciplinas', () => {
   assert.ok(html.indexOf('Disciplina 6') < html.indexOf('Disciplina 0'));
   assert.match(html, /Disciplina 0/);
 });
+
+test('renderGroupedBarChart — o texto de cada linha segue a ordem da legenda: planejado, depois realizado', () => {
+  const html = renderGroupedBarChart({
+    rows: [
+      {
+        subjectId: 's1',
+        name: 'Língua Portuguesa',
+        colorSlot: 1,
+        plannedMinutes: 45,
+        studiedMinutes: 132,
+        plannedShare: 56,
+        studiedShare: 21,
+        diffMinutes: 87,
+        status: 'surplus',
+      },
+    ],
+    maxMinutes: 132,
+  });
+  const text = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
+  // Legenda: "Planejado" vem antes de "Realizado"; o valor da linha precisa seguir a mesma ordem.
+  assert.ok(text.indexOf('Planejado') < text.indexOf('Realizado'));
+  assert.match(text, /Planejado 45m.*realizado 2h 12m/);
+  assert.doesNotMatch(text, /2h 12m \/ 45m/);
+});

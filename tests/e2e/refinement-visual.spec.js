@@ -21,7 +21,9 @@ for (const { name, width, theme, columns } of [
     await activateTab(page, 'desempenho');
     for (const section of sections) {
       await openPerformanceSection(page, section);
-      await expect(page.locator(`[data-performance-section="${section}"]`)).toHaveAttribute(
+      // Questões, Simulados e Inteligência da prova são seções da aba "Provas".
+      const tabKey = ['simulations', 'exam'].includes(section) ? 'questions' : section;
+      await expect(page.locator(`[data-performance-section="${tabKey}"]`)).toHaveAttribute(
         'aria-selected',
         'true'
       );
@@ -32,6 +34,8 @@ for (const { name, width, theme, columns } of [
         ).toBeVisible();
       else if (section === 'consistency')
         await expect(page.locator('#performanceSectionContent .performance-synthesis')).toBeVisible();
+      else if (['questions', 'simulations'].includes(section))
+        await expect(page.locator(`#prova-${section} .performance-summary`)).toBeVisible();
       else
         await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
       if (section === 'overview') {
@@ -153,8 +157,8 @@ test('Desempenho mantém orientação dentro dos cards quando não há dados', a
   await activateTab(page, 'desempenho');
   for (const section of ['questions', 'simulations']) {
     await openPerformanceSection(page, section);
-    await expect(page.locator('#performanceSectionContent > .empty-state')).toBeVisible();
-    await expect(page.locator('#performanceSectionContent > .empty-state')).not.toHaveText(
+    await expect(page.locator(`#prova-${section} > .empty-state`)).toBeVisible();
+    await expect(page.locator(`#prova-${section} > .empty-state`)).not.toHaveText(
       'Sem dados.'
     );
   }
