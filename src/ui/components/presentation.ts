@@ -30,6 +30,7 @@ export function renderEmptyState({ title, message = '', className = '' }: any = 
   return `<div class="empty-state empty-state--compact${className ? ' ' + escape(className) : ''}" role="status"><strong>${escape(title)}</strong>${message ? `<p>${escape(message)}</p>` : ''}</div>`;
 }
 
-export function renderMetricCard({ label, value, detail = '' }: any = {}) {
-  return `<article class="performance-kpi ui-metric"><span>${escape(label)}</span><strong>${escape(value)}</strong>${detail ? `<small>${escape(detail)}</small>` : ''}</article>`;
+/** `windowBadge` é HTML já pronto (renderWindowBadge): o selo da janela fica colado ao rótulo do número. */
+export function renderMetricCard({ label, value, detail = '', windowBadge = '' }: any = {}) {
+  return `<article class="performance-kpi ui-metric"><span>${escape(label)}${windowBadge ? ' ' + windowBadge : ''}</span><strong>${escape(value)}</strong>${detail ? `<small>${escape(detail)}</small>` : ''}</article>`;
 }

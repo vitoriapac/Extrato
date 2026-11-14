@@ -1,3 +1,4 @@
+import { renderWindowBadge } from './window-badge.js';
 import { renderEvidenceBadge } from './evidence-badge.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { formatDecimal, formatPoints } from '../../core/format-number.js';
@@ -34,11 +35,12 @@ export function renderPerformanceSimulations(
     : '';
   if (!model.count)
     return projectionHtml + '<div class="empty-state empty-state--compact" role="status"><strong>Sem simulados neste período</strong><p>Registre simulados para acompanhar as notas. Duas provas com disciplinas detalhadas em comum permitem a comparação por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar simulado</button></div>';
+  const win = renderWindowBadge('period', range?.label || '');
   const kpis = `<section class="performance-kpis" aria-label="Indicadores de simulados">
-    <article class="performance-kpi"><span>Último simulado</span><strong>${percent(model.latest)}</strong><small>${pluralize(model.count, 'simulado', 'simulados')} · ${escapeHtml(range?.label || 'período escolhido')}</small></article>
-    <article class="performance-kpi"><span>Média do período</span><strong>${percent(model.mean)}</strong><small>${range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso'}</small></article>
-    <article class="performance-kpi"><span>Melhor resultado</span><strong>${percent(model.best)}</strong><small>No período selecionado</small></article>
-    <article class="performance-kpi"><span>Tendência recente</span><strong>${signed(model.trend)}</strong><small>Último × penúltimo simulado</small></article>
+    <article class="performance-kpi"><span>Último simulado ${win}</span><strong>${percent(model.latest)}</strong><small>${pluralize(model.count, 'simulado', 'simulados')} · ${escapeHtml(range?.label || 'período escolhido')}</small></article>
+    <article class="performance-kpi"><span>Média do período ${win}</span><strong>${percent(model.mean)}</strong><small>${range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso'}</small></article>
+    <article class="performance-kpi"><span>Melhor resultado ${win}</span><strong>${percent(model.best)}</strong><small>No período selecionado</small></article>
+    <article class="performance-kpi"><span>Tendência recente ${win}</span><strong>${signed(model.trend)}</strong><small>Último × penúltimo simulado</small></article>
   </section>`;
   const chart = renderSimulationTrendChart({
     items: model.items.slice(-12),

@@ -1,3 +1,4 @@
+import { renderWindowBadge } from './window-badge.js';
 import { formatDateBR } from '../../core/format-date.js';
 import { formatDecimal, formatPoints } from '../../core/format-number.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
@@ -29,11 +30,12 @@ export function renderPerformanceQuestions({
     range.comparePrevious && analysis.accuracy != null && previousAccuracy != null
       ? analysis.accuracy - previousAccuracy
       : null;
+  const win = renderWindowBadge('period', range?.label || '');
   const kpis = `<section class="performance-kpis" aria-label="Indicadores de questões">
-    <article class="performance-kpi"><span>Questões resolvidas</span><strong>${analysis.questionCount}</strong><small>Respostas pessoais no período</small></article>
-    <article class="performance-kpi"><span>Precisão</span><strong>${percent(analysis.accuracy)}</strong><small>Acertos ÷ questões resolvidas</small></article>
-    <article class="performance-kpi"><span>Erros</span><strong>${analysis.errors}</strong><small>Inclui erros sem categoria</small></article>
-    <article class="performance-kpi"><span>Evolução</span><strong>${delta(trend!)}</strong><small>${range.comparePrevious ? 'Precisão × período anterior' : 'Comparação desativada'}</small></article>
+    <article class="performance-kpi"><span>Questões resolvidas ${win}</span><strong>${analysis.questionCount}</strong><small>Respostas pessoais no período</small></article>
+    <article class="performance-kpi"><span>Precisão ${win}</span><strong>${percent(analysis.accuracy)}</strong><small>Acertos ÷ questões resolvidas</small></article>
+    <article class="performance-kpi"><span>Erros ${win}</span><strong>${analysis.errors}</strong><small>Inclui erros sem categoria</small></article>
+    <article class="performance-kpi"><span>Evolução ${win}</span><strong>${delta(trend!)}</strong><small>${range.comparePrevious ? 'Precisão × período anterior' : 'Comparação desativada'}</small></article>
   </section>`;
   const buckets = evolution.buckets
     .map(

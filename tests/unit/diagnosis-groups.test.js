@@ -92,3 +92,23 @@ test('p.p.: sempre com sinal tipográfico e uma casa', async () => {
   assert.equal(formatPoints(0), '0,0 p.p.');
   assert.equal(formatPoints(null), '—');
 });
+
+test('janela: o selo fica colado ao rótulo de cada número (cartão de métrica, aderência)', async () => {
+  const { renderMetricCard } = await import('../../src/ui/components/presentation.js');
+  const { renderWindowBadge } = await import('../../src/ui/performance/window-badge.js');
+  const html = renderMetricCard({
+    label: 'Precisão',
+    value: '69,3%',
+    windowBadge: renderWindowBadge('period', 'Últimos 30 dias'),
+  });
+  assert.match(html, /<span>Precisão <span class="performance-window" data-window="period"/);
+  assert.doesNotMatch(renderMetricCard({ label: 'Precisão', value: '1' }), /performance-window/);
+  const { renderAdherenceMetrics } = await import('../../src/ui/renderers/adherence-renderer.js');
+  const model = {
+    summary: { temporalAdherence: 70, matchedMinutes: 60, plannedMinutes: 90, executedMinutes: 80, volumeRatio: 88, additionalMinutes: 0, excessLinkedMinutes: 0, incompatibleMinutes: 0, otherPeriodMinutes: 0 },
+    priority: { classifiedCoverage: 100, plannedMinutes: 60, executedMinutes: 50, adherence: 80, unknownPlannedMinutes: 0, completedActivities: 1, plannedActivities: 1, partiallyExecutedActivities: 0 },
+    subjects: [],
+  };
+  const adherence = renderAdherenceMetrics(model, { escapeHtml: String });
+  assert.equal((adherence.match(/<span>(Aderência ao plano|Execução prioritária|Carga planejada|Tempo realizado) <span class="performance-window"/g) || []).length, 4);
+});

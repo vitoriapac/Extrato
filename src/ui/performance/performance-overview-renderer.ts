@@ -21,8 +21,8 @@ import {
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
 const change = (value: number | null | undefined) =>
   value == null ? 'Sem base comparável' : formatDelta(value);
-const card = (label: string, value: unknown, unit: string, detail: string) =>
-  renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail });
+const card = (label: string, value: unknown, unit: string, detail: string, windowBadge = '') =>
+  renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail, windowBadge });
 
 const glossaryItems: Array<[string, string]> = [
   [
@@ -72,15 +72,16 @@ export function renderPerformanceOverview(
   const comparisonLabel = range.comparePrevious
     ? 'Comparação com período anterior'
     : 'Sem comparação';
+  const periodBadge = renderWindowBadge('period', range?.label || '');
   const kpis = `<p class="performance-kpi-window">${renderWindowBadge('period', range?.label || '')}<span>Os indicadores abaixo seguem o período escolhido.</span></p><section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
-    ${renderMetricCard({ label: 'Tempo estudado', value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
-    ${card('Questões resolvidas', current.resolved ?? 0, '', 'No período selecionado')}
-    ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
-    ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`) : ''}
+    ${renderMetricCard({ label: 'Tempo estudado', windowBadge: periodBadge, value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
+    ${card('Questões resolvidas', current.resolved ?? 0, '', 'No período selecionado', periodBadge)}
+    ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, periodBadge)}
+    ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`, periodBadge) : ''}
   </section>`;
   // A Prontidão aparece uma vez só, na Leitura da preparação; a carga do período fica em "Planejado × realizado".
   const secondaryKpis = `<p class="performance-kpi-window">${renderWindowBadge('period', range?.label || '')}<span>Volume de carga no período escolhido. O dos últimos 7 dias aparece na Leitura da preparação.</span></p><section class="performance-kpis ui-metric-group" aria-label="Carga no período">
-    ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}
+    ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`, periodBadge)}
   </section>`;
   const history = renderReadinessHistory(model.history, {
     formatDate,
