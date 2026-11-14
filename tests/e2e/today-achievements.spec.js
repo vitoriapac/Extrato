@@ -162,3 +162,11 @@ test('o plano de hoje marca uma única atividade que completa uma conquista, sem
   ).toHaveCount(1);
   expect(await titles()).toEqual(before);
 });
+
+test('a busca global tem "Ver conquistas" e abre a subaba de Hoje', async ({ page }) => {
+  await openDemo(page);
+  await page.keyboard.press('Control+K');
+  await page.getByRole('combobox').fill('conquistas');
+  await page.getByRole('option', { name: /Ver conquistas/ }).click();
+  await expect(page.locator('#todaySub-conquistas')).toBeVisible();
+});

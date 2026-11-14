@@ -121,12 +121,14 @@ export interface UnlockSyncResult {
 /**
  * Compara as conquistas cumpridas com o registro.
  * Na primeira leitura de um estado (`achievementsBaselined` falso) tudo o que já está cumprido entra
- * como `migrated`, sem aviso. Depois, cada novo cumprimento entra como `live` com a data de hoje.
+ * como `migrated`, sem aviso. Depois, cada novo cumprimento entra como `live` com a data de hoje;
+ * os `silentIds` entram no registro, mas não geram aviso.
  */
 export function syncAchievementUnlocks(
   state: Row,
   unlockedIds: readonly string[],
-  todayISO: string
+  todayISO: string,
+  silentIds: readonly string[] = []
 ): UnlockSyncResult {
   if (!state.achievementUnlocks || typeof state.achievementUnlocks !== 'object')
     state.achievementUnlocks = {};
@@ -137,12 +139,24 @@ export function syncAchievementUnlocks(
   const newlyUnlocked: string[] = [];
   let changed = false;
 
+  // Datas inferidas do histórico são palpites: se a conquista não está cumprida agora, o registro sai,
+  // senão ele calaria o aviso quando ela fosse de fato ganha.
+  if (!baselined) {
+    for (const [id, entry] of Object.entries(registry)) {
+      if (entry.source === 'migrated' && !unlockedIds.includes(id)) {
+        delete registry[id];
+        changed = true;
+      }
+    }
+  }
+
   for (const id of unlockedIds) {
     if (registry[id]) continue;
     changed = true;
     if (baselined) {
       registry[id] = { unlockedAt: todayISO, source: 'live' };
-      newlyUnlocked.push(id);
+      // Silenciosa: conquista que virou verdadeira sem trabalho novo (ex.: arquivar disciplinas).
+      if (!silentIds.includes(id)) newlyUnlocked.push(id);
     } else {
       const unlockedAt = (inferred as Record<string, string>)[id] ?? null;
       registry[id] = unlockedAt

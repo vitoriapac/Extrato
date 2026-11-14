@@ -1,4 +1,5 @@
-import { h, render } from 'preact';
+import { h } from 'preact';
+import { mountPreact, unmountPreact } from '../preact-mount.js';
 import { AchievementToast } from '../components/AchievementToast.js';
 import type { AchievementNotice } from '../../application/achievements/achievement-notice.js';
 
@@ -28,14 +29,16 @@ export function createAchievementNotifier({
     if (!open) return;
     open = false;
     document.removeEventListener('keydown', onKey);
-    if (mount) render(null, mount);
+    if (mount) unmountPreact(mount);
   };
   const arm = (ms: number) => {
     clear();
     timer = setTimeout(hide, ms);
   };
+  // Esc só vale com o foco dentro do aviso: o resto da página usa Esc para modais e modo foco.
   function onKey(event: KeyboardEvent) {
-    if (event.key === 'Escape' && !event.defaultPrevented) hide();
+    const toast = document.getElementById('achievementToast');
+    if (event.key === 'Escape' && toast?.contains(event.target as Node)) hide();
   }
 
   function notify(notice: AchievementNotice | null) {
@@ -43,7 +46,7 @@ export function createAchievementNotifier({
     open = true;
     document.removeEventListener('keydown', onKey);
     document.addEventListener('keydown', onKey);
-    render(
+    mountPreact(
       h(AchievementToast, {
         notice,
         onView: () => {

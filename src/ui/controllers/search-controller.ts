@@ -18,7 +18,7 @@ export interface SearchCommand {
 export const SEARCH_COMMANDS: SearchCommand[] = [
   {
     label: 'Visão Geral',
-    keywords: 'inicio dashboard resumo prontidao conquistas saldo',
+    keywords: 'inicio dashboard resumo prontidao saldo',
     tab: 'dashboard',
     icon: 'layout-dashboard',
   },
@@ -34,6 +34,12 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     keywords: 'hoje tarefa recomendacao estudo proxima melhor acao plano do dia',
     tab: 'hoje',
     icon: 'sun',
+  },
+  {
+    label: 'Ver conquistas',
+    keywords: 'conquistas emblemas medalhas desbloqueadas progresso metas de constancia',
+    action: 'achievements',
+    icon: 'award',
   },
   {
     label: 'Ir para a recomendação prioritária',
@@ -233,6 +239,9 @@ export function createSearchController(options: SearchControllerOptions) {
     } else if (action === 'add-questions') {
       activateTab('questoes');
       (document.getElementById('addQuestaoRowBtn') as HTMLElement | null)?.click();
+    } else if (action === 'achievements') {
+      activateTab('hoje');
+      (document.getElementById('todayTab-conquistas') as HTMLElement | null)?.click();
     } else if (action === 'timer') {
       activateTab('dashboard');
       document.getElementById('timerSubjectSelect')?.focus();

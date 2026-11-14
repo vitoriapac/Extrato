@@ -11,10 +11,20 @@ export interface TabRouterOptions {
   onResetLists?: () => void;
   trapModalTab?: (event: KeyboardEvent) => boolean | void;
   onCancelReview?: () => void;
+  /** Chamado depois que o roteador reescreve o hash (ex.: endereço antigo das conquistas). */
+  onHashRewrite?: () => void;
 }
 
 export function createTabRouter(options: TabRouterOptions) {
-  const { document, window, onRenderTab, onResetLists, trapModalTab, onCancelReview } = options;
+  const {
+    document,
+    window,
+    onRenderTab,
+    onResetLists,
+    trapModalTab,
+    onCancelReview,
+    onHashRewrite,
+  } = options;
 
   const navigation = createNavigationController({
     document,
@@ -61,8 +71,8 @@ export function createTabRouter(options: TabRouterOptions) {
   function redirectLegacyHash(): void {
     if (!/^#desempenho\/history(?:[/?]|$)/.test(window.location.hash)) return;
     window.history.replaceState(null, '', '#hoje/conquistas');
-    // replaceState não dispara hashchange: avisa a subaba de Hoje, que escuta o hash.
-    window.dispatchEvent?.(new Event('hashchange'));
+    // replaceState não dispara hashchange: quem guarda estado no hash é avisado direto.
+    onHashRewrite?.();
   }
 
   function activateInitialTab(): void {

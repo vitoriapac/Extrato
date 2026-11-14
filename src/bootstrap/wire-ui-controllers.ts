@@ -118,6 +118,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     onResetLists: resetRecordListLimits,
     trapModalTab: event => trapModalTab(event, []),
     onCancelReview: () => practiceUi.reviewsTabController.closeReviewRating(),
+    onHashRewrite: () => analyticsUi?.todaySubtabs?.syncFromHash(),
   });
   const activateTab = (tabName: string, updateHash = true) =>
     tabRouter.activateTab(tabName, updateHash);

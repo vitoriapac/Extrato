@@ -15,6 +15,8 @@ export interface AchievementsControllerOptions {
   getActivityDates: () => Set<string>;
   intelligenceCandidates?: () => any[];
   escapeHtml?: (str: string) => string;
+  /** Dia de hoje (YYYY-MM-DD); a sequência muda com a data. */
+  todayISO?: () => string;
 }
 
 export const STRATEGIC_BADGES = [
@@ -59,12 +61,15 @@ export function createAchievementsController(options: AchievementsControllerOpti
     computeStreak,
     getActivityDates,
     intelligenceCandidates = () => [],
+    todayISO = () => new Date().toISOString().slice(0, 10),
   } = options;
 
   const escapeHtml = options.escapeHtml || defaultEscapeHtml;
 
-  function getBadgesDefinitions() {
+  function getBadgesDefinitions(streakValue?: number) {
     const state = getState();
+    let streakCache: number | undefined = streakValue;
+    const streakNow = () => (streakCache ??= computeStreak(getActivityDates()));
     return [
       {
         id: 'firstSession',
@@ -78,28 +83,28 @@ export function createAchievementsController(options: AchievementsControllerOpti
         icon: 'bolt',
         name: 'Ritmo iniciado',
         desc: '3 dias seguidos estudando',
-        check: () => computeStreak(getActivityDates()) >= 3,
+        check: () => streakNow() >= 3,
       },
       {
         id: 'streak7',
         icon: 'flame',
         name: 'Uma semana de foco',
         desc: '7 dias seguidos estudando',
-        check: () => computeStreak(getActivityDates()) >= 7,
+        check: () => streakNow() >= 7,
       },
       {
         id: 'streak14',
         icon: 'sparkles',
         name: 'Duas semanas de foco',
         desc: '14 dias seguidos estudando',
-        check: () => computeStreak(getActivityDates()) >= 14,
+        check: () => streakNow() >= 14,
       },
       {
         id: 'streak30',
         icon: 'trophy',
         name: 'Mês de ferro',
         desc: '30 dias seguidos estudando',
-        check: () => computeStreak(getActivityDates()) >= 30,
+        check: () => streakNow() >= 30,
       },
       {
         id: 'subject100',
@@ -263,9 +268,11 @@ export function createAchievementsController(options: AchievementsControllerOpti
     ];
   }
 
-  function evaluateAchievements() {
+  function computeAchievements() {
     const state = getState();
     const topics = allTopics();
+    // A sequência vem do histórico de atividade inteiro: calculada uma vez por avaliação.
+    const streak = computeStreak(getActivityDates());
     const activeTopics = topics.filter((item: any) => !item.archived);
 
     const progressByBadge: Record<string, { current: number; target: number; unit: string }> = {
@@ -346,10 +353,10 @@ export function createAchievementsController(options: AchievementsControllerOpti
         target: 50,
         unit: '% de conteúdo',
       },
-      streak3: { current: computeStreak(getActivityDates()), target: 3, unit: 'dias' },
-      streak7: { current: computeStreak(getActivityDates()), target: 7, unit: 'dias' },
-      streak14: { current: computeStreak(getActivityDates()), target: 14, unit: 'dias' },
-      streak30: { current: computeStreak(getActivityDates()), target: 30, unit: 'dias' },
+      streak3: { current: streak, target: 3, unit: 'dias' },
+      streak7: { current: streak, target: 7, unit: 'dias' },
+      streak14: { current: streak, target: 14, unit: 'dias' },
+      streak30: { current: streak, target: 30, unit: 'dias' },
     };
 
     const strategic = buildStrategicAchievements({
@@ -359,7 +366,7 @@ export function createAchievementsController(options: AchievementsControllerOpti
       activeExamTags: state.examBlueprint?.activeExamTags || [],
     });
 
-    const badges = getBadgesDefinitions();
+    const badges = getBadgesDefinitions(streak);
     return [
       ...badges.map(item => {
         const progress = progressByBadge[item.id];
@@ -380,6 +387,52 @@ export function createAchievementsController(options: AchievementsControllerOpti
     ];
   }
 
+  /**
+   * Assinatura barata do que as conquistas leem. Enquanto ela não muda, a avaliação anterior vale.
+   * shortcut: conquistas estratégicas também dependem de configuração de impacto dos tópicos, que não
+   * entra aqui; elas se atualizam na próxima mudança de dados contada acima.
+   */
+  function stateSignature(): string {
+    const state = getState();
+    const sessions: any[] = state.studySessions || [];
+    const questions: any[] = state.questoes || [];
+    const simulations: any[] = state.simulados || [];
+    const reviews: any[] = state.reviewAgenda || [];
+    const feedback: any[] = state.recommendationFeedback || [];
+    const topics = allTopics();
+    const sum = (rows: any[], pick: (row: any) => number) =>
+      rows.reduce((total, row) => total + pick(row), 0);
+    return [
+      todayISO(),
+      sessions.length,
+      sum(sessions, row => Number(row.durationSeconds) || 0),
+      questions.length,
+      sum(questions, row => Number(row.resolved) || 0),
+      sum(questions, row => Number(row.correct) || 0),
+      simulations.length,
+      (state.exams || []).length,
+      (state.topicHistory || []).length,
+      topics.length,
+      topics.filter((item: any) => item.status === 'Concluído').length,
+      topics.filter((item: any) => item.archived).length,
+      (state.subjects || []).filter((item: any) => item.archived).length,
+      reviews.filter((item: any) => item.status === 'Concluído').length,
+      feedback.length,
+      feedback.filter((item: any) => item.completed).length,
+      new Set([...sessions, ...questions, ...simulations].map((row: any) => row.date)).size,
+      (state.examBlueprint?.activeExamTags || []).join(','),
+    ].join('|');
+  }
+
+  let evaluationCache: { key: string; value: any[] } | null = null;
+  function evaluateAchievements() {
+    const key = stateSignature();
+    if (evaluationCache?.key === key) return evaluationCache.value;
+    const value = computeAchievements();
+    evaluationCache = { key, value };
+    return value;
+  }
+
   function render(): void {
     const grid = document.getElementById('badgesGrid');
     // A galeria mora numa subaba de Hoje: escondida, não vale o cálculo; ao abrir, é desenhada.
@@ -394,12 +447,22 @@ export function createAchievementsController(options: AchievementsControllerOpti
     });
   }
 
+  // Conquistas que mudam quando o edital muda de forma (arquivar disciplina ou tópico), sem estudo novo.
+  const STRUCTURAL_BADGE_IDS = ['subject100', 'allsubjects', 'coverage50'];
+  let lastCompletedTopics: number | null = null;
+
   /** Grava no estado as conquistas novas e devolve as desbloqueadas agora (vazio na primeira leitura). */
-  function syncUnlocks(todayISO: string) {
+  function syncUnlocks(today: string) {
     const unlockedIds = evaluateAchievements()
       .filter((item: any) => item.unlocked)
       .map((item: any) => item.id as string);
-    return syncAchievementUnlocks(getState(), unlockedIds, todayISO);
+    const completed = allTopics().filter(
+      (item: any) => !item.archived && !item.subjectArchived && item.status === 'Concluído'
+    ).length;
+    const silentIds =
+      lastCompletedTopics === null || completed > lastCompletedTopics ? [] : STRUCTURAL_BADGE_IDS;
+    lastCompletedTopics = completed;
+    return syncAchievementUnlocks(getState(), unlockedIds, today, silentIds);
   }
 
   /** Conquista a mostrar no resultado da sessão: desbloqueada agora ou a mais perto. */

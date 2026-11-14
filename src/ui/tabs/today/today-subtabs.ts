@@ -26,7 +26,12 @@ export interface TodaySubtabsOptions {
 /** Abas internas de Hoje: "Plano de hoje" (padrão) e "Conquistas", com a subaba na URL. */
 export function initTodaySubtabs({ document: doc, onShow }: TodaySubtabsOptions) {
   const mountNode = doc.getElementById('todaySubtabsMount');
-  if (!mountNode) return { select: (_key: TodaySubtabKey) => {}, current: () => 'hoje' as const };
+  if (!mountNode)
+    return {
+      select: (_key: TodaySubtabKey) => {},
+      current: () => 'hoje' as const,
+      syncFromHash: () => {},
+    };
   let active: TodaySubtabKey = 'hoje';
 
   const renderNav = () =>
@@ -61,5 +66,5 @@ export function initTodaySubtabs({ document: doc, onShow }: TodaySubtabsOptions)
   win?.addEventListener('hashchange', syncFromHash);
   syncFromHash();
 
-  return { select, current: () => active };
+  return { select, current: () => active, syncFromHash };
 }

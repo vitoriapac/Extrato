@@ -3,14 +3,14 @@ import {
   activateTab,
   openDemo,
   expectNoPageOverflow,
-  openPerformanceHistory,
+  openSessionLog,
   openPlanningSubtab, openPerformanceSection, openPerformanceFilters, openPerformanceFold } from './helpers.js';
 import { createDefaultState } from '../../src/state/defaults.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 import { DEMO_EXPERIENCE_PROFILES } from '../../src/demo/demo-preparation-profiles.js';
 
 async function showSessions(page) {
-  await openPerformanceHistory(page);
+  await openSessionLog(page);
   await page.evaluate(() => {
     document.getElementById('desempenho-study').open = true;
   });

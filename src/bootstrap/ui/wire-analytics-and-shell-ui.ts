@@ -116,6 +116,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     getActivityDates: studyMetricsSelectors.getActivityDates,
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
     escapeHtml,
+    todayISO,
   });
 
   // Conquistas moram numa subaba de Hoje; só são desenhadas quando ela é aberta.
@@ -350,6 +351,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
 
   return {
     achievementsController,
+    todaySubtabs,
     guidedTourController,
     analysisNavigationController,
     diagnosticsTabController,

@@ -4,7 +4,7 @@ import {
   openDemo,
   openExamImport,
   openAchievements,
-  openPerformanceHistory,
+  openSessionLog,
   openPlanningSubtab,
 } from './helpers.js';
 
@@ -80,7 +80,7 @@ test('regressão visual dos componentes críticos em desktop', async ({ page }) 
     screenshotOptions
   );
   await page.evaluate(() => scrollTo(0, 0));
-  await openPerformanceHistory(page);
+  await openSessionLog(page);
   await page.locator('#desempenho-study > summary').click();
   await page.evaluate(() => {
     for (const [id, height] of [

@@ -3,7 +3,7 @@ import {
   openDemo,
   expectNoPageOverflow,
   activateTab,
-  openPerformanceHistory,
+  openSessionLog,
   openPerformanceSection,
 } from './helpers.js';
 
@@ -283,7 +283,7 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar', asy
     const ids = await locator.evaluateAll(rows => rows.map(row => row.dataset.id).filter(Boolean));
     expect(new Set(ids).size).toBe(ids.length);
   };
-  await openPerformanceHistory(page);
+  await openSessionLog(page);
   await page.locator('#desempenho-study > summary').click();
   const sessionDays = page.locator('#studySessionsBody .session-day-row');
   const initialDays = await sessionDays.count();

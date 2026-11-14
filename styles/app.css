@@ -3578,3 +3578,5 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .badge-date{display:block;margin-top:var(--space-1);font-size:var(--text-micro);color:var(--text-secondary)}
 /* Plano de hoje: marca discreta na atividade que completa uma conquista (no máximo uma). */
 .plano-item-achievement{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-1);font-size:var(--text-sm);font-weight:600;color:var(--heading)}
+/* No modo foco o aviso de conquista desce para o rodapé e não cobre o botão "Sair do modo foco". */
+body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--space-4),env(safe-area-inset-bottom))}

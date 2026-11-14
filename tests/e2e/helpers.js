@@ -34,7 +34,7 @@ export async function openPerformanceSection(page, section) {
   await button.evaluate(element => element.click());
 }
 // O extrato de sessões e o tempo de estudo moram em Ritmo e aderência (Desempenho).
-export async function openPerformanceHistory(page) {
+export async function openSessionLog(page) {
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'consistency');
   await expect(page.locator('#panel-desempenho')).toHaveAttribute(

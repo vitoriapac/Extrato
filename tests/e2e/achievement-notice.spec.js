@@ -40,6 +40,10 @@ test('a primeira sessão desbloqueia uma conquista, avisa uma vez e grava a data
   expect(unlock.source).toBe('live');
   expect(unlock.unlockedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
+  // Esc fora do aviso não o fecha (é de modais e do modo foco); com o foco nele, fecha.
+  await page.keyboard.press('Escape');
+  await expect(toast).toBeVisible();
+  await toast.getByRole('button', { name: 'Fechar aviso de conquista' }).focus();
   await page.keyboard.press('Escape');
   await expect(toast).toBeHidden();
 

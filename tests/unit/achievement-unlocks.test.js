@@ -155,3 +155,34 @@ test('conquista que deixa de estar cumprida continua registrada (o passado não 
   assert.deepEqual(result.newlyUnlocked, []);
   assert.equal(state.achievementUnlocks.streak7.unlockedAt, '2026-10-10');
 });
+
+test('primeira leitura descarta data inferida de conquista que não está cumprida agora', () => {
+  const state = {
+    achievementUnlocks: {
+      topics10: { unlockedAt: '2026-09-10', source: 'migrated' },
+      hours10: { unlockedAt: '2026-10-01', source: 'migrated' },
+    },
+    achievementsBaselined: false,
+  };
+  syncAchievementUnlocks(state, ['hours10'], '2026-11-13');
+  assert.equal(state.achievementUnlocks.topics10, undefined);
+  assert.equal(state.achievementUnlocks.hours10.unlockedAt, '2026-10-01');
+
+  // Quando topics10 for de fato ganha, o aviso aparece.
+  const later = syncAchievementUnlocks(state, ['hours10', 'topics10'], '2026-11-20');
+  assert.deepEqual(later.newlyUnlocked, ['topics10']);
+});
+
+test('conquista silenciosa entra no registro como live, sem aviso', () => {
+  const state = { achievementUnlocks: {}, achievementsBaselined: true };
+  const result = syncAchievementUnlocks(state, ['coverage50', 'q100'], '2026-11-13', [
+    'coverage50',
+    'allsubjects',
+  ]);
+  assert.deepEqual(result.newlyUnlocked, ['q100']);
+  assert.deepEqual(state.achievementUnlocks.coverage50, {
+    unlockedAt: '2026-11-13',
+    source: 'live',
+  });
+  assert.equal(result.changed, true);
+});

@@ -78,6 +78,8 @@ export interface TodayTabControllerContext {
   startOfWeek?: (iso: string) => string;
   /** Conquistas avaliadas, para marcar a atividade do plano que completa uma. */
   getAchievements?: () => any[];
+  /** Hoje já conta na sequência de dias (mesma regra da sequência). */
+  hasActivityToday?: () => boolean;
   onOpenRecoveryMission?: () => void;
   onRecalibrateWeek?: () => void;
 }
@@ -122,6 +124,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     diasParaRevisao = () => null,
     startOfWeek = (iso: string) => iso,
     getAchievements = () => [],
+    hasActivityToday = () => false,
   } = ctx;
 
   let demoFirstStepsDismissed = false;
@@ -817,7 +820,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         : '';
 
     const achievementMark = pickPlanAchievementMark(items, getAchievements(), {
-      studiedToday: segundosEstudadosHoje() > 0,
+      studiedToday: hasActivityToday(),
     });
     const listaHtml = items
       .map((item: any) => {

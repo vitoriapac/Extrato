@@ -69,3 +69,11 @@ test('conquista desbloqueada mostra a data salva; sem data inferida, "antes de" 
   assert.match(html, /Desbloqueada antes de 13\/11\/2026/);
   assert.equal((html.match(/class="badge-date"/g) || []).length, 2);
 });
+
+test('a busca global tem o comando Ver conquistas e a Visão Geral deixou de listar conquistas', async () => {
+  const { SEARCH_COMMANDS } = await import('../../src/ui/controllers/search-controller.js');
+  const achievements = SEARCH_COMMANDS.find(command => command.action === 'achievements');
+  assert.equal(achievements.label, 'Ver conquistas');
+  const overview = SEARCH_COMMANDS.find(command => command.tab === 'dashboard');
+  assert.doesNotMatch(overview.keywords, /conquistas/);
+});

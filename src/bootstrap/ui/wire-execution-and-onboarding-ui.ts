@@ -236,6 +236,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     getRevisoesUnificadas: studyMetricsSelectors.getRevisoesUnificadas,
     segundosEstudadosHoje: studyMetricsSelectors.segundosEstudadosHoje,
     getAchievements,
+    hasActivityToday: () => studyMetricsSelectors.getActivityDates().has(todayISO()),
     diasParaRevisao,
     startOfWeek,
     onOpenRecoveryMission: () => recoveryMissionController?.open(),
