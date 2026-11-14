@@ -150,6 +150,25 @@ export function buildPerformancePageModel({
         readinessChange,
         nextBestAction,
         candidates,
+        subjectAccuracy: (() => {
+          const totals: Record<string, { resolved: number; correct: number }> = {};
+          for (const q of scope.questions?.included || []) {
+            const id = subjectIdFor?.(q);
+            if (!id) continue;
+            const row = (totals[id] ||= { resolved: 0, correct: 0 });
+            row.resolved += Math.max(0, Number(q.resolved) || 0);
+            row.correct += Math.max(0, Number(q.correct) || 0);
+          }
+          return Object.fromEntries(
+            Object.entries(totals).map(([id, row]) => [
+              id,
+              {
+                resolved: row.resolved,
+                accuracy: row.resolved ? Math.round((row.correct / row.resolved) * 100) : null,
+              },
+            ])
+          );
+        })(),
       }),
       achievementProjection,
       achievementHistory,

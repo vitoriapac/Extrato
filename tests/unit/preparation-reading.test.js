@@ -156,3 +156,51 @@ test('leitura da preparação: retrato fictício da demo é declarado; o real n�
   assert.match(read('demo-readiness-3'), /retratos de fechamento são fictícios/);
   assert.doesNotMatch(read('readiness-3'), /fictícios/);
 });
+
+const gap = (id, over = {}) => ({
+  topicId: id,
+  topicName: `Tópico ${id}`,
+  subjectId: 's1',
+  subjectName: 'Informática',
+  mastery: 40,
+  examImpact: 90,
+  improvementPotential: 60,
+  effortEfficiency: 50,
+  ...over,
+});
+
+test('"o que mais pesa" segue a ordem do Diagnóstico e leva a ele', () => {
+  const reading = buildPreparationReading({
+    candidates: [
+      gap('a', { improvementPotential: 30 }),
+      gap('b', { improvementPotential: 90 }),
+      gap('c', { mastery: 90 }),
+    ],
+  });
+  const texts = reading.pulling.map(item => item.text);
+  assert.match(texts[0], /Tópico b/);
+  assert.match(texts[1], /Tópico a/);
+  assert.equal(texts.length, 2);
+  assert.deepEqual(
+    reading.pulling.map(item => item.link.target),
+    ['diagnosis', 'diagnosis']
+  );
+});
+
+test('"o que mais pesa" diz quando o tópico fraco está numa disciplina forte', () => {
+  const read = subjectAccuracy =>
+    buildPreparationReading({ candidates: [gap('a')], subjectAccuracy }).pulling[0].text;
+  assert.match(
+    read({ s1: { accuracy: 85, resolved: 120 } }),
+    /Tópico fraco dentro de Informática, que tem 85% de precisão em questões\./
+  );
+  assert.doesNotMatch(read({ s1: { accuracy: 55, resolved: 120 } }), /dentro de Informática/);
+  assert.doesNotMatch(read({ s1: { accuracy: 85, resolved: 10 } }), /dentro de Informática/);
+});
+
+test('"o que mais pesa" não cria um segundo critério de pior disciplina', () => {
+  const reading = buildPreparationReading({
+    weeklyBrief: { current: week(), weakestSubject: { id: 's9', name: 'Direito', accuracy: 30, resolved: 40 } },
+  });
+  assert.ok(!reading.pulling.some(item => /Direito/.test(item.text)));
+});

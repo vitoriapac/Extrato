@@ -153,8 +153,8 @@ Verificação usada abaixo:
 
 ### Tarefa 12: "O que mais pesa" alinhado ao Diagnóstico
 **Aceite:**
-- [ ] Itens vêm do mesmo cálculo do Diagnóstico e linkam para ele
-- [ ] Tópico fraco em disciplina forte é dito ("tópico fraco dentro de Informática, 85% de precisão")
+- [x] Itens vêm do mesmo cálculo do Diagnóstico e linkam para ele
+- [x] Tópico fraco em disciplina forte é dito ("tópico fraco dentro de Informática, 85% de precisão")
 **Verificação:** Unit `preparation-reading.test.js`
 **Dependências:** T9
 **Arquivos:** `src/application/performance/build-preparation-reading.ts`

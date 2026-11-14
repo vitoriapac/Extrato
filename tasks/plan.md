@@ -41,7 +41,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 9: Vocabulário de domínio, retenção, confiança e evidência
 - [x] Tarefa 10: Linha de comparação e "Copiar link" um por subaba
 - [x] Tarefa 11: Turnos num bloco, uma leitura
-- [ ] Tarefa 12: "O que mais pesa" alinhado ao Diagnóstico
+- [x] Tarefa 12: "O que mais pesa" alinhado ao Diagnóstico
 
 ### Checkpoint 3: Coerência
 - [ ] `/impeccable critique` da aba; H4 e H6 ≥ 3
