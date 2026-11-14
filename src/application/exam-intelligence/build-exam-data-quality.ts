@@ -103,6 +103,7 @@ export function buildExamDataQuality({
       questions.length - lowConfidenceQuestions - moderateConfidenceQuestions,
     unreviewedQuestions,
     mappedTopics: mappedTopicIds.size,
+    eligibleTopics: eligibleTopicIds.size,
     importantTopicsWithoutHistory,
     coveragePercent,
     confidence,

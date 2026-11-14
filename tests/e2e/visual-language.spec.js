@@ -55,7 +55,8 @@ for (const { width, theme } of [
     await expectNoPageOverflow(page);
     await activateTab(page, 'desempenho');
     await openPerformanceSection(page, 'exam');
-    await expect(page.locator('.exam-intelligence-hub > .module-heading')).toBeVisible();
+    // O título da seção Provas já nomeia a Inteligência da prova; o cabeçalho do bloco fica oculto de propósito.
+    await expect(page.locator('.performance-proof__title', { hasText: 'Inteligência da prova' })).toBeVisible();
     await page.locator('#examDataQuality').evaluate(
       (element, html) => {
         element.innerHTML = html;

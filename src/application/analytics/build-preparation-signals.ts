@@ -171,7 +171,7 @@ export function buildPreparationSignals({
         action:
           'Revise os erros recentes e avalie uma revisão antes de reduzir a atenção ao tópico.',
         limitation:
-          'Exige domínio de pelo menos 80, retenção abaixo de 60, evidência moderada e 30 questões nos últimos 14 dias. Não altera automaticamente a prioridade ou o plano.',
+          'Exige domínio de pelo menos 80, retenção abaixo de 60, evidência média e 30 questões nos últimos 14 dias. Não altera automaticamente a prioridade ou o plano.',
       });
     }
   }

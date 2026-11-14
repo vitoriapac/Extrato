@@ -1,3 +1,4 @@
+import { matrixAbbreviations } from './matrix-abbreviations.js';
 import type { JSX } from 'preact';
 import { pedagogicalMatrixGeometry, PedagogicalMatrixItemInput } from './geometry.js';
 import { formatDecimal } from '../../../core/format-number.js';
@@ -36,6 +37,7 @@ export function PedagogicalMatrixChart({
       .slice(0, 5)
       .map(b => b.id)
   );
+  const abbreviations = matrixAbbreviations(items.map(item => item.name));
   const drawOrder = [...geom.bubbles].sort((a, b) => b.r - a.r);
 
   return (
@@ -194,7 +196,7 @@ export function PedagogicalMatrixChart({
             </circle>
             {labeled.has(b.id) && (
               <text class="chart-matrix__bubble-text" x={b.cx} y={b.cy + 3} text-anchor="middle">
-                {b.name.slice(0, 3).toUpperCase()}
+                {abbreviations.get(b.name) ?? b.name.slice(0, 3).toUpperCase()}
               </text>
             )}
           </g>

@@ -123,3 +123,18 @@ test('mapa de estabilidade usa o formatador de p.p. (menos tipográfico) e a fai
   assert.match(html, /53,7% · −17,7 p\.p\./);
   assert.doesNotMatch(html, /-17,7/);
 });
+
+test('Matriz: siglas únicas e contadores com os nomes dos quatro quadrantes', async () => {
+  const { matrixAbbreviations } = await import('../../src/ui/primitives/charts/matrix-abbreviations.js');
+  const abbr = matrixAbbreviations(['Produtos e Serviços', 'Probabilidade e Estatística', 'Matemática', 'Matemática Financeira']);
+  assert.equal(new Set(abbr.values()).size, 4);
+  assert.equal(abbr.get('Matemática'), 'MAT');
+  assert.equal(abbr.get('Matemática Financeira'), 'MAT·F');
+  const { renderPedagogicalMatrixSection } = await import('../../src/ui/performance/performance-matrix-renderer.js');
+  const html = renderPedagogicalMatrixSection(
+    { items: [{ name: 'A', mastery: 20, retention: 30, studyMinutes: 1 }], thresholdMastery: 70, thresholdRetention: 60, quadrantCounts: { consolidated: 0, forgetting_risk: 0, building: 0, critical: 1 } },
+    { escapeHtml: String }
+  );
+  for (const name of ['Consolidada', 'Risco de Esquecimento', 'Em Construção', 'Vulnerabilidade Crítica'])
+    assert.match(html, new RegExp(`${name}: [0-9]`));
+});

@@ -68,7 +68,7 @@ function renderExamIntelligenceReport(model: any = {}) {
       {
         insufficient: 'Evidência limitada',
         low: 'Baixa',
-        moderate: 'Moderada',
+        moderate: 'Média',
         high: 'Alta',
       } as Record<string, any>
     )[model.confidence] || 'Evidência limitada';
