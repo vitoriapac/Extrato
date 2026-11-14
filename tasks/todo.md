@@ -144,8 +144,8 @@ Verificação usada abaixo:
 
 ### Tarefa 11: Turnos num bloco, uma leitura
 **Aceite:**
-- [ ] Rendimento e foco por turno num bloco com dois selos
-- [ ] Uma frase de leitura (hoje são três)
+- [x] Rendimento e foco por turno num bloco com dois selos
+- [x] Uma frase de leitura (hoje são três)
 **Verificação:** Unit do renderer; manual
 **Dependências:** T8
 **Arquivos:** `src/ui/tabs/performance/ShiftEnergyCard.tsx`

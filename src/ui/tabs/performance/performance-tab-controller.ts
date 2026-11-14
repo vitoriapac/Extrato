@@ -484,7 +484,25 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       const shiftModel = buildShiftEnergyViewModel({
         sessions: state.studySessions || [],
       });
-      mountPreact(h(ShiftEnergyCard, { model: shiftModel }), shiftEnergyMount);
+      const focus = (pageModel?.model as any)?.focusByShift;
+      const periodFocus =
+        performanceViewState.section === 'consistency' && focus?.shifts
+          ? {
+              label: range.label,
+              byShift: Object.fromEntries(
+                (['morning', 'afternoon', 'night'] as const).map(key => [
+                  key,
+                  {
+                    rated: focus.shifts[key].focusRatedCount || 0,
+                    percent: focus.shifts[key].focusRatedCount
+                      ? focus.shifts[key].deepFocusPercent
+                      : null,
+                  },
+                ])
+              ),
+            }
+          : null;
+      mountPreact(h(ShiftEnergyCard, { model: shiftModel, periodFocus }), shiftEnergyMount);
     }
 
     const careerBenchmarkMount =

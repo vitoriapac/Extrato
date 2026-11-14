@@ -4,11 +4,18 @@ import { Icon } from '../../primitives/icon.js';
 import { Badge } from '../../primitives/badge.js';
 import type { ShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 
-export interface ShiftEnergyCardProps {
-  model: ShiftEnergyViewModel;
+/** Foco profundo por turno no período escolhido (outra janela que as horas e a precisão do cartão). */
+export interface PeriodFocusByShift {
+  label: string;
+  byShift: Record<string, { percent: number | null; rated: number }>;
 }
 
-export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
+export interface ShiftEnergyCardProps {
+  model: ShiftEnergyViewModel;
+  periodFocus?: PeriodFocusByShift | null;
+}
+
+export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardProps): JSX.Element {
   const {
     shifts,
     peakShift,
@@ -18,6 +25,11 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
     recommendations,
     summary,
   } = model;
+
+  // Uma frase de leitura: o alerta de queda, senão a primeira sugestão, senão o resumo.
+  const reading = isSampleSufficient
+    ? (fatigueAlert ?? recommendations[0] ?? summary)
+    : summary;
 
   const SHIFT_ICONS: Record<string, string> = {
     morning: 'sun',
@@ -35,14 +47,20 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
           <div>
             <div class="flex items-center gap-2">
               <h4 id="shiftEnergyTitle" class="text-base font-semibold text-content-primary m-0">
-                Rendimento por turno
+                Turno de estudo
               </h4>
               {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
-              <WindowBadge kind="history" title="Todo o histórico registrado" /> Todo o histórico
-              registrado, sem o filtro de período ({totalStudyHours.toLocaleString('pt-BR')}h no
-              total). O foco profundo por turno, logo abaixo, usa só o período escolhido.
+              <WindowBadge kind="history" title="Todo o histórico registrado" /> Horas e precisão, sem o
+              filtro de período ({totalStudyHours.toLocaleString('pt-BR')}h no total).
+              {periodFocus && (
+                <>
+                  {' '}
+                  <WindowBadge kind="period" title={periodFocus.label} /> Foco profundo, só no período
+                  escolhido.
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -96,8 +114,14 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
                 </div>
 
                 <div class="flex justify-between items-center text-content-secondary">
-                  <span>Foco profundo:</span>
-                  <span class="font-mono text-content-primary">{shift.deepFocusPercent}%</span>
+                  <span>Foco profundo{periodFocus ? ' (período)' : ''}:</span>
+                  <span class="font-mono text-content-primary">
+                    {periodFocus
+                      ? periodFocus.byShift[shift.shift]?.percent != null
+                        ? `${periodFocus.byShift[shift.shift].percent}%`
+                        : '—'
+                      : `${shift.deepFocusPercent}%`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -105,34 +129,12 @@ export function ShiftEnergyCard({ model }: ShiftEnergyCardProps): JSX.Element {
         })}
       </div>
 
-      {fatigueAlert && (
-        <div class="p-3 rounded-default bg-amber-bg border border-amber/30 text-amber text-xs mb-3 flex items-start gap-2">
-          <span class="inline-flex h-4 items-center shrink-0">
-            <Icon name="alert-triangle" size={16} />
-          </span>
-          <span>{fatigueAlert}</span>
-        </div>
-      )}
-
-      {recommendations.length > 0 && isSampleSufficient && (
-        <div class="p-3 rounded-default bg-surface-subtle text-xs text-content-secondary space-y-1">
-          {recommendations.map((rec, i) => (
-            <div key={i} class="flex items-start gap-2">
-              <span class="inline-flex h-4 items-center shrink-0 text-accent">
-                <Icon name="check" size={14} />
-              </span>
-              <span>{rec}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <footer class="mt-3 pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-content-secondary">
-        <span class="flex items-center gap-2">
-          <Icon name="info-circle" size={14} />
-          <span>{summary}</span>
+      <p class="shift-energy-card__reading mt-3 pt-2 border-t border-border-subtle flex items-start gap-2 text-xs text-content-secondary m-0">
+        <span class="inline-flex h-4 items-center shrink-0">
+          <Icon name={fatigueAlert && isSampleSufficient ? 'alert-triangle' : 'info-circle'} size={14} />
         </span>
-      </footer>
+        <span>{reading}</span>
+      </p>
     </article>
   );
 }

@@ -125,7 +125,7 @@ test('ShiftEnergyCard Preact Component — renderiza turnos e pico cognitivo', (
   });
 
   const html = render(h(ShiftEnergyCard, { model }));
-  assert.match(html, /Rendimento por turno/);
+  assert.match(html, /Turno de estudo/);
   assert.match(html, /Manhã/);
   assert.match(html, /Tarde/);
   assert.match(html, /Noite/);

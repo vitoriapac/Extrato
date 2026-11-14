@@ -3,34 +3,11 @@ import { pluralize } from '../../core/utils.js';
 import { renderPerformanceDetails } from './performance-story.js';
 import { renderAdherenceAnalysis } from '../renderers/adherence-renderer.js';
 import {
-  renderBulletBar,
   renderStackedColumnChart,
   renderDonutChart,
 } from '../primitives/charts/charts.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
-
-// Share of rated sessions with deep focus per shift; a shift without rated sessions shows "sem sessões", never 0%.
-export function renderFocusByShift(
-  analysis: Record<string, any> | null | undefined,
-  windowLabel = ''
-) {
-  if (!analysis?.shifts) return '';
-  const rows = (['morning', 'afternoon', 'night'] as const)
-    .map(key => {
-      const shift = analysis.shifts[key],
-        rated = shift.focusRatedCount || 0;
-      const label = String(shift.shiftLabel || key).split(' ')[0];
-      return `<li><span class="focus-shift__name">${label}</span>${renderBulletBar({ value: rated ? shift.deepFocusPercent : null, label: `Foco profundo de ${label.toLowerCase()}`, className: 'focus-shift__bar' })}<small>${rated ? pluralize(rated, 'sessão avaliada', 'sessões avaliadas') : 'sem sessões avaliadas'}</small></li>`;
-    })
-    .join('');
-  const note = analysis.isSampleSufficient
-    ? analysis.peakShiftLabel
-      ? `${analysis.shifts[analysis.peakShift]?.averageAccuracy != null ? 'Maior acerto em questões' : 'Mais foco profundo'}: ${String(analysis.peakShiftLabel).toLowerCase()}.`
-      : ''
-    : `Ainda há poucas sessões avaliadas; a partir de 5 o diagnóstico por turno fica disponível.`;
-  return `<section class="performance-block focus-shift" aria-label="Foco profundo por turno"><h4>Foco profundo por turno ${renderWindowBadge('period', windowLabel)}</h4><p class="analytics-note">Percentual das sessões avaliadas no encerramento com foco profundo${windowLabel ? `, no período escolhido (${windowLabel})` : ''}. ${note}</p><ul class="focus-shift__list">${rows}</ul></section>`;
-}
 
 export function renderPerformanceConsistency(
   model: Record<string, any>,
@@ -124,5 +101,5 @@ export function renderPerformanceConsistency(
     model.plannedMinutes > 0 && model.adherence != null
       ? `<section class="performance-synthesis" id="bloco-sintese" aria-label="Síntese da consistência"><p class="performance-synthesis__lead">${renderWindowBadge('period', range?.label || '')} ${escapeHtml(range?.label || 'No período')}: ${escapeHtml(formatStudyMinutes(model.studiedMinutes))} estudados de ${escapeHtml(formatStudyMinutes(model.plannedMinutes))} planejados (${formatDecimal(model.adherence)}% do tempo planejado), em ${pluralize(model.activeDays, 'dia', 'dias')} com estudo.</p><p class="analytics-note m-0">É tempo total, sem exigir vínculo com o plano. Aderência ao plano, execução prioritária e crédito semanal usam outras bases e ficam em "Como o plano foi cumprido", logo abaixo, cada uma com a sua janela.</p>${model.plannedMinutes > model.studiedMinutes ? `<p class="analytics-note m-0">Faltam ${escapeHtml(formatStudyMinutes(model.plannedMinutes - model.studiedMinutes))} para igualar o planejado neste período.</p><div class="performance-reading__actions"><button type="button" class="btn ghost small" data-performance-adjust-plan>Ajustar plano</button></div>` : ''}</section>`
       : '';
-  return `${synthesis}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml) : ''}${renderPerformanceDetails('Como o plano foi cumprido: aderência, execução prioritária e crédito semanal', renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml }), 'performance-details adherence-fold')}<div class="performance-shift mt-4" id="bloco-turno"><h3>Turno de estudo</h3><p class="analytics-note">Duas leituras do mesmo assunto: o rendimento em todo o histórico e o foco profundo no período escolhido. Cada número traz a sua janela.</p><div id="shiftEnergyMount" class="mt-3">${renderFocusByShift(model.focusByShift, range?.label)}</div></div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
+  return `${synthesis}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml) : ''}${renderPerformanceDetails('Como o plano foi cumprido: aderência, execução prioritária e crédito semanal', renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml }), 'performance-details adherence-fold')}<div class="performance-shift mt-4" id="bloco-turno"><div id="shiftEnergyMount"></div></div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
 }
