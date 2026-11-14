@@ -1,10 +1,10 @@
 import { formatDecimal } from '../../core/format-number.js';
+import { chartSize } from '../primitives/charts/chart-size.js';
 
 export function renderProgressChart({ data, formatDate }: any) {
   if (data.length < 2)
     return `<div class="progress-chart-empty">Continue estudando — o gráfico aparece a partir do segundo dia com dados.</div>`;
-  const W = 640,
-    H = 160,
+  const { width: W, height: H } = chartSize(640, 160),
     padL = 30,
     padR = 12,
     padT = 12,
@@ -45,8 +45,7 @@ export function renderProgressChart({ data, formatDate }: any) {
 export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatDuration }: any) {
   if (data.reduce((sum: any, item: any) => sum + item.seconds, 0) <= 0)
     return `<div class="progress-chart-empty">Registre sessões para visualizar a evolução das horas.</div>`;
-  const W = 640,
-    H = 180,
+  const { width: W, height: H } = chartSize(640, 180),
     padL = 36,
     padR = 12,
     padT = 16,

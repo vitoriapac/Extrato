@@ -1,4 +1,5 @@
 import { formatStudyMinutes } from '../format-study-time.js';
+import { chartSize } from '../primitives/charts/chart-size.js';
 
 export interface WeeklyPlanRecord {
   start: string;
@@ -21,8 +22,7 @@ export function renderPlannedVsActualChart(
   const validWeeks = weekly.filter(w => w.plannedMinutes > 0 || w.studiedMinutes > 0);
   if (!validWeeks.length) return '';
 
-  const width = 540;
-  const height = 150;
+  const { width, height } = chartSize(540, 150);
   const left = 44;
   const right = 16;
   const top = 22;

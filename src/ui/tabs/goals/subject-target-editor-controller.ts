@@ -1,6 +1,7 @@
 import { buildPerformanceSubjectComparison } from '../../../application/performance/build-performance-subject-comparison.js';
 import { resolvePerformanceRange } from '../../../application/performance/performance-view-state.js';
 import { updateSubjectAccuracyTargets } from '../../../application/goals/update-subject-accuracy-targets.js';
+import { splitQuestionGoal } from '../../../application/goals/split-question-goal.js';
 import { renderSubjectTargetEditor as renderSubjectTargetEditorView } from '../../renderers/subject-target-editor-renderer.js';
 import { runUndoable } from '../../undoable.js';
 
@@ -29,6 +30,9 @@ export interface SubjectTargetEditorContext {
 export function createSubjectTargetEditorController(ctx: SubjectTargetEditorContext) {
   const draftAccuracy = new Map<string, string>();
   const draftWeeklyGoals = new Map<string, string>();
+  // Prévia da repartição da meta global: nada é gravado antes de "Confirmar".
+  let splitPreview:
+    { id: string; subjectId: string; name: string; before: number; after: number }[] | null = null;
 
   function renderSubjectTargetEditor() {
     const container = ctx.document.getElementById('subjectTargetEditor');
@@ -70,11 +74,65 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     container.innerHTML = renderSubjectTargetEditorView({
       rows: comparison.rows,
       globalTarget: state.metas?.metaAprovacao,
-      globalWeeklyQuestions: state.metas?.questoesPorSemana,
+      globalWeeklyQuestions: state.metas?.questoesSemanal,
       blueprint: state.examBlueprint,
       weeklyGoalsBySubject,
       draftAccuracy,
       draftWeeklyGoals,
+      splitPreview,
+    });
+  }
+
+  function previewQuestionGoalSplit() {
+    const state = ctx.getState();
+    if (draftAccuracy.size || draftWeeklyGoals.size) {
+      ctx.showToast('Salve ou descarte as alterações pendentes antes de repartir a meta.');
+      return;
+    }
+    const scoped = new Map(ctx.examScopedSubjects().map((item: any) => [item.id, item.name]));
+    const goals = (state.metasPorDisciplina || [])
+      .map((md: any) => ({
+        id: md.id as string,
+        subjectId: (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) as string,
+        meta: Number(md.meta) || 0,
+      }))
+      .filter((goal: any) => scoped.has(goal.subjectId) && goal.meta > 0);
+    const shares = splitQuestionGoal(goals, Number(state.metas?.questoesSemanal));
+    if (!shares) {
+      ctx.showToast(
+        'Não foi possível repartir: a meta global é menor que o número de metas por disciplina.'
+      );
+      return;
+    }
+    splitPreview = goals.map((goal: any) => ({
+      id: goal.id,
+      subjectId: goal.subjectId,
+      name: String(scoped.get(goal.subjectId)),
+      before: goal.meta,
+      after: shares.get(goal.id) as number,
+    }));
+    renderSubjectTargetEditor();
+  }
+
+  function cancelQuestionGoalSplit() {
+    splitPreview = null;
+    renderSubjectTargetEditor();
+  }
+
+  function confirmQuestionGoalSplit() {
+    const preview = splitPreview;
+    splitPreview = null;
+    if (!preview) return;
+    const state = ctx.getState();
+    runUndoable('Meta de questões repartida entre as disciplinas.', () => {
+      for (const item of preview) {
+        if (ctx.subjectGoalService?.update) {
+          ctx.subjectGoalService.update(item.id, { meta: item.after });
+        } else {
+          const existing = (state.metasPorDisciplina || []).find((md: any) => md.id === item.id);
+          if (existing) existing.meta = item.after;
+        }
+      }
     });
   }
 
@@ -309,6 +367,21 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
         return;
       }
 
+      if (target.closest('[data-questions-split-preview]')) {
+        previewQuestionGoalSplit();
+        return;
+      }
+
+      if (target.closest('[data-questions-split-confirm]')) {
+        confirmQuestionGoalSplit();
+        return;
+      }
+
+      if (target.closest('[data-questions-split-cancel]')) {
+        cancelQuestionGoalSplit();
+        return;
+      }
+
       if (target.closest('[data-targets-save-all]')) {
         commitAllPendingDrafts();
         return;
@@ -353,6 +426,9 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     saveSubjectAccuracyTargets,
     saveWeeklyQuestionGoal,
     removeWeeklyQuestionGoal,
+    previewQuestionGoalSplit,
+    confirmQuestionGoalSplit,
+    cancelQuestionGoalSplit,
     bindEvents,
   };
 }

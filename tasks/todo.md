@@ -196,7 +196,7 @@ Verificação usada abaixo:
 ### Tarefa 16: Gráficos existentes com tamanho responsivo (T6.1)
 **Aceite:**
 - [x] Largura 100% do cartão; nenhum gráfico mais largo que o cartão em 1440, 1024, 375 e 320 (E2E `chart-sizes`)
-- [ ] Proporções da seção 14.3: no celular a altura segue a geometria do gráfico (70 a 126 px em 320/375, abaixo dos 180 px da regra); precisa de geometria que dependa da largura (Tarefa 16b)
+- [x] Proporções da seção 14.3: no celular a altura tem mínimo de 180 px (Tarefa 16b); no desktop vale a proporção de projeto de cada gráfico
 - [x] Série com menos de 3 pontos vira texto (Evolução dos simulados)
 - [x] Texto dos eixos em 12,5 px em qualquer largura (a escala vem de `--fit`)
 **Verificação:** script de medição no navegador (como na análise); axe nos E2E
@@ -206,9 +206,9 @@ Verificação usada abaixo:
 
 ### Tarefa 16b: Geometria dos gráficos que dependa da largura
 **Aceite:**
-- [ ] Cada gráfico recebe a largura do cartão ao renderizar e calcula a altura pela proporção da seção 14.3 (3:1 a 4:1 no desktop; mínimo de 180 px no celular)
-- [ ] Abaixo de 600 px, menos ticks e rótulo só no último ponto, sem sobreposição
-- [ ] Recalcula ao cruzar o ponto de quebra (resize)
+- [x] Cada gráfico recebe a largura do cartão ao renderizar e calcula a altura pela proporção da seção 14.3 (3:1 a 4:1 no desktop; mínimo de 180 px no celular)
+- [x] Abaixo de 600 px, menos ticks e rótulo só no último ponto, sem sobreposição
+- [x] Recalcula ao cruzar o ponto de quebra (resize)
 **Verificação:** `chart-sizes` com altura mínima; capturas em 320 e 375
 **Dependências:** Tarefa 16
 **Arquivos:** `geometry.ts`, `question-evolution-renderer.ts`, `planned-actual-chart.ts`, `study-charts-renderer.ts`, `readiness-history-renderer.ts`, `simulations-renderer.ts`, `achievement-projection-renderer.ts`, `performance-analytics-controller.ts`

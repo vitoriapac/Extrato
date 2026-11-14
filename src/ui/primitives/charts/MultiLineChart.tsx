@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { multiLineGeometry, MultiLineSeriesInput } from './geometry.js';
 import { formatDecimal } from '../../../core/format-number.js';
+import { chartSize } from './chart-size.js';
 
 export interface MultiLineChartProps {
   series: MultiLineSeriesInput[];
@@ -14,8 +15,8 @@ export interface MultiLineChartProps {
 export function MultiLineChart({
   series,
   periodLabels,
-  width = 620,
-  height = 240,
+  width = chartSize(620, 240).width,
+  height = chartSize(620, 240).height,
   label = 'Evolução da taxa de acerto por disciplina',
   className = '',
 }: MultiLineChartProps): JSX.Element {

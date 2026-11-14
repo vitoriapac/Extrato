@@ -18,6 +18,7 @@ import { createPerformanceController } from '../../controllers/performance-contr
 import { createPerformanceAnalyticsController } from '../../controllers/performance-analytics-controller.js';
 import { renderProgressChart as renderProgressChartView } from '../../renderers/study-charts-renderer.js';
 import { ShiftEnergyCard } from './ShiftEnergyCard.js';
+import { NARROW_CHART_BREAKPOINT } from '../../primitives/charts/chart-size.js';
 import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
@@ -88,6 +89,13 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     'consistency',
   ];
   let performanceViewState = createPerformanceViewState();
+  // Cruzar o ponto de quebra (celular × desktop) muda a geometria dos gráficos: desenha de novo.
+  doc?.defaultView
+    ?.matchMedia?.(`(max-width: ${NARROW_CHART_BREAKPOINT - 1}px)`)
+    ?.addEventListener?.('change', () => {
+      if ((doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho')
+        renderPerformance();
+    });
   const hashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
   // Voltar e URLs coladas mudam o hash sem recarregar: a seção acompanha.
   doc?.defaultView?.addEventListener?.('hashchange', () => {

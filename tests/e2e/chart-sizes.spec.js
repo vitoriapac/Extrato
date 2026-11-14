@@ -29,6 +29,8 @@ test('gráficos de Desempenho ficam dentro do cartão, sem rolagem, com texto le
           const label = svg.getAttribute('aria-label') || svg.parentElement.className.toString();
           if (box.right > limit.right + 1) found.push(`${label}: passa do cartão`);
           if (!svg.classList.contains('chart-fit')) found.push(`${label}: sem ajuste`);
+          if (window.innerWidth < 600 && box.height < 180)
+            found.push(`${label}: altura de ${Math.round(box.height)} px no celular`);
           const scale = box.width / view.width;
           const fonts = [...svg.querySelectorAll('text')].map(
             t => parseFloat(getComputedStyle(t).fontSize) * scale

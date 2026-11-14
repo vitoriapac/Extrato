@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { simulationTrendGeometry } from './geometry.js';
 import type { SimulationTrendVisualModel } from '../../../domain/practice/practice-visual-models.js';
+import { chartSize } from './chart-size.js';
 
 export interface SimulationTrendChartProps {
   visual: SimulationTrendVisualModel;
@@ -35,7 +36,7 @@ export function SimulationTrendChart({
   // Escala ajustada aos dados (0–100 achatava notas entre 77% e 84%); no máximo 80 de piso.
   const lowest = Math.min(...simulations.map(sim => sim.score), targetScore);
   const yMin = Math.min(80, Math.max(0, Math.floor((lowest - 10) / 10) * 10));
-  const geom = simulationTrendGeometry(simulations, targetScore, { width: 560, height: 160, yMin });
+  const geom = simulationTrendGeometry(simulations, targetScore, { ...chartSize(560, 160), yMin });
 
   return (
     <div

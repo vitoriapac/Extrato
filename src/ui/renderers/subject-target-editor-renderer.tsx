@@ -23,6 +23,7 @@ export function renderSubjectTargetEditor({
   weeklyGoalsBySubject = new Map(),
   draftAccuracy = new Map(),
   draftWeeklyGoals = new Map(),
+  splitPreview = null,
 }: any) {
   const configs = new Map<string, any>(
     (blueprint.subjects || []).map((item: any) => [item.subjectId, item])
@@ -47,12 +48,49 @@ export function renderSubjectTargetEditor({
 
   const globalQuestions = Number(globalWeeklyQuestions) || 0;
   const hasDirty = accDraftMap.size > 0 || wkDraftMap.size > 0;
+  const splitDiff = sumWeekly - globalQuestions;
+  const needsSplit = globalQuestions > 0 && sumWeekly > 0 && splitDiff !== 0 && !hasDirty;
 
   return render(
     <div class="subject-target-editor">
       <p class="analytics-note">
         Acerto atual e tendência usam os últimos 30 dias, com pelo menos 10 questões por período.
       </p>
+      {splitPreview ? (
+        <section class="subject-target-split" aria-labelledby="questionSplitTitle">
+          <h4 id="questionSplitTitle">Prévia: repartir {globalQuestions} questões por semana</h4>
+          <ul>
+            {splitPreview.map((item: any) => (
+              <li key={item.id}>
+                <span class="break-words">{item.name}</span>{' '}
+                <span class="metadata-text">
+                  {item.before} → {item.after}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p class="metadata-text">
+            Proporcional às metas atuais. Nada é gravado até você confirmar; depois dá para
+            desfazer.
+          </p>
+          <div class="action-group">
+            <button type="button" class="btn small" data-questions-split-confirm>
+              Confirmar repartição
+            </button>
+            <button type="button" class="btn ghost small" data-questions-split-cancel>
+              Cancelar
+            </button>
+          </div>
+        </section>
+      ) : needsSplit ? (
+        <p class="subject-target-split" role="status">
+          As metas por disciplina somam {sumWeekly} questões por semana; a meta global é{' '}
+          {globalQuestions} ({splitDiff > 0 ? 'passam' : 'faltam'} {Math.abs(splitDiff)}).{' '}
+          <button type="button" class="btn ghost small" data-questions-split-preview>
+            Repartir a meta global entre as disciplinas
+          </button>
+        </p>
+      ) : null}
       <details>
         <summary>Editar metas de acerto em lote</summary>
         <div class="subject-target-bulk">
@@ -101,11 +139,7 @@ export function renderSubjectTargetEditor({
             {globalQuestions > 0
               ? `Meta global: ${globalTarget}% de acerto · ${globalQuestions} questões/semana.`
               : `Meta global: ${globalTarget}% de acerto, sem meta global de questões: vale a soma das disciplinas.`}{' '}
-            Soma das metas por disciplina: {sumWeekly} questões/semana
-            {globalQuestions > 0 && sumWeekly !== globalQuestions
-              ? `, diferente da meta global (${globalQuestions})`
-              : ''}
-            .
+            Soma das metas por disciplina: {sumWeekly} questões/semana.
           </caption>
           <thead>
             <tr>

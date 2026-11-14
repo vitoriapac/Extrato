@@ -1,4 +1,5 @@
 import { formatDecimal } from '../../core/format-number.js';
+import { chartSize } from '../primitives/charts/chart-size.js';
 import { renderChartFrame } from '../chart-components.js';
 import { renderIconSvg } from '../primitives/icon.js';
 
@@ -86,8 +87,7 @@ export function renderSimulationTrendChart({
   escapeHtml: Esc;
   targetScore?: number | string | null;
 }) {
-  const width = 640,
-    height = 160,
+  const { width, height } = chartSize(640, 160),
     padLeft = 30,
     padRight = 12,
     padTop = 12,

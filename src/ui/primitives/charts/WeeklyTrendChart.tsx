@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { weeklyTrendGeometry } from './geometry.js';
 import type { SubjectWeeklyTrendVisualModel } from '../../../domain/practice/practice-visual-models.js';
+import { chartSize } from './chart-size.js';
 
 export interface WeeklyTrendChartProps {
   visual: SubjectWeeklyTrendVisualModel;
@@ -24,7 +25,7 @@ export function WeeklyTrendChart({
     );
   }
 
-  const geom = weeklyTrendGeometry(points, maxResolved, { width: 520, height: 160 });
+  const geom = weeklyTrendGeometry(points, maxResolved, chartSize(520, 160));
 
   let trendIcon = 'minus';
   let trendBadgeClass = 'text-content-secondary bg-surface-sunken';

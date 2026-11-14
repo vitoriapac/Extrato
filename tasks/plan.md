@@ -59,7 +59,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 14: Diagnóstico sem "Situação do preparo" nem sugestão duplicada
 - [x] Tarefa 15: Faixa projetada só em Simulados
 - [x] Tarefa 16: Gráficos existentes com tamanho responsivo (largura, texto e série curta; altura no celular fica na 16b)
-- [ ] Tarefa 16b: Geometria dos gráficos que dependa da largura (altura mínima de 180 px no celular, menos ticks)
+- [x] Tarefa 16b: Geometria dos gráficos que dependa da largura (altura mínima de 180 px no celular, menos ticks)
 
 ### Checkpoint 4: Repetições
 - [ ] Visão geral ≤ 1.600 px no desktop; nenhum gráfico mais largo que o cartão em 375 e 320

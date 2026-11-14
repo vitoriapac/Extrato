@@ -1,4 +1,5 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { isNarrowViewport } from '../primitives/charts/chart-size.js';
 import { subjectColorOf } from '../../domain/subjects/subject-color.js';
 /**
  * Controller e renderizador do Radar Multidimensional de Disciplinas e Análise de Desempenho.
@@ -34,14 +35,15 @@ export interface RadarSvgOptions {
 export function renderRadarSvg({
   selected,
   axisMeta = RADAR_AXIS_META,
-  width = 560,
-  height = 430,
-  maxR = 125,
+  // No celular o radar encolhe e ganha folga lateral para os rótulos (o texto mantém o tamanho em px).
+  width = isNarrowViewport() ? 440 : 560,
+  height = isNarrowViewport() ? 320 : 430,
+  maxR = isNarrowViewport() ? 75 : 125,
   escapeHtml = defaultEscapeHtml,
 }: RadarSvgOptions): string {
   const N = axisMeta.length;
   const cx = width / 2;
-  const cy = 190;
+  const cy = isNarrowViewport() ? 160 : 190;
   const angleFor = (i: number) => (Math.PI * 2 * i) / N - Math.PI / 2;
 
   const gridRings = [0.25, 0.5, 0.75, 1]

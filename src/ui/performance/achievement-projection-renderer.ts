@@ -1,4 +1,5 @@
 import { formatDecimal } from '../../core/format-number.js';
+import { chartSize } from '../primitives/charts/chart-size.js';
 import { formatDateBR } from '../../core/format-date.js';
 import { pluralize } from '../../core/utils.js';
 import { renderDecisionExplanation } from '../components/decision-explanation.js';
@@ -62,8 +63,7 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
   const points = (model.trajectory.observations || []).slice(-12);
   if (points.length < 2)
     return '<p class="analytics-note">A trajetória visual aparece após simulados comparáveis em datas diferentes.</p>';
-  const width = 640,
-    height = 190,
+  const { width, height } = chartSize(640, 190),
     left = 42,
     right = 18,
     top = 16,

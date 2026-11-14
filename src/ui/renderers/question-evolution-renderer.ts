@@ -1,4 +1,5 @@
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
+import { chartSize } from '../primitives/charts/chart-size.js';
 type FormatDate = (date: string) => string;
 const label = (bucket: Record<string, any>, monthly: boolean, formatDate: FormatDate) =>
   monthly
@@ -14,8 +15,9 @@ export function renderQuestionEvolution(
       title: 'Precisão ao longo do tempo',
       emptyMessage: 'Registre questões para acompanhar a evolução do desempenho.',
     });
-  const width = Math.max(420, model.buckets.length * 48),
-    height = 150,
+  const designed = chartSize(Math.max(420, model.buckets.length * 48), 150),
+    width = designed.width,
+    height = designed.height,
     left = 24,
     right = 16,
     top = 12,

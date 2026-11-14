@@ -1,4 +1,5 @@
 import { pluralize } from '../../core/utils.js';
+import { chartSize } from '../primitives/charts/chart-size.js';
 import { formatDelta } from '../../core/format-number.js';
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import {
@@ -50,8 +51,7 @@ export function renderReadinessHistory(
     ? `<details class="readiness-history-explanation"><summary>Fatores da variação entre os dois últimos fechamentos</summary>${factors(weekly)}</details>`
     : '';
   const rows = model.history.slice(-12),
-    width = 640,
-    height = 152,
+    { width, height } = chartSize(640, 152),
     left = 32,
     right = 16,
     top = 12,

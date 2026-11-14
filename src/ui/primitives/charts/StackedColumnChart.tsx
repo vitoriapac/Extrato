@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { stackedColumnsGeometry, StackedColumnDayInput } from './geometry.js';
 import { formatDecimal } from '../../../core/format-number.js';
+import { chartSize } from './chart-size.js';
 
 export interface StackedColumnChartProps {
   days: StackedColumnDayInput[];
@@ -18,8 +19,8 @@ const formatHours = (seconds: number) => {
 
 export function StackedColumnChart({
   days,
-  width = 620,
-  height = 200,
+  width = chartSize(620, 200).width,
+  height = chartSize(620, 200).height,
   label = 'Linha do tempo de estudos diários por disciplina',
   minYMax = 3600,
   className = '',
@@ -27,8 +28,8 @@ export function StackedColumnChart({
   const geom = stackedColumnsGeometry(days, { width, height, minYMax });
   const maxH = geom.maxSeconds / 3600;
   const gridTicks = [0, maxH / 2, maxH];
-  // No máximo ~6 datas no eixo X: com 30 colunas os rótulos se sobrepunham.
-  const labelStep = Math.max(1, Math.ceil(geom.columns.length / 6));
+  // Uma data a cada ~70 unidades do viewBox: com 30 colunas (ou numa tela estreita) os rótulos se sobrepunham.
+  const labelStep = Math.max(1, Math.ceil(geom.columns.length / Math.max(2, Math.floor(width / 70))));
 
   return (
     <div
@@ -101,7 +102,8 @@ export function StackedColumnChart({
               )}
 
               {/* Rótulo da data no eixo X (espaçado) */}
-              {(colIndex % labelStep === 0 || colIndex === geom.columns.length - 1) && (
+              {((colIndex % labelStep === 0 && geom.columns.length - 1 - colIndex >= labelStep / 2) ||
+                colIndex === geom.columns.length - 1) && (
                 <text
                   x={col.cx}
                   y={geom.height - 8}
