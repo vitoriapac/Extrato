@@ -54,6 +54,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] C3.7 P2: alvos de toque do Ritmo (mapa de calor, 3 botões de 18 px)
 - [x] Nova crítica (14/11, 2ª rodada): 23/40, H4 = 1, H6 = 2; varredura final de escala feita. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 depois da Fase 4
 - [x] Nova crítica (14/11, 3ª rodada, depois da Fase 4): 23/40, H4 = 1, H6 = 2. Passo dado: uma fila de estudo só (pontuação de prioridade do Diagnóstico) na Leitura e nos riscos da projeção; Radar e Mapa de lacunas rotulados como ordenados por gravidade. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 ao fim da Fase 5
+- [x] Críticas 4 a 9 (14/11, depois das Fases 4 e 5): 27 → 27 → 27 → 28 → 28/40. H6 = 3 (fechou). H4 = 2 e H8 = 2. Checkpoint 3 FECHADO COMO PARCIAL por decisão do usuário. Pendências: nomes da área (Questões & Simulados / Provas / rota `#desempenho/questions`; colisão Visão geral e Disciplinas com a navegação global), linha-chave dos universos 296 · 194 · 305, formatos (69,3% × 69%, p.p. × "ponto", faixa com "a" × travessão, "34h"), Provas com 10,8 mil px no mobile, alvos de 24 px do heatmap. Nova crítica no checkpoint final (meta ≥ 32/40)
 - [x] C3.8 (parcial, 14/11): contrato de grandezas (feito: cobertura, retenção e saúde em /100; "Ritmo em construção" no lugar de "Fase de Construção"; "base histórica" para a evidência das provas da banca; glossário de evidência alinhado a Alta/Média/Baixa; nota quando Aderência = Volume. Não feito: um formatador único no código e uma função única de evidência por tópico); a divergência do item 1 entre Leitura e Diagnóstico está resolvida (empate de pontuação desempatado pela ordem dos cards)
 
 ### Fase 4: Cortar repetições
@@ -75,7 +76,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 22: Ritmo com dois números, extrato de sessões e tempo por disciplina
 
 ### Checkpoint 5: Navegação
-- [ ] 5 abas sem segundo nível; rotas antigas redirecionam; E2E atualizados
+- [x] 5 abas sem segundo nível; rotas antigas redirecionam (`#desempenho/questions|simulations|exam` → Provas; rota desconhecida mantém a aba atual); E2E atualizados
 
 ### Fase 6: Referência de ritmo e notas de corte
 - [ ] Tarefa 23: Textos da referência sem afirmação sem fonte

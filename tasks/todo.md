@@ -161,7 +161,7 @@ Verificação usada abaixo:
 **Tamanho:** S
 
 ### Checkpoint 3
-- [ ] `/impeccable critique` da aba; H4 e H6 ≥ 3
+- [x] `/impeccable critique` da aba (rodada 9, 14/11): 28/40, H6 = 3, H4 = 2, H8 = 2. Fechado como parcial por decisão do usuário; pendências em `tasks/plan.md`
 
 ---
 
@@ -275,7 +275,7 @@ Verificação usada abaixo:
 **Tamanho:** S
 
 ### Checkpoint 5
-- [ ] 5 abas sem segundo nível; rotas antigas redirecionam; E2E e capturas atualizados
+- [x] 5 abas sem segundo nível; rotas antigas redirecionam; E2E e capturas atualizados
 - [ ] Revisão humana
 
 ---
