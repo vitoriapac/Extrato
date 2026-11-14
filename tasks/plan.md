@@ -54,7 +54,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] C3.7 P2: alvos de toque do Ritmo (mapa de calor, 3 botões de 18 px)
 - [x] Nova crítica (14/11, 2ª rodada): 23/40, H4 = 1, H6 = 2; varredura final de escala feita. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 depois da Fase 4
 - [x] Nova crítica (14/11, 3ª rodada, depois da Fase 4): 23/40, H4 = 1, H6 = 2. Passo dado: uma fila de estudo só (pontuação de prioridade do Diagnóstico) na Leitura e nos riscos da projeção; Radar e Mapa de lacunas rotulados como ordenados por gravidade. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 ao fim da Fase 5
-- [ ] C3.8: contrato de grandezas (um formatador, evidência com os 3 níveis do glossário, uma função por tópico, uma fase só, Aderência × Volume); a divergência do item 1 entre Leitura e Diagnóstico está resolvida (empate de pontuação desempatado pela ordem dos cards)
+- [x] C3.8 (parcial, 14/11): contrato de grandezas (feito: cobertura, retenção e saúde em /100; "Ritmo em construção" no lugar de "Fase de Construção"; "base histórica" para a evidência das provas da banca; glossário de evidência alinhado a Alta/Média/Baixa; nota quando Aderência = Volume. Não feito: um formatador único no código e uma função única de evidência por tópico); a divergência do item 1 entre Leitura e Diagnóstico está resolvida (empate de pontuação desempatado pela ordem dos cards)
 
 ### Fase 4: Cortar repetições
 - [x] Tarefa 13: Resumo da semana na Visão geral

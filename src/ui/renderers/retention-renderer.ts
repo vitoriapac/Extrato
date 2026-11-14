@@ -32,14 +32,14 @@ export function renderTopicRetentionDashboard({
       const evidence = presentEvidence({
           state: row.r.available ? EVIDENCE_STATES.ESTIMATED : EVIDENCE_STATES.NO_DATA,
           value: row.r.value,
-          unit: '%',
+          unit: '/100',
           message:
             'Registre questões ou revisões vinculadas para estimar retenção. Saúde da revisão é um indicador separado.',
           confidence: row.r.confidence,
         }),
         score = evidence.state === EVIDENCE_STATES.NO_DATA ? null : row.r.value,
         classification = score >= 70 ? 'ok' : score >= 50 ? 'warn' : '';
-      return `<div class="retention-row" title="${escapeAttr(row.r.detail || row.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.subjectName)} · retenção ${evidence.text} · saúde ${row.h.value === null ? '—' : row.h.value + '%'}</span></div><div class="retention-track"><div class="retention-fill ${classification}" style="width:${score ?? 0}%" aria-hidden="true"></div></div><div class="retention-value">${score == null ? evidence.label : evidence.text}</div>${score == null ? '<p>' + escapeHtml(evidence.message) + '</p>' : ''}</div>`;
+      return `<div class="retention-row" title="${escapeAttr(row.r.detail || row.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.subjectName)} · retenção ${evidence.text} · saúde ${row.h.value === null ? '—' : row.h.value + '/100'}</span></div><div class="retention-track"><div class="retention-fill ${classification}" style="width:${score ?? 0}%" aria-hidden="true"></div></div><div class="retention-value">${score == null ? evidence.label : evidence.text}</div>${score == null ? '<p>' + escapeHtml(evidence.message) + '</p>' : ''}</div>`;
     })
     .join('');
   const footer = renderFooter({

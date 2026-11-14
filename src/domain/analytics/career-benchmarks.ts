@@ -386,7 +386,7 @@ export function calculateCareerBenchmarkComparison(
     hoursCommentary = 'Volume semanal dentro da faixa de referência.';
   } else if (hours >= career.weeklyHours.minimum) {
     hoursStatus = 'building';
-    hoursStatusLabel = 'Fase de Construção';
+    hoursStatusLabel = 'Ritmo em construção';
     hoursCommentary = 'Entre o mínimo e a faixa competitiva de referência.';
   }
 
@@ -421,7 +421,7 @@ export function calculateCareerBenchmarkComparison(
     qCommentary = 'Volume dentro da faixa competitiva de referência.';
   } else if (questions >= career.weeklyQuestions.minimum) {
     qStatus = 'building';
-    qStatusLabel = 'Fase de Construção';
+    qStatusLabel = 'Ritmo em construção';
     qCommentary = 'Entre o mínimo e a faixa competitiva de referência.';
   }
 
@@ -457,7 +457,7 @@ export function calculateCareerBenchmarkComparison(
       accCommentary = 'Precisão sólida. Excelente aproveitamento nos temas centrais do edital.';
     } else if (accuracy >= career.targetAccuracy.construction) {
       accStatus = 'building';
-      accStatusLabel = 'Fase de Construção';
+      accStatusLabel = 'Ritmo em construção';
       accCommentary = 'Taxa de acertos saudável para quem está construindo a base teórica.';
     }
   }
@@ -517,7 +517,7 @@ export function calculateCareerBenchmarkComparison(
       'Horas, questões e precisão estão dentro das faixas de referência desta carreira.';
   } else if (avgScore >= 0.8) {
     overallStatus = 'building';
-    overallLabel = 'Fase de construção de base';
+    overallLabel = 'Ritmo em construção';
     guidanceNote =
       'Parte dos indicadores já está nas faixas de referência; os demais ficam entre o mínimo e a faixa competitiva.';
   }

@@ -9,7 +9,7 @@ const metrics: Record<string, any> = {
   accuracy: ['Precisão', '%'],
   target: ['Meta', '%'],
   impact: ['Impacto', '/100'],
-  coverage: ['Cobertura', '%'],
+  coverage: ['Cobertura', '/100'],
   questionCount: ['Questões', ''],
   urgency: ['Urgência da revisão', '/100'],
   presencePercent: ['Incidência', '%'],

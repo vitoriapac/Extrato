@@ -111,7 +111,7 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
           <div class="l">Evidência do índice · {Math.round(confidence.value * 100)}%</div>
         </div>
         <div class="kpi-cell">
-          <div class="n">{m.retencao.available ? `${Math.round(m.retencao.raw)}%` : '—'}</div>
+          <div class="n">{m.retencao.available ? `${Math.round(m.retencao.raw)}/100` : '—'}</div>
           <div class="l">Retenção média</div>
         </div>
       </div>

@@ -32,7 +32,7 @@ const glossaryItems: Array<[string, string]> = [
   ['Domínio', 'Desempenho pessoal medido em um tópico ou disciplina, de 0 a 100.'],
   ['Retenção', 'Estimativa de quanto o conteúdo se mantém na memória ao longo das revisões, de 0 a 100.'],
   ['Cobertura', 'Quanto do edital já foi estudado, de 0 a 100 (tópicos concluídos sobre o total).'],
-  ['Evidência', 'Quanto confiar em um número: suficiente, pequena ou insuficiente, conforme a quantidade de registros.'],
+  ['Evidência', 'Quanto confiar em um número do seu estudo: Alta, Média ou Baixa, conforme a quantidade e a variedade de registros. "Base histórica" é a evidência das provas da banca, e "Confiança" é só da faixa projetada.'],
   ['Confiança', 'Só da faixa projetada: o quanto a faixa de nota se apoia em simulados comparáveis.'],
   ['Execução prioritária', 'Parte do tempo planejado para tópicos prioritários que foi executada em sessões vinculadas ao plano.'],
   [

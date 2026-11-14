@@ -174,3 +174,13 @@ test('bundle: filtros de retenção por evidência, pesos nomeados e lacuna/impa
   assert.match(bundle, /Cobertura \(peso 30%\)/);
   assert.doesNotMatch(bundle, /impacto \$\{[^}]*examImpact[^}]*\}%/);
 });
+
+test('contrato de grandezas: cobertura e retenção em /100, "ritmo em construção" e "base histórica" da banca', async () => {
+  const { readFileSync } = await import('node:fs');
+  const bundle = readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8');
+  assert.match(bundle, /coverage:\["Cobertura","\/100"\]/);
+  assert.doesNotMatch(bundle, /Fase de Constru[cç][aã]o|Fase de constru[cç][aã]o de base/);
+  assert.match(bundle, /base histórica/);
+  assert.doesNotMatch(bundle, /· evidência \$\{[^}]*row\.confidenceLabel/);
+  assert.match(bundle, /Igual ao volume: todo o estudo da semana teve crédito/);
+});

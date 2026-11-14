@@ -36,7 +36,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
   }));
   const positioned = classified.filter(row => row.quadrant !== 'insufficient').length;
   const item = (row: any) =>
-    `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : `${Math.round(row.mastery)}/100`} · evidência ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`;
+    `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : `${Math.round(row.mastery)}/100`} · base histórica ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`;
   const list = (items: any[]) => `<ul>${items.map(item).join('')}</ul>`;
   // Cinco por grupo, o resto sob "Mostrar mais"; a ordem é a escolhida no filtro "Ordenar por".
   const visibleItems = 5;
