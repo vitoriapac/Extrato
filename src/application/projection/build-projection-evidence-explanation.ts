@@ -6,6 +6,10 @@ export function buildProjectionEvidenceExplanation(model: Record<string, any>) {
     { label: 'Questões nos simulados', value: evidence.sampleSize ?? 0 },
     { label: 'Amplitude do histórico em dias', value: evidence.spanDays ?? 0 },
     { label: 'Registros válidos fora do grupo utilizado', value: evidence.excludedCount ?? 0 },
+    {
+      label: 'Simulados registrados no escopo',
+      value: (evidence.observationCount ?? 0) + (evidence.excludedCount ?? 0),
+    },
   ];
   return {
     facts,
@@ -13,7 +17,7 @@ export function buildProjectionEvidenceExplanation(model: Record<string, any>) {
       ? 'A faixa resume o desempenho recente em simulados comparáveis; não é uma nota prevista no dia da prova.'
       : 'Sem amostra suficiente, não há faixa de desempenho.',
     method:
-      'O centro usa a mediana dos três últimos simulados comparáveis. A margem é conservadora e considera dispersão e erros retrospectivos; não é um intervalo estatístico de confiança.',
+      'O centro usa a mediana dos três últimos simulados comparáveis. O fator Simulados da Prontidão é outro cálculo: média ponderada dos cinco últimos simulados, sem filtro de composição; e a média da aba Simulados é simples e só do período escolhido. A margem é conservadora e considera dispersão e erros retrospectivos; não é um intervalo estatístico de confiança.',
     confidenceMeaning:
       'A confiança considera composição, histórico e calibração. Volume de estudo não acrescenta pontos à nota nem eleva a confiança. O modelo atual oferece no máximo confiança moderada.',
     trendMeaning:

@@ -73,3 +73,19 @@ test('bundle: sem "domínio N%", "Gap de" nem "Presença" como rótulo de incid�
   assert.doesNotMatch(bundle, /<p>Presença \$\{/);
   assert.doesNotMatch(bundle, /confiança do índice/);
 });
+
+test('simulados: cada cálculo tem um nome e a conta canônica aparece na explicação da projeção', async () => {
+  const { buildProjectionEvidenceExplanation } = await import(
+    '../../src/application/projection/build-projection-evidence-explanation.js'
+  );
+  const explanation = buildProjectionEvidenceExplanation({
+    evidence: { observationCount: 3, excludedCount: 3, sampleSize: 480, spanDays: 60 },
+    projection: { calibratedSimulationBand: { low: 69, high: 93 } },
+  });
+  const registered = explanation.facts.find(f => f.label === 'Simulados registrados no escopo');
+  assert.equal(registered.value, 6);
+  assert.equal(explanation.facts.find(f => f.label === 'Simulados comparáveis').value, 3);
+  assert.match(explanation.method, /mediana dos três últimos simulados comparáveis/);
+  assert.match(explanation.method, /média ponderada dos cinco últimos/);
+  assert.match(explanation.method, /média da aba Simulados é simples e só do período/);
+});

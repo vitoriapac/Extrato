@@ -46,7 +46,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Checkpoint 3: Coerência
 - [ ] `/impeccable critique` da aba; H4 e H6 ≥ 3 (14/11: 23/40, H4 = 1, H6 = 1; correções abaixo)
 - [x] C3.1 P0: deltas da Prontidão com um limiar, fatores do cálculo de hoje rotulados, janela no 73%, contagem 5 de 6 simulados
-- [ ] C3.2 P0: simulados com numeração coerente e três médias com um nome cada (conta canônica 6 · 3 · 5)
+- [x] C3.2 P0: simulados com numeração coerente e três médias com um nome cada (conta canônica 6 · 3 · 5)
 - [x] C3.3 P1: vocabulário e escala em Prova e metas, Diagnóstico, radar e Disciplinas (antecipa a Tarefa 33)
 - [ ] C3.4 P1: projeção num bloco só e metodologia do Diagnóstico uma vez (antecipa as Tarefas 13 e 14)
 - [ ] C3.5 P2: card do Diagnóstico com um botão primário e alerta só para risco real
