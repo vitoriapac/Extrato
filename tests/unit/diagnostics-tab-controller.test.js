@@ -53,8 +53,14 @@ test('createDiagnosticsTabController — renderAlertasInteligentes reconcilia e 
     examScopedTopics: () => [],
     examScopedSubjects: () => [],
     uniqueTopicsCompletedBetween: () => 2,
-    buildExecutiveSummary: () => ({ score: 85 }),
-    renderExecutiveSummaryView: () => '<div class="summary">Resumo Executivo</div>',
+    buildExecutiveSummary: () => ({
+      cards: [
+        {},
+        { value: '90', label: 'dias até a prova' },
+        { value: '194', label: 'tópicos restantes' },
+        {},
+      ],
+    }),
     reconcileAlerts: alerts => ({ visible: alerts, states: { a1: 'active' }, additional: 0 }),
     renderIntelligentAlerts: ({ alerts }) => ({
       list: `<div class="alerts">${alerts.length} alertas</div>`,
@@ -96,11 +102,28 @@ test('createDiagnosticsTabController — renderAlertasInteligentes reconcilia e 
   assert.equal(saved, true);
 
   controller.renderExecutiveSummary();
-  const summary = mockDoc.getElementById('executiveSummary');
-  assert.match(summary.innerHTML, /Resumo Executivo/);
+  // Dias e tópicos restantes ficam no cabeçalho do Extrato; não há cartão "Situação do preparo".
+  assert.equal(mockDoc.getElementById('diagnosisHeaderMeta').textContent, '90 dias até a prova · 194 tópicos restantes');
 
   controller.renderDiagnosisCenter();
   const diag = mockDoc.getElementById('diagnosisCenter');
   assert.match(diag.innerHTML, /Diagnostico/);
   assert.match(diag.innerHTML, /Proxima Acao/);
+});
+
+test('a sugestão fora do plano não volta como item da lista do Diagnóstico', async () => {
+  const { dropSuggestedTopic } = await import('../../src/application/diagnostics/drop-suggested-topic.js');
+  const diagnosis = {
+    consolidated: {
+      topics: [
+        { subjectId: 's1', topicId: 't1', name: 'A' },
+        { subjectId: 's1', topicId: 't2', name: 'B' },
+      ],
+      subjects: [],
+    },
+  };
+  const out = dropSuggestedTopic(diagnosis, { subjectId: 's1', topicId: 't1' });
+  assert.deepEqual(out.consolidated.topics.map(item => item.name), ['B']);
+  assert.equal(dropSuggestedTopic(diagnosis, null), diagnosis);
+  assert.equal(diagnosis.consolidated.topics.length, 2);
 });

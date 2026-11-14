@@ -2,7 +2,6 @@ import { h } from 'preact';
 import { render as renderToString } from 'preact-render-to-string';
 import {
   AlertListItem,
-  ExecutiveSummaryView,
   OverviewAlerts,
   WeeklyCloseView,
 } from '../components/overview-sections.js';
@@ -20,10 +19,6 @@ export function renderIntelligentAlerts({ alerts, additional, currentAction = nu
     .join('');
   const overview = renderToString(h(OverviewAlerts, { alerts, currentAction, additionalCount: additional.length }));
   return { list, overview };
-}
-
-export function renderExecutiveSummary({ summary }: any) {
-  return renderToString(h(ExecutiveSummaryView, { summary }));
 }
 
 export function renderWeeklyCloseSummary(

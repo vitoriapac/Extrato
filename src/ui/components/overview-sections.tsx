@@ -72,43 +72,6 @@ export function OverviewAlerts({
   );
 }
 
-export function ExecutiveSummaryView({ summary }: { summary: AnyRecord }): JSX.Element {
-  return (
-    <>
-      <div class="executive-kpis">
-        {summary.cards.map((card: AnyRecord) => (
-          <div key={card.label} class="executive-kpi">
-            <strong>{card.value}</strong>
-            <span>{card.label}</span>
-            <small>{card.detail}</small>
-          </div>
-        ))}
-      </div>
-      <div class="executive-decision-grid">
-        <section>
-          <h4>Prioridade do dia</h4>
-          <p>A atividade do plano e o motivo estão em Hoje.</p>
-          <button
-            class="btn ghost small"
-            type="button"
-            data-delegated-click="navigateKpi('hoje')"
-          >
-            Abrir Hoje
-          </button>
-        </section>
-        <section>
-          <h4>Riscos e oportunidades</h4>
-          <p>
-            <strong>{summary.riskCount}</strong> risco{summary.riskCount === 1 ? '' : 's'} com evidência
-            atual.
-          </p>
-          <small>{summary.opportunityMessage}</small>
-        </section>
-      </div>
-    </>
-  );
-}
-
 export function WeeklyCloseView({
   weekly,
   period,

@@ -472,3 +472,16 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expect(page.locator('.performance-scope-note')).toHaveText(scope);
   expect(await records()).toBe(before);
 });
+
+test('Diagnóstico não tem o cartão "Situação do preparo"; dias e tópicos ficam no cabeçalho do Extrato', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'diagnosis');
+  await expect(page.locator('#panel-desempenho')).not.toContainText('Situação do preparo');
+  await expect(page.locator('#diagnosisHeaderMeta')).toHaveText(
+    /\d+ dias? até a prova · \d+ tópicos restantes/
+  );
+});

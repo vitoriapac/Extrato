@@ -1,7 +1,7 @@
 import { renderNextBestAction as defaultRenderNextBestAction } from '../../renderers/next-best-action-renderer.js';
+import { dropSuggestedTopic } from '../../../application/diagnostics/drop-suggested-topic.js';
 import { buildExecutiveSummary as defaultBuildExecutiveSummary } from '../../../application/build-executive-summary.js';
 import {
-  renderExecutiveSummary as defaultRenderExecutiveSummaryView,
   renderIntelligentAlerts as defaultRenderIntelligentAlerts,
 } from '../../renderers/overview-renderer.js';
 import {
@@ -43,7 +43,6 @@ export interface DiagnosticsTabControllerOptions {
   examScopedSubjects: () => Array<any>;
   uniqueTopicsCompletedBetween: (start: string, end: string) => number;
   buildExecutiveSummary?: (opts: any) => any;
-  renderExecutiveSummaryView?: (opts: any) => string;
   reconcileAlerts?: (alerts: any[], states: any, today: string) => any;
   renderIntelligentAlerts?: (opts: any) => { list: string; overview: string };
   dismissAlert?: (states: any, id: string, today: string, addDays: any, days: number) => any;
@@ -76,8 +75,6 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
   const renderIntelligentAlerts = opts.renderIntelligentAlerts || defaultRenderIntelligentAlerts;
   const dismissAlert = opts.dismissAlert || defaultDismissAlert;
   const buildExecutiveSummary = opts.buildExecutiveSummary || defaultBuildExecutiveSummary;
-  const renderExecutiveSummaryView =
-    opts.renderExecutiveSummaryView || defaultRenderExecutiveSummaryView;
   const buildDiagnosisPageModel = opts.buildDiagnosisPageModel || defaultBuildDiagnosisPageModel;
   const renderDiagnosisCenterView =
     opts.renderDiagnosisCenterView || defaultRenderDiagnosisCenterView;
@@ -132,52 +129,23 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     renderAlertasInteligentes();
   }
 
+  // Dias até a prova e tópicos restantes ficam no cabeçalho do Extrato; a Prontidão e a prioridade do dia
+  // têm dono (Leitura da preparação e Hoje), então não há mais cartão "Situação do preparo".
   function renderExecutiveSummary(): void {
-    const container = opts.document.getElementById('executiveSummary');
+    const container = opts.document.getElementById('diagnosisHeaderMeta');
     if (!container) return;
-
     const state = opts.getState();
-    const metrics = opts.computeApprovalMetrics();
-    const readiness = opts.readinessResult(metrics);
-    const pace = opts.computeRitmo();
-    const priorities = opts.computeStudyPriorities();
-    const topPriority = priorities[0]
-      ? { ...priorities[0], reason: opts.motivoPrioridade(priorities[0]) }
-      : null;
-    const risks = opts.computeAlertasInteligentes();
-    const configuredTopics = opts
-      .examScopedTopics()
-      .filter(
-        topic =>
-          (topic.examImportance !== null ||
-            Object.keys(topic.examImportanceEstimates || {}).length) &&
-          topic.estimatedStudyMinutes !== null
-      );
-    const opportunityCount = configuredTopics.filter(topic =>
-      priorities.some(priority => priority.topicId === topic.id)
-    ).length;
-
-    const weekStart = opts.startOfWeek(opts.todayISO());
-    const weeklyGoal = {
-      achieved: opts.uniqueTopicsCompletedBetween(weekStart, opts.addDays(weekStart, 6)),
-      target: state.metas?.semanal ?? 0,
-    };
-
-    const summary = buildExecutiveSummary({
-      readiness,
+    const { cards } = buildExecutiveSummary({
       daysToExam: state.examDate ? (opts.diasParaRevisao(state.examDate) ?? null) : null,
-      pace,
-      topPriority,
-      riskCount: risks.length,
-      weeklyGoal,
-      opportunityCount,
+      pace: opts.computeRitmo(),
     });
-
-    container.innerHTML = renderExecutiveSummaryView({
-      summary,
-      formatMinutes: opts.formatPlanMinutes,
-      escapeHtml: opts.escapeHtml,
-    });
+    const [, exam, pace] = cards;
+    container.textContent = [
+      exam.value !== '—' ? `${exam.value} ${exam.label}` : '',
+      pace.label === 'tópicos restantes' ? `${pace.value} ${pace.label}` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
   }
 
   function renderDiagnosisCenter(): void {
@@ -219,7 +187,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     opts.setCurrentConsolidatedDiagnosis?.(consolidated);
 
     const diagnosisHtml = renderDiagnosisCenterView({
-      model: diagnosis,
+      model: dropSuggestedTopic(diagnosis, nextAction?.action),
       studyActionForItem: (item: Record<string, any>) => {
         const recommendation = currentStudyRecommendations.find(
           candidate => candidate.subjectId === item.subjectId && candidate.topicId === item.topicId

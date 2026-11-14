@@ -179,8 +179,8 @@ Verificação usada abaixo:
 
 ### Tarefa 14: Diagnóstico sem "Situação do preparo" nem sugestão duplicada
 **Aceite:**
-- [ ] "Situação do preparo" removida; dias e tópicos restantes no cabeçalho do Extrato
-- [ ] Sugestão fora do plano não repete o item 1
+- [x] "Situação do preparo" removida; dias e tópicos restantes no cabeçalho do Extrato
+- [x] Sugestão fora do plano não repete o item 1
 **Verificação:** E2E do Diagnóstico atualizado
 **Dependências:** T12
 **Tamanho:** S
