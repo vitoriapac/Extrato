@@ -23,7 +23,7 @@ function renderEffects(effects: Record<string, any> | null) {
     (goal ? `<div><dt>Meta do dia</dt><dd>${goal}</dd></div>` : '') +
     (reviews ? `<div><dt>Revisões agendadas</dt><dd>${reviews.text}</dd></div>` : '');
   const factors = readiness?.factors?.length
-    ? `<p>Fatores que mudaram${readiness.confidence ? ` · confiança ${String(readiness.confidence).toLocaleLowerCase('pt-BR')}` : ''}:</p><ul>${readiness.factors.map((factor: any) => `<li>${factor.label}: ${factor.before} → ${factor.after}/100 · contribuição ${factor.contribution > 0 ? '+' : ''}${factor.contribution.toFixed(1).replace('.', ',')} ponto(s)</li>`).join('')}</ul>`
+    ? `<p>Fatores que mudaram${readiness.confidence ? ` · evidência ${String(readiness.confidence).toLocaleLowerCase('pt-BR')}` : ''}:</p><ul>${readiness.factors.map((factor: any) => `<li>${factor.label}: ${factor.before} → ${factor.after}/100 · contribuição ${factor.contribution > 0 ? '+' : ''}${factor.contribution.toFixed(1).replace('.', ',')} ponto(s)</li>`).join('')}</ul>`
     : '';
   const explanation = readiness?.reason
     ? `<p>${readiness.reason}</p>`

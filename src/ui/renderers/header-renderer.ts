@@ -16,7 +16,7 @@ function renderReadinessSub(readiness: Record<string, any>) {
       ? readiness.availableFactors
         ? 'Ainda sem evidência suficiente'
         : 'Aguardando evidências'
-      : `Confiança do índice: ${String(readiness.confidence).toLowerCase()}`;
+      : `Evidência do índice: ${String(readiness.confidence).toLowerCase()}`;
   if (!missing.length) return `${lead} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
   const actions = missing
     .filter(key => READINESS_FACTOR_ACTIONS[key])

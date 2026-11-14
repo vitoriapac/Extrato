@@ -23,7 +23,7 @@ export function renderPerformanceSimulations(
   if (!model.count)
     return '<div class="empty-state empty-state--compact" role="status"><strong>Sem simulados neste período</strong><p>Registre simulados para acompanhar as notas. Duas provas com disciplinas detalhadas em comum permitem a comparação por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar simulado</button></div>';
   const kpis = `<section class="performance-kpis" aria-label="Indicadores de simulados">
-    <article class="performance-kpi"><span>Último simulado</span><strong>${percent(model.latest)}</strong><small>${model.count} simulados no período</small></article>
+    <article class="performance-kpi"><span>Último simulado</span><strong>${percent(model.latest)}</strong><small>${pluralize(model.count, 'simulado', 'simulados')} · ${escapeHtml(range?.label || 'período escolhido')}</small></article>
     <article class="performance-kpi"><span>Média</span><strong>${percent(model.mean)}</strong><small>${range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso'}</small></article>
     <article class="performance-kpi"><span>Melhor resultado</span><strong>${percent(model.best)}</strong><small>No período selecionado</small></article>
     <article class="performance-kpi"><span>Tendência recente</span><strong>${signed(model.trend)}</strong><small>Último × penúltimo simulado</small></article>
@@ -39,7 +39,7 @@ export function renderPerformanceSimulations(
   const calibration = renderProjectionCalibration(model.calibration);
   const story = renderPerformanceStory({
     title: 'Resultado dos simulados',
-    summary: `Último resultado: ${percent(model.latest)} em ${pluralize(model.count, 'simulado', 'simulados')} no período.`,
+    summary: `Último resultado: ${percent(model.latest)} em ${pluralize(model.count, 'simulado', 'simulados')}, ${range?.label || 'no período escolhido'}.`,
     details: [
       model.trend == null
         ? 'Tendência recente sem base comparável.'

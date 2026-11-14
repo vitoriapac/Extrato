@@ -25,7 +25,7 @@ export function renderTopicRetentionDashboard({
   const repeated = [...scoreCounts.entries()].sort((a, b) => b[1] - a[1])[0];
   const repeatedSummary =
     repeated && repeated[1] >= 4
-      ? `<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>`
+      ? `<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}/100. Compare a evidência antes de interpretar o resultado como definitivo.</div>`
       : '';
   const items = visible
     .map((row: any) => {

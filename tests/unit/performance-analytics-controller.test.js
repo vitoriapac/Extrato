@@ -89,7 +89,7 @@ test('renderRadarAnalysisHtml — exibe seções de análise descritiva', () => 
   const html = renderRadarAnalysisHtml(selected);
   assert.ok(html.includes('Raciocínio Lógico'));
   assert.ok(html.includes('Ritmo favorável'));
-  assert.ok(html.includes('4 de 5 eixos · confiança média'));
+  assert.ok(html.includes('4 de 5 eixos · evidência média'));
   assert.ok(html.includes('<dd>Aguardando dados</dd>'));
   assert.ok(html.includes('<dd>70/100</dd>'));
 });

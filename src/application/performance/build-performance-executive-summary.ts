@@ -11,6 +11,8 @@ export interface PerformanceExecutiveSummary {
     band: { low: number; high: number } | null;
     /** Simulados comparáveis que sustentam o resultado central (todo o histórico). */
     simulationCount: number | null;
+    /** Simulados válidos no histórico, comparáveis ou não. */
+    simulationTotal: number | null;
   };
   /** A principal mudança medida contra o período anterior, quando há base comparável. */
   change: { label: string; delta: number; unit: string; detail?: string } | null;
@@ -50,6 +52,11 @@ export function buildPerformanceExecutiveSummary({
       simulationAccuracy: finite(projection?.current?.simulationAccuracy),
       band: low != null && high != null ? { low, high } : null,
       simulationCount: finite(projection?.evidence?.observationCount),
+      simulationTotal:
+        finite(projection?.evidence?.observationCount) != null
+          ? finite(projection?.evidence?.observationCount)! +
+            (finite(projection?.evidence?.excludedCount) ?? 0)
+          : null,
     },
     change: first
       ? { label: first.label, delta: first.delta, unit: first.unit, detail: first.detail }

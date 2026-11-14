@@ -190,7 +190,7 @@ export function PedagogicalMatrixChart({
               stroke="var(--surface-card)"
               stroke-width={2}
             >
-              <title>{`${b.name} · Domínio: ${formatDecimal(b.mastery)}% · Retenção: ${formatDecimal(b.retention)}% · Estudo: ${formatDecimal(b.studyMinutes / 60)}h`}</title>
+              <title>{`${b.name} · Domínio: ${formatDecimal(b.mastery)}/100 · Retenção: ${formatDecimal(b.retention)}/100 · Estudo: ${formatDecimal(b.studyMinutes / 60)}h`}</title>
             </circle>
             {labeled.has(b.id) && (
               <text class="chart-matrix__bubble-text" x={b.cx} y={b.cy + 3} text-anchor="middle">

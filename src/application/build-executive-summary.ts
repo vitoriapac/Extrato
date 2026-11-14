@@ -17,7 +17,7 @@ export function buildExecutiveSummary({
         }
       : {
           value: `${readinessValue}/100`,
-          label: `Confiança do índice: ${String(readiness.confidenceLabel || 'baixa').toLowerCase()}`,
+          label: `Evidência do índice: ${String(readiness.confidenceLabel || 'baixa').toLowerCase()}`,
           detail: `${readiness.availableFactors?.length || 0} de 5 fatores disponíveis`,
         };
   const exam =

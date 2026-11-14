@@ -158,7 +158,7 @@ export function renderRadarAnalysisHtml(
           : '';
         return `<section><h4><span class="radar-key ${keyColorClass}" ${keyDataAttr}></span>${escapeHtml(
           model.name
-        )}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta
+        )}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · evidência ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta
           .map(
             ([key, label]) =>
               `<div><dt>${label}</dt><dd>${

@@ -76,7 +76,7 @@ function forecastText(projection: AnyRecord): string {
   const f = projection.forecast30;
   if (!f.available) return String(f.reason ?? '');
   const slope = `${f.slopePerWeek >= 0 ? '+' : ''}${f.slopePerWeek}`;
-  return `Média móvel: ${projection.movingAverage}% · tendência ${slope} p.p./semana · confiança da tendência: ${f.confidenceLabel}`;
+  return `Média móvel: ${projection.movingAverage}% · tendência ${slope} p.p./semana · evidência da tendência: ${f.confidenceLabel}`;
 }
 
 export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.Element {
@@ -108,7 +108,7 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
         </div>
         <div class="kpi-cell">
           <div class="n">{confidence.nivel}</div>
-          <div class="l">Confiança do índice · {Math.round(confidence.value * 100)}%</div>
+          <div class="l">Evidência do índice · {Math.round(confidence.value * 100)}%</div>
         </div>
         <div class="kpi-cell">
           <div class="n">{m.retencao.available ? `${Math.round(m.retencao.raw)}%` : '—'}</div>
@@ -156,7 +156,7 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
               <li key={label}>
                 <strong>{label}</strong>:{' '}
                 {item.available
-                  ? `${item.score}/100 · confiança do fator ${Math.round(item.confidence * 100)}%`
+                  ? `${item.score}/100 · evidência do fator ${Math.round(item.confidence * 100)}%`
                   : 'aguardando dados'}
                 {item.detail ? ` · ${item.detail}` : ''}
               </li>

@@ -139,7 +139,7 @@ export function buildPreparationReading({
   const dropped = (readinessChange?.factors || []).filter((item: Row) => item.direction === 'down');
   if (dropped.length)
     pulling.push({
-      text: `${dropped[0].label} caiu no índice de Prontidão, de ${dropped[0].before} para ${dropped[0].after} (escala de 0 a 100)${pair?.previous && pair?.current ? ` entre ${formatDateBR(pair.previous.date)} e ${formatDateBR(pair.current.date)}` : ''}.`,
+      text: `O fator ${dropped[0].label} da Prontidão caiu de ${dropped[0].before} para ${dropped[0].after} (escala de 0 a 100)${pair?.previous && pair?.current ? ` entre ${formatDateBR(pair.previous.date)} e ${formatDateBR(pair.current.date)}` : ''}.`,
       link: null,
     });
   const gaps = candidates

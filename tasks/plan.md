@@ -38,7 +38,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [ ] Relatório T2 revisado; nenhuma tela com o mesmo número em arredondamentos diferentes
 
 ### Fase 3: Coerência (vocabulário e janelas)
-- [ ] Tarefa 9: Vocabulário de domínio, retenção, confiança e evidência
+- [x] Tarefa 9: Vocabulário de domínio, retenção, confiança e evidência
 - [ ] Tarefa 10: Linha de comparação e "Copiar link" um por subaba
 - [ ] Tarefa 11: Turnos num bloco, uma leitura
 - [ ] Tarefa 12: "O que mais pesa" alinhado ao Diagnóstico

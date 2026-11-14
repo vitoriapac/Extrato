@@ -7,7 +7,7 @@ export type EvidenceState = 'small' | 'low' | 'insufficient';
 
 export const EVIDENCE_LABELS: Record<EvidenceState, string> = {
   small: 'amostra pequena',
-  low: 'confiança baixa',
+  low: 'evidência baixa',
   insufficient: 'sem dados suficientes',
 };
 

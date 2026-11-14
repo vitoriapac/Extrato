@@ -27,7 +27,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
   const confidence = confidenceLabels[situation.confidence || ''];
   const countNote =
     situation.simulationCount != null
-      ? ` (${pluralize(situation.simulationCount, 'simulado', 'simulados')}, todo o histórico)`
+      ? ` (${situation.simulationCount}${situation.simulationTotal != null && situation.simulationTotal > situation.simulationCount ? ` de ${pluralize(situation.simulationTotal, 'simulado', 'simulados')}` : ` ${situation.simulationCount === 1 ? 'simulado' : 'simulados'}`}, todo o histórico)`
       : '';
   // Resultado central na meta, mas o piso da faixa abaixo dela: o selo vem da incerteza, não de um resultado ruim.
   const bandBelowTarget =

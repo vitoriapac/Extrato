@@ -45,7 +45,7 @@ test('hero e compacto apresentam a mesma prontidão e conteúdo separado', () =>
   assert.equal(document.nodes.compactReadiness.textContent, '45/100');
   assert.equal(document.nodes.statContent.textContent, '26%');
   assert.equal(document.nodes.statStreak.textContent, '7 dias');
-  assert.match(document.nodes.balanceSub.innerHTML, /Confiança do índice: alta/);
+  assert.match(document.nodes.balanceSub.innerHTML, /Evidência do índice: alta/);
 });
 
 test('fatores que faltam viram ações; com 5 de 5 volta o número (F8)', () => {

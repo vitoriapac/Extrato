@@ -127,9 +127,9 @@ Verificação usada abaixo:
 
 ### Tarefa 9: Vocabulário de domínio, retenção, confiança e evidência
 **Aceite:**
-- [ ] Domínio e retenção sempre em /100
-- [ ] Fator da Prontidão chamado "fator Retenção"
-- [ ] "Confiança" só na faixa projetada; demais selos "Evidência"
+- [x] Domínio e retenção sempre em /100
+- [x] Fator da Prontidão chamado "fator Retenção"
+- [x] "Confiança" só na faixa projetada; demais selos "Evidência"
 **Verificação:** Unit de formatação; busca no bundle por "domínio \d+%" sem ocorrências
 **Dependências:** Checkpoint 2
 **Tamanho:** M
