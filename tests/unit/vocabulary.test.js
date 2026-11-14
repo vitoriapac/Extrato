@@ -47,7 +47,7 @@ test('resumo: contagem comparável diz de quantos simulados do histórico', () =
     base: { resolved: 40, sessions: 5, smallSample: false },
   };
   const html = renderPerformanceExecutiveSummary(base, { escapeHtml });
-  assert.match(html, /3 de 5 simulados, todo o histórico/);
+  assert.match(html, /3 de 5 simulados, últimos 90 dias/);
 });
 
 test('subaba: um "Copiar link" e linha de comparação só quando há comparação', async () => {
@@ -82,7 +82,7 @@ test('simulados: cada cálculo tem um nome e a conta canônica aparece na explic
     evidence: { observationCount: 3, excludedCount: 3, sampleSize: 480, spanDays: 60 },
     projection: { calibratedSimulationBand: { low: 69, high: 93 } },
   });
-  const registered = explanation.facts.find(f => f.label === 'Simulados registrados no escopo');
+  const registered = explanation.facts.find(f => f.label === 'Simulados válidos dos últimos 90 dias');
   assert.equal(registered.value, 6);
   assert.equal(explanation.facts.find(f => f.label === 'Simulados comparáveis').value, 3);
   assert.match(explanation.method, /mediana dos três últimos simulados comparáveis/);

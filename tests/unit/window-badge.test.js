@@ -10,6 +10,7 @@ const escapeHtml = value => String(value).replace(/[&<>"']/g, c => `&#${c.charCo
 test('selo de janela: só o vocabulário oficial e o título é escapado', () => {
   assert.deepEqual(Object.values(WINDOW_LABELS), [
     '7 dias',
+    '90 dias',
     'período',
     'semana atual',
     'todo o histórico',
@@ -46,7 +47,7 @@ test('números de aderência, "o que mudou" e simulados saem com selo de janela'
     },
     { escapeHtml }
   );
-  assert.match(summary, /data-window="history"/);
+  assert.match(summary, /data-window="ninetyDays"/);
 });
 
 test('simulados: uma casa decimal e contagem com critério e janela no resumo', () => {
@@ -66,7 +67,7 @@ test('simulados: uma casa decimal e contagem com critério e janela no resumo', 
     },
     { escapeHtml }
   );
-  assert.match(html, /3 simulados, todo o histórico/);
+  assert.match(html, /3 simulados, últimos 90 dias/);
   assert.match(html, /80,7%/);
   assert.match(html, /76,2%/);
 });

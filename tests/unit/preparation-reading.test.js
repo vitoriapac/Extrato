@@ -138,7 +138,7 @@ test('projeção mantém intervalo, confiança e limite juntos; conteúdo da aç
   const html = renderPreparationReading(reading);
   assert.match(html, /69% a 93%, confiança baixa/);
   assert.match(html, /Não é chance de aprovação/);
-  assert.match(html, /data-window="history"/);
+  assert.match(html, /data-window="ninetyDays"/);
   assert.doesNotMatch(html, /<script>|<img src=x>/);
   assert.match(html, /&lt;script>/);
 });

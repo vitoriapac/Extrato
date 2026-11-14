@@ -3,10 +3,11 @@ import { escapePresentationText } from '../components/presentation.js';
 import { Tooltip } from '../primitives/tooltip.js';
 
 /** Vocabulário oficial das janelas de tempo dos números de Desempenho. */
-export type WindowKind = 'sevenDays' | 'period' | 'currentWeek' | 'history';
+export type WindowKind = 'sevenDays' | 'ninetyDays' | 'period' | 'currentWeek' | 'history';
 
 export const WINDOW_LABELS: Record<WindowKind, string> = {
   sevenDays: '7 dias',
+  ninetyDays: '90 dias',
   period: 'período',
   currentWeek: 'semana atual',
   history: 'todo o histórico',

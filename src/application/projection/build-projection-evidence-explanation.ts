@@ -7,7 +7,7 @@ export function buildProjectionEvidenceExplanation(model: Record<string, any>) {
     { label: 'Amplitude do histórico em dias', value: evidence.spanDays ?? 0 },
     { label: 'Registros válidos fora do grupo utilizado', value: evidence.excludedCount ?? 0 },
     {
-      label: 'Simulados registrados no escopo',
+      label: 'Simulados válidos dos últimos 90 dias',
       value: (evidence.observationCount ?? 0) + (evidence.excludedCount ?? 0),
     },
   ];

@@ -9,7 +9,7 @@ export interface PerformanceExecutiveSummary {
     target: number | null;
     simulationAccuracy: number | null;
     band: { low: number; high: number } | null;
-    /** Simulados comparáveis que sustentam o resultado central (todo o histórico). */
+    /** Simulados comparáveis que sustentam o resultado central (últimos 90 dias). */
     simulationCount: number | null;
     /** Simulados válidos no histórico, comparáveis ou não. */
     simulationTotal: number | null;

@@ -27,7 +27,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
   const confidence = confidenceLabels[situation.confidence || ''];
   const countNote =
     situation.simulationCount != null
-      ? ` (${situation.simulationCount}${situation.simulationTotal != null && situation.simulationTotal > situation.simulationCount ? ` de ${pluralize(situation.simulationTotal, 'simulado', 'simulados')}` : ` ${situation.simulationCount === 1 ? 'simulado' : 'simulados'}`}, todo o histórico)`
+      ? ` (${situation.simulationCount}${situation.simulationTotal != null && situation.simulationTotal > situation.simulationCount ? ` de ${pluralize(situation.simulationTotal, 'simulado', 'simulados')}` : ` ${situation.simulationCount === 1 ? 'simulado' : 'simulados'}`}, últimos 90 dias)`
       : '';
   // Resultado central na meta, mas o piso da faixa abaixo dela: o selo vem da incerteza, não de um resultado ruim.
   const bandBelowTarget =
@@ -64,7 +64,7 @@ export function renderPerformanceExecutiveSummary(
   }: { escapeHtml?: (value: any) => string; embedded?: boolean } = {}
 ): string {
   const lead = (text: string) =>
-    `<p class="performance-executive__lead" data-status="${escapeHtml(summary.situation.status)}">${renderWindowBadge('history', 'Simulados comparáveis, todo o histórico')}${escapeHtml(text)}</p>`;
+    `<p class="performance-executive__lead" data-status="${escapeHtml(summary.situation.status)}">${renderWindowBadge('ninetyDays', 'Simulados comparáveis dos últimos 90 dias')}${escapeHtml(text)}</p>`;
   const row = (term: string, text: string) =>
     `<div class="space-y-1"><dt class="text-xs font-semibold text-content-secondary">${escapeHtml(term)}</dt><dd class="m-0 text-sm text-content-primary leading-relaxed">${escapeHtml(text)}</dd></div>`;
   const body = `${lead(situationText(summary.situation))}
