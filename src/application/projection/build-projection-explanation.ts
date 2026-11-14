@@ -27,7 +27,7 @@ export function buildProjectionExplanation({
       risks.push('Os simulados comparáveis mostram deterioração recente.');
   }
   if (coverage != null && coverage < 50)
-    risks.push(`Cobertura de tópicos baixa (${Math.round(coverage)}%).`);
+    risks.push(`Cobertura de tópicos baixa (${Math.round(coverage)}/100).`);
   if (adherence != null && adherence < 60)
     risks.push(`Execução do plano baixa (${Math.round(adherence)}%).`);
   if (consistency?.target > 0 && consistency.days >= consistency.target)

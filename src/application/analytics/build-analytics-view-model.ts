@@ -348,7 +348,7 @@ export function buildApprovalSignals(metrics: Row, { target = 70 }: any = {}) {
   if (metrics.prazo?.available && metrics.prazo.score < 60)
     signals.push({ level: 'warning', text: 'Ritmo atual abaixo do necessário até a prova' });
   if (!metrics.simulados?.available)
-    signals.push({ level: 'info', text: 'Registre simulados para aumentar a confiança do índice' });
+    signals.push({ level: 'info', text: 'Registre simulados para aumentar a evidência do índice' });
   if ((metrics.acertos?.confidence || 0) < 0.34)
     signals.push({ level: 'info', text: 'Ainda há poucas questões para uma estimativa estável' });
   return signals.length

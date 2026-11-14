@@ -34,7 +34,11 @@ const glossaryItems: Array<[string, string]> = [
     'Índice de 0 a 100 que combina cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.',
   ],
   ['Domínio', 'Desempenho pessoal medido em um tópico ou disciplina, de 0 a 100.'],
-  ['Retenção', 'Estimativa de quanto o conteúdo se mantém na memória ao longo das revisões.'],
+  ['Retenção', 'Estimativa de quanto o conteúdo se mantém na memória ao longo das revisões, de 0 a 100.'],
+  ['Cobertura', 'Quanto do edital já foi estudado, de 0 a 100 (tópicos concluídos sobre o total).'],
+  ['Evidência', 'Quanto confiar em um número: suficiente, pequena ou insuficiente, conforme a quantidade de registros.'],
+  ['Confiança', 'Só da faixa projetada: o quanto a faixa de nota se apoia em simulados comparáveis.'],
+  ['Execução prioritária', 'Parte do tempo planejado para tópicos prioritários que foi executada em sessões vinculadas ao plano.'],
   [
     'Aderência',
     'Tempo realizado que tem crédito compatível com uma atividade do plano. Difere do tempo total estudado.',
@@ -103,7 +107,7 @@ export function renderPerformanceOverview(
     })
     .join('');
   const planChart = renderPlannedVsActualChart(model.weekly || [], { formatDate, escapeHtml });
-  const plan = `<section class="performance-block"><h3>Planejado × realizado</h3><p class="analytics-note">Volume de carga compara minutos estudados com minutos planejados. Pode superar 100%.</p>${secondaryKpis}${planChart}${weekRows ? `<details class="performance-more mt-3"><summary>Ver tabela semanal detalhada</summary><div class="performance-table-scroll ui-data-table mt-2" tabindex="0" role="region" aria-label="Tabela semanal de planejado e realizado"><table><caption>Semanas com plano ou estudo no período</caption><thead><tr><th scope="col">Semana de</th><th scope="col">Planejado</th><th scope="col">Realizado</th><th scope="col">Volume</th></tr></thead><tbody>${weekRows}</tbody></table></div></details>` : renderEmptyState({ title: 'Sem plano ou estudo no período', message: 'Distribua um plano ou registre uma sessão para comparar planejado e realizado.' })}${model.strategic?.strategicAdherence != null ? `<p class="context-note context-note--info">Aderência estratégica: ${formatDecimal(model.strategic.strategicAdherence)}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>` : ''}</section>`;
+  const plan = `<section class="performance-block"><h3>Planejado × realizado</h3><p class="analytics-note">Volume de carga compara minutos estudados com minutos planejados. Pode superar 100%.</p>${secondaryKpis}${planChart}${weekRows ? `<details class="performance-more mt-3"><summary>Ver tabela semanal detalhada</summary><div class="performance-table-scroll ui-data-table mt-2" tabindex="0" role="region" aria-label="Tabela semanal de planejado e realizado"><table><caption>Semanas com plano ou estudo no período</caption><thead><tr><th scope="col">Semana de</th><th scope="col">Planejado</th><th scope="col">Realizado</th><th scope="col">Volume</th></tr></thead><tbody>${weekRows}</tbody></table></div></details>` : renderEmptyState({ title: 'Sem plano ou estudo no período', message: 'Distribua um plano ou registre uma sessão para comparar planejado e realizado.' })}${model.strategic?.strategicAdherence != null ? `<p class="context-note context-note--info">Execução prioritária: ${formatDecimal(model.strategic.strategicAdherence)}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>` : ''}</section>`;
   const changes = model.changes.length
     ? `<ul class="performance-changes">${model.changes.map((item: any) => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.unit === 'min' ? formatStudyMinuteDelta(item.delta) : `${item.delta > 0 ? '+' : ''}${shown(item.delta)} ${escapeHtml(item.unit)}`}</span></li>`).join('')}</ul>`
     : '<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';

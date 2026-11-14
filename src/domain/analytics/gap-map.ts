@@ -62,7 +62,7 @@ export function buildGapMap<T extends Record<string, any> = any>(
           reason:
             factors.masteryGap == null
               ? 'Sem evidência de domínio'
-              : `Gap de ${factors.masteryGap} pontos com impacto de prova ${impact ?? 'não informado'}%`,
+              : `Lacuna de ${factors.masteryGap} pontos (de 100) com impacto de prova ${impact == null ? 'não informado' : `${impact}/100`}`,
           recommendedAction:
             (score ?? 0) >= 60 ? 'Revisar e resolver questões' : 'Manter revisão espaçada',
         };

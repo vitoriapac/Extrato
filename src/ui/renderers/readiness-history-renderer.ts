@@ -31,7 +31,7 @@ export function renderReadinessHistory(
   });
   const currentDelta = model.currentComparison;
   const weekly = model.weeklyComparison;
-  const summary = `<div class="readiness-history-summary"><div><span>Prontidão atual</span><strong>${value(model.current)}</strong><small>${model.current ? 'Cálculo atual · confiança do índice: ' + escapeHtml(model.current.confidenceLabel) : 'Aguardando dados atuais'}</small></div><div><span>Último fechamento</span><strong>${value(model.latest)}</strong><small>${model.latest ? escapeHtml(formatDate(model.latest.date)) : 'Salve um fechamento semanal'}</small></div><div><span>Entre os dois últimos fechamentos</span><strong>${weekly.delta === null ? '—' : points(weekly.delta)}</strong><small>${model.weeklyPeriod ? escapeHtml(formatDate(model.weeklyPeriod.start) + ' a ' + formatDate(model.weeklyPeriod.end)) : 'São necessários dois fechamentos'}${weekly.state === 'comparable' ? ' · ' + weekly.trend : ''}</small></div><div><span>Melhor registro comparável</span><strong>${value(model.best)}</strong><small>${model.best ? escapeHtml(formatDate(model.best.date)) : 'Sem registro com a mesma base de cálculo'}</small></div></div>`;
+  const summary = `<div class="readiness-history-summary"><div><span>Prontidão atual</span><strong>${value(model.current)}</strong><small>${model.current ? 'Cálculo atual · evidência do índice: ' + escapeHtml(model.current.confidenceLabel) : 'Aguardando dados atuais'}</small></div><div><span>Último fechamento</span><strong>${value(model.latest)}</strong><small>${model.latest ? escapeHtml(formatDate(model.latest.date)) : 'Salve um fechamento semanal'}</small></div><div><span>Entre os dois últimos fechamentos</span><strong>${weekly.delta === null ? '—' : points(weekly.delta)}</strong><small>${model.weeklyPeriod ? escapeHtml(formatDate(model.weeklyPeriod.start) + ' a ' + formatDate(model.weeklyPeriod.end)) : 'São necessários dois fechamentos'}${weekly.state === 'comparable' ? ' · ' + weekly.trend : ''}</small></div><div><span>Melhor registro comparável</span><strong>${value(model.best)}</strong><small>${model.best ? escapeHtml(formatDate(model.best.date)) : 'Sem registro com a mesma base de cálculo'}</small></div></div>`;
   const notice =
     weekly.state !== 'comparable' && model.weeklyPeriod
       ? `<p class="context-note context-note--info">${escapeHtml(weekly.reason)}</p>`
@@ -111,7 +111,7 @@ export function renderReadinessHistory(
         .reverse()
         .map(
           item =>
-            `<li><span>${escapeHtml(formatDate(item.date))} · ${escapeHtml(item.reason || 'Fechamento semanal')}</span><strong>${item.score}/100</strong><small>Algoritmo ${escapeHtml(item.algorithmVersion ?? 'não informado')} · confiança do índice: ${escapeHtml(item.confidenceLabel || 'não informada')}</small></li>`
+            `<li><span>${escapeHtml(formatDate(item.date))} · ${escapeHtml(item.reason || 'Fechamento semanal')}</span><strong>${item.score}/100</strong><small>Algoritmo ${escapeHtml(item.algorithmVersion ?? 'não informado')} · evidência do índice: ${escapeHtml(item.confidenceLabel || 'não informada')}</small></li>`
         )
         .join('')}</ol>`
     : '';

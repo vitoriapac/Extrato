@@ -428,7 +428,7 @@ export function calculateApprovalRetencaoMetric(params: {
     confidence,
     available: true,
     raw,
-    detail: `${Math.round(raw)}% em ${values.length} de ${totalTopicsCount} tópicos`,
+    detail: `${Math.round(raw)}/100 em ${values.length} de ${totalTopicsCount} tópicos`,
   };
 }
 

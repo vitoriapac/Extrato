@@ -114,7 +114,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
     rows
       .map(
         (row: any) =>
-          `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · ${row.presentExamCount} de ${row.examCount} provas · ${row.questionCount} questões</p><div>${row.cells.map((cell: any) => `<span class="exam-matrix-cell is-${level(cell.count)}">${escape(cell.year)}: ${cellText(cell.count)}</span>`).join('')}</div></article>`
+          `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · ${row.presentExamCount} de ${row.examCount} provas · ${row.questionCount} questões</p><div>${row.cells.map((cell: any) => `<span class="exam-matrix-cell is-${level(cell.count)}">${escape(cell.year)}: ${cellText(cell.count)}</span>`).join('')}</div></article>`
       )
       .join('');
   const selected = model.rows.find((row: any) => row.topicId === selectedTopicId);
@@ -180,6 +180,6 @@ export function renderExamOpportunity(model: Record<string, any>) {
   );
   const row = candidates[0];
   if (!row)
-    return '<p class="analytics-note">Nenhum tópico deste recorte reúne presença em 50% ou mais das provas, domínio abaixo de 70 e confiança moderada ou alta, então não há oportunidade a destacar. Ajuste os filtros da matriz para ver outros recortes. Esta leitura usa só a incidência histórica; a lista de tópicos prioritários usa a prioridade calculada do app.</p>';
-  return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade no recorte</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · confiança ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-analysis-nav="hoje" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
+    return '<p class="analytics-note">Nenhum tópico deste recorte reúne incidência em 50% ou mais das provas, domínio abaixo de 70/100 e evidência moderada ou alta, então não há oportunidade a destacar. Ajuste os filtros da matriz para ver outros recortes. Esta leitura usa só a incidência histórica; a lista de tópicos prioritários usa a prioridade calculada do app.</p>';
+  return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade no recorte</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · evidência ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-analysis-nav="hoje" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
 }

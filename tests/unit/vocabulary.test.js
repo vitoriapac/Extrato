@@ -64,3 +64,12 @@ test('subaba: um "Copiar link" e linha de comparação só quando há comparaç�
   for (const html of [on, off, diagnosis])
     assert.equal((html.match(/data-performance-copy-link/g) || []).length, 1);
 });
+
+test('bundle: sem "domínio N%", "Gap de" nem "Presença" como rótulo de incidência nas telas de análise', async () => {
+  const { readFileSync } = await import('node:fs');
+  const bundle = readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(bundle, /[Dd]omínio \d+(,\d)?%/);
+  assert.doesNotMatch(bundle, /Gap de \$\{/);
+  assert.doesNotMatch(bundle, /<p>Presença \$\{/);
+  assert.doesNotMatch(bundle, /confiança do índice/);
+});

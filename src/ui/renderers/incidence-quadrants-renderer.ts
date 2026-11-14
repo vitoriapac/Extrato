@@ -36,7 +36,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
   }));
   const positioned = classified.filter(row => row.quadrant !== 'insufficient').length;
   const item = (row: any) =>
-    `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : Math.round(row.mastery)} · confiança ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`;
+    `<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? 'sem dados' : `${Math.round(row.mastery)}/100`} · evidência ${escape(row.confidenceLabel)} · prioridade existente ${row.priority == null ? 'sem dados' : Math.round(row.priority)}</p></li>`;
   const list = (items: any[]) => `<ul>${items.map(item).join('')}</ul>`;
   // Cinco por grupo, o resto sob "Mostrar mais"; a ordem é a escolhida no filtro "Ordenar por".
   const visibleItems = 5;
@@ -62,13 +62,13 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
   return renderChartFrame({
     title: 'Incidência × Domínio',
     description:
-      'Presença em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',
+      'Incidência em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',
     evidence:
-      'Só confiança moderada ou alta permite posicionar. Baixa confiança e ausência de domínio ficam separados.',
+      'Só evidência moderada ou alta permite posicionar. Evidência baixa e ausência de domínio ficam separados.',
     emptyTitle: positioned ? 'Sem gráfico: os grupos estão na lista abaixo' : undefined,
     emptyMessage: positioned
-      ? `${positioned} de ${classified.length} tópicos têm confiança moderada ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". Registrar questões e revisões desses tópicos aumenta a confiança e permite posicioná-los. A lista abaixo mostra cada grupo.`
-      : `Os ${classified.length} tópicos ainda não têm confiança moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
+      ? `${positioned} de ${classified.length} tópicos têm evidência moderada ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". Registrar questões e revisões desses tópicos aumenta a evidência e permite posicioná-los. A lista abaixo mostra cada grupo.`
+      : `Os ${classified.length} tópicos ainda não têm evidência moderada ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
     records: `<div class="incidence-quadrants">${records}</div>${emptyNote}`,
   });
 }
