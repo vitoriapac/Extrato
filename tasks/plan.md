@@ -39,7 +39,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 
 ### Fase 3: Coerência (vocabulário e janelas)
 - [x] Tarefa 9: Vocabulário de domínio, retenção, confiança e evidência
-- [ ] Tarefa 10: Linha de comparação e "Copiar link" um por subaba
+- [x] Tarefa 10: Linha de comparação e "Copiar link" um por subaba
 - [ ] Tarefa 11: Turnos num bloco, uma leitura
 - [ ] Tarefa 12: "O que mais pesa" alinhado ao Diagnóstico
 

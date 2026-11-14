@@ -136,8 +136,8 @@ Verificação usada abaixo:
 
 ### Tarefa 10: Linha de comparação e "Copiar link" um por subaba
 **Aceite:**
-- [ ] Linha "comparação: dd/mm a dd/mm" só onde há comparação
-- [ ] Um "Copiar link" por subaba, no título; âncoras de bloco continuam funcionando
+- [x] Linha "comparação: dd/mm a dd/mm" só onde há comparação
+- [x] Um "Copiar link" por subaba, no título; âncoras de bloco continuam funcionando
 **Verificação:** E2E "Copiar link gera a âncora" atualizado
 **Dependências:** nenhuma
 **Tamanho:** S

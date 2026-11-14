@@ -83,12 +83,15 @@ test('Copiar link gera a âncora do bloco e o calendário tem alternativa em tex
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.locator('.performance-reading').getByRole('button', { name: 'Copiar link' }).click();
-  await expect(
-    page.locator('.performance-reading').getByRole('button', { name: 'Link copiado' })
-  ).toBeVisible();
+  const panel = page.locator('#panel-desempenho');
+  await expect(panel.getByRole('button', { name: 'Copiar link' })).toHaveCount(1);
+  await panel.getByRole('button', { name: 'Copiar link' }).click();
+  await expect(panel.getByRole('button', { name: 'Link copiado' })).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toMatch(/#desempenho\/overview\/leitura$/);
+  expect(copied).toMatch(/#desempenho\/overview$/);
+  // A âncora de bloco continua valendo na navegação.
+  await page.goto(copied.replace(/#.*$/, '#desempenho/overview/leitura'));
+  await expect(page.locator('#bloco-leitura')).toBeVisible();
   await openPerformanceSection(page, 'consistency');
   const weekly = page.locator('.heatmap-weekly-text');
   await expect(weekly).toBeVisible();

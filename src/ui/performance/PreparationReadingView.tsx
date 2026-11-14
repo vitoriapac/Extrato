@@ -14,7 +14,7 @@ export function PreparationReadingView({ reading }: { reading: PreparationReadin
   const readiness = howAmI.readiness;
   const action = whatToDo.action;
   return <section class="performance-reading chart-card mb-4" id="bloco-leitura" aria-labelledby="performanceReadingTitle">
-    <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3><button type="button" class="btn ghost small performance-block-link" data-performance-copy-link="leitura" aria-label="Copiar link deste bloco">Copiar link</button></div></header>
+    <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3></div></header>
     <div class="performance-reading__grid">
       <section class="performance-reading__todo" aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">O que fazer</h4>
         {action ? <><p class="m-0" data-recommendation-id={action.recommendationId ?? ''}><strong>{action.label}:</strong> {action.text}</p>

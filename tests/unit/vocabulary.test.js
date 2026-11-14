@@ -49,3 +49,18 @@ test('resumo: contagem comparável diz de quantos simulados do histórico', () =
   const html = renderPerformanceExecutiveSummary(base, { escapeHtml });
   assert.match(html, /3 de 5 simulados, todo o histórico/);
 });
+
+test('subaba: um "Copiar link" e linha de comparação só quando há comparação', async () => {
+  const { renderPerformanceChromeHtml } = await import('../../src/ui/performance/performance-page.js');
+  const range = { label: 'Últimos 30 dias', previous: { start: '2026-09-15', end: '2026-10-14' } };
+  const chrome = state =>
+    renderPerformanceChromeHtml({ viewState: state, range, activeExamCount: 0, escapeHtml });
+  const on = chrome({ section: 'overview', period: '30d', comparePrevious: true });
+  const off = chrome({ section: 'overview', period: '30d', comparePrevious: false });
+  const diagnosis = chrome({ section: 'diagnosis', period: '30d', comparePrevious: true });
+  assert.match(on, /comparação: /);
+  assert.doesNotMatch(off, /comparação: /);
+  assert.doesNotMatch(diagnosis, /comparação: /);
+  for (const html of [on, off, diagnosis])
+    assert.equal((html.match(/data-performance-copy-link/g) || []).length, 1);
+});

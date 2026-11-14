@@ -3,6 +3,7 @@ import { render as renderToString } from 'preact-render-to-string';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { pluralize } from '../../core/utils.js';
 import { PerformancePageNav, performanceGroupOf } from './PerformancePageNav.js';
+import { renderCopyTabLink } from './block-link.js';
 
 export { performanceGroupOf };
 
@@ -78,7 +79,11 @@ export function renderPerformanceChromeHtml({
   const restText = [
     // Com a barra de filtros visível, o escopo já aparece nela.
     hasToolbar ? '' : scopeLabel,
-    viewState.section === 'exam' || viewState.section === 'diagnosis' || !prevStart || !prevEnd
+    viewState.section === 'exam' ||
+    viewState.section === 'diagnosis' ||
+    !viewState.comparePrevious ||
+    !prevStart ||
+    !prevEnd
       ? ''
       : 'comparação: ' + escapeHtml(formatPeriodBR(prevStart, prevEnd)),
   ]
@@ -94,7 +99,7 @@ export function renderPerformanceChromeHtml({
     : `<div class="performance-toolbar ui-filter-bar" id="performanceToolbar" data-collapsed="true"><div class="performance-toolbar__summary"><span>${escapeHtml(range.label)}${viewState.comparePrevious && range.previous ? ' · comparando' : ''}</span><button type="button" class="btn ghost small" data-performance-filters-toggle aria-expanded="false" aria-controls="performanceToolbar">Alterar filtros</button></div><label>Período<select class="select-control ui-select-field__control" id="performancePeriod" data-performance-period><option value="7" ${viewState.period === '7' ? 'selected' : ''}>7 dias</option><option value="30" ${viewState.period === '30' ? 'selected' : ''}>30 dias</option><option value="90" ${viewState.period === '90' ? 'selected' : ''}>90 dias</option><option value="all" ${viewState.period === 'all' ? 'selected' : ''}>Tudo</option></select></label>
     <label class="performance-compare"><input type="checkbox" id="performanceCompare" data-performance-compare ${viewState.comparePrevious ? 'checked' : ''} ${viewState.period === 'all' ? 'disabled' : ''}> Comparar período anterior</label><div class="performance-scope-control"><span>${activeExamCount ? `Concurso ativo · ${pluralize(activeExamCount, 'escopo', 'escopos')}` : 'Todos os concursos'}</span><button type="button" class="btn ghost small" data-performance-open="metas">Alterar concurso</button></div></div>`;
 
-  return `${toolbarHtml}<p class="performance-scope-note">${scopeNote}</p>`;
+  return `${toolbarHtml}<div class="flex flex-wrap items-center justify-between gap-2"><p class="performance-scope-note">${scopeNote}</p>${renderCopyTabLink()}</div>`;
 }
 
 export function renderPerformancePage({

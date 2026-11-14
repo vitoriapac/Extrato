@@ -122,7 +122,7 @@ export function createPerformanceController({
         if (copy) {
           const section =
             document.getElementById('panel-desempenho')?.dataset.performanceView || 'overview';
-          const url = `${window.location.origin}${window.location.pathname}#desempenho/${section}/${copy.dataset.performanceCopyLink}`;
+          const url = `${window.location.origin}${window.location.pathname}#desempenho/${section}${copy.dataset.performanceCopyLink ? `/${copy.dataset.performanceCopyLink}` : ''}`;
           const label = copy.textContent;
           const ariaLabel = copy.getAttribute('aria-label');
           const say = (text: string, name: string) => {
