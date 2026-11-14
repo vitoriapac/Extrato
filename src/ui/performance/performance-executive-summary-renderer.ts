@@ -35,7 +35,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
     situation.simulationAccuracy >= situation.target &&
     situation.band.low < situation.target;
   if (bandBelowTarget && situation.status === 'attention')
-    return `${label}. O resultado central dos simulados (${formatEvidencePercent(situation.simulationAccuracy)}) atinge a meta de ${formatEvidencePercent(situation.target)}, mas a faixa estimada de ${formatEvidencePercent(situation.band!.low)} a ${formatEvidencePercent(situation.band!.high)} inclui valores abaixo dela.${confidence ? ` Confiança ${confidence}.` : ''}`;
+    return `${label}. O resultado central dos simulados comparáveis${countNote}, ${formatEvidencePercent(situation.simulationAccuracy)}, atinge a meta de ${formatEvidencePercent(situation.target)}, mas a faixa estimada de ${formatEvidencePercent(situation.band!.low)} a ${formatEvidencePercent(situation.band!.high)} inclui valores abaixo dela.${confidence ? ` Confiança ${confidence}.` : ''}`;
   return `${label}. Resultado central dos simulados comparáveis${countNote}: ${formatEvidencePercent(situation.simulationAccuracy)}, meta de ${formatEvidencePercent(situation.target)}${band}.${confidence ? ` Confiança ${confidence}.` : ''}`;
 }
 
