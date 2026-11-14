@@ -3566,6 +3566,9 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 #panel-desempenho{--text-micro:.8125rem;--text-caption:.8125rem;--text-label:.8125rem;--text-xs:.8125rem;--text-sm:.875rem}
 #panel-desempenho table,#panel-desempenho .font-data,#panel-desempenho .performance-reading__figure,#panel-desempenho .performance-kpis strong{font-variant-numeric:lining-nums tabular-nums}
 #panel-desempenho .performance-window{display:inline-flex;align-items:center;min-height:24px}
+/* Alvo mínimo de toque: 24 px com mouse (WCAG 2.5.8) e 44 px em tela de toque. */
+.touch-target{min-height:24px;min-width:24px}
+@media(pointer:coarse){.touch-target{min-height:44px}}
 #panel-desempenho small,#panel-desempenho caption,#panel-desempenho .performance-method-note,#panel-desempenho .bar-pct{font-size:.8125rem}
 /* Trocar de subaba não deve encolher o contêiner e deslocar o que vem depois (CLS medido em 0,036 por troca). */
 #panel-desempenho #performanceSectionContent{min-height:60vh}

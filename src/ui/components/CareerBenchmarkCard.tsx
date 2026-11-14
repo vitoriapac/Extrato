@@ -243,7 +243,7 @@ export function CareerBenchmarkCard({
             >
               <button
                 type="button"
-                class="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
+                class="touch-target inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <span
                   class="w-2 h-2 rounded-full"
@@ -261,7 +261,7 @@ export function CareerBenchmarkCard({
             >
               <button
                 type="button"
-                class="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
+                class="touch-target inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <span class="w-2 h-2 rounded-full" style={{ background: 'var(--subject-2)' }} />
                 <span>
@@ -276,7 +276,7 @@ export function CareerBenchmarkCard({
             >
               <button
                 type="button"
-                class="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
+                class="touch-target inline-flex items-center gap-1 border-0 bg-transparent p-0 text-inherit font-inherit cursor-help rounded focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <span class="w-2 h-2 rounded-full" style={{ background: 'var(--ink-soft)' }} />
                 <span>

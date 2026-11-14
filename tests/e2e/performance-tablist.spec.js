@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openDemo, activateTab } from './helpers.js';
+import { openDemo, activateTab, openPerformanceSection } from './helpers.js';
 
 test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }) => {
   await openDemo(page);
@@ -46,4 +46,29 @@ test('Questões e provas reúne Questões, Simulados e Inteligência da prova, e
   await sections.nth(2).click();
   await expect(page.locator('#panel-desempenho')).toHaveAttribute('data-performance-view', 'exam');
   await expect(page).toHaveURL(/#desempenho\/exam$/);
+});
+
+test('Ritmo e aderência: nenhum alvo interativo menor que 24 px (WCAG 2.5.8)', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await activateTab(page, 'desempenho');
+    await openPerformanceSection(page, 'consistency');
+    const small = await page.evaluate(() => {
+      const found = [];
+      document
+        .querySelectorAll(
+          '#panel-desempenho button, #panel-desempenho a[href], #panel-desempenho summary, #panel-desempenho select'
+        )
+        .forEach(el => {
+          const box = el.getBoundingClientRect();
+          if (!box.width || !box.height || el.closest('[hidden]')) return;
+          if (box.height < 24 || box.width < 24)
+            found.push(`${el.className} ${Math.round(box.width)}x${Math.round(box.height)}`);
+        });
+      return found;
+    });
+    expect(small, `alvos pequenos em ${width}px`).toEqual([]);
+  }
 });

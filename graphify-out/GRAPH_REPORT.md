@@ -1,17 +1,17 @@
 # Graph Report - Extrato  (2026-11-14)
 
 ## Corpus Check
-- 1296 files · ~1,529,936 words
+- 1296 files · ~1,530,049 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 22 file(s) not represented in the graph (top: (none) 6, .woff2 6, .css 6)
 
 ## Summary
-- 8717 nodes · 26284 edges · 315 communities (302 shown, 13 thin omitted)
+- 8717 nodes · 26285 edges · 316 communities (302 shown, 14 thin omitted)
 - Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 3630 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3685b592`
+- Built from commit: `d8f161c3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -308,6 +308,7 @@
 - help-visuals.ts
 - engines
 - help-runtime.ts
+- ux-baseline.spec.js
 - Inventário de densidade — consolidação de produto
 - 10. Refinamento de Usabilidade & Experiência do Iniciante (10 Pontos de Atrito)
 - 2.2. Arquitetura em 3 Camadas Implementada
@@ -353,7 +354,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (315 total, 13 thin omitted)
+## Communities (316 total, 14 thin omitted)
 
 ### Community 0 - "app.ts"
 Cohesion: 0.06
@@ -473,7 +474,7 @@ Nodes (53): createGuidedStudyService(), GUIDED_STUDY_VERSION, createTopicHistory
 
 ### Community 29 - "helpers.js"
 Cohesion: 0.08
-Nodes (24): @axe-core/playwright, @playwright/test, finishQuestionSession(), prepare(), activateTab(), assertCriticalResponsive(), expectNoPageOverflow(), openAchievements() (+16 more)
+Nodes (28): @axe-core/playwright, @playwright/test, finishQuestionSession(), prepare(), activateTab(), assertCriticalResponsive(), expectNoPageOverflow(), openAchievements() (+20 more)
 
 ### Community 30 - "createFirstAccessModalController"
 Cohesion: 0.28
@@ -1220,8 +1221,8 @@ Cohesion: 0.22
 Nodes (9): Checkpoint 0 — Decisões (sem código) — FECHADO em 01/11/2026, Checkpoint 3B, Fase 3B — Gráficos aprovados no Checkpoint 3, G10: Foco profundo por turno, G11: Pareto do perfil de erros, G12: Intensidade de carga no calendário, G8: Disponibilidade semanal, Modernização Visual e Cockpit Panorâmico (Novembro 2026) (+1 more)
 
 ### Community 221 - "defaults.ts"
-Cohesion: 0.18
-Nodes (8): createDefaultState(), AUDIT_PROFILES, AUDIT_TODAY, buildJourneyProfile(), openPerformanceFilters(), openSessionLog(), selectSubjectCombobox(), showSessions()
+Cohesion: 0.24
+Nodes (5): createDefaultState(), AUDIT_PROFILES, AUDIT_TODAY, buildJourneyProfile(), selectSubjectCombobox()
 
 ### Community 222 - "build-performance-consistency.ts"
 Cohesion: 0.12
@@ -1290,10 +1291,6 @@ Nodes (11): createStudyTimerViewController(), getSelectedSubjectId(), populateTi
 ### Community 239 - "Arquitetura"
 Cohesion: 0.17
 Nodes (12): Arquitetura, Auditoria final da modularização, Build e verificações, Ciclo de estabilização, Cockpit Panorâmico (Visão Geral), Contrato de ação de estudo, Fluxo de dependências, Persistência (+4 more)
-
-### Community 240 - "app-state.js"
-Cohesion: 0.19
-Nodes (6): waitForAppReady(), waitForImportReady(), openExamImport(), openStableDemo(), screenshotOptions, viewports
 
 ### Community 241 - "achievement-unlocks.ts"
 Cohesion: 0.24
@@ -1499,6 +1496,10 @@ Nodes (3): escape(), minutes(), renderHelpVisual()
 Cohesion: 0.31
 Nodes (9): calculateEbbinghausRetention(), EbbinghausSimulationResult, SCHEDULED_REVIEW_DAYS, HELP_CATEGORIES, HELP_FAQ, HELP_GLOSSARY, renderHelpCenter(), runtime (+1 more)
 
+### Community 298 - "ux-baseline.spec.js"
+Cohesion: 0.33
+Nodes (3): prepareDemo(), prepareDiagnosisScreenshot(), screenshotOptions
+
 ### Community 299 - "Inventário de densidade — consolidação de produto"
 Cohesion: 0.40
 Nodes (4): Contrato de leitura, Decisões e limites, Inventário de densidade — consolidação de produto, Inventário por área
@@ -1566,7 +1567,7 @@ Nodes (29): Checkpoint 2, Checkpoint 3, Checkpoint 4, Checkpoint 8, Checkpoint f
 ## Knowledge Gaps
 - **11 isolated node(s):** `@babel/core`, `@babel/preset-react`, `@babel/preset-typescript`, `@tailwindcss/cli`, `@types/node` (+6 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2613 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

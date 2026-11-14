@@ -51,7 +51,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] C3.4 P1: projeção num bloco só e metodologia do Diagnóstico uma vez (antecipa as Tarefas 13 e 14)
 - [x] C3.5 P2: card do Diagnóstico com um botão primário e alerta só para risco real
 - [x] C3.6 P2: selo do Resumo do período igual ao conteúdo; resumo dos 7 dias aberto
-- [ ] C3.7 P2: alvos de toque do Ritmo (mapa de calor, 3 botões de 18 px)
+- [x] C3.7 P2: alvos de toque do Ritmo (mapa de calor, 3 botões de 18 px)
 - [ ] Nova crítica: H4 e H6 ≥ 3
 
 ### Fase 4: Cortar repetições
