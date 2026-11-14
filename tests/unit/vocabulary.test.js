@@ -89,3 +89,47 @@ test('simulados: cada cálculo tem um nome e a conta canônica aparece na explic
   assert.match(explanation.method, /média ponderada dos cinco últimos/);
   assert.match(explanation.method, /média da aba Simulados é simples e só do período/);
 });
+
+test('a faixa projetada não repete os números no resumo e o aviso comum do Diagnóstico vale uma vez', async () => {
+  const summary = renderPerformanceExecutiveSummary(
+    {
+      rangeLabel: 'Últimos 30 dias',
+      situation: {
+        status: 'attention',
+        confidence: 'low',
+        target: 80,
+        simulationAccuracy: 81,
+        band: { low: 69, high: 93 },
+        simulationCount: 3,
+        simulationTotal: 6,
+      },
+      change: null,
+      base: { resolved: 40, sessions: 5, smallSample: false },
+    },
+    { escapeHtml }
+  );
+  assert.doesNotMatch(summary, /69%|93%/);
+  assert.match(summary, /Projeção até a prova/);
+
+  const { renderConsolidatedDiagnosis } = await import('../../src/ui/renderers/consolidated-diagnosis-renderer.js');
+  const { SHARED_SIGNALS_LIMITATION } = await import('../../src/application/diagnostics/build-consolidated-signals.js');
+  const item = n => ({
+    subjectId: 's',
+    topicId: `t${n}`,
+    name: `Tópico ${n}`,
+    granularity: 'topic',
+    primarySignal: 'gap',
+    severity: 'high',
+    severityLabel: 'Alta',
+    state: 'attention',
+    evidenceQuality: 'moderate',
+    evidence: { label: 'Moderada' },
+    limitation: SHARED_SIGNALS_LIMITATION,
+    signals: [{ kind: 'gap', active: true, reasons: ['Lacuna'], period: null }],
+  });
+  const html = renderConsolidatedDiagnosis(
+    { topics: [item(1), item(2), item(3)], subjects: [] },
+    { studyActionForItem: () => null, escapeHtml, escapeAttr: escapeHtml }
+  );
+  assert.equal(html.split('Sinais podem compartilhar observações').length - 1, 1);
+});

@@ -22,7 +22,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
   if (!label || situation.target == null || situation.simulationAccuracy == null)
     return 'Dados insuficientes para projetar a meta: faltam simulados comparáveis.';
   const band = situation.band
-    ? `; faixa estimada de ${formatEvidencePercent(situation.band.low)} a ${formatEvidencePercent(situation.band.high)}`
+    ? '; faixa estimada em “Projeção até a prova”'
     : '';
   const confidence = confidenceLabels[situation.confidence || ''];
   const countNote =
@@ -35,7 +35,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
     situation.simulationAccuracy >= situation.target &&
     situation.band.low < situation.target;
   if (bandBelowTarget && situation.status === 'attention')
-    return `${label}. O resultado central dos simulados comparáveis${countNote}, ${formatEvidencePercent(situation.simulationAccuracy)}, atinge a meta de ${formatEvidencePercent(situation.target)}, mas a faixa estimada de ${formatEvidencePercent(situation.band!.low)} a ${formatEvidencePercent(situation.band!.high)} inclui valores abaixo dela.${confidence ? ` Confiança ${confidence}.` : ''}`;
+    return `${label}. O resultado central dos simulados comparáveis${countNote}, ${formatEvidencePercent(situation.simulationAccuracy)}, atinge a meta de ${formatEvidencePercent(situation.target)}, mas a faixa estimada, em “Projeção até a prova”, inclui valores abaixo dela.${confidence ? ` Confiança ${confidence}.` : ''}`;
   return `${label}. Resultado central dos simulados comparáveis${countNote}: ${formatEvidencePercent(situation.simulationAccuracy)}, meta de ${formatEvidencePercent(situation.target)}${band}.${confidence ? ` Confiança ${confidence}.` : ''}`;
 }
 

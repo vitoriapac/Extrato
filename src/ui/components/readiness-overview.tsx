@@ -178,9 +178,6 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
           {projection.available ? (
             <section class="performance-forecast" aria-label="Projeção de desempenho">
               <div>
-                <strong>
-                  Faixa atual: {projection.low}–{projection.high}%
-                </strong>
                 <small>{projectionGapText(projection)}</small>
               </div>
               <div>

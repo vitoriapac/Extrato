@@ -28,6 +28,10 @@ const stable = (left: Row, right: Row) => compareSignalIds(left.entityKey, right
 
 // eligibleEntities is the caller's current, verified content scope (including archived flags).
 // Unknown legacy subject aggregates cannot be inferred from a topic's membership.
+/** Aviso comum a todos os cards do Diagnóstico: aparece uma vez na lista, não em cada card. */
+export const SHARED_SIGNALS_LIMITATION =
+  'Sinais podem compartilhar observações. Suas evidências e volumes não são somados; ausência de alerta não confirma consolidação.';
+
 export function buildConsolidatedSignals(input: any = {}) {
   const {
     eligibleEntities = [],
@@ -183,8 +187,7 @@ export function buildConsolidatedSignals(input: any = {}) {
         kind: signal.kind,
         period: signal.period,
       })),
-      limitation:
-        'Sinais podem compartilhar observações. Suas confianças e volumes não são somados; ausência de alerta não confirma consolidação.',
+      limitation: SHARED_SIGNALS_LIMITATION,
     });
   }
   // Alerta com evidência vem antes de "dados insuficientes"; no empate de prioridade, a gravidade decide.

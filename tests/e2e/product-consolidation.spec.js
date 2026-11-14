@@ -414,8 +414,10 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expect(first.locator('.diagnostic-detail')).not.toHaveAttribute('open', '');
   await first.locator('.diagnostic-detail > summary').click();
   await expect(first.locator('.diagnostic-detail__body')).toBeVisible();
-  await first.locator('.diagnostic-detail__method > summary').click();
-  await expect(first.locator('.diagnostic-detail__method')).toContainText('confianças');
+  // O aviso comum fica uma vez no topo da lista, não em cada card.
+  await expect(page.locator('#diagnosisCenter .diagnosis-consolidated > .analytics-note')).toContainText(
+    'evidências e volumes não são somados'
+  );
   await expectNoPageOverflow(page);
 
   await activateTab(page, 'desempenho');

@@ -69,5 +69,4 @@ test('simulados: uma casa decimal e contagem com critério e janela no resumo', 
   );
   assert.match(html, /3 simulados, últimos 90 dias/);
   assert.match(html, /80,7%/);
-  assert.match(html, /76,2%/);
 });

@@ -1,5 +1,6 @@
 import { ALERT_SEVERITY_VARIANT, renderBadgeIcon } from '../primitives/badge.js';
 import { renderDiagnosticSummary } from './diagnostic-summary-renderer.js';
+import { SHARED_SIGNALS_LIMITATION } from '../../application/diagnostics/build-consolidated-signals.js';
 
 export function renderConsolidatedDiagnosis(
   model: Record<string, any>,
@@ -28,5 +29,5 @@ export function renderConsolidatedDiagnosis(
   };
   const first = rows.slice(0, 3),
     remaining = rows.slice(3);
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta.</p><div class="diagnosis-consolidated-list">${first.map(renderRow).join('')}</div>${remaining.length ? `<details class="performance-more diagnosis-insufficient"><summary>Mostrar mais diagnósticos · +${remaining.length}</summary><template data-lazy><div class="diagnosis-consolidated-list">${remaining.map((item, index) => renderRow(item, index + 5)).join('')}</div></template></details>` : ''}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p><div class="diagnosis-consolidated-list">${first.map(renderRow).join('')}</div>${remaining.length ? `<details class="performance-more diagnosis-insufficient"><summary>Mostrar mais diagnósticos · +${remaining.length}</summary><template data-lazy><div class="diagnosis-consolidated-list">${remaining.map((item, index) => renderRow(item, index + 5)).join('')}</div></template></details>` : ''}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }

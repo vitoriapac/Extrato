@@ -1,6 +1,7 @@
 import { formatPeriodBR } from '../../core/format-date.js';
 import { diagnosticSignalLabel } from '../../domain/diagnostics/diagnostic-vocabulary.js';
 import { renderDisclosure } from '../components/analytical-presentation.js';
+import { SHARED_SIGNALS_LIMITATION } from '../../application/diagnostics/build-consolidated-signals.js';
 
 const metrics: Record<string, any> = {
   mastery: ['Domínio', '/100'],
@@ -47,6 +48,13 @@ export function renderDiagnosticSummary(
     primary?.period?.start && primary?.period?.end
       ? formatPeriodBR(primary.period.start, primary.period.end)
       : null;
+  // O aviso comum fica uma vez no topo da lista; o card só traz o que é dele.
+  const ownLimitation =
+    item.limitation && item.limitation !== SHARED_SIGNALS_LIMITATION ? item.limitation : null;
+  const method =
+    ownLimitation || period
+      ? `<details class="diagnostic-detail__method"><summary>Ver metodologia</summary><template data-lazy>${ownLimitation ? `<p>${escapeHtml(ownLimitation)}</p>` : ''}${period ? `<p>Período observado: ${escapeHtml(period)}.</p>` : ''}</template></details>`
+      : '';
   return `<p class="diagnostic-primary-reason"><strong>${escapeHtml(diagnosticSignalLabel(item.primarySignal))}</strong>${reason ? ` · ${escapeHtml(reason)}` : ''}</p>
     <p class="diagnostic-quality">Evidência: ${escapeHtml(item.evidence?.label || 'Não avaliada')}</p>
     ${renderDisclosure({
@@ -56,7 +64,7 @@ export function renderDiagnosticSummary(
       contentHTML: `
       ${primaryMeasurements.length ? renderMeasurements(primaryMeasurements, escapeHtml) : '<p class="analytics-note">Ainda não há medidas detalhadas para o sinal principal.</p>'}
       ${supporting.length ? `<div class="diagnostic-supporting"><strong>Também observado</strong>${renderSupporting(supporting.slice(0, 5))}${supporting.length > 5 ? `<details class="diagnostic-detail__more"><summary>Mostrar mais sinais · +${supporting.length - 5}</summary><template data-lazy>${renderSupporting(supporting.slice(5))}</template></details>` : ''}</div>` : ''}
-      <details class="diagnostic-detail__method"><summary>Ver metodologia</summary><template data-lazy><p>${escapeHtml(item.limitation || 'O diagnóstico usa os registros disponíveis no concurso ativo.')}</p>${period ? `<p>Período observado: ${escapeHtml(period)}.</p>` : ''}</template></details>
+      ${method}
     `,
     })}`;
 }
