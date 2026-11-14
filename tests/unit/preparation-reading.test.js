@@ -169,11 +169,11 @@ const gap = (id, over = {}) => ({
   ...over,
 });
 
-test('"o que mais pesa" segue a ordem do Diagnóstico e leva a ele', () => {
+test('"o que mais pesa" segue a fila do Diagnóstico (pontuação de prioridade) e leva a ele', () => {
   const reading = buildPreparationReading({
     candidates: [
-      gap('a', { improvementPotential: 30 }),
-      gap('b', { improvementPotential: 90 }),
+      gap('a', { score: 50 }),
+      gap('b', { score: 80 }),
       gap('c', { mastery: 90 }),
     ],
   });
@@ -203,4 +203,24 @@ test('"o que mais pesa" não cria um segundo critério de pior disciplina', () =
     weeklyBrief: { current: week(), weakestSubject: { id: 's9', name: 'Direito', accuracy: 30, resolved: 40 } },
   });
   assert.ok(!reading.pulling.some(item => /Direito/.test(item.text)));
+});
+
+test('uma fila só: Leitura e riscos da projeção seguem a mesma pontuação de prioridade', async () => {
+  const { buildProjectionTopicRisks } = await import('../../src/application/projection/build-projection-topic-risks.js');
+  const item = (id, score) => ({
+    topicId: id,
+    subjectId: 's1',
+    topicName: id,
+    mastery: 40,
+    examImpact: 90,
+    evidenceStrength: 0.8,
+    score,
+  });
+  const candidates = [item('baixo', 10), item('alto', 90), item('meio', 50)];
+  const risks = buildProjectionTopicRisks(candidates).map(risk => risk.topicId);
+  const reading = buildPreparationReading({ candidates: candidates.map(c => ({ ...c, subjectName: 'D' })) })
+    .pulling.map(p => p.text);
+  assert.deepEqual(risks, ['alto', 'meio', 'baixo']);
+  assert.match(reading[0], /alto/);
+  assert.match(reading[1], /meio/);
 });

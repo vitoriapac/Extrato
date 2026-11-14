@@ -138,6 +138,12 @@ export function buildDailyPlanProposal({
     days: proposalDays,
     plannedMinutes,
     unallocatedMinutes,
+    // Totais da janela: a prévia usa estes valores para explicar por que parte do plano não coube.
+    window: {
+      availableMinutes: slots.reduce((sum: number, slot: any) => sum + slot.availableMinutes, 0),
+      reserveMinutes: slots.reduce((sum: number, slot: any) => sum + slot.reserveMinutes, 0),
+      existingMinutes: slots.reduce((sum: number, slot: any) => sum + slot.existingMinutes, 0),
+    },
     existingLinkedItems: existingKeys.size,
     reserveRatio: ratio,
     reason: plannedMinutes ? null : 'Não há capacidade ou itens novos para distribuir.',

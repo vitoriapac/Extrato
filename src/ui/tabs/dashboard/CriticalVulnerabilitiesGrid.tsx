@@ -42,7 +42,8 @@ export function CriticalVulnerabilitiesGrid({
               )}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
-              Tópicos mais cobrados no concurso com domínio abaixo da meta
+              Tópicos mais cobrados no concurso com domínio abaixo da meta, ordenados pela lacuna e pela
+              incidência. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.
             </p>
           </div>
         </div>

@@ -53,6 +53,8 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] C3.6 P2: selo do Resumo do período igual ao conteúdo; resumo dos 7 dias aberto
 - [x] C3.7 P2: alvos de toque do Ritmo (mapa de calor, 3 botões de 18 px)
 - [x] Nova crítica (14/11, 2ª rodada): 23/40, H4 = 1, H6 = 2; varredura final de escala feita. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 depois da Fase 4
+- [x] Nova crítica (14/11, 3ª rodada, depois da Fase 4): 23/40, H4 = 1, H6 = 2. Passo dado: uma fila de estudo só (pontuação de prioridade do Diagnóstico) na Leitura e nos riscos da projeção; Radar e Mapa de lacunas rotulados como ordenados por gravidade. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 ao fim da Fase 5
+- [ ] C3.8: contrato de grandezas (um formatador, evidência com os 3 níveis do glossário, uma função por tópico, uma fase só, Aderência × Volume); Leitura e Diagnóstico ainda divergem no item 1 na demo (Ferramentas de trabalho remoto fora de "O que mais pesa")
 
 ### Fase 4: Cortar repetições
 - [x] Tarefa 13: Resumo da semana na Visão geral

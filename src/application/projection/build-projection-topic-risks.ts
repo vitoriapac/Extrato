@@ -1,7 +1,9 @@
 // Uses the existing priority candidate order. It annotates evidence; it does not rank or score topics.
 export function buildProjectionTopicRisks(candidates: Array<Record<string, any>> = []) {
   const seen = new Set();
-  return candidates
+  // Mesma ordem do Diagnóstico: a pontuação de prioridade do tópico (a fila de estudo oficial).
+  return [...candidates]
+    .sort((a, b) => (Number(b?.score) || 0) - (Number(a?.score) || 0))
     .filter(
       item =>
         item?.topicId &&

@@ -322,7 +322,8 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     recoveryController,
     readinessResult: approvalReadinessService.readinessResult,
     computeApprovalMetrics: approvalReadinessService.computeApprovalMetrics,
-    intelligenceCandidates: studyCandidateService.intelligenceCandidates,
+    // Os mesmos candidatos (e a mesma pontuação) do Diagnóstico: uma fila de estudo só.
+    intelligenceCandidates: () => refreshStudyRecommendationItems().candidates,
     nextBestAction: () =>
       buildNextBestAction({
         recommendations: getCurrentStudyRecommendations(),

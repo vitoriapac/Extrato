@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=fee29f2e7cf1">
-<link rel="stylesheet" href="styles/app.css?v=fee29f2e7cf1">
+<link rel="stylesheet" href="styles/tailwind.css?v=b20208089967">
+<link rel="stylesheet" href="styles/app.css?v=b20208089967">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -235,7 +235,7 @@
     <details class="desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
       <summary>Mapa de lacunas por tópico, retenção e ajuste pós-simulado</summary>
       <div class="today-analysis-grid">
-      <section class="analytics-card" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Gravidade combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A ordem de estudo segue a prioridade da Próxima melhor ação.</p></header><div id="gapMapDashboard"></div></section>
+      <section class="analytics-card" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Ordenado por gravidade: combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.</p></header><div id="gapMapDashboard"></div></section>
       <section class="analytics-card" data-advanced="Replanejamento pós-simulado"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
       <section class="performance-retention-card" aria-labelledby="performanceRetentionTitle">
         <header class="module-heading module-heading--compact">
@@ -677,7 +677,7 @@
     <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3></header><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><p class="helper-text">Nada é salvo nem entra no calendário sem a sua confirmação. <a href="#instrucoes">Como calculamos a confiança &rarr;</a></p><div id="adaptivePlanningHistory"></div></section>
 
     <section class="chart-card card--default metas-execution" id="planExecutionCard" aria-labelledby="planExecutionTitle">
-      <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo planejado e estudo realizado no período atual.</p></header>
+      <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo com tarefa marcada e estudo no período atual.</p></header>
       <div id="planExecutionResults"></div>
       <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline--end icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
     </section>
@@ -780,7 +780,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=fee29f2e7cf1"></script>
+  <script src="src/app.bundle.js?v=b20208089967"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

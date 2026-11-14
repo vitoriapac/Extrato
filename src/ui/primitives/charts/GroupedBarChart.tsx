@@ -94,8 +94,16 @@ export function GroupedBarChart({
                   <span class="font-medium text-content-primary break-words">{row.name}</span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                  <span class="text-content-secondary font-mono text-xs">
-                    {formatMinutes(row.studiedMinutes)} / {formatMinutes(row.plannedMinutes)}
+                  {/* Mesma ordem da legenda e das barras: planejado, depois realizado. */}
+                  <span
+                    class="text-content-secondary font-mono text-xs"
+                    title={`Planejado ${formatMinutes(row.plannedMinutes)} · Realizado ${formatMinutes(row.studiedMinutes)}`}
+                  >
+                    <span class="sr-only">Planejado </span>
+                    {formatMinutes(row.plannedMinutes)}
+                    <span aria-hidden="true"> / </span>
+                    <span class="sr-only">, realizado </span>
+                    {formatMinutes(row.studiedMinutes)}
                   </span>
                   <span
                     class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}

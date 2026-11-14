@@ -17,7 +17,11 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
   return (
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
       <p class="week-reconciliation__period">{data.periodLabel}</p>
-      <LedgerLine label="Capacidade da semana" value={fmt(data.capacityMin)} />
+      <LedgerLine
+        label="Capacidade da semana"
+        hint="Soma da disponibilidade dos 7 dias"
+        value={fmt(data.capacityMin)}
+      />
       <LedgerLine
         label="Com tarefa marcada"
         hint="Semana inteira: inclui dias futuros"

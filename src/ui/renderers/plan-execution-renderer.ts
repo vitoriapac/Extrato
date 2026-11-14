@@ -28,7 +28,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
   );
   const warning =
     model.plannedMinutes > model.capacityMinutes
-      ? '<aside class="context-note context-note--attention"><strong>Atenção</strong><p>O tempo planejado nos dias supera a capacidade semanal informada. Revise a distribuição antes de confirmar novos planos.</p></aside>'
+      ? '<aside class="context-note context-note--attention"><strong>Atenção</strong><p>O tempo com tarefa marcada nos dias supera a capacidade semanal informada. Revise a distribuição antes de confirmar novos planos.</p></aside>'
       : '';
   const unplanned =
     model.state === 'unplanned'

@@ -1,5 +1,4 @@
 import { isStrategicGap, STRATEGY_THRESHOLDS } from '../../domain/strategy/config.js';
-import { generateDiagnosis } from '../generate-diagnosis.js';
 import { displayReadinessValue } from '../analytics/build-header-view-model.js';
 import { formatReadableMinutes as formatStudyMinutes } from './build-weekly-performance-brief.js';
 import { formatDateBR } from '../../core/format-date.js';
@@ -146,9 +145,11 @@ export function buildPreparationReading({
       text: `O fator ${dropped[0].label} da Prontidão caiu de ${dropped[0].before} para ${dropped[0].after} (escala de 0 a 100)${pair?.previous && pair?.current ? ` entre ${formatDateBR(pair.previous.date)} e ${formatDateBR(pair.current.date)}` : ''}.`,
       link: null,
     });
-  // Mesma ordem do Diagnóstico (oportunidade = impacto na prova × potencial × esforço); só entram tópicos
-  // fracos com impacto alto. É a resposta oficial para "o que mais pesa"; as outras telas apontam para ela.
-  const gaps = generateDiagnosis(candidates).opportunities.filter(item => isStrategicGap(item));
+  // Mesma fila do Diagnóstico (pontuação de prioridade do tópico, a que ordena a lista de cards); só entram
+  // tópicos fracos com impacto alto. É a resposta oficial para "o que mais pesa"; as outras telas apontam para ela.
+  const gaps = [...candidates]
+    .sort((a, b) => (Number(b?.score) || 0) - (Number(a?.score) || 0))
+    .filter(item => isStrategicGap(item));
   // Tópico fraco dentro de disciplina forte: diz as duas coisas para o leitor não ver contradição.
   const strongSubjectNote = (gap: Row): string => {
     const stat = subjectAccuracy[gap.subjectId];
