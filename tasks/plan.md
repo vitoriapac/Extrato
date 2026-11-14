@@ -96,7 +96,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [ ] Tarefa 32: Estados vazios do modo iniciante
 
 ### Checkpoint final
-- [ ] Todos os critérios atendidos; `/impeccable critique` ≥ 32/40; pronto para revisão
+- [ ] Todos os critérios atendidos (inclui a Fase 9); `/impeccable critique` ≥ 32/40; pronto para revisão
 
 ### Fase 8: Vocabulário e contagens nas outras telas
 - [ ] Tarefa 33: Vocabulário (domínio e retenção /100, evidência × confiança) fora de Desempenho
@@ -104,6 +104,21 @@ Tarefas detalhadas: [todo.md](todo.md).
 
 ### Checkpoint 8: Outras telas
 - [ ] Busca no bundle sem "domínio N%" nem "confiança" fora da faixa projetada; E2E e capturas atualizados
+
+### Fase 9: Correções das críticas 8 e 9 (H4, H8, mobile e personas)
+Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red flags de Alex, Casey, Sam e Jordan. Detalhes e aceite em [todo.md](todo.md).
+- [ ] Tarefa 35: Nomes da navegação e da rota (P1, H4)
+- [ ] Tarefa 36: Linha-chave dos universos de contagem (P1, H4)
+- [ ] Tarefa 37: Um formato por grandeza (P2, H4)
+- [ ] Tarefa 38: Um vocabulário de estado, prioridade e evidência (P2, H4)
+- [ ] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas (P2, H1)
+- [ ] Tarefa 40: Provas em um painel por vez, sem repetições, com ajuda uniforme (P1, H8, H10)
+- [ ] Tarefa 41: Mobile e acessibilidade (Casey, Sam; P2/P3)
+- [ ] Tarefa 42: Poder de uso e jargão (Alex, Jordan; H2, H3, H7)
+- [ ] Tarefa 43: Jornada emocional: o que já está firme e as boas notícias antes (P3)
+
+### Checkpoint 9: Crítica
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3 (28/40 na rodada 9)
 
 ## Grafo de dependências
 
@@ -115,6 +130,7 @@ T6 investigação ── T7, T8 ── T9..T12 ── T13..T16 ── T17..T22
 T23 ── T24 ── T25 ── T27      T26 (paralela, dados)
 T16 ── T28..T31 (gráficos usam as regras de tamanho)
 T17..T22 ── T32
+T35 ── T36 ── T37, T38 ── T39 ── T40 ── T41, T42, T43 ── Checkpoint 9
 ```
 
 ## Riscos e mitigações

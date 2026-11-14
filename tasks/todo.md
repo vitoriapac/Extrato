@@ -373,7 +373,7 @@ Verificação usada abaixo:
 
 ### Checkpoint final
 - [ ] Todos os critérios atendidos
-- [ ] `/impeccable critique` ≥ 32/40
+- [ ] `/impeccable critique` ≥ 32/40 (depois da Fase 9)
 - [ ] Pronto para revisão
 
 ---
@@ -404,3 +404,109 @@ A Tarefa 9 aplicou o vocabulário fixo só em Desempenho. Esta fase leva a mesma
 ### Checkpoint 8
 - [ ] Busca no bundle sem "domínio N%" nem "confiança" fora da faixa projetada
 - [ ] E2E e capturas atualizados; `/impeccable critique` sem novo achado de vocabulário
+
+---
+
+## Fase 9: Correções das críticas 8 e 9
+
+Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red flags das personas Alex (power user), Casey (mobile), Sam (acessibilidade) e Jordan (iniciante). Itens marcados "confirmar" foram vistos só pelo DOM de um avaliador e precisam de checagem antes de mudar.
+
+### Tarefa 35: Nomes da navegação e da rota
+**Origem:** P1 de H4 nas duas rodadas.
+**Aceite:**
+- [ ] Decisão de nomes registrada antes de codar (perguntar ao usuário): a área hoje é "Questões & Simulados" (global), "Provas" (subaba), "Questões" (âncora interna) e `#desempenho/questions` (rota)
+- [ ] Um nome para a subaba, a âncora e a rota (o hash antigo continua redirecionando); âncora interna "Questões" renomeada para não repetir o nome da área
+- [ ] Subabas "Visão geral" e "Disciplinas" não repetem o rótulo das abas globais "Visão geral" e "Matérias" (ou a diferença fica explícita no rótulo); mobile "Início/Matérias" revisado junto
+- [ ] Rótulos de acessibilidade do roteiro da demo ("Ir para Questões e Simulados") iguais aos visíveis
+**Verificação:** unit de rotas; E2E de navegação e redirecionamento; busca no bundle pelos nomes antigos
+**Arquivos prováveis:** `performance-tab-controller.ts`, `performance-controller.ts`, rotas em `src/ui/tabs`, `index.html`, `help-content.ts`, specs de navegação
+**Tamanho:** M
+
+### Tarefa 36: Linha-chave dos universos de contagem
+**Origem:** P1 de H4 (296 × 305 × 194; 463 × 842 × 686 questões); memória de trabalho de Alex e Jordan.
+**Aceite:**
+- [ ] Uma linha-chave no Diagnóstico e em Provas: "296 tópicos no edital · 194 por concluir · 305 mapeados ao histórico da banca" (valores reais, com a diferença de 9 explicada na tela)
+- [ ] Questões: "463 respondidas no período · 842 classificadas · 686 analisadas", com o critério de cada; verbo único ("respondidas", não "resolvidas")
+- [ ] Todo "N de M tópicos" nomeia o M
+**Verificação:** unit do texto com os três universos; E2E na demo conferindo que nenhum número aparece sem recorte
+**Arquivos prováveis:** `consolidated-diagnosis-renderer.ts`, `exam-matrix-controller.ts`, `exam-data-quality-renderer.ts`, `build-exam-data-quality.ts`
+**Tamanho:** S
+
+### Tarefa 37: Um formato por grandeza
+**Origem:** P2 de H4; observações de formatos.
+**Aceite:**
+- [ ] Precisão: sempre uma casa (69,3%) em KPI, texto e gráfico; tabela de Disciplinas com a mesma regra
+- [ ] Variação em % sempre em p.p. com sinal e uma casa, inclusive "execução prioritária: −6 p.p." e "Queda de 20 p.p."; variação da Prontidão (escala /100) diz "pontos", com a regra na ajuda
+- [ ] Faixas num estilo só ("69% a 93%", "78% a 84%", "20 a 26 h/sem") em Desempenho; legenda do heatmap igual
+- [ ] Tempo sempre "34 h 2 min", inclusive donut e listas de metas; contagens com unidade ("+72 questões")
+- [ ] "—" e "—%" viram "Sem dados" com motivo curto; "−35 pts" das metas (confirmar) padronizado
+**Verificação:** unit nos formatadores (`format-number.ts`, `formatStudyMinutes`); busca por `pts`, `—%` e horas coladas ("34h"); E2E e goldens conferidos antes de atualizar
+**Dependências:** Tarefa 36
+**Tamanho:** M
+
+### Tarefa 38: Um vocabulário de estado, prioridade e evidência
+**Origem:** P2 de H4 (quatro vocabulários paralelos, seis usos de "evidência"); jargão de Jordan.
+**Aceite:**
+- [ ] Decisão de produto registrada (perguntar ao usuário): quais estados existem (prioridade × tendência × quadrante da Matriz) e o nome de cada um; tabela de correspondência no código
+- [ ] Prioridade e tipo de problema em chips separados ("Prioridade provisória", "Lacuna prioritária", "Atenção prioritária", "Importante", "Cobertura a expandir" não dividem a mesma coluna); ordem de urgência visível
+- [ ] Evidência: um componente com Baixa, Média e Alta; "N tópicos com evidência" só como contagem em outro estilo; "Sem evidência registrada" e "base histórica" alinhados
+- [ ] Limiar de amostra dito uma vez (30 e 10 questões: confirmar se são conceitos diferentes e nomear cada um)
+**Verificação:** unit do mapa de vocabulário; busca no bundle; E2E do Diagnóstico e da Matriz
+**Dependências:** Tarefa 36
+**Tamanho:** M
+
+### Tarefa 39: Selo de janela com a janela real
+**Origem:** crítica 9 (23 de 33 selos dizem "período"; "Faltam 2 h 32 min" × "Faltam 12 h 14 min" lado a lado); H1.
+**Aceite:**
+- [ ] O selo diz a janela ("30 dias", "7 dias", "todo o histórico") em vez de "período"; mantém a posição colada ao rótulo decidida na T9
+- [ ] Onde duas janelas aparecem lado a lado, uma frase diz que são janelas diferentes
+- [ ] Linha de escopo única por bloco ("Últimos 30 dias · comparação: …") e o mesmo padrão no Diagnóstico ("Situação atual · …")
+**Verificação:** unit do `renderWindowBadge`; E2E contando selos sem "período"; goldens revisados
+**Dependências:** Tarefa 37
+**Tamanho:** S
+
+### Tarefa 40: Provas em um painel por vez, sem repetições
+**Origem:** P1 de H8 (10,8 mil px no mobile); Casey; redundâncias da crítica 9; H10.
+**Aceite:**
+- [ ] "Questões", "Simulados" e "Inteligência da prova" mostram um painel por vez (controle segmentado ou âncoras que recolhem os outros), sem virar segundo nível de abas; Provas ≤ 5.000 px no mobile
+- [ ] "Incidência × domínio" e a lista de 85 itens recolhidos por padrão no mobile
+- [ ] Sem repetição: meta pessoal de aderência 80% (Provas e Ritmo), "Faltam 12 h 14 min" duas vezes, Aderência 73,6% = Volume do plano 73,6% (confirmar), "Evolução dos simulados" duas vezes (confirmar)
+- [ ] Os cerca de 40 `<details>` "Como/Entenda/Limites" com nomes uniformes; a frase longa de causalidade vira versão curta com link para a explicação completa
+**Verificação:** medição de altura na demo (375 e 1440); E2E de visibilidade por painel; E2E de dobras
+**Dependências:** Tarefas 35 e 38
+**Tamanho:** L
+
+### Tarefa 41: Mobile e acessibilidade
+**Origem:** Casey e Sam; P3 de H8; pendências de H8.
+**Aceite:**
+- [ ] Heatmap: alvos de toque ≥ 44 px no mobile (semanas em 7 colunas ou últimas 12 semanas, com a lista textual como padrão); sobra de 21 px do heatmap em 1009 px corrigida
+- [ ] Selos `.performance-window` e botão de ajuda de 24 px com área de toque de 44 px no mobile
+- [ ] Botão flutuante não cobre o contador de tópicos; aba "Ritmo e aderência" em uma linha (rótulo curto ou rolagem)
+- [ ] Contraste claro medido com axe nos 5 painéis; os 2 textos escuros apontados ("O crédito só conta estudo vinculado…", "18 questões aguardam classificação.") conferidos
+- [ ] Siglas da Matriz com ponto médio ("MAT·F") com nome acessível completo
+**Verificação:** E2E mobile com `AxeBuilder` nos dois temas; contagem de alvos < 44 px
+**Tamanho:** M
+
+### Tarefa 42: Poder de uso e jargão
+**Origem:** Alex e Jordan; H2, H3, H7.
+**Aceite:**
+- [ ] Diagnóstico: filtros num controle "Filtros" (≤ 4 opções visíveis por vez) com "Restaurar padrão" e contagem de filtros ativos; busca textual de tópicos no topo
+- [ ] Atalho para a janela de tempo (7/30/90) e para trocar de subaba (decidir teclas; documentar na ajuda e no Ctrl+K)
+- [ ] Ordenação de 6 critérios de Disciplinas também no Diagnóstico onde fizer sentido (decidir)
+- [ ] Jargão com definição inline curta: "Saúde da revisão", "Incidência × domínio", "Lacuna prioritária", "Prioridade provisória"
+**Verificação:** E2E de teclado e de restaurar filtros; unit do filtro por texto
+**Dependências:** Tarefa 38
+**Tamanho:** M
+
+### Tarefa 43: Jornada emocional
+**Origem:** crítica 9 (chegada em alerta, meio desanimador, boas notícias escondidas em Simulados).
+**Aceite:**
+- [ ] Visão geral e Diagnóstico mostram o que já está firme (ex.: disciplinas na meta, simulados em alta) junto do alerta, sem elogio vazio
+- [ ] "Meta atingida" e a melhor notícia da semana aparecem fora do último subtab
+**Verificação:** unit do texto; revisão humana do tom
+**Dependências:** Tarefa 40
+**Tamanho:** S
+
+### Checkpoint 9
+- [ ] E2E, tipos e goldens revisados; busca no bundle pelos nomes e formatos antigos
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
