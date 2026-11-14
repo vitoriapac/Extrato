@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openPlanningSubtab } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openPerformanceSection,
+  openPlanningSubtab,
+} from './helpers.js';
 
 test('meta opcional persiste sem alterar históricos, aceita legado e contextualiza a trajetória', async ({
   page,
@@ -10,6 +15,7 @@ test('meta opcional persiste sem alterar históricos, aceita legado e contextual
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
   await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'simulations');
   await expect(page.locator('.achievement-projection .adherence-target')).toContainText('80%');
   const before = await page.evaluate(() => {
     const state = window.__EXTRATO_TEST__.getState();
@@ -30,6 +36,7 @@ test('meta opcional persiste sem alterar históricos, aceita legado e contextual
   await page.getByRole('button', { name: 'Desativar meta de aderência' }).click();
   await expect(page.getByRole('button', { name: 'Ativar meta de aderência' })).toBeVisible();
   await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'simulations');
   await expect(page.locator('.achievement-projection .adherence-target')).toHaveCount(0);
   const after = await page.evaluate(() => {
     const state = window.__EXTRATO_TEST__.getState();

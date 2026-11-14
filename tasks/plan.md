@@ -57,7 +57,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Fase 4: Cortar repetições
 - [x] Tarefa 13: Resumo da semana na Visão geral
 - [x] Tarefa 14: Diagnóstico sem "Situação do preparo" nem sugestão duplicada
-- [ ] Tarefa 15: Faixa projetada só em Simulados
+- [x] Tarefa 15: Faixa projetada só em Simulados
 - [ ] Tarefa 16: Gráficos existentes com tamanho responsivo
 
 ### Checkpoint 4: Repetições

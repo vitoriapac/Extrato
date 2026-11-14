@@ -38,6 +38,14 @@ export function renderPerformanceSection(
         targetScore,
         formatDate,
         escapeHtml,
+        escapeAttr,
+        projection: {
+          model: pageModel.achievementProjection,
+          history: pageModel.achievementHistory,
+          capacityMinutes: pageModel.achievementCapacityMinutes,
+          adherenceContext: pageModel.adherenceContext,
+          recoveryPlan: pageModel.recoveryPlan,
+        },
       });
     case 'subjects':
       return renderPerformanceSubjects(pageModel.model, {

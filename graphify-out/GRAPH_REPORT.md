@@ -1,17 +1,17 @@
 # Graph Report - Extrato  (2026-11-14)
 
 ## Corpus Check
-- 1300 files · ~1,530,946 words
+- 1300 files · ~1,531,828 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 22 file(s) not represented in the graph (top: (none) 6, .woff2 6, .css 6)
 
 ## Summary
-- 8739 nodes · 26405 edges · 304 communities (293 shown, 11 thin omitted)
+- 8739 nodes · 26409 edges · 306 communities (295 shown, 11 thin omitted)
 - Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 3741 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fb63fc31`
+- Built from commit: `6dfbd7f5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -39,7 +39,7 @@
 - Tarefas: aba Planejamento coerente, visual e para dois perfis
 - n
 - Icon
-- formatDateBR
+- plan-execution-renderer.ts
 - build-weekly-performance-brief.ts
 - error-notebook-engine.ts
 - demo.bundle.js
@@ -301,6 +301,8 @@
 - Consolidação da Visão Geral e Central de Ajuda
 - today-tab-controller.ts
 - buildStudyStrategy
+- formatDateBR
+- defaults.ts
 - parseLocalDate
 - ref_node_fs
 - preact
@@ -342,7 +344,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (304 total, 11 thin omitted)
+## Communities (306 total, 11 thin omitted)
 
 ### Community 0 - "app.ts"
 Cohesion: 0.05
@@ -397,8 +399,8 @@ Cohesion: 0.19
 Nodes (13): createRecoveryStateCommitter(), revision(), wireDomainAnalytics(), WireDomainAnalyticsDeps, createUiState(), OnboardingUiState, PERSISTENT_COLLECTIONS, PERSISTENT_OBJECTS (+5 more)
 
 ### Community 13 - "demo-generator.ts"
-Cohesion: 0.06
-Nodes (43): addDemoEssays(), buildDemoReviews(), buildDemoSimulations(), clamp(), stamp(), BuildDemoFlashcardOptions, buildDemoFlashcards(), RAW_DEMO_CARDS (+35 more)
+Cohesion: 0.07
+Nodes (38): addDemoEssays(), buildDemoReviews(), buildDemoSimulations(), clamp(), stamp(), BuildDemoFlashcardOptions, buildDemoFlashcards(), RAW_DEMO_CARDS (+30 more)
 
 ### Community 14 - "wire-import-controllers.ts"
 Cohesion: 0.19
@@ -406,7 +408,7 @@ Nodes (16): R2 — Datas inválidas são rejeitadas (#5), createQuestionImportSe
 
 ### Community 15 - "weekly-close-modal-controller.ts"
 Cohesion: 0.05
-Nodes (74): buildCloseComparison(), captureCloseComparisonMetrics(), number(), Row, buildPhaseComparison(), finite(), phaseOrder, rounded() (+66 more)
+Nodes (73): buildCloseComparison(), captureCloseComparisonMetrics(), number(), Row, buildPhaseComparison(), finite(), phaseOrder, rounded() (+65 more)
 
 ### Community 16 - "v"
 Cohesion: 0.04
@@ -436,9 +438,9 @@ Nodes (205): aa(), ce(), de(), ee(), G(), pe(), q(), V() (+197 more)
 Cohesion: 0.05
 Nodes (65): 4. Matriz de Entregas e Status de Execução, Fase 2: Iconografia Tabler em Escala, preact, PlateauDetectorViewModel, SimulatedRemediationDiagnostic, GuidedTourStep, LandingPricing(), FirstStepsMission() (+57 more)
 
-### Community 23 - "formatDateBR"
-Cohesion: 0.08
-Nodes (40): Contrato de superfícies, Espaçamento e componentes, Fundação visual — pacote 1, Inventário de migração, Verificação local, formatDateBR(), ENTITIES, escape() (+32 more)
+### Community 23 - "plan-execution-renderer.ts"
+Cohesion: 0.19
+Nodes (17): fmt(), renderPlanExecution(), escape(), fmt(), renderStrategicExecution(), buildWeekReconciliation(), clean(), WeekReconciliation (+9 more)
 
 ### Community 24 - "build-weekly-performance-brief.ts"
 Cohesion: 0.14
@@ -633,8 +635,8 @@ Cohesion: 0.19
 Nodes (10): computeTimerSeconds(), createTimerController(), pause(), reset(), restore(), start(), tick(), announceAriaLive() (+2 more)
 
 ### Community 72 - "approval-tab-controller.ts"
-Cohesion: 0.11
-Nodes (20): AnyRecord, FactorBar(), forecastText(), levelTone(), projectionGapText(), Raw(), ReadinessOverviewView(), ReadinessOverviewViewProps (+12 more)
+Cohesion: 0.10
+Nodes (22): AnyRecord, FactorBar(), forecastText(), levelTone(), projectionGapText(), Raw(), ReadinessOverviewView(), ReadinessOverviewViewProps (+14 more)
 
 ### Community 73 - "study-candidate-service.ts"
 Cohesion: 0.11
@@ -750,7 +752,7 @@ Nodes (15): buildVersion, bundles, checkOnly, filesUnder(), generatedIndex, gene
 
 ### Community 102 - "formatDecimal"
 Cohesion: 0.06
-Nodes (57): buildPerformanceComparison(), classify(), COMPARISON_THRESHOLDS, metric(), rounded(), formatDecimal(), formatters, ErrorCategoryRecord (+49 more)
+Nodes (64): buildPerformanceComparison(), classify(), COMPARISON_THRESHOLDS, metric(), rounded(), formatDecimal(), formatters, renderChartTooltip() (+56 more)
 
 ### Community 103 - "remote-sync-controller.ts"
 Cohesion: 0.18
@@ -761,8 +763,8 @@ Cohesion: 0.12
 Nodes (17): Classes Utilitárias Semânticas do Tema, Componentes, Controles de Formulário e Acessibilidade (WCAG 2.1 AA 1.4.11), Design System do Extrato de Estudos, Escala Tipográfica e Piso de Legibilidade, Espaçamento, Explicações de recomendações, Histórico explicável de prontidão (+9 more)
 
 ### Community 105 - "readiness-overview.tsx"
-Cohesion: 0.23
-Nodes (11): buildEvidenceQuality(), escape(), renderEvidenceQuality(), renderExamIntelligence(), escape(), renderPerformanceAnalysis(), score(), escape() (+3 more)
+Cohesion: 0.28
+Nodes (9): buildEvidenceQuality(), escape(), renderEvidenceQuality(), renderExamIntelligence(), escape(), renderPerformanceAnalysis(), score(), escape() (+1 more)
 
 ### Community 106 - "build-achievement-projection.ts"
 Cohesion: 0.18
@@ -1468,6 +1470,14 @@ Nodes (5): Cobertura dirigida, Consolidação da Visão Geral e Central de Ajuda
 Cohesion: 0.05
 Nodes (62): preact-render-to-string, buildFirstStepsMission(), FirstStepsMissionModel, MissionItem, buildTodayViewModel(), canGenerateAutomaticTodayPlan(), FinalStretchBanner, FinalStretchBanner() (+54 more)
 
+### Community 290 - "formatDateBR"
+Cohesion: 0.19
+Nodes (17): Contrato de superfícies, Espaçamento e componentes, Fundação visual — pacote 1, Inventário de migração, Verificação local, formatDateBR(), ENTITIES, escape() (+9 more)
+
+### Community 291 - "defaults.ts"
+Cohesion: 0.24
+Nodes (5): createDefaultState(), AUDIT_PROFILES, AUDIT_TODAY, buildJourneyProfile(), selectSubjectCombobox()
+
 ### Community 312 - "parseLocalDate"
 Cohesion: 0.08
 Nodes (46): Auditoria de datas, Datas civis, Instantes absolutos, Regra para novas alterações, buildCockpitSidebarViewModel(), CockpitSidebarSources, formatMinutesDuration(), MiniHeatmapDay (+38 more)
@@ -1532,7 +1542,7 @@ _Questions this graph is uniquely positioned to answer:_
   _11 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `app.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.04935064935064935 - nodes in this community are weakly interconnected._
-- **Why does `preact` connect `Icon` to `today-subtabs.test.js`, `cloud-catalog-service.test.js`, `scrollBehavior`, `Estrutura`, `reviews-tab-controller.ts`, `weekly-close-modal-controller.ts`, `CareerBenchmarkCard.tsx`, `performance-overview-renderer.ts`, `createStudyPlanBuilderController`, `formatDateBR`, `build-weekly-performance-brief.ts`, `error-notebook-engine.ts`, `ref_node_test`, `today-tab-controller.ts`, `AdminDashboardView.tsx`, `timer-coordinator.ts`, `subjects-components.test.js`, `table.tsx`, `study-timer-view-controller.ts`, `subjectColorOf`, `createCalendarTabController`, `createSimulationsTabController`, `first-access-modal-controller.ts`, `help-runtime.ts`, `entitlements.ts`, `achievement-notifier.ts`, `goals-tab-controller.ts`, `onboarding-renderer.ts`, `wire-analytics-and-shell-ui.ts`, `planning-visual-models.ts`, `command-palette.tsx`, `unmountPreact`, `createGuidedTourController`, `preact`, `diagnostic-summary-renderer.ts`, `practice-visual-models.ts`, `approval-tab-controller.ts`, `AppState`, `dashboard-tab-controller.ts`, `daily-execution.test.js`, `performance-tab-controller.ts`, `HelpTopicCard.tsx`, `practice-visual-models.ts`, `build-shift-energy-view-model.ts`, `formatDecimal`, `remote-sync-controller.ts`, `wire-ui-controllers.ts`, `wire-execution-and-onboarding-ui.ts`, `charts.tsx`, `activity-heatmap-models.ts`, `package.json`, `help-runtime.ts`?**
+- **Why does `preact` connect `Icon` to `today-subtabs.test.js`, `cloud-catalog-service.test.js`, `scrollBehavior`, `Estrutura`, `reviews-tab-controller.ts`, `weekly-close-modal-controller.ts`, `CareerBenchmarkCard.tsx`, `performance-overview-renderer.ts`, `createStudyPlanBuilderController`, `plan-execution-renderer.ts`, `build-weekly-performance-brief.ts`, `error-notebook-engine.ts`, `ref_node_test`, `today-tab-controller.ts`, `AdminDashboardView.tsx`, `timer-coordinator.ts`, `subjects-components.test.js`, `table.tsx`, `study-timer-view-controller.ts`, `subjectColorOf`, `createCalendarTabController`, `createSimulationsTabController`, `first-access-modal-controller.ts`, `help-runtime.ts`, `entitlements.ts`, `achievement-notifier.ts`, `goals-tab-controller.ts`, `onboarding-renderer.ts`, `wire-analytics-and-shell-ui.ts`, `planning-visual-models.ts`, `command-palette.tsx`, `unmountPreact`, `createGuidedTourController`, `preact`, `diagnostic-summary-renderer.ts`, `practice-visual-models.ts`, `approval-tab-controller.ts`, `AppState`, `dashboard-tab-controller.ts`, `daily-execution.test.js`, `performance-tab-controller.ts`, `HelpTopicCard.tsx`, `practice-visual-models.ts`, `build-shift-energy-view-model.ts`, `formatDecimal`, `remote-sync-controller.ts`, `wire-ui-controllers.ts`, `wire-execution-and-onboarding-ui.ts`, `charts.tsx`, `activity-heatmap-models.ts`, `package.json`, `help-runtime.ts`?**
   _High betweenness centrality (0.077) - this node is a cross-community bridge._
 - **Are the 97 inferred relationships involving `a()` (e.g. with `$0()` and `c1()`) actually correct?**
   _`a()` has 97 INFERRED edges - model-reasoned connections that need verification._

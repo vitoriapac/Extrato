@@ -130,7 +130,7 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
         <Raw
           html={renderActionGroup({
             label: 'Investigar a projeção',
-            actions: [{ label: 'Ver trajetória em Desempenho', attributes: { 'data-performance-jump': 'overview' } }],
+            actions: [{ label: 'Ver projeção em Simulados', attributes: { 'data-performance-jump': 'simulations' } }],
           })}
         />
       </section>

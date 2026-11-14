@@ -1,4 +1,5 @@
 import { renderEvidenceBadge } from './evidence-badge.js';
+import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
 import { renderSimulationTrendChart } from '../renderers/simulations-renderer.js';
@@ -18,10 +19,21 @@ const signed = (value: number) =>
 
 export function renderPerformanceSimulations(
   model: Record<string, any>,
-  { range, targetScore, formatDate, escapeHtml }: any = {}
+  { range, targetScore, formatDate, escapeHtml, escapeAttr = escapeHtml, projection = null }: any = {}
 ) {
+  // A faixa projetada e a projeção até a prova moram aqui; a Visão geral só traz a faixa numa linha com link.
+  const projectionHtml = projection?.model
+    ? renderAchievementProjection(projection.model, {
+        history: projection.history,
+        escapeHtml,
+        escapeAttr,
+        weeklyCapacityMinutes: projection.capacityMinutes,
+        adherenceContext: projection.adherenceContext,
+        recoveryPlan: projection.recoveryPlan,
+      })
+    : '';
   if (!model.count)
-    return '<div class="empty-state empty-state--compact" role="status"><strong>Sem simulados neste período</strong><p>Registre simulados para acompanhar as notas. Duas provas com disciplinas detalhadas em comum permitem a comparação por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar simulado</button></div>';
+    return projectionHtml + '<div class="empty-state empty-state--compact" role="status"><strong>Sem simulados neste período</strong><p>Registre simulados para acompanhar as notas. Duas provas com disciplinas detalhadas em comum permitem a comparação por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar simulado</button></div>';
   const kpis = `<section class="performance-kpis" aria-label="Indicadores de simulados">
     <article class="performance-kpi"><span>Último simulado</span><strong>${percent(model.latest)}</strong><small>${pluralize(model.count, 'simulado', 'simulados')} · ${escapeHtml(range?.label || 'período escolhido')}</small></article>
     <article class="performance-kpi"><span>Média do período</span><strong>${percent(model.mean)}</strong><small>${range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso'}</small></article>
@@ -49,5 +61,5 @@ export function renderPerformanceSimulations(
   const method =
     '<p class="performance-method-note">Resultados de provas com composição ou dificuldade diferentes não são diretamente equivalentes. A comparação por disciplina mostra somente áreas detalhadas em ambas as provas.</p>';
   const simulationsEvidence = model.count < 2 ? 'insufficient' : model.count < 3 ? 'small' : null;
-  return `${simulationsEvidence ? `<p class="performance-evidence-row m-0">${renderEvidenceBadge(simulationsEvidence, `${model.count} simulados no período`)}</p>` : ''}${renderPerformanceSummary(story, kpis, method)}${model.count < 2 ? renderPerformanceSampleState({ name: 'A tendência recente', current: model.count, required: 2, message: 'comparar os dois resultados mais recentes', unit: 'simulados', singular: 'simulado', actionLabel: 'Registrar simulado' }) : ''}<section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section>${renderPerformanceDetails('Comparação por disciplina e projeção', `<section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`)}`;
+  return `${simulationsEvidence ? `<p class="performance-evidence-row m-0">${renderEvidenceBadge(simulationsEvidence, `${model.count} simulados no período`)}</p>` : ''}${renderPerformanceSummary(story, kpis, method)}${projectionHtml}${model.count < 2 ? renderPerformanceSampleState({ name: 'A tendência recente', current: model.count, required: 2, message: 'comparar os dois resultados mais recentes', unit: 'simulados', singular: 'simulado', actionLabel: 'Registrar simulado' }) : ''}<section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section>${renderPerformanceDetails('Comparação por disciplina e projeção', `<section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`)}`;
 }

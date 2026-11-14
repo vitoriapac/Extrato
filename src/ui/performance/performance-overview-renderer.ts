@@ -12,7 +12,6 @@ import {
 } from './performance-story.js';
 import { renderReadinessChangeExplanation } from './readiness-change-explanation-renderer.js';
 import { renderMetricCard, renderEmptyState } from '../components/presentation.js';
-import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { renderPlannedVsActualChart } from './planned-actual-chart.js';
 import {
   renderPreparationReading,
@@ -61,17 +60,11 @@ export function renderPerformanceOverview(
     activeExamTags,
     formatDate,
     escapeHtml,
-    escapeAttr = escapeHtml,
     weekSummary = null,
     preparationReading = null,
     recommendationFollowup = [],
     comparisonModel = null,
     readinessChange = null,
-    achievementProjection = null,
-    achievementHistory = [],
-    achievementCapacityMinutes = 0,
-    adherenceContext = null,
-    recoveryPlan = null,
   }: any = {}
 ) {
   const current = model.current || {},
@@ -117,5 +110,5 @@ export function renderPerformanceOverview(
   const readingHtml = renderWeekSummary(weekSummary, { escapeHtml });
   const preparationHtml = renderPreparationReading(preparationReading);
   const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });
-  return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
+  return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${renderPerformanceDetails('Prontidão, trajetória e carga', `${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderPerformanceDetails('Como calculamos: termos desta aba', renderGlossary(escapeHtml))}`;
 }

@@ -243,3 +243,17 @@ test('Resumo dos últimos 7 dias aparece aberto abaixo da Leitura, com selo e se
   });
   expect(order).toBe(true);
 });
+
+test('A projeção até a prova mora em Simulados; a Visão geral mostra a faixa numa linha com link', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  await expect(page.locator('.achievement-projection')).toHaveCount(0);
+  const line = page.locator('.performance-reading__support', { hasText: 'Faixa projetada' });
+  await expect(line).toContainText(/\d+% a \d+%/);
+  await line.getByRole('button', { name: 'Ver em Simulados' }).click();
+  await expect(page.locator('#performanceTab-simulations')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.achievement-projection')).toBeVisible();
+});

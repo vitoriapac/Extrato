@@ -992,7 +992,7 @@ Object.assign(
   ),
   {
     title: 'Trajetória, faixa e confiança',
-    action: { label: 'Ver trajetória em Desempenho', target: 'projection' },
+    action: { label: 'Ver projeção em Simulados', target: 'projection' },
     keywords: ['projeção', 'meta', 'confiança', 'simulados comparáveis', 'reta final'],
     paragraphs: [
       'A faixa atual usa simulados comparáveis recentes. A tendência descreve a continuação aproximada do padrão observado, sem prever a nota do dia da prova ou a chance de aprovação. Poucas observações, baixa cobertura ou composição desconhecida limitam a confiança.',

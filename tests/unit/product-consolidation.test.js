@@ -32,13 +32,13 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
     metricStateLabel: () => {},
   });
   assert.match(html, /evidências comparáveis suficientes para estimar/);
-  assert.match(html, /data-performance-jump="overview"/);
+  assert.match(html, /data-performance-jump="simulations"/);
   assert.doesNotMatch(html, /<details[^>]* open/);
   assert.match(html, /readiness-investigation/);
   assert.deepEqual(input, before);
   assert.match(html, /class="analytical-result">Dados insuficientes/);
   assert.match(html, /class="readiness-explanation editorial-disclosure"/);
-  assert.ok(html.indexOf('Ver trajetória em Desempenho') < html.indexOf('<details'));
+  assert.ok(html.indexOf('Ver projeção em Simulados') < html.indexOf('<details'));
   assert.ok(html.indexOf('data-help-topic-link="readiness"') > html.indexOf('<details'));
   assert.match(html, /role="group" aria-label="Investigar a projeção"/);
   const measured = {

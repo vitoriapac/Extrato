@@ -35,17 +35,10 @@ for (const { name, width, theme, columns } of [
       else
         await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
       if (section === 'overview') {
-        expect(
-          await page
-            .locator('#performanceSectionContent')
-            .evaluate(
-              root =>
-                root
-                  .querySelector('.achievement-projection')
-                  .compareDocumentPosition(root.querySelector('.readiness-history-summary')) &
-                Node.DOCUMENT_POSITION_FOLLOWING
-            )
-        ).toBeTruthy();
+        // A projeção até a prova mora em Simulados; a Visão geral só traz a faixa numa linha.
+        await expect(page.locator('#performanceSectionContent .achievement-projection')).toHaveCount(0);
+        await expect(page.locator('#performanceSectionContent .readiness-history-summary')).toHaveCount(1);
+
         const analyses = page.getByRole('tablist', { name: 'Análises de desempenho' });
         await expect(analyses).toBeVisible();
         const period = await page.locator('#performancePeriod').inputValue();

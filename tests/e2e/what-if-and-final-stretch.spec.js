@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
-import { activateTab } from './helpers.js';
+import { activateTab, openPerformanceSection } from './helpers.js';
 
 async function prepare(page, { examDate = '2026-10-10' } = {}) {
   await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
@@ -65,7 +65,7 @@ test('Simulador E se pode ser acionado da Projeção na aba Desempenho e respond
   // Navega para Desempenho
   await activateTab(page, 'desempenho');
 
-  await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
+  await openPerformanceSection(page, 'simulations');
 
   // Localiza botão de simulação
   const openWhatIfBtn = page.locator('[data-open-what-if]').first();

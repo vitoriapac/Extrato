@@ -238,7 +238,7 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
         detail = root.locator('.readiness-explanation');
       await expect(root.locator('.analytical-result')).toBeVisible();
       await expect(
-        root.getByRole('button', { name: 'Ver trajetória em Desempenho', exact: true })
+        root.getByRole('button', { name: 'Ver projeção em Simulados', exact: true })
       ).toBeVisible();
       await expect(detail).not.toHaveAttribute('open', '');
       await expect(
@@ -306,6 +306,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   await expect(page.locator('#overviewNextAction [data-guided-action="open"]')).toBeVisible();
   await expect(page.locator('#guidedOnboarding')).toBeHidden();
   await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'simulations');
   const projection = page.locator('.achievement-projection');
   await expect(projection.locator('.achievement-projection__status')).toHaveText(
     'Dados insuficientes'
@@ -354,8 +355,7 @@ test('cinco perfis percorrem a experiência consolidada com ação, contexto e l
     await expect(page.locator('#panel-hoje')).toBeVisible();
     await expectNoPageOverflow(page);
     await activateTab(page, 'desempenho');
-    await openPerformanceSection(page, 'overview');
-    await openPerformanceFold(page, 'Prontidão, trajetória e carga');
+    await openPerformanceSection(page, 'simulations');
     const trajectory = page.locator('.achievement-projection');
     await expect(trajectory).toBeVisible();
     if (profile === 'beginner')
@@ -454,8 +454,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
       .locator('.adherence-summary')
       .getByRole('button', { name: 'Entenda aderência', exact: true })
   ).toBeFocused();
-  await openPerformanceSection(page, 'overview');
-  await openPerformanceFold(page, 'Prontidão, trajetória e carga');
+  await openPerformanceSection(page, 'simulations');
   await page
     .locator('.achievement-projection__details > summary')
     .filter({ hasText: 'Entender esta projeção' })
@@ -465,7 +464,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expect(page.locator('#projections')).toBeFocused();
   await page
     .locator('#projections')
-    .getByRole('button', { name: 'Ver trajetória em Desempenho', exact: true })
+    .getByRole('button', { name: 'Ver projeção em Simulados', exact: true })
     .click();
   await expect(page.locator('.achievement-projection')).toBeFocused();
   await expect(page.locator('#performancePeriod')).toHaveValue('90');

@@ -207,7 +207,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const activeExamTags = state.examBlueprint?.activeExamTags || [];
     const examSection = performanceViewState.section === 'exam';
     const achievement =
-      performanceViewState.section === 'overview' && deps.currentAchievementProjection
+      ['overview', 'simulations'].includes(performanceViewState.section) &&
+      deps.currentAchievementProjection
         ? deps.currentAchievementProjection()
         : null;
 

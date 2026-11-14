@@ -187,8 +187,8 @@ Verificação usada abaixo:
 
 ### Tarefa 15: Faixa projetada só em Simulados
 **Aceite:**
-- [ ] Projeção e "Faixa emitida × resultado" só em Simulados
-- [ ] Visão geral mostra a faixa em uma linha com link
+- [x] Projeção e "Faixa emitida × resultado" só em Simulados
+- [x] Visão geral mostra a faixa em uma linha com link
 **Verificação:** Unit do overview; E2E
 **Dependências:** T13
 **Tamanho:** S

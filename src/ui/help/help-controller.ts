@@ -51,7 +51,7 @@ export function loadHelpBundle(doc: any): Promise<any> {
 const DESTINATIONS: Readonly<
   Record<string, { tab: string; selector?: string; section?: string; subtab?: string }>
 > = Object.freeze({
-  projection: { tab: 'desempenho', section: 'overview', selector: '.achievement-projection' },
+  projection: { tab: 'desempenho', section: 'simulations', selector: '.achievement-projection' },
   adherence: { tab: 'desempenho', section: 'consistency', selector: '.adherence-summary' },
   subjects: { tab: 'disciplinas', selector: '#addSubjectBtn' },
   overview: { tab: 'dashboard', selector: '#balanceFigure' },

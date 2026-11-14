@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
 
 for (const [width, theme] of [
@@ -24,7 +24,7 @@ for (const [width, theme] of [
     );
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
     await activateTab(page, 'desempenho');
-    await page.getByText('Prontidão, trajetória e carga', { exact: true }).click();
+    await openPerformanceSection(page, 'simulations');
     const before = await page.evaluate(async () => {
       const api = window.__EXTRATO_TEST__;
       await api.settleSaves();

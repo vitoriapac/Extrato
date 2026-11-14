@@ -58,6 +58,7 @@ test('Visão Geral e Desempenho mostram a mesma precisão e os mesmos simulados 
     simulations = await kpi('Simulados comparáveis');
   await activateTab(page, 'desempenho');
   await expect(page.locator('#panel-desempenho')).toContainText(accuracy);
+  await openPerformanceSection(page, 'simulations');
   await expect(page.locator('#panel-desempenho .achievement-projection__metrics')).toContainText(
     simulations
   );

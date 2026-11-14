@@ -236,6 +236,11 @@ export function buildPerformancePageModel({
         range,
         today,
       }),
+      achievementProjection,
+      achievementHistory,
+      achievementCapacityMinutes,
+      adherenceContext,
+      recoveryPlan,
     };
   }
   if (section === 'subjects') {
