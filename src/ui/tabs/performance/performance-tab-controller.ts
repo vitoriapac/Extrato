@@ -571,7 +571,15 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         todayISO: today,
         daysWindow: 7,
       });
-      const comparison = calculateCareerBenchmarkComparison(aggregates, activeCareerId);
+      const planCapacityHours = Object.values(state.metas?.horasPorDia || {}).reduce<number>(
+        (sum, hours) => sum + (Number(hours) || 0),
+        0
+      );
+      const comparison = calculateCareerBenchmarkComparison(
+        aggregates,
+        activeCareerId,
+        planCapacityHours > 0 ? planCapacityHours : null
+      );
 
       mountPreact(
         h(CareerBenchmarkCard, {

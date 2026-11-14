@@ -48,14 +48,14 @@ function MetricBulletBar({
             (alvo: {formatDecimal(targetMin)}–{formatDecimal(targetMax)}{unit})
           </span>
           <Tooltip
-            content={`Faixa competitiva de referência: ${formatDecimal(targetMin)} a ${formatDecimal(targetMax)}${unit}`}
+            content={`Faixa de referência: ${formatDecimal(targetMin)} a ${formatDecimal(targetMax)}${unit}`}
             placement="top"
             align="end"
           >
             <button
               type="button"
               class="inline-flex items-center justify-center rounded-full min-w-7 min-h-7 max-md:min-w-11 max-md:min-h-11 pointer-coarse:min-w-11 pointer-coarse:min-h-11 p-1 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-accent border-0 bg-transparent cursor-help"
-              aria-label={`Explicar faixa competitiva de ${comparison.label}`}
+              aria-label={`Explicar a faixa de referência de ${comparison.label}`}
             >
               <Icon name="info-circle" size={14} />
             </button>
@@ -72,7 +72,7 @@ function MetricBulletBar({
         aria-valuemax={maxDisplay}
         aria-label={`${comparison.label}: ${currentValue}${unit}`}
       >
-        {/* Zona Alvo Recomendada (Faixa Competitiva) */}
+        {/* Zona da faixa de referência */}
         <div
           class="absolute top-0 bottom-0 bg-accent/15 border-x border-accent/30"
           style={{ left: `${targetMinPct}%`, width: `${targetWidthPct}%` }}
@@ -152,8 +152,8 @@ export function CareerBenchmarkCard({
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
-              Faixas de referência internas para <strong>{career.name}</strong>, sem fonte oficial ·
-              últimos 7 dias · 100% privado no seu aparelho
+              Sugestão de cursinhos para <strong>{career.name}</strong>, sem pesquisa com aprovados
+              nem fonte oficial · últimos 7 dias · 100% privado no seu aparelho
             </p>
           </div>
         </div>
@@ -164,7 +164,7 @@ export function CareerBenchmarkCard({
           label="Carreira:"
           inline
           size="compact"
-          aria-label="Filtrar parâmetros de aprovados por carreira"
+          aria-label="Escolher a carreira da faixa de referência"
           value={selectedCareerId}
           options={careerOptions.map(opt => ({ value: opt.id, label: opt.name }))}
           onChange={e => onSelectCareer?.((e.target as HTMLSelectElement).value as CareerClusterId)}
@@ -200,14 +200,14 @@ export function CareerBenchmarkCard({
         </div>
       </div>
 
-      {/* Mix de Tempo: Atual vs Recomendado */}
+      {/* Mix de tempo: atual vs referência */}
       <div class="p-card rounded border border-border-subtle bg-surface-subtle/25 space-y-2">
         <div class="flex justify-between items-center text-xs">
           <span class="font-medium text-content-primary">
             Mix de Estudo (Teoria / Questões / Revisão)
           </span>
           <span class="text-content-secondary text-xs">
-            Recomendado para {career.name}: {career.targetMix.theoryPercent}% T /{' '}
+            Referência para {career.name}: {career.targetMix.theoryPercent}% T /{' '}
             {career.targetMix.questionsPercent}% Q / {career.targetMix.reviewPercent}% R
           </span>
         </div>
@@ -239,7 +239,7 @@ export function CareerBenchmarkCard({
         <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-content-secondary pt-1">
           <div class="flex flex-wrap items-center gap-3">
             <Tooltip
-              content={`Teoria: ${measuredMix.theoryPercent}% do tempo medido (referência recomendada: ${career.targetMix.theoryPercent}%)`}
+              content={`Teoria: ${measuredMix.theoryPercent}% do tempo medido (referência: ${career.targetMix.theoryPercent}%)`}
               placement="top"
               align="start"
             >
@@ -257,7 +257,7 @@ export function CareerBenchmarkCard({
               </button>
             </Tooltip>
             <Tooltip
-              content={`Questões: ${measuredMix.questionsPercent}% do tempo medido (referência recomendada: ${career.targetMix.questionsPercent}%)`}
+              content={`Questões: ${measuredMix.questionsPercent}% do tempo medido (referência: ${career.targetMix.questionsPercent}%)`}
               placement="top"
               align="center"
             >
@@ -272,7 +272,7 @@ export function CareerBenchmarkCard({
               </button>
             </Tooltip>
             <Tooltip
-              content={`Revisão: ${measuredMix.reviewPercent}% do tempo medido (referência recomendada: ${career.targetMix.reviewPercent}%)`}
+              content={`Revisão: ${measuredMix.reviewPercent}% do tempo medido (referência: ${career.targetMix.reviewPercent}%)`}
               placement="top"
               align="center"
             >
@@ -299,6 +299,11 @@ export function CareerBenchmarkCard({
         <div>
           <strong class="text-content-primary">Leitura: </strong>
           <span>{guidanceNote}</span>
+          {comparison.planCapacityNote ? (
+            <p class="m-0 mt-1" data-career-plan-capacity="true">
+              {comparison.planCapacityNote}
+            </p>
+          ) : null}
         </div>
       </footer>
     </article>

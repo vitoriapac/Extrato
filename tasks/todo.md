@@ -284,8 +284,8 @@ Verificação usada abaixo:
 
 ### Tarefa 23: Textos da referência sem afirmação sem fonte
 **Aceite:**
-- [ ] Comentário de `career-benchmarks.ts` corrigido; "Faixa Competitiva", "Nível Reta Final", "Padrão de nota de corte…" e "Recomendado" trocados
-- [ ] Horas e questões como "sugestão de cursinhos, sem pesquisa com aprovados", comparadas também com a capacidade do plano
+- [x] Comentário de `career-benchmarks.ts` corrigido; "Faixa Competitiva", "Nível Reta Final", "Padrão de nota de corte…" e "Recomendado" trocados
+- [x] Horas e questões como "sugestão de cursinhos, sem pesquisa com aprovados", comparadas também com a capacidade do plano
 **Verificação:** Unit de `career-benchmarks`; busca pelos textos antigos sem ocorrências
 **Dependências:** nenhuma
 **Arquivos:** `src/domain/analytics/career-benchmarks.ts`, `src/ui/components/CareerBenchmarkCard.tsx`

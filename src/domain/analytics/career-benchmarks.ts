@@ -1,7 +1,8 @@
 /**
- * @fileoverview Benchmarks estatísticos determinísticos de ritmo de aprovados por carreira.
- * Fornece parâmetros médios consolidados de horas líquidas, volume de questões, precisão
- * e distribuição de tempo (mix) para que o concurseiro compare seu ritmo com total privacidade local.
+ * @fileoverview Faixas de referência de ritmo por carreira (horas, questões, precisão e mix).
+ * Origem: sugestão de cursinhos, sem pesquisa com aprovados e sem fonte oficial. Não são
+ * dados de aprovados nem nota de corte; a nota de corte vem do catálogo de concursos.
+ * A comparação roda localmente, sem enviar dados.
  */
 
 export type CareerClusterId =
@@ -68,6 +69,8 @@ export interface CareerBenchmarkComparisonResult {
   readonly overallStatus: BenchmarkStatus;
   readonly overallLabel: string;
   readonly guidanceNote: string;
+  /** Horas da referência frente ao que o plano semanal comporta; null sem capacidade cadastrada. */
+  readonly planCapacityNote: string | null;
 }
 
 export const CAREER_BENCHMARKS: Readonly<Record<CareerClusterId, CareerBenchmark>> = Object.freeze({
@@ -361,12 +364,24 @@ export function aggregateRecentActivity(
   };
 }
 
+function buildPlanCapacityNote(career: CareerBenchmark, capacityHours: number | null): string | null {
+  if (capacityHours === null || !Number.isFinite(capacityHours) || capacityHours <= 0) return null;
+  const { competitiveMin, competitiveMax } = career.weeklyHours;
+  const capacity = String(Math.round(capacityHours * 10) / 10).replace('.', ',');
+  const range = `${competitiveMin} a ${competitiveMax} h/sem`;
+  if (capacityHours < competitiveMin)
+    return `Seu plano comporta ${capacity} h/sem, abaixo da faixa de referência (${range}). A referência é só uma sugestão: ajuste o plano ao que cabe na sua rotina.`;
+  return `Seu plano comporta ${capacity} h/sem; a faixa de referência é ${range}.`;
+}
+
 /**
- * Compara os dados reais medidos do estudante contra o benchmark da carreira escolhida.
+ * Compara os dados reais medidos do estudante contra a faixa de referência da carreira escolhida.
+ * `planCapacityHours` (capacidade semanal do plano) é opcional e só gera uma nota.
  */
 export function calculateCareerBenchmarkComparison(
   aggregates: MetricAggregates,
-  careerId: CareerClusterId = 'geral'
+  careerId: CareerClusterId = 'geral',
+  planCapacityHours: number | null = null
 ): CareerBenchmarkComparisonResult {
   const career = CAREER_BENCHMARKS[careerId] || CAREER_BENCHMARKS.geral;
 
@@ -378,11 +393,11 @@ export function calculateCareerBenchmarkComparison(
 
   if (hours >= career.weeklyHours.advanced) {
     hoursStatus = 'advanced';
-    hoursStatusLabel = 'Ritmo Avançado';
+    hoursStatusLabel = 'Acima da faixa de referência';
     hoursCommentary = 'Carga horária na faixa avançada de referência.';
   } else if (hours >= career.weeklyHours.competitiveMin) {
     hoursStatus = 'competitive';
-    hoursStatusLabel = 'Faixa Competitiva';
+    hoursStatusLabel = 'Na faixa de referência';
     hoursCommentary = 'Volume semanal dentro da faixa de referência.';
   } else if (hours >= career.weeklyHours.minimum) {
     hoursStatus = 'building';
@@ -413,11 +428,11 @@ export function calculateCareerBenchmarkComparison(
 
   if (questions >= career.weeklyQuestions.advanced) {
     qStatus = 'advanced';
-    qStatusLabel = 'Volume Avançado';
+    qStatusLabel = 'Acima da faixa de referência';
     qCommentary = 'Volume na faixa avançada de referência. Vale conferir se há tempo para revisar os erros.';
   } else if (questions >= career.weeklyQuestions.competitiveMin) {
     qStatus = 'competitive';
-    qStatusLabel = 'Faixa Competitiva';
+    qStatusLabel = 'Na faixa de referência';
     qCommentary = 'Volume dentro da faixa competitiva de referência.';
   } else if (questions >= career.weeklyQuestions.minimum) {
     qStatus = 'building';
@@ -449,16 +464,16 @@ export function calculateCareerBenchmarkComparison(
   if (aggregates.accuracyPercent !== null) {
     if (accuracy >= career.targetAccuracy.finalStretch) {
       accStatus = 'advanced';
-      accStatusLabel = 'Nível Reta Final';
-      accCommentary = 'Precisão acima de 85%! Padrão de nota de corte para as primeiras colocações.';
+      accStatusLabel = 'Acima da faixa de referência';
+      accCommentary = `Precisão acima de ${career.targetAccuracy.finalStretch}%, o alvo interno de reta final. Não é nota de corte: compare com a do edital quando houver.`;
     } else if (accuracy >= career.targetAccuracy.consolidation) {
       accStatus = 'competitive';
-      accStatusLabel = 'Faixa Competitiva';
-      accCommentary = 'Precisão sólida. Excelente aproveitamento nos temas centrais do edital.';
+      accStatusLabel = 'Na faixa de referência';
+      accCommentary = 'Precisão dentro da faixa de referência interna.';
     } else if (accuracy >= career.targetAccuracy.construction) {
       accStatus = 'building';
       accStatusLabel = 'Ritmo em construção';
-      accCommentary = 'Taxa de acertos saudável para quem está construindo a base teórica.';
+      accCommentary = 'Entre o piso e a faixa de referência interna.';
     }
   }
 
@@ -536,5 +551,6 @@ export function calculateCareerBenchmarkComparison(
     overallStatus,
     overallLabel,
     guidanceNote,
+    planCapacityNote: buildPlanCapacityNote(career, planCapacityHours),
   });
 }

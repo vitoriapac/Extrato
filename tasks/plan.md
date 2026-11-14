@@ -79,7 +79,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] 5 abas sem segundo nível; rotas antigas redirecionam (`#desempenho/questions|simulations|exam` → Provas; rota desconhecida mantém a aba atual); E2E atualizados
 
 ### Fase 6: Referência de ritmo e notas de corte
-- [ ] Tarefa 23: Textos da referência sem afirmação sem fonte
+- [x] Tarefa 23: Textos da referência sem afirmação sem fonte
 - [ ] Tarefa 24: Campo de nota de corte no catálogo com validação de fonte
 - [ ] Tarefa 25: Notas de corte oficiais de BB, Caixa e CNU
 - [ ] Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5)

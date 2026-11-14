@@ -114,3 +114,34 @@ test('calculateCareerBenchmarkComparison — classifica métricas frente à carr
   assert.ok(comparison.guidanceNote.length > 20);
   assert.ok(Object.isFrozen(comparison));
 });
+
+test('referência: rótulos sem afirmação de aprovados ou nota de corte', () => {
+  const base = { theoryMinutes: 0, questionsMinutes: 0, reviewMinutes: 0 };
+  const top = calculateCareerBenchmarkComparison(
+    { ...base, studiedHours: 40, resolvedQuestions: 400, accuracyPercent: 90 },
+    'bancaria-administrativa'
+  );
+  const mid = calculateCareerBenchmarkComparison(
+    { ...base, studiedHours: 20, resolvedQuestions: 170, accuracyPercent: 80 },
+    'bancaria-administrativa'
+  );
+  const text = JSON.stringify([top, mid]);
+  assert.doesNotMatch(text, /Faixa Competitiva|Nível Reta Final|Padrão de nota de corte|Recomendad|Avançado/);
+  assert.equal(top.accuracy.statusLabel, 'Acima da faixa de referência');
+  assert.match(top.accuracy.commentary, /84%.*Não é nota de corte/);
+  assert.equal(mid.weeklyHours.statusLabel, 'Na faixa de referência');
+});
+
+test('referência: nota de capacidade do plano só com capacidade cadastrada', () => {
+  const agg = { studiedHours: 10, resolvedQuestions: 100, accuracyPercent: 70, theoryMinutes: 0, questionsMinutes: 0, reviewMinutes: 0 };
+  assert.equal(calculateCareerBenchmarkComparison(agg, 'bancaria-administrativa').planCapacityNote, null);
+  assert.equal(calculateCareerBenchmarkComparison(agg, 'bancaria-administrativa', 0).planCapacityNote, null);
+  assert.match(
+    calculateCareerBenchmarkComparison(agg, 'bancaria-administrativa', 12).planCapacityNote,
+    /comporta 12 h\/sem, abaixo da faixa de referência \(18 a 24 h\/sem\)/
+  );
+  assert.match(
+    calculateCareerBenchmarkComparison(agg, 'bancaria-administrativa', 20.5).planCapacityNote,
+    /comporta 20,5 h\/sem; a faixa de referência é 18 a 24 h\/sem/
+  );
+});
