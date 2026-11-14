@@ -31,7 +31,7 @@ test('aviso de plano curto usa o múltiplo exibido (2,04 não mostra; 2,06 mostr
 test('resumo diferencia a semana inteira do realizado até hoje', () => {
   const out = html(400, 231);
   assert.match(out, /inclui dias futuros/);
-  assert.match(out, /Detalhamento dos vínculos indisponível/);
+  assert.match(out, /Detalhamento do estudo ligado a tarefas indisponível/);
   assert.match(out, /Estudado até hoje/);
 });
 
@@ -56,7 +56,7 @@ test('fechamento identifica o corte temporal e o escopo da aderência', async ()
   assert.match(out, /até 11\/11\/2026/);
   assert.match(out, /provas ativas/);
   assert.match(out, /80 min/);
-  assert.match(out, /sem vínculo/);
+  assert.match(out, /Estudo avulso/);
 });
 
 test('prioridade informa a semana inteira e a necessidade de vínculo', async () => {
@@ -67,7 +67,7 @@ test('prioridade informa a semana inteira e a necessidade de vínculo', async ()
     '09/11 a 15/11'
   );
   assert.match(out, /semana inteira/);
-  assert.match(out, /Só sessões com vínculo válido contam/);
+  assert.match(out, /Só estudo ligado a uma tarefa válida conta/);
 });
 
 test('extrato usa vínculos reais mesmo quando o estudo total é menor que o planejado', async () => {
@@ -105,7 +105,7 @@ test('extrato usa vínculos reais mesmo quando o estudo total é menor que o pla
     ],
   });
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
-  assert.match(out, /Sem vínculo com atividade/);
+  assert.match(out, /Estudo avulso, sem tarefa/);
   assert.match(out, /30 min/);
   assert.match(out, /0 min de 1 h 20 min prioritárias/);
   assert.doesNotMatch(out, /Estudo extra, sem tarefa marcada/);
@@ -161,9 +161,9 @@ test('extrato separa vínculo válido, incompatível e de outro período', async
     ],
   });
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
-  assert.match(out, /Vinculado a atividades desta semana[\s\S]*?30 min/);
-  assert.match(out, /Vínculo incompatível ou inativo[\s\S]*?10 min/);
-  assert.match(out, /Vinculado a outro período[\s\S]*?20 min/);
+  assert.match(out, /Estudo ligado a tarefa desta semana[\s\S]*?30 min/);
+  assert.match(out, /Ligado a tarefa incompatível ou inativa[\s\S]*?10 min/);
+  assert.match(out, /Ligado a tarefa de outro período[\s\S]*?20 min/);
 });
 
 test('quando os totais usam bases diferentes o extrato explica a diferença', async () => {
@@ -177,7 +177,7 @@ test('quando os totais usam bases diferentes o extrato explica a diferença', as
     sessions: [session, session],
   });
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
-  assert.match(out, /análise de vínculos considera 30 min em sessões únicas/);
+  assert.match(out, /análise do estudo ligado a tarefas considera 30 min em sessões únicas/);
   assert.match(out, /total acima usa as datas registradas/);
 });
 
@@ -189,7 +189,7 @@ test('capacidade explica de onde vem o número e o estudado é a linha de total'
   assert.match(out, /ledger-line--total[^>]*>.*?Estudado até hoje/);
 });
 
-test('o aviso de plano acima da capacidade usa os nomes fixos da semana', async () => {
+test('o excesso vira linha de saldo com ação para ajustar a disponibilidade', async () => {
   const { renderPlanExecution } = await import('../../src/ui/renderers/plan-execution-renderer.js');
   const { buildPlanExecution } =
     await import('../../src/application/goals/build-plan-execution.js');
@@ -214,8 +214,10 @@ test('o aviso de plano acima da capacidade usa os nomes fixos da semana', async 
     sessions: [],
   });
   const out = renderPlanExecution(model, { formatDate: d => d.split('-').reverse().join('/') });
-  assert.match(out, /O tempo com tarefa marcada nos dias supera a capacidade semanal informada/);
-  assert.doesNotMatch(out, /tempo planejado nos dias/);
+  // 5 h marcadas para 2 h de capacidade: excesso de 3 h, com a ação ao lado.
+  assert.match(out, /Marcado acima da capacidade[\s\S]*?\+3 h/);
+  assert.match(out, /data-delegated-click="openAvailabilityAdjust\(\)"[^>]*>\s*Ajustar disponibilidade/);
+  assert.doesNotMatch(out, /context-note--attention|tempo planejado nos dias|Só .* de capacidade têm tarefa marcada/);
 });
 
 test('fechamento e resumo mostram os mesmos valores e rótulos para a mesma semana', async () => {
@@ -329,6 +331,24 @@ test('saldo da semana separa estudado com e sem vínculo', async () => {
   });
   const { parts } = weekBalanceParts(data);
   assert.deepEqual(parts.map(p => [p.label, p.value]), [
-    ['Estudado com vínculo', 150], ['Estudado sem vínculo', 90], ['Marcado, ainda não estudado', 150], ['Livre', 210],
+    ['Estudado ligado a tarefa', 150], ['Estudado avulso', 90], ['Marcado, ainda não estudado', 150], ['Livre', 210],
   ]);
+});
+
+test('frase-resumo diz o estudado contra a capacidade em três situações', async () => {
+  const { weekSummarySentence } = await import('../../src/ui/tabs/goals/WeekReconciliationSummary.js');
+  const d = (capacityMin, studiedMin) =>
+    buildWeekReconciliation({ periodLabel: 'x', capacityMin, plannedMin: 0, studiedMin });
+  assert.equal(weekSummarySentence(d(720, 623)), 'Estudado 10 h 23 min de 12 h; falta 1 h 37 min.');
+  assert.equal(weekSummarySentence(d(720, 720)), 'Estudado 12 h de 12 h: capacidade completa.');
+  assert.equal(weekSummarySentence(d(720, 810)), 'Estudado 13 h 30 min de 12 h: 1 h 30 min acima da capacidade.');
+  assert.equal(weekSummarySentence(d(0, 0)), null);
+  assert.equal(weekSummarySentence(d(0, 30)), 'Estudado 30 min até hoje.');
+});
+
+test('o resumo mostra a frase antes das linhas e não repete "só X dos Y" com o múltiplo', () => {
+  const out = html(100, 300, 720);
+  assert.ok(out.indexOf('week-reconciliation__sentence') < out.indexOf('Capacidade da semana'));
+  assert.match(out, /Você estudou 3,0× o tempo com tarefa marcada\./);
+  assert.doesNotMatch(out, /Só 1 h 40 min dos 12 h/);
 });

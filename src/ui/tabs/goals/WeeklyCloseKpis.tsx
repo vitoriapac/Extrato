@@ -28,7 +28,7 @@ export function WeeklyCloseKpis({
     summary && Number(planned) > 0 && Number(executed) > 0 && Number(credit) === 0;
   const note = unlinkedStudy && (
     <p class="analytics-note">
-      Sessões sem vínculo com as tarefas marcadas entram no tempo estudado, mas não contam na
+      Estudo avulso, sem ligação com as tarefas marcadas, entra no tempo estudado, mas não conta na
       aderência ao plano: estudar fora do plano não é perder tempo de estudo.
       {reconciliation && (
         <>

@@ -24,7 +24,7 @@ test('RealWeekBanner — renderiza acolhimento empático quando há revisões em
   );
 
   assert.match(html, /Sua semana não saiu como planejada\? Tudo bem\./);
-  assert.match(html, /Semana Real/);
+  assert.match(html, /Replanejamento/);
   assert.match(html, /Você tem 4 revisões aguardando resgate/);
   assert.match(html, /Resgatar em 30 min/);
   assert.match(html, /icon-lucide-heart-handshake/);
@@ -43,8 +43,8 @@ test('RealWeekBanner — renderiza acolhimento com déficit semanal e botão de 
   );
 
   assert.match(html, /Sua semana não saiu como planejada\? Tudo bem\./);
-  assert.match(html, /90 min de saldo planejado pendente/);
-  assert.match(html, /Recalibrar Semana/);
+  assert.match(html, /1 h 30 min de tarefas marcadas ainda por fazer/);
+  assert.match(html, /Redistribuir saldo pendente/);
   assert.match(html, /icon-lucide-refresh/);
   assert.doesNotMatch(html, /Resgatar em 30 min/);
 });
@@ -60,9 +60,9 @@ test('RealWeekBanner — combina atrasos e déficit com microcopy sem culpa e am
     })
   );
 
-  assert.match(html, /5 revisões pendentes e 120 min a redistribuir/);
+  assert.match(html, /5 revisões pendentes e 2 h a redistribuir/);
   assert.match(html, /A consistência se constrói na adaptação, não na culpa/);
   assert.match(html, /Resgatar em 30 min/);
-  assert.match(html, /Recalibrar Semana/);
-  assert.match(html, /aria-label="Dispensar aviso da semana real"/);
+  assert.match(html, /Redistribuir saldo pendente/);
+  assert.match(html, /aria-label="Dispensar aviso de replanejamento"/);
 });

@@ -6,7 +6,7 @@ import type { WeekReconciliation } from './week-reconciliation.js';
 // Formato único de duração do app (1h20, 2h, 48min), o mesmo do restante de Planejamento.
 const fmt = formatPlanMinutes;
 
-/** Saldo da semana na escala da capacidade: estudado (vinculado e sem vínculo), marcado ainda não estudado e livre. */
+/** Saldo da semana na escala da capacidade: estudado (ligado a tarefa e avulso), marcado ainda não estudado e livre. */
 export function weekBalanceParts(data: WeekReconciliation): {
   parts: StackedBarPart[];
   over: number;
@@ -18,16 +18,28 @@ export function weekBalanceParts(data: WeekReconciliation): {
   const free = Math.max(0, data.capacityMin - data.studiedMin - pending);
   const all: StackedBarPart[] = [
     {
-      label: data.linkedMin === null ? 'Estudado' : 'Estudado com vínculo',
+      label: data.linkedMin === null ? 'Estudado' : 'Estudado ligado a tarefa',
       value: linked,
       tone: 'primary',
     },
-    { label: 'Estudado sem vínculo', value: unlinked, tone: 'primary-soft' },
+    { label: 'Estudado avulso', value: unlinked, tone: 'primary-soft' },
     { label: 'Marcado, ainda não estudado', value: pending, tone: 'secondary' },
     { label: 'Livre', value: free, tone: 'empty' },
   ];
   const parts = all.filter(part => Number(part.value) > 0 || part.tone === 'primary');
   return { parts, over: Math.max(0, data.studiedMin + pending - data.capacityMin) };
+}
+
+/** Uma frase que responde "estou no caminho?": estudado contra a capacidade da semana. */
+export function weekSummarySentence(data: WeekReconciliation): string | null {
+  if (data.capacityMin <= 0)
+    return data.studiedMin > 0 ? `Estudado ${fmt(data.studiedMin)} até hoje.` : null;
+  const diff = data.capacityMin - data.studiedMin;
+  if (diff > 0)
+    return `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}; falta ${fmt(diff)}.`;
+  if (diff === 0)
+    return `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}: capacidade completa.`;
+  return `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}: ${fmt(-diff)} acima da capacidade.`;
 }
 
 export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }) {
@@ -40,10 +52,13 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
     data.capacityMin > 0 &&
     data.plannedMin / data.capacityMin < 0.5;
   const balance = weekBalanceParts(data);
+  const sentence = weekSummarySentence(data);
+  const excess = Math.max(0, data.plannedMin - data.capacityMin);
   const hasBalance = data.capacityMin > 0 || data.plannedMin > 0 || data.studiedMin > 0;
   return (
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
       <p class="week-reconciliation__period">{data.periodLabel}</p>
+      {sentence && <p class="week-reconciliation__sentence">{sentence}</p>}
       <LedgerLine
         label="Capacidade da semana"
         hint="Soma da disponibilidade dos 7 dias"
@@ -73,35 +88,56 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
           />
         </div>
       )}
+      {excess > 0 && (
+        <div class="week-reconciliation__excess" role="note">
+          <LedgerLine label="Marcado acima da capacidade" value={`+${fmt(excess)}`} />
+          <p>
+            Há mais tarefa marcada do que a disponibilidade informada. Ajuste a disponibilidade ou
+            reduza as tarefas dos próximos dias.{' '}
+            <button
+              type="button"
+              class="btn ghost small"
+              data-delegated-click="openAvailabilityAdjust()"
+            >
+              Ajustar disponibilidade
+            </button>
+          </p>
+        </div>
+      )}
       {data.linkedMin !== null && data.unlinkedMin !== null ? (
         <>
           <LedgerLine
-            label="Vinculado a atividades desta semana"
+            label="Estudo ligado a tarefa desta semana"
             hint="Tempo registrado, inclusive acima do previsto"
             value={fmt(data.linkedMin)}
           />
-          <LedgerLine label="Sem vínculo com atividade" value={fmt(data.unlinkedMin)} />
+          <LedgerLine label="Estudo avulso, sem tarefa" value={fmt(data.unlinkedMin)} />
           {data.incompatibleMin > 0 && (
-            <LedgerLine label="Vínculo incompatível ou inativo" value={fmt(data.incompatibleMin)} />
+            <LedgerLine
+              label="Ligado a tarefa incompatível ou inativa"
+              value={fmt(data.incompatibleMin)}
+            />
           )}
           {data.otherPeriodMin > 0 && (
-            <LedgerLine label="Vinculado a outro período" value={fmt(data.otherPeriodMin)} />
+            <LedgerLine label="Ligado a tarefa de outro período" value={fmt(data.otherPeriodMin)} />
           )}
           {data.classifiedStudyMin !== null &&
             Math.round(data.classifiedStudyMin) !== Math.round(data.studiedMin) && (
               <p class="week-reconciliation__note">
-                A análise de vínculos considera {fmt(data.classifiedStudyMin)} em sessões únicas,
-                com data de execução válida; o total acima usa as datas registradas nas sessões.
+                A análise do estudo ligado a tarefas considera {fmt(data.classifiedStudyMin)} em
+                sessões únicas, com data de execução válida; o total acima usa as datas registradas
+                nas sessões.
               </p>
             )}
         </>
       ) : (
-        <p class="week-reconciliation__note">Detalhamento dos vínculos indisponível.</p>
+        <p class="week-reconciliation__note">
+          Detalhamento do estudo ligado a tarefas indisponível.
+        </p>
       )}
       {multiple !== null && (
         <p class="week-reconciliation__note">
-          Você estudou {multiple.toFixed(1).replace('.', ',')}× o tempo com tarefa marcada: só{' '}
-          {fmt(data.plannedMin)} dos {fmt(data.capacityMin)} de capacidade têm tarefa marcada.
+          Você estudou {multiple.toFixed(1).replace('.', ',')}× o tempo com tarefa marcada.
         </p>
       )}
       {lowCoverage && (

@@ -66,7 +66,7 @@ test('card mostra múltiplo e informa quando vínculos não estão disponíveis'
   const html = renderPlanExecution(model, {
     formatDate: iso => iso.split('-').reverse().join('/'),
   });
-  assert.match(html, /Detalhamento dos vínculos indisponível/);
+  assert.match(html, /Detalhamento do estudo ligado a tarefas indisponível/);
   assert.match(html, /4,2× o tempo com tarefa marcada/);
   assert.match(html, /03\/11 a 09\/11/);
   assert.doesNotMatch(html, /Infinity|NaN/);

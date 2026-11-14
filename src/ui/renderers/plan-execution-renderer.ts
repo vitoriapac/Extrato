@@ -19,10 +19,6 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
   const summary = render(
     h(WeekReconciliationSummary, { data: buildWeekReconciliationFromExecution(model, formatDate) })
   );
-  const warning =
-    model.plannedMinutes > model.capacityMinutes
-      ? '<aside class="context-note context-note--attention"><strong>Atenção</strong><p>O tempo com tarefa marcada nos dias supera a capacidade semanal informada. Revise a distribuição antes de confirmar novos planos.</p></aside>'
-      : '';
   const unplanned =
     model.state === 'unplanned'
       ? renderActionCard({
@@ -155,7 +151,6 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
     : '';
   return (
     summary +
-    warning +
     unplanned +
     renderStrategicExecution(model.strategic, periodLabel) +
     dailyChart +

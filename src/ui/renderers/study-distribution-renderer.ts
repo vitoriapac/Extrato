@@ -1,7 +1,8 @@
 import { buildSubjectStudyDistributionVisual } from '../../domain/planning/planning-visual-models.js';
 import { renderGroupedBarChart } from '../primitives/charts/charts.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 
-const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
+const fmt = formatPlanMinutes;
 
 export function renderStudyDistribution(
   model: Record<string, any>,
@@ -26,7 +27,7 @@ export function renderStudyDistribution(
     label: 'Distribuição de estudo da semana por matéria: Planejado vs Realizado',
   });
 
-  const noteHtml = `<p class="analytics-note mb-3">Até hoje nesta semana: ${fmt(model.plannedMinutes)} em planos diários e ${fmt(model.studiedMinutes)} em sessões realizadas.</p>`;
+  const noteHtml = `<p class="analytics-note mb-3">Até hoje nesta semana: ${fmt(model.plannedMinutes)} com tarefa marcada e ${fmt(model.studiedMinutes)} estudados.</p>`;
 
   return `<div class="study-distribution-wrap">${noteHtml}${chartHtml}</div>`;
 }

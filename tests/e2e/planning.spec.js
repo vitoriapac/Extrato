@@ -242,3 +242,13 @@ test('a Semana tem uma única lista de disciplinas, "Plano × estudado por disci
   await expect(sub.locator('.chart-grouped-bars')).toHaveCount(1);
   await expect(sub.locator('.chart-allocation-bar [class*="subject-bg-"]')).toHaveCount(0);
 });
+
+test('a nota do bloco de disciplinas usa o formato único de duração e o vocabulário da semana', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'semana');
+  await page.locator('#studyDistribution').evaluate(node => (node.open = true));
+  const note = await page.locator('#studyDistribution .analytics-note').first().textContent();
+  expect(note).toMatch(/Até hoje nesta semana: \d+ h( \d+ min)? com tarefa marcada e \d+ h( \d+ min)? estudados\./);
+});

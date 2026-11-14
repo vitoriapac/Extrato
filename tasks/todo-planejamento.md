@@ -667,3 +667,19 @@ Conferido na demo: Semana, Fechamento e Histórico mostram os mesmos valores da 
 - Dobras na demo: 10 (7 de primeiro nível). Meta de 4 NÃO atingida; as demais saem em T13 (Ajustar metas), T20 (Plano × impacto, Histórico das semanas) e T21 (Comparação entre períodos), que dependem do Checkpoint 5 da Desempenho.
 - /impeccable critique da Semana: não rodado.
 - Revisão humana das capturas 375 e 1440: pendente (captura 1440 gerada).
+
+
+## Crítica do Checkpoint 2 (14/11/2026): 26/40
+Decisão do usuário: atacar primeiro frase-resumo e alerta com ação, incorporando os 2 P1 e o jargão (P3). Ficam fora por ora a tabela-extrato dos 7 dias e a lista "Mais detalhes" (P2), porque as Tarefas 13, 20 e 21 já reduzem a cauda.
+
+### Tarefa 11b: Frase-resumo e alerta de excesso com ação
+Uma frase no topo do Resumo ("Estudado 10 h 23 min de 12 h; falta 1 h 37 min") que responde "estou no caminho?"; prioridades e vínculos viram segunda linha. O alerta de excesso vira linha de saldo ("Excesso: +1 h 30 min sobre a capacidade") com ação "Ajustar disponibilidade"/"Redistribuir". Aceite: uma frase-resumo; alerta com ação; sem a repetição "Só X dos Y têm tarefa marcada". Comandos: clarify, layout, distill.
+
+### Tarefa 11c: Linguagem sem jargão
+"Vínculo" vira "Estudo ligado a tarefa"/"Estudo avulso"; "Recalibrar Semana Real" ganha rótulo que diz o efeito. Comando: clarify.
+
+O Checkpoint 2 só fecha com nova crítica (piso 30/40) depois de 11b e 11c.
+
+**Tarefa 11b feita em 14/11/2026, sem commit.** Frase-resumo (`weekSummarySentence`) acima das linhas do Resumo: "Estudado 10 h 23 min de 12 h; falta 1 h 37 min." (três situações: falta, completa, acima). O aviso âmbar do renderer saiu; o excesso é a linha "Marcado acima da capacidade +1 h 30 min" com a ação "Ajustar disponibilidade" (abre a dobra de disponibilidade). Saiu a repetição "só X dos Y" da nota do múltiplo. Borda inteira no bloco de excesso (sem borda lateral). Verificado em 375 escuro: axe 0, sem estouro, ação abre a dobra. Falta o item "vínculos viram segunda linha", já coberto pela 11c (renomear) e mantido como sublinhas do extrato.
+
+**Tarefa 11c feita em 14/11/2026, sem commit.** "Vínculo" saiu da Semana e do Fechamento (que compartilha o Resumo): Estudo ligado a tarefa desta semana, Estudo avulso, sem tarefa, Ligado a tarefa incompatível ou inativa, Ligado a tarefa de outro período; barra de saldo (Estudado ligado a tarefa / Estudado avulso); execução estratégica (ligadas a tarefas, avulsas); nota do Fechamento. O botão do card de replanejamento "Recalibrar Semana Real" virou "Redistribuir saldo pendente". O banner da aba Hoje (RealWeekBanner) também: selo Replanejamento, botão Redistribuir saldo pendente, duração em formato único. Fora do escopo e ainda com "vínculo": Fechamento (composição do tempo, aderência) e Desempenho. Falta a nova crítica da Semana (piso 30/40) para fechar o Checkpoint 2.

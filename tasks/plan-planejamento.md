@@ -111,6 +111,9 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 10: Semana em 7 colunas no lugar da lista "Planejado × realizado"
 - [x] Tarefa 11: Um bloco "Plano × estudado por disciplina" no lugar de dois
 
+- [x] Tarefa 11b: Frase-resumo no topo do Resumo e alerta de excesso com ação (P1 da crítica, 26/40)
+- [x] Tarefa 11c: Linguagem da Semana sem jargão ("vínculo", "Semana Real") e botão claro (P3 da crítica)
+
 ### Checkpoint 2: Semana
 - [ ] Crítica impeccable só da Semana, detector e axe sem regressão
 

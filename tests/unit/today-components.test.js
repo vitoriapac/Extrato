@@ -322,7 +322,7 @@ test('TodayTabController — coordena renderRealWeekBanner e permite dispensar p
 
   assert.equal(controller.isRealWeekBannerDismissed(), false);
   controller.renderRealWeekBanner();
-  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Semana Real/);
+  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Replanejamento/);
   assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Sua semana não saiu como planejada/);
 
   controller.dismissRealWeekBanner();
@@ -331,6 +331,6 @@ test('TodayTabController — coordena renderRealWeekBanner e permite dispensar p
 
   controller.restoreRealWeekBanner();
   assert.equal(controller.isRealWeekBannerDismissed(), false);
-  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Semana Real/);
+  assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Replanejamento/);
 });
 
