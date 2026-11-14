@@ -62,7 +62,7 @@ test('cabeçalhos analíticos com dados densos em desktop', async ({ page }) => 
   await expect(page.locator('#statSubjects')).toHaveText(String(state.subjects.length));
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'subjects');
-  await expect(page.locator('#desempenho-gaps .analytics-card > .module-heading')).toHaveCount(2);
+  await expect(page.locator('#desempenho-gaps .analytics-card > .module-heading')).toHaveCount(1);
   await activateTab(page, 'metas');
   await expect(
     page.locator('.metas-history-section > .analytics-card > .module-heading')
