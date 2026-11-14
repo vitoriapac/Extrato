@@ -11,7 +11,7 @@ const options = [
   ['accuracy', 'Precisão'],
   ['evolution', 'Evolução'],
   ['questions', 'Questões'],
-  ['priority', 'Prioridade existente'],
+  ['priority', 'Prioridade no plano'],
   ['balance', 'Saldo do plano'],
 ];
 const minutes = (number: number | null | undefined) =>

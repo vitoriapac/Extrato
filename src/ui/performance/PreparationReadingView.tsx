@@ -1,7 +1,7 @@
 import type { PreparationLink, PreparationReading } from '../../application/performance/build-preparation-reading.js';
 
 function LinkButton({ link, solid = false }: { link: PreparationLink; solid?: boolean }) {
-  return <button type="button" class={`btn${solid ? '' : ' ghost'} small`}
+  return <button type="button" class={`btn${solid ? '' : ' tertiary'} small`}
     data-performance-investigate={link.kind === 'section' ? link.target : undefined}
     data-performance-subject-id={link.kind === 'section' ? link.subjectId || undefined : undefined}
     data-performance-reveal={link.kind === 'reveal' ? link.target : undefined}

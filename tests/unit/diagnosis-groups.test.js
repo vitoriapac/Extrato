@@ -64,7 +64,7 @@ test('ordenar por tempo × edital e por críticos reordena as disciplinas e most
     { topics, subjects: [] },
     { studyActionForItem: () => null, escapeHtml: String, escapeAttr: String, filters: { sort: 'vulnerable' } }
   );
-  assert.match(byRisk, /1 críticos/);
+  assert.match(byRisk, /1 crítico/);
 });
 
 test('Matriz: sem nenhuma disciplina fora do quadrante crítico, só a lista', async () => {

@@ -153,7 +153,7 @@ test('leitura da preparação: retrato fictício da demo é declarado; o real n�
     buildPreparationReading({
       model: { readiness, readinessDelta: 1, readinessPair: pairWith(id) },
     }).howAmI.readiness.detail;
-  assert.match(read('demo-readiness-3'), /retratos de fechamento são fictícios/);
+  assert.match(read('demo-readiness-3'), /fechamentos são fictícios/);
   assert.doesNotMatch(read('readiness-3'), /fictícios/);
 });
 

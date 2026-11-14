@@ -9,7 +9,7 @@ export const DIAGNOSTIC_VOCABULARY = Object.freeze({
   }),
   evidence: Object.freeze({
     low: 'Baixa',
-    moderate: 'Moderada',
+    moderate: 'Média',
     high: 'Alta',
     unassessed: 'Não avaliada',
   }),

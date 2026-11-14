@@ -466,7 +466,7 @@ export function calculateCareerBenchmarkComparison(
 
   const accuracyComparison: BenchmarkMetricComparison = Object.freeze({
     metric: 'accuracy',
-    label: 'Precisão em Questões',
+    label: 'Precisão em questões',
     unit: '%',
     currentValue: accuracy,
     targetMin: career.targetAccuracy.consolidation,

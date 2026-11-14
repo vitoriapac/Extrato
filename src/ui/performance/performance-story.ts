@@ -10,7 +10,8 @@ export function renderPerformanceSummary(story: string, metrics: string, note = 
 export function renderPerformanceDetails(
   title: string,
   content: string,
-  className = 'performance-details'
+  className = 'performance-details',
+  open = false
 ) {
-  return renderDisclosure({ title, contentHTML: content, className });
+  return renderDisclosure({ title, contentHTML: content, className, open });
 }

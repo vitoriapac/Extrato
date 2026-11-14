@@ -98,11 +98,11 @@ export function buildPreparationReading({
     readinessValue != null && pair?.current && Number(pair.current.score) !== readinessValue;
   const demoClosing = String(pair?.current?.id || '').startsWith('demo-readiness-');
   const closingNote = closingDiffers
-    ? ` O valor acima é o cálculo de hoje; este é o retrato do fechamento.${demoClosing ? ' Na demonstração, os retratos de fechamento são fictícios e não seguem o cálculo de hoje.' : ''}`
+    ? ` O valor acima é o de hoje.${demoClosing ? ' Na demonstração, os fechamentos são fictícios.' : ''}`
     : '';
   const readinessDetailBase =
     model.readinessDelta != null && pair?.current && pair?.previous
-      ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}, ${model.readinessDelta > 0 ? '+' : model.readinessDelta < 0 ? '−' : ''}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente a ${pair.previous.score} em ${formatDateBR(pair.previous.date)}, último registro do período anterior.`
+      ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}, ${model.readinessDelta > 0 ? '+' : model.readinessDelta < 0 ? '−' : ''}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente ao fechamento anterior.`
       : pair?.current
         ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}.`
         : null;

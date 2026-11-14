@@ -19,7 +19,7 @@ test('Leitura da preparação usa a mesma recomendação de Hoje e leva ao dono'
   await expect(reading.getByRole('heading', { name: 'O que mais pesa' })).toBeVisible();
   await expect(reading.getByRole('heading', { name: 'O que fazer' })).toBeVisible();
   // Um único botão sólido na faixa: abrir no dono da recomendação.
-  await expect(reading.locator('.btn:not(.ghost)')).toHaveCount(1);
+  await expect(reading.locator('.btn:not(.ghost):not(.tertiary)')).toHaveCount(1);
   if (todayId)
     await expect(reading.locator('[data-recommendation-id]')).toHaveAttribute(
       'data-recommendation-id',
@@ -181,7 +181,8 @@ test('Aderência fica numa dobra que não fecha ao trocar a semana, e os filtros
     .locator('#performanceSectionContent details')
     .filter({ has: page.locator(':scope > summary', { hasText: 'Como o plano foi cumprido' }) })
     .first();
-  await expect(fold).toHaveJSProperty('open', false);
+  // Abre por padrão (é o centro de Ritmo), e a memória das dobras continua valendo.
+  await expect(fold).toHaveJSProperty('open', true);
   await openPerformanceSection(page, 'exam');
   const filters = page.locator('details.exam-matrix-filters-fold');
   await expect(filters).toHaveJSProperty('open', false);

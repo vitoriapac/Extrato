@@ -1,3 +1,4 @@
+import { formatDecimal } from '../../core/format-number.js';
 import { ALERT_SEVERITY_VARIANT, renderBadgeIcon } from '../primitives/badge.js';
 import { renderDiagnosticSummary } from './diagnostic-summary-renderer.js';
 import { SHARED_SIGNALS_LIMITATION } from '../../application/diagnostics/build-consolidated-signals.js';
@@ -43,7 +44,7 @@ export function renderConsolidatedDiagnosis(
   };
   const select = (name: string, title: string, current: string, entries: [string, string][], all = 'Todas') =>
     `<label class="diagnosis-filter">${title}<select class="select-control" data-diagnosis-filter="${name}"><option value="${name === 'sort' ? 'queue' : 'all'}">${all}</option>${entries.map(([value, text]) => `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')}</select></label>`;
-  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, options('evidenceQuality', item => item.evidence?.label || item.evidenceQuality))}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} conteúdos</span></div>`;
+  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} conteúdos</span></div>`;
   const groups = new Map<string, { name: string; items: { item: Record<string, any>; rank: number }[] }>();
   visible.forEach(entry => {
     const { item } = entry;
@@ -67,20 +68,26 @@ export function renderConsolidatedDiagnosis(
   if (sort === 'vulnerable') ordered.sort(([, a], [, b]) => criticals(b) - criticals(a));
   const note = (id: string, group: any) =>
     sort === 'allocation' && allocation[id]
-      ? ` · tempo ${allocation[id].timePercent}% · edital ${allocation[id].examWeightPercent}%`
+      ? ` · tempo ${formatDecimal(allocation[id].timePercent)}% · edital ${formatDecimal(allocation[id].examWeightPercent)}%`
       : sort === 'vulnerable'
-        ? ` · ${criticals(group)} críticos`
+        ? ` · ${criticals(group)} ${criticals(group) === 1 ? 'crítico' : 'críticos'}`
         : '';
   const body = ordered
     .map(([id, group], index) => {
       const open = index === 0;
-      const head = group.items.slice(0, 3),
-        rest = group.items.slice(3);
+      // Conteúdo sem registro nenhum ainda não é fraqueza: fica à parte, depois do que já foi estudado.
+      const noData = group.items.filter(({ item }) => item.primarySignal === 'collect-evidence');
+      const studied = group.items.filter(({ item }) => item.primarySignal !== 'collect-evidence');
+      const head = studied.slice(0, 3),
+        rest = studied.slice(3);
+      const unseen = noData.length
+        ? `<details class="performance-more"><summary>Sem evidência registrada · ${noData.length}</summary><template data-lazy>${listOf(noData)}</template></details>`
+        : '';
       const more = rest.length
         ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${listOf(rest)}</template></details>`
         : '';
-      const inner = listOf(head) + more;
-      return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'conteúdo' : 'conteúdos'}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
+      const inner = (head.length ? listOf(head) : '') + more + unseen;
+      return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'conteúdo' : 'conteúdos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
     })
     .join('');
   return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${controls}${body || '<p class="analytics-note">Nenhum conteúdo com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;

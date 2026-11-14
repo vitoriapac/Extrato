@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { buildEvidenceQuality } from '../../src/application/analytics/build-evidence-quality.js';
 import { renderEvidenceQuality } from '../../src/ui/renderers/evidence-quality-renderer.js';
 test('qualidade normaliza rótulos sem criar volumes ou confiança ausentes', () => {
-  assert.equal(buildEvidenceQuality({ label: 'Média' }).level, 'Moderada');
+  assert.equal(buildEvidenceQuality({ label: 'Média' }).level, 'Média');
   assert.equal(buildEvidenceQuality({ confidence: 0.8 }).level, 'Alta');
   const unknown = buildEvidenceQuality({ counts: { questoes: null, provas: 0 } });
   assert.equal(unknown.assessed, false);

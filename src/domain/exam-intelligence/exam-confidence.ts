@@ -3,7 +3,7 @@ import { EXAM_INTELLIGENCE_CONFIG } from './config.js';
 export const EXAM_CONFIDENCE_LABELS = Object.freeze({
   insufficient: 'Evidência limitada',
   low: 'Baixa',
-  moderate: 'Moderada',
+  moderate: 'Média',
   high: 'Alta',
 });
 

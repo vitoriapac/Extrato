@@ -347,8 +347,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
+    const proofIndex = `<nav class="performance-proof-index" aria-label="Seções de Provas">${[['questions', 'Questões'], ['simulations', 'Simulados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-proof-jump="${key}">${label}</button>`).join('')}</nav>`;
     const sectionHtml = examSection
-      ? proofBlock('questions', 'Questões', renderPerformanceSection(proofModels!.questions, renderOptions)) +
+      ? proofIndex +
+        proofBlock('questions', 'Questões', renderPerformanceSection(proofModels!.questions, renderOptions)) +
         proofBlock('simulations', 'Simulados', renderPerformanceSection(proofModels!.simulations, renderOptions)) +
         proofBlock(
           'exam',
