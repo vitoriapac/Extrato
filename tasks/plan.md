@@ -80,7 +80,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 
 ### Fase 6: Referência de ritmo e notas de corte
 - [x] Tarefa 23: Textos da referência sem afirmação sem fonte
-- [ ] Tarefa 24: Campo de nota de corte no catálogo com validação de fonte
+- [x] Tarefa 24: Campo de nota de corte no catálogo com validação de fonte
 - [ ] Tarefa 25: Notas de corte oficiais de BB, Caixa e CNU
 - [ ] Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5)
 - [ ] Tarefa 27: Precisão comparada com a nota de corte do concurso ativo

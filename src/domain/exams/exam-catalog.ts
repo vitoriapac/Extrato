@@ -148,8 +148,70 @@ export function catalogForExamTags(examTags: string[] = []) {
   }
   return result;
 }
+/**
+ * Notas de corte entram no catálogo só com link oficial (órgão ou banca). Cada perfil de prova
+ * pode ter `cutoffScores: [{ banca, cargo, praca, ano, modalidade, score, scale, sourceUrl }]`.
+ * Sem link oficial, a nota não é cadastrada: o dado fica "sem dado".
+ * shortcut: lista de domínios oficiais mantida à mão, acrescentar a banca ao cadastrar um concurso novo.
+ */
+export const OFFICIAL_SOURCE_HOSTS: readonly string[] = Object.freeze([
+  'gov.br',
+  'jus.br',
+  'leg.br',
+  'mp.br',
+  'def.br',
+  'bb.com.br',
+  'cesgranrio.org.br',
+  'cebraspe.org.br',
+  'cespe.unb.br',
+  'fgv.br',
+  'fcc.org.br',
+  'vunesp.com.br',
+  'idecan.org.br',
+  'ibfc.org.br',
+  'institutoaocp.org.br',
+  'quadrix.org.br',
+]);
+const CUTOFF_REQUIRED_TEXT = ['banca', 'cargo', 'praca', 'modalidade'] as const;
+
+export function isOfficialSourceUrl(value: unknown): boolean {
+  let url: URL;
+  try {
+    url = new URL(String(value));
+  } catch {
+    return false;
+  }
+  if (url.protocol !== 'https:') return false;
+  const host = url.hostname.toLowerCase();
+  return OFFICIAL_SOURCE_HOSTS.some(allowed => host === allowed || host.endsWith(`.${allowed}`));
+}
+
+export function validateCutoffScores(profiles: Row = EXAM_PROFILES) {
+  const errors: string[] = [];
+  for (const [profileId, profile] of Object.entries<Row>(profiles)) {
+    (profile?.cutoffScores || []).forEach((entry: Row, index: number) => {
+      const where = `Nota de corte ${profileId}[${index}]`;
+      for (const field of CUTOFF_REQUIRED_TEXT)
+        if (!String(entry?.[field] ?? '').trim()) errors.push(`${where}: falta ${field}`);
+      if (!Number.isInteger(entry?.ano)) errors.push(`${where}: ano inválido`);
+      if (!Number.isFinite(entry?.scale) || entry.scale <= 0)
+        errors.push(`${where}: escala inválida`);
+      else if (!Number.isFinite(entry?.score) || entry.score < 0 || entry.score > entry.scale)
+        errors.push(`${where}: nota fora da escala`);
+      if (!isOfficialSourceUrl(entry?.sourceUrl))
+        errors.push(`${where}: sem link oficial (órgão ou banca)`);
+    });
+  }
+  return Object.freeze({ valid: errors.length === 0, errors });
+}
+
+/** Notas de corte cadastradas para um perfil de prova; vazio quando não há dado oficial. */
+export function cutoffScoresFor(profileId: string): readonly Row[] {
+  return (EXAM_PROFILES as Row)[profileId]?.cutoffScores || [];
+}
+
 export function validateExamCatalog(subjects: Row[] = EXAM_CATALOG) {
-  const errors: string[] = [],
+  const errors: string[] = [...validateCutoffScores().errors],
     subjectIds = new Set<string>(),
     topicIds = new Set<string>();
   for (const subject of subjects) {

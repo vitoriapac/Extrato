@@ -293,8 +293,8 @@ Verificação usada abaixo:
 
 ### Tarefa 24: Campo de nota de corte no catálogo com validação de fonte
 **Aceite:**
-- [ ] Campo por concurso: banca, cargo, praça, ano, modalidade, nota, escala, link oficial
-- [ ] Validação recusa nota sem link oficial
+- [x] Campo por concurso: banca, cargo, praça, ano, modalidade, nota, escala, link oficial
+- [x] Validação recusa nota sem link oficial
 **Verificação:** Unit da validação do catálogo
 **Dependências:** T23
 **Arquivos:** `src/domain/exams/exam-catalog.ts`, `exam-catalog-data.json`, testes
