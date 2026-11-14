@@ -48,3 +48,25 @@ test('números de aderência, "o que mudou" e simulados saem com selo de janela'
   );
   assert.match(summary, /data-window="history"/);
 });
+
+test('simulados: uma casa decimal e contagem com critério e janela no resumo', () => {
+  const html = renderPerformanceExecutiveSummary(
+    {
+      rangeLabel: 'Últimos 30 dias',
+      situation: {
+        status: 'on_track',
+        confidence: 'low',
+        target: 80,
+        simulationAccuracy: 80.7,
+        band: { low: 76.2, high: 85 },
+        simulationCount: 3,
+      },
+      change: null,
+      base: { resolved: 40, sessions: 5, smallSample: false },
+    },
+    { escapeHtml }
+  );
+  assert.match(html, /3 simulados, todo o histórico/);
+  assert.match(html, /80,7%/);
+  assert.match(html, /76,2%/);
+});

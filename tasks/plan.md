@@ -31,7 +31,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 
 ### Fase 2: Origem e correção dos números
 - [x] Tarefa 6: Investigação demo × produto (T2)
-- [ ] Tarefa 7: Simulados com um arredondamento e contagem explicada
+- [x] Tarefa 7: Simulados com um arredondamento e contagem explicada
 - [x] Tarefa 8: Selos de janela e dois números de execução do plano
 
 ### Checkpoint 2: Números

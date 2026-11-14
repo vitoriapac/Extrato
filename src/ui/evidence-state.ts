@@ -1,3 +1,4 @@
+import { formatDecimal } from '../core/format-number.js';
 // Presentation only: evidence gates and confidence belong to the domain.
 export const EVIDENCE_STATES = Object.freeze({
   MEASURED: 'measured',
@@ -46,5 +47,4 @@ export function presentEvidence({
   };
 }
 export const formatEvidencePercent = (value: unknown) =>
-  presentEvidence({ value, unit: '%', format: (number: number) => String(Math.round(number)) })
-    .text;
+  presentEvidence({ value, unit: '%', format: (number: number) => formatDecimal(number) }).text;

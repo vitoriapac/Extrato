@@ -25,6 +25,10 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
     ? `; faixa estimada de ${formatEvidencePercent(situation.band.low)} a ${formatEvidencePercent(situation.band.high)}`
     : '';
   const confidence = confidenceLabels[situation.confidence || ''];
+  const countNote =
+    situation.simulationCount != null
+      ? ` (${pluralize(situation.simulationCount, 'simulado', 'simulados')}, todo o histórico)`
+      : '';
   // Resultado central na meta, mas o piso da faixa abaixo dela: o selo vem da incerteza, não de um resultado ruim.
   const bandBelowTarget =
     situation.band &&
@@ -32,7 +36,7 @@ function situationText(situation: PerformanceExecutiveSummary['situation']): str
     situation.band.low < situation.target;
   if (bandBelowTarget && situation.status === 'attention')
     return `${label}. O resultado central dos simulados (${formatEvidencePercent(situation.simulationAccuracy)}) atinge a meta de ${formatEvidencePercent(situation.target)}, mas a faixa estimada de ${formatEvidencePercent(situation.band!.low)} a ${formatEvidencePercent(situation.band!.high)} inclui valores abaixo dela.${confidence ? ` Confiança ${confidence}.` : ''}`;
-  return `${label}. Resultado central dos simulados comparáveis: ${formatEvidencePercent(situation.simulationAccuracy)}, meta de ${formatEvidencePercent(situation.target)}${band}.${confidence ? ` Confiança ${confidence}.` : ''}`;
+  return `${label}. Resultado central dos simulados comparáveis${countNote}: ${formatEvidencePercent(situation.simulationAccuracy)}, meta de ${formatEvidencePercent(situation.target)}${band}.${confidence ? ` Confiança ${confidence}.` : ''}`;
 }
 
 function changeText(change: PerformanceExecutiveSummary['change']): string {

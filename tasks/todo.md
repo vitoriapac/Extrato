@@ -99,9 +99,9 @@ Verificação usada abaixo:
 
 ### Tarefa 7: Simulados com um arredondamento e contagem explicada
 **Aceite:**
-- [ ] Uma casa decimal para simulados em toda a aba
-- [ ] Toda contagem de simulados diz o critério e a janela ("3 comparáveis, todo o histórico")
-- [ ] Um nome por cálculo (resultado central, média do período), um por tela
+- [x] Uma casa decimal para simulados em toda a aba
+- [x] Toda contagem de simulados diz o critério e a janela ("3 comparáveis, todo o histórico")
+- [x] Um nome por cálculo (resultado central, média do período), um por tela
 **Verificação:** Unit fixando valor e rótulo; manual na demo
 **Dependências:** T6
 **Arquivos:** renderers de simulados, resumo executivo, preparação
