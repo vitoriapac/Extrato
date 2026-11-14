@@ -20,6 +20,7 @@ import { createSearchController } from '../../ui/controllers/search-controller.j
 import { createApprovalTabController } from '../../ui/tabs/approval/approval-tab-controller.js';
 import { createDashboardTabController } from '../../ui/tabs/dashboard/dashboard-tab-controller.js';
 import { buildNextBestAction } from '../../application/diagnostics/build-next-best-action.js';
+import { buildDiagnosisPageModel } from '../../application/diagnostics/build-diagnosis-page-model.js';
 import { createPerformanceTabController } from '../../ui/tabs/performance/performance-tab-controller.js';
 
 export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
@@ -324,6 +325,25 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     computeApprovalMetrics: approvalReadinessService.computeApprovalMetrics,
     // Os mesmos candidatos (e a mesma pontuação) do Diagnóstico: uma fila de estudo só.
     intelligenceCandidates: () => refreshStudyRecommendationItems().candidates,
+    // A ordem dos cards do Diagnóstico (a fila de estudo oficial), calculada com os mesmos insumos.
+    diagnosisOrder: () => {
+      const state = getState();
+      const { candidates } = refreshStudyRecommendationItems();
+      const model = buildDiagnosisPageModel({
+        candidates,
+        subjects: studyMetricsSelectors.examScopedSubjects(),
+        scope: studyMetricsSelectors.examEvidenceContext(),
+        blueprint: state.examBlueprint,
+        globalTarget: state.metas?.metaAprovacao,
+        today: todayISO(),
+        activeExamTags: state.examBlueprint?.activeExamTags || [],
+        recommendations: getCurrentStudyRecommendations(),
+        activePlan: getLatestStudyPlan(),
+        weeklyCapacityMinutes: studyMetricsSelectors.weeklyStrategyCapacity(),
+        hoursByDay: state.metas?.horasPorDia || {},
+      });
+      return (model.consolidated?.topics || []).map((row: any) => row.topicId);
+    },
     nextBestAction: () =>
       buildNextBestAction({
         recommendations: getCurrentStudyRecommendations(),

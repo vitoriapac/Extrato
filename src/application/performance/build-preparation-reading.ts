@@ -73,6 +73,7 @@ export function buildPreparationReading({
   readinessChange = null,
   nextBestAction = null,
   candidates = [],
+  diagnosisOrder = [],
   subjectAccuracy = {},
 }: {
   range?: Row;
@@ -82,6 +83,8 @@ export function buildPreparationReading({
   readinessChange?: Row | null;
   nextBestAction?: Row | null;
   candidates?: Row[];
+  /** Ids dos tópicos na ordem dos cards do Diagnóstico; desempata a pontuação igual do mesmo jeito. */
+  diagnosisOrder?: string[];
   /** Precisão em questões por disciplina (id → acerto e questões), do mesmo escopo da leitura. */
   subjectAccuracy?: Record<string, { accuracy: number | null; resolved: number }>;
 } = {}): PreparationReading {
@@ -147,8 +150,13 @@ export function buildPreparationReading({
     });
   // Mesma fila do Diagnóstico (pontuação de prioridade do tópico, a que ordena a lista de cards); só entram
   // tópicos fracos com impacto alto. É a resposta oficial para "o que mais pesa"; as outras telas apontam para ela.
+  const position = new Map(diagnosisOrder.map((id, index) => [id, index]));
   const gaps = [...candidates]
-    .sort((a, b) => (Number(b?.score) || 0) - (Number(a?.score) || 0))
+    .sort(
+      (a, b) =>
+        (Number(b?.score) || 0) - (Number(a?.score) || 0) ||
+        (position.get(a?.topicId) ?? Infinity) - (position.get(b?.topicId) ?? Infinity)
+    )
     .filter(item => isStrategicGap(item));
   // Tópico fraco dentro de disciplina forte: diz as duas coisas para o leitor não ver contradição.
   const strongSubjectNote = (gap: Row): string => {

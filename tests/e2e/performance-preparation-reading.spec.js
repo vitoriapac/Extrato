@@ -257,3 +257,19 @@ test('A projeção até a prova mora em Simulados; a Visão geral mostra a faixa
   await expect(page.locator('#performanceTab-simulations')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('.achievement-projection')).toBeVisible();
 });
+
+test('"O que mais pesa" segue a mesma ordem dos cards do Diagnóstico', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const pulled = await page.locator('.performance-reading__list li span').allInnerTexts();
+  const topics = pulled.map(text => /—\s*([^:]+):/.exec(text)?.[1]?.trim()).filter(Boolean);
+  expect(topics.length).toBeGreaterThan(0);
+  await openPerformanceSection(page, 'diagnosis');
+  const cards = await page
+    .locator('#diagnosisCenter .consolidated-diagnosis-row .diagnostic-row-identity strong')
+    .allInnerTexts();
+  const positions = topics.map(topic => cards.indexOf(topic));
+  expect(positions.every(position => position >= 0)).toBe(true);
+  expect(positions).toEqual([...positions].sort((a, b) => a - b));
+});

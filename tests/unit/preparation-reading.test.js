@@ -224,3 +224,16 @@ test('uma fila só: Leitura e riscos da projeção seguem a mesma pontuação de
   assert.match(reading[0], /alto/);
   assert.match(reading[1], /meio/);
 });
+
+test('empate de pontuação: "o que mais pesa" desempata pela ordem dos cards do Diagnóstico', () => {
+  const candidates = [gap('a', { score: 77 }), gap('b', { score: 77 }), gap('c', { score: 77 })];
+  const order = buildPreparationReading({ candidates, diagnosisOrder: ['c', 'a', 'b'] }).pulling.map(
+    p => p.text
+  );
+  assert.match(order[0], /Tópico c/);
+  assert.match(order[1], /Tópico a/);
+  assert.match(order[2], /Tópico b/);
+  // Sem a ordem, mantém a ordem recebida (compatível com o comportamento anterior).
+  const plain = buildPreparationReading({ candidates }).pulling.map(p => p.text);
+  assert.match(plain[0], /Tópico a/);
+});

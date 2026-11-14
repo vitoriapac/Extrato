@@ -51,6 +51,8 @@ export interface PerformanceTabControllerDeps {
   readinessResult?: (metrics: any) => any;
   computeApprovalMetrics?: () => any;
   intelligenceCandidates?: () => any[];
+  /** Ids dos tópicos na ordem dos cards do Diagnóstico. */
+  diagnosisOrder?: () => string[];
   /** A mesma próxima melhor ação de Hoje, para a leitura da preparação. */
   nextBestAction?: () => any;
   entitySubjectId?: (item: any) => string | null;
@@ -268,6 +270,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             performanceViewState.section === 'overview' && deps.nextBestAction
               ? deps.nextBestAction()
               : null,
+          diagnosisOrder:
+            performanceViewState.section === 'overview' && deps.diagnosisOrder
+              ? deps.diagnosisOrder()
+              : [],
           candidates:
             ['subjects', 'overview'].includes(performanceViewState.section) &&
             deps.intelligenceCandidates

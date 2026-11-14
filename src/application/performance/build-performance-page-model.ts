@@ -82,6 +82,7 @@ export function buildPerformancePageModel({
   blueprint = {},
   globalTarget = 80,
   candidates = [],
+  diagnosisOrder = [],
   dailyPlans = [],
   executionSource = null,
   subjectIdFor,
@@ -152,6 +153,7 @@ export function buildPerformancePageModel({
         readinessChange,
         nextBestAction,
         candidates,
+        diagnosisOrder,
         subjectAccuracy: (() => {
           const totals: Record<string, { resolved: number; correct: number }> = {};
           for (const q of scope.questions?.included || []) {
