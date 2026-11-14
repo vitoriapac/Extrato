@@ -90,7 +90,10 @@ export function buildPreparationReading({
   // O valor grande é o cálculo de hoje; o fechamento é um retrato de outra data. Se diferem, a frase diz isso.
   const closingDiffers =
     readinessValue != null && pair?.current && Number(pair.current.score) !== readinessValue;
-  const closingNote = closingDiffers ? ' O valor acima é o cálculo de hoje; este é o retrato do fechamento.' : '';
+  const demoClosing = String(pair?.current?.id || '').startsWith('demo-readiness-');
+  const closingNote = closingDiffers
+    ? ` O valor acima é o cálculo de hoje; este é o retrato do fechamento.${demoClosing ? ' Na demonstração, os retratos de fechamento são fictícios e não seguem o cálculo de hoje.' : ''}`
+    : '';
   const readinessDetailBase =
     model.readinessDelta != null && pair?.current && pair?.previous
       ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}, ${model.readinessDelta > 0 ? '+' : model.readinessDelta < 0 ? '−' : ''}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente a ${pair.previous.score} em ${formatDateBR(pair.previous.date)}, último registro do período anterior.`

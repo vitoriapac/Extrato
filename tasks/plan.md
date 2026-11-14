@@ -32,7 +32,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Fase 2: Origem e correção dos números
 - [x] Tarefa 6: Investigação demo × produto (T2)
 - [ ] Tarefa 7: Simulados com um arredondamento e contagem explicada
-- [ ] Tarefa 8: Selos de janela e dois números de execução do plano
+- [x] Tarefa 8: Selos de janela e dois números de execução do plano
 
 ### Checkpoint 2: Números
 - [ ] Relatório T2 revisado; nenhuma tela com o mesmo número em arredondamentos diferentes

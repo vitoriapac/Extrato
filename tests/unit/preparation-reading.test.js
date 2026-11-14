@@ -142,3 +142,17 @@ test('projeção mantém intervalo, confiança e limite juntos; conteúdo da aç
   assert.doesNotMatch(html, /<script>|<img src=x>/);
   assert.match(html, /&lt;script>/);
 });
+
+test('leitura da preparação: retrato fictício da demo é declarado; o real não', () => {
+  const readiness = { value: 47, availableFactors: ['coverage', 'mastery', 'retention'] };
+  const pairWith = id => ({
+    current: { id, date: '2026-11-08', score: 56 },
+    previous: { id: 'x', date: '2026-10-11', score: 55 },
+  });
+  const read = id =>
+    buildPreparationReading({
+      model: { readiness, readinessDelta: 1, readinessPair: pairWith(id) },
+    }).howAmI.readiness.detail;
+  assert.match(read('demo-readiness-3'), /retratos de fechamento são fictícios/);
+  assert.doesNotMatch(read('readiness-3'), /fictícios/);
+});

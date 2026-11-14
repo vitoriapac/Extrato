@@ -3,6 +3,7 @@ import { Icon } from '../primitives/icon.js';
 import { Badge } from '../primitives/badge.js';
 import { SelectField } from '../primitives/select-field.js';
 import { Tooltip } from '../primitives/tooltip.js';
+import { WindowBadge } from '../performance/window-badge.js';
 import { formatDecimal } from '../../core/format-number.js';
 import {
   CAREER_BENCHMARKS,
@@ -190,6 +191,9 @@ export function CareerBenchmarkCard({
 
         {/* 3. Precisão em Questões */}
         <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+          <div class="text-xs mb-1">
+            <WindowBadge kind="sevenDays" />
+          </div>
           <MetricBulletBar comparison={accuracy} maxDisplay={100} />
         </div>
       </div>

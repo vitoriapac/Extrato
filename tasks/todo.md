@@ -109,9 +109,9 @@ Verificação usada abaixo:
 
 ### Tarefa 8: Selos de janela e dois números de execução do plano
 **Aceite:**
-- [ ] Toda precisão, simulado, aderência e turno com selo de janela no número
-- [ ] Execução do plano com dois números (volume do plano e aderência) e definição em uma linha
-- [ ] Gráficos com recorte diferente do filtro dizem "semanas fechadas dentro do período"
+- [x] Toda precisão, simulado, aderência e turno com selo de janela no número
+- [x] Execução do plano com dois números (volume do plano e aderência) e definição em uma linha
+- [x] Gráficos com recorte diferente do filtro dizem "semanas fechadas dentro do período"
 **Verificação:** Unit dos rótulos; `window-badge.test.js`; E2E de Desempenho
 **Dependências:** T6
 **Arquivos:** `window-badge.tsx`, `performance-consistency-renderer.ts`, `CareerBenchmarkCard.tsx`, `adherence-renderer.ts`
