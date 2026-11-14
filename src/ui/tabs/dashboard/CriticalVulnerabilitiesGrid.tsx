@@ -99,9 +99,9 @@ export function CriticalVulnerabilitiesGrid({
                 <div class="flex items-center justify-between text-xs mb-2">
                   <span class="text-content-secondary">Domínio pessoal:</span>
                   <span class="font-semibold font-mono text-amber">
-                    {item.mastery}%
+                    {item.mastery}/100
                     <span class="text-content-tertiary font-normal ml-1">
-                      (Meta: {item.target}%)
+                      (Meta: {item.target}/100)
                     </span>
                   </span>
                 </div>

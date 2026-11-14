@@ -214,7 +214,8 @@ test('Blocos analíticos mostram o selo de evidência quando falta amostra', asy
   test.setTimeout(120_000);
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await expect(page.locator('#bloco-resumo .performance-evidence')).toBeVisible();
+  // Confiança baixa da faixa já está escrita no texto: o selo de evidência só entra por amostra pequena.
+  await expect(page.locator('#bloco-resumo .performance-evidence')).toHaveCount(0);
   await openPerformanceSection(page, 'subjects');
   await expect(page.locator('#bloco-comparacao .performance-evidence')).toBeVisible();
 });

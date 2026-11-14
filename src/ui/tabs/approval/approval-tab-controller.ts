@@ -183,11 +183,11 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
       today: todayISO(),
     });
     const factors = [
-      ['Cobertura · 30%', m.edital, 'coverage'],
-      ['Domínio · 25%', m.dominio, 'mastery'],
-      ['Retenção · 20%', m.retencao, 'retention'],
-      ['Consistência · 15%', m.consistencia, 'consistency'],
-      ['Simulados · 10%', m.simulados, 'simulations'],
+      ['Cobertura (peso 30%)', m.edital, 'coverage'],
+      ['Domínio (peso 25%)', m.dominio, 'mastery'],
+      ['Retenção (peso 20%)', m.retencao, 'retention'],
+      ['Consistência (peso 15%)', m.consistencia, 'consistency'],
+      ['Simulados (peso 10%)', m.simulados, 'simulations'],
     ];
     const approvalState =
       readiness.state === 'empty'

@@ -139,11 +139,9 @@ export function renderPerformanceOverview(
     ['none', 'insufficient_data'].includes(executiveSummary.situation.status) ||
     executiveSummary.situation.confidence === 'insufficient'
       ? 'insufficient'
-      : executiveSummary.situation.confidence === 'low'
-        ? 'low'
-        : executiveSummary.base.smallSample
-          ? 'small'
-          : null;
+      : executiveSummary.base.smallSample
+        ? 'small'
+        : null;
   const readingHtml = `<section class="performance-executive chart-card mb-4" id="bloco-resumo" aria-label="Resumo: meta e última semana"><header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title">Meta e última semana</h3>${renderEvidenceBadge(summaryEvidence)}</div></header>${executiveHtml}${weeklyBriefHtml ? `<div class="mt-3">${weeklyBriefHtml}</div>` : ''}</section>`;
   const preparationHtml = renderPreparationReading(preparationReading);
   const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });

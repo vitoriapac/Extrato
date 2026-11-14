@@ -152,7 +152,7 @@ export function PedagogicalMatrixChart({
           y={geom.height - geom.padBottom + 14}
           text-anchor="start"
         >
-          {geom.domain.xMin}%
+          {geom.domain.xMin}
         </text>
         <text
           class="chart-stacked-columns__label"
@@ -160,7 +160,7 @@ export function PedagogicalMatrixChart({
           y={geom.height - geom.padBottom + 14}
           text-anchor="end"
         >
-          {geom.domain.xMax}%
+          {geom.domain.xMax}
         </text>
         <text
           class="chart-stacked-columns__label"
@@ -168,7 +168,7 @@ export function PedagogicalMatrixChart({
           y={geom.height - geom.padBottom}
           text-anchor="end"
         >
-          {geom.domain.yMin}%
+          {geom.domain.yMin}
         </text>
         <text
           class="chart-stacked-columns__label"
@@ -176,7 +176,7 @@ export function PedagogicalMatrixChart({
           y={geom.padTop + 8}
           text-anchor="end"
         >
-          {geom.domain.yMax}%
+          {geom.domain.yMax}
         </text>
 
         {/* Bolhas das Disciplinas */}

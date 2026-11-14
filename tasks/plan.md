@@ -52,7 +52,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] C3.5 P2: card do Diagnóstico com um botão primário e alerta só para risco real
 - [x] C3.6 P2: selo do Resumo do período igual ao conteúdo; resumo dos 7 dias aberto
 - [x] C3.7 P2: alvos de toque do Ritmo (mapa de calor, 3 botões de 18 px)
-- [ ] Nova crítica: H4 e H6 ≥ 3
+- [x] Nova crítica (14/11, 2ª rodada): 23/40, H4 = 1, H6 = 2; varredura final de escala feita. Fechar o Checkpoint 3 com H4 e H6 ≥ 3 depois da Fase 4
 
 ### Fase 4: Cortar repetições
 - [ ] Tarefa 13: Resumo da semana na Visão geral

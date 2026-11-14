@@ -165,3 +165,12 @@ test('card do Diagnóstico: um botão sólido, os demais discretos, e ícone de 
   assert.doesNotMatch(warning, /status-badge--warning"[^>]*><svg/);
   assert.match(danger, /status-badge--danger"[^>]*><svg/);
 });
+
+test('bundle: filtros de retenção por evidência, pesos nomeados e lacuna/impacto em /100', async () => {
+  const { readFileSync } = await import('node:fs');
+  const bundle = readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(bundle, /Todas as confianças|Confiança alta|Filtrar retenção por confiança/);
+  assert.doesNotMatch(bundle, /'(Cobertura|Domínio|Retenção|Consistência|Simulados) · \d+%'/);
+  assert.match(bundle, /Cobertura \(peso 30%\)/);
+  assert.doesNotMatch(bundle, /impacto \$\{[^}]*examImpact[^}]*\}%/);
+});
