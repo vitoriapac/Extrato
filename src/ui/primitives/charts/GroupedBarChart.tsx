@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
+import { formatPlanMinutes as formatMinutes } from '../../../core/format-duration.js';
 import type { SubjectDistributionRowVisual } from '../../../domain/planning/planning-visual-models.js';
 
 export interface GroupedBarChartProps {
@@ -7,14 +8,6 @@ export interface GroupedBarChartProps {
   maxMinutes?: number;
   label?: string;
   className?: string;
-}
-
-function formatMinutes(mins: number): string {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
 }
 
 export function GroupedBarChart({
@@ -107,7 +100,7 @@ export function GroupedBarChart({
                   </span>
                   <span
                     class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}
-                    title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${row.diffMinutes} min`}
+                    title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${formatMinutes(row.diffMinutes)}`}
                   >
                     <Icon name={statusIcon} size={11} />
                     {statusText}

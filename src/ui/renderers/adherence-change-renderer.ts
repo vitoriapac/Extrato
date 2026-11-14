@@ -1,6 +1,6 @@
 import { renderWindowBadge } from '../performance/window-badge.js';
 import { formatDelta } from '../../core/format-number.js';
-import { formatStudyMinuteDelta } from '../format-study-time.js';
+import { planMinDelta as formatStudyMinuteDelta } from './adherence-labels.js';
 const delta = (value: number) => formatDelta(value);
 export function renderAdherenceChangeExplanation(
   model: Record<string, any>,

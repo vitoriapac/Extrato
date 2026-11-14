@@ -146,6 +146,8 @@ Verificação usada abaixo:
 
 **Dependências:** T4
 
+**Feito em 14/11/2026, sem commit.** Causa: os recortes realmente diferem. A Semana usa `buildStrategicExecution` (semana inteira); o Fechamento e o Desempenho usam o modelo de aderência (dias avaliados até hoje). Os valores não são o mesmo número, então os rótulos passam a dizer o recorte: "0min de 45min prioritárias (dias até 14/11)" contra "na semana inteira". Excesso num formato só (`volumeLabel`): percentual até 2×, "7,8× o previsto" acima; "778,8%" não existe mais. Novo `src/ui/renderers/adherence-labels.ts`; snapshot `adherence-320-light` regenerado (texto do recorte). Unificar o recorte em si (semana inteira nos dois) fica como decisão aberta, pois mudaria a regra de aderência.
+
 **Arquivos:** `src/ui/renderers/plan-execution-renderer.ts`, `src/features/weekly-close/weekly-close-modal-controller.ts`, testes
 
 **Tamanho:** S
@@ -166,6 +168,8 @@ Verificação usada abaixo:
 **Arquivos:** `src/ui/renderers/strategic-history-renderer.ts`, `src/ui/renderers/adaptive-planning-renderer.ts`, `src/ui/renderers/plan-execution-renderer.ts`, `src/ui/tabs/goals/study-plan-builder-controller.ts`, `tests/e2e/planning.spec.js`
 
 **Tamanho:** M
+
+**Feito em 14/11/2026, sem commit.** Varredura da demo nas 5 subabas (com os <details> abertos) achou 9 formatos. Todos os renderizadores da aba agora usam `formatPlanMinutes`; novo `planMin`/`planMinDelta` em `src/ui/renderers/adherence-labels.ts` para ausência (—) e variação (+1h20, −45min). Trocados: gráficos de Distribuição e Alocação, estratégia por fase, transferência adaptativa, sustentabilidade, Fechamento (composição do tempo, conciliação, comparação de períodos), Histórico (decisões, linha do tempo, "aderência exige 1h planejada"). E2E novo recusa os outros formatos nas 5 subabas. Efeito colateral: a comparação de períodos (`performance-comparison-renderer`) e a explicação de aderência são compartilhadas com Desempenho e agora também mostram `1h20`; o resto de Desempenho ainda usa `format-study-time.ts` ("6h 59min"), a unificar por quem cuida de lá. Snapshot `adherence-320-light` regenerado de novo.
 
 ### Tarefa 7b: Plano semanal ocupa 90% da capacidade e revisões da agenda substituem as do plano
 **Descrição:** Decisões 1 e 2 da investigação ([investigacao-distribuir.md](investigacao-distribuir.md)). Hoje o plano semanal usa 100% da capacidade (`weeklyBudget = min(disponibilidade, necessidade)` em `src/application/build-study-plan.ts`) e a distribuição reserva 10% e soma as revisões vencendo na agenda por cima das revisões que o plano já contém, então nunca cabe. Passa a valer:
@@ -189,6 +193,8 @@ Verificação usada abaixo:
 **Arquivos:** `src/application/build-study-plan.ts`, `src/application/planning/distribute-study-plan.ts`, `src/ui/tabs/goals/study-plan-builder-controller.ts`, `src/domain/planning/phase-strategy.ts` (a verificar), testes
 
 **Tamanho:** M
+
+**Feito em 14/11/2026, sem commit.** Constante única `PLAN_RESERVE_RATIO` (10%) em `src/application/planning/plan-reserve.ts`, usada pelo plano (`weeklyBudget = min(90% da disponibilidade, necessidade)`) e pela distribuição; o "10% Reserva mínima" da prévia vem dela. Distribuição: as revisões vencendo na agenda reduzem as revisões do plano (`replacedReviewMinutes`, mostrado na prévia). Planos já confirmados não são reescritos (o 90% só vale ao calcular uma proposta). A demo não mudou (plano confirmado vem do gerador). Estratégia por fase e invariantes (`budget ≤ capacity`) seguem válidos com 648/720. Testes: 720 → 648 e cabe em 7 dias; revisões nunca passam do maior dos dois; 4 expectativas antigas de orçamento atualizadas. Limite conhecido: o empacotamento evita blocos < 15 min, então com muitos tópicos (16 a 20) ainda sobram 13 a 24 min, mostrados como "sem espaço". Na demo o E2E não dá 0 porque a agenda marcada ocupa a capacidade (caso da T2). `paceState` ainda compara a necessidade com a disponibilidade inteira, não com os 90% (ver pendência).
 
 ### Tarefa 8: Plano confirmado sem texto de prévia, com linha de estado e ações renomeadas
 **Descrição:** Abaixo de "Plano confirmado" ainda aparecem "carga de 720 min… preservadas" e "3 divisões de atividades propostas". Substituir por uma linha de estado ("Plano 12h/semana · agendado 2h40 · falta agendar 9h20"). Renomear as ações para "Agendar nos próximos 7 dias", "Recalcular plano" e "Simular 'E se?'", e remover "Ver resumo da semana". A linha de estado é também o lugar do replanejamento que a Tarefa 21 do plano da Desempenho traz.

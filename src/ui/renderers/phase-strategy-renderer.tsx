@@ -1,7 +1,8 @@
 import { render } from 'preact-render-to-string';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 
 const activities = (mix: Record<string, any>) =>
-  `teoria ${mix.theory} min · questões ${mix.questions} min · revisão ${mix.reviews} min`;
+  `teoria ${formatPlanMinutes(mix.theory)} · questões ${formatPlanMinutes(mix.questions)} · revisão ${formatPlanMinutes(mix.reviews)}`;
 
 export function renderPhaseStrategy(
   model: Record<string, any>,
@@ -14,8 +15,8 @@ export function renderPhaseStrategy(
       {model.state === 'proposal' ? (
         <>
           <p>
-            {model.phase.days} dias até a prova · carga de {model.budget} min e capacidade de{' '}
-            {model.capacity} min preservadas.
+            {model.phase.days} dias até a prova · carga de {formatPlanMinutes(model.budget)} e
+            capacidade de {formatPlanMinutes(model.capacity)} preservadas.
           </p>
           <details open={preview}>
             <summary>{model.changes.length} divisões de atividades propostas</summary>

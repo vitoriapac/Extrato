@@ -10,15 +10,16 @@ test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ 
   await expect(confirmPlan).toBeVisible();
   await confirmPlan.click();
   await expect(page.getByText('Plano confirmado', { exact: true })).toBeVisible();
-  await expect(page.locator('.study-plan-guidance')).toContainText('Distribua o plano nos próximos 7 dias');
+  await expect(page.locator('.study-plan-guidance')).toContainText(
+    'Distribua o plano nos próximos 7 dias'
+  );
   await page.getByRole('link', { name: 'Ver resumo da semana' }).click();
   await expect(page.locator('#planExecutionCard')).toBeInViewport();
 
   await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias' }).click();
   await expect(page.getByRole('heading', { name: 'Prévia dos próximos 7 dias' })).toBeFocused();
   const confirmDaily = page.getByRole('button', { name: 'Confirmar planos diários' });
-  await expect(confirmDaily).toBeVisible();
-  await confirmDaily.click();
+  await expect(confirmDaily).toBeVisible();  await confirmDaily.click();
 
   const undo = page.getByRole('button', { name: 'Desfazer última distribuição' });
   await expect(undo).toBeVisible();
@@ -166,5 +167,28 @@ test('Distribuição entre disciplinas mostra planejado e realizado na ordem da 
     const planned = /Planejado: (.+?) \(/.exec(row.planned)[1];
     const studied = /Realizado: (.+?) \(/.exec(row.studied)[1];
     expect(row.values).toBe(`Planejado ${planned} / , realizado ${studied}`);
+  }
+});
+
+test('as subabas de Planejamento só mostram durações no formato 1h20, 2h e 48min', async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  // Recusa "1h 20m", "35m", "60 min", "60 minutos", "10 h 23 min" e "0h00".
+  // Espaço literal, não \s: células vizinhas separadas por quebra de linha não contam.
+  const refused =
+    /\b\d+h[ ]\d+|\b\d+h\d{2}m\b|(?<![\dh])\d+m\b|\b\d+[ ](?:min|minutos?|h)\b|\b\d+h00\b|\b0h\d{2}\b/;
+  for (const key of ['semana', 'metas', 'fechamento', 'historico', 'prova']) {
+    await openPlanningSubtab(page, key);
+    await page
+      .locator(`#metasSub-${key} details`)
+      .evaluateAll(list => list.forEach(item => (item.open = true)));
+    const text = await page.locator(`#metasSub-${key}`).innerText();
+    const found = refused.exec(text);
+    expect(
+      found ? `${key}: …${text.slice(Math.max(0, found.index - 30), found.index + 25)}…` : null
+    ).toBeNull();
   }
 });

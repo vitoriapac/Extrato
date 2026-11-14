@@ -1,4 +1,5 @@
 import { scoreStudyDecision } from './study-decision.js';
+import { usableMinutes } from './planning/plan-reserve.js';
 import { describeScoreEvidence } from '../domain/analytics/score-evidence.js';
 import {
   canStudy,
@@ -82,7 +83,11 @@ export function buildStudyPlan({
     };
   // Reserve one usable block when the average weekly need is smaller, without exceeding total remaining effort.
   const minimumUsefulMinutes = Math.min(15, remainingMinutes + maintenanceMinutes);
-  const weeklyBudget = Math.min(availability, Math.max(weeklyNeedMinutes!, minimumUsefulMinutes));
+  // O plano ocupa a capacidade menos a reserva; a distribuição diária reserva a mesma folga.
+  const weeklyBudget = Math.min(
+    usableMinutes(availability),
+    Math.max(weeklyNeedMinutes!, minimumUsefulMinutes)
+  );
   const scored = configured
     .map(item => ({ ...scoreStudyDecision(item), capacityMinutes: effort(item) }))
     .sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));

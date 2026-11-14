@@ -1,4 +1,5 @@
 import { freezePlanExecution } from '../../domain/planning/plan-execution-snapshot.js';
+import { PLAN_RESERVE_RATIO } from './plan-reserve.js';
 const ACTIVE_STATUSES = new Set(['planned', 'in_progress', 'partial', 'completed', 'deferred']);
 const clampMinutes = (value: unknown) => Math.max(0, Math.round(Number(value) || 0));
 
@@ -22,7 +23,7 @@ export function buildDailyPlanProposal({
   existingPlans = [],
   days = [],
   dueReviews = [],
-  reserveRatio = 0.1,
+  reserveRatio = PLAN_RESERVE_RATIO,
   eligibleTopicIds = null,
 }: any = {}) {
   if (!studyPlan?.id || !Array.isArray(studyPlan.items))
@@ -100,8 +101,22 @@ export function buildDailyPlanProposal({
         })
       );
     });
-  let unallocatedMinutes = 0;
+  // As revisões vencendo na agenda substituem a parcela de revisões do plano: a soma nunca passa do maior dos dois.
+  const agendaReviewMinutes = candidates
+    .filter(item => item.origin === 'review')
+    .reduce((sum, item) => sum + item.minutes, 0);
+  let toReplace = agendaReviewMinutes;
   for (const candidate of candidates) {
+    if (toReplace <= 0) break;
+    if (candidate.origin !== 'study-plan' || candidate.type !== 'review') continue;
+    const cut = Math.min(candidate.minutes, toReplace);
+    candidate.minutes -= cut;
+    toReplace -= cut;
+  }
+  const replacedReviewMinutes = agendaReviewMinutes - toReplace;
+  const toDistribute = candidates.filter(item => item.minutes > 0);
+  let unallocatedMinutes = 0;
+  for (const candidate of toDistribute) {
     let remaining = candidate.minutes;
     const ordered = candidate.dueDate
       ? [...slots].sort(
@@ -144,6 +159,7 @@ export function buildDailyPlanProposal({
       reserveMinutes: slots.reduce((sum: number, slot: any) => sum + slot.reserveMinutes, 0),
       existingMinutes: slots.reduce((sum: number, slot: any) => sum + slot.existingMinutes, 0),
     },
+    replacedReviewMinutes,
     existingLinkedItems: existingKeys.size,
     reserveRatio: ratio,
     reason: plannedMinutes ? null : 'Não há capacidade ou itens novos para distribuir.',

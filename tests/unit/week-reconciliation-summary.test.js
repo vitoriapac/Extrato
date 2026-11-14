@@ -107,7 +107,7 @@ test('extrato usa vínculos reais mesmo quando o estudo total é menor que o pla
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
   assert.match(out, /Sem vínculo com atividade/);
   assert.match(out, /30min/);
-  assert.match(out, /0h00 de 1h20 prioritárias/);
+  assert.match(out, /0min de 1h20 prioritárias/);
   assert.doesNotMatch(out, /Estudo extra, sem tarefa marcada/);
 });
 

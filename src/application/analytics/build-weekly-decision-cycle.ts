@@ -1,4 +1,5 @@
 import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import { compareReadinessSnapshots } from './build-readiness-evolution.js';
 import { readinessHistoryForScope } from './readiness-history.js';
 import { READINESS_WEIGHTS } from '../../domain/analytics/readiness-score.js';
@@ -78,7 +79,7 @@ export function buildWeeklyDecisionCycle({
   if (close.mainRisk) attention.push(close.mainRisk.message);
   if (execution.unknownPlannedMinutes)
     attention.push(
-      `${execution.unknownPlannedMinutes} minutos planejados sem classificação estratégica histórica.`
+      `${formatPlanMinutes(execution.unknownPlannedMinutes)} planejados sem classificação estratégica histórica.`
     );
   return {
     version: 2,

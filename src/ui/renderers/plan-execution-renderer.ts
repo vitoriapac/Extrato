@@ -4,10 +4,11 @@ import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import { renderEmptyState } from '../components/presentation.js';
 import { renderActionCard } from '../components/analytical-presentation.js';
 import { h } from 'preact';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import { render } from 'preact-render-to-string';
 import { WeekReconciliationSummary } from '../tabs/goals/WeekReconciliationSummary.js';
 import { buildWeekReconciliationFromExecution } from '../tabs/goals/week-reconciliation.js';
-const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
+const fmt = formatPlanMinutes;
 
 export function renderPlanExecution(model: Record<string, any>, { formatDate }: any) {
   const range = (start: string, end: string) =>

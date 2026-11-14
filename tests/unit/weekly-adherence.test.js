@@ -207,7 +207,7 @@ test('execução da semana: capacidade por dia e âmbar só quando o planejado p
   const tones = [...html.matchAll(/chart-columns__bar--(\w+)/g)].map(m => m[1]);
   assert.equal(tones.length, 21);
   assert.deepEqual(tones.slice(0, 6), ['muted', 'attention', 'primary', 'muted', 'soft', 'primary']);
-  assert.match(html, /12\/10: capacidade 1h00, planejado 1h30, estudado 0h50/);
-  assert.match(html, /14\/10: capacidade 0h00, sem plano, estudado —/);
-  assert.match(html, /<small>Capacidade 1h00<\/small><strong>1h30 \/ 0h50<\/strong>/);
+  assert.match(html, /12\/10: capacidade 1h, planejado 1h30, estudado 50min/);
+  assert.match(html, /14\/10: capacidade 0min, sem plano, estudado —/);
+  assert.match(html, /<small>Capacidade 1h<\/small><strong>1h30 \/ 50min<\/strong>/);
 });

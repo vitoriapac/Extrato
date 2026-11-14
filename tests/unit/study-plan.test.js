@@ -19,7 +19,7 @@ test('carga e capacidade menores que 15 minutos não são aumentadas', () => {
   const short = buildStudyPlan({ weeklyAvailableMinutes: 840, weeksUntilExam: 26, topics: [{ id: 't', estimatedMinutes: 7 }] });
   assert.equal(short.weeklyPlannedMinutes, 7);
   const limited = buildStudyPlan({ weeklyAvailableMinutes: 8, weeksUntilExam: 26, topics: [{ id: 't', estimatedMinutes: 75 }] });
-  assert.equal(limited.weeklyPlannedMinutes, 8);
+  assert.equal(limited.weeklyPlannedMinutes, 7);
 });
 
 test('distribui o orçamento semanal sem ultrapassar disponibilidade', () => {
@@ -85,7 +85,7 @@ test('redistribui minutos quando um tópico atinge sua carga restante', () => {
       { id: 'b', subjectId: 's2', subjectName: 'B', estimatedMinutes: 90, examImpact: 10 },
     ],
   });
-  assert.equal(plan.weeklyPlannedMinutes, 100);
+  assert.equal(plan.weeklyPlannedMinutes, 90);
   assert.equal(plan.items.find(item => item.id === 'a').minutes, 10);
 });
 
@@ -121,7 +121,7 @@ test('não cria blocos semanais menores que 15 minutos quando o tópico é maior
   assert.ok(plan.items.length > 0);
   for (const item of plan.items)
     assert.ok(item.minutes >= 15, `${item.id} recebeu ${item.minutes} min`);
-  assert.equal(plan.weeklyPlannedMinutes, 300);
+  assert.equal(plan.weeklyPlannedMinutes, 270);
   const short = buildStudyPlan({
     weeklyAvailableMinutes: 300,
     weeksUntilExam: 1,

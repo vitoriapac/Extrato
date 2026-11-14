@@ -1,3 +1,4 @@
+import { formatPlanMinutes } from '../../core/format-duration.js';
 export const WEEKLY_CLOSE_VERSION = '2.2.0';
 type Row = Record<string, any>;
 const n = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
@@ -77,7 +78,7 @@ export function buildWeeklyClose({
       : planned > executed
         ? {
             type: 'execution_deficit',
-            message: `Faltaram ${planned - executed} min para executar o planejado.`,
+            message: `Faltaram ${formatPlanMinutes(planned - executed)} para executar o planejado.`,
           }
         : null;
   const recommendedAction =

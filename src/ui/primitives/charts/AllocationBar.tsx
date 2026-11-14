@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
+import { formatPlanMinutes as formatMinutes } from '../../../core/format-duration.js';
 import type { WeeklyAllocationBarVisualModel } from '../../../domain/planning/planning-visual-models.js';
 import { formatDecimal } from '../../../core/format-number.js';
 
@@ -8,14 +9,6 @@ export interface AllocationBarProps {
   weeklyCapacityMinutes?: number;
   label?: string;
   className?: string;
-}
-
-function formatMinutes(mins: number): string {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
 }
 
 const VISIBLE_CHIPS = 5;

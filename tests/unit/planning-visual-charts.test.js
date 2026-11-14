@@ -251,6 +251,6 @@ test('renderGroupedBarChart — o texto de cada linha segue a ordem da legenda: 
   const text = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
   // Legenda: "Planejado" vem antes de "Realizado"; o valor da linha precisa seguir a mesma ordem.
   assert.ok(text.indexOf('Planejado') < text.indexOf('Realizado'));
-  assert.match(text, /Planejado 45m.*realizado 2h 12m/);
+  assert.match(text, /Planejado 45min.*realizado 2h12/);
   assert.doesNotMatch(text, /2h 12m \/ 45m/);
 });

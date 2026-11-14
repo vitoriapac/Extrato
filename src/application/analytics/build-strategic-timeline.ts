@@ -1,4 +1,5 @@
 import { formatPeriodBR } from '../../core/format-date.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import {
   normalizeExamTags,
   isTopicInExamScope,
@@ -134,7 +135,7 @@ export function buildStrategicTimeline({
       item.createdAt || item.date,
       'decisions',
       item.accepted ? 'Recomendação aceita' : 'Recomendação rejeitada',
-      `${name} · ${item.snapshot?.recommendedMinutes ?? 'sem duração registrada'} min`,
+      `${name} · ${item.snapshot?.recommendedMinutes == null ? 'sem duração registrada' : formatPlanMinutes(item.snapshot.recommendedMinutes)}`,
       item
     );
   });
@@ -170,7 +171,7 @@ export function buildStrategicTimeline({
           : phase
             ? 'Estratégia por fase aplicada'
             : 'Plano semanal confirmado',
-        `${phase?.phase?.label ? phase.phase.label + ' · ' : ''}${item.weeklyPlannedMinutes} min distribuídos`,
+        `${phase?.phase?.label ? phase.phase.label + ' · ' : ''}${formatPlanMinutes(item.weeklyPlannedMinutes)} distribuídos`,
         item
       );
     });
@@ -182,10 +183,10 @@ export function buildStrategicTimeline({
     )
     .forEach((item: any) => {
       const recovery = item.decisionType === 'recovery',
-        transfer = `${item.minutes ?? '—'} min de ${item.sourceName || 'origem'} para ${item.targetName || 'destino'}`;
+        transfer = `${item.minutes == null ? '—' : formatPlanMinutes(item.minutes)} de ${item.sourceName || 'origem'} para ${item.targetName || 'destino'}`;
       const capacity =
         item.totalMinutesBefore != null && item.totalMinutesAfter != null
-          ? ` · carga semanal ${item.totalMinutesBefore} → ${item.totalMinutesAfter} min`
+          ? ` · carga semanal ${formatPlanMinutes(item.totalMinutesBefore)} → ${formatPlanMinutes(item.totalMinutesAfter)}`
           : '';
       const status = item.trajectoryStatus
         ? ` · trajetória ${TRAJECTORY_LABELS[item.trajectoryStatus] || 'reavaliada'}`

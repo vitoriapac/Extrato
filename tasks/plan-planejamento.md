@@ -97,9 +97,9 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 ### Fase 1: Números coerentes
 - [x] Tarefa 4: Resumo da semana com os nomes fixos, estudado em destaque e demo vinculada ao plano
 - [x] Tarefa 5: "A semana" do Fechamento usa a mesma fonte, com o estudado em destaque
-- [ ] Tarefa 6: Tempo prioritário e excesso com um valor e um formato
-- [ ] Tarefa 7: Um formato de duração em toda a aba
-- [ ] Tarefa 7b: Plano semanal ocupa 90% da capacidade e revisões da agenda substituem as do plano
+- [x] Tarefa 6: Tempo prioritário e excesso com um valor e um formato
+- [x] Tarefa 7: Um formato de duração em toda a aba
+- [x] Tarefa 7b: Plano semanal ocupa 90% da capacidade e revisões da agenda substituem as do plano
 - [ ] Tarefa 8: Plano confirmado sem texto de prévia, com linha de estado e ações renomeadas
 
 ### Checkpoint 1: Números

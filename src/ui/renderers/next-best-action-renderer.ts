@@ -1,7 +1,8 @@
 import { NEXT_BEST_ACTION_STATES } from '../../application/diagnostics/build-next-best-action.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 
 const minutes = (value: number | null | undefined) =>
-  value == null ? 'Não estimado' : `${Math.round(value)} min`;
+  value == null ? 'Não estimado' : formatPlanMinutes(value);
 export function renderNextBestAction(
   model: Record<string, any>,
   { escapeHtml, escapeAttr, dailyPriority = null }: any

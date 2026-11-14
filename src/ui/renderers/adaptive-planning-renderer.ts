@@ -1,4 +1,5 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import { renderOpportunityCost } from './opportunity-cost-renderer.js';
 import { buildRecommendationExplanation } from '../../application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
@@ -44,7 +45,7 @@ export function renderAdaptiveAllocationAdvice(
   {
     weeklyPlannedMinutes = 0,
     weeklyAvailableMinutes = null,
-    formatMinutes = (value: unknown) => `${value} min`,
+    formatMinutes = (value: unknown) => formatPlanMinutes(Number(value)),
     escapeHtml = defaultEscapeHtml,
   }: any = {}
 ) {

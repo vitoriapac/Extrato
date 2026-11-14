@@ -1,3 +1,4 @@
+import { formatPlanMinutes } from '../../core/format-duration.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
@@ -9,10 +10,7 @@ const escape = (value: unknown) =>
         >
       )[char]
   );
-const fmt = (value: unknown) => {
-  const minutes = Math.round(Number(value) || 0);
-  return `${Math.floor(minutes / 60)}h${String(minutes % 60).padStart(2, '0')}`;
-};
+const fmt = (value: unknown) => formatPlanMinutes(Number(value) || 0);
 
 export function renderStrategicExecution(model: Record<string, any>, periodLabel = 'esta semana') {
   if (!model) return '';

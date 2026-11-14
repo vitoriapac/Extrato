@@ -1,4 +1,5 @@
 import { formatDecimal } from '../../core/format-number.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { renderSubjectAccuracy } from './subject-accuracy-renderer.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
@@ -8,12 +9,7 @@ import { render } from 'preact-render-to-string';
 import { WeeklyCloseKpis } from '../tabs/goals/WeeklyCloseKpis.js';
 const safe = (escapeHtml: (value: any) => string, value: unknown) =>
   escapeHtml(String(value ?? ''));
-const focusMinutes = (value: unknown) => {
-  const minutes = Math.max(0, Math.round(Number(value) || 0));
-  return minutes >= 60
-    ? `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}min`
-    : `${minutes} min`;
-};
+const focusMinutes = (value: unknown) => formatPlanMinutes(Number(value) || 0);
 const focusPercent = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 function renderFocusTrend(rows: any[]) {
   if (rows.length < 2) return '';

@@ -76,9 +76,9 @@ test('prova histórica alimenta o mesmo planejamento sem redistribuição autom�
   const advice = buildAdaptivePlanningAdvice({ plan, candidates, today: '2026-09-25' });
   assert.equal(advice.state, 'proposal', advice.reason);
   assert.match(advice.rationale.join(' '), /Juros Compostos.*4 de 5 provas/);
-  assert.equal(plan.weeklyPlannedMinutes, 240);
+  assert.equal(plan.weeklyPlannedMinutes, 216);
   assert.equal(advice.applied, false);
   const adjusted = applyAdaptivePlanningAdvice(plan, advice);
   assert.ok(adjusted);
-  assert.equal(adjusted.weeklyPlannedMinutes, 240);
+  assert.equal(adjusted.weeklyPlannedMinutes, 216);
 });

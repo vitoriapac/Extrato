@@ -1,4 +1,5 @@
 import { EXAM_INTELLIGENCE_CONFIG } from '../exam-intelligence/config.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import { STRATEGY_THRESHOLDS } from '../strategy/config.js';
 import { localDateFromTimestamp } from '../sessions/study-session.js';
 
@@ -300,7 +301,7 @@ export function buildAdaptivePlanningAdvice({
           `Histórico validado em ${target.historical.topicName || 'tópico da disciplina'}: ${target.historical.examIntelligence.presentExamCount} de ${target.historical.examIntelligence.analyzedExamCount} provas; confiança ${target.historical.examIntelligence.confidenceLabel.toLowerCase()}.`,
         ]
       : []),
-    `A transferência mantém a carga semanal em ${budget} minutos. O bloco fica entre ${ADAPTIVE_TRANSFER_MINUTES} e ${ADAPTIVE_TRANSFER_MAX_MINUTES} minutos.`,
+    `A transferência mantém a carga semanal em ${formatPlanMinutes(budget)}. O bloco fica entre ${formatPlanMinutes(ADAPTIVE_TRANSFER_MINUTES)} e ${formatPlanMinutes(ADAPTIVE_TRANSFER_MAX_MINUTES)}.`,
     ...(elapsed >= 0 && elapsed < ADAPTIVE_COOLDOWN_DAYS && relevantDeterioration
       ? [
           'Exceção ao intervalo de duas semanas: queda relevante de domínio, confirmada por evidência forte.',

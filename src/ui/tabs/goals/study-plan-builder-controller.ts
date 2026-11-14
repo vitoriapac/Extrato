@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { PLAN_RESERVE_RATIO } from '../../../application/planning/plan-reserve.js';
 import { render } from 'preact-render-to-string';
 
 import {
@@ -434,7 +435,6 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       studyPlan,
       days,
       dueReviews,
-      reserveRatio: 0.1,
       eligibleTopicIds: deps
         .intelligenceCandidates()
         .filter((item: any) => !item.archived && !item.blockedPrerequisites?.length)
@@ -529,13 +529,17 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
           .join('');
         const win = proposal.window;
         const needMinutes = proposal.plannedMinutes + proposal.unallocatedMinutes;
+        const replaced =
+          proposal.replacedReviewMinutes > 0
+            ? `<p class="helper-text">As revisões que vencem na agenda substituem ${formatPlanMinutes(proposal.replacedReviewMinutes)} das revisões do plano; o total de revisões não passa do maior dos dois.</p>`
+            : '';
         const shortfall =
           proposal.unallocatedMinutes > 0 && win
             ? `<p class="helper-text">Cabem ${formatPlanMinutes(proposal.plannedMinutes)} dos ${formatPlanMinutes(needMinutes)}. A disponibilidade dos 7 dias soma ${formatPlanMinutes(win.availableMinutes)}; ${win.existingMinutes > 0 ? `${formatPlanMinutes(win.existingMinutes)} já estão agendados e ` : ''}${formatPlanMinutes(win.reserveMinutes)} ficam de reserva. <button class="btn tertiary" type="button" data-delegated-click="openAvailabilityAdjust()">Ajustar disponibilidade</button></p>`
             : '';
         container.innerHTML =
           previewHeading('Prévia dos próximos 7 dias') +
-          `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes + proposal.unallocatedMinutes)}</strong><span>Tempo a distribuir (plano e revisões)</span></div><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Sem espaço nos 7 dias</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${shortfall}${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" type="button" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" type="button" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
+          `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes + proposal.unallocatedMinutes)}</strong><span>Tempo a distribuir (plano e revisões)</span></div><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Sem espaço nos 7 dias</span></div><div><strong>${Math.round(PLAN_RESERVE_RATIO * 100)}%</strong><span>Reserva mínima</span></div></div>${replaced}${shortfall}${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" type="button" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" type="button" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
         return;
       }
       const activeOperation = [...(latest?.dailyPlanOperations || [])]

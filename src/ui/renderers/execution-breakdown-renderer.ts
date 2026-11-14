@@ -1,5 +1,5 @@
 import { formatPeriodBR } from '../../core/format-date.js';
-import { formatStudyMinutes as minutes } from '../format-study-time.js';
+import { planMin as minutes } from './adherence-labels.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
