@@ -62,7 +62,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 16b: Geometria dos gráficos que dependa da largura (altura mínima de 180 px no celular, menos ticks)
 
 ### Checkpoint 4: Repetições
-- [ ] Visão geral ≤ 1.600 px no desktop; nenhum gráfico mais largo que o cartão em 375 e 320
+- [x] Visão geral ≤ 1.600 px no desktop (conteúdo 1.412 px; painel inteiro 1.692 px); nenhum gráfico mais largo que o cartão em 375 e 320
 
 ### Fase 5: Reorganizar as abas
 - [ ] Tarefa 17: Aba "Provas" sem segundo nível

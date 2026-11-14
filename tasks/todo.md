@@ -215,8 +215,8 @@ Verificação usada abaixo:
 **Tamanho:** M
 
 ### Checkpoint 4
-- [ ] Visão geral ≤ 1.600 px no desktop
-- [ ] Medição de gráficos sem estouro
+- [x] Visão geral ≤ 1.600 px no desktop: conteúdo da subaba com 1.412 px em 1440 e 1.447 px em 1024 (era 1.843 px), com 12 dobras fechadas. O painel inteiro, com cabeçalho, abas e filtros, mede 1.692 px em 1440 (14/11/2026)
+- [x] Medição de gráficos sem estouro: `chart-sizes` passa em 1440, 1024, 375 e 320 (nenhum gráfico passa do cartão, sem rolagem lateral, texto de 12,5 px, altura mínima de 180 px no celular)
 
 ---
 
