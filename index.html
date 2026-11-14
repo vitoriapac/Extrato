@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=69c3d5e75d3e">
-<link rel="stylesheet" href="styles/app.css?v=69c3d5e75d3e">
+<link rel="stylesheet" href="styles/tailwind.css?v=589eb2c1832f">
+<link rel="stylesheet" href="styles/app.css?v=589eb2c1832f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -221,15 +221,13 @@
     <details class="today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
       <summary>Diagnóstico consolidado do edital e replanejamento da semana</summary>
       <div class="today-analysis-grid">
-        <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Extrato Diagnóstico do Edital</h3><p class="module-heading__description" id="diagnosisHeaderMeta"></p></header><div id="diagnosisCenter"></div></section>
-        <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento da semana</h3><p class="module-heading__description">Compara execução e planejamento e sugere onde redistribuir o saldo de horas pendente. Nenhum ajuste é aplicado sem confirmação.</p></header><div id="weeklyReplan"></div></section>
+        <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Extrato Diagnóstico do Edital</h3><p class="module-heading__description" id="diagnosisHeaderMeta"></p></header><div id="diagnosisCenter"></div><p class="analytics-note">Replanejamento da semana e ajuste pós-simulado ficam em Planejamento. <button type="button" class="btn ghost small" data-performance-open="metas">Abrir Planejamento</button></p></section>
       </div>
     </details>
     <details class="desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
       <summary>Mapa de lacunas por tópico, retenção e ajuste pós-simulado</summary>
       <div class="today-analysis-grid">
       <section class="analytics-card" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Ordenado por gravidade: combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.</p></header><div id="gapMapDashboard"></div></section>
-      <section class="analytics-card" data-advanced="Replanejamento pós-simulado"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
       <section class="performance-retention-card" aria-labelledby="performanceRetentionTitle">
         <header class="module-heading module-heading--compact">
           <h3 class="module-heading__title" id="performanceRetentionTitle">Retenção por tópico</h3>
@@ -675,6 +673,8 @@
       <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline--end icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
     </section>
 
+    <section class="chart-card card--default metas-replan"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento da semana</h3><p class="module-heading__description">Compara execução e planejamento e sugere onde redistribuir o saldo de horas pendente. Nenhum ajuste é aplicado sem confirmação.</p></header><div id="weeklyReplan"></div></section>
+
     <details class="chart-card decision-fold metas-adjust" id="metasAdjust" data-remember="planning-week-adjust"><summary>Ajustar metas e disponibilidade</summary>
     <section class="metas-adjust-panel metas-goals" id="metasActiveGoals" data-metas-section aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Metas de rendimento e volume semanal desejado. Ajuste os valores conforme a sua fase de estudo.</p></header><div id="metasContainer"></div></section>
 
@@ -716,6 +716,7 @@
       <header class="module-heading"><h3 class="module-heading__title" id="metasCloseTitle">Fechamento semanal</h3><p class="module-heading__description">Leia a semana, salve o retrato e decida a próxima.</p></header>
       <div id="weeklyCloseDashboard"></div>
     </section>
+    <section class="chart-card card--default" data-advanced="Replanejamento pós-simulado"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
 
     </section>
     <section class="metas-subpanel" id="metasSub-historico" data-metas-subpanel="historico" role="tabpanel" aria-labelledby="metasTab-historico" tabindex="0" hidden>
@@ -773,7 +774,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=69c3d5e75d3e"></script>
+  <script src="src/app.bundle.js?v=589eb2c1832f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

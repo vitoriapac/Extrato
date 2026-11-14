@@ -242,13 +242,11 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     onOpenRecoveryMission: () => recoveryMissionController?.open(),
     onRecalibrateWeek: () => {
       studyRecommendationController?.calculateReplanPreview();
-      activateTab('desempenho');
+      // O replanejamento mora em Planejamento > Semana.
+      activateTab('metas');
       setTimeout(() => {
-        const el = document.getElementById('weeklyReplan');
-        if (el) {
-          el.closest('details')?.setAttribute('open', 'true');
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        document.getElementById('metasTab-semana')?.click();
+        document.getElementById('weeklyReplan')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     },
   });

@@ -96,5 +96,7 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'diagnosis');
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
+  await expect(page.locator('.analytics-card:has(#diagnosisCenter) [data-performance-open="metas"]')).toBeVisible();
+  await activateTab(page, 'metas');
   await expect(page.locator('#weeklyReplan')).toBeVisible();
 });

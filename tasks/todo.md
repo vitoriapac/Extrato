@@ -258,8 +258,9 @@ Verificação usada abaixo:
 
 ### Tarefa 21: Replanejamentos em Planejamento
 **Aceite:**
-- [ ] Replanejamento da semana e pós-simulado em Planejamento; Desempenho mantém um link
-- [ ] Prévia e confirmação continuam obrigatórias
+- [x] Replanejamento da semana e pós-simulado em Planejamento; Desempenho mantém um link
+- [x] Prévia e confirmação continuam obrigatórias
+**Feito:** replanejamento da semana em Planejamento > Semana; pós-simulado em Fechamento; Desempenho tem link; atalhos de recalibrar abrem Planejamento. Prévia e confirmação intactas (mesmos controladores).
 **Verificação:** E2E de planejamento e de "Ajustar plano"
 **Dependências:** Checkpoint 4
 **Tamanho:** M

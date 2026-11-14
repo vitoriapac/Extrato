@@ -611,13 +611,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         if (ctx.onRecalibrateWeek) {
           ctx.onRecalibrateWeek();
         } else {
-          _activateTab('desempenho');
+          _activateTab('metas');
           setTimeout(() => {
-            const el = doc.getElementById('weeklyReplan');
-            if (el) {
-              el.closest('details')?.setAttribute('open', 'true');
-              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            doc.getElementById('metasTab-semana')?.click();
+            doc.getElementById('weeklyReplan')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 80);
         }
       },
