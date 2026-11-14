@@ -360,3 +360,32 @@ Verificação usada abaixo:
 - [ ] Todos os critérios atendidos
 - [ ] `/impeccable critique` ≥ 32/40
 - [ ] Pronto para revisão
+
+---
+
+## Fase 8: Vocabulário e contagens nas outras telas
+
+A Tarefa 9 aplicou o vocabulário fixo só em Desempenho. Esta fase leva a mesma regra às demais telas.
+
+### Tarefa 33: Vocabulário fora de Desempenho
+**Aceite:**
+- [ ] Domínio e retenção sempre em /100 em Aprovação, Metas/Matriz da prova, Hoje (recomendação), Planejamento, relatório PDF, landing e ajuda
+- [ ] "Confiança" só na faixa projetada (e na ajuda dessa faixa); demais ocorrências viram "Evidência" (Aprovação, plateau, alertas, recomendações, qualidade dos dados da prova, relatório)
+- [ ] "Meta de domínio" em Planejamento fica em % ou muda para /100, com a regra escrita (decidir: é alvo, não medida)
+- [ ] Ajuda e simulador "Evidência × confiança" reescritos com o vocabulário
+**Verificação:** busca no bundle por `domínio d+%` e `[Cc]onfiança` com lista de exceções; unit de formatação; E2E das telas tocadas
+**Dependências:** Tarefa 9
+**Arquivos (levantados em 14/11/2026):** `approval-tab-controller.ts`, `exam-matrix-controller.ts`, `exam-matrix-renderer.ts`, `incidence-quadrants-renderer.ts`, `exam-intelligence-renderer.ts`, `exam-data-quality-renderer.ts`, `exam-classification-review-renderer.ts`, `study-recommendation-controller.ts`, `study-plan-builder-controller.ts`, `recommendation-calibration-renderer.ts`, `error-analysis-renderer.ts`, `overview-standing-renderer.ts`, `strategic-history-renderer.ts`, `readiness-history-renderer.ts`, `report-template.ts`, `SalesLandingPage.tsx`, `help-content.ts`, `EvidenceConfidenceSimulator.tsx`, `domain/diagnostics/alerts.ts`, `domain/analytics/plateau-detector.ts`, `build-analytics-view-model.ts`
+**Tamanho:** M
+
+### Tarefa 34: Contagens de simulados nas outras telas
+**Aceite:**
+- [ ] Toda contagem de simulados (Aprovação, relatório PDF, fechamento semanal, ciclo de decisão, ajuda) diz critério e janela
+- [ ] Decisão registrada: o fator Simulados da Prontidão passa ou não a usar só os simulados comparáveis (3 × 5); se passar, capturas, testes e retratos salvos reconferidos
+**Verificação:** unit fixando valor e rótulo; manual na demo
+**Dependências:** Tarefa 9
+**Tamanho:** S
+
+### Checkpoint 8
+- [ ] Busca no bundle sem "domínio N%" nem "confiança" fora da faixa projetada
+- [ ] E2E e capturas atualizados; `/impeccable critique` sem novo achado de vocabulário

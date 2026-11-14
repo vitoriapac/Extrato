@@ -86,6 +86,13 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Checkpoint final
 - [ ] Todos os critérios atendidos; `/impeccable critique` ≥ 32/40; pronto para revisão
 
+### Fase 8: Vocabulário e contagens nas outras telas
+- [ ] Tarefa 33: Vocabulário (domínio e retenção /100, evidência × confiança) fora de Desempenho
+- [ ] Tarefa 34: Contagens de simulados e janelas nas outras telas; decisão sobre a base do fator Simulados
+
+### Checkpoint 8: Outras telas
+- [ ] Busca no bundle sem "domínio N%" nem "confiança" fora da faixa projetada; E2E e capturas atualizados
+
 ## Grafo de dependências
 
 ```
