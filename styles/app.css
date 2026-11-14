@@ -3605,3 +3605,6 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 .performance-compare-modes[data-mode="progress"]>[data-compare-mode]:not([data-compare-mode="progress"]),
 .performance-compare-modes[data-mode="radar"]>[data-compare-mode]:not([data-compare-mode="radar"]){display:none}
 .performance-compare-mode{display:grid;gap:var(--space-3)}
+
+/* Diagnóstico agrupado por disciplina, com filtro de prioridade e evidência. */
+.diagnosis-filters{display:flex;flex-wrap:wrap;align-items:end;gap:var(--space-3);margin:var(--space-3) 0}.diagnosis-filter{display:grid;gap:var(--space-1);font-size:var(--text-sm);color:var(--text-secondary)}.diagnosis-filters__count{margin-left:auto;font-size:var(--text-sm);color:var(--text-secondary)}.diagnosis-group{border-top:1px solid var(--paper-line);padding:var(--space-2) 0}.diagnosis-group>summary{cursor:pointer;padding:var(--space-2) 0;color:var(--heading)}.diagnosis-group>summary strong{font-weight:600}

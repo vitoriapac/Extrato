@@ -240,8 +240,9 @@ Verificação usada abaixo:
 
 ### Tarefa 19: Diagnóstico agrupado por disciplina com filtro
 **Aceite:**
-- [ ] Extrato agrupado por disciplina, filtro por prioridade e evidência; 3 primeiros abertos
-- [ ] "+294" substituído por grupos com contagem
+- [x] Extrato agrupado por disciplina, filtro por prioridade e evidência; 3 primeiros abertos
+- [x] "+294" substituído por grupos com contagem
+**Feito:** grupos por disciplina (só a do 1º da fila abre, com 3 conteúdos; "Mostrar mais · +N" por grupo), filtros de prioridade e evidência, "296 de 296 conteúdos"; número do cartão = lugar na fila.
 **Verificação:** E2E do Diagnóstico
 **Dependências:** T14
 **Tamanho:** M

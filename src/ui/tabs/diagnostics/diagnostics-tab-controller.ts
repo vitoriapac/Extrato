@@ -71,6 +71,8 @@ export interface DiagnosticsTabControllerOptions {
 
 export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOptions) {
   let currentConsolidatedDiagnosis: any = null;
+  const diagnosisFilters = { severity: 'all', evidence: 'all' };
+  let filtersWired = false;
   const reconcileAlerts = opts.reconcileAlerts || defaultReconcileAlerts;
   const renderIntelligentAlerts = opts.renderIntelligentAlerts || defaultRenderIntelligentAlerts;
   const dismissAlert = opts.dismissAlert || defaultDismissAlert;
@@ -152,6 +154,16 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     const container = opts.document.getElementById('diagnosisCenter');
     if (!container) return;
 
+    if (!filtersWired) {
+      filtersWired = true;
+      container.addEventListener?.('change', (event: any) => {
+        const name = event.target?.dataset?.diagnosisFilter;
+        if (!name) return;
+        diagnosisFilters[name === 'severity' ? 'severity' : 'evidence'] = event.target.value;
+        renderDiagnosisCenter();
+      });
+    }
+
     const state = opts.getState();
     const { candidates } = opts.refreshStudyRecommendationItems();
     const scoped = opts.examEvidenceContext();
@@ -197,6 +209,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       },
       escapeHtml: opts.escapeHtml,
       escapeAttr: opts.escapeAttr,
+      filters: diagnosisFilters,
     });
 
     const secondaryHtml = renderRecoveryReviewDebt(

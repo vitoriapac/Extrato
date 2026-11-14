@@ -69,7 +69,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Fase 5: Reorganizar as abas
 - [x] Tarefa 17: Aba "Provas" sem segundo nível
 - [x] Tarefa 18: Modos da Comparação em Disciplinas (precisão, tendência, progresso, radar)
-- [ ] Tarefa 19: Diagnóstico agrupado por disciplina com filtro
+- [x] Tarefa 19: Diagnóstico agrupado por disciplina com filtro
 - [ ] Tarefa 20: Matriz condicional; Balanço e Radar de vulnerabilidades como ordenações
 - [ ] Tarefa 21: Replanejamentos em Planejamento
 - [ ] Tarefa 22: Ritmo com dois números, extrato de sessões e tempo por disciplina

@@ -1,12 +1,13 @@
 import { renderBadgeIcon } from '../primitives/badge.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
 import { renderConsolidatedDiagnosis } from './consolidated-diagnosis-renderer.js';
-export function renderDiagnosisCenter({ model, studyActionForItem, escapeHtml, escapeAttr }: any) {
+export function renderDiagnosisCenter({ model, studyActionForItem, escapeHtml, escapeAttr, filters }: any) {
   if (model.consolidated?.rows?.length)
     return renderConsolidatedDiagnosis(model.consolidated, {
       studyActionForItem,
       escapeHtml,
       escapeAttr,
+      filters,
     });
   const emptyState = (empty: Record<string, any>) =>
     `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action ? `<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>` : ''}</div>`;

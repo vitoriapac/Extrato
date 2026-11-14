@@ -52,12 +52,8 @@ test('diagnóstico consolida o escopo atual sem modificar planos ou registros pe
   expect(model.topics.map(item => item.topicId)).toEqual(['only-bb']);
   expect(model.summary.topics.controlled).toBe(0);
   expect(new Set(model.rows.map(item => item.entityKey)).size).toBe(model.rows.length);
-  const annotated = page.locator('#diagnosisCenter [data-consolidated-state]');
-  expect(await annotated.count()).toBeGreaterThan(0);
-  await expect(annotated.first()).toHaveAttribute(
-    'data-consolidated-signal',
-    model.topics[0].primarySignal || 'unassessed'
-  );
+  // O único conteúdo é a ação sugerida, então aparece no cartão da ação e não repetido na lista.
+  await expect(page.locator('#diagnosisCenter')).toContainText('Exclusivo BB');
   const original = await page.evaluate(() => {
     const state = window.__EXTRATO_TEST__.getState();
     return structuredClone({
