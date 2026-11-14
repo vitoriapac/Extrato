@@ -343,6 +343,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       escapeHtml,
       escapeAttr,
       targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
+      compareMode: performanceViewState.compareMode,
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
@@ -354,15 +355,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           'Inteligência da prova',
           '<p class="analytics-note">Histórico das provas da banca: não segue o filtro de período.</p><div id="examIntelligenceMount"></div>'
         )
-      : renderPerformanceSection(pageModel!, {
-          range,
-          today,
-          activeExamTags,
-          formatDate: formatDatePt,
-          escapeHtml,
-          escapeAttr,
-          targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
-        });
+      : renderPerformanceSection(pageModel!, renderOptions);
 
     if ((target as HTMLElement).dataset && !(target as HTMLElement).dataset.foldMemory) {
       (target as HTMLElement).dataset.foldMemory = 'true';
@@ -416,6 +409,12 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         });
       }
 
+      // Progresso e radar moram dentro do conteúdo de Disciplinas só enquanto ele existe: antes de trocar o
+      // conteúdo, voltam para a seção de origem, senão o innerHTML os destruiria.
+      for (const id of ['performanceProgressMode', 'performanceRadarMode']) {
+        const mode = doc.getElementById(id);
+        if (mode && progressSection && mode.parentElement !== progressSection) progressSection.append(mode);
+      }
       const sectionContent = target.querySelector('#performanceSectionContent');
       if (sectionContent) {
         sectionContent.setAttribute(
@@ -459,7 +458,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     } else if (performanceViewState.section === 'subjects') {
       // Matriz, Balanço, Radar e Queda de retenção moraram aqui; agora ficam em Diagnóstico.
       // Evolução e progresso por disciplina saíram de Conquistas e esperam virar modos da Comparação.
-      if (progressSection) target.append(progressSection);
+      const progressMode = doc.getElementById('performanceProgressMode');
+      const radarMode = doc.getElementById('performanceRadarMode');
+      if (progressMode) target.querySelector('#compareModeProgressMount')?.append(progressMode);
+      if (radarMode) target.querySelector('#compareModeRadarMount')?.append(radarMode);
     } else if (performanceViewState.section === 'diagnosis') {
       const diagnosisMount = target.querySelector('#performanceDiagnosisMount');
       if (diagnosisMount && todayAnalysisDetails) {

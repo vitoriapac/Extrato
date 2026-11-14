@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=dd95f22f9ef0">
-<link rel="stylesheet" href="styles/app.css?v=dd95f22f9ef0">
+<link rel="stylesheet" href="styles/tailwind.css?v=e48a6542f019">
+<link rel="stylesheet" href="styles/app.css?v=e48a6542f019">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -191,28 +191,25 @@
       </div>
     </details>
     <section class="performance-progress" id="performance-progress" aria-label="Evolução e progresso por disciplina">
-      <details class="overview-fold">
-        <summary>Evolução, progresso por disciplina e radar</summary>
+      <div id="performanceProgressMode" class="performance-compare-mode">
         <div class="chart-card">
           <h3>Evolução do progresso</h3>
           <div id="progressChart"></div>
         </div>
-
-        <div class="overview-pair">
-          <div class="chart-card">
-            <h3>Progresso por disciplina</h3>
-            <div id="progressBars"></div>
-          </div>
-
-          <div class="chart-card">
-            <h3>Radar de disciplinas</h3>
-            <p class="helper-text helper-text--compact">
-              Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
-            </p>
-            <div id="radarChart"></div>
-          </div>
+        <div class="chart-card">
+          <h3>Progresso por disciplina</h3>
+          <div id="progressBars"></div>
         </div>
-      </details>
+      </div>
+      <div id="performanceRadarMode" class="performance-compare-mode">
+        <div class="chart-card">
+          <h3>Radar de disciplinas</h3>
+          <p class="helper-text helper-text--compact">
+            Combina cobertura, domínio, retenção, frequência e consistência: quanto menor o "raio", mais atenção a disciplina precisa.
+          </p>
+          <div id="radarChart"></div>
+        </div>
+      </div>
     </section>
     <section id="performanceConsistencyMural" class="w-full" aria-label="Consistência histórica de estudos"><div id="heatmapContainer" class="w-full"></div></section>
     <div id="examIntelligenceParking" hidden>
@@ -780,7 +777,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=dd95f22f9ef0"></script>
+  <script src="src/app.bundle.js?v=e48a6542f019"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

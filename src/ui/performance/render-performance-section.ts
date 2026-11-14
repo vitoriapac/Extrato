@@ -7,7 +7,16 @@ import { renderPerformanceConsistency } from './performance-consistency-renderer
 
 export function renderPerformanceSection(
   pageModel: Record<string, any>,
-  { range, today, activeExamTags, formatDate, escapeHtml, escapeAttr, targetScore }: any = {}
+  {
+    range,
+    today,
+    activeExamTags,
+    formatDate,
+    escapeHtml,
+    escapeAttr,
+    targetScore,
+    compareMode,
+  }: any = {}
 ) {
   switch (pageModel.section) {
     case 'overview':
@@ -56,6 +65,7 @@ export function renderPerformanceSection(
         topicDetail: pageModel.detail,
         comparison: pageModel.comparison,
         stabilityMap: pageModel.stabilityMap,
+        compareMode,
       });
     case 'consistency':
       return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml })}<div id="performanceConsistencyMuralMount" class="mt-4"></div><div id="performanceCareerBenchmarkMount" class="mt-4"></div>`;

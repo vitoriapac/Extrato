@@ -55,6 +55,12 @@ export function createPerformanceController({
           render();
           return;
         }
+        const compareMode = event.target.closest('[data-performance-compare-mode]');
+        if (compareMode) {
+          update({ compareMode: compareMode.dataset.performanceCompareMode });
+          render();
+          return;
+        }
         const section = event.target.closest(
           inComponentNav
             ? '[data-performance-investigate]'

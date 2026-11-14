@@ -3360,6 +3360,8 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 .ledger-line__lead{flex:1;border-bottom:1px dotted var(--border-control);align-self:end;margin-bottom:.35em;min-width:16px}
 .ledger-line__value{font:var(--text-small) var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
 .week-reconciliation{display:grid;gap:var(--space-2);margin:4px 0 var(--space-6)}.week-reconciliation__period{margin:0;font:var(--text-micro) var(--font-data);color:var(--text-secondary)}.week-reconciliation__note{margin:var(--space-2) 0 0;color:var(--text-secondary)}
+/* O estudado é o saldo do extrato da semana: valor que importa, em Fraunces. */
+.week-reconciliation .ledger-line--total .ledger-line__label{color:var(--heading);font-weight:600}.week-reconciliation .ledger-line--total .ledger-line__value{font:600 1.5rem/1.2 var(--font-display);font-variant-numeric:lining-nums tabular-nums;color:var(--heading)}
 .ledger-line--total{border-top:2px solid var(--heading);padding-top:8px}
 .ledger-line.is-negative .ledger-line__value{color:var(--status-negative)}
 .ledger-line.is-positive .ledger-line__value{color:var(--status-positive)}
@@ -3594,3 +3596,12 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 #panel-desempenho svg.chart-fit.chart-matrix{max-width:480px!important;margin-inline:auto!important}
 #panel-desempenho svg.chart-fit.radar-svg{max-width:560px!important;margin-inline:auto!important}
 #panel-desempenho :is(.chart-scroll,.question-evolution-scroll,.achievement-trajectory__scroll,.planned-actual-chart__canvas,.chart-stacked-columns-wrap,.chart-multiline-wrap,.chart-matrix-wrap){overflow-x:visible;flex-direction:row}
+
+/* Comparação entre disciplinas: quatro leituras (precisão, tendência, progresso, radar), uma por vez. */
+.performance-modes{display:flex;flex-wrap:wrap;gap:var(--space-2);margin:0 0 var(--space-3)}
+.performance-modes .btn[aria-pressed="true"]{background:var(--heading);color:var(--surface,#fff);border-color:var(--heading)}
+.performance-compare-modes[data-mode="accuracy"]>[data-compare-mode]:not([data-compare-mode="accuracy"]),
+.performance-compare-modes[data-mode="trend"]>[data-compare-mode]:not([data-compare-mode="trend"]),
+.performance-compare-modes[data-mode="progress"]>[data-compare-mode]:not([data-compare-mode="progress"]),
+.performance-compare-modes[data-mode="radar"]>[data-compare-mode]:not([data-compare-mode="radar"]){display:none}
+.performance-compare-mode{display:grid;gap:var(--space-3)}

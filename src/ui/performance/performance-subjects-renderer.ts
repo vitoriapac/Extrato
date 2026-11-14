@@ -35,6 +35,7 @@ export function renderPerformanceSubjects(
     topicDetail = null,
     comparison = null,
     stabilityMap = null,
+    compareMode = 'accuracy',
   }: any = {}
 ) {
   if (model.state === 'empty')
@@ -56,5 +57,15 @@ export function renderPerformanceSubjects(
     model.activity.questions < 10
       ? `Amostra insuficiente: ${model.activity.questions} questões no período.`
       : `Precisão de ${value(model.accuracy, '%')} frente à meta de ${model.goal.target}%.`;
-  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão · ${escapeHtml(model.subject.name)}</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}<div id="performanceSubjectsSupplementalMount" class="space-y-4 mt-4"></div>`;
+  // Quatro leituras da mesma comparação entre disciplinas, uma por vez: precisão (padrão), tendência
+  // (antes × agora), progresso e radar.
+  const modes: Array<[string, string]> = [
+    ['accuracy', 'Precisão'],
+    ['trend', 'Tendência'],
+    ['progress', 'Progresso'],
+    ['radar', 'Radar'],
+  ];
+  const modeNav = `<nav class="performance-modes" role="group" aria-label="Ver a comparação entre disciplinas por">${modes.map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-compare-mode="${key}" aria-pressed="${key === compareMode}">${label}</button>`).join('')}</nav>`;
+  const comparisonModes = `<div class="performance-compare-modes" data-mode="${escapeAttr(compareMode)}">${modeNav}<div data-compare-mode="accuracy">${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}</div><div data-compare-mode="trend">${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}</div><div data-compare-mode="progress" id="compareModeProgressMount"></div><div data-compare-mode="radar" id="compareModeRadarMount"></div></div>`;
+  return `${comparisonModes}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão · ${escapeHtml(model.subject.name)}</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}<div id="performanceSubjectsSupplementalMount" class="space-y-4 mt-4"></div>`;
 }

@@ -12,6 +12,8 @@ export const PERFORMANCE_SECTIONS = Object.freeze([
 ]);
 /** Seções de uma página só ("Provas"): a do estado é a âncora para a qual a página rola. */
 export const PROOF_SECTIONS: readonly string[] = Object.freeze(['questions', 'simulations', 'exam']);
+/** Modos da Comparação entre disciplinas (Disciplinas): precisão, tendência, progresso e radar. */
+export const COMPARE_MODES = Object.freeze(['accuracy', 'trend', 'progress', 'radar']);
 export const PERFORMANCE_PERIODS = Object.freeze(['7', '30', '90', 'all']);
 
 export function createPerformanceViewState() {
@@ -23,6 +25,7 @@ export function createPerformanceViewState() {
     topicId: null as string | null,
     subjectSort: 'gap',
     adherenceWeeks: 8,
+    compareMode: 'accuracy',
   };
 }
 
@@ -80,6 +83,8 @@ export function updatePerformanceViewState(
     ['gap', 'accuracy', 'evolution', 'questions', 'priority', 'balance'].includes(patch.subjectSort)
   )
     next.subjectSort = patch.subjectSort;
+  if (patch.compareMode !== undefined && COMPARE_MODES.includes(patch.compareMode))
+    next.compareMode = patch.compareMode;
   if (patch.adherenceWeeks !== undefined && [4, 8, 12].includes(Number(patch.adherenceWeeks)))
     next.adherenceWeeks = Number(patch.adherenceWeeks);
   if (next.period === 'all') next.comparePrevious = false;

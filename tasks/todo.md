@@ -232,8 +232,8 @@ Verificação usada abaixo:
 
 ### Tarefa 18: Modos da Comparação em Disciplinas
 **Aceite:**
-- [ ] Modos: precisão (padrão), tendência (antes × agora), progresso, radar
-- [ ] Mapa de estabilidade vira o modo tendência; progresso e radar saem de Conquistas
+- [x] Modos: precisão (padrão), tendência (antes × agora), progresso, radar
+- [x] Mapa de estabilidade vira o modo tendência; progresso e radar saem de Conquistas
 **Verificação:** E2E de Disciplinas; unit dos modos
 **Dependências:** T4
 **Tamanho:** M

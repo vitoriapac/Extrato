@@ -184,3 +184,14 @@ test('contrato de grandezas: cobertura e retenção em /100, "ritmo em construç
   assert.doesNotMatch(bundle, /· evidência \$\{[^}]*row\.confidenceLabel/);
   assert.match(bundle, /Igual ao volume: todo o estudo da semana teve crédito/);
 });
+
+test('modos da comparação entre disciplinas: estado aceita só os quatro e o renderer marca o ativo', async () => {
+  const { createPerformanceViewState, updatePerformanceViewState, COMPARE_MODES } = await import(
+    '../../src/application/performance/performance-view-state.js'
+  );
+  assert.deepEqual([...COMPARE_MODES], ['accuracy', 'trend', 'progress', 'radar']);
+  const state = createPerformanceViewState();
+  assert.equal(state.compareMode, 'accuracy');
+  assert.equal(updatePerformanceViewState(state, { compareMode: 'radar' }).compareMode, 'radar');
+  assert.equal(updatePerformanceViewState(state, { compareMode: 'xyz' }).compareMode, 'accuracy');
+});
