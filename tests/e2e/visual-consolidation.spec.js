@@ -682,7 +682,7 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   );
   await openPlanningSubtab(page, 'semana');
   await page.locator('.metas-execution-history').evaluate(node => (node.open = true));
-  const week = page.getByRole('img', { name: /^Capacidade, planejado e estudado por dia: / });
+  const week = page.getByRole('img', { name: /^Capacidade, tarefa marcada e estudado por dia: / });
   await expect(week).toBeVisible();
   expect(await week.locator('.chart-columns__bar').count()).toBe(21);
   await openPlanningSubtab(page, 'prova');

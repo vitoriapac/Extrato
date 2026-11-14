@@ -228,3 +228,17 @@ test('a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico
     `Execução: ${semana['Estudado até hoje']} de ${semana['Com tarefa marcada']} planejados`
   );
 });
+
+test('a Semana tem uma única lista de disciplinas, "Plano × estudado por disciplina"', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'semana');
+  const sub = page.locator('#metasSub-semana');
+  await expect(sub.getByText('Plano × estudado por disciplina', { exact: true })).toHaveCount(1);
+  await expect(sub.getByText('Distribuição por disciplina')).toHaveCount(0);
+  await expect(sub.getByText('Distribuição entre disciplinas')).toHaveCount(0);
+  // Listas de disciplinas: só o bloco unificado tem linhas com barras por disciplina.
+  await expect(sub.locator('.chart-grouped-bars')).toHaveCount(1);
+  await expect(sub.locator('.chart-allocation-bar [class*="subject-bg-"]')).toHaveCount(0);
+});

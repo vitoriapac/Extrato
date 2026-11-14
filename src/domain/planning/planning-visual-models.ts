@@ -84,6 +84,14 @@ export function buildSubjectStudyDistributionVisual({
     };
   });
 
+  // Ordem do plano: mais minutos planejados primeiro; empate pelo estudado e depois pelo nome.
+  rows.sort(
+    (x, y) =>
+      y.plannedMinutes - x.plannedMinutes ||
+      y.studiedMinutes - x.studiedMinutes ||
+      x.name.localeCompare(y.name, 'pt-BR')
+  );
+
   return {
     rows,
     totalPlannedMinutes: totalPlanned,

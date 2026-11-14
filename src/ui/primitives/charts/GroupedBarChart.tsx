@@ -10,6 +10,8 @@ export interface GroupedBarChartProps {
   className?: string;
 }
 
+const VISIBLE_ROWS = 5;
+
 export function GroupedBarChart({
   rows,
   maxMinutes: providedMax,
@@ -29,6 +31,90 @@ export function GroupedBarChart({
     providedMax || 0,
     ...rows.map(r => Math.max(r.plannedMinutes, r.studiedMinutes))
   );
+
+  // As cinco maiores ficam na lista; disciplinas sem plano nem estudo só aparecem em "Ver outras".
+  const withData = rows.filter(row => row.plannedMinutes > 0 || row.studiedMinutes > 0);
+  const empty = rows.filter(row => row.plannedMinutes <= 0 && row.studiedMinutes <= 0);
+  const visibleRows = withData.slice(0, VISIBLE_ROWS);
+  const moreRows = [...withData.slice(VISIBLE_ROWS), ...empty];
+
+  const renderRow = (row: SubjectDistributionRowVisual) => {
+    const plannedPct = Math.min(100, Math.max(0, (row.plannedMinutes / maxVal) * 100));
+    const studiedPct = Math.min(100, Math.max(0, (row.studiedMinutes / maxVal) * 100));
+
+    let statusIcon = 'check';
+    let statusText = 'No ritmo';
+    let statusBadgeClass = 'text-content-secondary bg-surface-sunken';
+
+    if (row.status === 'surplus') {
+      statusIcon = 'trending-up';
+      statusText = `+${formatMinutes(row.diffMinutes)}`;
+      statusBadgeClass = 'text-success-emphasis bg-success-subtle';
+    } else if (row.status === 'deficit') {
+      statusIcon = 'alert-triangle';
+      statusText = `-${formatMinutes(Math.abs(row.diffMinutes))}`;
+      statusBadgeClass = 'text-warning-emphasis bg-warning-subtle';
+    } else if (row.status === 'unplanned') {
+      statusIcon = 'plus';
+      statusText = 'Extra';
+      statusBadgeClass = 'text-accent-emphasis bg-accent-subtle';
+    }
+
+    return (
+      <div
+        key={row.subjectId}
+        class="group p-2 rounded-default transition-colors hover:bg-surface-sunken/50"
+      >
+        <div class="flex items-center justify-between gap-2 mb-2 text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span
+              class={`w-2 h-2 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
+              aria-hidden="true"
+            />
+            <span class="font-medium text-content-primary break-words">{row.name}</span>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            {/* Mesma ordem da legenda e das barras: planejado, depois realizado. */}
+            <span
+              class="text-content-secondary font-mono text-xs"
+              title={`Planejado ${formatMinutes(row.plannedMinutes)} · Realizado ${formatMinutes(row.studiedMinutes)}`}
+            >
+              <span class="sr-only">Planejado </span>
+              {formatMinutes(row.plannedMinutes)}
+              <span aria-hidden="true"> / </span>
+              <span class="sr-only">, realizado </span>
+              {formatMinutes(row.studiedMinutes)}
+            </span>
+            <span
+              class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}
+              title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${formatMinutes(row.diffMinutes)}`}
+            >
+              <Icon name={statusIcon} size={11} />
+              {statusText}
+            </span>
+          </div>
+        </div>
+
+        {/* Par de barras horizontais */}
+        <div class="space-y-1">
+          <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
+            <div
+              class="h-full bg-content-secondary/30 rounded-full transition-all duration-300"
+              style={{ width: `${plannedPct}%` }}
+              title={`Planejado: ${formatMinutes(row.plannedMinutes)} (${row.plannedShare}%)`}
+            />
+          </div>
+          <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
+            <div
+              class={`h-full subject-bg-${row.colorSlot} rounded-full transition-all duration-300`}
+              style={{ width: `${studiedPct}%` }}
+              title={`Realizado: ${formatMinutes(row.studiedMinutes)} (${row.studiedShare}%)`}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -50,88 +136,15 @@ export function GroupedBarChart({
         </div>
       </div>
 
-      <div class="space-y-3">
-        {rows.map(row => {
-          const plannedPct = Math.min(100, Math.max(0, (row.plannedMinutes / maxVal) * 100));
-          const studiedPct = Math.min(100, Math.max(0, (row.studiedMinutes / maxVal) * 100));
-
-          let statusIcon = 'check';
-          let statusText = 'No ritmo';
-          let statusBadgeClass = 'text-content-secondary bg-surface-sunken';
-
-          if (row.status === 'surplus') {
-            statusIcon = 'trending-up';
-            statusText = `+${formatMinutes(row.diffMinutes)}`;
-            statusBadgeClass = 'text-success-emphasis bg-success-subtle';
-          } else if (row.status === 'deficit') {
-            statusIcon = 'alert-triangle';
-            statusText = `-${formatMinutes(Math.abs(row.diffMinutes))}`;
-            statusBadgeClass = 'text-warning-emphasis bg-warning-subtle';
-          } else if (row.status === 'unplanned') {
-            statusIcon = 'plus';
-            statusText = 'Extra';
-            statusBadgeClass = 'text-accent-emphasis bg-accent-subtle';
-          }
-
-          return (
-            <div
-              key={row.subjectId}
-              class="group p-2 rounded-default transition-colors hover:bg-surface-sunken/50"
-            >
-              <div class="flex items-center justify-between gap-2 mb-2 text-xs">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span
-                    class={`w-2 h-2 rounded-full flex-shrink-0 subject-bg-${row.colorSlot}`}
-                    aria-hidden="true"
-                  />
-                  <span class="font-medium text-content-primary break-words">{row.name}</span>
-                </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  {/* Mesma ordem da legenda e das barras: planejado, depois realizado. */}
-                  <span
-                    class="text-content-secondary font-mono text-xs"
-                    title={`Planejado ${formatMinutes(row.plannedMinutes)} · Realizado ${formatMinutes(row.studiedMinutes)}`}
-                  >
-                    <span class="sr-only">Planejado </span>
-                    {formatMinutes(row.plannedMinutes)}
-                    <span aria-hidden="true"> / </span>
-                    <span class="sr-only">, realizado </span>
-                    {formatMinutes(row.studiedMinutes)}
-                  </span>
-                  <span
-                    class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}
-                    title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${formatMinutes(row.diffMinutes)}`}
-                  >
-                    <Icon name={statusIcon} size={11} />
-                    {statusText}
-                  </span>
-                </div>
-              </div>
-
-              {/* Par de barras horizontais */}
-              <div class="space-y-1">
-                {/* Barra Planejado */}
-                <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
-                  <div
-                    class="h-full bg-content-secondary/30 rounded-full transition-all duration-300"
-                    style={{ width: `${plannedPct}%` }}
-                    title={`Planejado: ${formatMinutes(row.plannedMinutes)} (${row.plannedShare}%)`}
-                  />
-                </div>
-
-                {/* Barra Realizado com cor da disciplina */}
-                <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
-                  <div
-                    class={`h-full subject-bg-${row.colorSlot} rounded-full transition-all duration-300`}
-                    style={{ width: `${studiedPct}%` }}
-                    title={`Realizado: ${formatMinutes(row.studiedMinutes)} (${row.studiedShare}%)`}
-                  />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <div class="space-y-3">{visibleRows.map(renderRow)}</div>
+      {moreRows.length > 0 && (
+        <details class="allocation-more">
+          <summary class="text-xs font-medium text-content-secondary cursor-pointer">
+            Ver outras {moreRows.length} disciplinas
+          </summary>
+          <div class="space-y-3 pt-2">{moreRows.map(renderRow)}</div>
+        </details>
+      )}
     </div>
   );
 }

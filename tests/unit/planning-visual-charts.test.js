@@ -218,17 +218,31 @@ test('renderGroupedBarChart, renderAllocationBar, renderPhaseRoadmapTimeline —
   assert.ok(roadmapHtml.includes('dias'));
 });
 
-test('alocação mostra ranking legível de todas as disciplinas', () => {
+test('alocação não repete a lista de disciplinas e mostra a divisão por tipo numa barra', () => {
   const subjects = Array.from({ length: 7 }, (_, i) => ({ id: `s${i}`, name: `Disciplina ${i}` }));
   const visual = buildWeeklyAllocationBarVisual({
     subjects,
-    planItems: subjects.map((subject, i) => ({ subjectId: subject.id, minutes: (i + 1) * 10 })),
+    planItems: subjects.map((subject, i) => ({ subjectId: subject.id, minutes: (i + 1) * 10, activityMix: { theory: (i + 1) * 5, questions: (i + 1) * 3, reviews: (i + 1) * 2 } })),
     weeklyCapacityMinutes: 280,
   });
   const html = renderAllocationBar({ visual });
-  assert.match(html, /Distribuição por disciplina/);
-  assert.ok(html.indexOf('Disciplina 6') < html.indexOf('Disciplina 0'));
-  assert.match(html, /Disciplina 0/);
+  assert.doesNotMatch(html, /Distribuição por disciplina|Disciplina 0/);
+  assert.match(html, /Divisão por tipo de estudo/);
+  assert.match(html, /role="img" aria-label="Divisão do plano por tipo de estudo: Teoria/);
+});
+
+test('plano × estudado: ordem do plano, cinco maiores na lista, zeradas só em "Ver outras"', () => {
+  const subjects = Array.from({ length: 8 }, (_, i) => ({ id: `s${i}`, name: `Disciplina ${i}` }));
+  const rows = subjects.map((s, i) => ({ subjectId: s.id, name: s.name, plannedMinutes: i < 6 ? (i + 1) * 10 : 0, studiedMinutes: i === 6 ? 25 : 0 }));
+  const visual = buildSubjectStudyDistributionVisual({ distributionRows: rows, subjects });
+  assert.deepEqual(visual.rows.slice(0, 3).map(r => r.name), ['Disciplina 5', 'Disciplina 4', 'Disciplina 3']);
+  const html = renderGroupedBarChart({ rows: visual.rows, maxMinutes: visual.maxMinutes });
+  const [main, more] = html.split('<details');
+  for (const n of [5, 4, 3, 2, 1]) assert.ok(main.includes(`Disciplina ${n}`), `Disciplina ${n} na lista`);
+  assert.ok(!main.includes('Disciplina 0') && !main.includes('Disciplina 7') && !main.includes('Disciplina 6'));
+  assert.match(more, /Ver outras 3 disciplinas/);
+  assert.match(more, /Disciplina 7/);
+  assert.match(html, /Extra/);
 });
 
 test('renderGroupedBarChart — o texto de cada linha segue a ordem da legenda: planejado, depois realizado', () => {

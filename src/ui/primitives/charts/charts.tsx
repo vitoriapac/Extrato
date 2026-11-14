@@ -166,14 +166,18 @@ export interface StackedBarProps {
   parts: StackedBarPart[];
   label: string;
   unit?: string;
+  /** Formata o valor de cada parte na legenda e na descrição (ex.: duração); sem ele, número + unidade. */
+  formatValue?: (value: number) => string;
   className?: string;
 }
 
-export function StackedBar({ parts, label, unit = '', className = '' }: StackedBarProps) {
+export function StackedBar({ parts, label, unit = '', formatValue, className = '' }: StackedBarProps) {
   const segments = stackedSegments(parts);
   const suffix = unitSuffix(unit);
+  const shownValue = (value: unknown) =>
+    formatValue ? formatValue(Number(value) || 0) : `${formatNumber(Number(value) || 0)}${suffix}`;
   const description = segments
-    ? `${label}: ${parts.map((part, i) => `${part.label} ${formatNumber(Number(part.value) || 0)}${suffix} (${segments[i].share}%)`).join(', ')}`
+    ? `${label}: ${parts.map((part, i) => `${part.label} ${shownValue(part.value)} (${segments[i].share}%)`).join(', ')}`
     : `${label}: sem dados suficientes`;
   return (
     <div class={`chart-stacked${className ? ` ${className}` : ''}`}>
@@ -190,8 +194,7 @@ export function StackedBar({ parts, label, unit = '', className = '' }: StackedB
           {parts.map((part, i) => (
             <li>
               <span class={`chart-stacked__swatch chart-stacked__part--${part.tone || 'primary'}`} />
-              {part.label} {formatNumber(Number(part.value) || 0)}
-              {suffix} ({segments[i].share}%)
+              {part.label} {shownValue(part.value)} ({segments[i].share}%)
             </li>
           ))}
         </ul>
@@ -206,6 +209,8 @@ export interface ColumnChartColumn {
   title: string;
   tone?: 'primary' | 'soft' | 'attention' | 'muted';
   separated?: boolean;
+  /** Dia ainda por vir: a barra fica esmaecida. */
+  faded?: boolean;
 }
 
 export interface ColumnChartProps {
@@ -235,7 +240,7 @@ export function ColumnChart({ columns, label, max, target, height = 48, classNam
     >
       {geometry.bars.map((bar, i) => (
         <rect
-          class={`chart-columns__bar chart-columns__bar--${columns[i].tone || 'primary'}${bar.zero ? ' is-zero' : ''}`}
+          class={`chart-columns__bar chart-columns__bar--${columns[i].tone || 'primary'}${bar.zero ? ' is-zero' : ''}${columns[i].faded ? ' is-faded' : ''}`}
           x={bar.x}
           y={bar.y}
           width={bar.width}

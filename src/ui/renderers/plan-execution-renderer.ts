@@ -37,16 +37,22 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         })
       : '';
   const dayText = (item: any) =>
-    `${formatDate(item.date).slice(0, 5)}: capacidade ${fmt(item.capacityMinutes || 0)}, ${item.plannedMinutes === null ? 'sem plano' : 'planejado ' + fmt(item.plannedMinutes)}, estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`;
-  const days = model.days
+    `${formatDate(item.date).slice(0, 5)}: capacidade ${fmt(item.capacityMinutes || 0)}, ${item.plannedMinutes === null ? 'sem tarefa marcada' : 'com tarefa marcada ' + fmt(item.plannedMinutes)}, estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`;
+  const dayRows = model.days
     .map(
       (item: any) =>
-        `<li><span>${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</span><small>Capacidade ${fmt(item.capacityMinutes || 0)}</small><strong>${item.plannedMinutes === null ? 'Sem plano' : fmt(item.plannedMinutes)} / ${item.future ? '—' : item.studiedMinutes ? fmt(item.studiedMinutes) : 'Sem estudo'}</strong></li>`
+        `<tr><th scope="row">${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</th><td>${fmt(item.capacityMinutes || 0)}</td><td>${item.plannedMinutes === null ? 'Sem tarefa marcada' : fmt(item.plannedMinutes)}</td><td>${item.future ? '—' : item.studiedMinutes ? fmt(item.studiedMinutes) : 'Sem estudo'}</td></tr>`
     )
     .join('');
+  const daysTable = `<details class="chart-frame__data"><summary>Ver dados</summary><table class="plan-execution-table"><caption class="sr-only">Capacidade, tarefa marcada e estudado por dia</caption><thead><tr><th scope="col">Dia</th><th scope="col">Capacidade</th><th scope="col">Com tarefa marcada</th><th scope="col">Estudado</th></tr></thead><tbody>${dayRows}</tbody></table></details>`;
+  // Hoje é o último dia que já começou; os dias por vir ficam esmaecidos.
+  const todayIndex = model.days.reduce(
+    (last: number, item: any, index: number) => (item.future ? last : index),
+    -1
+  );
   // Three columns per day: capacity, planned (amber only when it exceeds capacity) and studied.
   const dayChart = renderColumnChart({
-    label: `Capacidade, planejado e estudado por dia: ${model.days.map(dayText).join('; ')}`,
+    label: `Capacidade, tarefa marcada e estudado por dia: ${model.days.map(dayText).join('; ')}`,
     className: 'plan-execution-columns',
     height: 64,
     columns: model.days.flatMap((item: any, index: number) => [
@@ -55,10 +61,12 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         title: `${formatDate(item.date).slice(0, 5)} · capacidade ${fmt(item.capacityMinutes || 0)}`,
         tone: 'muted' as const,
         separated: index > 0,
+        faded: item.future,
       },
       {
         value: item.plannedMinutes || 0,
-        title: `${formatDate(item.date).slice(0, 5)} · ${item.plannedMinutes === null ? 'sem plano' : 'planejado ' + fmt(item.plannedMinutes)}`,
+        title: `${formatDate(item.date).slice(0, 5)} · ${item.plannedMinutes === null ? 'sem tarefa marcada' : 'com tarefa marcada ' + fmt(item.plannedMinutes)}`,
+        faded: item.future,
         tone:
           (item.plannedMinutes || 0) > (item.capacityMinutes || 0)
             ? ('attention' as const)
@@ -68,10 +76,11 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         value: item.future ? 0 : item.studiedMinutes,
         title: `${formatDate(item.date).slice(0, 5)} · estudado ${item.future ? '—' : fmt(item.studiedMinutes)}`,
         tone: 'primary' as const,
+        faded: item.future,
       },
     ]),
   });
-  const axis = `<div class="plan-execution-axis" aria-hidden="true">${model.days.map((item: any) => `<span>${formatDate(item.date).slice(0, 5)}</span>`).join('')}</div>`;
+  const axis = `<div class="plan-execution-axis" aria-hidden="true">${model.days.map((item: any, index: number) => `<span${index === todayIndex ? ' class="is-today"' : item.future ? ' class="is-future"' : ''}>${formatDate(item.date).slice(0, 5)}${index === todayIndex ? '<small>hoje</small>' : ''}</span>`).join('')}</div>`;
   const measured = model.history.filter((item: any) => item.adherence !== null);
   let trend = '';
   if (measured.length >= 2) {
@@ -110,27 +119,29 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
     !(model.studiedMinutes || 0) &&
     !measured.length
   );
-  const history = showHistory
-    ? `<details class="metas-execution-history"><summary>Ver execução diária e histórico</summary>` +
-      renderChartFrame({
-        title: 'Planejado × realizado nesta semana',
+  const dailyChart = showHistory
+    ? renderChartFrame({
+        title: 'Estudo por dia nesta semana',
         description:
-          'Sessões registradas incluem estudo fora do plano. Dias sem plano permanecem sem percentual.',
+          'Sessões registradas incluem estudo fora do plano. Dias sem tarefa marcada permanecem sem percentual.',
         period: model.days.length
           ? formatDate(model.days[0].date) + ' a ' + formatDate(model.days.at(-1).date)
           : '',
         legend: [
           { label: 'Capacidade', tone: 'muted' },
-          { label: 'Planejado', tone: 'soft' },
+          { label: 'Com tarefa marcada', tone: 'soft' },
           { label: 'Estudado', tone: 'primary' },
         ],
         chart: dayChart + axis,
-        records: '<ol class="plan-execution-days">' + days + '</ol>',
-      }) +
+        records: daysTable,
+      })
+    : '';
+  const history = showHistory
+    ? `<details class="metas-execution-history"><summary>Ver histórico das semanas</summary>` +
       renderChartFrame({
         title: 'Cumprimento nas semanas concluídas',
         description:
-          'Minutos estudados ÷ minutos planejados nos dias. Semanas sem plano não entram na tendência.',
+          'Minutos estudados ÷ minutos com tarefa marcada nos dias. Semanas sem plano não entram na tendência.',
         evidence: measured.length + ' semanas concluídas com plano · período atual em andamento',
         legend: [
           { label: 'Cumprimento', tone: 'primary' },
@@ -143,6 +154,11 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
       '</details>'
     : '';
   return (
-    summary + warning + unplanned + renderStrategicExecution(model.strategic, periodLabel) + history
+    summary +
+    warning +
+    unplanned +
+    renderStrategicExecution(model.strategic, periodLabel) +
+    dailyChart +
+    history
   );
 }

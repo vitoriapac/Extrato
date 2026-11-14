@@ -207,7 +207,10 @@ test('execução da semana: capacidade por dia e âmbar só quando o planejado p
   const tones = [...html.matchAll(/chart-columns__bar--(\w+)/g)].map(m => m[1]);
   assert.equal(tones.length, 21);
   assert.deepEqual(tones.slice(0, 6), ['muted', 'attention', 'primary', 'muted', 'soft', 'primary']);
-  assert.match(html, /12\/10: capacidade 1 h, planejado 1 h 30 min, estudado 50 min/);
-  assert.match(html, /14\/10: capacidade 0 min, sem plano, estudado —/);
-  assert.match(html, /<small>Capacidade 1 h<\/small><strong>1 h 30 min \/ 50 min<\/strong>/);
+  assert.match(html, /12\/10: capacidade 1 h, com tarefa marcada 1 h 30 min, estudado 50 min/);
+  assert.match(html, /14\/10: capacidade 0 min, sem tarefa marcada, estudado —/);
+  // A lista textual saiu; os mesmos dados ficam numa tabela em "Ver dados".
+  assert.match(html, /<summary>Ver dados<\/summary><table/);
+  assert.match(html, /<th scope="row">12\/10<\/th><td>1 h<\/td><td>1 h 30 min<\/td><td>50 min<\/td>/);
+  assert.doesNotMatch(html, /plan-execution-days/);
 });

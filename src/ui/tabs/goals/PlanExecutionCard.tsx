@@ -17,7 +17,7 @@ export function PlanExecutionCard({
 
       {distributionHtml && (
         <details class="study-distribution" id="studyDistribution">
-          <summary>Distribuição entre disciplinas</summary>
+          <summary>Plano × estudado por disciplina</summary>
           <div dangerouslySetInnerHTML={{ __html: distributionHtml }} />
         </details>
       )}

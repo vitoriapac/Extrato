@@ -2,26 +2,13 @@ import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { formatPlanMinutes as formatMinutes } from '../../../core/format-duration.js';
 import type { WeeklyAllocationBarVisualModel } from '../../../domain/planning/planning-visual-models.js';
-import { formatDecimal } from '../../../core/format-number.js';
+import { StackedBar, type StackedBarPart } from './charts.js';
 
 export interface AllocationBarProps {
   visual: WeeklyAllocationBarVisualModel;
   weeklyCapacityMinutes?: number;
   label?: string;
   className?: string;
-}
-
-const VISIBLE_CHIPS = 5;
-
-function chip(s: WeeklyAllocationBarVisualModel['subjects'][number]): JSX.Element {
-  return (
-    <li key={s.subjectId} class="flex items-center gap-2 py-1 text-xs text-content-primary">
-      <span class={`w-2 h-2 rounded-full subject-bg-${s.colorSlot}`} aria-hidden="true" />
-      <span class="font-medium break-words min-w-0">{s.subjectName}</span>
-      <span class="text-content-secondary font-mono">{formatMinutes(s.minutes)}</span>
-      <span class="text-content-secondary text-xs">({formatDecimal(s.percentage)}%)</span>
-    </li>
-  );
 }
 
 export function AllocationBar({
@@ -64,68 +51,21 @@ export function AllocationBar({
         )}
       </div>
 
-      <p class="text-xs font-semibold text-content-primary">Distribuição por disciplina</p>
-      {/* Fatias das disciplinas (Badges com cores oficiais) */}
-      <ol class="pt-1">{subjects.slice(0, VISIBLE_CHIPS).map(chip)}</ol>
-      {subjects.length > VISIBLE_CHIPS && (
-        <details class="allocation-more">
-          <summary class="text-xs font-medium text-content-secondary cursor-pointer">
-            Ver outras {subjects.length - VISIBLE_CHIPS} disciplinas
-          </summary>
-          <ol start={VISIBLE_CHIPS + 1} class="pt-2">
-            {subjects.slice(VISIBLE_CHIPS).map(chip)}
-          </ol>
-        </details>
-      )}
-
-      {/* Mix de Atividades da Semana (Teoria × Questões × Revisão) */}
+      {/* A lista de disciplinas vive num só lugar: "Plano × estudado por disciplina", no Resumo. */}
       {mix.totalMinutes > 0 && (
         <div class="pt-2 border-t border-border-subtle">
-          <div class="flex items-center justify-between text-xs font-medium text-content-secondary mb-2">
-            <span>Divisão por tipo de estudo</span>
-            <span>
-              {formatDecimal(mix.theoryPercentage)}% teoria ·{' '}
-              {formatDecimal(mix.questionsPercentage)}% questões ·{' '}
-              {formatDecimal(mix.reviewsPercentage)}% revisões
-            </span>
-          </div>
-          <div class="h-2 w-full bg-surface-sunken rounded-full overflow-hidden flex">
-            {mix.theoryPercentage > 0 && (
-              <div
-                class="h-full bg-info-emphasis transition-all"
-                style={{ width: `${mix.theoryPercentage}%` }}
-                title={`Teoria: ${formatMinutes(mix.theoryMinutes)} (${formatDecimal(mix.theoryPercentage)}%)`}
-              />
-            )}
-            {mix.questionsPercentage > 0 && (
-              <div
-                class="h-full bg-accent-emphasis transition-all"
-                style={{ width: `${mix.questionsPercentage}%` }}
-                title={`Questões: ${formatMinutes(mix.questionsMinutes)} (${formatDecimal(mix.questionsPercentage)}%)`}
-              />
-            )}
-            {mix.reviewsPercentage > 0 && (
-              <div
-                class="h-full bg-success-emphasis transition-all"
-                style={{ width: `${mix.reviewsPercentage}%` }}
-                title={`Revisões: ${formatMinutes(mix.reviewsMinutes)} (${formatDecimal(mix.reviewsPercentage)}%)`}
-              />
-            )}
-          </div>
-          <div class="flex items-center justify-between text-xs text-content-secondary mt-2 px-1">
-            <span class="flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-info-emphasis"></span>
-              Teoria: {formatMinutes(mix.theoryMinutes)}
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-accent-emphasis"></span>
-              Questões: {formatMinutes(mix.questionsMinutes)}
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-success-emphasis"></span>
-              Revisões: {formatMinutes(mix.reviewsMinutes)}
-            </span>
-          </div>
+          <p class="text-xs font-medium text-content-secondary mb-2">Divisão por tipo de estudo</p>
+          <StackedBar
+            label="Divisão do plano por tipo de estudo"
+            formatValue={formatMinutes}
+            parts={(
+              [
+                { label: 'Teoria', value: mix.theoryMinutes, tone: 'primary' },
+                { label: 'Questões', value: mix.questionsMinutes, tone: 'secondary' },
+                { label: 'Revisões', value: mix.reviewsMinutes, tone: 'primary-soft' },
+              ] as StackedBarPart[]
+            ).filter(part => Number(part.value) > 0)}
+          />
         </div>
       )}
     </div>

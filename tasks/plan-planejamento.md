@@ -107,9 +107,9 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - Decisão de 14/11/2026: formato único de duração é "1 h 20 min", "2 h", "48 min" (não "1h20"); formatPlanMinutes passou a emitir esse formato. Pendência fora de Planejamento: formatDuration (segundos, cronômetro) ainda emite "7min".
 
 ### Fase 2: Semana visual
-- [ ] Tarefa 9: Barra do saldo abaixo das linhas de razão
-- [ ] Tarefa 10: Semana em 7 colunas no lugar da lista "Planejado × realizado"
-- [ ] Tarefa 11: Um bloco "Plano × estudado por disciplina" no lugar de dois
+- [x] Tarefa 9: Barra do saldo abaixo das linhas de razão
+- [x] Tarefa 10: Semana em 7 colunas no lugar da lista "Planejado × realizado"
+- [x] Tarefa 11: Um bloco "Plano × estudado por disciplina" no lugar de dois
 
 ### Checkpoint 2: Semana
 - [ ] Crítica impeccable só da Semana, detector e axe sem regressão

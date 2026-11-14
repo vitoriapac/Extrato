@@ -301,3 +301,34 @@ test('fechamento com estudo sem vínculo explica o 0% e oferece marcar o restant
   assert.ok(out.indexOf('estudar fora do plano') < out.indexOf('Capacidade da semana'));
   assert.match(out, /Aderência ao plano<\/span><strong>0%/);
 });
+
+test('saldo da semana: perfil vazio não mostra a barra', () => {
+  assert.doesNotMatch(html(0, 0, 0), /chart-stacked/);
+});
+
+test('saldo da semana abaixo da capacidade tem frase descritiva, rótulos com duração e parte livre', () => {
+  const out = html(160, 60, 720);
+  assert.match(out, /role="img" aria-label="Saldo da semana, capacidade de 12 h:/);
+  assert.match(out, /Estudado 1 h \(8%\)/);
+  assert.match(out, /Marcado, ainda não estudado 1 h 40 min/);
+  assert.match(out, /Livre 9 h 20 min/);
+});
+
+test('saldo da semana acima da capacidade marca o excedente e não cria parte livre', () => {
+  const out = html(400, 800, 720);
+  assert.match(out, /aria-label="Saldo da semana, 1 h 20 min acima da capacidade de 12 h:/);
+  assert.doesNotMatch(out, /Livre /);
+});
+
+test('saldo da semana separa estudado com e sem vínculo', async () => {
+  const { buildWeekReconciliation } = await import('../../src/ui/tabs/goals/week-reconciliation.js');
+  const { weekBalanceParts } = await import('../../src/ui/tabs/goals/WeekReconciliationSummary.js');
+  const data = buildWeekReconciliation({
+    capacityMin: 600, plannedMin: 300, studiedMin: 240, periodLabel: '09/11 a 15/11',
+    links: { studiedMinutes: 240, linkedMinutes: 150, additionalMinutes: 90, incompatibleMinutes: 0, otherPeriodMinutes: 0 },
+  });
+  const { parts } = weekBalanceParts(data);
+  assert.deepEqual(parts.map(p => [p.label, p.value]), [
+    ['Estudado com vínculo', 150], ['Estudado sem vínculo', 90], ['Marcado, ainda não estudado', 150], ['Livre', 210],
+  ]);
+});

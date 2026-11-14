@@ -656,3 +656,14 @@ A lista de eventos da linha do tempo é cortada. Os registros não se fundem; ca
 
 ## Checkpoint 1 (14/11/2026)
 Conferido na demo: Semana, Fechamento e Histórico mostram os mesmos valores da semana (capacidade 12 h, com tarefa marcada 13 h 30 min, estudado 10 h 23 min). A conferência achou três números sem formato ("623 de 12 h 10 min", "420 de 10 h", "83.98576512455516%") — corrigidos em weekly-adherence-renderer e weekly-decision-cycle-renderer; o E2E de formato agora também recusa minutos soltos e decimais longos. Decisão do usuário: formato único "1 h 20 min"; formatPlanMinutes alterado e DESIGN.md atualizado; testes e E2E das Tarefas 7 e 8 convertidos. Recortes ainda distintos, mas rotulados: prioridades (72% semana inteira x 84% até 14/11) e aderência até hoje.
+
+
+## Fase 2 (14/11/2026)
+**T9** barra de saldo (StackedBar com formatValue novo) abaixo das linhas do Resumo: estudado com/sem vínculo, marcado ainda não estudado e livre; some no perfil vazio; frase descritiva e legenda com duração. **T10** gráfico por dia saiu da dobra: 3 séries (capacidade, com tarefa marcada, estudado), hoje marcado, dias futuros esmaecidos (barras e itálico no rótulo), lista textual trocada por tabela em "Ver dados". Desvio do plano: a capacidade é coluna e não linha de meta, porque varia por dia. **T11** um só bloco "Plano × estudado por disciplina" (GroupedBarChart: ordem do plano, 5 maiores, zeradas só em "Ver outras N", selo Extra); AllocationBar perdeu a lista de disciplinas e a divisão por tipo virou StackedBar.
+
+### Checkpoint 2
+- Testes, tipos e build limpos: sim (unit 1.702; E2E planning, weekly-adherence, visual-consolidation).
+- axe na Semana: 0 violações em 1440 claro e 375 escuro (achou e corrigiu contraste do rótulo futuro).
+- Dobras na demo: 10 (7 de primeiro nível). Meta de 4 NÃO atingida; as demais saem em T13 (Ajustar metas), T20 (Plano × impacto, Histórico das semanas) e T21 (Comparação entre períodos), que dependem do Checkpoint 5 da Desempenho.
+- /impeccable critique da Semana: não rodado.
+- Revisão humana das capturas 375 e 1440: pendente (captura 1440 gerada).

@@ -55,7 +55,7 @@ test('PlanExecutionCard Preact Component — renderiza execução, distribuiçã
   );
 
   assert.match(html, /Resumo de Execução/);
-  assert.match(html, /Distribuição entre disciplinas/);
+  assert.match(html, /Plano × estudado por disciplina/);
   assert.match(html, /Plano × impacto na prova/);
 });
 
