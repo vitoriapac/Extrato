@@ -19,8 +19,8 @@ const html = (plannedMin, studiedMin, capacityMin = 720) =>
 
 test('minutos fracionários arredondam antes de virar horas (119,7 min = 2h)', () => {
   const out = html(100, 50, 119.7);
-  assert.match(out, />2h</);
-  assert.doesNotMatch(out, />1h</);
+  assert.match(out, />2 h</);
+  assert.doesNotMatch(out, />1 h</);
 });
 
 test('aviso de plano curto usa o múltiplo exibido (2,04 não mostra; 2,06 mostra)', () => {
@@ -106,8 +106,8 @@ test('extrato usa vínculos reais mesmo quando o estudo total é menor que o pla
   });
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
   assert.match(out, /Sem vínculo com atividade/);
-  assert.match(out, /30min/);
-  assert.match(out, /0min de 1h20 prioritárias/);
+  assert.match(out, /30 min/);
+  assert.match(out, /0 min de 1 h 20 min prioritárias/);
   assert.doesNotMatch(out, /Estudo extra, sem tarefa marcada/);
 });
 
@@ -161,9 +161,9 @@ test('extrato separa vínculo válido, incompatível e de outro período', async
     ],
   });
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
-  assert.match(out, /Vinculado a atividades desta semana[\s\S]*?30min/);
-  assert.match(out, /Vínculo incompatível ou inativo[\s\S]*?10min/);
-  assert.match(out, /Vinculado a outro período[\s\S]*?20min/);
+  assert.match(out, /Vinculado a atividades desta semana[\s\S]*?30 min/);
+  assert.match(out, /Vínculo incompatível ou inativo[\s\S]*?10 min/);
+  assert.match(out, /Vinculado a outro período[\s\S]*?20 min/);
 });
 
 test('quando os totais usam bases diferentes o extrato explica a diferença', async () => {
@@ -177,7 +177,7 @@ test('quando os totais usam bases diferentes o extrato explica a diferença', as
     sessions: [session, session],
   });
   const out = renderPlanExecution(model, { formatDate: iso => iso.split('-').reverse().join('/') });
-  assert.match(out, /análise de vínculos considera 30min em sessões únicas/);
+  assert.match(out, /análise de vínculos considera 30 min em sessões únicas/);
   assert.match(out, /total acima usa as datas registradas/);
 });
 
@@ -268,8 +268,8 @@ test('fechamento e resumo mostram os mesmos valores e rótulos para a mesma sema
   const resumo = renderPlanExecution(model, { formatDate });
   for (const label of ['Capacidade da semana', 'Com tarefa marcada', 'Estudado até hoje'])
     assert.ok(out.includes(label) && resumo.includes(label), label);
-  // Mesmos valores (1h20 com tarefa marcada, 1h estudada) nos dois lugares.
-  for (const value of ['1h20', '1h'])
+  // Mesmos valores (1 h 20 min com tarefa marcada, 1 h estudada) nos dois lugares.
+  for (const value of ['1 h 20 min', '1 h'])
     assert.ok(out.includes(`>${value}<`) && resumo.includes(`>${value}<`), value);
   assert.match(out, /ledger-line--total[^>]*>.*?Estudado até hoje/);
   assert.doesNotMatch(out, />Planejado<|>Realizado</);

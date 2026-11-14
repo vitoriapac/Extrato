@@ -73,7 +73,7 @@ for (const profile of AUDIT_PROFILES)
     await activateTab(page, 'metas');
     await capture('planning', '#panel-metas');
     if (profile !== 'new') {
-      await page.getByRole('button', { name: 'Calcular proposta semanal', exact: true }).click();
+      await page.getByRole('button', { name: /^(Calcular proposta semanal|Recalcular plano)$/ }).click();
       await expect(
         page.getByRole('button', { name: 'Confirmar e salvar plano', exact: true })
       ).toBeVisible();

@@ -421,7 +421,7 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Do** manter Plex Mono para números, datas, durações e códigos, Fraunces para valores e marca, e Plex Sans para rótulos, estados e ações.
 - **Do** usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.
 - **Do** dar a todo badge de estado um rótulo textual.
-- **Do** escrever durações no formato único do app (`formatPlanMinutes`: `1h20`, `2h`, `48min`) e títulos em caixa de frase ("Capacidade semanal alocada", não "Capacidade Semanal Alocada").
+- **Do** escrever durações no formato único do app (`formatPlanMinutes`: `1 h 20 min`, `2 h`, `48 min`) e títulos em caixa de frase ("Capacidade semanal alocada", não "Capacidade Semanal Alocada").
 - **Do** manter um só botão cheio por tela de decisão. No Plano da semana é "Distribuir nos próximos 7 dias"; sem data de prova, é "Definir data da prova". "Calcular proposta semanal" e "Simular E se?" ficam como links terciários em "Outras formas de planejar".
 - **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px em toque; links de tópico e disciplina em listas densas têm no mínimo 24px com ponteiro fino).
 - **Do** usar foco sálvia visível em tudo que é interativo, com `--accent` no anel: `--brand` quase coincide com o fundo no tema escuro (1,1:1).

@@ -16,12 +16,12 @@ test('formatDuration — formata durações em segundos corretamente', () => {
 });
 
 test('formatPlanMinutes — formata minutos de planejamento corretamente', () => {
-  assert.equal(formatPlanMinutes(0), '0min');
-  assert.equal(formatPlanMinutes(30), '30min');
-  assert.equal(formatPlanMinutes(59), '59min');
-  assert.equal(formatPlanMinutes(60), '1h');
-  assert.equal(formatPlanMinutes(75), '1h15');
-  assert.equal(formatPlanMinutes(120), '2h');
-  assert.equal(formatPlanMinutes(125), '2h05');
-  assert.equal(formatPlanMinutes(null), '0min');
+  assert.equal(formatPlanMinutes(0), '0 min');
+  assert.equal(formatPlanMinutes(30), '30 min');
+  assert.equal(formatPlanMinutes(59), '59 min');
+  assert.equal(formatPlanMinutes(60), '1 h');
+  assert.equal(formatPlanMinutes(75), '1 h 15 min');
+  assert.equal(formatPlanMinutes(120), '2 h');
+  assert.equal(formatPlanMinutes(125), '2 h 5 min');
+  assert.equal(formatPlanMinutes(null), '0 min');
 });

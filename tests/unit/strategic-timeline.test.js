@@ -78,7 +78,7 @@ test('linha do tempo identifica recuperação aplicada e revertida com capacidad
   assert.equal(model.total, 2);
   assert.equal(model.rows[0].title, 'Plano de recuperação revertido');
   assert.equal(model.rows[1].title, 'Plano de recuperação aplicado');
-  assert.match(model.rows[1].description, /12h → 12h/);
+  assert.match(model.rows[1].description, /12 h → 12 h/);
   assert.equal(
     model.rows[1].details.rows.find(row => row.label === 'Trajetória naquele momento').value,
     'Em risco'

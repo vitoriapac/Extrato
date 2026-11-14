@@ -49,7 +49,7 @@ for (const viewport of viewports) {
     const week = await close.evaluate(element =>
       [...element.children[0].children].map(child => child.className)
     );
-    expect(week.indexOf('weekly-kpis')).toBeLessThan(
+    expect(week.indexOf('week-reconciliation')).toBeLessThan(
       week.indexOf('weekly-close-analysis editorial-disclosure')
     );
     const analysis = await close.evaluate(element =>

@@ -75,7 +75,7 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload', a
   await expect(page.locator('#sessionModalOverlay')).toBeVisible();
   await page.locator('#sessionModalSaveBtn').click();
   await activateTab(page, 'dashboard');
-  await expect(card).toContainText('10min de 20min do plano · 50%');
+  await expect(card).toContainText('10 min de 20 min do plano · 50%');
   await expect(
     card.getByRole('img', { name: 'Progresso das atividades planejadas: 50 de 100' })
   ).toBeVisible();

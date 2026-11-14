@@ -5,21 +5,24 @@ test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ 
   await openDemo(page);
   await activateTab(page, 'metas');
 
-  await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();
+  await page.getByRole('button', { name: 'Recalcular plano' }).click();
   const confirmPlan = page.getByRole('button', { name: 'Confirmar e salvar plano' });
   await expect(confirmPlan).toBeVisible();
   await confirmPlan.click();
-  await expect(page.getByText('Plano confirmado', { exact: true })).toBeVisible();
-  await expect(page.locator('.study-plan-guidance')).toContainText(
-    'Distribua o plano nos próximos 7 dias'
+  // Plano confirmado: linha de estado e ações novas, sem texto de prévia nem atalho para o resumo.
+  await expect(page.locator('#examStudyPlan .confirmed-plan-note')).toContainText(
+    /Plano .+\/semana/
   );
-  await page.getByRole('link', { name: 'Ver resumo da semana' }).click();
-  await expect(page.locator('#planExecutionCard')).toBeInViewport();
+  await expect(page.locator('#examStudyPlan')).not.toContainText(
+    /divisões de atividades propostas|Ver resumo da semana/
+  );
+  await expect(page.getByRole('button', { name: 'Recalcular plano' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias' }).click();
+  await page.getByRole('button', { name: 'Agendar nos próximos 7 dias' }).click();
   await expect(page.getByRole('heading', { name: 'Prévia dos próximos 7 dias' })).toBeFocused();
   const confirmDaily = page.getByRole('button', { name: 'Confirmar planos diários' });
-  await expect(confirmDaily).toBeVisible();  await confirmDaily.click();
+  await expect(confirmDaily).toBeVisible();
+  await confirmDaily.click();
 
   const undo = page.getByRole('button', { name: 'Desfazer última distribuição' });
   await expect(undo).toBeVisible();
@@ -35,7 +38,7 @@ test('prévia explica fase da prova e sugere adaptação sem salvar automaticame
 }) => {
   await openDemo(page);
   await activateTab(page, 'metas');
-  await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();
+  await page.getByRole('button', { name: 'Recalcular plano' }).click();
   const preview = page.locator('#examStudyPlan');
   await expect(preview.getByRole('heading', { name: 'Prévia do plano semanal' })).toBeFocused();
   await expect(preview).toContainText('Fase até a prova');
@@ -44,14 +47,14 @@ test('prévia explica fase da prova e sugere adaptação sem salvar automaticame
   );
   await expect(preview.getByRole('button', { name: 'Confirmar e salvar plano' })).toBeVisible();
   await preview.getByRole('button', { name: 'Descartar proposta' }).click();
-  await expect(preview.getByRole('button', { name: 'Calcular proposta semanal' })).toBeFocused();
+  await expect(preview.getByRole('button', { name: 'Recalcular plano' })).toBeFocused();
 });
 
 test('fase e redistribuição do plano se organizam em tela móvel', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 900 });
   await openDemo(page);
   await activateTab(page, 'metas');
-  await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();
+  await page.getByRole('button', { name: 'Recalcular plano' }).click();
   const preview = page.locator('#examStudyPlan');
   await expect(preview.locator('.exam-phase-steps')).toBeVisible();
   await expect(preview.locator('.exam-phase-step')).toHaveCount(4);
@@ -128,7 +131,7 @@ test('a prévia de distribuição explica o que não coube e leva à disponibili
   await openDemo(page);
   await openPlanningSubtab(page, 'semana');
 
-  await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias' }).click();
+  await page.getByRole('button', { name: 'Agendar nos próximos 7 dias' }).click();
   const note = page.locator('#examStudyPlan .helper-text', { hasText: 'Cabem' });
   await expect(note).toContainText(
     /Cabem .+ dos .+\. A disponibilidade dos 7 dias soma .+ ficam de reserva/
@@ -170,16 +173,15 @@ test('Distribuição entre disciplinas mostra planejado e realizado na ordem da 
   }
 });
 
-test('as subabas de Planejamento só mostram durações no formato 1h20, 2h e 48min', async ({
+test('as subabas de Planejamento só mostram durações no formato 1 h 20 min, 2 h e 48 min', async ({
   page,
 }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await openDemo(page);
-  // Recusa "1h 20m", "35m", "60 min", "60 minutos", "10 h 23 min" e "0h00".
-  // Espaço literal, não \s: células vizinhas separadas por quebra de linha não contam.
-  const refused =
-    /\b\d+h[ ]\d+|\b\d+h\d{2}m\b|(?<![\dh])\d+m\b|\b\d+[ ](?:min|minutos?|h)\b|\b\d+h00\b|\b0h\d{2}\b/;
+  // Formato único "1 h 20 min", "2 h", "48 min". Recusa "1h20", "20min", "35m", "60 minutos",
+  // minutos soltos antes de "de 12 h" e decimais longos. Espaço literal, não s: células vizinhas não contam.
+  const refused = /d+hd*|d+min|d+m|d+[ ](?:minutos?|horas?)|d{2,} de d+ (?:h|min)|d+.d{3,}%/;
   for (const key of ['semana', 'metas', 'fechamento', 'historico', 'prova']) {
     await openPlanningSubtab(page, key);
     await page
@@ -191,4 +193,38 @@ test('as subabas de Planejamento só mostram durações no formato 1h20, 2h e 48
       found ? `${key}: …${text.slice(Math.max(0, found.index - 30), found.index + 25)}…` : null
     ).toBeNull();
   }
+});
+
+test('a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico', async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  const ledger = async key => {
+    await openPlanningSubtab(page, key);
+    const rows = await page
+      .locator(`#metasSub-${key} .week-reconciliation .ledger-line`)
+      .evaluateAll(list =>
+        Object.fromEntries(
+          list.map(row => [
+            row.querySelector('.ledger-line__label').firstChild.textContent.trim(),
+            row.querySelector('.ledger-line__value').textContent.trim(),
+          ])
+        )
+      );
+    return rows;
+  };
+  const semana = await ledger('semana');
+  const fechamento = await ledger('fechamento');
+  for (const label of ['Capacidade da semana', 'Com tarefa marcada', 'Estudado até hoje'])
+    expect(fechamento[label], label).toBe(semana[label]);
+  // O Histórico lista o período atual com os mesmos estudado e marcado.
+  await openPlanningSubtab(page, 'historico');
+  await page
+    .locator('#metasSub-historico details')
+    .evaluateAll(list => list.forEach(item => (item.open = true)));
+  await expect(page.locator('#metasSub-historico')).toContainText(
+    `Execução: ${semana['Estudado até hoje']} de ${semana['Com tarefa marcada']} planejados`
+  );
 });

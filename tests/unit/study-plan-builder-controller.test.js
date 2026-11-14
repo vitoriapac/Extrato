@@ -186,3 +186,41 @@ test('StudyPlanBuilderController — Ajustar disponibilidade abre a dobra e leva
   assert.equal(elements.metasAdjust.open, true);
   assert.deepEqual(calls, ['scroll', 'focus']);
 });
+
+function confirmedCard() {
+  const { deps, elements, getState } = createMockDeps();
+  const controller = createStudyPlanBuilderController(deps);
+  controller.calculateStudyPlanPreview();
+  controller.confirmStudyPlan();
+  return { html: elements['examStudyPlan'].innerHTML, controller, elements, getState };
+}
+
+test('plano confirmado mostra a linha de estado com as medidas da semana, sem texto de prévia', () => {
+  const { html } = confirmedCard();
+  assert.match(html, /Plano 120 min\/semana/);
+  assert.match(html, /com tarefa marcada 0 min · falta marcar 120 min/);
+  assert.doesNotMatch(html, /divisões de atividades propostas|preservadas|Ver resumo da semana|Distribua o plano/);
+});
+
+test('plano confirmado tem uma ação principal e no máximo duas secundárias, com os nomes novos', () => {
+  const { html } = confirmedCard();
+  const actions = html.match(/<div class="study-plan-actions">([\s\S]*?)<\/div>/)[1];
+  const buttons = [...actions.matchAll(/<button class="btn( ghost)?"[^>]*>([^<]*)<\/button>/g)];
+  assert.equal(buttons.filter(b => !b[1]).length, 1);
+  assert.ok(buttons.filter(b => b[1]).length <= 2);
+  assert.deepEqual(
+    buttons.map(b => b[2]),
+    ['Agendar nos próximos 7 dias', 'Recalcular plano', 'Simular "E se?"'.replace('"', '&quot;').replace('"', '&quot;')]
+  );
+});
+
+test('linha de estado diz "tudo marcado" quando a semana já tem o plano inteiro agendado', () => {
+  const { deps, elements, getState } = createMockDeps();
+  const controller = createStudyPlanBuilderController(deps);
+  controller.calculateStudyPlanPreview();
+  getState().dailyPlans = [
+    { date: '2026-10-28', items: [{ id: 'a', plannedMinutes: 120, status: 'planned' }] },
+  ];
+  controller.confirmStudyPlan();
+  assert.match(elements['examStudyPlan'].innerHTML, /com tarefa marcada 120 min · tudo marcado/);
+});

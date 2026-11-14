@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { buildPlanExecution } from '../../../application/goals/build-plan-execution.js';
 import { PLAN_RESERVE_RATIO } from '../../../application/planning/plan-reserve.js';
 import { render } from 'preact-render-to-string';
 
@@ -559,14 +560,38 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
             label: 'Distribuição da capacidade semanal do plano confirmado',
           })
         : '';
-      // Um só botão cheio: o passo que o aluno precisa dar agora.
+      // Um só botão cheio (o passo de agora) e, com plano confirmado, no máximo dois secundários.
       const calcIsPrimary = !latest && Boolean(deps.getState().examDate);
       const primaryAction = latest
-        ? '<button class="btn" type="button" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>'
+        ? '<button class="btn" type="button" data-delegated-click="calculateDailyPlanPreview()">Agendar nos próximos 7 dias</button>'
         : deps.getState().examDate
           ? '<button class="btn" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'
           : '<a class="btn" href="#planejamento/prova">Definir data da prova</a>';
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}<div class="study-plan-actions">${primaryAction}${activeOperation ? '<button class="btn ghost" type="button" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}</div><p class="study-plan-more">Outras formas de planejar: ${calcIsPrimary ? '' : '<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'}<button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>${render(h(StudyPlanGuidance, { hasPlan: Boolean(latest), hasExamDate: Boolean(deps.getState().examDate) }))}${allocationBarHtml}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}`;
+      const whatIf =
+        '<button class="btn ghost" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button>';
+      const phaseView = phaseStrategyController.view();
+      const phaseProposal = latest && !phaseView ? currentPhaseStrategy() : null;
+      if (latest) {
+        // Medidas da semana (as mesmas do Resumo): quanto do plano já tem tarefa marcada.
+        const state = deps.getState();
+        const marked =
+          buildPlanExecution({
+            today: todayISO(),
+            dailyPlans: state.dailyPlans,
+            hoursByDay: state.metas?.horasPorDia,
+          }).plannedMinutes ?? 0;
+        const missing = Math.max(0, (latest.weeklyPlannedMinutes || 0) - marked);
+        const confirmedAt = new Date(latest.confirmedAt).toLocaleString('pt-BR', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+        });
+        const inline = (action: string, label: string) =>
+          `<button class="btn tertiary" type="button" data-delegated-click="${action}">${label}</button>`;
+        const stateLine = `<div class="confirmed-plan-note"><strong>Plano ${formatPlanMinutes(latest.weeklyPlannedMinutes)}/semana</strong><span title="Confirmado em ${confirmedAt}">com tarefa marcada ${formatPlanMinutes(marked)} · ${missing > 0 ? `falta marcar ${formatPlanMinutes(missing)}` : 'tudo marcado'} · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span>${activeOperation ? inline('undoLatestDailyPlanGeneration()', 'Desfazer última distribuição') : ''}${phaseProposal?.state === 'proposal' ? inline('previewPhaseStrategy()', 'Revisar proposta de estratégia') : ''}${latest.phaseStrategy?.status === 'applied' ? inline('revertPhaseStrategy()', 'Reverter última estratégia por fase') : ''}</div>`;
+        container.innerHTML = `${stateLine}<div class="study-plan-actions">${primaryAction}<button class="btn ghost" type="button" data-delegated-click="calculateStudyPlanPreview()">Recalcular plano</button>${whatIf}</div>${phaseProposal?.state === 'cooldown' ? `<p class="helper-text">${escapeHtml((phaseProposal as { reason?: string }).reason)}</p>` : ''}${allocationBarHtml}${phaseView ? renderPhaseStrategy(phaseView, { preview: phaseView.state === 'proposal', canRevert: false }) : ''}`;
+        return;
+      }
+      container.innerHTML = `<div class="study-plan-actions">${primaryAction}</div><p class="study-plan-more">Outras formas de planejar: ${calcIsPrimary ? '' : '<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'}<button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>${render(h(StudyPlanGuidance, { hasPlan: false, hasExamDate: Boolean(deps.getState().examDate) }))}`;
       return;
     }
 

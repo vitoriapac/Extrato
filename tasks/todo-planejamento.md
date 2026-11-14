@@ -214,6 +214,8 @@ Verificação usada abaixo:
 
 **Tamanho:** M
 
+**Feito em 14/11/2026, sem commit.** Com plano confirmado o card mostra uma linha de estado ("Plano 12h/semana · com tarefa marcada 13h30 · falta marcar … / tudo marcado · prova em …"), que usa as medidas da T4 (`buildPlanExecution` da semana) e abriga as ações pequenas (Desfazer última distribuição, Revisar proposta de estratégia, Reverter última estratégia por fase). Ações do card: principal "Agendar nos próximos 7 dias" e secundárias "Recalcular plano" e "Simular \"E se?\"". Saíram "Ver resumo da semana", a frase de orientação e o bloco da estratégia por fase ("carga de … preservadas", "N divisões propostas"), que só aparece durante a prévia; o cooldown ("Aguarde 14 dias") continua como nota. "Plano confirmado" deixou de existir como texto. E2E e testes renomeados (Calcular proposta semanal → Recalcular plano quando já há plano). Pendência: o lugar do replanejamento da T21 (Desempenho) é a mesma linha de estado.
+
 ### Checkpoint 1: Números
 - [ ] Testes, tipos e build limpos
 - [ ] Demo: a semana de 09/11 a 15/11 mostra os mesmos valores em Semana, Fechamento e Histórico
@@ -650,3 +652,7 @@ A lista de eventos da linha do tempo é cortada. Os registros não se fundem; ca
 - [ ] Todos os critérios de aceite marcados
 - [ ] Suíte completa passando
 - [ ] Revisão humana antes do commit final
+
+
+## Checkpoint 1 (14/11/2026)
+Conferido na demo: Semana, Fechamento e Histórico mostram os mesmos valores da semana (capacidade 12 h, com tarefa marcada 13 h 30 min, estudado 10 h 23 min). A conferência achou três números sem formato ("623 de 12 h 10 min", "420 de 10 h", "83.98576512455516%") — corrigidos em weekly-adherence-renderer e weekly-decision-cycle-renderer; o E2E de formato agora também recusa minutos soltos e decimais longos. Decisão do usuário: formato único "1 h 20 min"; formatPlanMinutes alterado e DESIGN.md atualizado; testes e E2E das Tarefas 7 e 8 convertidos. Recortes ainda distintos, mas rotulados: prioridades (72% semana inteira x 84% até 14/11) e aderência até hoje.

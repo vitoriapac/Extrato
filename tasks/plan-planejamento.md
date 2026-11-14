@@ -100,10 +100,11 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 6: Tempo prioritário e excesso com um valor e um formato
 - [x] Tarefa 7: Um formato de duração em toda a aba
 - [x] Tarefa 7b: Plano semanal ocupa 90% da capacidade e revisões da agenda substituem as do plano
-- [ ] Tarefa 8: Plano confirmado sem texto de prévia, com linha de estado e ações renomeadas
+- [x] Tarefa 8: Plano confirmado sem texto de prévia, com linha de estado e ações renomeadas
 
 ### Checkpoint 1: Números
-- [ ] Na demo, a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico
+- [x] Na demo, a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico (conferido em 14/11/2026: capacidade 12 h, com tarefa marcada 13 h 30 min, estudado 10 h 23 min; E2E permanente em planning.spec.js). Recortes que continuam diferentes e rotulados: prioridades (semana inteira x dias até hoje) e aderência (até hoje).
+- Decisão de 14/11/2026: formato único de duração é "1 h 20 min", "2 h", "48 min" (não "1h20"); formatPlanMinutes passou a emitir esse formato. Pendência fora de Planejamento: formatDuration (segundos, cronômetro) ainda emite "7min".
 
 ### Fase 2: Semana visual
 - [ ] Tarefa 9: Barra do saldo abaixo das linhas de razão

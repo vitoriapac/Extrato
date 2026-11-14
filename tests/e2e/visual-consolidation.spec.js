@@ -250,7 +250,7 @@ test('meta do cronômetro mostra progresso acessível somente quando configurada
   const progress = page.locator('#studyTimerProgress');
   await expect(progress).toBeVisible();
   await expect(page.locator('#studyTimerTarget')).toBeVisible();
-  await expect(progress).toHaveAttribute('aria-valuetext', / de \d+min/);
+  await expect(progress).toHaveAttribute('aria-valuetext', / de \d+ min/);
 });
 
 test('instruções detalham áreas, fluxos, atalhos e dúvidas', async ({ page }) => {
@@ -297,7 +297,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await openDemo(page);
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'fechamento');
-  await expect(page.locator('#weeklyCloseDashboard .weekly-kpis')).toBeVisible();
+  await expect(page.locator('#weeklyCloseDashboard .week-reconciliation')).toBeVisible();
   await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText(
     'Diagnóstico'
   );

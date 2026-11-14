@@ -120,7 +120,7 @@ test('foco semanal descreve zero, uma e várias lacunas sem impor meta de percen
     unmeasured: 1,
   });
   assert.match(one, /1 lacuna prioritária trabalhada/);
-  assert.match(one, /1h/);
+  assert.match(one, /1 h/);
   assert.match(one, /1 ainda sem medida posterior/);
   const many = renderWeeklyStrategicFocus({
     ...base,

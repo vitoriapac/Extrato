@@ -85,7 +85,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
         Object.values(item.activityMix).reduce((sum, value) => sum + value, 0) === item.minutes
     )
   ).toBe(true);
-  await page.getByRole('button', { name: 'Distribuir nos próximos 7 dias', exact: true }).click();
+  await page.getByRole('button', { name: 'Agendar nos próximos 7 dias', exact: true }).click();
   await page.getByRole('button', { name: 'Confirmar planos diários', exact: true }).click();
   await activateTab(page, 'hoje');
   const recommendation = page.locator('#studyRecommendation .study-recommendation').first();
