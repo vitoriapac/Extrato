@@ -302,8 +302,8 @@ Verificação usada abaixo:
 
 ### Tarefa 25: Notas de corte oficiais de BB, Caixa e CNU
 **Aceite:**
-- [ ] Valores lidos no resultado oficial (Cesgranrio, MGI), com link
-- [ ] O que não tiver fonte oficial fica "sem dado"
+- [~] Valores lidos no resultado oficial (Cesgranrio, MGI), com link: BB e Caixa não publicam nota de corte; CNU só publica a pontuação mínima de habilitação à discursiva (decisão pendente). Registro em `tasks/notas-de-corte-fontes.md`
+- [x] O que não tiver fonte oficial fica "sem dado" (BB e Caixa)
 **Verificação:** revisão manual das fontes; validação do catálogo passa
 **Dependências:** T24
 **Tamanho:** S (dados)
