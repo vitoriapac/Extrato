@@ -297,7 +297,7 @@ const applicationRenderer = createApplicationRenderer({
 const achievementNotifier = createAchievementNotifier({
   document,
   onView: () => {
-    window.location.hash = '#desempenho/history';
+    window.location.hash = '#hoje/conquistas';
   },
 });
 let achievementCheckQueued = false;

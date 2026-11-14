@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=562c3ad915f8">
-<link rel="stylesheet" href="styles/app.css?v=562c3ad915f8">
+<link rel="stylesheet" href="styles/tailwind.css?v=055f51f9ecac">
+<link rel="stylesheet" href="styles/app.css?v=055f51f9ecac">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -190,12 +190,7 @@
         </div>
       </div>
     </details>
-    <section class="performance-progress" id="performance-progress" aria-labelledby="performanceProgressTitle">
-      <header class="module-heading"><h3 class="module-heading__title" id="performanceProgressTitle">Progresso e conquistas</h3></header>
-      <div class="chart-card">
-        <h3>Conquistas</h3>
-        <div class="badges-grid" id="badgesGrid"></div>
-      </div>
+    <section class="performance-progress" id="performance-progress" aria-label="Evolução e progresso por disciplina">
       <details class="overview-fold">
         <summary>Evolução, progresso por disciplina e radar</summary>
         <div class="chart-card">
@@ -320,7 +315,9 @@
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
     <h2 class="section-title today-title">Hoje · Execução Diária</h2>
+    <div id="todaySubtabsMount"></div>
 
+    <div id="todaySub-hoje" data-today-subpanel="hoje" role="tabpanel" aria-labelledby="todayTab-hoje">
     <div class="today-layout-grid grid grid-cols-1 lg:grid-cols-12 items-start">
       <!-- COLUNA PRINCIPAL DE EXECUÇÃO (8 cols) -->
       <div class="today-layout-grid__col today-layout-grid__main lg:col-span-8">
@@ -414,6 +411,15 @@
 
         <div id="errorNotebookDueToday"></div>
       </div>
+    </div>
+    </div>
+
+    <div id="todaySub-conquistas" data-today-subpanel="conquistas" role="tabpanel" aria-labelledby="todayTab-conquistas" hidden>
+      <section class="chart-card" aria-labelledby="achievementsTitle">
+        <h3 id="achievementsTitle">Conquistas</h3>
+        <p class="analytics-note">Reconhecem sua constância e seu progresso. Não alteram prioridades nem o Índice de Prontidão.</p>
+        <div class="badges-grid" id="badgesGrid"></div>
+      </section>
     </div>
   </div>
 
@@ -775,7 +781,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=562c3ad915f8"></script>
+  <script src="src/app.bundle.js?v=055f51f9ecac"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

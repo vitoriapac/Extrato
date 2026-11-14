@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { openDemo, expectNoPageOverflow, activateTab, openPerformanceHistory } from './helpers.js';
+import {
+  openDemo,
+  expectNoPageOverflow,
+  activateTab,
+  openPerformanceHistory,
+  openPerformanceSection,
+} from './helpers.js';
 
 test('desempenho do simulado separa consulta e edição', async ({ page }) => {
   await openDemo(page);
@@ -140,7 +146,8 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
   expect(restored.studySessions.some(session => String(session.id).startsWith('demo-'))).toBe(
     false
   );
-  await openPerformanceHistory(page);
+  await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'subjects');
   await page
     .locator('.overview-fold', { has: page.locator('#progressBars') })
     .locator('> summary')

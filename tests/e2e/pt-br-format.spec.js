@@ -26,7 +26,7 @@ test('textos da demo usam números, datas e horários no formato brasileiro', as
     await activateTab(page, tab);
     const sections =
       tab === 'desempenho'
-        ? ['overview', 'subjects', 'diagnosis', 'questions', 'simulations', 'exam', 'consistency', 'history']
+        ? ['overview', 'subjects', 'diagnosis', 'questions', 'simulations', 'exam', 'consistency']
         : [null];
     for (const section of sections) {
       if (section) await openPerformanceSection(page, section);

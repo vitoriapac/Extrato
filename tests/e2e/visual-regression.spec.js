@@ -3,6 +3,7 @@ import {
   activateTab,
   openDemo,
   openExamImport,
+  openAchievements,
   openPerformanceHistory,
   openPlanningSubtab,
 } from './helpers.js';
@@ -99,7 +100,7 @@ test('regressão visual dos componentes críticos em desktop', async ({ page }) 
     'historico-sessoes-desktop.png',
     screenshotOptions
   );
-  await activateTab(page, 'desempenho');
+  await openAchievements(page);
   await expect(page.locator('#badgesGrid')).toHaveScreenshot(
     'conquistas-desktop.png',
     screenshotOptions

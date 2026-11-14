@@ -437,7 +437,10 @@ export interface AppState {
   /** Campo legado, sem uso: chaves antigas que não correspondem às conquistas atuais. */
   achievementsUnlocked: Record<string, unknown>;
   /** Quando cada conquista foi desbloqueada (gravado uma vez, nunca recalculado). */
-  achievementUnlocks: Record<string, { unlockedAt: string | null; source: 'live' | 'migrated' }>;
+  achievementUnlocks: Record<
+    string,
+    { unlockedAt: string | null; source: 'live' | 'migrated'; recordedAt?: string }
+  >;
   /** Falso até a primeira leitura: o que já estava cumprido entra como migrado, sem aviso. */
   achievementsBaselined: boolean;
   metasPorDisciplina: SubjectGoal[];

@@ -1,5 +1,6 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { formatDecimal } from '../../core/format-number.js';
+import { formatDateBR } from '../../core/format-date.js';
 type Row = Record<string, any>;
 
 export function renderAchievementGroups(model: Row, { escapeHtml = defaultEscapeHtml }: any = {}) {
@@ -12,8 +13,18 @@ export function renderAchievementGroups(model: Row, { escapeHtml = defaultEscape
       item.progress.unit === 'horas' ? formatDecimal(value) : String(Math.floor(value));
     return `<div class="badge-progress" role="progressbar" aria-label="Progresso de ${escapeHtml(item.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-valuetext="${format(current)} de ${format(target)} ${escapeHtml(item.progress.unit)}"><span style="width:${percent}%"></span></div><small class="badge-progress-label">${format(current)} / ${format(target)} ${escapeHtml(item.progress.unit)}</small>`;
   };
+  const unlockDate = (item: Row) => {
+    if (!item.unlocked || !item.unlock) return '';
+    const { unlockedAt, recordedAt } = item.unlock;
+    const text = unlockedAt
+      ? `Desbloqueada em ${formatDateBR(unlockedAt)}`
+      : recordedAt
+        ? `Desbloqueada antes de ${formatDateBR(recordedAt)}`
+        : '';
+    return text ? `<small class="badge-date">${escapeHtml(text)}</small>` : '';
+  };
   const card = (item: Row) =>
-    `<article class="badge-card${item.unlocked ? ' unlocked' : ''}" aria-label="${escapeHtml(item.name)}: ${item.unlocked ? 'desbloqueada' : 'bloqueada'}">${item.id ? `<img class="badge-image" src="assets/achievements/${escapeHtml(item.id)}.png" alt="" width="64" height="64" loading="lazy" decoding="async">` : ''}<div class="badge-name">${escapeHtml(item.name)}</div><div class="badge-desc">${escapeHtml(item.desc)}</div>${progress(item)}${!item.unlocked && item.guidance ? `<p class="badge-guidance">${escapeHtml(item.guidance)}</p>` : ''}${!item.unlocked && item.missing?.length ? `<ul class="badge-missing">${item.missing.map((value: any) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>` : ''}${!item.unlocked ? '<span class="badge-status">A conquistar</span>' : ''}</article>`;
+    `<article class="badge-card${item.unlocked ? ' unlocked' : ''}" aria-label="${escapeHtml(item.name)}: ${item.unlocked ? 'desbloqueada' : 'bloqueada'}">${item.id ? `<img class="badge-image" src="assets/achievements/${escapeHtml(item.id)}.png" alt="" width="64" height="64" loading="lazy" decoding="async">` : ''}<div class="badge-name">${escapeHtml(item.name)}</div><div class="badge-desc">${escapeHtml(item.desc)}</div>${unlockDate(item)}${progress(item)}${!item.unlocked && item.guidance ? `<p class="badge-guidance">${escapeHtml(item.guidance)}</p>` : ''}${!item.unlocked && item.missing?.length ? `<ul class="badge-missing">${item.missing.map((value: any) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>` : ''}${!item.unlocked ? '<span class="badge-status">A conquistar</span>' : ''}</article>`;
   const categories = [
     ['consistency', 'Consistência'],
     ['learning', 'Aprendizado'],

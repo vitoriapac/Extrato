@@ -63,7 +63,7 @@ export function renderPerformanceChromeHtml({
   activeExamCount?: number;
   escapeHtml: (text: any) => string;
 }): string {
-  const hasToolbar = !['exam', 'history', 'diagnosis'].includes(viewState.section);
+  const hasToolbar = !['exam', 'diagnosis'].includes(viewState.section);
   const scopeLabel = activeExamCount
     ? 'Concurso ativo · ' + pluralize(activeExamCount, 'escopo')
     : 'Todos os concursos';
@@ -72,11 +72,9 @@ export function renderPerformanceChromeHtml({
   const periodText =
     viewState.section === 'exam'
       ? 'Histórico de provas'
-      : viewState.section === 'history'
-        ? 'Período definido nos filtros de sessões'
-        : viewState.section === 'diagnosis'
-          ? 'Situação atual'
-          : escapeHtml(range.label);
+      : viewState.section === 'diagnosis'
+        ? 'Situação atual'
+        : escapeHtml(range.label);
   const restText = [
     // Com a barra de filtros visível, o escopo já aparece nela.
     hasToolbar ? '' : scopeLabel,

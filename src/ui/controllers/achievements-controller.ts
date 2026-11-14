@@ -1,5 +1,6 @@
 import { buildStrategicAchievements } from '../../application/achievements/build-strategic-achievements.js';
 import { buildAchievementViewModel } from '../../application/achievements/build-achievement-view-model.js';
+import { buildSessionAchievementNote } from '../../application/achievements/achievement-progress-note.js';
 import { syncAchievementUnlocks } from '../../application/achievements/achievement-unlocks.js';
 import { renderAchievementGroups } from '../renderers/achievement-renderer.js';
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
@@ -345,6 +346,8 @@ export function createAchievementsController(options: AchievementsControllerOpti
         target: 50,
         unit: '% de conteúdo',
       },
+      streak3: { current: computeStreak(getActivityDates()), target: 3, unit: 'dias' },
+      streak7: { current: computeStreak(getActivityDates()), target: 7, unit: 'dias' },
       streak14: { current: computeStreak(getActivityDates()), target: 14, unit: 'dias' },
       streak30: { current: computeStreak(getActivityDates()), target: 30, unit: 'dias' },
     };
@@ -379,8 +382,13 @@ export function createAchievementsController(options: AchievementsControllerOpti
 
   function render(): void {
     const grid = document.getElementById('badgesGrid');
-    if (!grid) return;
-    const achievements = evaluateAchievements();
+    // A galeria mora numa subaba de Hoje: escondida, não vale o cálculo; ao abrir, é desenhada.
+    if (!grid || grid.closest('[hidden]')) return;
+    const registry = getState().achievementUnlocks || {};
+    const achievements = evaluateAchievements().map((item: any) => ({
+      ...item,
+      unlock: registry[item.id] || null,
+    }));
     grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(achievements), {
       escapeHtml,
     });
@@ -394,8 +402,19 @@ export function createAchievementsController(options: AchievementsControllerOpti
     return syncAchievementUnlocks(getState(), unlockedIds, todayISO);
   }
 
+  /** Conquista a mostrar no resultado da sessão: desbloqueada agora ou a mais perto. */
+  function sessionNote() {
+    const state = getState();
+    return buildSessionAchievementNote(
+      evaluateAchievements(),
+      state.achievementUnlocks,
+      state.achievementsBaselined === true
+    );
+  }
+
   return {
     getBadgesDefinitions,
+    sessionNote,
     evaluateAchievements,
     syncUnlocks,
     render,

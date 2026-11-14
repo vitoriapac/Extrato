@@ -24,7 +24,6 @@ const PERFORMANCE_GROUP = {
   simulations: 'proofs',
   exam: 'proofs',
   consistency: 'consistency',
-  history: 'history',
 };
 export async function openPerformanceSection(page, section) {
   const button = page.locator(`[data-performance-section="${section}"]`);
@@ -34,14 +33,20 @@ export async function openPerformanceSection(page, section) {
       .evaluate(element => element.click());
   await button.evaluate(element => element.click());
 }
-// Conquistas, tempo de estudo e sessões moram na subaba Histórico de Desempenho.
+// O extrato de sessões e o tempo de estudo moram em Ritmo e aderência (Desempenho).
 export async function openPerformanceHistory(page) {
   await activateTab(page, 'desempenho');
-  await openPerformanceSection(page, 'history');
+  await openPerformanceSection(page, 'consistency');
   await expect(page.locator('#panel-desempenho')).toHaveAttribute(
     'data-performance-view',
-    'history'
+    'consistency'
   );
+}
+// As conquistas moram na subaba Conquistas da aba Hoje.
+export async function openAchievements(page) {
+  await activateTab(page, 'hoje');
+  await page.locator('#todayTab-conquistas').evaluate(button => button.click());
+  await expect(page.locator('#todaySub-conquistas')).toBeVisible();
 }
 // The overview card is either the recommendation itself or a pending plan item carrying it as a suggestion line.
 export async function overviewRecommendationId(page) {

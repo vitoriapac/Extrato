@@ -48,29 +48,30 @@ export function loadHelpBundle(doc: any): Promise<any> {
   return helpBundleLoadPromise;
 }
 
-const DESTINATIONS: Readonly<Record<string, { tab: string; selector?: string; section?: string }>> =
-  Object.freeze({
-    projection: { tab: 'desempenho', section: 'overview', selector: '.achievement-projection' },
-    adherence: { tab: 'desempenho', section: 'consistency', selector: '.adherence-summary' },
-    subjects: { tab: 'disciplinas', selector: '#addSubjectBtn' },
-    overview: { tab: 'dashboard', selector: '#balanceFigure' },
-    timer: { tab: 'hoje', selector: '#timerSubjectSelect' },
-    questions: { tab: 'questoes', selector: '#addQuestaoRowBtn' },
-    reviews: { tab: 'agenda', selector: '#addAgendaRowBtn' },
-    today: { tab: 'hoje', selector: '#panel-hoje' },
-    calendar: { tab: 'agenda', selector: '#calendarMonthCard' },
-    planning: { tab: 'metas', selector: '#examStudyPlan' },
-    weekly: { tab: 'dashboard', selector: '#weeklyCloseDashboard' },
-    diagnosis: { tab: 'desempenho', selector: '#diagnosisCenter' },
-    achievements: { tab: 'desempenho', section: 'history', selector: '#badgesGrid' },
-    history: { tab: 'dashboard', selector: '#decisionHistoryDashboard' },
-    report: { tab: 'instrucoes', selector: '#exportReportBtn' },
-    exam: { tab: 'desempenho', section: 'exam', selector: '#examIntelligenceOverview' },
-    audit: { tab: 'desempenho', section: 'exam', selector: '#examConfigurationAudit' },
-    matrix: { tab: 'desempenho', section: 'exam', selector: '#examHistoricalMatrix' },
-    backup: { tab: 'instrucoes', selector: '#exportBackupBtn' },
-    demo: { tab: 'instrucoes', selector: '#enterDemoBtn' },
-  });
+const DESTINATIONS: Readonly<
+  Record<string, { tab: string; selector?: string; section?: string; subtab?: string }>
+> = Object.freeze({
+  projection: { tab: 'desempenho', section: 'overview', selector: '.achievement-projection' },
+  adherence: { tab: 'desempenho', section: 'consistency', selector: '.adherence-summary' },
+  subjects: { tab: 'disciplinas', selector: '#addSubjectBtn' },
+  overview: { tab: 'dashboard', selector: '#balanceFigure' },
+  timer: { tab: 'hoje', selector: '#timerSubjectSelect' },
+  questions: { tab: 'questoes', selector: '#addQuestaoRowBtn' },
+  reviews: { tab: 'agenda', selector: '#addAgendaRowBtn' },
+  today: { tab: 'hoje', selector: '#panel-hoje' },
+  calendar: { tab: 'agenda', selector: '#calendarMonthCard' },
+  planning: { tab: 'metas', selector: '#examStudyPlan' },
+  weekly: { tab: 'dashboard', selector: '#weeklyCloseDashboard' },
+  diagnosis: { tab: 'desempenho', selector: '#diagnosisCenter' },
+  achievements: { tab: 'hoje', subtab: 'conquistas', selector: '#badgesGrid' },
+  history: { tab: 'dashboard', selector: '#decisionHistoryDashboard' },
+  report: { tab: 'instrucoes', selector: '#exportReportBtn' },
+  exam: { tab: 'desempenho', section: 'exam', selector: '#examIntelligenceOverview' },
+  audit: { tab: 'desempenho', section: 'exam', selector: '#examConfigurationAudit' },
+  matrix: { tab: 'desempenho', section: 'exam', selector: '#examHistoricalMatrix' },
+  backup: { tab: 'instrucoes', selector: '#exportBackupBtn' },
+  demo: { tab: 'instrucoes', selector: '#enterDemoBtn' },
+});
 
 function highlightMatches(scope: Node, query: string, document: any, window: any) {
   const walker = document.createTreeWalker(scope, window.NodeFilter.SHOW_TEXT);
@@ -310,6 +311,7 @@ export function createHelpController({
     if (!destination) return;
     activateTab(destination.tab);
     if (destination.section) openPerformanceSection(document, destination.section);
+    if (destination.subtab) document.getElementById(`todayTab-${destination.subtab}`)?.click();
     window.requestAnimationFrame(() => {
       const target =
         document.querySelector(destination.selector) ||

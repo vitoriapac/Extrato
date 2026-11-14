@@ -10,6 +10,7 @@ import { generateDiagnosis } from '../../application/generate-diagnosis.js';
 import { createReportController } from '../../ui/controllers/report-controller.js';
 import { createHelpController } from '../../ui/help/help-controller.js';
 import { createAchievementsController } from '../../ui/controllers/achievements-controller.js';
+import { initTodaySubtabs, todaySubtabHash } from '../../ui/tabs/today/today-subtabs.js';
 import { createGuidedTourController } from '../../ui/controllers/guided-tour-controller.js';
 import { createAnalysisNavigationController } from '../../ui/navigation/analysis-navigation-controller.js';
 import { createDiagnosticsTabController } from '../../ui/tabs/diagnostics/diagnostics-tab-controller.js';
@@ -115,6 +116,18 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     getActivityDates: studyMetricsSelectors.getActivityDates,
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
     escapeHtml,
+  });
+
+  // Conquistas moram numa subaba de Hoje; só são desenhadas quando ela é aberta.
+  const todaySubtabs = initTodaySubtabs({
+    document,
+    onShow: key => {
+      if (key === 'conquistas') achievementsController.render();
+    },
+  });
+  // Voltar à aba Hoje mantém a subaba lembrada, e a URL diz qual é.
+  document.querySelector('.tab-btn[data-tab="hoje"]')?.addEventListener('click', () => {
+    window.history.replaceState(null, '', todaySubtabHash(todaySubtabs.current()));
   });
 
   const guidedTourController = createGuidedTourController({

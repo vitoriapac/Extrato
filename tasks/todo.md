@@ -43,11 +43,11 @@ Verificação usada abaixo:
 ### Tarefa 3: Resultado da sessão mostra conquista ganha ou a mais perto
 **Descrição:** O resultado da sessão em Hoje mostra o que foi desbloqueado ou a conquista mais perto, com quanto falta, pela regra de "perto" (até 10% do critério ou cumprível hoje).
 **Aceite:**
-- [ ] Mostra desbloqueio da sessão quando houver; senão, a mais perto; senão, nada
-- [ ] Texto com quanto falta ("Faltam 37 questões para Mil questões")
+- [x] Mostra desbloqueio da sessão quando houver; senão, a mais perto; senão, nada
+- [x] Texto com quanto falta ("Faltam 37 questões para Mil questões")
 **Verificação:**
-- [ ] Unit: regra de "perto" nos limites (10%, 1 dia, 1 h, 30 questões)
-- [ ] Manual: salvar sessão na demo e ler o resultado
+- [x] Unit: regra de "perto" nos limites (10%, 1 dia, 1 h, 30 questões)
+- [x] Manual: salvar sessão na demo e ler o resultado
 **Dependências:** T1
 **Arquivos:** `src/ui/renderers/session-result-renderer.ts`, helper de conquistas próximas, teste unit
 **Tamanho:** S
@@ -55,13 +55,13 @@ Verificação usada abaixo:
 ### Tarefa 4: Subaba "Conquistas" em Hoje e redirecionamento
 **Descrição:** Galeria com emblemas ilustrados, desbloqueadas com data e próximas com barra de progresso, numa subaba de Hoje. Desempenho perde a subaba; `#desempenho/history` redireciona.
 **Aceite:**
-- [ ] Subaba acessível por teclado (tablist) e por URL
-- [ ] `#desempenho/history` abre a subaba de Hoje
-- [ ] Desempenho mostra 5 abas (sem Conquistas)
-- [ ] Cada desbloqueada mostra a data salva ("Desbloqueada em 02/10/2026"); sem data inferida: "Desbloqueada antes de <data da migração>"
+- [x] Subaba acessível por teclado (tablist) e por URL
+- [x] `#desempenho/history` abre a subaba de Hoje
+- [x] Desempenho mostra 5 abas (sem Conquistas)
+- [x] Cada desbloqueada mostra a data salva ("Desbloqueada em 02/10/2026"); sem data inferida: "Desbloqueada antes de <data da migração>"
 **Verificação:**
-- [ ] E2E: `performance-tablist.spec.js` atualizado; spec novo da subaba
-- [ ] Manual: 375 px sem rolagem lateral
+- [x] E2E: `performance-tablist.spec.js` atualizado; spec novo da subaba
+- [x] Manual: 375 px sem rolagem lateral
 **Dependências:** T1
 **Arquivos:** `src/ui/tabs/today/today-tab-controller.ts`, `index.html`, `src/ui/performance/PerformancePageNav.tsx`, roteamento, specs
 **Tamanho:** M
@@ -69,10 +69,10 @@ Verificação usada abaixo:
 ### Tarefa 5: Marca no plano do dia
 **Descrição:** Quando concluir uma atividade planejada completa uma conquista, a atividade mostra "conclui <conquista>"; no máximo uma por dia.
 **Aceite:**
-- [ ] No máximo uma marca por dia
-- [ ] Não muda a ordem nem a prioridade do plano
+- [x] No máximo uma marca por dia
+- [x] Não muda a ordem nem a prioridade do plano
 **Verificação:**
-- [ ] Unit: escolha da atividade marcada
+- [x] Unit: escolha da atividade marcada
 **Dependências:** T3
 **Arquivos:** renderer do plano de Hoje, helper de conquistas próximas
 **Tamanho:** S

@@ -68,3 +68,12 @@ test('entrar na demonstração não dispara avisos de conquistas antigas', async
   });
   if (sources) expect(sources.every(source => source === 'migrated')).toBe(true);
 });
+
+test('o resultado da sessão mostra a conquista ganha ou a mais perto', async ({ page }) => {
+  await startAfterFirstRead(page);
+  await finishQuestionSession(page);
+  const note = page.locator('#sessionResult [data-achievement-note]');
+  await expect(note).toBeVisible();
+  await expect(note).toContainText('Primeiros passos');
+  await expect(note).toHaveAttribute('data-achievement-note', 'unlocked');
+});

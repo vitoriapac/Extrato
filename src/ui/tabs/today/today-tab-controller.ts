@@ -24,6 +24,7 @@ import { createDailyExecutionController } from '../../controllers/daily-executio
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 import { renderIconSvg } from '../../primitives/icon.js';
+import { pickPlanAchievementMark } from '../../../application/achievements/achievement-progress-note.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
 
 const PRIORITY_TIER_EMOJI: Record<string, string> = {
@@ -75,6 +76,8 @@ export interface TodayTabControllerContext {
   segundosEstudadosHoje?: () => number;
   diasParaRevisao?: (date: string) => number | null;
   startOfWeek?: (iso: string) => string;
+  /** Conquistas avaliadas, para marcar a atividade do plano que completa uma. */
+  getAchievements?: () => any[];
   onOpenRecoveryMission?: () => void;
   onRecalibrateWeek?: () => void;
 }
@@ -118,6 +121,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     segundosEstudadosHoje = () => 0,
     diasParaRevisao = () => null,
     startOfWeek = (iso: string) => iso,
+    getAchievements = () => [],
   } = ctx;
 
   let demoFirstStepsDismissed = false;
@@ -812,6 +816,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     `
         : '';
 
+    const achievementMark = pickPlanAchievementMark(items, getAchievements(), {
+      studiedToday: segundosEstudadosHoje() > 0,
+    });
     const listaHtml = items
       .map((item: any) => {
         const progress =
@@ -856,6 +863,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         </div>
         <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
         <div class="plano-item-reason">${[formatPlanMinutes(item.plannedMinutes), item.action && escapeHtml(item.action), item.recommendedQuestions && item.recommendedQuestions + ' questões'].filter(Boolean).join(' · ')}</div>
+        ${achievementMark && achievementMark.itemId === item.id ? `<div class="plano-item-achievement" data-achievement-mark="${escapeAttr(achievementMark.achievementId)}">${renderIconSvg('award', { size: 13, className: 'icon-inline' })}<span>${escapeHtml(achievementMark.text)}</span></div>` : ''}
         <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
         <div class="plano-item-actions">
           ${actionButton}

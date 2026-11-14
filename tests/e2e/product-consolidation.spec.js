@@ -95,11 +95,11 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
                 .querySelectorAll('.panel')
                 .forEach(node => node.classList.toggle('active', node.id === `panel-${name}`));
               // Planejamento shows one sub-tab at a time; the nav is detached here, so reveal directly.
-              // Desempenho shows the history blocks only in its Histórico sub-tab.
+              // Desempenho shows the session history only in its Ritmo e aderência sub-tab.
               if (name === 'desempenho')
                 document
                   .getElementById('panel-desempenho')
-                  .setAttribute('data-performance-view', 'history');
+                  .setAttribute('data-performance-view', 'consistency');
               const owner = document.querySelector(target)?.closest('[data-metas-subpanel]');
               if (owner) owner.open = true;
               if (owner)

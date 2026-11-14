@@ -25,10 +25,19 @@ function renderEffects(effects: Record<string, any> | null) {
   const factors = readiness?.factors?.length
     ? `<p>Fatores que mudaram${readiness.confidence ? ` · confiança ${String(readiness.confidence).toLocaleLowerCase('pt-BR')}` : ''}:</p><ul>${readiness.factors.map((factor: any) => `<li>${factor.label}: ${factor.before} → ${factor.after}/100 · contribuição ${factor.contribution > 0 ? '+' : ''}${factor.contribution.toFixed(1).replace('.', ',')} ponto(s)</li>`).join('')}</ul>`
     : '';
-  const explanation = readiness?.reason ? `<p>${readiness.reason}</p>` : readiness && readiness.delta != null
-    ? '<p>O índice reúne diferentes sinais, que podem mudar em conjunto. Consulte Desempenho para ver os fatores; não representa probabilidade de aprovação.</p>'
-    : '';
+  const explanation = readiness?.reason
+    ? `<p>${readiness.reason}</p>`
+    : readiness && readiness.delta != null
+      ? '<p>O índice reúne diferentes sinais, que podem mudar em conjunto. Consulte Desempenho para ver os fatores; não representa probabilidade de aprovação.</p>'
+      : '';
   return `<dl class="session-effects" aria-label="Efeitos desta sessão">${rows}</dl>${factors}${explanation}`;
+}
+function renderAchievement(
+  note: Record<string, any> | null | undefined,
+  escapeHtml: (value: any) => string
+) {
+  if (!note?.text) return '';
+  return `<p class="session-achievement" data-achievement-note="${note.kind === 'unlocked' ? 'unlocked' : 'near'}">${renderIconSvg('award', { size: 14, className: 'icon-inline' })}<span>${escapeHtml(note.text)}</span></p>`;
 }
 export function renderSessionResult(
   model: Record<string, any>,
@@ -53,5 +62,5 @@ export function renderSessionResult(
       : model.simulation
         ? '<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>'
         : `<p>Consulte a próxima ação sugerida para continuar.</p>${actionCluster}`;
-  return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderEffects(model.effects)}<small>Seus indicadores foram atualizados.</small>${next}`;
+  return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderEffects(model.effects)}${renderAchievement(model.achievement, escapeHtml)}<small>Seus indicadores foram atualizados.</small>${next}`;
 }

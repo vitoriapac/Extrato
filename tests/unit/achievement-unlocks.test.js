@@ -104,8 +104,30 @@ test('primeira leitura registra o que já está cumprido como migrado, sem aviso
   const result = syncAchievementUnlocks(state, ['streak7', 'coverage50'], '2026-11-13');
   assert.deepEqual(result.newlyUnlocked, []);
   assert.equal(result.changed, true);
-  assert.deepEqual(state.achievementUnlocks.streak7, { unlockedAt: null, source: 'migrated' });
+  assert.deepEqual(state.achievementUnlocks.streak7, {
+    unlockedAt: null,
+    source: 'migrated',
+    recordedAt: '2026-11-13',
+  });
   assert.equal(state.achievementsBaselined, true);
+});
+
+test('primeira leitura de um estado sem registro infere a data das cumulativas pelo histórico', () => {
+  const state = {
+    achievementUnlocks: {},
+    achievementsBaselined: false,
+    studySessions: [session('2026-10-01', 11)],
+  };
+  syncAchievementUnlocks(state, ['hours10', 'streak7'], '2026-11-13');
+  assert.deepEqual(state.achievementUnlocks.hours10, {
+    unlockedAt: '2026-10-01',
+    source: 'migrated',
+  });
+  assert.deepEqual(state.achievementUnlocks.streak7, {
+    unlockedAt: null,
+    source: 'migrated',
+    recordedAt: '2026-11-13',
+  });
 });
 
 test('depois da primeira leitura, cada conquista nova entra como live uma única vez', () => {

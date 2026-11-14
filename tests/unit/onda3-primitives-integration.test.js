@@ -153,7 +153,7 @@ test('PerformancePageNav e renderPerformancePage — usa Tabs em dois níveis se
   assert.equal(performanceGroupOf('overview'), 'overview');
   assert.equal(performanceGroupOf('diagnosis'), 'diagnosis');
   assert.equal(performanceGroupOf('simulations'), 'proofs');
-  assert.equal(performanceGroupOf('history'), 'history');
+  assert.equal(performanceGroupOf('history'), null);
 
   const overviewNav = render(h(PerformancePageNav, { activeSection: 'overview' }));
   assert.equal((overviewNav.match(/role="tablist"/g) || []).length, 1);

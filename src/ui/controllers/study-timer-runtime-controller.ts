@@ -83,6 +83,8 @@ export interface StudyTimerRuntimeControllerOptions {
     onCancel?: () => void,
     options?: Record<string, any>
   ) => void;
+  /** Conquista desbloqueada agora ou a mais perto, para o resultado da sessão. */
+  getAchievementNote?: () => { kind: string; text: string } | null;
 }
 
 export function createStudyTimerRuntimeController(options: StudyTimerRuntimeControllerOptions) {
@@ -106,6 +108,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     intelligenceCandidates,
     getDailyExecutionItems,
     getReadinessValue = () => null,
+    getAchievementNote = () => null,
     getReadinessResult,
     getCurrentStudyRecommendations,
     guidedStudyService,
@@ -530,15 +533,18 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     const result = document.getElementById('sessionResult');
     if (!result) return;
     result.innerHTML = renderSessionResult(
-      buildSessionResultViewModel(session, nextPriority, priorityChanged, {
-        subjectName: getSubjectName,
-        topicName: getTopicName,
-        formatMinutes: formatPlanMinutes,
-        day,
-        planNext,
-        outcome,
-        formatDate: formatDateBR,
-      }),
+      {
+        ...buildSessionResultViewModel(session, nextPriority, priorityChanged, {
+          subjectName: getSubjectName,
+          topicName: getTopicName,
+          formatMinutes: formatPlanMinutes,
+          day,
+          planNext,
+          outcome,
+          formatDate: formatDateBR,
+        }),
+        achievement: getAchievementNote(),
+      },
       { escapeHtml }
     );
     if (document.body.classList.contains('timer-focus-active')) {

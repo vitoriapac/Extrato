@@ -286,7 +286,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Conquistas',
         summary: 'Consistência, aprendizagem e decisões estratégicas.',
         paragraphs: [
-          'As conquistas ficam em Desempenho, na subaba Histórico. Elas reconhecem progresso, mas não alteram prioridades nem o Índice de Prontidão. Estrategista exige estudo em dez tópicos distintos de alto impacto; Cobertura crítica exige domínio com evidência suficiente nos tópicos críticos de uma disciplina; Prova mapeada exige quatro provas completas no concurso ativo. As conquistas bloqueadas mostram o que falta.',
+          'As conquistas ficam em Hoje, na subaba Conquistas. Um aviso aparece quando você desbloqueia uma. Elas reconhecem progresso, mas não alteram prioridades nem o Índice de Prontidão. Estrategista exige estudo em dez tópicos distintos de alto impacto; Cobertura crítica exige domínio com evidência suficiente nos tópicos críticos de uma disciplina; Prova mapeada exige quatro provas completas no concurso ativo. As conquistas bloqueadas mostram o que falta.',
         ],
         action: { label: 'Ver conquistas', target: 'achievements' },
       },

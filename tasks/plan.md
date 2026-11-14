@@ -22,9 +22,9 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Fase 1: Conquistas em Hoje
 - [x] Tarefa 1: Registro de desbloqueio e migração 30 → 31
 - [x] Tarefa 2: Aviso de conquista desbloqueada
-- [ ] Tarefa 3: Resultado da sessão mostra conquista ganha ou a mais perto
-- [ ] Tarefa 4: Subaba "Conquistas" em Hoje e redirecionamento
-- [ ] Tarefa 5: Marca no plano do dia
+- [x] Tarefa 3: Resultado da sessão mostra conquista ganha ou a mais perto
+- [x] Tarefa 4: Subaba "Conquistas" em Hoje e redirecionamento
+- [x] Tarefa 5: Marca no plano do dia
 
 ### Checkpoint 1: Conquistas
 - [ ] Testes, tipos e build limpos; E2E de sessão com aviso; revisão humana

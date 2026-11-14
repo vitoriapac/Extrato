@@ -184,6 +184,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
 
   executionUi = wireExecutionAndOnboardingUi({
     ...deps,
+    getAchievementNote: () => analyticsUi?.achievementsController?.sessionNote() ?? null,
+    getAchievements: () => analyticsUi?.achievementsController?.evaluateAchievements() ?? [],
     listViewState,
     LIST_VIEW_STEPS,
     isMobileHistoryLayout,

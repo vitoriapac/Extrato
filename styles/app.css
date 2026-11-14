@@ -3033,8 +3033,8 @@ footer>span{display:block;font-size:13px;color:var(--ink)}
 #panel-desempenho:not([data-performance-view="diagnosis"]) .today-analysis-details,
 #panel-desempenho:not([data-performance-view="diagnosis"]) #desempenho-gaps,
 #panel-desempenho:not([data-performance-view="consistency"]) #performanceConsistencyMural,
-#panel-desempenho:not([data-performance-view="history"]) #performance-progress,
-#panel-desempenho:not([data-performance-view="history"]) #desempenho-study{display:none}
+#panel-desempenho:not([data-performance-view="subjects"]) #performance-progress,
+#panel-desempenho:not([data-performance-view="consistency"]) #desempenho-study{display:none}
 /* Diagnóstico é uma subaba: o bloco fica sempre aberto, sem o resumo de disclosure. */
 #panel-desempenho[data-performance-view="diagnosis"] .today-analysis-details>summary{display:none}
 
@@ -3569,3 +3569,12 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 #panel-desempenho small,#panel-desempenho caption,#panel-desempenho .performance-method-note,#panel-desempenho .bar-pct{font-size:.8125rem}
 /* Trocar de subaba não deve encolher o contêiner e deslocar o que vem depois (CLS medido em 0,036 por troca). */
 #panel-desempenho #performanceSectionContent{min-height:60vh}
+/* Conquista no resultado da sessão: uma linha discreta; o lançamento do dia continua sendo o destaque. */
+.session-achievement{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-2) 0 0;font-size:var(--text-sm);color:var(--heading)}
+.session-achievement[data-achievement-note=unlocked]{font-weight:600}
+/* Hoje: abas internas (Plano de hoje, Conquistas). */
+.today-subtabs-list{margin-bottom:var(--space-4)}
+#panel-hoje [data-today-subpanel][hidden]{display:none}
+.badge-date{display:block;margin-top:var(--space-1);font-size:var(--text-micro);color:var(--text-secondary)}
+/* Plano de hoje: marca discreta na atividade que completa uma conquista (no máximo uma). */
+.plano-item-achievement{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-1);font-size:var(--text-sm);font-weight:600;color:var(--heading)}

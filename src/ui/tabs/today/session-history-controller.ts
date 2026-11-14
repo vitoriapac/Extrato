@@ -241,10 +241,10 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     sessionHistoryExpansionInitialized = true;
     renderStudySessionsHistory();
     renderHeatmap();
-    // O histórico mora na subaba Histórico de Desempenho: abre a aba e a subaba antes de rolar.
+    // O extrato de sessões mora na subaba Ritmo e aderência de Desempenho: abre a aba e a subaba antes de rolar.
     const doc = getDoc();
     (doc as any)?.querySelector('.tab-btn[data-tab="desempenho"]')?.click();
-    if (doc) openPerformanceSection(doc, 'history');
+    if (doc) openPerformanceSection(doc, 'consistency');
     doc?.getElementById('studySessionsCard')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
     opts.onFilterChange?.();
   }

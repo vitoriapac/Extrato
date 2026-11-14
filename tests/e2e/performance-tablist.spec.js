@@ -7,7 +7,7 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
 
   const tablist = page.getByRole('tablist', { name: 'Análises de desempenho' });
   const tabs = tablist.getByRole('tab');
-  await expect(tabs).toHaveCount(6);
+  await expect(tabs).toHaveCount(5);
   await expect(tabs.nth(3)).toHaveText('Questões e provas');
   await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
   await expect(tabs.first()).toHaveAttribute('tabindex', '0');

@@ -21,7 +21,6 @@ export const PERFORMANCE_GROUPS: ReadonlyArray<PerformanceGroupDef> = [
     ],
   },
   { key: 'consistency', label: 'Ritmo e aderência', items: [['consistency', 'Ritmo e aderência']] },
-  { key: 'history', label: 'Conquistas', items: [['history', 'Conquistas e histórico']] },
 ];
 
 export function performanceGroupOf(section: string): string | null {

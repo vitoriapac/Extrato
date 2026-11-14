@@ -85,7 +85,6 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     'simulations',
     'exam',
     'consistency',
-    'history',
   ];
   let performanceViewState = createPerformanceViewState();
   const hashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
@@ -407,6 +406,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       if (readinessMount && readinessCard) readinessMount.append(readinessCard);
     } else if (performanceViewState.section === 'subjects') {
       // Matriz, Balanço, Radar e Queda de retenção moraram aqui; agora ficam em Diagnóstico.
+      // Evolução e progresso por disciplina saíram de Conquistas e esperam virar modos da Comparação.
+      if (progressSection) target.append(progressSection);
     } else if (performanceViewState.section === 'diagnosis') {
       const diagnosisMount = target.querySelector('#performanceDiagnosisMount');
       if (diagnosisMount && todayAnalysisDetails) {
@@ -427,14 +428,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     } else if (performanceViewState.section === 'consistency') {
       const muralMount = target.querySelector('#performanceConsistencyMuralMount');
       if (muralMount && consistencyMural) muralMount.append(consistencyMural);
-    } else if (performanceViewState.section === 'history') {
-      const historyMount = target.querySelector('#performanceHistorySupplementalMount');
-      if (historyMount) {
-        // Extrato de sessões primeiro; as conquistas ficam abaixo dele.
-        for (const node of [studyDetails, progressSection]) {
-          if (node) historyMount.append(node);
-        }
-      }
+      // Tempo de estudo e extrato de sessões são registro de execução: moram em Ritmo e aderência.
+      if (studyDetails) target.append(studyDetails);
     }
 
     for (const fold of (target.querySelectorAll?.('#performanceSectionContent details') ??
@@ -466,7 +461,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       .querySelector('.performance-section-button.active[data-performance-section]')
       ?.textContent?.trim();
     const statusText = section
-      ? `Mostrando ${section}${examSection || performanceViewState.section === 'history' || performanceViewState.section === 'diagnosis' ? '' : ` · ${range.label}`}.`
+      ? `Mostrando ${section}${examSection || performanceViewState.section === 'diagnosis' ? '' : ` · ${range.label}`}.`
       : '';
     if (status && status.textContent !== statusText) status.textContent = statusText;
 

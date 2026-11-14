@@ -9,6 +9,8 @@ export interface AchievementUnlock {
   /** Data local (YYYY-MM-DD). `null` quando não dá para inferir. */
   unlockedAt: string | null;
   source: 'live' | 'migrated';
+  /** Dia em que o registro viu a conquista pela primeira vez; só existe quando `unlockedAt` é null. */
+  recordedAt?: string;
 }
 
 export type AchievementUnlocks = Record<string, AchievementUnlock>;
@@ -130,6 +132,8 @@ export function syncAchievementUnlocks(
     state.achievementUnlocks = {};
   const registry = state.achievementUnlocks as AchievementUnlocks;
   const baselined = state.achievementsBaselined === true;
+  // Estado sem registro (demo, backup já na versão atual): as cumulativas ganham a data do histórico.
+  const inferred = baselined ? {} : inferCumulativeUnlockDates(state);
   const newlyUnlocked: string[] = [];
   let changed = false;
 
@@ -140,7 +144,10 @@ export function syncAchievementUnlocks(
       registry[id] = { unlockedAt: todayISO, source: 'live' };
       newlyUnlocked.push(id);
     } else {
-      registry[id] = { unlockedAt: null, source: 'migrated' };
+      const unlockedAt = (inferred as Record<string, string>)[id] ?? null;
+      registry[id] = unlockedAt
+        ? { unlockedAt, source: 'migrated' }
+        : { unlockedAt: null, source: 'migrated', recordedAt: todayISO };
     }
   }
   if (!baselined) {

@@ -48,6 +48,8 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     syncModalShell,
     renderHeatmap,
     renderDiagnosisCenter,
+    getAchievementNote,
+    getAchievements,
     renderAlertasInteligentes,
     renderRecommendationHistorySummary,
     addQuestaoRow,
@@ -128,7 +130,9 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
         approvalReadinessService.readinessResult(approvalReadinessService.computeApprovalMetrics())
       ),
     getReadinessResult: () => {
-      const result = approvalReadinessService.readinessResult(approvalReadinessService.computeApprovalMetrics());
+      const result = approvalReadinessService.readinessResult(
+        approvalReadinessService.computeApprovalMetrics()
+      );
       return { ...result, value: displayReadinessValue(result) };
     },
     getCurrentStudyRecommendations: () =>
@@ -146,6 +150,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     addSimuladoRow,
     showToast,
     showConfirm,
+    getAchievementNote,
   });
   studyTimerRuntime.bindEvents();
 
@@ -230,6 +235,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     uniqueTopicsCompletedBetween: studyMetricsSelectors.uniqueTopicsCompletedBetween,
     getRevisoesUnificadas: studyMetricsSelectors.getRevisoesUnificadas,
     segundosEstudadosHoje: studyMetricsSelectors.segundosEstudadosHoje,
+    getAchievements,
     diasParaRevisao,
     startOfWeek,
     onOpenRecoveryMission: () => recoveryMissionController?.open(),
@@ -382,7 +388,9 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     onPasteSyllabus: () => {
       activateTab('disciplinas');
       setTimeout(() => {
-        const buttons = (document.querySelectorAll ? Array.from(document.querySelectorAll('button')) : []) as any[];
+        const buttons = (
+          document.querySelectorAll ? Array.from(document.querySelectorAll('button')) : []
+        ) as any[];
         const pasteBtn = buttons.find(b => b?.textContent?.includes('Colar Edital'));
         pasteBtn?.click?.();
       }, 60);

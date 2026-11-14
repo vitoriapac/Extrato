@@ -60,7 +60,7 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
   }
 
   const FOCUS_INERT_SELECTORS =
-    '.demo-banner, .demo-empty-cta, .statement, .sticky-shell, .global-search-row, main > footer, .panel:not(#panel-hoje), #panel-hoje > *:not(.today-layout-grid), .today-layout-grid__side, .today-layout-grid__main > *:not(#study-timer), #backToTopBtn';
+    '.demo-banner, .demo-empty-cta, .statement, .sticky-shell, .global-search-row, main > footer, .panel:not(#panel-hoje), #panel-hoje > *:not(#todaySub-hoje), #todaySub-hoje > *:not(.today-layout-grid), .today-layout-grid__side, .today-layout-grid__main > *:not(#study-timer), #backToTopBtn';
 
   function syncFocusInert(active: boolean): void {
     if (typeof document.querySelectorAll !== 'function') return;

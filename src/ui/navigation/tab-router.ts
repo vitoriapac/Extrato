@@ -57,10 +57,20 @@ export function createTabRouter(options: TabRouterOptions) {
     return tab && document.querySelector(`.tab-btn[data-tab="${tab}"]`) ? tab : null;
   }
 
+  // Endereço antigo das conquistas (subaba Histórico de Desempenho) leva à subaba de Hoje.
+  function redirectLegacyHash(): void {
+    if (!/^#desempenho\/history(?:[/?]|$)/.test(window.location.hash)) return;
+    window.history.replaceState(null, '', '#hoje/conquistas');
+    // replaceState não dispara hashchange: avisa a subaba de Hoje, que escuta o hash.
+    window.dispatchEvent?.(new Event('hashchange'));
+  }
+
   function activateInitialTab(): void {
+    redirectLegacyHash();
     activateTab(tabFromHash(window.location.hash) || 'dashboard', false);
     // Links internos e hash editado na barra trocam de aba sem recarregar.
     window.addEventListener?.('hashchange', () => {
+      redirectLegacyHash();
       const tab = tabFromHash(window.location.hash);
       if (tab && tab !== activeTabName()) activateTab(tab, false);
     });

@@ -5,7 +5,6 @@ export const RENDER_SCOPE_SECTIONS = {
     'desempenho',
     'evolução do progresso',
     'progresso por disciplina',
-    'conquistas',
     'radar',
     // Análise saiu de Hoje: a aba do dia fica com o plano.
     'resumo executivo',
@@ -58,6 +57,7 @@ export const RENDER_SCOPE_SECTIONS = {
     'alertas',
     'plano de hoje',
     'avisos do caderno de erros',
+    'conquistas',
   ]),
 };
 
