@@ -308,7 +308,7 @@ Verificação usada abaixo:
 **Dependências:** T24
 **Tamanho:** S (dados)
 
-### Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5)
+### Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5) (ADIADA PARA O FINAL, junto com a T25: o usuário vai enviar as notas)
 **Aceite:**
 - [ ] INSS, PF, PRF, Receita Federal, tribunais e demais editais do catálogo: link oficial, escala, cargos, praças, ano
 - [ ] Lista entregue para cadastro; sem fonte oficial = "sem dado"
@@ -325,7 +325,7 @@ Verificação usada abaixo:
 **Tamanho:** S
 
 ### Checkpoint 6
-- [ ] Nenhum rótulo afirma dado de aprovados sem fonte
+- [x] Nenhum rótulo afirma dado de aprovados sem fonte (busca sem ocorrências)
 
 ---
 

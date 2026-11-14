@@ -82,11 +82,11 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 23: Textos da referência sem afirmação sem fonte
 - [x] Tarefa 24: Campo de nota de corte no catálogo com validação de fonte
 - [ ] Tarefa 25: Notas de corte oficiais de BB, Caixa e CNU (ADIADA PARA O FINAL: o usuário vai enviar as notas; ver tasks/notas-de-corte-fontes.md)
-- [ ] Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5)
+- [ ] Tarefa 26: Pesquisa de notas de corte dos outros concursos (T5) (ADIADA PARA O FINAL, junto com a T25: o usuário vai enviar as notas)
 - [x] Tarefa 27: Precisão comparada com a nota de corte do concurso ativo
 
 ### Checkpoint 6: Referência
-- [ ] Nenhum rótulo afirma dado de aprovados sem fonte
+- [x] Nenhum rótulo afirma dado de aprovados sem fonte (busca no código e nos HTML sem ocorrências; 14/11/2026). As notas de corte (T25 e T26) entram no final, com as notas do usuário
 
 ### Fase 7: Visual e iniciante
 - [ ] Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
