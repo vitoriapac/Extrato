@@ -1,6 +1,6 @@
 import { renderEvidenceBadge } from './evidence-badge.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPoints } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
 import { renderSimulationTrendChart } from '../renderers/simulations-renderer.js';
 import { renderSimulationComparison } from '../renderers/simulation-comparison-renderer.js';
@@ -15,7 +15,7 @@ import { renderPerformanceSampleState } from './performance-sample-state.js';
 const percent = (value: number | null | undefined) =>
   value == null ? '—' : `${formatDecimal(value)}%`;
 const signed = (value: number) =>
-  value == null ? 'Sem comparação' : `${value > 0 ? '+' : ''}${formatDecimal(value)} p.p.`;
+  value == null ? 'Sem comparação' : formatPoints(value);
 
 export function renderPerformanceSimulations(
   model: Record<string, any>,

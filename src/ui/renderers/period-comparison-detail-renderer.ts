@@ -1,3 +1,4 @@
+import { formatPoints } from '../../core/format-number.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { planMin, planMinDelta } from './adherence-labels.js';
 export function renderPeriodComparisonDetail(model: Record<string, any>, { escapeHtml }: any = {}) {
@@ -15,7 +16,7 @@ export function renderPeriodComparisonDetail(model: Record<string, any>, { escap
       : metric.delta == null
         ? 'Sem comparação'
         : metric.unit === 'percentage_points'
-          ? `${metric.delta > 0 ? '+' : ''}${metric.delta} p.p.`
+          ? formatPoints(metric.delta)
           : metric.unit === 'min'
             ? planMinDelta(metric.delta)
             : `${metric.delta > 0 ? '+' : ''}${metric.delta}`;

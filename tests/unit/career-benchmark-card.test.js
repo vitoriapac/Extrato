@@ -35,7 +35,7 @@ test('CareerBenchmarkCard — renderiza comparativo completo de ritmo por carrei
   assert.match(html, /Questões por semana/);
   assert.match(html, /240 questões\/sem/);
   assert.match(html, /Precisão em questões/);
-  assert.match(html, /82 %/);
+  assert.match(html, /82%/);
   assert.match(html, /Mix de Estudo/);
   assert.match(html, /Leitura:/);
   assert.match(html, /careerClusterSelect/);

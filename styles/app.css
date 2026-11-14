@@ -3615,3 +3615,6 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 
 /* Provas: índice de seções no topo, colado ao rolar. */
 .performance-proof-index{display:flex;flex-wrap:wrap;gap:var(--space-2);margin:0 0 var(--space-4)}
+
+/* Modos da matriz de provas: o ativo se distingue pelo mesmo estilo dos modos de Disciplinas. */
+.exam-matrix-modes .btn[aria-pressed="true"]{background:var(--action-primary-bg);color:var(--action-primary-text);border-color:var(--action-primary-bg)}

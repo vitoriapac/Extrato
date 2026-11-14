@@ -189,7 +189,8 @@ export function buildPreparationReading({
       : best.currentAllocationMinutes != null
         ? `No plano da semana: ${formatStudyMinutes(best.currentAllocationMinutes)} para este tópico, de ${formatStudyMinutes(best.weeklyPlannedMinutes)} planejados.`
         : 'Este tópico ainda não tem tempo no plano da semana.';
-    const evidenceText = String(best.evidence || 'não avaliada').toLowerCase();
+    const evidenceRaw = String(best.evidence || 'não avaliada').toLowerCase();
+    const evidenceText = evidenceRaw.charAt(0).toUpperCase() + evidenceRaw.slice(1);
     const inPlan = !best.activePlanId
       ? 'sem plano ativo'
       : best.currentAllocationMinutes != null

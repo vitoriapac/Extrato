@@ -25,7 +25,6 @@ export function renderPerformanceConsistency(
   const timeline = model.studyTimeline;
   let timelineHtml = '';
   if (timeline && timeline.days.length > 0) {
-    const totalHours = formatDecimal(timeline.totalSeconds / 3600);
     // Teto da escala em horas "redondas" (a metade também): evita rótulos como 0 / 1,9h / 3,8h.
     const maxHours = Math.max(
       0,
@@ -50,7 +49,7 @@ export function renderPerformanceConsistency(
         </div>
         <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <div class="mb-3">
-            <span class="text-2xl font-semibold font-data text-content-primary">${totalHours}h</span>
+            <span class="text-2xl font-semibold font-data text-content-primary">${formatStudyMinutes(timeline.totalSeconds / 60)}</span>
             <p class="text-xs text-content-secondary m-0">Tempo total no período selecionado</p>
           </div>
           <p class="text-xs text-content-secondary m-0">A divisão por disciplina está em "Tempo de estudo por disciplina", logo abaixo.</p>
@@ -71,7 +70,7 @@ export function renderPerformanceConsistency(
     const legend = distribution.slices
       .map(
         (slice: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${slice.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(slice.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatDecimal(slice.seconds / 3600)}h <span class="text-micro font-sans text-content-secondary">(${formatDecimal(slice.percentage)}%)</span></div></li>`
+          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${slice.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(slice.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatStudyMinutes(slice.seconds / 60)} <span class="text-micro font-sans text-content-secondary">(${formatDecimal(slice.percentage)}%)</span></div></li>`
       )
       .join('');
 

@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPoints } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
 import { renderPerformanceTopicDialog } from './performance-topic-renderer.js';
@@ -16,7 +16,7 @@ type Esc = (value: any) => string;
 const value = (number: number | null | undefined, suffix = '') =>
   number == null ? '—' : `${formatDecimal(number)}${suffix}`;
 const signed = (number: number | null | undefined) =>
-  number == null ? 'Sem comparação' : `${number > 0 ? '+' : ''}${formatDecimal(number)} p.p.`;
+  number == null ? 'Sem comparação' : formatPoints(number);
 const topicRows = (items: Row[], escapeHtml: Esc, escapeAttr: Esc) =>
   items
     .map(

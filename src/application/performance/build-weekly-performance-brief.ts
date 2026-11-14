@@ -81,13 +81,11 @@ export interface BuildWeeklyPerformanceBriefInput {
 }
 
 export function formatReadableMinutes(minutes: number): string {
+  // Mesmo formato de duração de Desempenho: "2 h 32 min".
   const rounded = Math.max(0, Math.round(Number(minutes) || 0));
-  if (rounded === 0) return '0 min';
   const hours = Math.floor(rounded / 60);
   const rem = rounded % 60;
-  if (hours === 0) return `${rem} min`;
-  if (rem === 0) return `${hours}h`;
-  return `${hours}h ${rem}min`;
+  return hours ? `${hours} h${rem ? ` ${rem} min` : ''}` : `${rem} min`;
 }
 
 function inDateWindow(date: unknown, start: string, end: string): boolean {

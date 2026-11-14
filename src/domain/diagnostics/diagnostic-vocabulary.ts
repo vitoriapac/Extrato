@@ -5,7 +5,7 @@ export const DIAGNOSTIC_VOCABULARY = Object.freeze({
     important: 'Importante',
     monitor: 'Monitorar',
     controlled: 'Sob controle',
-    insufficient: 'Dados insuficientes',
+    insufficient: 'Sem evidência',
   }),
   evidence: Object.freeze({
     low: 'Baixa',

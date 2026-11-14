@@ -51,7 +51,7 @@ test('buildWeeklyPerformanceBrief — gera 3 parágrafos detalhados, 1 parágraf
   // 3 parágrafos para a aba Desempenho
   assert.equal(brief.detailedParagraphs.length, 3);
   assert.match(brief.detailedParagraphs[0], /5 dias ativos dos últimos 7 dias/);
-  assert.match(brief.detailedParagraphs[0], /5h/);
+  assert.match(brief.detailedParagraphs[0], /5 h/);
   assert.match(brief.detailedParagraphs[1], /70 questões/);
   assert.match(brief.detailedParagraphs[1], /Português/);
   assert.match(brief.detailedParagraphs[1], /Direito Constitucional/);
@@ -62,7 +62,7 @@ test('buildWeeklyPerformanceBrief — gera 3 parágrafos detalhados, 1 parágraf
   assert.match(brief.shortParagraph, /Nos últimos 7 dias, você estudou em 5 dias/);
   assert.match(brief.shortParagraph, /Direito Constitucional/);
   // Tempo, acerto e plano ficam no comparativo visual, não no texto.
-  assert.doesNotMatch(brief.shortParagraph, /5h|% do tempo planejado|semana passada/);
+  assert.doesNotMatch(brief.shortParagraph, /5 h|% do tempo planejado|semana passada/);
 
   // Mini-gráfico comparativo
   assert.equal(brief.chartMetrics.length, 3);

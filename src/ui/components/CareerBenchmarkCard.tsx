@@ -25,7 +25,9 @@ function MetricBulletBar({
   comparison: BenchmarkMetricComparison;
   maxDisplay: number;
 }): JSX.Element {
-  const { currentValue, targetMin, targetMax, unit } = comparison;
+  const { currentValue, targetMin, targetMax } = comparison;
+  // Percentual cola no número (73%); as demais unidades levam espaço (35 min).
+  const unit = comparison.unit === '%' ? '%' : ` ${comparison.unit}`;
 
   const targetMinPct = Math.min(100, Math.round((targetMin / maxDisplay) * 100));
   const targetMaxPct = Math.min(100, Math.round((targetMax / maxDisplay) * 100));
@@ -40,13 +42,13 @@ function MetricBulletBar({
         <span class="font-medium text-content-primary">{comparison.label}</span>
         <div class="flex items-center gap-2 font-mono">
           <span class="font-semibold text-sm text-content-primary">
-            {formatDecimal(currentValue)} {unit}
+            {formatDecimal(currentValue)}{unit}
           </span>
           <span class="text-content-secondary text-xs">
-            (alvo: {formatDecimal(targetMin)}–{formatDecimal(targetMax)} {unit})
+            (alvo: {formatDecimal(targetMin)}–{formatDecimal(targetMax)}{unit})
           </span>
           <Tooltip
-            content={`Faixa competitiva de referência: ${formatDecimal(targetMin)} a ${formatDecimal(targetMax)} ${unit}`}
+            content={`Faixa competitiva de referência: ${formatDecimal(targetMin)} a ${formatDecimal(targetMax)}${unit}`}
             placement="top"
             align="end"
           >
@@ -68,7 +70,7 @@ function MetricBulletBar({
         aria-valuenow={currentValue}
         aria-valuemin={0}
         aria-valuemax={maxDisplay}
-        aria-label={`${comparison.label}: ${currentValue} ${unit}`}
+        aria-label={`${comparison.label}: ${currentValue}${unit}`}
       >
         {/* Zona Alvo Recomendada (Faixa Competitiva) */}
         <div

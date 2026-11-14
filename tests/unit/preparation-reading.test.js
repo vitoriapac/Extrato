@@ -127,7 +127,7 @@ test('ação aparece com motivo e ressalvas antes dos controles e da análise de
   assert.match(html, /Revisão prevista para hoje/);
   assert.ok(html.indexOf('O que fazer') < html.indexOf('O que mais pesa'));
   assert.ok(html.indexOf('No plano:') < html.indexOf('Abrir em Hoje'));
-  assert.match(html, /Evidência:.*baixa/);
+  assert.match(html, /Evidência:.*Baixa/);
 });
 
 test('projeção mantém intervalo, confiança e limite juntos; conteúdo da ação é escapado', () => {

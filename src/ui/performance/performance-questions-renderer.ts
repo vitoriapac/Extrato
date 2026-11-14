@@ -1,5 +1,5 @@
 import { formatDateBR } from '../../core/format-date.js';
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPoints } from '../../core/format-number.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
 import { renderErrorProfileChart } from './error-profile-chart.js';
 import { renderMultiLineChart } from '../primitives/charts/charts.js';
@@ -12,7 +12,7 @@ import {
 const percent = (value: number | null | undefined) =>
   value == null ? '—' : `${formatDecimal(value)}%`;
 const delta = (value: number) =>
-  value == null ? 'Sem base anterior' : `${value > 0 ? '+' : ''}${formatDecimal(value)} p.p.`;
+  value == null ? 'Sem base anterior' : formatPoints(value);
 
 export function renderPerformanceQuestions({
   evolution,

@@ -1,3 +1,4 @@
+import { formatPoints } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { simulationTrendGeometry } from './geometry.js';
@@ -85,7 +86,7 @@ export function SimulationTrendChart({
                     size={12}
                   />
                 )}
-                {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} p.p.
+                {formatPoints(scoreDelta)}
               </span>
             )}
           </div>

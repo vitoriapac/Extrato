@@ -20,3 +20,14 @@ export function formatDelta(value: unknown, digits = 1): string {
   const sign = number > 0 ? '+' : '−';
   return sign + formatDecimal(Math.abs(number), digits);
 }
+
+// Diferença em pontos percentuais: sempre com sinal (− tipográfico) e uma casa (+13,2 p.p. · −6,0 p.p.).
+export function formatPoints(value: unknown, digits = 1): string {
+  const number = Number(value);
+  if (value == null || value === '' || !Number.isFinite(number)) return '—';
+  const text = new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(Math.abs(number));
+  return `${number > 0 ? '+' : number < 0 ? '−' : ''}${text} p.p.`;
+}

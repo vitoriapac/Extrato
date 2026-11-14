@@ -83,3 +83,12 @@ test('Matriz: sem nenhuma disciplina fora do quadrante crítico, só a lista', a
   );
   assert.match(mixed, /matrix-chart-scroll/);
 });
+
+test('p.p.: sempre com sinal tipográfico e uma casa', async () => {
+  const { formatPoints } = await import('../../src/core/format-number.js');
+  assert.equal(formatPoints(13.2), '+13,2 p.p.');
+  assert.equal(formatPoints(-6), '−6,0 p.p.');
+  assert.equal(formatPoints(-17.74), '−17,7 p.p.');
+  assert.equal(formatPoints(0), '0,0 p.p.');
+  assert.equal(formatPoints(null), '—');
+});

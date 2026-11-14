@@ -1,3 +1,4 @@
+import { formatPoints } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { weeklyTrendGeometry } from './geometry.js';
@@ -53,7 +54,7 @@ export function WeeklyTrendChart({
           <span class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${trendBadgeClass}`}>
             <Icon name={trendIcon} size={12} />
             {trendLabel}
-            {trendDelta !== null && ` (${trendDelta > 0 ? '+' : ''}${trendDelta} p.p.)`}
+            {trendDelta !== null && ` (${formatPoints(trendDelta)})`}
           </span>
         </div>
 

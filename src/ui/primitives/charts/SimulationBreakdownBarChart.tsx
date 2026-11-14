@@ -1,3 +1,4 @@
+import { formatPoints } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import type { SimulationBreakdownVisualModel } from '../../../domain/practice/practice-visual-models.js';
@@ -86,7 +87,7 @@ export function SimulationBreakdownBarChart({
                     }`}
                     title={`Diferença para a média geral da prova (${overallScore}%)`}
                   >
-                    {row.relativeGap >= 0 ? `+${row.relativeGap}` : row.relativeGap} p.p.
+                    {formatPoints(row.relativeGap)}
                   </span>
                 </div>
               </div>

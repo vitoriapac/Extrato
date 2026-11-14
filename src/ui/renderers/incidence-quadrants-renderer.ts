@@ -60,7 +60,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
     ? `<p class="analytics-note">Sem tópicos em: ${emptyGroups.map(escape).join('; ')}.</p>`
     : '';
   return renderChartFrame({
-    title: 'Incidência × Domínio',
+    title: 'Incidência × domínio',
     description:
       'Incidência em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',
     evidence:

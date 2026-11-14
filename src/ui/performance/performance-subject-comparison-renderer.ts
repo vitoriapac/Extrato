@@ -1,11 +1,11 @@
 import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPoints } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 type Row = Record<string, any>;
 const value = (number: number | null | undefined, suffix = '') =>
   number == null ? '—' : `${formatDecimal(number)}${suffix}`;
 const signed = (number: number | null | undefined) =>
-  number == null ? '—' : `${number > 0 ? '+' : ''}${formatDecimal(number)} p.p.`;
+  number == null ? '—' : formatPoints(number);
 const options = [
   ['gap', 'Distância da meta'],
   ['accuracy', 'Precisão'],
