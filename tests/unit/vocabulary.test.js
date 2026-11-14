@@ -133,3 +133,35 @@ test('a faixa projetada não repete os números no resumo e o aviso comum do Dia
   );
   assert.equal(html.split('Sinais podem compartilhar observações').length - 1, 1);
 });
+
+test('card do Diagnóstico: um botão sólido, os demais discretos, e ícone de alerta só para risco', async () => {
+  const { renderConsolidatedDiagnosis } = await import('../../src/ui/renderers/consolidated-diagnosis-renderer.js');
+  const row = severity => ({
+    subjectId: 's',
+    topicId: 't',
+    name: 'Tópico',
+    granularity: 'topic',
+    primarySignal: 'gap',
+    severity,
+    severityLabel: severity === 'high' ? 'Crítica' : 'Importante',
+    state: 'attention',
+    evidenceQuality: 'moderate',
+    evidence: { label: 'Moderada' },
+    signals: [{ kind: 'gap', active: true, reasons: ['Lacuna'], period: null }],
+  });
+  const render = severity =>
+    renderConsolidatedDiagnosis(
+      { topics: [row(severity)], subjects: [] },
+      {
+        studyActionForItem: () => ({ id: 'a', source: 'x', activityType: 'review', label: 'Iniciar revisão' }),
+        escapeHtml: v => String(v),
+        escapeAttr: v => String(v),
+      }
+    );
+  const warning = render('medium');
+  const danger = render('high');
+  const buttons = html => html.match(/<button class="btn [a-z ]*"/g);
+  assert.deepEqual(buttons(warning), ['<button class="btn small"', '<button class="btn tertiary small"', '<button class="btn tertiary small"']);
+  assert.doesNotMatch(warning, /status-badge--warning"[^>]*><svg/);
+  assert.match(danger, /status-badge--danger"[^>]*><svg/);
+});
