@@ -42,6 +42,41 @@ const period = (range: Range, questions: Row[], sessions: Row[], plans: Row[]) =
     videoBlocksCompleted,
   };
 };
+export const KPI_TREND_WEEKS = 6;
+/** Precisão semanal só conta com esta amostra; abaixo disso a semana fica vazia no minigráfico. */
+const TREND_MIN_QUESTIONS = 10;
+/**
+ * Últimas semanas completas (segunda a domingo), sem depender do período escolhido. A semana em andamento
+ * fica de fora: com dias a menos ela pareceria uma queda.
+ */
+function buildKpiTrend(today: string, questions: Row[], sessions: Row[]) {
+  const currentStart = weekStart(today);
+  if (!currentStart) return [];
+  const lastCompleteStart = parseLocalDate(today)?.getDay() === 0 ? currentStart : addLocalDays(currentStart, -7)!;
+  const rows = Array.from({ length: KPI_TREND_WEEKS }, (_, index) => ({
+    start: addLocalDays(lastCompleteStart, -7 * (KPI_TREND_WEEKS - 1 - index))!,
+    studiedMinutes: 0,
+    resolved: 0,
+    correct: 0,
+  }));
+  const byStart = new Map(rows.map(row => [row.start, row]));
+  for (const item of sessions) {
+    const row = byStart.get(weekStart(item.date) as string);
+    if (row) row.studiedMinutes += (Number(item.durationSeconds) || 0) / 60;
+  }
+  for (const item of questions) {
+    const row = byStart.get(weekStart(item.date) as string);
+    if (!row) continue;
+    row.resolved += Math.max(0, Number(item.resolved) || 0);
+    row.correct += Math.max(0, Number(item.correct) || 0);
+  }
+  return rows.map(row => ({
+    start: row.start,
+    studiedMinutes: round(row.studiedMinutes),
+    resolved: row.resolved,
+    accuracy: row.resolved >= TREND_MIN_QUESTIONS ? round((row.correct / row.resolved) * 100) : null,
+  }));
+}
 const delta = (current: number | null, previous: number | null) =>
   current == null || previous == null ? null : round(current - previous);
 
@@ -154,6 +189,7 @@ export function buildPerformanceOverview({
     readinessPair: { previous: prior, current: latest },
     history,
     weekly,
+    trend: buildKpiTrend(today, questions, sessions),
     strategic,
     changes: changes.slice(0, 5),
   };

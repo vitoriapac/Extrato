@@ -9,6 +9,21 @@ function LinkButton({ link, solid = false }: { link: PreparationLink; solid?: bo
     data-performance-open={link.kind === 'tab' ? link.target : undefined}>{link.label}</button>;
 }
 
+const clamp = (value: number) => Math.max(0, Math.min(100, value));
+
+/** Faixa projetada de nota e meta numa régua de 0 a 100, abaixo da barra da Prontidão (escalas diferentes, mesmo eixo). */
+function ProjectionRuler({ projection }: { projection: NonNullable<PreparationReading['howAmI']['projection']> }) {
+  const { low, high, target } = projection;
+  const description = `Faixa projetada de nota de ${low}% a ${high}%${target != null ? `, meta de ${target}%` : ''}, em uma escala de 0 a 100`;
+  return <div class="performance-reading__ruler" role="img" aria-label={description} data-projection-ruler="true">
+    <div class="performance-reading__band">
+      <i style={{ left: `${clamp(low)}%`, width: `${Math.max(1, clamp(high) - clamp(low))}%` }} />
+      {target != null && <b style={{ left: `${clamp(target)}%` }} />}
+    </div>
+    <small aria-hidden="true">Faixa projetada {low}% a {high}%{target != null ? ` · meta ${target}%` : ''}</small>
+  </div>;
+}
+
 export function PreparationReadingView({ reading }: { reading: PreparationReading }) {
   const { howAmI, pulling, whatToDo, evidence } = reading;
   const readiness = howAmI.readiness;
@@ -25,7 +40,7 @@ export function PreparationReadingView({ reading }: { reading: PreparationReadin
         {whatToDo.deficit && <p class="m-0">{whatToDo.deficit}</p>}
       </section>
       <section class="performance-reading__how" aria-labelledby="performanceReadingHow"><h4 id="performanceReadingHow">Como estou</h4>
-        {readiness ? <><p class="m-0"><strong class="performance-reading__figure">Prontidão {readiness.value}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label={`Prontidão ${readiness.value} em uma escala de 0 a 100`}><i style={{ width: `${Math.max(0, Math.min(100, Number(readiness.value)))}%` }} /></div>{readiness.verdict && <p class="performance-reading__verdict m-0" data-state={readiness.verdict.state}>{readiness.verdict.text}</p>}</> : <p class="m-0">Ainda não há dados suficientes para esta leitura.</p>}
+        {readiness ? <><p class="m-0"><strong class="performance-reading__figure">Prontidão {readiness.value}/100</strong> <span>calculada agora</span></p><div class="performance-reading__bar" role="img" aria-label={`Prontidão ${readiness.value} em uma escala de 0 a 100`}><i style={{ width: `${Math.max(0, Math.min(100, Number(readiness.value)))}%` }} /></div>{howAmI.projection && <ProjectionRuler projection={howAmI.projection} />}{readiness.verdict && <p class="performance-reading__verdict m-0" data-state={readiness.verdict.state}>{readiness.verdict.text}</p>}</> : <p class="m-0">Ainda não há dados suficientes para esta leitura.</p>}
       </section>
       <section class="performance-reading__pull" aria-labelledby="performanceReadingPull"><h4 id="performanceReadingPull">O que mais pesa</h4><p class="m-0 performance-reading__support">Pontos de atenção, não a recomendação.</p>
         {pulling.length ? <ol class="performance-reading__list">{pulling.map((item, index) => <li key={index}><span>{item.text}</span>{item.link && <> <LinkButton link={item.link} /></>}</li>)}</ol> : <p class="m-0">Nenhum ponto de atenção com evidência suficiente.</p>}

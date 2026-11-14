@@ -89,7 +89,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Nenhum rótulo afirma dado de aprovados sem fonte (busca no código e nos HTML sem ocorrências; 14/11/2026). As notas de corte (T25 e T26) entram no final, com as notas do usuário
 
 ### Fase 7: Visual e iniciante
-- [ ] Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
+- [x] Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
 - [ ] Tarefa 29: Gráficos de Disciplinas e Diagnóstico
 - [ ] Tarefa 30: Gráficos de Provas
 - [ ] Tarefa 31: Gráficos de Ritmo

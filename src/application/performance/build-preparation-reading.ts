@@ -22,7 +22,13 @@ export interface PreparationReading {
       /** Tendência frente ao período anterior; sem causa. */
       verdict: ReadinessVerdict;
     } | null;
-    projection: { text: string } | null;
+    projection: {
+      text: string;
+      /** Faixa projetada de nota e meta, em % da escala da prova, para a régua. */
+      low: number;
+      high: number;
+      target: number | null;
+    } | null;
     rhythm: { text: string } | null;
   };
   /** Até três pontos que mais pesam, lidos como associação, sem causa. */
@@ -218,7 +224,15 @@ export function buildPreparationReading({
         readinessValue != null
           ? { value: readinessValue, detail: readinessDetail, verdict: readinessVerdict }
           : null,
-      projection: projectionText ? { text: projectionText } : null,
+      projection:
+        projectionText && low != null && high != null
+          ? {
+              text: projectionText,
+              low: round(low),
+              high: round(high),
+              target: finite(projection?.current?.targetScore) != null ? round(projection!.current.targetScore) : null,
+            }
+          : null,
       rhythm: rhythmText ? { text: rhythmText } : null,
     },
     pulling,

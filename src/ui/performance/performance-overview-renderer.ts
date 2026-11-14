@@ -12,6 +12,7 @@ import {
 } from './performance-story.js';
 import { renderReadinessChangeExplanation } from './readiness-change-explanation-renderer.js';
 import { renderMetricCard, renderEmptyState } from '../components/presentation.js';
+import { renderSparkline } from '../primitives/charts/charts.js';
 import { renderPlannedVsActualChart } from './planned-actual-chart.js';
 import {
   renderPreparationReading,
@@ -21,8 +22,13 @@ import {
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
 const change = (value: number | null | undefined) =>
   value == null ? 'Sem base comparável' : formatDelta(value);
-const card = (label: string, value: unknown, unit: string, detail: string, windowBadge = '') =>
-  renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail, windowBadge });
+const card = (label: string, value: unknown, unit: string, detail: string, windowBadge = '', trend = '') =>
+  renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail, windowBadge, trend });
+/** Tendência das últimas semanas; com menos de 3 semanas com atividade não há o que desenhar (só zeros é ruído). */
+const kpiTrend = (values: Array<number | null>, label: string, unit: string) =>
+  values.filter(value => value != null && value > 0).length < 3
+    ? ''
+    : `<span class="performance-kpi__trend">${renderSparkline({ values, label, unit, width: 120, height: 28 })}<small>${values.length} semanas completas</small></span>`;
 
 const glossaryItems: Array<[string, string]> = [
   [
@@ -73,10 +79,11 @@ export function renderPerformanceOverview(
     ? 'Comparação com período anterior'
     : 'Sem comparação';
   const periodBadge = renderWindowBadge('period', range?.label || '');
+  const trend: any[] = model.trend || [];
   const kpis = `<p class="performance-kpi-window">${renderWindowBadge('period', range?.label || '')}<span>Os indicadores abaixo seguem o período escolhido.</span></p><section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
-    ${renderMetricCard({ label: 'Tempo estudado', windowBadge: periodBadge, value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
-    ${card('Questões resolvidas', current.resolved ?? 0, '', 'No período selecionado', periodBadge)}
-    ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, periodBadge)}
+    ${renderMetricCard({ label: 'Tempo estudado', windowBadge: periodBadge, trend: kpiTrend(trend.map((row: any) => Math.round((row.studiedMinutes / 60) * 10) / 10), 'Tempo estudado por semana completa', 'h'), value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
+    ${card('Questões resolvidas', current.resolved ?? 0, '', 'No período selecionado', periodBadge, kpiTrend(trend.map((row: any) => row.resolved), 'Questões por semana completa', 'questões'))}
+    ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, periodBadge, kpiTrend(trend.map((row: any) => row.accuracy), 'Precisão por semana completa (10 questões ou mais)', '%'))}
     ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`, periodBadge) : ''}
   </section>`;
   // A Prontidão aparece uma vez só, na Leitura da preparação; a carga do período fica em "Planejado × realizado".

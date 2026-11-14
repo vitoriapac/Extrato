@@ -138,3 +138,51 @@ test('Matriz: siglas únicas e contadores com os nomes dos quatro quadrantes', a
   for (const name of ['Consolidada', 'Risco de Esquecimento', 'Em Construção', 'Vulnerabilidade Crítica'])
     assert.match(html, new RegExp(`${name}: [0-9]`));
 });
+
+test('T28: tendência semanal dos KPIs e régua da Prontidão com faixa projetada e meta', async () => {
+  const { buildPerformanceOverview, KPI_TREND_WEEKS } = await import('../../src/application/performance/build-performance-overview.js');
+  const range = { start: '2026-11-01', end: '2026-11-14', label: 'Últimos 14 dias', comparePrevious: false };
+  const model = buildPerformanceOverview({
+    range,
+    today: '2026-11-14',
+    sessions: [
+      { date: '2026-11-14', durationSeconds: 7200 },
+      { date: '2026-11-03', durationSeconds: 3600 },
+      { date: '2026-09-01', durationSeconds: 3600 },
+    ],
+    questions: [
+      { date: '2026-11-14', resolved: 20, correct: 15 },
+      { date: '2026-11-04', resolved: 5, correct: 5 },
+    ],
+  });
+  assert.equal(model.trend.length, KPI_TREND_WEEKS);
+  // 14/11/2026 é sábado: a semana em andamento (09/11) fica de fora e a última completa começa em 02/11.
+  assert.equal(model.trend.at(-1).start, '2026-11-02');
+  assert.equal(model.trend.at(-1).studiedMinutes, 60);
+  assert.equal(model.trend.at(-1).resolved, 5);
+  assert.equal(model.trend.at(-1).accuracy, null);
+  assert.equal(model.trend.reduce((sum, row) => sum + row.studiedMinutes, 0), 60);
+  const sunday = buildPerformanceOverview({ range, today: '2026-11-15', sessions: [{ date: '2026-11-14', durationSeconds: 3600 }], questions: [{ date: '2026-11-14', resolved: 20, correct: 15 }] });
+  assert.equal(sunday.trend.at(-1).start, '2026-11-09');
+  assert.equal(sunday.trend.at(-1).accuracy, 75);
+
+  const { renderPreparationReading } = await import('../../src/ui/performance/preparation-reading-renderer.js');
+  const reading = {
+    howAmI: { readiness: { value: 47, detail: null, verdict: null }, projection: { text: 't', low: 69, high: 93, target: 80 }, rhythm: null },
+    pulling: [],
+    whatToDo: { state: 'x', action: null, reason: null, deficit: null, recovery: false },
+    evidence: [],
+  };
+  const html = renderPreparationReading(reading);
+  assert.match(html, /data-projection-ruler="true"/);
+  assert.match(html, /aria-label="Faixa projetada de nota de 69% a 93%, meta de 80%, em uma escala de 0 a 100"/);
+  assert.doesNotMatch(renderPreparationReading({ ...reading, howAmI: { ...reading.howAmI, projection: null } }), /data-projection-ruler/);
+
+  const { renderPerformanceOverview } = await import('../../src/ui/performance/performance-overview-renderer.js');
+  const base = { current: { studiedMinutes: 60, resolved: 20, accuracy: 70, sessionCount: 1 }, previous: null, weekly: [], changes: [], history: [], readiness: null };
+  const opts = { range, today: '2026-11-14', formatDate: String, escapeHtml: String };
+  const trend = [1, 2, 3, 4, 5, 6].map(n => ({ start: `w${n}`, studiedMinutes: n * 60, resolved: n * 10, accuracy: n > 4 ? null : 60 + n }));
+  const withTrend = renderPerformanceOverview({ ...base, trend }, opts);
+  assert.equal((withTrend.match(/performance-kpi__trend/g) || []).length, 3);
+  assert.equal((renderPerformanceOverview({ ...base, trend: trend.slice(0, 2) }, opts).match(/performance-kpi__trend/g) || []).length, 0);
+});

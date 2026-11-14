@@ -333,8 +333,8 @@ Verificação usada abaixo:
 
 ### Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
 **Aceite:**
-- [ ] Régua com Prontidão, faixa projetada e meta, com texto alternativo
-- [ ] KPIs com tendência das últimas 4 a 6 semanas, valor atual em destaque
+- [x] Régua com Prontidão, faixa projetada e meta, com texto alternativo
+- [x] KPIs com tendência das últimas 4 a 6 semanas, valor atual em destaque
 **Verificação:** contraste nos dois temas; axe; manual em 375
 **Dependências:** T16, T13
 **Tamanho:** M
