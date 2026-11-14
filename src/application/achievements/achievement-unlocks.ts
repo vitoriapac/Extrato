@@ -116,6 +116,8 @@ export interface UnlockSyncResult {
   /** Conquistas desbloqueadas agora, nesta chamada. Vazio na primeira leitura. */
   newlyUnlocked: string[];
   changed: boolean;
+  /** Houve registro `live` novo: vale gravar. A primeira leitura só ajusta a memória. */
+  persist: boolean;
 }
 
 /**
@@ -138,6 +140,7 @@ export function syncAchievementUnlocks(
   const inferred = baselined ? {} : inferCumulativeUnlockDates(state);
   const newlyUnlocked: string[] = [];
   let changed = false;
+  let persist = false;
 
   // Datas inferidas do histórico são palpites: se a conquista não está cumprida agora, o registro sai,
   // senão ele calaria o aviso quando ela fosse de fato ganha.
@@ -155,6 +158,7 @@ export function syncAchievementUnlocks(
     changed = true;
     if (baselined) {
       registry[id] = { unlockedAt: todayISO, source: 'live' };
+      persist = true;
       // Silenciosa: conquista que virou verdadeira sem trabalho novo (ex.: arquivar disciplinas).
       if (!silentIds.includes(id)) newlyUnlocked.push(id);
     } else {
@@ -168,5 +172,5 @@ export function syncAchievementUnlocks(
     state.achievementsBaselined = true;
     changed = true;
   }
-  return { newlyUnlocked, changed };
+  return { newlyUnlocked, changed, persist };
 }

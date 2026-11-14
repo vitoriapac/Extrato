@@ -64,6 +64,20 @@ function shiftDate(iso: string, days: number) {
 function timestamp(date: string, hour = 12) {
   return `${date}T${String(hour).padStart(2, '0')}:00:00.000Z`;
 }
+// Alguns tópicos foram concluídos nos últimos dias; sem isso a meta semanal de tópicos fica em "0 de N"
+// ao lado de uma semana com 12 h de estudo.
+function placeRecentDemoCompletions(subjects: any[], today: string) {
+  const done = subjects.flatMap((subject: any) =>
+    subject.topics.filter((topic: any) => topic.status === 'Concluído' && topic.firstCompletedAt)
+  );
+  [1, 2, 3].forEach((daysAgo, index) => {
+    const topic = done[index * 11];
+    if (!topic) return;
+    const at = `${shiftDate(today, -daysAgo)}T12:00:00.000Z`;
+    topic.firstCompletedAt = at;
+    topic.lastCompletedAt = at;
+  });
+}
 export function generateDemoData({
   seed = DEMO_SCENARIO.seed,
   today,
@@ -80,6 +94,7 @@ export function generateDemoData({
     state: any = createDefaultState(),
     createdAt = timestamp(shiftDate(today, -oldestAge)!);
   state.subjects = buildDemoSubjects(demoScenario, { createdAt, random });
+  placeRecentDemoCompletions(state.subjects, today);
   const activeTopics = state.subjects.flatMap((subject: any) =>
     subject.topics.filter((topic: any) => !topic.archived).map((topic: any) => ({ subject, topic }))
   );

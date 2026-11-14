@@ -17,8 +17,9 @@ export function buildDemoPlanning(
     if (!sessionsByDate.has(session.date)) sessionsByDate.set(session.date, session);
   }
   const metas = {
-    semanal: goals.weeklyHours,
-    mensal: goals.monthlyHours,
+    // `semanal` e `mensal` são metas de tópicos concluídos (o app compara com tópicos), não horas.
+    semanal: goals.weeklyTopics ?? 5,
+    mensal: goals.monthlyTopics ?? 20,
     questoesSemanal: goals.weeklyQuestions,
     simuladosSemanal: goals.weeklySimulations,
     metaAprovacao: goals.targetScorePct,
@@ -94,6 +95,52 @@ export function buildDemoPlanning(
       availableMinutes: 120,
       plannedMinutes: 80,
       flexMinutes: 40,
+      createdAt: stamp(date!),
+      updatedAt: stamp(date!),
+      items,
+    });
+  }
+  // Os dias entre o último plano histórico e hoje também tiveram plano: sem eles, a semana atual
+  // aparece com sessões sem vínculo, 0% de crédito ao plano e volume de carga muito acima de 100%.
+  const lastHistoricDate = dailyPlans
+    .map((plan: any) => plan.date)
+    .filter((date: string) => date < today)
+    .sort()
+    .at(-1) as string;
+  const recentSessions = new Map<string, any[]>();
+  for (const session of sessions) {
+    if (session.date <= lastHistoricDate || session.date >= today) continue;
+    recentSessions.set(session.date, [...(recentSessions.get(session.date) || []), session]);
+  }
+  for (const [date, rows] of [...recentSessions].sort(([a], [b]) => a.localeCompare(b))) {
+    const items = rows.map((session: any, itemIndex: number) => {
+      const minutes = Math.max(15, Math.round((Number(session.durationSeconds) || 0) / 60));
+      // A cada terceira atividade o plano previa um pouco mais do que foi feito: fica parcial.
+      const plannedMinutes = itemIndex % 3 === 2 ? Math.round(minutes * 1.25) : minutes;
+      return {
+        id: `demo-recent-plan-item-${date}-${itemIndex + 1}`,
+        subjectId: session.subjectId,
+        topicId: session.topicId,
+        type: session.type || 'study',
+        plannedMinutes,
+        executedSeconds: 0,
+        status: 'planned',
+        sessionIds: [] as any[],
+        originalDate: date,
+        currentDate: date,
+        rescheduleCount: 0,
+        skippedReason: null as any,
+        recommendationId: null as any,
+        lastExecutedAt: null as any,
+      };
+    });
+    const plannedMinutes = items.reduce((sum: number, item: any) => sum + item.plannedMinutes, 0);
+    dailyPlans.push({
+      id: `demo-recent-plan-${date}`,
+      date,
+      availableMinutes: 120,
+      plannedMinutes,
+      flexMinutes: Math.max(0, 120 - plannedMinutes),
       createdAt: stamp(date!),
       updatedAt: stamp(date!),
       items,

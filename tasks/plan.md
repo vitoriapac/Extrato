@@ -30,7 +30,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [ ] Testes, tipos e build limpos; E2E de sessão com aviso; revisão humana
 
 ### Fase 2: Origem e correção dos números
-- [ ] Tarefa 6: Investigação demo × produto (T2)
+- [x] Tarefa 6: Investigação demo × produto (T2)
 - [ ] Tarefa 7: Simulados com um arredondamento e contagem explicada
 - [ ] Tarefa 8: Selos de janela e dois números de execução do plano
 

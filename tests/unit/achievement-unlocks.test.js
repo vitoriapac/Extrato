@@ -110,6 +110,8 @@ test('primeira leitura registra o que já está cumprido como migrado, sem aviso
     recordedAt: '2026-11-13',
   });
   assert.equal(state.achievementsBaselined, true);
+  // A primeira leitura não manda gravar: abrir o app não reescreve o que está salvo.
+  assert.equal(result.persist, false);
 });
 
 test('primeira leitura de um estado sem registro infere a data das cumulativas pelo histórico', () => {
@@ -137,6 +139,7 @@ test('depois da primeira leitura, cada conquista nova entra como live uma única
   };
   const first = syncAchievementUnlocks(state, ['streak7', 'q100', 'hours10'], '2026-11-13');
   assert.deepEqual(first.newlyUnlocked, ['q100', 'hours10']);
+  assert.equal(first.persist, true);
   assert.deepEqual(state.achievementUnlocks.q100, { unlockedAt: '2026-11-13', source: 'live' });
   assert.deepEqual(state.achievementUnlocks.streak7, { unlockedAt: null, source: 'migrated' });
 

@@ -3,6 +3,7 @@ import {
   activateTab,
   openDemo,
   expectNoPageOverflow,
+  openAchievements,
   openPlanningSubtab,
   openPerformanceSection,
   selectSubjectCombobox,
@@ -97,7 +98,7 @@ test('configuração estratégica comunica herança e conquista de cem horas', a
       )
     )
     .toBe(360000);
-  await page.evaluate(() => window.__EXTRATO_TEST__.renderAll());
+  await openAchievements(page);
   await expect(
     page.locator('#badgesGrid .badge-card.unlocked').filter({ hasText: 'Cem horas' }).first()
   ).toContainText('Cem horas');

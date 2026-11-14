@@ -89,10 +89,10 @@ Verificação usada abaixo:
 ### Tarefa 6: Investigação demo × produto (T2)
 **Descrição:** Reproduzir as 8 incoerências da seção 13 da análise com fixture controlada e com a demo; classificar e escrever o plano de correção.
 **Aceite:**
-- [ ] Tabela com classificação, evidência e destino de cada item em `tasks/investigacao-demo-produto.md`
-- [ ] Defeitos do gerador da demo corrigidos em `src/demo` quando forem a causa
+- [x] Tabela com classificação, evidência e destino de cada item em `tasks/investigacao-demo-produto.md`
+- [x] Defeitos do gerador da demo corrigidos em `src/demo` quando forem a causa
 **Verificação:**
-- [ ] Unit: um teste por item classificado como defeito de cálculo
+- [x] Unit: um teste por item classificado como defeito de cálculo
 **Dependências:** nenhuma
 **Arquivos:** `src/demo/*`, `tests/unit/*`, relatório
 **Tamanho:** M

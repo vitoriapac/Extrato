@@ -10,7 +10,7 @@ test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ 
   await expect(confirmPlan).toBeVisible();
   await confirmPlan.click();
   await expect(page.getByText('Plano confirmado', { exact: true })).toBeVisible();
-  await expect(page.locator('.study-plan-guidance')).toContainText('revise antes de confirmar');
+  await expect(page.locator('.study-plan-guidance')).toContainText('Distribua o plano nos próximos 7 dias');
   await page.getByRole('link', { name: 'Ver resumo da semana' }).click();
   await expect(page.locator('#planExecutionCard')).toBeInViewport();
 

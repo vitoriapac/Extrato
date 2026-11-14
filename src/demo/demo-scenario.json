@@ -3181,6 +3181,8 @@
   "goals": {
     "weeklyHours": 12,
     "monthlyHours": 48,
+    "weeklyTopics": 5,
+    "monthlyTopics": 20,
     "weeklyQuestions": 220,
     "weeklySimulations": 1,
     "targetScorePct": 80,

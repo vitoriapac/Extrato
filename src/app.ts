@@ -304,9 +304,10 @@ let achievementCheckQueued = false;
 function checkAchievementUnlocks() {
   achievementCheckQueued = false;
   const controller = uiControllers.achievementsController;
-  const { newlyUnlocked, changed } = controller.syncUnlocks(todayISO());
+  const { newlyUnlocked, changed, persist } = controller.syncUnlocks(todayISO());
   if (!changed) return;
-  storageAndSync.stateSyncCoordinator.scheduleSave();
+  // A primeira leitura só ajusta a memória: abrir o app não deve reescrever o que está salvo.
+  if (persist) storageAndSync.stateSyncCoordinator.scheduleSave();
   achievementNotifier.notify(
     buildAchievementNotice(newlyUnlocked, controller.getBadgesDefinitions())
   );
