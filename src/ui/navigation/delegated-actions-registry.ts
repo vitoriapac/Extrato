@@ -204,6 +204,7 @@ export function buildDelegatedActionHandlers(
     calculateDailyPlanPreview: (...args: any[]) =>
       c.studyPlan?.calculateDailyPlanPreview?.(...args),
     clearDailyPlanPreview: (...args: any[]) => c.studyPlan?.clearDailyPlanPreview?.(...args),
+    openAvailabilityAdjust: (...args: any[]) => c.studyPlan?.openAvailabilityAdjust?.(...args),
     confirmDailyPlanPreview: (...args: any[]) => c.studyPlan?.confirmDailyPlanPreview?.(...args),
     undoLatestDailyPlanGeneration: (...args: any[]) =>
       c.studyPlan?.undoLatestDailyPlanGeneration?.(...args),

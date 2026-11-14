@@ -15,7 +15,9 @@ export function renderQuestionEvolution(
       title: 'Precisão ao longo do tempo',
       emptyMessage: 'Registre questões para acompanhar a evolução do desempenho.',
     });
-  const designed = chartSize(Math.max(420, model.buckets.length * 48), 150),
+  // Proporção de projeto ~3,3:1 (seção 14.3), qualquer que seja a quantidade de períodos.
+  const designWidth = Math.max(420, model.buckets.length * 48),
+    designed = chartSize(designWidth, Math.round(designWidth / 3.3)),
     width = designed.width,
     height = designed.height,
     left = 24,

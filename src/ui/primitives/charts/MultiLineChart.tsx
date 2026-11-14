@@ -15,8 +15,8 @@ export interface MultiLineChartProps {
 export function MultiLineChart({
   series,
   periodLabels,
-  width = chartSize(620, 240).width,
-  height = chartSize(620, 240).height,
+  width = chartSize(620, 190).width,
+  height = chartSize(620, 190).height,
   label = 'Evolução da taxa de acerto por disciplina',
   className = '',
 }: MultiLineChartProps): JSX.Element {

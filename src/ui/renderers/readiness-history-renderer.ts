@@ -51,7 +51,7 @@ export function renderReadinessHistory(
     ? `<details class="readiness-history-explanation"><summary>Fatores da variação entre os dois últimos fechamentos</summary>${factors(weekly)}</details>`
     : '';
   const rows = model.history.slice(-12),
-    { width, height } = chartSize(640, 152),
+    { width, height } = chartSize(640, 180),
     left = 32,
     right = 16,
     top = 12,

@@ -29,6 +29,12 @@ test('gráficos de Desempenho ficam dentro do cartão, sem rolagem, com texto le
           const label = svg.getAttribute('aria-label') || svg.parentElement.className.toString();
           if (box.right > limit.right + 1) found.push(`${label}: passa do cartão`);
           if (!svg.classList.contains('chart-fit')) found.push(`${label}: sem ajuste`);
+          // Séries temporais no desktop: entre 3:1 e 4:1 (o radar e a Matriz têm formato próprio).
+          const isSeries = !svg.classList.contains('radar-svg') && !svg.classList.contains('chart-matrix');
+          if (window.innerWidth >= 1024 && isSeries) {
+            const ratio = box.width / box.height;
+            if (ratio < 2.9 || ratio > 4.25) found.push(`${label}: proporção ${ratio.toFixed(1)}:1`);
+          }
           if (window.innerWidth < 600 && box.height < 180)
             found.push(`${label}: altura de ${Math.round(box.height)} px no celular`);
           const scale = box.width / view.width;

@@ -18,6 +18,7 @@ import { renderRecommendationExplanation } from '../../renderers/recommendation-
 import { buildWeeklyAllocationBarVisual } from '../../../domain/planning/planning-visual-models.js';
 import { renderAllocationBar } from '../../primitives/charts/charts.js';
 import { StudyPlanGuidance } from './StudyPlanGuidance.js';
+import { scrollBehavior } from '../../accessibility.js';
 
 const previewHeading = (title: string) =>
   render(h('h4', { tabIndex: -1, 'data-plan-preview-title': '' }, title));
@@ -443,6 +444,16 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     focusPlanControl('[data-plan-preview-title]');
   }
 
+  /** Leva à Disponibilidade semanal, que fica dentro de "Ajustar metas e disponibilidade". */
+  function openAvailabilityAdjust() {
+    const fold = doc?.getElementById('metasAdjust');
+    if (!fold) return;
+    fold.open = true;
+    const capacity = doc?.getElementById('metasCapacity');
+    capacity?.scrollIntoView?.({ block: 'start', behavior: scrollBehavior() });
+    capacity?.querySelector?.('input')?.focus?.({ preventScroll: true });
+  }
+
   function clearDailyPlanPreview() {
     dailyPlanPreview = null;
     renderStudyPlanBuilder();
@@ -516,9 +527,15 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
               `<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`
           )
           .join('');
+        const win = proposal.window;
+        const needMinutes = proposal.plannedMinutes + proposal.unallocatedMinutes;
+        const shortfall =
+          proposal.unallocatedMinutes > 0 && win
+            ? `<p class="helper-text">Cabem ${formatPlanMinutes(proposal.plannedMinutes)} dos ${formatPlanMinutes(needMinutes)}. A disponibilidade dos 7 dias soma ${formatPlanMinutes(win.availableMinutes)}; ${win.existingMinutes > 0 ? `${formatPlanMinutes(win.existingMinutes)} já estão agendados e ` : ''}${formatPlanMinutes(win.reserveMinutes)} ficam de reserva. <button class="btn tertiary" type="button" data-delegated-click="openAvailabilityAdjust()">Ajustar disponibilidade</button></p>`
+            : '';
         container.innerHTML =
           previewHeading('Prévia dos próximos 7 dias') +
-          `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes + proposal.unallocatedMinutes)}</strong><span>Tempo a distribuir (plano e revisões)</span></div><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Sem espaço nos 7 dias</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" type="button" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" type="button" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
+          `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes + proposal.unallocatedMinutes)}</strong><span>Tempo a distribuir (plano e revisões)</span></div><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Sem espaço nos 7 dias</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${shortfall}${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" type="button" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" type="button" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" type="button" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
         return;
       }
       const activeOperation = [...(latest?.dailyPlanOperations || [])]
@@ -636,6 +653,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     revertAdaptivePlanningDecision,
     calculateDailyPlanPreview,
     clearDailyPlanPreview,
+    openAvailabilityAdjust,
     confirmDailyPlanPreview,
     undoLatestDailyPlanGeneration,
     currentPhaseStrategy,
