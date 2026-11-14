@@ -8,6 +8,7 @@ import {
 import { normalizeStudySession } from '../domain/sessions/study-session.ts';
 import { snapshotEvidenceScopes } from '../application/exams/evidence-scope-migration.ts';
 import { migrateRecommendationHistory } from '../application/recommendations/recommendation-history.ts';
+import { buildMigratedUnlocks } from '../application/achievements/achievement-unlocks.ts';
 import { runStateMigrations } from '../storage/migration-service.ts';
 import { CURRENT_SCHEMA_VERSION } from './schema.ts';
 import {
@@ -440,6 +441,13 @@ export function createStateMigrator({
     data.schemaVersion = 30;
     return data;
   }
+  // v31: registro de quando cada conquista foi desbloqueada; as cumulativas recebem a data inferida do histórico.
+  function migrateV30toV31(data: Record<string, any>) {
+    data.achievementUnlocks = buildMigratedUnlocks(data);
+    data.achievementsBaselined = false;
+    data.schemaVersion = 31;
+    return data;
+  }
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -473,6 +481,7 @@ export function createStateMigrator({
         27: migrateV27toV28,
         28: migrateV28toV29,
         29: migrateV29toV30,
+        30: migrateV30toV31,
       },
     });
   }

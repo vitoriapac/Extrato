@@ -103,6 +103,9 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   if (!Array.isArray(state.progressHistory)) state.progressHistory = [];
   if (!Array.isArray(state.projectionSnapshots)) state.projectionSnapshots = [];
   if (!Array.isArray(state.readinessSnapshots)) state.readinessSnapshots = [];
+  if (!state.achievementUnlocks || typeof state.achievementUnlocks !== 'object')
+    state.achievementUnlocks = {};
+  if (typeof state.achievementsBaselined !== 'boolean') state.achievementsBaselined = false;
   if (!state.achievementsUnlocked || typeof state.achievementsUnlocked !== 'object')
     state.achievementsUnlocked = {};
   if (!Array.isArray(state.metasPorDisciplina)) state.metasPorDisciplina = [];

@@ -41,6 +41,8 @@ import { wireDomainAnalytics } from './bootstrap/wire-domain-analytics.js';
 import { wireImportControllers } from './bootstrap/wire-import-controllers.js';
 import { wireUiControllers } from './bootstrap/wire-ui-controllers.js';
 import { createMasterRenderer } from './bootstrap/master-renderer.js';
+import { createAchievementNotifier } from './ui/controllers/achievement-notifier.js';
+import { buildAchievementNotice } from './application/achievements/achievement-notice.js';
 import { RENDER_SCOPE_SECTIONS, buildRenderSections } from './bootstrap/render-sections-config.js';
 import { createTestBridgeConfig } from './bootstrap/create-test-bridge-api.js';
 import {
@@ -188,6 +190,7 @@ const storageAndSync = wireStorageAndSync({
     state = next;
   },
   ensureStateDefaults,
+  onStateChanged: () => scheduleAchievementCheck(),
   observePlanningCapacity: coreServices.observePlanningCapacity,
   restoreTimerFromState: () => uiControllers.studyTimerRuntime.restoreTimerFromState(),
   render: (scope?: string) => render(scope),
@@ -290,6 +293,36 @@ const applicationRenderer = createApplicationRenderer({
   onError: (error: unknown, name: string) => errorBoundary.report(error, name),
 });
 
+// Confere as conquistas depois de salvar. Adiado para não pesar na interação; primeira leitura não avisa.
+const achievementNotifier = createAchievementNotifier({
+  document,
+  onView: () => {
+    window.location.hash = '#desempenho/history';
+  },
+});
+let achievementCheckQueued = false;
+function checkAchievementUnlocks() {
+  achievementCheckQueued = false;
+  const controller = uiControllers.achievementsController;
+  const { newlyUnlocked, changed } = controller.syncUnlocks(todayISO());
+  if (!changed) return;
+  storageAndSync.stateSyncCoordinator.scheduleSave();
+  achievementNotifier.notify(
+    buildAchievementNotice(newlyUnlocked, controller.getBadgesDefinitions())
+  );
+}
+function scheduleAchievementCheck() {
+  if (achievementCheckQueued) return;
+  achievementCheckQueued = true;
+  setTimeout(() => {
+    try {
+      checkAchievementUnlocks();
+    } catch (error) {
+      errorBoundary.report(error, 'conquistas');
+    }
+  }, 0);
+}
+
 masterRenderer = createMasterRenderer({
   applicationRenderer,
   getActiveTabName: uiControllers.activeTabName,
@@ -322,12 +355,15 @@ setupApplicationLifecycle({
 const activateInitialTab = () => {
   // The essential-mode default is decided once, from the data present at the first load (F10).
   essentialController.decide({
-    hasData: Boolean(state.subjects?.length || state.studySessions?.length || state.questoes?.length),
+    hasData: Boolean(
+      state.subjects?.length || state.studySessions?.length || state.questoes?.length
+    ),
     demo: IS_DEMO_MODE,
     testMode: TEST_MODE,
   });
   uiControllers.tabRouter.activateInitialTab();
   uiControllers.firstAccessModalController?.checkAndTrigger();
+  scheduleAchievementCheck();
 };
 const pristineTestState = TEST_MODE ? structuredCloneSafe(state) : null;
 

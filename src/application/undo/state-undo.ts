@@ -1,7 +1,14 @@
 import { pickPersistentState } from '../../state/state-boundaries.js';
 
 // Save bookkeeping and the live timer move on their own; undo neither restores nor compares them.
-const VOLATILE = new Set(['updatedAt', 'lastBackupAt', 'lastExportAt', 'activeTimer']);
+const VOLATILE = new Set([
+  'updatedAt',
+  'lastBackupAt',
+  'lastExportAt',
+  'activeTimer',
+  'achievementUnlocks',
+  'achievementsBaselined',
+]);
 
 const userData = (state: Record<string, any>) => {
   const data = pickPersistentState(state);

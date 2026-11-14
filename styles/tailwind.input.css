@@ -934,6 +934,40 @@
     text-align: left;
   }
 
+  /* Aviso de conquista desbloqueada: canto superior direito, separado do aviso central de salvamento. */
+  .achievement-toast {
+    align-items: center;
+    animation: achievement-toast-in 220ms ease-out;
+  }
+
+  .achievement-toast__badges {
+    display: inline-flex;
+    flex: none;
+  }
+
+  .achievement-toast__badges img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .achievement-toast__badges img + img {
+    margin-left: -12px;
+  }
+
+  @keyframes achievement-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .achievement-toast {
+      animation: none;
+    }
+  }
+
   .ui-toast--idle {
     opacity: 0;
     visibility: hidden;

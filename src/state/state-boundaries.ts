@@ -30,6 +30,7 @@ export const PERSISTENT_OBJECTS = Object.freeze([
   'algorithmVersions',
   'activeTimer',
   'achievementsUnlocked',
+  'achievementUnlocks',
 ] as const);
 
 export interface OnboardingUiState {
@@ -75,6 +76,7 @@ export function pickPersistentState(source: Record<string, any> = {}): Record<st
     'examDate',
     'lastBackupAt',
     'lastExportAt',
+    'achievementsBaselined',
     'updatedAt',
     ...PERSISTENT_COLLECTIONS,
     ...PERSISTENT_OBJECTS,

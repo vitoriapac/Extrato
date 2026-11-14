@@ -49,7 +49,7 @@ test('migração v28 → v29 dá cor às disciplinas sem cor e preserva as váli
 
 test('migração v29 → v30 registra que backup antigo nunca exportou arquivo (F7)', () => {
   const migrated = migrateState({ schemaVersion: 29, subjects: [], lastBackupAt: '2026-10-01T10:00:00.000Z' });
-  assert.equal(migrated.schemaVersion, 30);
+  assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
   assert.equal(migrated.lastExportAt, null);
   assert.equal(migrated.lastBackupAt, '2026-10-01T10:00:00.000Z');
   const kept = migrateState({ schemaVersion: 29, subjects: [], lastExportAt: '2026-10-20T10:00:00.000Z' });

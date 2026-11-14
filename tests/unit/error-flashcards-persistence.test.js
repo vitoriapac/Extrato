@@ -18,6 +18,7 @@ const SCALAR_PERSISTENT_KEYS = [
   'examDate',
   'lastBackupAt',
   'lastExportAt',
+  'achievementsBaselined',
   'updatedAt',
 ];
 

@@ -24,6 +24,8 @@ import { createDemoController } from '../ui/controllers/demo-controller.js';
 import { enterDemoMode, exitDemoMode, resetDemoMode } from '../application/demo/demo-mode.js';
 
 export interface WireStorageAndSyncDeps {
+  /** Depois de qualquer alteração de dados que agenda salvamento (ex.: conferir conquistas). */
+  onStateChanged?: () => void;
   document: Document;
   window: Window;
   instanceId: string;
@@ -210,6 +212,7 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     scheduleSave: (options?: { silent?: boolean }) => {
       demoController.sync();
       stateSyncCoordinator.scheduleSave(options);
+      deps.onStateChanged?.();
     },
     enqueueStateTransaction: stateSyncCoordinator.enqueueStateTransaction,
     loadState: stateSyncCoordinator.loadState,

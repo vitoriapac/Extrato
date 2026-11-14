@@ -1,5 +1,6 @@
 import { buildStrategicAchievements } from '../../application/achievements/build-strategic-achievements.js';
 import { buildAchievementViewModel } from '../../application/achievements/build-achievement-view-model.js';
+import { syncAchievementUnlocks } from '../../application/achievements/achievement-unlocks.js';
 import { renderAchievementGroups } from '../renderers/achievement-renderer.js';
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 
@@ -385,9 +386,18 @@ export function createAchievementsController(options: AchievementsControllerOpti
     });
   }
 
+  /** Grava no estado as conquistas novas e devolve as desbloqueadas agora (vazio na primeira leitura). */
+  function syncUnlocks(todayISO: string) {
+    const unlockedIds = evaluateAchievements()
+      .filter((item: any) => item.unlocked)
+      .map((item: any) => item.id as string);
+    return syncAchievementUnlocks(getState(), unlockedIds, todayISO);
+  }
+
   return {
     getBadgesDefinitions,
     evaluateAchievements,
+    syncUnlocks,
     render,
   };
 }

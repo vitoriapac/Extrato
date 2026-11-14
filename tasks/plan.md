@@ -20,8 +20,8 @@ Tarefas detalhadas: [todo.md](todo.md).
 ## Lista de tarefas
 
 ### Fase 1: Conquistas em Hoje
-- [ ] Tarefa 1: Registro de desbloqueio e migração 30 → 31
-- [ ] Tarefa 2: Aviso de conquista desbloqueada
+- [x] Tarefa 1: Registro de desbloqueio e migração 30 → 31
+- [x] Tarefa 2: Aviso de conquista desbloqueada
 - [ ] Tarefa 3: Resultado da sessão mostra conquista ganha ou a mais perto
 - [ ] Tarefa 4: Subaba "Conquistas" em Hoje e redirecionamento
 - [ ] Tarefa 5: Marca no plano do dia

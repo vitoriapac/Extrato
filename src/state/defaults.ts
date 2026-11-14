@@ -62,6 +62,8 @@ export function createDefaultState(): AppState {
     },
     topicHistory: [],
     achievementsUnlocked: {},
+    achievementUnlocks: {},
+    achievementsBaselined: false,
     metasPorDisciplina: [],
     errorFlashcards: [],
     lastBackupAt: null,

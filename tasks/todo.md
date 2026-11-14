@@ -16,13 +16,13 @@ Verificação usada abaixo:
 ### Tarefa 1: Registro de desbloqueio e migração 30 → 31
 **Descrição:** Cada conquista passa a ter um registro gravado no estado (`id`, `unlockedAt`, `source`). A migração grava como `migrated` o que já está cumprido, com data inferida quando o critério é cumulativo.
 **Aceite:**
-- [ ] `CURRENT_SCHEMA_VERSION` = 31 e migração idempotente (rodar duas vezes dá o mesmo estado)
-- [ ] Conquistas cumpridas antes da migração ficam `migrated`; nenhum registro é recalculado depois de gravado
-- [ ] Cumulativas (horas, questões, tópicos, simulados) recebem a data do registro que atingiu o critério; as demais ficam sem data
-- [ ] Importar backup v30 e entrar na demo passam pela mesma migração
+- [x] `CURRENT_SCHEMA_VERSION` = 31 e migração idempotente (rodar duas vezes dá o mesmo estado)
+- [x] Conquistas cumpridas antes da migração ficam `migrated`; nenhum registro é recalculado depois de gravado
+- [x] Cumulativas (horas, questões, tópicos, simulados) recebem a data do registro que atingiu o critério; as demais ficam sem data
+- [x] Importar backup v30 e entrar na demo passam pela mesma migração
 **Verificação:**
-- [ ] Unit: casos backup sem o campo, já migrado, cumprida sem data inferível, demo
-- [ ] Tipos e build limpos
+- [x] Unit: casos backup sem o campo, já migrado, cumprida sem data inferível, demo
+- [x] Tipos e build limpos
 **Dependências:** nenhuma
 **Arquivos:** `src/state/schema.ts`, `src/state/migrations.ts`, `src/state/defaults.ts`, `src/ui/controllers/achievements-controller.ts`, `tests/unit/state-migrations.test.js`
 **Tamanho:** M
@@ -30,12 +30,12 @@ Verificação usada abaixo:
 ### Tarefa 2: Aviso de conquista desbloqueada
 **Descrição:** Depois de salvar sessão, questões, simulado ou concluir tópico/recomendação, comparar o estado com os registros; cada conquista nova gera registro `live` e um aviso com emblema, nome e critério.
 **Aceite:**
-- [ ] Aviso não bloqueante, fecha sozinho, com Esc e com botão; `role="status"`; sem animação com `prefers-reduced-motion`
-- [ ] Várias conquistas na mesma ação geram um aviso só
-- [ ] Nenhum aviso para registros `migrated`
+- [x] Aviso não bloqueante, fecha sozinho, com Esc e com botão; `role="status"`; sem animação com `prefers-reduced-motion`
+- [x] Várias conquistas na mesma ação geram um aviso só
+- [x] Nenhum aviso para registros `migrated`
 **Verificação:**
-- [ ] Unit: detecção de novos desbloqueios e agrupamento
-- [ ] E2E: na demo, registrar sessão que completa uma conquista e ver o aviso uma vez
+- [x] Unit: detecção de novos desbloqueios e agrupamento
+- [x] E2E: na demo, registrar sessão que completa uma conquista e ver o aviso uma vez
 **Dependências:** T1
 **Arquivos:** `src/ui/controllers/achievements-controller.ts`, `src/ui/primitives/toast.tsx` (ou componente novo), fiação em `src/bootstrap/wire-ui-controllers.ts`, teste unit e spec E2E
 **Tamanho:** M
