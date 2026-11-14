@@ -302,7 +302,7 @@ Verificação usada abaixo:
 
 ### Tarefa 25: Notas de corte oficiais de BB, Caixa e CNU
 **Aceite:**
-- [~] Valores lidos no resultado oficial (Cesgranrio, MGI), com link: BB e Caixa não publicam nota de corte; CNU só publica a pontuação mínima de habilitação à discursiva (decisão pendente). Registro em `tasks/notas-de-corte-fontes.md`
+- [ ] Valores lidos no resultado oficial (Cesgranrio, MGI), com link: ADIADO PARA O FINAL, o usuário vai enviar as notas; BB e Caixa não publicam nota de corte nas fontes lidas e o CNU só publica a pontuação mínima de habilitação à discursiva (registro em `tasks/notas-de-corte-fontes.md`)
 - [x] O que não tiver fonte oficial fica "sem dado" (BB e Caixa)
 **Verificação:** revisão manual das fontes; validação do catálogo passa
 **Dependências:** T24
@@ -318,8 +318,8 @@ Verificação usada abaixo:
 
 ### Tarefa 27: Precisão comparada com a nota de corte do concurso ativo
 **Aceite:**
-- [ ] Referência mostra "Nota de corte <concurso> <ano>, sua praça: X (<banca>)" quando houver
-- [ ] Sem nota cadastrada, compara com a meta do aluno e diz isso
+- [x] Referência mostra "Nota de corte <concurso> <ano>, sua praça: X (<banca>)" quando houver
+- [x] Sem nota cadastrada, compara com a meta do aluno e diz isso
 **Verificação:** Unit dos dois caminhos; E2E na demo
 **Dependências:** T25
 **Tamanho:** S

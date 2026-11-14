@@ -5,6 +5,7 @@ import { SelectField } from '../primitives/select-field.js';
 import { Tooltip } from '../primitives/tooltip.js';
 import { WindowBadge } from '../performance/window-badge.js';
 import { formatDecimal } from '../../core/format-number.js';
+import type { CutoffReference } from '../../domain/analytics/cutoff-reference.js';
 import {
   CAREER_BENCHMARKS,
   type CareerClusterId,
@@ -16,6 +17,7 @@ export interface CareerBenchmarkCardProps {
   comparison: CareerBenchmarkComparisonResult;
   selectedCareerId: CareerClusterId;
   onSelectCareer?: (careerId: CareerClusterId) => void;
+  cutoffReference?: CutoffReference | null;
 }
 
 function MetricBulletBar({
@@ -108,6 +110,7 @@ export function CareerBenchmarkCard({
   comparison,
   selectedCareerId,
   onSelectCareer,
+  cutoffReference = null,
 }: CareerBenchmarkCardProps): JSX.Element {
   const {
     career,
@@ -197,6 +200,14 @@ export function CareerBenchmarkCard({
             <WindowBadge kind="sevenDays" />
           </div>
           <MetricBulletBar comparison={accuracy} maxDisplay={100} />
+          {cutoffReference ? (
+            <p
+              class="text-xs text-content-secondary m-0 mt-2"
+              data-cutoff-reference={cutoffReference.kind}
+            >
+              {cutoffReference.text}
+            </p>
+          ) : null}
         </div>
       </div>
 

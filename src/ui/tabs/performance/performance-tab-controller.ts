@@ -24,6 +24,7 @@ import { NARROW_CHART_BREAKPOINT } from '../../primitives/charts/chart-size.js';
 import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
+import { buildCutoffReference } from '../../../domain/analytics/cutoff-reference.js';
 import {
   detectCareerCluster,
   aggregateRecentActivity,
@@ -585,6 +586,10 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         h(CareerBenchmarkCard, {
           comparison,
           selectedCareerId: activeCareerId,
+          cutoffReference: buildCutoffReference({
+            activeExamTags: state.examBlueprint?.activeExamTags || [],
+            goalPercent: Number(state.metas?.metaAprovacao) || 80,
+          }),
           onSelectCareer: (newId: CareerClusterId) => {
             selectedCareerClusterId = newId;
             renderPerformance();
