@@ -249,8 +249,9 @@ Verificação usada abaixo:
 
 ### Tarefa 20: Matriz condicional; Balanço e Radar de vulnerabilidades como ordenações
 **Aceite:**
-- [ ] Matriz só aparece quando ao menos um quadrante não crítico tem disciplinas; senão, lista
-- [ ] Balanço e Radar viram ordenações do Extrato
+- [x] Matriz só aparece quando ao menos um quadrante não crítico tem disciplinas; senão, lista
+- [x] Balanço e Radar viram ordenações do Extrato
+**Feito:** Matriz sem dispersão quando tudo é crítico (só a lista); Balanço = ordenar por tempo × edital; Radar = ordenar por críticos; fold só com Queda de retenção.
 **Verificação:** Unit da condição da Matriz; E2E
 **Dependências:** T19
 **Tamanho:** M

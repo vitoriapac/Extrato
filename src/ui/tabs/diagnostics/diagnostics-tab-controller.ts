@@ -19,6 +19,7 @@ import {
   buildStudyAction as defaultBuildStudyAction,
   recommendationActionLabel as defaultRecommendationActionLabel,
 } from '../../../application/recommendations/recommendation-action.js';
+import { buildAllocationBalanceViewModel } from '../../../application/analytics/build-allocation-balance-view-model.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 
 export interface DiagnosticsTabControllerOptions {
@@ -71,7 +72,7 @@ export interface DiagnosticsTabControllerOptions {
 
 export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOptions) {
   let currentConsolidatedDiagnosis: any = null;
-  const diagnosisFilters = { severity: 'all', evidence: 'all' };
+  const diagnosisFilters: Record<string, string> = { severity: 'all', evidence: 'all', sort: 'queue' };
   let filtersWired = false;
   const reconcileAlerts = opts.reconcileAlerts || defaultReconcileAlerts;
   const renderIntelligentAlerts = opts.renderIntelligentAlerts || defaultRenderIntelligentAlerts;
@@ -159,7 +160,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       container.addEventListener?.('change', (event: any) => {
         const name = event.target?.dataset?.diagnosisFilter;
         if (!name) return;
-        diagnosisFilters[name === 'severity' ? 'severity' : 'evidence'] = event.target.value;
+        diagnosisFilters[name] = event.target.value;
         renderDiagnosisCenter();
       });
     }
@@ -210,6 +211,15 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       escapeHtml: opts.escapeHtml,
       escapeAttr: opts.escapeAttr,
       filters: diagnosisFilters,
+      allocation: Object.fromEntries(
+        buildAllocationBalanceViewModel({
+          subjects: state.subjects || [],
+          sessions: state.studySessions || [],
+          blueprint: state.examBlueprint || {},
+          today: opts.todayISO(),
+          addDays: opts.addDays,
+        }).rows.map((row: any) => [row.subjectId, row])
+      ),
     });
 
     const secondaryHtml = renderRecoveryReviewDebt(

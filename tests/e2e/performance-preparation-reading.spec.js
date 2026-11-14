@@ -138,7 +138,7 @@ test('Dobras de Desempenho continuam abertas quando a tela é redesenhada', asyn
   ).toHaveJSProperty('open', true);
 });
 
-test('Diagnóstico recebe Matriz, Balanço, Radar e Queda; Por disciplina fica enxuta', async ({
+test('Diagnóstico recebe Matriz, ordenações (Balanço, Radar) e Queda; Por disciplina fica enxuta', async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -159,7 +159,12 @@ test('Diagnóstico recebe Matriz, Balanço, Radar e Queda; Por disciplina fica e
   // Nasce fechada, mas lembra se foi aberta.
   await expect(balance).toHaveJSProperty('open', false);
   await balance.locator(':scope > summary').click();
-  await expect(page.getByRole('heading', { name: /Radar de Vulnerabilidades/ })).toBeVisible();
+  // Balanço e Radar viraram ordenações do Extrato.
+  await expect(page.getByRole('heading', { name: /Radar de Vulnerabilidades|Balanço: Tempo/ })).toHaveCount(0);
+  await page.locator('[data-diagnosis-filter=sort]').selectOption('allocation');
+  await expect(page.locator('.diagnosis-group > summary').first()).toContainText('edital');
+  await page.locator('[data-diagnosis-filter=sort]').selectOption('vulnerable');
+  await expect(page.locator('.diagnosis-group > summary').first()).toContainText('críticos');
   await expect(
     page.getByRole('heading', { name: /Queda de retenção entre avaliações/ })
   ).toBeVisible();

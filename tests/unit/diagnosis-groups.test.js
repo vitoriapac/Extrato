@@ -46,3 +46,40 @@ test('filtro por prioridade e evidência mantém o lugar na fila e informa a con
   assert.equal((html.match(/<article/g) || []).length, 1);
   assert.match(render({ severity: 'monitor' }), /Nenhum conteúdo com esse filtro/);
 });
+
+test('ordenar por tempo × edital e por críticos reordena as disciplinas e mostra o motivo', () => {
+  const allocation = {
+    a: { timePercent: 50, examWeightPercent: 20 },
+    b: { timePercent: 10, examWeightPercent: 40 },
+    c: { timePercent: 40, examWeightPercent: 40 },
+  };
+  const names = html => [...html.matchAll(/<strong>(Disciplina \w)<\/strong>/g)].map(m => m[1]);
+  const byGap = renderConsolidatedDiagnosis(
+    { topics, subjects: [] },
+    { studyActionForItem: () => null, escapeHtml: String, escapeAttr: String, filters: { sort: 'allocation' }, allocation }
+  );
+  assert.deepEqual(names(byGap), ['Disciplina b', 'Disciplina c', 'Disciplina a']);
+  assert.match(byGap, /tempo 10% · edital 40%/);
+  const byRisk = renderConsolidatedDiagnosis(
+    { topics, subjects: [] },
+    { studyActionForItem: () => null, escapeHtml: String, escapeAttr: String, filters: { sort: 'vulnerable' } }
+  );
+  assert.match(byRisk, /1 críticos/);
+});
+
+test('Matriz: sem nenhuma disciplina fora do quadrante crítico, só a lista', async () => {
+  const { renderPedagogicalMatrixSection } = await import('../../src/ui/performance/performance-matrix-renderer.js');
+  const item = { name: 'Informática', mastery: 20, retention: 30, studyMinutes: 60 };
+  const base = { items: [item], thresholdMastery: 70, thresholdRetention: 60 };
+  const critical = renderPedagogicalMatrixSection(
+    { ...base, quadrantCounts: { consolidated: 0, forgetting_risk: 0, building: 0, critical: 1 } },
+    { escapeHtml: String }
+  );
+  assert.doesNotMatch(critical, /matrix-chart-scroll/);
+  assert.match(critical, /matrix-ranked/);
+  const mixed = renderPedagogicalMatrixSection(
+    { ...base, quadrantCounts: { consolidated: 0, forgetting_risk: 0, building: 1, critical: 0 } },
+    { escapeHtml: String }
+  );
+  assert.match(mixed, /matrix-chart-scroll/);
+});

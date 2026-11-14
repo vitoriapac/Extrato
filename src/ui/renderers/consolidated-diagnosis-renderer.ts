@@ -4,7 +4,7 @@ import { SHARED_SIGNALS_LIMITATION } from '../../application/diagnostics/build-c
 
 export function renderConsolidatedDiagnosis(
   model: Record<string, any>,
-  { studyActionForItem, escapeHtml, escapeAttr, filters = {} }: any
+  { studyActionForItem, escapeHtml, escapeAttr, filters = {}, allocation = {} }: any
 ) {
   const rows = [...(model.topics || []), ...(model.subjects || [])].filter(
     item => item.primarySignal
@@ -30,7 +30,8 @@ export function renderConsolidatedDiagnosis(
   // Posição na fila (pontuação) não muda com o filtro: o número do cartão é o lugar na fila.
   const ranked = rows.map((item, index) => ({ item, rank: index }));
   const severity = filters.severity || 'all',
-    evidence = filters.evidence || 'all';
+    evidence = filters.evidence || 'all',
+    sort = filters.sort || 'queue';
   const matches = ({ item }: { item: Record<string, any> }) =>
     (severity === 'all' || item.severity === severity) &&
     (evidence === 'all' || item.evidenceQuality === evidence);
@@ -40,9 +41,9 @@ export function renderConsolidatedDiagnosis(
     rows.forEach(item => seen.has(item[key]) || seen.set(item[key], label(item)));
     return [...seen];
   };
-  const select = (name: string, title: string, current: string, entries: [string, string][]) =>
-    `<label class="diagnosis-filter">${title}<select class="select-control" data-diagnosis-filter="${name}"><option value="all">Todas</option>${entries.map(([value, text]) => `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')}</select></label>`;
-  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, options('evidenceQuality', item => item.evidence?.label || item.evidenceQuality))}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} conteúdos</span></div>`;
+  const select = (name: string, title: string, current: string, entries: [string, string][], all = 'Todas') =>
+    `<label class="diagnosis-filter">${title}<select class="select-control" data-diagnosis-filter="${name}"><option value="${name === 'sort' ? 'queue' : 'all'}">${all}</option>${entries.map(([value, text]) => `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')}</select></label>`;
+  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, options('evidenceQuality', item => item.evidence?.label || item.evidenceQuality))}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} conteúdos</span></div>`;
   const groups = new Map<string, { name: string; items: { item: Record<string, any>; rank: number }[] }>();
   visible.forEach(entry => {
     const { item } = entry;
@@ -56,8 +57,22 @@ export function renderConsolidatedDiagnosis(
   // Só a disciplina do primeiro da fila abre, e mostra três conteúdos; o resto de cada grupo espera a abertura.
   const listOf = (entries: typeof visible) =>
     `<div class="diagnosis-consolidated-list">${entries.map(({ item, rank }) => renderRow(item, rank)).join('')}</div>`;
-  const body = [...groups.values()]
-    .map((group, index) => {
+  // Balanço (tempo × peso) e Radar (críticos) são maneiras de ordenar as disciplinas, não painéis à parte.
+  const gap = (id: string) =>
+    allocation[id] ? allocation[id].examWeightPercent - allocation[id].timePercent : -Infinity;
+  const criticals = (group: { items: { item: Record<string, any> }[] }) =>
+    group.items.filter(({ item }) => item.severity === 'critical').length;
+  const ordered = [...groups.entries()];
+  if (sort === 'allocation') ordered.sort(([a], [b]) => gap(b) - gap(a));
+  if (sort === 'vulnerable') ordered.sort(([, a], [, b]) => criticals(b) - criticals(a));
+  const note = (id: string, group: any) =>
+    sort === 'allocation' && allocation[id]
+      ? ` · tempo ${allocation[id].timePercent}% · edital ${allocation[id].examWeightPercent}%`
+      : sort === 'vulnerable'
+        ? ` · ${criticals(group)} críticos`
+        : '';
+  const body = ordered
+    .map(([id, group], index) => {
       const open = index === 0;
       const head = group.items.slice(0, 3),
         rest = group.items.slice(3);
@@ -65,7 +80,7 @@ export function renderConsolidatedDiagnosis(
         ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${listOf(rest)}</template></details>`
         : '';
       const inner = listOf(head) + more;
-      return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'conteúdo' : 'conteúdos'}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
+      return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'conteúdo' : 'conteúdos'}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
     })
     .join('');
   return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${controls}${body || '<p class="analytics-note">Nenhum conteúdo com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
