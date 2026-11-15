@@ -1,3 +1,4 @@
+import { ratioPercent } from '../../core/format-number.js';
 import { buildRecommendationFollowup } from '../recommendations/build-recommendation-followup.js';
 import { buildAdherenceModel } from '../adherence/build-adherence-model.js';
 import { buildPreparationReading } from './build-preparation-reading.js';
@@ -169,7 +170,7 @@ export function buildPerformancePageModel({
               id,
               {
                 resolved: row.resolved,
-                accuracy: row.resolved ? Math.round((row.correct / row.resolved) * 100) : null,
+                accuracy: row.resolved ? ratioPercent(row.correct, row.resolved) : null,
               },
             ])
           );

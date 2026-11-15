@@ -45,3 +45,7 @@ export function formatPointsMagnitude(value: unknown, digits = 1): string {
   if (value == null || value === '' || !Number.isFinite(number)) return '—';
   return `${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Math.abs(number))} p.p.`;
 }
+
+/** Porcentagem de acertos com uma casa (65,4), para o número mostrado e o gráfico não divergirem. */
+export const ratioPercent = (part: number, total: number): number =>
+  Math.round((Number(part) / Number(total)) * 1000) / 10;

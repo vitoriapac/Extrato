@@ -119,7 +119,18 @@ Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red 
 - [x] Tarefa 43: Jornada emocional: bloco "O que já está firme" na Leitura da Visão geral e "N já sob controle" no Diagnóstico (P3)
 
 ### Checkpoint 9: Crítica
-- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3 (28/40 na rodada 9)
+- [x] `/impeccable critique` rodada 11: 27/40 (H4 = 2, H8 = 2): meta não atingida; achados na Fase 10
+
+### Fase 10: Correções da crítica 11 (27/40; H4 = 2, H8 = 2)
+Origem: crítica de 15/11 (avaliadores A e B). Ordem: consistência, fila, mobile, cor e densidade.
+- [ ] Tarefa 44: Consistência dos números (precisão agregada de uma só fonte; sem ",0" falso; contador do Diagnóstico "298"; "1 sessão"; "p.p." e sinais únicos; horas em um formato)
+- [ ] Tarefa 45: Fila do Diagnóstico e Próxima ação (Próxima ação explicada ou primeiro da fila; "evidência" por tópico explicada; Impacto manual visível)
+- [ ] Tarefa 46: Mobile e toque (subaba "Resultados das provas" sem corte; alvos de 44 px; selos de janela; aria-allowed-role e landmark-unique; foco após Ctrl+K)
+- [ ] Tarefa 47: Laranja e densidade (semana em curso neutra; Prioridade média neutra; Simulados do mais recente ao mais antigo; Ritmo em Esta semana/Histórico)
+- [ ] Tarefa 48: Matriz e gráfico de precisão por disciplina (5 piores rotulados; barras com meta)
+
+### Checkpoint 10: Crítica
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
 
 ## Grafo de dependências
 

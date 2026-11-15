@@ -246,7 +246,10 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       remaining: countRemainingTopics(scopedTopics),
       withSignal,
       controlled: consolidated?.summary?.topics?.controlled ?? null,
-      inNextAction: Math.max(0, withSignal - signalCount(dropSuggestedTopic(diagnosis, nextAction?.action))),
+      inNextAction: Math.max(
+        0,
+        signalCount(diagnosis?.consolidated) - signalCount(dropSuggestedTopic(diagnosis, nextAction?.action)?.consolidated)
+      ),
     });
 
     const secondaryHtml = renderRecoveryReviewDebt(

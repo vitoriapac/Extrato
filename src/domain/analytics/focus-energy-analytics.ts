@@ -1,3 +1,4 @@
+import { pluralize } from '../../core/utils.js';
 import { formatPointsMagnitude } from '../../core/format-number.js';
 /**
  * Análise Cronobiológica de Energia, Foco e Fadiga (src/domain/analytics/focus-energy-analytics.ts)
@@ -181,7 +182,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
       shifts,
       fatigueAlert: null,
       recommendations: [
-        `Amostra atual (${sampleSize} sessões) ainda insuficiente. Registre foco e energia no encerramento de mais ${MINIMUM_RATED_SESSIONS_SAMPLE - sampleSize} sessões para gerar diagnósticos cronobiológicos.`,
+        `Amostra atual (${pluralize(sampleSize, 'sessão', 'sessões')}) ainda insuficiente. Registre foco e energia no encerramento de mais ${pluralize(MINIMUM_RATED_SESSIONS_SAMPLE - sampleSize, 'sessão', 'sessões')} para gerar diagnósticos cronobiológicos.`,
       ],
     };
   }

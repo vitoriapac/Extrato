@@ -1,8 +1,9 @@
+import { ratioPercent } from '../../core/format-number.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 
 const number = (value: unknown) => Math.max(0, Number(value) || 0);
 const percent = (correct: number, total: number) =>
-  total ? Math.round((correct / total) * 100) : null;
+  total ? ratioPercent(correct, total) : null;
 const bucketKey = (date: string, monthly: boolean) => {
   if (monthly) return date.slice(0, 7);
   const weekday = parseLocalDate(date)?.getDay();

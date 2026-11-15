@@ -3669,7 +3669,7 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 .pace-next{margin:var(--space-2) 0;padding:var(--space-2) var(--space-3);border:1px solid var(--chart-series-secondary);background:var(--surface-card-muted)}.pace-next p{margin:0 0 var(--space-1);font:var(--text-small) var(--font-body);color:var(--ink);max-width:none}.pace-next__actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}
 /* T41: celular e toque */
 .heatmap-weekly-mobile{display:none;list-style:none;margin:0;padding:0}.heatmap-weekly-mobile li{display:grid;grid-template-columns:minmax(7.5rem,1fr) minmax(4rem,1.2fr) auto;gap:var(--space-3);align-items:center;min-height:44px;border-bottom:1px solid var(--border-default);font-size:var(--text-small);color:var(--text-secondary)}.heatmap-weekly-mobile__bar{display:block;height:8px;border-radius:2px;background:var(--surface-card-muted);overflow:hidden}.heatmap-weekly-mobile__bar>i{display:block;height:100%;background:var(--chart-series-primary)}
-@media(max-width:600px){.heatmap-grid-wrap,.heatmap-weekly-text{display:none}.heatmap-weekly-mobile{display:block}.touch-target{min-height:44px}.performance-section-nav{overflow-x:auto;scrollbar-width:none}.performance-section-nav::-webkit-scrollbar{display:none}.performance-section-nav [role=tab]{flex:0 0 auto;white-space:nowrap}.diagnosis-filters__count{margin-left:0;width:100%}}
+@media(max-width:600px){.heatmap-grid-wrap,.heatmap-weekly-text{display:none}.heatmap-weekly-mobile{display:block}.touch-target{min-height:44px}.performance-section-nav{overflow-x:auto;scrollbar-width:none}.performance-section-nav::-webkit-scrollbar{display:none}.performance-section-nav [role=tab]{flex:0 0 auto;width:auto;min-width:max-content;min-height:44px;white-space:nowrap}.diagnosis-filters__count{margin-left:0;width:100%}}
 button.performance-window{position:relative}button.performance-window::after{content:"";position:absolute;inset:-10px -6px}
 #performancePage select{max-width:100%;min-width:0}.heatmap-toolbar select,.activity-heatmap-container select{max-width:100%;min-width:0}
 .performance-reading__steady{margin-top:var(--space-3);padding-top:var(--space-2);border-top:1px solid var(--border-default)}.performance-reading__steady h5{font:600 var(--text-small) var(--font-body);color:var(--text-secondary)}.performance-reading__steady ul{padding-left:1.1rem;font-size:var(--text-sm);color:var(--text-primary)}
@@ -3695,3 +3695,6 @@ button.performance-window{position:relative}button.performance-window::after{con
 }
 
 /* Laranja só para atenção (precisa de ação): evidência e métricas são neutras. */
+
+/* T46: alvos de toque e selos de janela */
+@media(pointer:coarse),(max-width:600px){.performance-window{min-height:44px;display:inline-flex;align-items:center}}
