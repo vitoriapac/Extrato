@@ -148,7 +148,7 @@ export function buildPerformanceOverview({
   const changes = [];
   if (readinessDelta != null && readinessDelta !== 0)
     changes.push({
-      label: 'Prontidão no último fechamento',
+      label: 'Prontidão: último fechamento contra o do período anterior',
       delta: readinessDelta,
       detail: `${latest!.score} em ${formatDateBR(latest!.date)} contra ${prior!.score} em ${formatDateBR(prior!.date)}, último registro do período anterior`,
       unit: Math.abs(readinessDelta) === 1 ? 'ponto' : 'pontos',

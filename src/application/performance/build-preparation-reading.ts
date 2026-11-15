@@ -107,9 +107,11 @@ export function buildPreparationReading({
   // O valor grande é o cálculo de hoje; o fechamento é um retrato de outra data. Se diferem, a frase diz isso.
   const closingDiffers =
     readinessValue != null && pair?.current && Number(pair.current.score) !== readinessValue;
+  const formatSignedPoints = (n: number) =>
+    `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(Math.round(n))} ${Math.abs(Math.round(n)) === 1 ? 'ponto' : 'pontos'}`;
   const demoClosing = String(pair?.current?.id || '').startsWith('demo-readiness-');
   const closingNote = closingDiffers
-    ? ` O valor acima é o de hoje.${demoClosing ? ' Na demonstração, os fechamentos são fictícios.' : ''}`
+    ? ` O valor acima é o de hoje (${formatSignedPoints(readinessValue! - Number(pair!.current.score))} frente a esse fechamento).${demoClosing ? ' Na demonstração, os fechamentos são fictícios.' : ''}`
     : '';
   const readinessDetailBase =
     model.readinessDelta != null && pair?.current && pair?.previous
@@ -123,10 +125,10 @@ export function buildPreparationReading({
     delta == null
       ? null
       : Math.abs(delta) <= 1
-        ? { state: 'steady', text: 'Tendência: estável frente ao período anterior' }
+        ? { state: 'steady', text: 'Tendência entre os dois últimos fechamentos: estável' }
         : delta < 0
-          ? { state: 'down', text: 'Tendência: em queda frente ao período anterior' }
-          : { state: 'up', text: 'Tendência: em alta frente ao período anterior' };
+          ? { state: 'down', text: 'Tendência entre os dois últimos fechamentos: em queda' }
+          : { state: 'up', text: 'Tendência entre os dois últimos fechamentos: em alta' };
   if (readinessValue != null && model.readinessDelta == null)
     evidence.push('Sem fechamento anterior comparável: a Prontidão aparece sem variação.');
   const band = projection?.projection?.calibratedSimulationBand;
