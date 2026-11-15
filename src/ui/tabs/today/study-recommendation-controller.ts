@@ -178,7 +178,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     const reasons = model.reasons.length
       ? `<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(' · '))}</small>`
       : '';
-    return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança da medição: ${escapeHtml((model.confidenceLabel || 'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || '<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
+    return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Evidência da medição: ${escapeHtml((model.confidenceLabel || 'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || '<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
   }
 
   function refreshStudyRecommendationItems({

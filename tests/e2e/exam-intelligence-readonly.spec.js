@@ -61,7 +61,7 @@ test('impacto manual prevalece sobre o histórico na prioridade', async ({ page 
   // A lista de tópicos só entra no DOM quando a dobra abre.
   await page.locator('.exam-intelligence-topics summary').click();
   await expect(page.locator('#examIntelligenceSummary')).toContainText('4 de 5 provas');
-  await expect(page.locator('#examIntelligenceSummary')).toContainText('Confiança média');
+  await expect(page.locator('#examIntelligenceSummary')).toContainText('Base histórica média');
   await expectNoPageOverflow(page);
   await activateTab(page, 'disciplinas');
   await page.locator('.notes-toggle-btn').first().click();

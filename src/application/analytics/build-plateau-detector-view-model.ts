@@ -73,8 +73,8 @@ const STRATEGY_VARIANTS: Record<PlateauPrescribedStrategy, PlateauTopicItem['str
 };
 
 const CONFIDENCE_LABELS: Record<PlateauDiagnosticResult['confidence'], string> = {
-  high: 'Alta Confiança',
-  medium: 'Média Confiança',
+  high: 'Evidência alta',
+  medium: 'Evidência média',
   low: 'Indício Inicial',
 };
 

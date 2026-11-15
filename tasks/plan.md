@@ -99,11 +99,11 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [ ] Todos os critérios atendidos (inclui a Fase 9); `/impeccable critique` ≥ 32/40; pronto para revisão
 
 ### Fase 8: Vocabulário e contagens nas outras telas
-- [ ] Tarefa 33: Vocabulário (domínio e retenção /100, evidência × confiança) fora de Desempenho
-- [ ] Tarefa 34: Contagens de simulados e janelas nas outras telas; decisão sobre a base do fator Simulados
+- [x] Tarefa 33: Vocabulário (domínio e retenção /100, evidência × confiança) fora de Desempenho
+- [x] Tarefa 34: Contagens de simulados e janelas nas outras telas; decisão sobre a base do fator Simulados (mantém os 5 últimos, sem filtro de composição)
 
 ### Checkpoint 8: Outras telas
-- [ ] Busca no bundle sem "domínio N%" nem "confiança" fora da faixa projetada; E2E e capturas atualizados
+- [x] Busca no bundle sem "domínio N%" nem "confiança" fora da faixa projetada (restam só pesos de fator em % e a meta de domínio em %, com a regra escrita na Ajuda); E2E atualizados
 
 ### Fase 9: Correções das críticas 8 e 9 (H4, H8, mobile e personas)
 Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red flags de Alex, Casey, Sam e Jordan. Detalhes e aceite em [todo.md](todo.md).

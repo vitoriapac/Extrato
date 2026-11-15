@@ -79,7 +79,7 @@ export function calculateSubjectOpportunity(input: SubjectOpportunityInput): Opp
     tier = 'marginal';
     rationale =
       mastery >= MASTERY_CEILING
-        ? `Domínio consolidado (${Math.round(mastery)}% >= 85%). Retorno marginal por hora adicional é decrescente.`
+        ? `Domínio consolidado (${Math.round(mastery)}/100, a partir de 85/100). Retorno marginal por hora adicional é decrescente.`
         : 'Baixo peso relativo no concurso com retorno marginal insignificante.';
   } else if (pointsPerHourRatio >= 0.35) {
     tier = 'top_priority';

@@ -298,7 +298,7 @@ export function buildAdaptivePlanningAdvice({
     `Impacto da disciplina de destino na prova: ${target.impact}/100.`,
     ...(target.historical
       ? [
-          `Histórico validado em ${target.historical.topicName || 'tópico da disciplina'}: ${target.historical.examIntelligence.presentExamCount} de ${target.historical.examIntelligence.analyzedExamCount} provas; confiança ${target.historical.examIntelligence.confidenceLabel.toLowerCase()}.`,
+          `Histórico validado em ${target.historical.topicName || 'tópico da disciplina'}: ${target.historical.examIntelligence.presentExamCount} de ${target.historical.examIntelligence.analyzedExamCount} provas; base histórica ${target.historical.examIntelligence.confidenceLabel.toLowerCase()}.`,
         ]
       : []),
     `A transferência mantém a carga semanal em ${formatPlanMinutes(budget)}. O bloco fica entre ${formatPlanMinutes(ADAPTIVE_TRANSFER_MINUTES)} e ${formatPlanMinutes(ADAPTIVE_TRANSFER_MAX_MINUTES)}.`,

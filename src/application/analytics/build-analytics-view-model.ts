@@ -219,7 +219,7 @@ export function buildDiagnosisViewModel(
         ),
       ],
       secondaryReasons: item.missingFactors?.includes('examImpact')
-        ? ['Configure o impacto da prova para aumentar a confiança da estimativa.']
+        ? ['Configure o impacto da prova para aumentar a evidência da estimativa.']
         : [],
     });
   });

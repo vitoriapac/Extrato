@@ -54,7 +54,7 @@ export function buildPriorityViewModel(item: any = {}, position = 1) {
       ? 'Impacto ainda sem dados'
       : `${impactOrigin} ${Math.round(exam.value)}/100`;
   const examExplanation = exam.analyzedExamCount
-    ? `${impactLabel} · ${exam.presentExamCount} de ${exam.analyzedExamCount} provas · incidência ${exam.presencePercent}% · confiança ${String(exam.confidenceLabel || 'limitada').toLowerCase()}${exam.usedHistory ? ' · histórico considerado no impacto' : ' · histórico informativo'}`
+    ? `${impactLabel} · ${exam.presentExamCount} de ${exam.analyzedExamCount} provas · incidência ${exam.presencePercent}% · base histórica ${String(exam.confidenceLabel || 'limitada').toLowerCase()}${exam.usedHistory ? ' · histórico considerado no impacto' : ' · histórico informativo'}`
     : impactLabel;
   const personalExplanation = [
     item.mastery == null ? 'Domínio sem evidência' : `Domínio ${Math.round(item.mastery)}/100`,

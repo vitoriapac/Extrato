@@ -275,9 +275,9 @@ const BASE_HELP_CATEGORIES: any[] = [
       {
         id: 'readiness',
         title: 'Índice de Prontidão',
-        summary: 'Uma síntese de 0 a 100, sempre acompanhada de confiança.',
+        summary: 'Uma síntese de 0 a 100, sempre acompanhada de evidência.',
         paragraphs: [
-          'O índice combina cobertura, domínio, retenção, consistência e simulados. Progresso real, melhora nesses fatores e evidência mais completa podem elevar o indicador; deterioração ou revisão insuficiente podem reduzi-lo. Fatores ausentes diminuem a confiança. O número não estima a chance de aprovação.',
+          'O índice combina cobertura, domínio, retenção, consistência e simulados. Progresso real, melhora nesses fatores e evidência mais completa podem elevar o indicador; deterioração ou revisão insuficiente podem reduzi-lo. Fatores ausentes diminuem a evidência. O número não estima a chance de aprovação.',
         ],
         action: { label: 'Ver Índice de Prontidão', target: 'overview' },
       },
@@ -304,7 +304,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Relatório e PDF',
         summary: 'Uma fotografia estratégica do período escolhido.',
         paragraphs: [
-          'O PDF resume planejamento, desempenho, recomendações, Inteligência da Prova e foco dos últimos sete dias do período. Inclui cobertura e confiança históricas e até três lacunas estratégicas. Use-o para revisar ou imprimir; ele não substitui o backup JSON.',
+          'O PDF resume planejamento, desempenho, recomendações, Inteligência da Prova e foco dos últimos sete dias do período. Inclui cobertura e base histórica e até três lacunas estratégicas. Use-o para revisar ou imprimir; ele não substitui o backup JSON.',
         ],
         action: { label: 'Ir ao relatório PDF', target: 'report' },
       },
@@ -332,7 +332,7 @@ const BASE_HELP_CATEGORIES: any[] = [
           'Provas históricas',
           'Questões classificadas',
           'Tópicos e incidência',
-          'Confiança',
+          'Base histórica',
           'Impacto na prova',
         ],
         paragraphs: [
@@ -345,7 +345,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Qualidade do histórico',
         summary: 'A força da amostra vem antes do impacto.',
         paragraphs: [
-          'O Extrato de Estudos observa provas completas e parciais, cobertura conhecida, questões classificadas, pendências e confiança. Provas parciais não são tratadas como ausência do tópico. Uma base pequena não significa desempenho ruim: quando o histórico é insuficiente, sua influência no impacto é limitada.',
+          'O Extrato de Estudos observa provas completas e parciais, cobertura conhecida, questões classificadas, pendências e base histórica. Provas parciais não são tratadas como ausência do tópico. Uma base pequena não significa desempenho ruim: quando o histórico é insuficiente, sua influência no impacto é limitada.',
         ],
         action: { label: 'Revisar qualidade da base', target: 'exam' },
       },
@@ -610,7 +610,7 @@ Object.assign(
 );
 analysisGuide.entries.push({
   id: 'evidence-guide',
-  title: 'Evidência e confiança',
+  title: 'Evidência, base histórica e confiança',
   kind: 'concept',
   summary: 'Dados suficientes precisam também ser comparáveis e estatisticamente significativos.',
   keywords: [
@@ -626,7 +626,8 @@ analysisGuide.entries.push({
     title: 'Simulador de Força da Evidência e Amostragem',
   },
   paragraphs: [
-    'A confiança nas análises do Extrato de Estudos obedece ao princípio estatístico da amostragem (Lei dos Grandes Números): volumes muito pequenos de questões geram margens de erro excessivamente amplas, tornando qualquer conclusão precoce sobre maestria ou deficiência altamente volátil.',
+    'A evidência nas análises do Extrato de Estudos obedece ao princípio estatístico da amostragem (Lei dos Grandes Números): volumes muito pequenos de questões geram margens de erro excessivamente amplas, tornando qualquer conclusão precoce sobre maestria ou deficiência altamente volátil.',
+    'Três palavras, três usos: Evidência (Alta, Média ou Baixa) é a força de um número do seu estudo; Base histórica é a evidência das provas da banca; Confiança é só da faixa projetada de nota. Domínio e retenção são sempre de 0 a 100. A meta de domínio, em Planejamento, é um alvo escrito em %: 80% equivale a 80/100 do índice.',
     'O algoritmo adota uma postura prudente: com menos de 10 questões, ele evita rotular tópicos como dominados ou condenados e prioriza a coleta de evidências. A partir de 30 questões, a tendência se estabiliza, e acima de 80 questões atinge robustez estatística com margem de erro reduzida.',
   ],
 });
@@ -690,7 +691,7 @@ Object.assign(
         },
       ],
     },
-    note: 'Incidência é presença nas provas analisadas. Impacto considera também pesos, fontes e confiança; a matriz didática não substitui o mecanismo de prioridade.',
+    note: 'Incidência é presença nas provas analisadas. Impacto considera também pesos, fontes e base histórica; a matriz didática não substitui o mecanismo de prioridade.',
   }
 );
 examGuide.entries.push({
@@ -929,7 +930,7 @@ export const HELP_GLOSSARY = [
     'Presença de um tópico nas provas analisadas, distinta da participação em questões.',
   ],
   [
-    'Confiança',
+    'Evidência',
     'Força de uma medida considerando volume, qualidade e comparabilidade dos dados. Evidência limitada preserva a incerteza.',
   ],
   [
@@ -965,8 +966,8 @@ export const HELP_GLOSSARY = [
 
 export const HELP_FAQ = [
   [
-    'Por que meu índice ainda tem baixa confiança?',
-    'Ainda há pouca evidência em um ou mais fatores. Baixa confiança não significa automaticamente baixo desempenho.',
+    'Por que meu índice ainda tem evidência baixa?',
+    'Ainda há pouca evidência em um ou mais fatores. Evidência baixa não significa automaticamente baixo desempenho.',
   ],
   [
     'Prontidão é probabilidade de aprovação?',
@@ -979,6 +980,10 @@ export const HELP_FAQ = [
   [
     'Como levo meus dados para outro dispositivo?',
     'Exporte um backup JSON, transfira o arquivo com segurança e importe-o no outro navegador. O PDF não restaura dados.',
+  ],
+  [
+    'Por que o app conta simulados de formas diferentes?',
+    'São três contas, cada uma com o seu critério e a sua janela. A aba Simulados mostra a média simples dos simulados do período escolhido. A faixa projetada usa a mediana dos 3 últimos simulados comparáveis (mesma meta, prova e composição). O fator Simulados da Prontidão usa a média ponderada dos 5 últimos simulados de todo o histórico, sem filtro de composição.',
   ],
   [
     'O aplicativo funciona sem internet?',

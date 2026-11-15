@@ -122,7 +122,7 @@ export function buildWeeklyDecisionGuidance({
     comparisonNote:
       delta == null
         ? 'Sem comparação de simulados com a mesma meta, prova e escopo.'
-        : 'Mudança observada nos simulados comparáveis; não representa ganho causado pelo planejamento.',
+        : 'Mudança do resultado central (mediana dos 3 últimos simulados comparáveis) frente ao fechamento anterior, com a mesma meta, prova e escopo; não representa ganho causado pelo planejamento.',
   };
 }
 

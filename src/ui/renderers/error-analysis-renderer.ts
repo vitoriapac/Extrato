@@ -32,7 +32,7 @@ export function renderErrorAnalysis(
     formatDecimal(model.coverage) +
     '% dos ' +
     model.totalErrors +
-    ' erros estão categorizados · confiança ' +
+    ' erros estão categorizados · evidência ' +
     escapeHtml(model.confidence?.label?.toLowerCase() || 'em avaliação') +
     ' · ' +
     escapeHtml(model.periodLabel || 'recorte atual') +

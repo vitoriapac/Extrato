@@ -47,7 +47,7 @@ export function calculateEvidenceConfidence(
     badgeTone = 'success';
     explanation = `Com ${n} questões, a margem de erro cai para ±${marginOfErrorPct}%. O desempenho real tem alta significância estatística.`;
     recommendationDecision =
-      'O algoritmo aplica pesos normais, calcula índice de prontidão com máxima confiança e pode sugerir transição para manutenção.';
+      'O algoritmo aplica pesos normais, calcula índice de prontidão com máxima evidência e pode sugerir transição para manutenção.';
   } else if (n >= 30) {
     evidenceLevel = 'solid';
     levelLabel = 'Evidência Sólida';

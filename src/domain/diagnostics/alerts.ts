@@ -209,7 +209,7 @@ export function buildIntelligentAlerts({
           createdAt: today,
           reason: 'Ainda há pouca evidência para avaliar ' + topic.name + '.',
           recommendedAction:
-            'Registre uma sessão com questões para melhorar a confiança da análise.',
+            'Registre uma sessão com questões para melhorar a evidência da análise.',
         })
       )
     );

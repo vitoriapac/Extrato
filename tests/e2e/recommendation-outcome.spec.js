@@ -8,5 +8,5 @@ test('mostra resultado mensurável da recomendação com comparação e confian�
   await expect(card).toBeVisible();
   await expect(card).toContainText('Resultado da recomendação');
   await expect(card).toContainText(/Retenção|Acerto/);
-  await expect(card).toContainText('Confiança');
+  await expect(card).toContainText('Evidência');
 });

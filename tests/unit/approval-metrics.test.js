@@ -171,3 +171,14 @@ test('calculateApprovalConhecimentoMetric e extractReadinessFactors: integram me
   assert.equal(factors.mastery, dominio);
   assert.equal(factors.simulations, dominio);
 });
+
+test('T34: o fator Simulados diz critério e janela (5 últimos, todo o histórico, média ponderada) e o valor fica fixo', async () => {
+  const { calculateApprovalSimuladosMetric } = await import('../../src/domain/analytics/approval-metrics.js');
+  const sims = [60, 62, 70, 72, 80, 90].map(nota => ({ nota, totalQuestions: 60 }));
+  const metric = calculateApprovalSimuladosMetric(sims);
+  // Janela: só os 5 últimos (62, 70, 72, 80, 90), pesos 1 a 5.
+  assert.equal(Math.round(metric.raw * 100) / 100, 79.2);
+  assert.match(metric.detail, /5 últimos de 6 simulados, todo o histórico · média ponderada 79,2%/);
+  assert.match(calculateApprovalSimuladosMetric([sims[0]]).detail, /último simulado, todo o histórico/);
+  assert.equal(calculateApprovalSimuladosMetric([]).detail, 'Sem simulados concluídos');
+});

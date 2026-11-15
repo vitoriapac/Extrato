@@ -47,7 +47,7 @@ function renderTrajectory(
     <text class="ovs-axis" x="28" y="146">${formatDate(obs[0].date)}</text>
     <text class="ovs-axis" x="294" y="146" text-anchor="end">${formatDate(obs[obs.length - 1].date)}</text>
   </svg>`;
-  const confidence = model.confidenceLabel ? ` Confiança ${model.confidenceLabel.toLowerCase()}.` : '';
+  const confidence = model.confidenceLabel ? ` Evidência ${model.confidenceLabel.toLowerCase()}.` : '';
   return `<article class="chart-card overview-standing__card" aria-labelledby="ovsTrajectoryTitle"><h3 class="module-heading__title" id="ovsTrajectoryTitle">Trajetória nos simulados</h3>${svg}<p class="overview-standing__note">Estimativa de ${model.low} a ${model.high}: ${STATUS_TEXT[model.status] || ''} de ${model.target}.${confidence}</p></article>`;
 }
 
@@ -101,7 +101,7 @@ export function renderOverviewEvidence(model: OverviewStanding['evidence']) {
     (_, index) => `<i class="overview-standing__segment${index < model.available ? ' is-on' : ''}"></i>`
   ).join('');
   const missing = model.missing.length
-    ? `Faltam ${model.missing.join(', ')} para o índice ganhar confiança.`
+    ? `Faltam ${model.missing.join(', ')} para o índice ganhar evidência.`
     : 'Todos os fatores do índice têm evidência.';
   return `<article class="chart-card overview-standing__card" aria-labelledby="ovsEvidenceTitle"><h3 class="module-heading__title" id="ovsEvidenceTitle">Qualidade da evidência</h3><div class="overview-standing__meter" role="img" aria-label="${model.available} de ${model.total} fatores com evidência">${segments}</div><p class="overview-standing__note"><strong>${model.available} de ${model.total} fatores.</strong> ${missing}</p></article>`;
 }

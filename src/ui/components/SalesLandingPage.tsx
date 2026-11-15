@@ -48,7 +48,7 @@ const STATEMENT_SNAPSHOTS: Record<'week1' | 'week14', StatementPreviewState> = {
     weeklyHours: '14h 20m',
     nextActionSubject: 'Direito Constitucional',
     nextActionTopic: 'Controle de Constitucionalidade',
-    nextActionReason: 'Peso máximo na prova (92/100) · Domínio atual em 48% · 45 min prescritos',
+    nextActionReason: 'Peso máximo na prova (92/100) · Domínio atual em 48/100 · 45 min prescritos',
     rows: [
       {
         id: 'subj-1',
@@ -101,7 +101,7 @@ const STATEMENT_SNAPSHOTS: Record<'week1' | 'week14', StatementPreviewState> = {
     weeklyHours: '21h 45m',
     nextActionSubject: 'Direito Administrativo',
     nextActionTopic: 'Licitações e Contratos (Lei 14.133/21)',
-    nextActionReason: 'Bateria de manutenção (30 min) · Retenção estabilizada acima de 85%',
+    nextActionReason: 'Bateria de manutenção (30 min) · Retenção estabilizada acima de 85/100',
     rows: [
       {
         id: 'subj-1',

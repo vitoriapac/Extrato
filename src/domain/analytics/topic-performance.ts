@@ -30,9 +30,9 @@ export function performanceConfidence(
   minWeekly: number = MIN_WEEKLY_QUESTIONS
 ): PerformanceConfidence {
   if (total < minWeekly) return { key: 'insufficient', label: 'Amostra insuficiente' };
-  if (total < 20) return { key: 'low', label: 'Confiança da amostra: baixa' };
-  if (total < 50) return { key: 'medium', label: 'Confiança da amostra: média' };
-  return { key: 'high', label: 'Confiança da amostra: alta' };
+  if (total < 20) return { key: 'low', label: 'Evidência da amostra: baixa' };
+  if (total < 50) return { key: 'medium', label: 'Evidência da amostra: média' };
+  return { key: 'high', label: 'Evidência da amostra: alta' };
 }
 
 export function classifyAccuracy(accuracy: number | null, target: number): AccuracyClassification {

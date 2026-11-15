@@ -32,7 +32,7 @@ export function reviewExamClassification(
     !Number.isFinite(Date.parse(now)) ||
     typeof idGenerator !== 'function'
   )
-    throw new TypeError('Escolha uma prova, questão, tópico e confiança válidos.');
+    throw new TypeError('Escolha uma prova, questão, tópico e evidência válidos.');
   const existing = examQuestions.find(
     item => item.examId === examId && item.questionNumber === questionNumber
   );

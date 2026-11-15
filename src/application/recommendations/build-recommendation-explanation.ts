@@ -42,7 +42,7 @@ export function buildRecommendationExplanation(
         ),
       ];
   if (!redistribution && historical.confidenceLabel)
-    evidence.push({ label: 'Confiança do histórico', value: historical.confidenceLabel });
+    evidence.push({ label: 'Base histórica', value: historical.confidenceLabel });
   if (!redistribution && historical.impactSourceType)
     evidence.push({
       label: 'Origem do impacto',

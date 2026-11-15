@@ -44,7 +44,7 @@ test('calculateEvidenceConfidence — amostra 80+ confere máxima confiança est
     result.marginOfErrorPct <= 10,
     `Margem deve ser <= 10%, obtido ${result.marginOfErrorPct}%`
   );
-  assert.match(result.recommendationDecision, /máxima confiança/);
+  assert.match(result.recommendationDecision, /máxima evidência/);
 });
 
 test('calculateEvidenceConfidence — normaliza entradas fora dos limites esperados', () => {

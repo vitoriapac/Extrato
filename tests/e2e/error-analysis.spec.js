@@ -8,5 +8,5 @@ test('apresenta diagnóstico de erros e ação recomendada', async ({ page }) =>
   await expect(diagnosis).toBeVisible();
   await expect(diagnosis).toContainText('Diagnóstico');
   await expect(diagnosis).toContainText('Ação');
-  await expect(page.locator('#subjectErrorProfile')).toContainText(/confiança/i);
+  await expect(page.locator('#subjectErrorProfile')).toContainText(/evidência/i);
 });
