@@ -232,17 +232,6 @@ test('plano confirmado rebaixa as ações secundárias a terciárias e não repe
   assert.doesNotMatch(html, /chart-allocation-bar|Capacidade semanal alocada/);
 });
 
-test('perfil sem plano mostra o roteiro de 3 passos com uma única ação cheia', () => {
-  const { deps, elements } = createMockDeps();
-  const state = deps.getState();
-  state.examDate = '';
-  createStudyPlanBuilderController(deps).renderStudyPlanBuilder();
-  const html = elements['examStudyPlan'].innerHTML;
-  assert.match(html, /Monte seu plano em 3 passos/);
-  assert.match(html, /aria-current="step"/);
-  assert.equal((html.match(/class="btn"/g) || []).length, 1);
-  assert.match(html, /href="#planejamento\/prova"[^>]*>\s*Definir data da prova/);
-});
 
 test('o roteiro avança: com prova e horas o passo atual é calcular a proposta; com plano ele some', () => {
   const { deps, elements } = createMockDeps();
@@ -255,4 +244,40 @@ test('o roteiro avança: com prova e horas o passo atual é calcular a proposta;
   controller.calculateStudyPlanPreview();
   controller.confirmStudyPlan();
   assert.doesNotMatch(elements['examStudyPlan'].innerHTML, /plan-roadmap/);
+});
+
+test('perfil sem plano mostra o roteiro de 3 passos; o passo 1 é o campo de data da prova', () => {
+  const { deps, elements } = createMockDeps();
+  deps.getState().examDate = '';
+  createStudyPlanBuilderController(deps).renderStudyPlanBuilder();
+  const html = elements['examStudyPlan'].innerHTML;
+  assert.match(html, /Monte seu plano em 3 passos/);
+  assert.match(html, /aria-current="step"/);
+  // O campo do cabeçalho fica oculto fora da Visão geral: a data se define dentro do roteiro.
+  assert.match(html, /<input type="date"[^>]*data-delegated-change="setRoadmapExamDate\(this\.value\)"/);
+  assert.equal((html.match(/class="btn"/g) || []).length, 0);
+});
+
+test('setRoadmapExamDate grava a data pela função do cabeçalho e ignora valor vazio', () => {
+  const { deps } = createMockDeps();
+  const saved = [];
+  deps.updateExamBlueprint = (field, value) => saved.push([field, value]);
+  const controller = createStudyPlanBuilderController(deps);
+  controller.setRoadmapExamDate('');
+  controller.setRoadmapExamDate('2027-03-01');
+  assert.deepEqual(saved, [['examDate', '2027-03-01']]);
+});
+
+test('o card só é repintado quando o HTML muda (o blur de um campo não troca o botão sob o clique)', () => {
+  const { deps, elements } = createMockDeps();
+  const controller = createStudyPlanBuilderController(deps);
+  controller.renderStudyPlanBuilder();
+  const writes = [];
+  const el = elements['examStudyPlan'];
+  let html = el.innerHTML;
+  Object.defineProperty(el, 'innerHTML', { get: () => html, set: value => { writes.push(value); html = value; } });
+  el.childNodes = [{}];
+  controller.renderStudyPlanBuilder();
+  controller.renderStudyPlanBuilder();
+  assert.equal(writes.length, 0);
 });

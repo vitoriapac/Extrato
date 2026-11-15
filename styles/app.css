@@ -3664,3 +3664,4 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 @media (max-width:560px){.plan-roadmap__step{grid-template-columns:2rem minmax(0,1fr)}.plan-roadmap__action{grid-column:1/-1}.plan-roadmap__action .btn{width:100%}}
 /* Essencial: metas marcadas como avançadas continuam escondidas mesmo com o display próprio do cartão. */
 [data-essential="on"] #metasContainer .meta-card[data-advanced]:not(.is-advanced-open){display:none}
+.plan-roadmap__date{display:flex;flex-direction:column;gap:2px;font:var(--text-xs) var(--font-body);color:var(--ink-soft)}.plan-roadmap__date input{min-height:var(--touch-target);padding:var(--space-1) var(--space-2);border:1px solid var(--border-control);border-radius:var(--radius-control);background:var(--paper);color:var(--ink);font:var(--text-body) var(--font-data)}

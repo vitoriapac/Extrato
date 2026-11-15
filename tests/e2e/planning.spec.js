@@ -274,12 +274,14 @@ test('perfil vazio abre a Semana com o roteiro de 3 passos e uma única ação c
   // O roteiro vem antes do Resumo vazio e tem a única ação cheia da primeira tela.
   const firstId = await page.locator('#metasSub-semana > section').first().getAttribute('id');
   expect(firstId).toBe('metasPlanning');
+  // O passo 1 é o campo de data (o do cabeçalho fica oculto fora da Visão geral); nenhum botão cheio compete.
+  await expect(roadmap.locator('input[type="date"]')).toBeVisible();
   const solid = await page
     .locator('#metasSub-semana .btn:visible')
     .evaluateAll(list =>
       list.filter(b => !/ghost|tertiary|secondary/.test(b.className)).map(b => b.textContent.trim())
     );
-  expect(solid).toEqual(['Definir data da prova']);
+  expect(solid).toEqual([]);
 });
 
 test('modo Essencial esconde os blocos avançados da Semana atrás de "Mostrar …" e o modo completo mostra tudo', async ({
@@ -332,4 +334,26 @@ test('metas: o modo Essencial mostra 3 e o modo completo mostra todas', async ({
   // Acerto, dias, aderência, tópicos, questões e simulados; a meta mensal saiu da tela.
   await expect(cards.locator('visible=true')).toHaveCount(6);
   await expect(page.locator('#metasContainer')).not.toContainText('Tópicos no mês');
+});
+
+test('Jordan: data da prova, horas por dia e plano seguindo só a ação principal, um clique em cada', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(node => node.remove());
+  await openPlanningSubtab(page, 'semana');
+  const current = page.locator('.plan-roadmap [aria-current="step"]');
+  await expect(current).toContainText('Data da prova');
+  await page.locator('.plan-roadmap input[type="date"]').fill('2027-03-01');
+  await expect(current).toContainText('Horas por dia');
+  await page.getByRole('button', { name: 'Informar horas por dia' }).click();
+  await page.locator('#metasCapacity input[type="number"]').first().fill('2');
+  await page.keyboard.press('Tab');
+  await expect(current).toContainText('Plano da semana');
+  // O blur do campo de horas acontece no mousedown do botão: o clique não pode se perder.
+  await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();
+  // Sem tópicos com carga restante a prévia diz que o plano está indisponível; o que importa é que abriu.
+  await expect(page.getByRole('heading', { name: 'Plano semanal indisponível' })).toBeVisible();
 });

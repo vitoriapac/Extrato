@@ -125,7 +125,7 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 13: Disponibilidade perto do plano e metas enxutas
 
 ### Checkpoint 3: Perfis
-- [ ] Percurso do iniciante (perfil vazio) e do analítico (demo) verificados
+- [x] Percurso do iniciante (perfil vazio) e do analítico (demo) verificados (15/11/2026; o plano confirmado do Jordan depende de conteúdo cadastrado: ver pendência no todo)
 
 ### Fase 4: Prova e metas
 - [ ] Tarefa 14: Subaba "Prova e metas" (5 → 4 subabas)

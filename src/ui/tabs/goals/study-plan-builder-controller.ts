@@ -28,6 +28,8 @@ const previewHeading = (title: string) =>
   render(h('h4', { tabIndex: -1, 'data-plan-preview-title': '' }, title));
 
 export interface StudyPlanBuilderControllerDeps {
+  /** Grava a data da prova (a mesma função do campo do cabeçalho). */
+  updateExamBlueprint?: (field: string, value: any) => void;
   document?: any;
   window?: any;
   getState: () => any;
@@ -448,6 +450,13 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
   }
 
   /** Leva à Disponibilidade semanal, que fica dentro de "Ajustar metas e disponibilidade". */
+  /** Passo 1 do roteiro: grava a data da prova e redesenha o card. */
+  function setRoadmapExamDate(value: string) {
+    if (!value) return;
+    deps.updateExamBlueprint?.('examDate', value);
+    renderStudyPlanBuilder();
+  }
+
   function openAvailabilityAdjust() {
     const fold = doc?.getElementById('metasAdjust');
     if (!fold) return;
@@ -495,8 +504,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
 
   function renderAdaptivePlanningHistory() {
     if (!doc) return;
-    const container = doc.getElementById('adaptivePlanningHistory');
-    if (!container) return;
+    const rawContainer = doc.getElementById('adaptivePlanningHistory');
+    if (!rawContainer) return;
+    const container = memoContainer(rawContainer);
     const state = deps.getState();
     const entries = [...(state.adaptivePlanningHistory || [])].sort((a, b) =>
       String(b.createdAt).localeCompare(String(a.createdAt))
@@ -509,6 +519,26 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     };
     container.innerHTML = `<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length ? `<ol>${entries.map((item: any) => `<li><div><strong>${escapeHtml(labels[item.status] || item.status)}</strong><small>${escapeHtml(new Date(item.createdAt!).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</small></div><p>${escapeHtml(item.sourceName || (deps.getSubjectName ? deps.getSubjectName(item.sourceSubjectId!) : item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore!)} → ${formatPlanMinutes(item.sourceAfter!)} · ${escapeHtml(item.targetName || (deps.getSubjectName ? deps.getSubjectName(item.targetSubjectId!) : item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore!)} → ${formatPlanMinutes(item.targetAfter!)}</p><small>${escapeHtml(item.reasons?.join(' ') || 'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot!, { headingLevel: 4 })}${item.status === 'applied' && latestStudyPlan()?.id === item.planId ? `<button class="btn ghost small" type="button" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>` : ''}</li>`).join('')}</ol>` : '<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
   }
+
+  /**
+   * Só repinta quando o HTML mudou. O `blur` de um campo redesenha o card no `mousedown` do botão
+   * seguinte; trocar o botão por um nó novo ali perde o `click` (a pessoa precisaria clicar duas vezes).
+   */
+  function memoContainer(el: any) {
+    return {
+      set innerHTML(html: string) {
+        if (lastPaint.get(el) === html && el.childNodes?.length) return;
+        lastPaint.set(el, html);
+        el.innerHTML = html;
+      },
+      querySelectorAll: (selector: string) => el.querySelectorAll(selector),
+      insertAdjacentHTML: (position: string, html: string) => {
+        lastPaint.delete(el); // o DOM mudou por fora: a próxima pintura precisa acontecer
+        el.insertAdjacentHTML(position, html);
+      },
+    };
+  }
+  const lastPaint = new WeakMap<object, string>();
 
   /** Modo Essencial: coloca "Mostrar …" antes dos blocos avançados recém-renderizados. */
   function decorateReveals(container: any) {
@@ -537,8 +567,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
 
   function renderStudyPlanBuilder() {
     if (!doc) return;
-    const container = doc.getElementById('examStudyPlan');
-    if (!container) return;
+    const rawContainer = doc.getElementById('examStudyPlan');
+    if (!rawContainer) return;
+    const container = memoContainer(rawContainer);
     const contextContainer = doc.getElementById('analysisPlanningContext');
     if (contextContainer && deps.analysisContextBanner) {
       contextContainer.innerHTML = deps.analysisContextBanner('metas');
@@ -602,7 +633,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
           `<button class="btn tertiary" type="button"${advanced ? ` data-advanced="${advanced}"` : ''} data-delegated-click="${action}">${label}</button>`;
         const stateLine = `<div class="confirmed-plan-note"><strong>Plano ${formatPlanMinutes(latest.weeklyPlannedMinutes)}/semana</strong><span title="Confirmado em ${confirmedAt}">com tarefa marcada ${formatPlanMinutes(marked)} · ${missing > 0 ? `falta marcar ${formatPlanMinutes(missing)}` : 'tudo marcado'} · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span>${activeOperation ? inline('undoLatestDailyPlanGeneration()', 'Desfazer última distribuição') : ''}${phaseProposal?.state === 'proposal' ? inline('previewPhaseStrategy()', 'Revisar proposta de estratégia', 'estratégia por fase') : ''}${latest.phaseStrategy?.status === 'applied' ? inline('revertPhaseStrategy()', 'Reverter última estratégia por fase', 'estratégia por fase') : ''}</div>`;
         container.innerHTML = `${stateLine}<div class="study-plan-actions">${primaryAction}<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Recalcular plano</button>${whatIf}</div>${phaseProposal?.state === 'cooldown' ? `<p class="helper-text">${escapeHtml((phaseProposal as { reason?: string }).reason)}</p>` : ''}${phaseView ? renderPhaseStrategy(phaseView, { preview: phaseView.state === 'proposal', canRevert: false }) : ''}`;
-        decorateReveals(container);
+        decorateReveals(rawContainer);
         return;
       }
       // Perfil sem plano: o roteiro de 3 passos tem a única ação cheia e vem antes do Resumo vazio.
@@ -706,6 +737,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     calculateDailyPlanPreview,
     clearDailyPlanPreview,
     openAvailabilityAdjust,
+    setRoadmapExamDate,
     confirmDailyPlanPreview,
     undoLatestDailyPlanGeneration,
     currentPhaseStrategy,

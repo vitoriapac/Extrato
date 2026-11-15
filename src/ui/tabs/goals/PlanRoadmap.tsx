@@ -10,10 +10,16 @@ export function PlanRoadmap({ hasExamDate, hasHours, hasPlan }: PlanRoadmapProps
     {
       done: hasExamDate,
       label: 'Data da prova',
+      // O campo do cabeçalho fica oculto fora da Visão geral: a data se define aqui mesmo.
       action: (
-        <a class="btn" href="#planejamento/prova">
-          Definir data da prova
-        </a>
+        <label class="plan-roadmap__date">
+          <span>Data da prova</span>
+          <input
+            type="date"
+            aria-label="Data da prova"
+            data-delegated-change="setRoadmapExamDate(this.value)"
+          />
+        </label>
       ),
     },
     {

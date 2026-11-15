@@ -165,6 +165,8 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
   subjectTargetEditorController.bindEvents();
 
   studyPlanBuilderController = createStudyPlanBuilderController({
+    updateExamBlueprint: (field, val) =>
+      goalsBlueprintService.updateExamBlueprint(field as any, val),
     document,
     window,
     getState,
