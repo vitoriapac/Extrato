@@ -189,7 +189,7 @@ test('capacidade explica de onde vem o número e o estudado é a linha de total'
   assert.match(out, /ledger-line--total[^>]*>.*?Estudado até hoje/);
 });
 
-test('o excesso vira linha de saldo com ação para ajustar a disponibilidade', async () => {
+test('o excesso vira uma sublinha com ação para ajustar a disponibilidade', async () => {
   const { renderPlanExecution } = await import('../../src/ui/renderers/plan-execution-renderer.js');
   const { buildPlanExecution } =
     await import('../../src/application/goals/build-plan-execution.js');
@@ -215,7 +215,7 @@ test('o excesso vira linha de saldo com ação para ajustar a disponibilidade', 
   });
   const out = renderPlanExecution(model, { formatDate: d => d.split('-').reverse().join('/') });
   // 5 h marcadas para 2 h de capacidade: excesso de 3 h, com a ação ao lado.
-  assert.match(out, /Marcado acima da capacidade[\s\S]*?\+3 h/);
+  assert.match(out, /Marcado acima da capacidade em <strong>3 h<\/strong>/);
   assert.match(out, /data-delegated-click="openAvailabilityAdjust\(\)"[^>]*>\s*Ajustar disponibilidade/);
   assert.doesNotMatch(out, /context-note--attention|tempo planejado nos dias|Só .* de capacidade têm tarefa marcada/);
 });
@@ -366,4 +366,16 @@ test('a execução das prioridades vira texto: sem número grande nem segunda ba
   );
   assert.match(out, /<strong>72%<\/strong> das prioridades executadas: 3 h 56 min de 5 h 26 min/);
   assert.doesNotMatch(out, /metas-priority-value|ui-progress/);
+});
+
+test('o excesso não usa caixa de alerta e o estudo avulso zerado não ocupa linha', async () => {
+  const { buildWeekReconciliation } = await import('../../src/ui/tabs/goals/week-reconciliation.js');
+  const data = buildWeekReconciliation({
+    capacityMin: 120, plannedMin: 300, studiedMin: 60, periodLabel: 'x',
+    links: { studiedMinutes: 60, linkedMinutes: 60, additionalMinutes: 0, incompatibleMinutes: 0, otherPeriodMinutes: 0 },
+  });
+  const out = render(h(WeekReconciliationSummary, { data }));
+  assert.match(out, /class="week-reconciliation__excess" role="note"/);
+  assert.doesNotMatch(out, /Estudo avulso, sem tarefa/);
+  assert.match(out, /Estudo ligado a tarefa desta semana/);
 });

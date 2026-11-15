@@ -103,20 +103,17 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
         </div>
       )}
       {excess > 0 && (
-        <div class="week-reconciliation__excess" role="note">
-          <LedgerLine label="Marcado acima da capacidade" value={`+${fmt(excess)}`} />
-          <p>
-            Há mais tarefa marcada do que a disponibilidade informada. Ajuste a disponibilidade ou
-            reduza as tarefas dos próximos dias.{' '}
-            <button
-              type="button"
-              class="btn ghost small"
-              data-delegated-click="openAvailabilityAdjust()"
-            >
-              Ajustar disponibilidade
-            </button>
-          </p>
-        </div>
+        <p class="week-reconciliation__excess" role="note">
+          Marcado acima da capacidade em <strong>{fmt(excess)}</strong>: há mais tarefa do que a
+          disponibilidade informada.{' '}
+          <button
+            type="button"
+            class="btn tertiary"
+            data-delegated-click="openAvailabilityAdjust()"
+          >
+            Ajustar disponibilidade
+          </button>
+        </p>
       )}
       {data.linkedMin !== null && data.unlinkedMin !== null ? (
         <>
@@ -125,7 +122,9 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
             hint="Tempo registrado, inclusive acima do previsto"
             value={fmt(data.linkedMin)}
           />
-          <LedgerLine label="Estudo avulso, sem tarefa" value={fmt(data.unlinkedMin)} />
+          {data.unlinkedMin > 0 && (
+            <LedgerLine label="Estudo avulso, sem tarefa" value={fmt(data.unlinkedMin)} />
+          )}
           {data.incompatibleMin > 0 && (
             <LedgerLine
               label="Ligado a tarefa incompatível ou inativa"
