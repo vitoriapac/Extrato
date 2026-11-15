@@ -37,28 +37,33 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   await expect(tabs.first()).toBeFocused();
 });
 
-test('Provas é uma aba só com três seções, e as rotas antigas levam à seção certa', async ({
+test('Resultados das provas mostra um painel por vez, sem segundo nível de abas, e as rotas levam ao painel certo', async ({
   page,
 }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
   await page.getByRole('tab', { name: 'Resultados das provas', exact: true }).click();
-  // Sem segundo nível de abas: Questões, Simulados e Inteligência da prova são seções da mesma página.
+  // Sem segundo nível de abas: o controle é segmentado (botões com aria-pressed), não um tablist.
   await expect(page.locator('#panel-desempenho').getByRole('tablist')).toHaveCount(1);
-  await expect(page.locator('#performanceSectionContent .performance-proof__title')).toHaveText([
-    'Questões respondidas',
-    'Simulados realizados',
-    'Inteligência da prova',
-  ]);
-  for (const route of ['simulations', 'exam']) {
+  const titles = page.locator('#performanceSectionContent .performance-proof__title');
+  await expect(titles).toHaveText(['Questões respondidas']);
+  const index = page.locator('.performance-proof-index');
+  await expect(index.getByRole('button')).toHaveText(['Questões respondidas', 'Simulados realizados', 'Inteligência da prova']);
+  await expect(index.locator('[aria-pressed="true"]')).toHaveText('Questões respondidas');
+  await index.getByRole('button', { name: 'Simulados realizados' }).click();
+  await expect(titles).toHaveText(['Simulados realizados']);
+  await expect(page.locator('#prova-questions')).toHaveCount(0);
+  await expect(index.locator('[aria-pressed="true"]')).toHaveText('Simulados realizados');
+  await index.getByRole('button', { name: 'Inteligência da prova' }).click();
+  await expect(titles).toHaveText(['Inteligência da prova']);
+  await expect(page.locator('#examIntelligenceHub')).toBeVisible();
+  for (const [route, key] of [['simulations', 'simulations'], ['exam', 'exam'], ['questions', 'questions']]) {
     await page.evaluate(hash => {
       window.location.hash = hash;
     }, `#desempenho/${route}`);
-    await expect(page.getByRole('tab', { name: 'Resultados das provas', exact: true })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
-    await expect(page.locator(`#prova-${route}`)).toBeInViewport();
+    await expect(page.getByRole('tab', { name: 'Resultados das provas', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator(`#prova-${key}`)).toBeVisible();
+    await expect(titles).toHaveCount(1);
   }
 });
 

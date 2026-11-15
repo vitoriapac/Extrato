@@ -136,7 +136,7 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
       </section>
 
       <details class="readiness-explanation editorial-disclosure">
-        <summary>Como este índice foi calculado?</summary>
+        <summary>Como ler: cálculo do índice</summary>
         <div>
           {factors.map(([label, item]) => (
             <FactorBar

@@ -196,7 +196,7 @@ test('explicação separa amostra, faixa atual, tendência e nota futura sem mut
   assert.match(explanation.bandMeaning, /não é uma nota prevista/);
   assert.match(explanation.trendMeaning, /não é extrapolada/);
   const html = renderAchievementProjection(model, { escapeHtml });
-  assert.match(html, /Faixa, confiança e limites do cálculo/);
+  assert.match(html, /Como ler: faixa, confiança e limites/);
   assert.match(html, /no máximo confiança moderada/);
 });
 test('confiança explica composição desconhecida e calibração sem promover o nível', () => {

@@ -27,9 +27,13 @@ const PERFORMANCE_GROUP = {
 };
 const PROOF_SECTIONS = ['questions', 'simulations', 'exam'];
 export async function openPerformanceSection(page, section) {
-  // Questões, Simulados e Inteligência da prova são seções de uma página só ("Provas").
+  // Questões, Simulados e Inteligência da prova são painéis de "Resultados das provas": um por vez.
   if (PROOF_SECTIONS.includes(section)) {
     await page.locator('[data-performance-section="questions"]').evaluate(element => element.click());
+    if (section !== 'questions')
+      await page
+        .locator(`.performance-proof-index [data-performance-investigate="${section}"]`)
+        .evaluate(element => element.click());
     const block = page.locator(`#prova-${section}`);
     await block.waitFor();
     await block.evaluate(element => element.scrollIntoView());

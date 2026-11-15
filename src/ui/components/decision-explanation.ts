@@ -30,7 +30,7 @@ export function renderDecisionExplanation(
     (evidence ? '<p>' + escapeHtml(evidence) + '</p>' : '') +
     (confidence ? '<p>' + escapeHtml(confidence) + '</p>' : '') +
     (method
-      ? '<details class="projection-evidence-method"><summary>Faixa, confiança e limites do cálculo</summary>' +
+      ? '<details class="projection-evidence-method"><summary>Como ler: faixa, confiança e limites</summary>' +
         (helpTopic
           ? '<button type="button" class="btn ghost small" data-help-topic-link="' +
             escapeAttr(helpTopic) +

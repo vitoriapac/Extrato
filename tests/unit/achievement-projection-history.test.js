@@ -109,5 +109,5 @@ test('card distingue observado de tendência e não declara nota na prova', () =
   assert.match(html, /Histórico registrado/);
   assert.match(html, /Tendência de 30 dias/);
   assert.match(html, /não uma nota estimada para a data da prova/);
-  assert.match(html, /Entender esta projeção/);
+  assert.match(html, /Como ler: esta projeção/);
 });

@@ -157,13 +157,6 @@ export function createPerformanceController({
           });
           return;
         }
-        const proofJump = event.target.closest('[data-proof-jump]');
-        if (proofJump) {
-          document
-            .getElementById(`prova-${proofJump.dataset.proofJump}`)
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          return;
-        }
         const open = event.target.closest('[data-performance-open]');
         if (open) {
           document.getElementById('performanceTopicDialog')?.close();

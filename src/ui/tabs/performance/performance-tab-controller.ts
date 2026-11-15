@@ -1,5 +1,4 @@
 import { h } from 'preact';
-import { scrollBehavior } from '../../accessibility.js';
 import { revealAdvanced } from '../../essential-mode.js';
 import { mountPreact } from '../../preact-mount.js';
 import {
@@ -348,12 +347,18 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const beginnerGate =
       beginner.beginner && ['subjects', 'diagnosis'].includes(performanceViewState.section);
     const beginnerQuestions = beginner.beginner && examSection;
+    // Resultados das provas mostra um painel por vez (Questões, Simulados ou Inteligência da prova): só o do painel
+    // aberto é calculado e desenhado, e a rota diz qual é.
     const proofModels = examSection
       ? {
-          questions: beginnerQuestions
-            ? null
-            : buildModelFor({ ...performanceViewState, section: 'questions' }),
-          simulations: buildModelFor({ ...performanceViewState, section: 'simulations' }),
+          questions:
+            beginnerQuestions || performanceViewState.section !== 'questions'
+              ? null
+              : buildModelFor({ ...performanceViewState, section: 'questions' }),
+          simulations:
+            performanceViewState.section === 'simulations'
+              ? buildModelFor({ ...performanceViewState, section: 'simulations' })
+              : null,
         }
       : null;
     const pageModel = examSection || beginnerGate ? null : buildModelFor(performanceViewState);
@@ -376,24 +381,26 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
-    const proofIndex = `<nav class="performance-proof-index" aria-label="Seções de Resultados das provas">${[['questions', 'Questões respondidas'], ['simulations', 'Simulados realizados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-proof-jump="${key}">${label}</button>`).join('')}</nav>`;
+    const proofIndex = `<nav class="performance-modes performance-proof-index" role="group" aria-label="Seções de Resultados das provas">${[['questions', 'Questões respondidas'], ['simulations', 'Simulados realizados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`).join('')}</nav>`;
     const sectionHtml = beginnerGate
       ? renderBeginnerState(performanceViewState.section, beginner)
       : examSection
       ? proofIndex +
-        proofBlock(
-          'questions',
-          'Questões respondidas',
-          beginnerQuestions
-            ? renderBeginnerState('questions', beginner)
-            : renderPerformanceSection(proofModels!.questions!, renderOptions)
-        ) +
-        proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations, renderOptions)) +
-        proofBlock(
-          'exam',
-          'Inteligência da prova',
-          '<p class="analytics-note">Histórico das provas da banca: não segue o filtro de período.</p><div id="examIntelligenceMount"></div>'
-        )
+        (performanceViewState.section === 'simulations'
+          ? proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations!, renderOptions))
+          : performanceViewState.section === 'exam'
+            ? proofBlock(
+                'exam',
+                'Inteligência da prova',
+                '<p class="analytics-note">Histórico das provas da banca: não segue o filtro de período.</p><div id="examIntelligenceMount"></div>'
+              )
+            : proofBlock(
+                'questions',
+                'Questões respondidas',
+                beginnerQuestions
+                  ? renderBeginnerState('questions', beginner)
+                  : renderPerformanceSection(proofModels!.questions!, renderOptions)
+              ))
       : renderPerformanceSection(pageModel!, renderOptions);
 
     if ((target as HTMLElement).dataset && !(target as HTMLElement).dataset.foldMemory) {
@@ -484,13 +491,11 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     }
 
     if (examSection) {
-      target.querySelector('#examIntelligenceMount')?.append(examHub!);
-      if (deps.renderExamIntelligenceSection) deps.renderExamIntelligenceSection();
-      // Rotas antigas (#desempenho/simulations, /exam) e links entre seções levam à seção certa da página.
-      if (performanceViewState.section !== 'questions')
-        target
-          .querySelector(`#prova-${performanceViewState.section}`)
-          ?.scrollIntoView?.({ block: 'start', behavior: scrollBehavior() });
+      // O hub da Inteligência da prova só entra na página quando o painel dela está aberto.
+      if (performanceViewState.section === 'exam') {
+        target.querySelector('#examIntelligenceMount')?.append(examHub!);
+        if (deps.renderExamIntelligenceSection) deps.renderExamIntelligenceSection();
+      }
     } else if (performanceViewState.section === 'overview') {
       const readinessMount = target.querySelector('#performanceReadinessMount');
       if (readinessMount && readinessCard) readinessMount.append(readinessCard);

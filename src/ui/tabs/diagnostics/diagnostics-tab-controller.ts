@@ -259,7 +259,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       diagnosisHtml +
       `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'vencida')} na Agenda</summary>${secondaryHtml}</details>`;
 
-    container.innerHTML += `<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
+    container.innerHTML += `<details class="diagnosis-method-details"><summary>Como ler: sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
 
     const search = opts.locationSearch ? opts.locationSearch() : '';
     if (search.includes('debug=decisions')) {

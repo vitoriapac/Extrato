@@ -112,7 +112,7 @@ Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red 
 - [x] Tarefa 37: Um formato por grandeza (precisão com uma casa, p.p. com sinal e uma casa, faixas "a", "Sem dados")
 - [x] Tarefa 38: Um vocabulário de estado, prioridade e evidência (evidência em 4 estados; Prioridade alta/média; tipo de problema à parte; tendência Em queda/Estável/Abaixo da meta/Melhorando)
 - [x] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas
-- [ ] Tarefa 40: Provas em um painel por vez, sem repetições, com ajuda uniforme (P1, H8, H10)
+- [x] Tarefa 40: Resultados das provas em um painel por vez (mobile 3,4 / 3,6 / 4,1 mil px), quadrantes recolhidos no mobile, dobras de método com "Como ler:"
 - [ ] Tarefa 41: Mobile e acessibilidade (Casey, Sam; P2/P3)
 - [ ] Tarefa 42: Poder de uso e jargão (Alex, Jordan; H2, H3, H7)
 - [x] Achado (15/11), resolvido na T38: o tópico "Direitos do consumidor" não faltava na fila: ele é a Próxima ação, que sai da lista. A Leitura passou a citar só tópicos da fila (com sinal) e o E2E conta a Próxima ação como primeiro da fila, sem relógio fixo

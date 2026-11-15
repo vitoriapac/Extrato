@@ -454,7 +454,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await openPerformanceSection(page, 'simulations');
   await page
     .locator('.achievement-projection__details > summary')
-    .filter({ hasText: 'Entender esta projeção' })
+    .filter({ hasText: 'Como ler: esta projeção' })
     .click();
   await page.locator('.projection-evidence-method > summary').click();
   await page.getByRole('button', { name: 'Entenda faixa e confiança na ajuda' }).click();

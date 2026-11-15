@@ -75,7 +75,7 @@ export function buildPerformanceComparison(
     load = rows[3];
   if (accuracy.state === 'improved' && volume.delta != null && volume.delta >= 0) {
     insights.push(
-      `A precisão subiu ${formatPointsMagnitude(accuracy.delta)} enquanto o volume de questões ${volume.delta ? 'cresceu ' + volume.delta : 'se manteve'}. A mudança observada não indica, sozinha, sua causa.`
+      `A precisão subiu ${formatPointsMagnitude(accuracy.delta)} enquanto o volume de questões ${volume.delta ? 'cresceu ' + volume.delta : 'se manteve'}. É uma observação, não uma causa.`
     );
   } else if (accuracy.state === 'worsened') {
     insights.push(

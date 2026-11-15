@@ -471,10 +471,11 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 40: Provas em um painel por vez, sem repetições
 **Origem:** P1 de H8 (10,8 mil px no mobile); Casey; redundâncias da crítica 9; H10.
 **Aceite:**
-- [ ] "Questões", "Simulados" e "Inteligência da prova" mostram um painel por vez (controle segmentado ou âncoras que recolhem os outros), sem virar segundo nível de abas; Provas ≤ 5.000 px no mobile
-- [ ] "Incidência × domínio" e a lista de 85 itens recolhidos por padrão no mobile
-- [ ] Sem repetição: meta pessoal de aderência 80% (Provas e Ritmo), "Faltam 12 h 14 min" duas vezes, Aderência 73,6% = Volume do plano 73,6% (confirmar), "Evolução dos simulados" duas vezes (confirmar)
-- [ ] Os cerca de 40 `<details>` "Como/Entenda/Limites" com nomes uniformes; a frase longa de causalidade vira versão curta com link para a explicação completa
+- [x] "Questões", "Simulados" e "Inteligência da prova" mostram um painel por vez (controle segmentado ou âncoras que recolhem os outros), sem virar segundo nível de abas; Provas ≤ 5.000 px no mobile
+- [x] "Incidência × domínio" e a lista de 85 itens recolhidos por padrão no mobile
+- [x] Sem repetição: meta pessoal de aderência 80% (Provas e Ritmo), "Faltam 12 h 14 min" duas vezes, Aderência 73,6% = Volume do plano 73,6% (confirmar), "Evolução dos simulados" duas vezes (confirmar)
+- [x] Os cerca de 40 `<details>` "Como/Entenda/Limites" com nomes uniformes; a frase longa de causalidade vira versão curta com link para a explicação completa
+**Feito (15/11/2026):** controle segmentado (aria-pressed) com um painel por vez; só o painel aberto é calculado; quadrantes de Incidência × domínio recolhidos no mobile (a escolha do aluno é lembrada); títulos externos repetidos removidos; dobras de método com prefixo "Como ler:"; frase de causalidade curta. Alturas no mobile: 3.400, 3.633 e 4.107 px (antes 10,8 mil). Não havia duplicata de meta de aderência na demo; a lista de 85 itens não foi recolhida à parte.
 **Verificação:** medição de altura na demo (375 e 1440); E2E de visibilidade por painel; E2E de dobras
 **Dependências:** Tarefas 35 e 38
 **Tamanho:** L

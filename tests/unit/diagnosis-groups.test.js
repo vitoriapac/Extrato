@@ -375,3 +375,21 @@ test('T39: o selo do período diz a janela real e a Leitura avisa que as janelas
   assert.equal((html.match(/>30 dias<\/span>/g) || []).length, 5);
   assert.doesNotMatch(html, />período<\/span>/);
 });
+
+test('T40: os quadrantes ficam numa dobra que o controller abre ou fecha conforme a tela, e as dobras de método dizem "Como ler:"', async () => {
+  const { renderExamMatrix } = await import('../../src/ui/renderers/exam-matrix-renderer.js');
+  const model = {
+    state: 'available',
+    filters: { scope: 'active', board: 'all', year: 'all', role: 'all', subject: 'all', search: '', sort: 'incidence', mode: 'quadrants' },
+    options: { tags: [], boards: [], years: [], roles: [], subjects: [] },
+    scopedExamCount: 1, selectedExamCount: 1, partialExamCount: 0, analyzedQuestionCount: 10, exams: [],
+    rows: [{ topicId: 't', subjectName: 'S', name: 'T', presencePercent: 80, mastery: 40, confidence: 'high', presentExamCount: 4, examCount: 5, questionCount: 3, cells: [] }],
+  };
+  const html = renderExamMatrix(model, {});
+  assert.match(html, /<details class="exam-matrix-quadrants-fold" open><summary>Quadrantes de incidência × domínio<\/summary>/);
+  assert.doesNotMatch(renderExamMatrix({ ...model, filters: { ...model.filters, mode: 'history' } }, {}), /exam-matrix-quadrants-fold/);
+
+  const { renderStabilityMap } = await import('../../src/ui/performance/stability-map-renderer.js');
+  const map = renderStabilityMap({ groups: { attention: [{ subjectId: 'a', name: 'A', accuracy: 85, evolution: -4 }], maintain: [], intervene: [], evolving: [], insufficient: [] }, total: 1, measured: 1 }, { escapeHtml: String, escapeAttr: String });
+  assert.match(map, /<summary aria-label="Limites de estabilidade">Como ler: limites<\/summary>/);
+});

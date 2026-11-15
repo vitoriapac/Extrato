@@ -30,7 +30,7 @@ for (const { width, theme } of [
     await expect(page.locator('.achievement-projection__status')).toBeVisible();
     const explanation = page
       .locator('.achievement-projection__details')
-      .filter({ has: page.locator('summary', { hasText: 'Entender esta projeção' }) });
+      .filter({ has: page.locator('summary', { hasText: 'Como ler: esta projeção' }) });
     await explanation.locator(':scope > summary').click();
     const method = explanation.locator('.projection-evidence-method');
     await expect(method).not.toHaveAttribute('open');
@@ -518,7 +518,7 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
   ).toBeVisible();
   await page
     .locator('.achievement-projection__details > summary')
-    .filter({ hasText: 'Entender esta projeção' })
+    .filter({ hasText: 'Como ler: esta projeção' })
     .click();
   await page.locator('.projection-evidence-method > summary').click();
   await page.getByRole('button', { name: 'Entenda faixa e confiança na ajuda' }).click();

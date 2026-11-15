@@ -143,6 +143,11 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       '.exam-matrix-more-filters'
     )?.open;
 
+    // Os quadrantes são a parte mais longa: no celular nascem fechados, e a escolha do aluno sobrevive ao redesenho.
+    const quadrantsWasOpen = container.querySelector<HTMLDetailsElement>(
+      'details.exam-matrix-quadrants-fold'
+    )?.open;
+
     const model = buildCurrentModel(examMatrixFilters);
 
     if (!model.rows.some((row: any) => row.topicId === selectedExamMatrixTopicId))
@@ -157,6 +162,12 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       (
         container.querySelector?.('details.exam-matrix-filters-fold') as HTMLDetailsElement | null
       )?.setAttribute('open', '');
+    const quadrantsFold = container.querySelector<HTMLDetailsElement>(
+      'details.exam-matrix-quadrants-fold'
+    );
+    if (quadrantsFold)
+      quadrantsFold.open =
+        quadrantsWasOpen ?? !ctx.window.matchMedia?.('(max-width:600px)')?.matches;
     const opportunity = ctx.document.getElementById('examOpportunity');
     if (opportunity) opportunity.innerHTML = renderExamOpportunity(model);
 

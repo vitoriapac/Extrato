@@ -78,7 +78,7 @@ export function renderPriorityHistory(
   const visibleRows = rows.slice(0, (page + 1) * pageSize);
   const remainingTopics = Math.max(0, rows.length - visibleRows.length);
 
-  return `<label class="strategic-history-filter">Disciplina<select class="select-control" data-delegated-change="setPriorityHistorySubject(this.value)"><option value="">Todas</option>${model.subjects.map((item: any) => `<option value="${escape(item.id)}" ${model.subjectId === item.id ? 'selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label><details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">Registros congelados e diagnóstico atual, com uma observação por dia. Não reconstruímos indicadores passados com os dados atuais. Registros legados sem concurso congelado usam o vínculo atual do tópico.</p></details>${
+  return `<label class="strategic-history-filter">Disciplina<select class="select-control" data-delegated-change="setPriorityHistorySubject(this.value)"><option value="">Todas</option>${model.subjects.map((item: any) => `<option value="${escape(item.id)}" ${model.subjectId === item.id ? 'selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label><details class="limits-disclosure"><summary>Como ler: limites</summary><p class="analytics-note">Registros congelados e diagnóstico atual, com uma observação por dia. Não reconstruímos indicadores passados com os dados atuais. Registros legados sem concurso congelado usam o vínculo atual do tópico.</p></details>${
     visibleRows.length
       ? `<div class="priority-history-topics">${visibleRows
           .map((row: any) => {
