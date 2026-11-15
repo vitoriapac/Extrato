@@ -458,13 +458,13 @@ Verificação usada abaixo:
 **Descrição:** Quatro séries contam a mesma história em três subabas: "Cumprimento nas semanas concluídas" (Semana), "Histórico de metas" (Metas), "Aderência nos fechamentos salvos" e "Foco estratégico" (Histórico). Passa a haver um `WeeklyTrendChart` no Histórico com estudado e agendado por semana, mais as metas cumpridas como marcas. A tabela fica em "Ver dados". Os blocos antigos saem da Semana e de Prova e metas.
 
 **Aceite:**
-- [ ] Uma série semanal na aba inteira
-- [ ] Período em andamento desenhado separado (tracejado), sem se ligar aos fechados
-- [ ] Mesmos números da T4 para a semana atual
+- [x] Uma série semanal na aba inteira
+- [x] Período em andamento desenhado separado (tracejado), sem se ligar aos fechados
+- [x] Mesmos números da T4 para a semana atual
 
 **Verificação:**
-- [ ] Unit: `tests/unit/goal-history-chart.test.js`, `tests/unit/strategic-focus-history.test.js`
-- [ ] E2E: `weekly-focus-visual.spec.js`
+- [x] Unit: `tests/unit/goal-history-chart.test.js`, `tests/unit/strategic-focus-history.test.js`
+- [x] E2E: `weekly-focus-visual.spec.js`
 
 **Dependências:** T4
 
@@ -476,13 +476,13 @@ Verificação usada abaixo:
 **Descrição:** Retratos semanais em lista de 5 com "Mostrar mais"; os detalhes de cada retrato (sustentabilidade, composição, crédito) só renderizam ao abrir. O período em andamento não entra em "em relação ao último período salvo". No modo Essencial com o Histórico vazio, uma linha explica o que vai aparecer ali, no lugar do botão solitário.
 
 **Aceite:**
-- [ ] Histórico com menos de 20 `<details>` no DOM da demo (hoje 112)
-- [ ] Nenhuma variação compara período parcial com fechado
-- [ ] Estado vazio com uma frase e, se fizer sentido, uma ação
+- [x] Histórico com menos de 20 `<details>` no DOM da demo (hoje 112)
+- [x] Nenhuma variação compara período parcial com fechado
+- [x] Estado vazio com uma frase e, se fizer sentido, uma ação
 
 **Verificação:**
-- [ ] Unit: `tests/unit/weekly-close-snapshot.test.js`, `tests/unit/close-comparison.test.js`
-- [ ] E2E: `planning.spec.js` (Histórico vazio e com dados)
+- [x] Unit: `tests/unit/weekly-close-snapshot.test.js`, `tests/unit/close-comparison.test.js`
+- [x] E2E: `planning.spec.js` (Histórico vazio e com dados)
 
 **Dependências:** T19a
 
@@ -719,3 +719,7 @@ Decisão do usuário: rodada nos 2 P1, marcador de dobra e tom do gráfico no es
 **T15a + T15b feitas, sem commit.** "Metas por disciplina" virou uma tabela única editável (prioridade, peso, questões na prova, meta de acerto, meta semanal, domínio; acerto atual em `BulletBar` com texto alternativo; ordenação por coluna; colunas avançadas ocultas no Essencial; cartões ≤640 px). Edição na linha grava só rascunho; um rodapé fixo "Salvar alterações / Descartar" valida tudo antes e grava de uma vez (um Desfazer), Enter também salva; lote nas colunas; "usar meta geral". A lista antiga por disciplina e suas ações (`saveExamSubjectConfig` etc.) foram removidas. Bug achado no E2E: o Enter salvava e o `change` disparado no redesenho recriava o rascunho (bloqueava "Repartir a meta"); corrigido com guarda `justCommitted`. Testes: unitários do editor, `planning`, `question-goal-split`, `subject-accuracy-target`, `accessibility`, `release-gate`, `refinement-visual` (teste de duas colunas agora abre `#metasAdjust`). Falha fora do escopo: `release-gate` "paleta" (search-controller da outra sessão).
 
 **T18 feita, sem commit.** Fechamento tem 2 dobras na demo ("Ver análise da semana" e o "Ver dados" do gráfico): tendência de 4 semanas (agendado × estudado, `weekly-close-trend-renderer.ts`) e "Sinais da semana" em lista curta (≤2 acertos, ≤3 revisões, resultados medidos). Decisão da usuária: a análise longa antiga (sustentabilidade, composição do tempo, comparação com a trajetória, foco estratégico, decisões anteriores) foi movida inteira para o Histórico, na dobra "Análise completa da semana encerrada" (`#weeklyCloseFullAnalysis`); a T19a a enxuga. "Conferir impacto" desabilitado já explica o que falta (dica `weeklyPreviewHint`). Testes: unitários 1.762; E2E `planning` (novo), `planning-sustainability`, `weekly-adherence`, `achievement-projection`, `visual-consolidation` (também corrigido o seletor da tabela da T15), `visual-regression` ajustados ao novo lugar.
+
+**T19a feita, sem commit.** Histórico ganhou `#weeklyHistorySeries` (`weekly-history-series-renderer.ts`): agendado e estudado por semana (8 semanas, mais antiga à esquerda), metas cumpridas como marca ("2/3") embaixo de cada semana encerrada, tabela em "Ver dados". Semana em andamento separada e tracejada (`dashed` novo em `ColumnChart`), com os mesmos números do Resumo da semana (vêm do `buildPlanExecution` atual). Saíram da Semana "Cumprimento nas semanas concluídas" e "Histórico de metas". Mantidos para a T19b: a lista "Aderência nos fechamentos salvos" (são os retratos) e o histórico de foco estratégico (a T19b trata a comparação com o período em andamento). Sobras inertes: `renderHistoricoMetas`/`renderGoalHistoryCharts` e seus testes (container removido; limpar depois). Falha que não é minha: `visual-consolidation` "ações guiadas" (botões de Hoje abaixo de 44 px).
+
+**T19b feita, sem commit.** Histórico da demo caiu de 123 para menos de 20 `<details>`: retratos de aderência (5 visíveis + "Mostrar mais N", corpo em `<template data-lazy>` que só vira DOM ao abrir, usando o `initLazyDetails` existente), decisões (5 + "Mostrar mais", novo `src/ui/lazy-more.ts`) e a "Análise completa da semana encerrada" (corpo lazy). A variação do foco estratégico agora compara só os dois últimos períodos salvos (o período em andamento fica de fora; `build-strategic-focus-history.ts`, `latestEnd` novo) e "Desde o último fechamento" mostra "período em andamento" em vez de comparar parcial com fechado (`today` em `buildCloseComparison`). Histórico vazio no Essencial: frase `#weeklyHistoryEmpty` no lugar do botão "Mostrar" sozinho. Testes: unit `lazy-more`, `strategic-focus-history` (atualizado); E2E `planning` (2 novos); `achievement-projection`/`visual-consolidation`/`visual-regression` abrem a dobra antes de ler. Pendente que não é meu: 4 snapshots de `achievement-projection` (altura da projeção em Desempenho 2338→2360 px; snapshots foram regravados por outra sessão).

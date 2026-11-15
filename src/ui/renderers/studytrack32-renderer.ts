@@ -1,4 +1,5 @@
 import { formatDecimal } from '../../core/format-number.js';
+import { lazyMore } from '../lazy-more.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { renderSubjectAccuracy } from './subject-accuracy-renderer.js';
@@ -38,7 +39,7 @@ export function renderStrategicFocusHistory(model: Record<string, any>) {
     )
     .join('');
   const comparison = model.comparison
-    ? `<p class="weekly-focus-history-comparison">Em relação ao último período salvo sem sobreposição: foco ${model.comparison.focusDelta >= 0 ? '+' : ''}${model.comparison.focusDelta} p.p.; tempo executado ${model.comparison.executionDelta >= 0 ? '+' : '-'}${focusMinutes(Math.abs(model.comparison.executionDelta))}.</p>`
+    ? `<p class="weekly-focus-history-comparison">Entre os dois últimos períodos salvos (período em andamento fora da conta): foco ${model.comparison.focusDelta >= 0 ? '+' : ''}${model.comparison.focusDelta} p.p.; tempo executado ${model.comparison.executionDelta >= 0 ? '+' : '-'}${focusMinutes(Math.abs(model.comparison.executionDelta))}.</p>`
     : '<p class="analytics-note">Salve fechamentos de períodos anteriores para comparar foco e execução no mesmo concurso.</p>';
   const totals = model.totals;
   return `<section class="weekly-focus-history" aria-label="Histórico do foco estratégico"><h4>Foco estratégico ao longo do tempo</h4><p class="analytics-note">Períodos salvos mantêm os cálculos e o concurso ativo da data do registro. O período atual ainda pode mudar.</p>${renderFocusTrend(model.rows)}<ol>${rows}</ol>${comparison}<p class="weekly-focus-history-results">Nos períodos exibidos: ${totals.workedGaps} lacunas trabalhadas; ${totals.measured} com resultado posterior medido (${totals.improved} melhoraram, ${totals.stable} estáveis, ${totals.declined} pioraram).</p><small>O histórico descreve associação entre foco e resultados; não atribui causalidade nem exige aumento contínuo do percentual.</small></section>`;
@@ -117,10 +118,7 @@ export function renderGapMap(model: Record<string, any>, { escapeHtml }: any) {
     : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
 }
 export function renderDecisionHistory(model: Record<string, any>, { escapeHtml }: any) {
-  return model.items.length
-    ? model.items
-        .map(
-          (item: any) =>
+  const card = (item: any) =>
             `<article class="data-row"><strong>${safe(escapeHtml, item.subjectName)} — ${safe(escapeHtml, item.topicName)}</strong><span>${safe(escapeHtml, item.strategyLabel)}</span>${
               item.reasons.length
                 ? `<small>${item.reasons
@@ -130,10 +128,12 @@ export function renderDecisionHistory(model: Record<string, any>, { escapeHtml }
                 : item.examImpact != null || item.masteryBefore != null
                   ? `<small>Prova: impacto ${item.examImpact ?? '—'}/100 · Você: domínio ${item.masteryBefore ?? '—'}/100</small>`
                   : ''
-            }<small>${safe(escapeHtml, item.outcomeLabel)}</small>${renderRecommendationExplanation(item.explanationSnapshot, { headingLevel: 4 })}</article>`
-        )
-        .join('')
-    : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
+            }<small>${safe(escapeHtml, item.outcomeLabel)}</small>${renderRecommendationExplanation(item.explanationSnapshot, { headingLevel: 4 })}</article>`;
+  if (!model.items.length)
+    return '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
+  // Só as 5 decisões mais recentes entram no DOM; o resto vem em "Mostrar mais".
+  const rest = model.items.slice(5);
+  return model.items.slice(0, 5).map(card).join('') + lazyMore(rest.map(card).join(''), rest.length);
 }
 export function renderPostSimulationReplan(model: Record<string, any>, { escapeHtml }: any) {
   const need =

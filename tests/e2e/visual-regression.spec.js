@@ -54,6 +54,8 @@ for (const viewport of viewports) {
     await expect(close.locator('.weekly-close-brief .weekly-signals')).toHaveCount(1);
     // A análise longa e o foco estratégico moram no Histórico.
     const full = page.locator('#weeklyCloseFullAnalysis');
+    await openPlanningSubtab(page, 'historico');
+    await full.locator('.weekly-close-analysis > summary').click();
     await expect(full.locator('.weekly-strategic-focus')).toContainText('Foco estratégico da semana');
     await expect(full.locator('.weekly-decision-summary')).toContainText('Decisão sugerida');
     // O histórico de foco saiu do fechamento e vive na seção Histórico.

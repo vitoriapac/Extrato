@@ -64,10 +64,12 @@ test('histórico usa apenas períodos salvos, comparáveis, sem sobreposição e
     result.rows.map(item => item.end),
     ['2026-09-07', '2026-09-19', '2026-09-28']
   );
+  // O período em andamento (09-22 a 09-28) não entra na variação: só os dois salvos.
   assert.deepEqual(result.comparison, {
-    focusDelta: 6,
-    executionDelta: -40,
-    previousEnd: '2026-09-19',
+    focusDelta: 16,
+    executionDelta: 30,
+    previousEnd: '2026-09-07',
+    latestEnd: '2026-09-19',
   });
   assert.deepEqual(result.totals, {
     workedGaps: 8,

@@ -1,3 +1,4 @@
+import { formatInteger } from '../../core/format-number.js';
 import {
   BEGINNER_DAYS_LIMIT,
   BEGINNER_QUESTION_LIMIT,
@@ -15,6 +16,6 @@ export function renderBeginnerState(section: string, assessment: BeginnerAssessm
   const what = WHAT[section] || WHAT.questions;
   const days = assessment.recordDays === 1 ? '1 dia' : `${assessment.recordDays} dias`;
   const questions =
-    assessment.questionCount === 1 ? '1 questão' : `${assessment.questionCount} questões`;
+    assessment.questionCount === 1 ? '1 questão' : `${formatInteger(assessment.questionCount)} questões`;
   return `<div class="empty-state performance-beginner" role="status" data-beginner-state="${section}"><strong>Esta aba fica útil com mais registros</strong><p>Ela ${what}. Com poucos dados, os números oscilam e podem confundir.</p><p>Fica útil com ${BEGINNER_QUESTION_LIMIT} questões respondidas ou ${BEGINNER_DAYS_LIMIT / 7} semanas de registro. Você tem ${questions} e ${days} de registro.</p><div class="performance-reading__actions"><button type="button" class="btn small" data-performance-open="questoes">Registrar questões</button><button type="button" class="btn ghost small" data-performance-investigate="overview">Ver a Visão geral</button></div></div>`;
 }

@@ -1,3 +1,4 @@
+import { formatInteger } from './format-number.js';
 export function uid(prefix = 'id'): string {
   if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function')
     return `${prefix}-${globalThis.crypto.randomUUID()}`;
@@ -44,7 +45,7 @@ export function pluralize(
   singular: string,
   pluralForm = `${singular}s`
 ): string {
-  return `${count} ${Number(count) === 1 ? singular : pluralForm}`;
+  return `${typeof count === 'number' ? formatInteger(count) : count} ${Number(count) === 1 ? singular : pluralForm}`;
 }
 
 const HTML_ESCAPES: Record<string, string> = {

@@ -36,7 +36,7 @@ test('semana normal: feito, sinal e ação, com a ação da Leitura e até três
   assert.equal(summary.kind, 'normal');
   assert.equal(summary.paragraphs.length, 3);
   assert.match(summary.paragraphs[0], /Você estudou 12 h 38 min em 6 dias, perto do que o plano previa\./);
-  assert.match(summary.paragraphs[1], /A precisão em questões foi 73%\./);
+  assert.match(summary.paragraphs[1], /A precisão em questões foi 73,0%\./);
   assert.match(summary.paragraphs[2], /A próxima ação é Juros simples \(Matemática\), em Hoje\./);
   assert.ok(numbers(summary) <= 3);
 });

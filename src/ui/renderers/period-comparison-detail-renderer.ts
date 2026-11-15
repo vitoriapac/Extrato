@@ -1,4 +1,4 @@
-import { formatPoints } from '../../core/format-number.js';
+import { formatPercent, formatPoints } from '../../core/format-number.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { planMin, planMinDelta } from './adherence-labels.js';
 export function renderPeriodComparisonDetail(model: Record<string, any>, { escapeHtml }: any = {}) {
@@ -8,7 +8,7 @@ export function renderPeriodComparisonDetail(model: Record<string, any>, { escap
       : metric.unit === 'min'
         ? planMin(value)
         : metric.unit === 'percentage_points'
-          ? `${value}%`
+          ? formatPercent(value)
           : String(value);
   const delta = (metric: Record<string, any>) =>
     metric.key === 'accuracy' && model.insights.confidence !== 'moderate'

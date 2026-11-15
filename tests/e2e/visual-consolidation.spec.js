@@ -297,6 +297,8 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'fechamento');
   await expect(page.locator('#weeklyCloseDashboard .week-reconciliation')).toBeVisible();
+  await openPlanningSubtab(page, 'historico');
+  await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
   await expect(page.locator('#weeklyCloseFullAnalysis .weekly-assessment')).toContainText(
     'Diagnóstico'
   );
@@ -671,17 +673,11 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   await openDemo(page);
 
   await activateTab(page, 'metas');
-  await openPlanningSubtab(page, 'prova');
-  const history = page.locator('#historicoMetasContainer .goal-history-chart');
-  await expect(history).toHaveCount(3);
-  await expect(
-    history.first().getByRole('img', { name: /^Tópicos concluídos por semana/ })
-  ).toBeAttached();
-  await expect(history.first().locator('figcaption')).toContainText(
-    /semanas? encerradas? na meta|sem meta definida/
-  );
+  await openPlanningSubtab(page, 'historico');
+  const series = page.getByRole('img', { name: /^Agendado e estudado por semana: / });
+  await expect(series).toBeAttached();
+  await expect(page.locator('#weeklyHistorySeries .chart-columns__bar--primary').first()).toBeAttached();
   await openPlanningSubtab(page, 'semana');
-  await page.locator('.metas-execution-history').evaluate(node => (node.open = true));
   const week = page.getByRole('img', { name: /^Capacidade, tarefa marcada e estudado por dia: / });
   await expect(week).toBeVisible();
   expect(await week.locator('.chart-columns__bar').count()).toBe(21);
@@ -744,26 +740,24 @@ test('alvos de toque móveis, modo foco inerte, envio de metas e indicador de sa
   await page.locator('.mobile-more-scrim').click({ position: { x: 20, y: 120 } });
   await expect(page.locator('.mobile-more-scrim')).toHaveCount(0);
 
-  // Tabela unificada de metas por disciplina remove e restaura meta semanal de questões via Enter
+  // Tabela unificada de metas por disciplina remove e restaura a meta semanal de questões via Enter
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  const removeButtons = page.locator('#subjectTargetEditor [data-weekly-goal-remove]');
-  const initialCount = await removeButtons.count();
+  const weekly = page.locator('#subjectTargetEditor [data-field="weekly"]');
+  const filled = () =>
+    weekly.evaluateAll(items => items.filter(item => item.value !== '').length);
+  const initialCount = await filled();
   expect(initialCount).toBeGreaterThan(0);
-  const removedSubjectId = await removeButtons.first().getAttribute('data-weekly-goal-remove');
-  const weeklyEditor = page.locator('#subjectTargetEditor details').filter({
-    has: page.locator(`[data-weekly-goal-value="${removedSubjectId}"]`),
-  });
-  await weeklyEditor.locator('summary').click();
-  await removeButtons.first().click();
-  await expect(removeButtons).toHaveCount(initialCount - 1);
-  const weeklyInput = page.locator(
-    `#subjectTargetEditor [data-weekly-goal-value="${removedSubjectId}"]`
-  );
-  await weeklyEditor.locator('summary').click();
-  await weeklyInput.fill('45');
-  await weeklyEditor.getByRole('button', { name: 'Salvar questões' }).click();
-  await expect(removeButtons).toHaveCount(initialCount);
+  const filledIndex = await weekly.evaluateAll(items => items.findIndex(item => item.value !== ''));
+  const field = weekly.nth(filledIndex);
+  const subject = await field.getAttribute('data-subject');
+  await field.fill('');
+  await field.press('Enter');
+  await expect.poll(filled).toBe(initialCount - 1);
+  const again = page.locator(`#subjectTargetEditor [data-field="weekly"][data-subject="${subject}"]`);
+  await again.fill('45');
+  await again.press('Enter');
+  await expect.poll(filled).toBe(initialCount);
 
   // Indicador de salvamento e botão Sair da demonstração nunca colidem no desktop
   await page.setViewportSize({ width: 1280, height: 800 });

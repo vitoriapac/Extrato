@@ -211,6 +211,8 @@ export interface ColumnChartColumn {
   separated?: boolean;
   /** Dia ainda por vir: a barra fica esmaecida. */
   faded?: boolean;
+  /** Período em andamento: contorno tracejado, separado dos fechados. */
+  dashed?: boolean;
 }
 
 export interface ColumnChartProps {
@@ -240,7 +242,7 @@ export function ColumnChart({ columns, label, max, target, height = 48, classNam
     >
       {geometry.bars.map((bar, i) => (
         <rect
-          class={`chart-columns__bar chart-columns__bar--${columns[i].tone || 'primary'}${bar.zero ? ' is-zero' : ''}${columns[i].faded ? ' is-faded' : ''}`}
+          class={`chart-columns__bar chart-columns__bar--${columns[i].tone || 'primary'}${bar.zero ? ' is-zero' : ''}${columns[i].faded ? ' is-faded' : ''}${columns[i].dashed ? ' is-dashed' : ''}`}
           x={bar.x}
           y={bar.y}
           width={bar.width}

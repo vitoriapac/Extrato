@@ -44,6 +44,7 @@ import { renderAdherenceCloseHistory } from '../../ui/renderers/weekly-adherence
 import { renderPhaseComparison } from '../../ui/renderers/phase-comparison-renderer.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../ui/accessibility.js';
+import { renderWeeklyHistorySeries } from '../../ui/renderers/weekly-history-series-renderer.js';
 import { renderWeeklyCloseTrend, renderWeeklySignals } from '../../ui/renderers/weekly-close-trend-renderer.js';
 import { renderWeeklyCloseRecord } from '../../ui/renderers/weekly-close-record-renderer.js';
 import { openSectionFor } from '../../ui/remembered-sections.js';
@@ -88,6 +89,7 @@ export interface WeeklyCloseModalControllerDeps {
   computeApprovalMetrics?: () => any;
   currentAchievementProjection?: () => { model: any };
   examScopedSimulations?: () => any[];
+  computeWeeklyHistory?: (weeks?: number) => any[];
   allTopics?: () => any[];
   metaHoursForDate?: (dateStr: string) => number;
   projectPerformance?: () => any;
@@ -525,6 +527,27 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
           : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
         '</section>';
     }
+    const series = doc.getElementById('weeklyHistorySeries');
+    if (series) {
+      series.innerHTML = renderWeeklyHistorySeries({
+        execution: buildPlanExecution({
+          today: todayISO(),
+          dailyPlans: state.dailyPlans,
+          sessions: (state.studySessions || []).map((item: any) => ({
+            ...item,
+            subjectId: deps.entitySubjectId ? deps.entitySubjectId(item) : item.subjectId,
+          })),
+          hoursByDay: state.metas?.horasPorDia,
+          subjects: state.subjects,
+          activeExamTags: state.examBlueprint?.activeExamTags || [],
+        }),
+        goalWeeks: deps.computeWeeklyHistory ? deps.computeWeeklyHistory(8) : [],
+        metas: state.metas || {},
+        formatMinutes: formatPlanMinutes,
+        formatDate: formatDateBR,
+        escapeHtml,
+      });
+    }
     // A análise longa da semana encerrada mora no Histórico; o Fechamento só mostra a tendência e os sinais.
     const fullAnalysis = doc.getElementById('weeklyCloseFullAnalysis');
     if (fullAnalysis) {
@@ -541,8 +564,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       const fullOpen = Boolean(
         (fullAnalysis.querySelector?.('.weekly-close-analysis') as HTMLDetailsElement | null)?.open
       );
-      fullAnalysis.innerHTML =
-        `<details class="chart-card weekly-close-analysis editorial-disclosure"${fullOpen ? ' open' : ''}><summary>Análise completa da semana encerrada</summary>` +
+      const fullBody =
         renderWeeklyClose(model.weeklyClose, { ...options, includeNext: false, includeKpis: false }) +
         renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
           adherence: model.weeklyClose.adherence,
@@ -557,10 +579,15 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
                 current: model,
                 snapshots: state.weeklyCloseSnapshots || [],
                 activeExamTags: model.activeExamTags,
+                today: todayISO(),
               })
             ) + renderProjectionCloseContext(trajectoryClose, { escapeHtml }),
         }) +
-        renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus) +
+        renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus);
+      // Fechada, a análise não pesa no DOM: o corpo entra quando a dobra abre.
+      fullAnalysis.innerHTML =
+        `<details class="chart-card weekly-close-analysis editorial-disclosure"${fullOpen ? ' open' : ''}><summary>Análise completa da semana encerrada</summary>` +
+        (fullOpen ? fullBody : `<template data-lazy>${fullBody}</template>`) +
         '</details>';
     }
     const closeHistory = doc.getElementById('weeklyCloseHistoryDashboard');
@@ -624,6 +651,14 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     if (comparison) comparison.innerHTML = renderPeriodComparison(model.weeklyClose, options);
     if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
     if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
+    // Sem retratos nem decisões, o modo Essencial mostra uma frase em vez do botão "Mostrar" sozinho.
+    const emptyNote = doc.getElementById('weeklyHistoryEmpty');
+    const historySection = doc.getElementById('metasHistorySection');
+    const historyEmpty = !(state.weeklyCloseSnapshots || []).length && !model.decisionHistory.items.length;
+    emptyNote?.classList?.toggle('is-empty', historyEmpty);
+    const reveal = historySection?.previousElementSibling as HTMLElement | null;
+    if (reveal?.classList?.contains('advanced-reveal'))
+      reveal.hidden = historyEmpty || Boolean(historySection?.classList?.contains('is-advanced-open'));
     if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
   }
 

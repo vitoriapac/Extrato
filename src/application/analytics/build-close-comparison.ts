@@ -27,7 +27,10 @@ export function captureCloseComparisonMetrics(model: Row, projection: Row | null
       : null,
   };
 }
-export function buildCloseComparison({ current, snapshots = [], activeExamTags = [] }: any = {}) {
+export function buildCloseComparison({ current, snapshots = [], activeExamTags = [], today = null }: any = {}) {
+  // Período ainda em andamento não se compara com um fechado.
+  if (today && current?.period?.end >= today)
+    return { state: 'partial', rows: [] as Row[], previous: null as Row | null };
   const previous = [...snapshots]
     .filter(
       item =>

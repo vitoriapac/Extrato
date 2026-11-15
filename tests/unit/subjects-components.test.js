@@ -191,7 +191,7 @@ test('Disciplinas — linha fechada mostra nome, progresso, acerto recente e a a
   assert.ok(html.includes('Língua Portuguesa'));
   assert.ok(html.includes('40% de progresso · 1 tópico'));
   assert.ok(html.includes('role="progressbar"'));
-  assert.match(html, /Acerto · última janela com questões[\s\S]*72%/);
+  assert.match(html, /Acerto · última janela com questões[\s\S]*72,0%/);
   assert.ok(html.includes('Abrir tópicos'));
   assert.ok(html.includes('aria-expanded="false"'));
   assert.ok(!html.includes('<table'), 'tabela de tópicos não é montada fechada');

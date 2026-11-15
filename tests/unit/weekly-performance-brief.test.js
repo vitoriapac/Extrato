@@ -42,7 +42,7 @@ test('buildWeeklyPerformanceBrief — gera 3 parágrafos detalhados, 1 parágraf
   assert.equal(brief.previous.studiedMinutes, 120); // 2h
   assert.equal(brief.current.activeDays, 5);
   assert.equal(brief.current.resolved, 70);
-  assert.equal(brief.current.accuracy, 71);
+  assert.equal(brief.current.accuracy, 71.4);
   assert.equal(brief.previous.accuracy, 66);
   assert.equal(brief.bestSubject?.name, 'Português');
   assert.equal(brief.weakestSubject?.name, 'Direito Constitucional');

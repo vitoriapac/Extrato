@@ -1,3 +1,4 @@
+import { ratioPercent } from '../../core/format-number.js';
 import { resolveSubjectAccuracyTarget } from '../../domain/analytics/subject-accuracy-target.js';
 const summarize = (records: Array<Record<string, any>>, totalKey: string) => {
   const total = records.reduce(
@@ -82,7 +83,7 @@ export function buildSubjectWeeklyAccuracy(
   for (const [subjectId, rows] of sums)
     result.set(
       subjectId,
-      rows.map(row => (row.resolved ? Math.round((row.correct / row.resolved) * 100) : null))
+      rows.map(row => (row.resolved ? ratioPercent(row.correct, row.resolved) : null))
     );
   return result;
 }

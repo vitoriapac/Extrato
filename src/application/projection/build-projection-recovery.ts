@@ -23,7 +23,7 @@ export function buildProjectionRecovery({
     );
   if (topicRisks.length)
     steps.push(
-      `Revise a prioridade já identificada para ${topicRisks[0].topicName}, de alto impacto e domínio ${topicRisks[0].mastery}/100.`
+      `Ponto de atenção da projeção: ${topicRisks[0].topicName}, de alto impacto e domínio ${topicRisks[0].mastery}/100. A ação do dia segue a Próxima ação.`
     );
   if (coverage != null && coverage < 50)
     steps.push('Amplie a cobertura dos tópicos do edital ainda não concluídos.');

@@ -1,3 +1,4 @@
+import { formatInteger } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
 import { renderWindowBadge } from './window-badge.js';
 import { renderWeekSummary } from './week-summary-renderer.js';
@@ -58,7 +59,7 @@ export function renderPerformanceOverview(
   const kpis = `<p class="performance-kpi-window">${renderWindowBadge('period', range?.label || '')}<span>Os indicadores abaixo seguem o período escolhido.</span></p><section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
     ${renderMetricCard({ label: 'Tempo estudado', windowBadge: periodBadge, trend: kpiTrend(trend.map((row: any) => Math.round((row.studiedMinutes / 60) * 10) / 10), 'Tempo estudado por semana completa', 'h'), value: formatStudyMinutes(current.studiedMinutes), detail: `${pluralize(current.sessionCount || 0, 'sessão', 'sessões')}${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
     ${card('Questões respondidas', current.resolved ?? 0, '', 'No período selecionado', periodBadge, kpiTrend(trend.map((row: any) => row.resolved), 'Questões por semana completa', 'questões'))}
-    ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, periodBadge, kpiTrend(trend.map((row: any) => row.accuracy), 'Precisão por semana completa (10 questões ou mais)', '%'))}
+    ${card('Precisão em questões', current.accuracy, '%', `${formatInteger(current.resolved || 0)} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, periodBadge, kpiTrend(trend.map((row: any) => row.accuracy), 'Precisão por semana completa (10 questões ou mais)', '%'))}
     ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`, periodBadge) : ''}
   </section>`;
   const history = renderReadinessHistory(model.history, {

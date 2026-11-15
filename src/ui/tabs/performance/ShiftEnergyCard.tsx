@@ -21,6 +21,7 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
     shifts,
     peakShift,
     totalStudyHours,
+    totalStudyMinutes,
     isSampleSufficient,
     fatigueAlert,
     recommendations,
@@ -54,7 +55,7 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
               <WindowBadge kind="history" title="Todo o histórico registrado" /> Horas e precisão, sem o
-              filtro de período ({formatStudyMinutes(totalStudyHours * 60)} no total).
+              filtro de período ({formatStudyMinutes(totalStudyMinutes ?? totalStudyHours * 60)} no total).
               {periodFocus && (
                 <>
                   {' '}

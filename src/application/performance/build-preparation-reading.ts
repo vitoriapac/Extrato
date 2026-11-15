@@ -115,7 +115,11 @@ export function buildPreparationReading({
     : '';
   const readinessDetailBase =
     model.readinessDelta != null && pair?.current && pair?.previous
-      ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}, ${model.readinessDelta > 0 ? '+' : model.readinessDelta < 0 ? '−' : ''}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente ao fechamento anterior.`
+      ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}${
+          model.readinessDelta === 0
+            ? ', igual ao fechamento anterior.'
+            : `, ${model.readinessDelta > 0 ? '+' : '−'}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente ao fechamento anterior.`
+        }`
       : pair?.current
         ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}.`
         : null;

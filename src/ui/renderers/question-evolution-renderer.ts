@@ -1,3 +1,4 @@
+import { formatInteger } from '../../core/format-number.js';
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import { formatPercent } from '../../core/format-number.js';
 import { chartSize } from '../primitives/charts/chart-size.js';
@@ -109,7 +110,7 @@ export function renderQuestionEvolution(
         ' a ' +
         label(model.buckets.at(-1), model.monthly, formatDate)
       : '',
-    evidence: model.resolved + ' questões no recorte · ' + formatPercent(model.accuracy) + ' de acerto',
+    evidence: formatInteger(model.resolved) + ' questões no recorte · ' + formatPercent(model.accuracy) + ' de acerto',
     legend: [
       { label: 'Precisão média móvel', tone: 'primary' },
       ...(goal === null ? [] : [{ label: `Meta de precisão (${goal}%)`, tone: 'target' }]),

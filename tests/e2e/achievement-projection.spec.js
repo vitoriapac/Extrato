@@ -22,7 +22,6 @@ for (const { width, theme } of [
     await page.setViewportSize({ width, height: 900 });
     await openDemo(page);
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
-    await expect(page.locator('#weeklyCloseFullAnalysis .projection-close-context')).toHaveCount(1);
     await activateTab(page, 'desempenho');
     // A projeção até a prova mora em Simulados.
   await openPerformanceSection(page, 'simulations');
@@ -60,6 +59,10 @@ for (const { width, theme } of [
         )
       );
     }
+    await activateTab(page, 'metas');
+    await openPlanningSubtab(page, 'historico');
+    await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
+    await expect(page.locator('#weeklyCloseFullAnalysis .projection-close-context')).toHaveCount(1);
   });
 
 test('novo snapshot passa na validação e migração do backup anterior preserva o histórico', async ({

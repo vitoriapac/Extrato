@@ -87,6 +87,5 @@ export function updatePerformanceViewState(
     next.compareMode = patch.compareMode;
   if (patch.adherenceWeeks !== undefined && [4, 8, 12].includes(Number(patch.adherenceWeeks)))
     next.adherenceWeeks = Number(patch.adherenceWeeks);
-  if (next.period === 'all') next.comparePrevious = false;
   return next;
 }

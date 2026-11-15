@@ -68,13 +68,16 @@ export function buildStrategicFocusHistory({
   }
   const history = selected.reverse().map(({ savedAt, ...item }) => item),
     rows = [...history, ...(currentRow ? [currentRow] : [])];
-  const previous = history.at(-1) || null;
+  // A variação compara só períodos salvos (fechados); o período em andamento fica de fora.
+  const latest = history.at(-1) || null,
+    previous = history.at(-2) || null;
   const comparison =
-    currentRow && previous
+    latest && previous
       ? {
-          focusDelta: currentRow.focusPercent! - previous.focusPercent,
-          executionDelta: currentRow.executedMinutes! - previous.executedMinutes,
+          focusDelta: latest.focusPercent! - previous.focusPercent!,
+          executionDelta: latest.executedMinutes! - previous.executedMinutes!,
           previousEnd: previous.end,
+          latestEnd: latest.end,
         }
       : null;
   type FocusTotals = Record<'workedGaps' | 'measured' | 'improved' | 'stable' | 'declined', number>;

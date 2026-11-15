@@ -2,6 +2,7 @@ import { EXAM_TAGS, EXAM_SOURCES } from '../../domain/exams/exam-constants.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { parseLocalDate } from '../../core/date-utils.js';
+import { bindLazyMore } from '../../ui/lazy-more.js';
 import { createGoalsTabController } from '../../ui/tabs/goals/goals-tab-controller.js';
 import { createExamMatrixController } from '../../ui/tabs/goals/exam-matrix-controller.js';
 import { createSubjectTargetEditorController } from '../../ui/tabs/goals/subject-target-editor-controller.js';
@@ -114,6 +115,7 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     computeRitmo: studyCandidateService.computeRitmo,
   });
   goalsTabController.bindEvents();
+  bindLazyMore(document);
 
   const examMatrixController = createExamMatrixController({
     document,
@@ -229,6 +231,7 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     computeApprovalMetrics: approvalReadinessService.computeApprovalMetrics,
     currentAchievementProjection,
     examScopedSimulations: studyMetricsSelectors.examScopedSimulations,
+    computeWeeklyHistory: studyMetricsSelectors.computeWeeklyHistory,
     allTopics,
   });
 

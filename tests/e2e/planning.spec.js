@@ -96,10 +96,8 @@ test('a meta geral de domínio não vira meta da disciplina: a herança continua
   await expect(mastery).toHaveAttribute('placeholder', '80');
   await expect(mastery).toHaveValue('');
   await page.locator('#examBlueprintConfig .exam-general-config > summary').click();
-  const target = page
-    .locator('#examBlueprintConfig .exam-blueprint-main label')
-    .nth(2)
-    .locator('input');
+  await page.evaluate(() => document.documentElement.removeAttribute('data-essential'));
+  const target = page.locator('#examBlueprintConfig .exam-blueprint-main').getByLabel('Meta geral de domínio (%)');
   await target.fill('85');
   await target.press('Tab');
   await expect(mastery).toHaveAttribute('placeholder', '85');
@@ -409,4 +407,54 @@ test('Fechamento: uma análise com tendência de 4 semanas e sinais, no máximo 
   // A análise longa continua disponível no Histórico.
   await openPlanningSubtab(page, 'historico');
   await expect(page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary')).toBeVisible();
+});
+
+test('Histórico tem uma série semanal (agendado e estudado, metas em marcas) e a Semana não repete', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'historico');
+  const series = page.locator('#weeklyHistorySeries');
+  await expect(series.getByRole('img', { name: /^Agendado e estudado por semana: / })).toBeAttached();
+  await expect(series.locator('.weekly-history-series__marks li').first()).toBeAttached();
+  await series.getByText('Ver dados', { exact: true }).click();
+  await expect(series.locator('.plan-execution-table')).toBeVisible();
+  await openPlanningSubtab(page, 'semana');
+  await expect(page.locator('#planExecutionResults .metas-execution-history')).toHaveCount(0);
+  await expect(page.locator('#historicoMetasContainer')).toHaveCount(0);
+});
+
+test('Histórico da demo tem menos de 20 dobras e "Mostrar mais" revela o resto', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'historico');
+  const count = () => page.locator('#metasSub-historico details').count();
+  expect(await count()).toBeLessThan(20);
+  const decisions = page.locator('#decisionHistoryDashboard article');
+  await expect(decisions).toHaveCount(5);
+  await page.locator('#decisionHistoryDashboard').getByRole('button', { name: /^Mostrar mais/ }).click();
+  expect(await decisions.count()).toBeGreaterThan(5);
+  // O corpo de um retrato só existe depois de abrir.
+  const retrato = page.locator('#weeklyCloseHistoryDashboard .weekly-adherence-history details').first();
+  await expect(retrato.locator('.weekly-adherence')).toHaveCount(0);
+  await retrato.locator('summary').first().click();
+  await expect(retrato.locator('.weekly-adherence').first()).toBeAttached();
+});
+
+test('Histórico vazio no Essencial explica o que vai aparecer, sem botão solitário', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.evaluate(() => {
+    document.getElementById('testReport')?.remove();
+    document.documentElement.setAttribute('data-essential', 'on');
+  });
+  await activateTab(page, 'metas');
+  await openPlanningSubtab(page, 'historico');
+  await expect(page.locator('#weeklyHistoryEmpty')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Mostrar Retratos e histórico de decisões/ })).toBeHidden();
 });

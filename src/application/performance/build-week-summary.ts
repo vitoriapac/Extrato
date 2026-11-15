@@ -1,3 +1,4 @@
+import { formatPercent } from '../../core/format-number.js';
 import { formatReadableMinutes } from './build-weekly-performance-brief.js';
 
 type Row = Record<string, any>;
@@ -57,7 +58,7 @@ export function buildWeekSummary({
 
   const enoughQuestions = week.resolved >= MIN_QUESTIONS;
   const signal = enoughQuestions
-    ? `A precisão em questões foi ${week.accuracy}%.`
+    ? `A precisão em questões foi ${formatPercent(week.accuracy)}.`
     : week.resolved > 0
       ? 'Poucas questões na semana (menos de 30): leia a precisão como indício.'
       : '';

@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=b7ab26f0b346">
-<link rel="stylesheet" href="styles/app.css?v=b7ab26f0b346">
+<link rel="stylesheet" href="styles/tailwind.css?v=810348baa181">
+<link rel="stylesheet" href="styles/app.css?v=810348baa181">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -93,7 +93,7 @@
     <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral"><img src="icons/app-icon.svg" alt="" width="28" height="28">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flame icon-inline" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
     <div class="primary-nav-shell">
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
-        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-layout-dashboard tab-icon" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Visão geral</span></span></button>
+        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-layout-dashboard tab-icon" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Visão</span></span></button>
         <button class="tab-btn" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chart-line tab-icon" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg><span class="tab-label">Desempenho</span></button>
         <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-sun tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><span class="tab-label">Hoje</span></button>
         <button class="tab-btn tab-secondary" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-books tab-icon" aria-hidden="true"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></svg><span class="tab-label"><span class="tab-label-long">Disciplinas</span><span class="tab-label-short">Disciplinas</span></span></button>
@@ -699,11 +699,6 @@
       <div id="ritmoContainer"></div>
     </div>
 
-    <div class="chart-card">
-      <h3>Histórico de metas (últimas 8 semanas)</h3>
-      <div id="historicoMetasContainer"></div>
-    </div>
-
     </section>
     <section class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento" tabindex="0" hidden>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
@@ -717,7 +712,9 @@
     <section class="chart-card metas-history-intro" id="metasHistoryIntro" data-metas-section aria-labelledby="metasHistoryTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="metasHistoryTitle">Retratos e histórico de decisões</h3><p class="module-heading__description">Retratos semanais salvos, decisões e trajetória das prioridades. Registros congelados e imutáveis.</p></header>
     </section>
+    <section class="chart-card" id="weeklyHistorySection" aria-label="Histórico semanal"><div id="weeklyHistorySeries"></div></section>
     <div id="weeklyCloseFullAnalysis"></div>
+    <p class="analytics-note" id="weeklyHistoryEmpty">Ainda não há retratos nem decisões salvos. Quando você salvar o primeiro fechamento semanal e aceitar recomendações, eles aparecem aqui.</p>
     <div class="metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões">
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Retratos semanais</h4></header><div id="weeklyCloseHistoryDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Histórico de decisões</h4></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Linha do Tempo Estratégica</h4><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Evolução das prioridades</h4><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
@@ -769,7 +766,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=b7ab26f0b346"></script>
+  <script src="src/app.bundle.js?v=810348baa181"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

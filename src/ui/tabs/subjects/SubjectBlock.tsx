@@ -1,3 +1,4 @@
+import { formatPercent } from '../../../core/format-number.js';
 import { SubjectTopicRow } from './SubjectTopicRow.js';
 import { Icon } from '../../primitives/icon.js';
 import { Sparkline, StackedBar } from '../../primitives/charts/charts.js';
@@ -126,7 +127,7 @@ export function SubjectBlock({
           </span>
           {recentAccuracy !== undefined && (
             <span class="subject-recent-accuracy">
-              Acerto · última janela com questões <b>{recentAccuracy}%</b>
+              Acerto · última janela com questões <b>{formatPercent(recentAccuracy)}</b>
             </span>
           )}
           <button

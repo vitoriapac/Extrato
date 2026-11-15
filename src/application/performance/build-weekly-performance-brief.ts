@@ -1,4 +1,4 @@
-import { formatPoints } from '../../core/format-number.js';
+import { formatPercent, formatPoints, ratioPercent } from '../../core/format-number.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { pluralize } from '../../core/utils.js';
@@ -120,7 +120,7 @@ function computeWindowStats(
 
   const resolved = winQuestions.reduce((sum, q) => sum + Math.max(0, Number(q?.resolved) || 0), 0);
   const correct = winQuestions.reduce((sum, q) => sum + Math.max(0, Number(q?.correct) || 0), 0);
-  const accuracy = resolved > 0 ? Math.round((correct / resolved) * 100) : null;
+  const accuracy = resolved > 0 ? ratioPercent(correct, resolved) : null;
 
   const activeDateSet = new Set<string>();
   for (const s of winSessions) {
@@ -195,7 +195,7 @@ function findSubjectHighlights(
 
   const all = [...bySubject.values()].map(item => ({
     ...item,
-    accuracy: Math.round((item.correct / item.resolved) * 100),
+    accuracy: ratioPercent(item.correct, item.resolved),
   }));
 
   if (all.length === 0) {
@@ -310,8 +310,8 @@ function buildChartMetrics(
       label: 'Taxa de acerto',
       currentValue: currAcc ?? 0,
       previousValue: prevAcc ?? 0,
-      currentFormatted: currAcc != null ? `${currAcc}%` : '—',
-      previousFormatted: prevAcc != null ? `${prevAcc}%` : '—',
+      currentFormatted: currAcc != null ? formatPercent(currAcc) : '—',
+      previousFormatted: prevAcc != null ? formatPercent(prevAcc) : '—',
       deltaFormatted: accuracyDeltaFormatted,
       trend: accuracyTrend,
       currentBarPct: currAcc != null && currAcc > 0 ? Math.max(6, Math.min(100, currAcc)) : 0,
@@ -494,7 +494,7 @@ export function buildWeeklyPerformanceBrief({
   if (!hasActivity) {
     p2 =
       previous.resolved > 0 && previous.accuracy != null
-        ? `Na semana anterior, você tinha resolvido ${pluralize(previous.resolved, 'questão', 'questões')} com ${previous.accuracy}% de acerto. Resolver uma pequena bateria de questões hoje é a forma mais rápida de medir como está sua lembrança da matéria.`
+        ? `Na semana anterior, você tinha resolvido ${pluralize(previous.resolved, 'questão', 'questões')} com ${formatPercent(previous.accuracy)} de acerto. Resolver uma pequena bateria de questões hoje é a forma mais rápida de medir como está sua lembrança da matéria.`
         : `Como também não houve questões ou simulados registrados nesta semana, ainda não temos acertos recentes para comparar por matéria. Assim que você registrar seus primeiros exercícios, este espaço mostrará em quais disciplinas você está indo melhor.`;
   } else if (current.resolved === 0) {
     const simNote =
@@ -507,21 +507,21 @@ export function buildWeeklyPerformanceBrief({
     if (previous.resolved > 0 && previous.accuracy != null && current.accuracy != null) {
       const diff = current.accuracy - previous.accuracy;
       if (diff >= 2) {
-        accCompare = ` — uma evolução positiva frente aos ${previous.accuracy}% da semana passada (em ${pluralize(previous.resolved, 'questão', 'questões')})`;
+        accCompare = ` — uma evolução positiva frente aos ${formatPercent(previous.accuracy)} da semana passada (em ${pluralize(previous.resolved, 'questão', 'questões')})`;
       } else if (diff <= -2) {
-        accCompare = ` — um pouco abaixo dos ${previous.accuracy}% que você alcançou na semana passada (em ${pluralize(previous.resolved, 'questão', 'questões')})`;
+        accCompare = ` — um pouco abaixo dos ${formatPercent(previous.accuracy)} que você alcançou na semana passada (em ${pluralize(previous.resolved, 'questão', 'questões')})`;
       } else {
-        accCompare = ` — mantendo a estabilidade em relação aos ${previous.accuracy}% da semana passada`;
+        accCompare = ` — mantendo a estabilidade em relação aos ${formatPercent(previous.accuracy)} da semana passada`;
       }
     }
 
     let subjectsSentence = '';
     if (bestSubject && weakestSubject) {
-      subjectsSentence = ` Seu destaque positivo foi em ${bestSubject.name} (${bestSubject.accuracy}% de acerto em ${pluralize(bestSubject.resolved, 'questão', 'questões')}), enquanto ${weakestSubject.name} foi a matéria que pediu mais cuidado (${weakestSubject.accuracy}% de acerto em ${pluralize(weakestSubject.resolved, 'questão', 'questões')}).`;
+      subjectsSentence = ` Seu destaque positivo foi em ${bestSubject.name} (${formatPercent(bestSubject.accuracy)} de acerto em ${pluralize(bestSubject.resolved, 'questão', 'questões')}), enquanto ${weakestSubject.name} foi a matéria que pediu mais cuidado (${formatPercent(weakestSubject.accuracy)} de acerto em ${pluralize(weakestSubject.resolved, 'questão', 'questões')}).`;
     } else if (weakestSubject) {
-      subjectsSentence = ` Entre as matérias praticadas, ${weakestSubject.name} foi a que concentrou mais dificuldades na semana, fechando com ${weakestSubject.accuracy}% de acerto em ${pluralize(weakestSubject.resolved, 'questão', 'questões')}.`;
+      subjectsSentence = ` Entre as matérias praticadas, ${weakestSubject.name} foi a que concentrou mais dificuldades na semana, fechando com ${formatPercent(weakestSubject.accuracy)} de acerto em ${pluralize(weakestSubject.resolved, 'questão', 'questões')}.`;
     } else if (bestSubject) {
-      subjectsSentence = ` Seu melhor aproveitamento na semana veio em ${bestSubject.name}, onde você alcançou ${bestSubject.accuracy}% de acerto em ${pluralize(bestSubject.resolved, 'questão', 'questões')}.`;
+      subjectsSentence = ` Seu melhor aproveitamento na semana veio em ${bestSubject.name}, onde você alcançou ${formatPercent(bestSubject.accuracy)} de acerto em ${pluralize(bestSubject.resolved, 'questão', 'questões')}.`;
     }
 
     const simSentence =
@@ -529,7 +529,7 @@ export function buildWeeklyPerformanceBrief({
         ? ` Além disso, você concluiu ${pluralize(current.simulationsCount, 'simulado')} nesta semana.`
         : '';
 
-    p2 = `Na prática de exercícios, você respondeu ${pluralize(current.resolved, 'questão', 'questões')} e acertou ${current.accuracy}% delas${accCompare}.${subjectsSentence}${simSentence}`;
+    p2 = `Na prática de exercícios, você respondeu ${pluralize(current.resolved, 'questão', 'questões')} e acertou ${formatPercent(current.accuracy)} delas${accCompare}.${subjectsSentence}${simSentence}`;
   }
 
   // --- PARÁGRAFO 3 & LINKS: Próximos passos e indicação de outras abas ---
@@ -661,11 +661,11 @@ export function buildWeeklyPerformanceBrief({
         : ' e ainda não registrou questões no período';
     let tailSnippet = '.';
     if (weakestSubject && overdueReviews > 0) {
-      tailSnippet = `, com ponto de atenção em ${weakestSubject.name} (${weakestSubject.accuracy}%) e ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
+      tailSnippet = `, com ponto de atenção em ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)}) e ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
     } else if (weakestSubject) {
-      tailSnippet = `, sendo ${weakestSubject.name} (${weakestSubject.accuracy}% de acerto) a matéria que mais pede reforço agora.`;
+      tailSnippet = `, sendo ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)} de acerto) a matéria que mais pede reforço agora.`;
     } else if (bestSubject) {
-      tailSnippet = `, com destaque positivo para ${bestSubject.name} (${bestSubject.accuracy}% de acerto).`;
+      tailSnippet = `, com destaque positivo para ${bestSubject.name} (${formatPercent(bestSubject.accuracy)} de acerto).`;
     } else if (overdueReviews > 0) {
       tailSnippet = `, restando ${pluralize(overdueReviews, 'revisão atrasada', 'revisões atrasadas')} para colocar em dia na Agenda.`;
     }

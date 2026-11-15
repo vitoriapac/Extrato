@@ -1,6 +1,6 @@
 import { renderStrategicExecution } from './strategic-execution-renderer.js';
 import { renderColumnChart } from '../primitives/charts/charts.js';
-import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
+import { renderChartFrame } from '../chart-components.js';
 import { renderEmptyState } from '../components/presentation.js';
 import { renderActionCard } from '../components/analytical-presentation.js';
 import { h } from 'preact';
@@ -77,43 +77,11 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
     ]),
   });
   const axis = `<div class="plan-execution-axis" aria-hidden="true">${model.days.map((item: any, index: number) => `<span${index === todayIndex ? ' class="is-today"' : item.future ? ' class="is-future"' : ''}>${formatDate(item.date).slice(0, 5)}${index === todayIndex ? '<small>hoje</small>' : ''}</span>`).join('')}</div>`;
-  const measured = model.history.filter((item: any) => item.adherence !== null);
-  let trend = '';
-  if (measured.length >= 2) {
-    const width = 480,
-      height = 136,
-      max = Math.max(
-        100,
-        Math.ceil(Math.max(...measured.map((item: any) => item.adherence)) / 50) * 50
-      );
-    const x = (index: number) => 25 + (index / (measured.length - 1)) * 440,
-      y = (value: number) => 104 - (value / max) * 86;
-    const segments = measured
-      .slice(1)
-      .map(
-        (item: any, index: any) =>
-          `<line x1="${x(index)}" y1="${y(measured[index].adherence)}" x2="${x(index + 1)}" y2="${y(item.adherence)}"/>`
-      )
-      .join('');
-    const points = measured
-      .map(
-        (item: any, index: any) =>
-          `<circle cx="${x(index)}" cy="${y(item.adherence)}" r="4">${renderChartTooltip(formatDate(item.start) + ' a ' + formatDate(item.end) + ': ' + item.adherence + '% de cumprimento')}</circle>`
-      )
-      .join('');
-    trend = `<svg class="plan-adherence-chart" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}"><line class="plan-adherence-grid" x1="25" x2="465" y1="${y(100)}" y2="${y(100)}"/><g class="plan-adherence-line">${segments}</g><g class="plan-adherence-point">${points}</g></svg>`;
-  }
-  const weeks = model.history
-    .map(
-      (item: any) =>
-        `<li><span>${formatDate(item.start).slice(0, 5)} a ${formatDate(item.end).slice(0, 5)}</span><strong>${item.adherence === null ? 'Sem plano' : item.adherence + '%'}</strong><small>${fmt(item.studiedMinutes)} estudados${item.strategic ? ' · aderência estratégica ' + (item.strategic.strategicAdherence === null ? 'sem base' : item.strategic.strategicAdherence + '%') : ''} · ${item.plannedMinutes ? fmt(item.plannedMinutes) + ' planejados' : 'nenhum plano registrado'}</small></li>`
-    )
-    .join('');
   // Sem plano, sem estudo e sem semanas medidas, o histórico só repetiria zeros: o bloco não aparece.
   const showHistory = !(
     model.state === 'unplanned' &&
     !(model.studiedMinutes || 0) &&
-    !measured.length
+    !model.history.some((item: any) => item.adherence !== null)
   );
   const dailyChart = showHistory
     ? renderChartFrame({
@@ -132,28 +100,10 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         records: daysTable,
       })
     : '';
-  const history = showHistory
-    ? `<details class="metas-execution-history"><summary>Ver histórico das semanas</summary>` +
-      renderChartFrame({
-        title: 'Cumprimento nas semanas concluídas',
-        description:
-          'Minutos estudados ÷ minutos com tarefa marcada nos dias. Semanas sem plano não entram na tendência.',
-        evidence: measured.length + ' semanas concluídas com plano · período atual em andamento',
-        legend: [
-          { label: 'Cumprimento', tone: 'primary' },
-          { label: 'Referência de 100%', tone: 'target' },
-        ],
-        chart: trend,
-        emptyMessage: 'São necessárias duas semanas concluídas com plano para mostrar a tendência.',
-        records: '<ol class="plan-adherence-list">' + weeks + '</ol>',
-      }) +
-      '</details>'
-    : '';
   return (
     summary +
     unplanned +
     renderStrategicExecution(model.strategic, periodLabel) +
-    dailyChart +
-    history
+    dailyChart
   );
 }

@@ -1,3 +1,4 @@
+import { ratioPercent } from '../../core/format-number.js';
 import { addLocalDays, localDateRange } from '../../core/date-utils.js';
 import { buildPeriodComparisonInsights } from '../../domain/analytics/period-comparison-insights.js';
 
@@ -56,7 +57,7 @@ function aggregate(
   return {
     minutes: Math.round(sum(selectedSessions, 'durationSeconds') / 60),
     questions: resolved,
-    accuracy: resolved ? Math.round((sum(selectedQuestions, 'correct') / resolved) * 100) : null,
+    accuracy: resolved ? ratioPercent(sum(selectedQuestions, 'correct'), resolved) : null,
     reviews: selectedReviews.length,
   };
 }

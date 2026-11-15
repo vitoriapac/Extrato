@@ -27,6 +27,8 @@ export interface ShiftEnergyViewModel {
   peakShift: DayShift | null;
   peakShiftLabel: string | null;
   totalStudyHours: number;
+  /** Minutos exatos: a soma dos turnos fecha com o total mostrado. */
+  totalStudyMinutes: number;
   sampleSize: number;
   isSampleSufficient: boolean;
   fatigueAlert: string | null;
@@ -100,6 +102,7 @@ export function buildShiftEnergyViewModel({
     peakShift: diagnostic.peakShift,
     peakShiftLabel: diagnostic.peakShiftLabel,
     totalStudyHours,
+    totalStudyMinutes: Math.round(totalSeconds / 60),
     sampleSize: diagnostic.sampleSize,
     isSampleSufficient: diagnostic.isSampleSufficient,
     fatigueAlert: diagnostic.fatigueAlert,

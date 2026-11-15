@@ -13,6 +13,8 @@ const escape = (value: unknown) =>
       )[char]
   );
 export function renderCloseComparison(model: Record<string, any>) {
+  if (model.state === 'partial')
+    return '<section class="close-comparison"><h4>Desde o último fechamento</h4><p class="analytics-note">O período ainda está em andamento. A comparação com o último fechamento aparece quando ele terminar.</p></section>';
   if (model.state === 'empty')
     return '<section class="close-comparison"><h4>Desde o último fechamento</h4><p class="analytics-note">Salve um fechamento deste concurso para começar a comparação.</p></section>';
   const display = (value: any) =>

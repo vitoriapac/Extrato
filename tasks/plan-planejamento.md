@@ -139,8 +139,8 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 
 ### Fase 5: Fechamento e Histórico
 - [x] Tarefa 18: Análise do Fechamento em uma dobra, com a tendência de 4 semanas
-- [ ] Tarefa 19a: Uma série semanal no Histórico no lugar de quatro
-- [ ] Tarefa 19b: Retratos paginados, período atual fora das variações e estado vazio
+- [x] Tarefa 19a: Uma série semanal no Histórico no lugar de quatro
+- [x] Tarefa 19b: Retratos paginados, período atual fora das variações e estado vazio
 
 ### Checkpoint 5: Fechamento e Histórico
 - [ ] Histórico com menos de 20 dobras na demo

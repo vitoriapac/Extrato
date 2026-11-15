@@ -1,3 +1,4 @@
+import { formatInteger } from '../../core/format-number.js';
 import { renderWindowBadge } from './window-badge.js';
 import { formatDateBR } from '../../core/format-date.js';
 import { formatPercent, formatPoints } from '../../core/format-number.js';
@@ -71,7 +72,7 @@ export function renderPerformanceQuestions({
   const summary =
     analysis.accuracy == null
       ? 'Ainda não há precisão calculável.'
-      : `Precisão de ${formatPercent(analysis.accuracy)} em ${analysis.questionCount} questões respondidas.`;
+      : `Precisão de ${formatPercent(analysis.accuracy)} em ${formatInteger(analysis.questionCount)} questões respondidas.`;
 
   const msp = multiSubjectPerformance;
   let multiLineSection = '';
@@ -109,7 +110,7 @@ export function renderPerformanceQuestions({
         <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <div class="mb-3">
             <span class="text-3xl font-semibold font-data text-content-primary">${msp.overallAccuracy ?? '—'}%</span>
-            <p class="text-xs text-content-secondary m-0">${msp.totalResolved} questões · ${msp.totalCorrect} acertos</p>
+            <p class="text-xs text-content-secondary m-0">${formatInteger(msp.totalResolved)} questões · ${msp.totalCorrect} acertos</p>
             <span class="text-xs font-medium text-content-secondary mt-1 inline-block">Precisão geral no período</span>
           </div>
           <ul class="m-0 p-0 list-none space-y-1">

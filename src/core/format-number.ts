@@ -49,3 +49,7 @@ export function formatPointsMagnitude(value: unknown, digits = 1): string {
 /** Porcentagem de acertos com uma casa (65,4), para o número mostrado e o gráfico não divergirem. */
 export const ratioPercent = (part: number, total: number): number =>
   Math.round((Number(part) / Number(total)) * 1000) / 10;
+
+/** Inteiro com separador de milhar do pt-BR (1.750). */
+export const formatInteger = (value: unknown): string =>
+  Number.isFinite(Number(value)) ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(Number(value)) : '—';
