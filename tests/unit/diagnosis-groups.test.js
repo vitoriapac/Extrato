@@ -393,3 +393,22 @@ test('T40: os quadrantes ficam numa dobra que o controller abre ou fecha conform
   const map = renderStabilityMap({ groups: { attention: [{ subjectId: 'a', name: 'A', accuracy: 85, evolution: -4 }], maintain: [], intervene: [], evolving: [], insufficient: [] }, total: 1, measured: 1 }, { escapeHtml: String, escapeAttr: String });
   assert.match(map, /<summary aria-label="Limites de estabilidade">Como ler: limites<\/summary>/);
 });
+
+test('T41: a sigla da Matriz diz o nome completo e a grade do heatmap tem a lista de 12 semanas para o celular', async () => {
+  const { renderPedagogicalMatrixSection } = await import('../../src/ui/performance/performance-matrix-renderer.js');
+  const html = renderPedagogicalMatrixSection(
+    { items: [{ name: 'Matemática Financeira', mastery: 20, retention: 30, studyMinutes: 60 }], thresholdMastery: 70, thresholdRetention: 60, quadrantCounts: { consolidated: 0, forgetting_risk: 0, building: 0, critical: 1 } },
+    { escapeHtml: String }
+  );
+  assert.match(html, /<abbr title="Matemática Financeira">/);
+  assert.doesNotMatch(html, /Sigla na dispersão/);
+
+  const { h } = await import('preact');
+  const { renderToString } = await import('preact-render-to-string');
+  const { ActivityHeatmap } = await import('../../src/ui/primitives/charts/ActivityHeatmap.js');
+  const days = Array.from({ length: 21 }, (_, n) => ({ date: `2026-10-${String(n + 5).padStart(2, '0')}`, dayOfWeek: (n + 0) % 7, level: n % 3, selected: false, tooltip: `dia ${n}` }));
+  const out = renderToString(h(ActivityHeatmap, { mode: 'calendar', calendarVisual: { days, monthLabels: [], weeks: 3 }, hasActivity: true }));
+  assert.match(out, /class="heatmap-weekly-mobile"/);
+  assert.match(out, /heatmap-grid-wrap/);
+  assert.ok((out.match(/<li[ >]/g) || []).length >= 3);
+});

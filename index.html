@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=f80b1d52a654">
-<link rel="stylesheet" href="styles/app.css?v=f80b1d52a654">
+<link rel="stylesheet" href="styles/tailwind.css?v=7c228ccedcdf">
+<link rel="stylesheet" href="styles/app.css?v=7c228ccedcdf">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -654,7 +654,7 @@
     <header class="page-header"><div class="page-header__text"><h2>Planejamento</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p></div></header>
     <nav class="overview-nav metas-nav" aria-label="Seções do Planejamento">
       <div id="metasSubtabsMount" class="overview-nav-links"></div>
-      <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e ritmo</option><option value="metas">Metas por disciplina</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
+      <label class="overview-nav-mobile"><span class="sr-only">Seção do Planejamento</span><select class="select-control" id="metasSubtabSelect" aria-label="Seção do Planejamento"><option value="semana">Plano da semana</option><option value="prova">Prova e metas</option><option value="fechamento">Fechamento semanal</option><option value="historico">Histórico</option></select></label>
     </nav>
 
     <section class="metas-subpanel active" id="metasSub-semana" data-metas-subpanel="semana" role="tabpanel" aria-labelledby="metasTab-semana" tabindex="0">
@@ -692,19 +692,18 @@
     </div>
     <div class="chart-card" data-advanced="Matriz Edital × Domínio"><header class="module-heading"><h3 class="module-heading__title">Matriz Edital × Domínio</h3><p class="module-heading__description">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p></header><div id="examMasteryMatrix"></div></div>
 
+    <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas por disciplina</h3><p class="module-heading__description">Configure a meta de acerto (%) e a meta semanal de questões de cada disciplina em uma única tabela.</p></header><div id="subjectTargetEditor"></div></div>
+
     <div class="chart-card">
       <h3>Estimativa de ritmo</h3>
       <div id="ritmoContainer"></div>
     </div>
 
-    </section>
-    <section class="metas-subpanel" id="metasSub-metas" data-metas-subpanel="metas" role="tabpanel" aria-labelledby="metasTab-metas" tabindex="0" hidden>
-    <div class="chart-card" id="subjectAccuracyGoals" data-metas-section><header class="module-heading"><h3 class="module-heading__title">Metas por disciplina</h3><p class="module-heading__description">Configure a meta de acerto (%) e a meta semanal de questões de cada disciplina em uma única tabela.</p></header><div id="subjectTargetEditor"></div></div>
-
     <div class="chart-card">
       <h3>Histórico de metas (últimas 8 semanas)</h3>
       <div id="historicoMetasContainer"></div>
     </div>
+
     </section>
     <section class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento" tabindex="0" hidden>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
@@ -769,7 +768,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=f80b1d52a654"></script>
+  <script src="src/app.bundle.js?v=7c228ccedcdf"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

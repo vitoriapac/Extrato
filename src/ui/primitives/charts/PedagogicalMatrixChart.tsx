@@ -195,7 +195,7 @@ export function PedagogicalMatrixChart({
               <title>{`${b.name} · Domínio: ${formatDecimal(b.mastery)}/100 · Retenção: ${formatDecimal(b.retention)}/100 · Estudo: ${formatDecimal(b.studyMinutes / 60)}h`}</title>
             </circle>
             {labeled.has(b.id) && (
-              <text class="chart-matrix__bubble-text" x={b.cx} y={b.cy + 3} text-anchor="middle">
+              <text class="chart-matrix__bubble-text" x={b.cx} y={b.cy + 3} text-anchor="middle" aria-hidden="true">
                 {abbreviations.get(b.name) ?? b.name.slice(0, 3).toUpperCase()}
               </text>
             )}

@@ -30,7 +30,7 @@ export function renderPedagogicalMatrixSection(
       .sort((a: Row, b: Row) => a.mastery - b.mastery)
       .map(
         (item: Row) =>
-          `<li><span><abbr title="Sigla na dispersão">${escapeHtml(abbreviations.get(item.name) ?? '')}</abbr> · ${escapeHtml(item.name)}</span><span>domínio ${value(item.mastery, '/100')} · retenção ${value(item.retention, '/100')}</span></li>`
+          `<li><span><abbr title="${escapeHtml(item.name)}">${escapeHtml(abbreviations.get(item.name) ?? '')}</abbr> · ${escapeHtml(item.name)}</span><span>domínio ${value(item.mastery, '/100')} · retenção ${value(item.retention, '/100')}</span></li>`
       )
       .join('')}</ol>`;
     matrixSection = `<section class="performance-block" id="bloco-matriz" aria-label="Matriz de Domínio versus Retenção">

@@ -226,7 +226,7 @@ export function ActivityHeatmap({
       {isCalendar && calendarVisual && (
         <div class="space-y-2">
           <div class="lg:flex lg:items-start lg:gap-8">
-            <div class="min-w-0 flex-1 overflow-x-auto pb-2">
+            <div class="heatmap-grid-wrap min-w-0 flex-1 overflow-x-auto pb-2">
               <div class="inline-flex flex-col min-w-[580px]">
                 {/* Linha com os rótulos de meses */}
                 <div class="relative h-4 mb-1 pl-8 text-xs text-content-secondary font-mono">
@@ -302,6 +302,25 @@ export function ActivityHeatmap({
               </dl>
             )}
           </div>
+
+          {/* Celular: a grade de 364 dias não tem alvo de toque utilizável; as últimas 12 semanas viram uma lista. */}
+          {hasActivity && isCalendar && (
+            <ul class="heatmap-weekly-mobile" aria-label="Dias com atividade nas últimas 12 semanas">
+              {weeklyActivity(days).map(week => (
+                <li key={week.start}>
+                  <span>
+                    Semana de {week.start.slice(8, 10)}/{week.start.slice(5, 7)}
+                  </span>
+                  <span class="heatmap-weekly-mobile__bar" aria-hidden="true">
+                    <i style={{ width: `${Math.round((week.active / Math.max(1, week.total)) * 100)}%` }} />
+                  </span>
+                  <span>
+                    {week.active} de {week.total} {week.total === 1 ? 'dia' : 'dias'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {hasActivity && isCalendar && (
             <details class="performance-more heatmap-weekly-text">

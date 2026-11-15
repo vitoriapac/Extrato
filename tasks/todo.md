@@ -483,11 +483,11 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 41: Mobile e acessibilidade
 **Origem:** Casey e Sam; P3 de H8; pendências de H8.
 **Aceite:**
-- [ ] Heatmap: alvos de toque ≥ 44 px no mobile (semanas em 7 colunas ou últimas 12 semanas, com a lista textual como padrão); sobra de 21 px do heatmap em 1009 px corrigida
-- [ ] Selos `.performance-window` e botão de ajuda de 24 px com área de toque de 44 px no mobile
-- [ ] Botão flutuante não cobre o contador de tópicos; aba "Ritmo e aderência" em uma linha (rótulo curto ou rolagem)
-- [ ] Contraste claro medido com axe nos 5 painéis; os 2 textos escuros apontados ("O crédito só conta estudo vinculado…", "18 questões aguardam classificação.") conferidos
-- [ ] Siglas da Matriz com ponto médio ("MAT·F") com nome acessível completo
+- [x] Heatmap: alvos de toque ≥ 44 px no mobile (semanas em 7 colunas ou últimas 12 semanas, com a lista textual como padrão); sobra de 21 px do heatmap em 1009 px corrigida
+- [x] Selos `.performance-window` e botão de ajuda de 24 px com área de toque de 44 px no mobile
+- [x] Botão flutuante não cobre o contador de tópicos; aba "Ritmo e aderência" em uma linha (rótulo curto ou rolagem)
+- [x] Contraste claro medido com axe nos 5 painéis; os 2 textos escuros apontados ("O crédito só conta estudo vinculado…", "18 questões aguardam classificação.") conferidos
+- [x] Siglas da Matriz com ponto médio ("MAT·F") com nome acessível completo
 **Verificação:** E2E mobile com `AxeBuilder` nos dois temas; contagem de alvos < 44 px
 **Tamanho:** M
 

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { openDemo, activateTab, openPerformanceSection } from './helpers.js';
 
 test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }) => {
@@ -112,5 +113,30 @@ test('Ritmo e aderência: nenhum alvo interativo menor que 24 px (WCAG 2.5.8)', 
       return found;
     });
     expect(small, `alvos pequenos em ${width}px`).toEqual([]);
+  }
+});
+
+test('celular: subabas em uma linha, heatmap vira lista de 12 semanas e o contraste passa no axe nos dois temas', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const heights = await page.locator('.performance-section-nav [role=tab]').evaluateAll(tabs => tabs.map(tab => Math.round(tab.getBoundingClientRect().height)));
+  expect(new Set(heights).size).toBe(1);
+  expect(heights[0]).toBeLessThanOrEqual(48);
+  await openPerformanceSection(page, 'consistency');
+  const list = page.locator('.heatmap-weekly-mobile');
+  await expect(list).toBeVisible();
+  await expect(list.locator('li')).toHaveCount(12);
+  const rowHeight = await list.locator('li').first().evaluate(row => row.getBoundingClientRect().height);
+  expect(rowHeight).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('.heatmap-grid-wrap')).toBeHidden();
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    for (const section of ['overview', 'consistency']) {
+      await openPerformanceSection(page, section);
+      const axe = await new AxeBuilder({ page }).include('#panel-desempenho').withRules(['color-contrast']).analyze();
+      expect(axe.violations).toEqual([]);
+    }
   }
 });
