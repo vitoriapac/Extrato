@@ -114,6 +114,9 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 11b: Frase-resumo no topo do Resumo e alerta de excesso com ação (P1 da crítica, 26/40)
 - [x] Tarefa 11c: Linguagem da Semana sem jargão ("vínculo", "Semana Real") e botão claro (P3 da crítica)
 
+- [x] Tarefa 11d: Resumo no topo da Semana, plano como contexto, um número herói e uma barra só (P1 da 2ª crítica, 27/40)
+- [x] Tarefa 11e: Assinatura de extrato nas linhas de razão (pontilhado visível, dupla linha no total, valores em mono tabular) (P2 da 2ª crítica)
+
 ### Checkpoint 2: Semana
 - [ ] Crítica impeccable só da Semana, detector e axe sem regressão
 

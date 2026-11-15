@@ -30,16 +30,24 @@ export function weekBalanceParts(data: WeekReconciliation): {
   return { parts, over: Math.max(0, data.studiedMin + pending - data.capacityMin) };
 }
 
-/** Uma frase que responde "estou no caminho?": estudado contra a capacidade da semana. */
-export function weekSummarySentence(data: WeekReconciliation): string | null {
+/** Frase que responde "estou no caminho?": o destaque é o que falta (ou passou) em relação à capacidade. */
+export function weekSummaryParts(
+  data: WeekReconciliation
+): { before: string; hero: string; after: string } | null {
   if (data.capacityMin <= 0)
-    return data.studiedMin > 0 ? `Estudado ${fmt(data.studiedMin)} até hoje.` : null;
+    return data.studiedMin > 0
+      ? { before: '', hero: `Estudado ${fmt(data.studiedMin)} até hoje`, after: '.' }
+      : null;
+  const studied = `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}`;
   const diff = data.capacityMin - data.studiedMin;
-  if (diff > 0)
-    return `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}; falta ${fmt(diff)}.`;
-  if (diff === 0)
-    return `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}: capacidade completa.`;
-  return `Estudado ${fmt(data.studiedMin)} de ${fmt(data.capacityMin)}: ${fmt(-diff)} acima da capacidade.`;
+  if (diff > 0) return { before: `${studied}; `, hero: `falta ${fmt(diff)}`, after: '.' };
+  if (diff === 0) return { before: `${studied}: `, hero: 'capacidade completa', after: '.' };
+  return { before: `${studied}: `, hero: `${fmt(-diff)} acima da capacidade`, after: '.' };
+}
+
+export function weekSummarySentence(data: WeekReconciliation): string | null {
+  const parts = weekSummaryParts(data);
+  return parts ? parts.before + parts.hero + parts.after : null;
 }
 
 export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }) {
@@ -52,13 +60,19 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
     data.capacityMin > 0 &&
     data.plannedMin / data.capacityMin < 0.5;
   const balance = weekBalanceParts(data);
-  const sentence = weekSummarySentence(data);
+  const sentence = weekSummaryParts(data);
   const excess = Math.max(0, data.plannedMin - data.capacityMin);
   const hasBalance = data.capacityMin > 0 || data.plannedMin > 0 || data.studiedMin > 0;
   return (
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
       <p class="week-reconciliation__period">{data.periodLabel}</p>
-      {sentence && <p class="week-reconciliation__sentence">{sentence}</p>}
+      {sentence && (
+        <p class="week-reconciliation__sentence">
+          {sentence.before}
+          <strong>{sentence.hero}</strong>
+          {sentence.after}
+        </p>
+      )}
       <LedgerLine
         label="Capacidade da semana"
         hint="Soma da disponibilidade dos 7 dias"

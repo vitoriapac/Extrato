@@ -352,3 +352,18 @@ test('o resumo mostra a frase antes das linhas e não repete "só X dos Y" com o
   assert.match(out, /Você estudou 3,0× o tempo com tarefa marcada\./);
   assert.doesNotMatch(out, /Só 1 h 40 min dos 12 h/);
 });
+
+test('a frase-resumo destaca o que falta em um único elemento forte', () => {
+  const out = html(160, 623, 720);
+  assert.match(out, /week-reconciliation__sentence">Estudado 10 h 23 min de 12 h; <strong>falta 1 h 37 min<\/strong>\./);
+});
+
+test('a execução das prioridades vira texto: sem número grande nem segunda barra', async () => {
+  const { renderStrategicExecution } = await import('../../src/ui/renderers/strategic-execution-renderer.js');
+  const out = renderStrategicExecution(
+    { priorityPlannedMinutes: 326, priorityExecutedMinutes: 236, strategicAdherence: 72 },
+    '09/11 a 15/11'
+  );
+  assert.match(out, /<strong>72%<\/strong> das prioridades executadas: 3 h 56 min de 5 h 26 min/);
+  assert.doesNotMatch(out, /metas-priority-value|ui-progress/);
+});

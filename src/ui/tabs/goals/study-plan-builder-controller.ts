@@ -546,20 +546,6 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       const activeOperation = [...(latest?.dailyPlanOperations || [])]
         .reverse()
         .find((item: any) => !item.undoneAt);
-      const allocationVisual = latest?.items?.length
-        ? buildWeeklyAllocationBarVisual({
-            planItems: latest.items,
-            subjects: deps.getState()?.subjects || [],
-            weeklyCapacityMinutes: latest.weeklyPlannedMinutes || 0,
-          })
-        : null;
-      const allocationBarHtml = allocationVisual
-        ? renderAllocationBar({
-            visual: allocationVisual,
-            weeklyCapacityMinutes: latest.weeklyPlannedMinutes || 0,
-            label: 'Distribuição da capacidade semanal do plano confirmado',
-          })
-        : '';
       // Um só botão cheio (o passo de agora) e, com plano confirmado, no máximo dois secundários.
       const calcIsPrimary = !latest && Boolean(deps.getState().examDate);
       const primaryAction = latest
@@ -568,7 +554,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
           ? '<button class="btn" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'
           : '<a class="btn" href="#planejamento/prova">Definir data da prova</a>';
       const whatIf =
-        '<button class="btn ghost" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button>';
+        '<button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button>';
       const phaseView = phaseStrategyController.view();
       const phaseProposal = latest && !phaseView ? currentPhaseStrategy() : null;
       if (latest) {
@@ -588,7 +574,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
         const inline = (action: string, label: string) =>
           `<button class="btn tertiary" type="button" data-delegated-click="${action}">${label}</button>`;
         const stateLine = `<div class="confirmed-plan-note"><strong>Plano ${formatPlanMinutes(latest.weeklyPlannedMinutes)}/semana</strong><span title="Confirmado em ${confirmedAt}">com tarefa marcada ${formatPlanMinutes(marked)} · ${missing > 0 ? `falta marcar ${formatPlanMinutes(missing)}` : 'tudo marcado'} · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span>${activeOperation ? inline('undoLatestDailyPlanGeneration()', 'Desfazer última distribuição') : ''}${phaseProposal?.state === 'proposal' ? inline('previewPhaseStrategy()', 'Revisar proposta de estratégia') : ''}${latest.phaseStrategy?.status === 'applied' ? inline('revertPhaseStrategy()', 'Reverter última estratégia por fase') : ''}</div>`;
-        container.innerHTML = `${stateLine}<div class="study-plan-actions">${primaryAction}<button class="btn ghost" type="button" data-delegated-click="calculateStudyPlanPreview()">Recalcular plano</button>${whatIf}</div>${phaseProposal?.state === 'cooldown' ? `<p class="helper-text">${escapeHtml((phaseProposal as { reason?: string }).reason)}</p>` : ''}${allocationBarHtml}${phaseView ? renderPhaseStrategy(phaseView, { preview: phaseView.state === 'proposal', canRevert: false }) : ''}`;
+        container.innerHTML = `${stateLine}<div class="study-plan-actions">${primaryAction}<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Recalcular plano</button>${whatIf}</div>${phaseProposal?.state === 'cooldown' ? `<p class="helper-text">${escapeHtml((phaseProposal as { reason?: string }).reason)}</p>` : ''}${phaseView ? renderPhaseStrategy(phaseView, { preview: phaseView.state === 'proposal', canRevert: false }) : ''}`;
         return;
       }
       container.innerHTML = `<div class="study-plan-actions">${primaryAction}</div><p class="study-plan-more">Outras formas de planejar: ${calcIsPrimary ? '' : '<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'}<button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>${render(h(StudyPlanGuidance, { hasPlan: false, hasExamDate: Boolean(deps.getState().examDate) }))}`;

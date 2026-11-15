@@ -205,7 +205,7 @@ test('plano confirmado mostra a linha de estado com as medidas da semana, sem te
 test('plano confirmado tem uma ação principal e no máximo duas secundárias, com os nomes novos', () => {
   const { html } = confirmedCard();
   const actions = html.match(/<div class="study-plan-actions">([\s\S]*?)<\/div>/)[1];
-  const buttons = [...actions.matchAll(/<button class="btn( ghost)?"[^>]*>([^<]*)<\/button>/g)];
+  const buttons = [...actions.matchAll(/<button class="btn( ghost| tertiary)?"[^>]*>([^<]*)<\/button>/g)];
   assert.equal(buttons.filter(b => !b[1]).length, 1);
   assert.ok(buttons.filter(b => b[1]).length <= 2);
   assert.deepEqual(
@@ -223,4 +223,11 @@ test('linha de estado diz "tudo marcado" quando a semana já tem o plano inteiro
   ];
   controller.confirmStudyPlan();
   assert.match(elements['examStudyPlan'].innerHTML, /com tarefa marcada 120 min · tudo marcado/);
+});
+
+test('plano confirmado rebaixa as ações secundárias a terciárias e não repete a barra de alocação', () => {
+  const { html } = confirmedCard();
+  assert.match(html, /class="btn tertiary"[^>]*>Recalcular plano/);
+  assert.match(html, /class="btn tertiary"[^>]*>Simular &quot;E se\?&quot;/);
+  assert.doesNotMatch(html, /chart-allocation-bar|Capacidade semanal alocada/);
 });
