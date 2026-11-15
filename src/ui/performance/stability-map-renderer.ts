@@ -1,5 +1,5 @@
 import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
-import { formatDecimal, formatPoints } from '../../core/format-number.js';
+import { formatPercent, formatPoints } from '../../core/format-number.js';
 import { renderBeforeAfterChart } from './before-after-chart.js';
 const cells = [
   ['attention', 'Atenção', 'Na meta, mas a precisão caiu'],
@@ -19,7 +19,7 @@ export function renderStabilityMap(
       .slice(0, 5)
       .map(
         (row: any) =>
-          `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${formatPoints(row.evolution)}</small></li>`
+          `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatPercent(row.accuracy)} · ${formatPoints(row.evolution)}</small></li>`
       )
       .join('')}</ul>${
       model.groups[key].length > 5
@@ -29,7 +29,7 @@ export function renderStabilityMap(
             .slice(5)
             .map(
               (row: any) =>
-                `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${formatPoints(row.evolution)}</small></li>`
+                `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatPercent(row.accuracy)} · ${formatPoints(row.evolution)}</small></li>`
             )
             .join('')}</ul></details>`
         : ''

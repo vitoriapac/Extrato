@@ -31,3 +31,17 @@ export function formatPoints(value: unknown, digits = 1): string {
   }).format(Math.abs(number));
   return `${number > 0 ? '+' : number < 0 ? '−' : ''}${text} p.p.`;
 }
+
+// Precisão e demais percentuais medidos: sempre uma casa (69,3% · 55,0%); sem dado, "Sem dados".
+export function formatPercent(value: unknown, digits = 1): string {
+  const number = Number(value);
+  if (value == null || value === '' || !Number.isFinite(number)) return 'Sem dados';
+  return `${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(number)}%`;
+}
+
+// Tamanho de uma diferença em p.p. quando o texto já diz o sentido ("caiu 20,0 p.p."): uma casa, sem sinal.
+export function formatPointsMagnitude(value: unknown, digits = 1): string {
+  const number = Number(value);
+  if (value == null || value === '' || !Number.isFinite(number)) return '—';
+  return `${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Math.abs(number))} p.p.`;
+}

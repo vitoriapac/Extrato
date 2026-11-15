@@ -67,8 +67,8 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
       'Só evidência média ou alta permite posicionar. Evidência baixa e ausência de domínio ficam separados.',
     emptyTitle: positioned ? 'Sem gráfico: os grupos estão na lista abaixo' : undefined,
     emptyMessage: positioned
-      ? `${positioned} de ${classified.length} tópicos têm evidência média ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". Registrar questões e revisões desses tópicos aumenta a evidência e permite posicioná-los. A lista abaixo mostra cada grupo.`
-      : `Os ${classified.length} tópicos ainda não têm evidência média ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
+      ? `${positioned} de ${classified.length} tópicos do edital listados aqui têm evidência média ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Evidência insuficiente para posicionar". Registrar questões e revisões desses tópicos aumenta a evidência e permite posicioná-los. A lista abaixo mostra cada grupo.`
+      : `Os ${classified.length} tópicos do edital listados aqui ainda não têm evidência média ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
     records: `<div class="incidence-quadrants">${records}</div>${emptyNote}`,
   });
 }

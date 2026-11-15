@@ -1,3 +1,4 @@
+import { formatPointsMagnitude } from '../../core/format-number.js';
 /**
  * Análise Cronobiológica de Energia, Foco e Fadiga (src/domain/analytics/focus-energy-analytics.ts)
  *
@@ -226,7 +227,7 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
     const nightAcc = night.averageAccuracy;
 
     if (nightAcc !== null && peakAcc - nightAcc >= 20) {
-      fatigueAlert = `Queda de ${peakAcc - nightAcc} p.p. no acerto em questões durante a noite em relação ao seu horário de pico.`;
+      fatigueAlert = `Queda de ${formatPointsMagnitude(peakAcc - nightAcc)} no acerto em questões durante a noite em relação ao seu horário de pico.`;
       recommendations.push(
         'Se a queda se repetir, vale testar revisões leves ou leitura nesse turno, em vez de baterias longas de questões. É uma diferença observada, sem causa comprovada.'
       );

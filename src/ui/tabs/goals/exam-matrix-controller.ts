@@ -4,6 +4,7 @@ import { ExamClassificationModal } from '../../modals/ExamClassificationModal.js
 import { syncDialogOpen } from '../../primitives/dialog.js';
 import { buildExamConfigurationAudit } from '../../../application/exam-intelligence/build-exam-configuration-audit.js';
 import { renderExamConfigurationAudit } from '../../renderers/exam-configuration-audit-renderer.js';
+import { countRemainingTopics, renderTopicUniverse } from '../../performance/topic-universe.js';
 import { buildExamMatrix } from '../../../application/exam-intelligence/build-exam-matrix.js';
 import { renderExamMatrix, renderExamOpportunity } from '../../renderers/exam-matrix-renderer.js';
 import { renderExamBlueprintConfigView } from '../../renderers/exam-blueprint-config-renderer.js';
@@ -183,11 +184,12 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     });
     if (quality) quality.innerHTML = renderExamDataQuality(qualityModel);
 
+    const scopedTopics = ctx.examScopedTopics();
     const overview = ctx.document.getElementById('examIntelligenceOverview');
     if (overview) {
       overview.hidden = !qualityModel.examCount;
       overview.innerHTML = qualityModel.examCount
-        ? `<strong>${qualityModel.mappedTopics}${qualityModel.eligibleTopics ? ` de ${qualityModel.eligibleTopics}` : ''} tópicos mapeados ao histórico da banca</strong><span>Provas, questões, cobertura e base histórica estão em "Qualidade do histórico".</span>`
+        ? `<strong>${qualityModel.mappedTopics}${qualityModel.eligibleTopics ? ` de ${qualityModel.eligibleTopics}` : ''} tópicos do edital mapeados ao histórico da banca</strong><span>Provas, questões, cobertura e base histórica estão em "Qualidade do histórico".</span>${renderTopicUniverse({ inScope: scopedTopics.length, remaining: countRemainingTopics(scopedTopics), mapped: qualityModel.mappedTopics })}`
         : '';
     }
 

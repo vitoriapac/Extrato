@@ -1,3 +1,4 @@
+import { formatPointsMagnitude } from '../../core/format-number.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 export const WEEKLY_CLOSE_VERSION = '2.2.0';
 type Row = Record<string, any>;
@@ -63,7 +64,7 @@ export function buildWeeklyClose({
   const accuracyGap = accuracy == null ? null : Math.round((accuracy - targetAccuracy) * 10) / 10,
     bestSignal =
       (comparisons.accuracy.delta ?? 0) > 0
-        ? { type: 'accuracy', message: `O acerto avançou ${comparisons.accuracy.delta} p.p.` }
+        ? { type: 'accuracy', message: `O acerto avançou ${formatPointsMagnitude(comparisons.accuracy.delta)}` }
         : (comparisons.minutes.delta ?? 0) > 0
           ? { type: 'minutes', message: 'O tempo de estudo aumentou.' }
           : resolved > 0
@@ -73,7 +74,7 @@ export function buildWeeklyClose({
     accuracyGap != null && accuracyGap < 0
       ? {
           type: 'accuracy_below_target',
-          message: `O acerto ficou ${Math.abs(accuracyGap)} p.p. abaixo da meta de ${targetAccuracy}%.`,
+          message: `O acerto ficou ${formatPointsMagnitude(accuracyGap)} abaixo da meta de ${targetAccuracy}%.`,
         }
       : planned > executed
         ? {

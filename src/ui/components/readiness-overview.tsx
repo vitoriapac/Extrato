@@ -69,7 +69,7 @@ function projectionGapText(projection: AnyRecord): string {
   if (projection.calibration.status === 'above')
     return `A faixa atual está acima da meta de ${projection.gap.target}%.`;
   if (projection.gap.minimum === 0) return `A meta de ${projection.gap.target}% está dentro da faixa atual.`;
-  return `Gap estimado até a meta: ${projection.gap.minimum}–${projection.gap.maximum} p.p.`;
+  return `Gap estimado até a meta: ${projection.gap.minimum} a ${projection.gap.maximum} p.p.`;
 }
 
 function forecastText(projection: AnyRecord): string {

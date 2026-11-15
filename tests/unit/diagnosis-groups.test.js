@@ -41,7 +41,7 @@ test('agrupa por disciplina, com contagem, e só a primeira abre, com até três
 
 test('filtro por prioridade e evidência mantém o lugar na fila e informa a contagem', () => {
   const html = render({ severity: 'critical', evidence: 'low' });
-  assert.match(html, /1 de 5 tópicos/);
+  assert.match(html, /1 de 5 itens com sinal de diagnóstico/);
   assert.match(html, /4 · TÓPICO/);
   assert.equal((html.match(/<article/g) || []).length, 1);
   assert.match(render({ severity: 'monitor' }), /Nenhum tópico com esse filtro/);
@@ -240,7 +240,7 @@ test('T30: meta e amostra pequena na precisão, faixa projetada nos simulados, p
   const { renderIncidenceBySubject } = await import('../../src/ui/performance/incidence-by-subject-chart.js');
   const row = (subjectName, questionCount, mastery) => ({ subjectName, questionCount, mastery });
   const out = renderIncidenceBySubject([row('Mat', 20, 40), row('Mat', 10, 60), row('Port', 40, null), row('Inf', 30, 80)], 100);
-  assert.match(out, /Mat: 30% das questões analisadas/);
+  assert.match(out, /Mat: 30% das questões da banca analisadas/);
   assert.match(out, /Mat: domínio médio 50 de 100, em 2 tópicos/);
   assert.match(out, /sem domínio medido/);
   assert.ok(out.indexOf('Port') < out.indexOf('Inf'));
@@ -275,4 +275,47 @@ test('T31: linha da capacidade, barras de tempo por disciplina e faixas por turn
   assert.equal((html.match(/class="shift-band[ "]/g) || []).length, 3);
   assert.match(html, /precisão de 90%/);
   assert.match(html, /sem questões registradas/);
+});
+
+test('T36: a linha-chave dos universos relaciona edital, por concluir, sinal e histórico, e explica a diferença', async () => {
+  const { renderTopicUniverse, countRemainingTopics } = await import('../../src/ui/performance/topic-universe.js');
+  const diagnosis = renderTopicUniverse({ inScope: 305, remaining: 194, withSignal: 296 });
+  assert.match(diagnosis, /data-topic-universe/);
+  assert.match(diagnosis, /305 tópicos no edital · 194 por concluir · 296 com sinal de diagnóstico \(9 sem sinal ainda não entram na lista\)\./);
+  assert.match(renderTopicUniverse({ inScope: 305, remaining: 194, withSignal: 297, inNextAction: 1 }), /(8 sem sinal ainda não entram na lista; 1 aparece em Próxima ação, acima da lista)/);
+  const exams = renderTopicUniverse({ inScope: 305, remaining: 194, mapped: 304 });
+  assert.match(exams, /305 tópicos no edital · 194 por concluir · 304 mapeados ao histórico da banca \(1 sem questão no histórico da banca\)\./);
+  // Sem diferença, sem parêntese; sem tópicos, sem linha.
+  assert.doesNotMatch(renderTopicUniverse({ inScope: 10, remaining: 4, mapped: 10 }), /\(/);
+  assert.equal(renderTopicUniverse({ inScope: 0 }), '');
+  assert.match(renderTopicUniverse({ inScope: 1 }), /1 tópico no edital\./);
+  assert.equal(countRemainingTopics([{ status: 'Concluído' }, { status: 'Em andamento' }, { status: 'Não iniciado' }, {}]), 3);
+});
+
+test('T37: precisão com uma casa, diferença em p.p. com sinal e uma casa, e "Sem dados" no lugar do traço', async () => {
+  const { formatPercent, formatPointsMagnitude, formatPoints } = await import('../../src/core/format-number.js');
+  assert.equal(formatPercent(69.3), '69,3%');
+  assert.equal(formatPercent(55), '55,0%');
+  assert.equal(formatPercent(null), 'Sem dados');
+  assert.equal(formatPercent(''), 'Sem dados');
+  assert.equal(formatPointsMagnitude(20), '20,0 p.p.');
+  assert.equal(formatPointsMagnitude(-6), '6,0 p.p.');
+  assert.equal(formatPoints(-6), '−6,0 p.p.');
+
+  const { renderPerformanceSubjectComparison } = await import('../../src/ui/performance/performance-subject-comparison-renderer.js');
+  const row = (n, accuracy, state = 'measured') => ({ subjectId: `s${n}`, name: `D${n}`, target: 80, accuracy, gap: accuracy == null ? null : accuracy - 80, evolution: -6, questions: 40, state, plannedMinutes: 0, executedMinutes: 0, balanceMinutes: null, suggestion: null });
+  const html = renderPerformanceSubjectComparison({ rows: [row(1, 55), row(2, 53.7)], measured: 2, sort: 'gap' }, { escapeHtml: String, escapeAttr: String });
+  assert.match(html, /55,0% · meta de precisão 80%/);
+  assert.match(html, /53,7% · meta de precisão 80%/);
+  assert.doesNotMatch(html, /−6 p\.p\./);
+  assert.match(html, /−6,0 p\.p\./);
+
+  const { calculateCareerBenchmarkComparison } = await import('../../src/domain/analytics/career-benchmarks.js');
+  const { h } = await import('preact');
+  const { renderToString } = await import('preact-render-to-string');
+  const { CareerBenchmarkCard } = await import('../../src/ui/components/CareerBenchmarkCard.js');
+  const comparison = calculateCareerBenchmarkComparison({ studiedHours: 22, resolvedQuestions: 200, accuracyPercent: 80, theoryMinutes: 1, questionsMinutes: 1, reviewMinutes: 1 }, 'policial');
+  const card = renderToString(h(CareerBenchmarkCard, { comparison, selectedCareerId: 'policial' }));
+  assert.match(card, /alvo: 20 a 26 h\/sem/);
+  assert.match(card, /alvo: 76% a 82%/);
 });

@@ -107,7 +107,7 @@ test('analyzeFocusAndEnergy — identifica turno de pico e alerta de fadiga notu
 
   // Alerta de fadiga ativado (queda de 35 p.p. à noite)
   assert.ok(result.fatigueAlert !== null);
-  assert.match(result.fatigueAlert, /Queda de 35 p.p./);
+  assert.match(result.fatigueAlert, /Queda de 35,0 p.p./);
   assert.ok(
     result.recommendations.some(r => r.includes('o melhor rendimento apareceu no turno da manhã'))
   );

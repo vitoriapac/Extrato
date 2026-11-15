@@ -1,3 +1,4 @@
+import { formatPoints } from '../../core/format-number.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { pluralize } from '../../core/utils.js';
@@ -267,7 +268,7 @@ function buildChartMetrics(
         : 'Sem questões na semana'
       : accDiff === 0
         ? 'Manteve o percentual'
-        : `${accDiff > 0 ? '+' : '−'}${Math.abs(accDiff)} p.p.`;
+        : formatPoints(accDiff);
 
   return [
     {
@@ -341,7 +342,7 @@ function buildAdherenceMetric(
         ? 'Sem plano na semana anterior'
         : diff === 0
           ? 'Manteve o percentual'
-          : `${diff > 0 ? '+' : '−'}${Math.abs(diff)} p.p.`,
+          : formatPoints(diff),
     trend: diff == null ? 'stable' : diff >= 5 ? 'up' : diff <= -5 ? 'down' : 'stable',
     currentBarPct: bar(now),
     previousBarPct: bar(before),

@@ -1,5 +1,6 @@
 import { renderNextBestAction as defaultRenderNextBestAction } from '../../renderers/next-best-action-renderer.js';
 import { dropSuggestedTopic } from '../../../application/diagnostics/drop-suggested-topic.js';
+import { countRemainingTopics, renderTopicUniverse } from '../../performance/topic-universe.js';
 import { buildExecutiveSummary as defaultBuildExecutiveSummary } from '../../../application/build-executive-summary.js';
 import {
   renderIntelligentAlerts as defaultRenderIntelligentAlerts,
@@ -222,6 +223,17 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       ),
     });
 
+    const scopedTopics = opts.examScopedTopics();
+    const signalCount = (model: any) =>
+      (model?.topics || []).filter((item: any) => item.primarySignal).length;
+    const withSignal = signalCount(consolidated);
+    const universeHtml = renderTopicUniverse({
+      inScope: scopedTopics.length,
+      remaining: countRemainingTopics(scopedTopics),
+      withSignal,
+      inNextAction: Math.max(0, withSignal - signalCount(dropSuggestedTopic(diagnosis, nextAction?.action))),
+    });
+
     const secondaryHtml = renderRecoveryReviewDebt(
       { recoveries: preparationSignals.rows.filter((item: any) => item.type === 'recovery'), debt },
       { escapeHtml: opts.escapeHtml }
@@ -243,6 +255,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
         dailyPriority: opts.getDailyPriority(nextAction),
       }) +
       energyAlertHtml +
+      universeHtml +
       diagnosisHtml +
       `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'vencida')} na Agenda</summary>${secondaryHtml}</details>`;
 

@@ -1,3 +1,4 @@
+import { formatPoints } from '../../core/format-number.js';
 export const PERIOD_COMPARISON_INSIGHTS_VERSION = '1.1.0';
 
 const safeCount = (value: unknown) =>
@@ -32,7 +33,7 @@ export function buildPeriodComparisonInsights(
     delta == null
       ? 'Acerto sem comparação: são necessárias questões resolvidas nos dois períodos.'
       : confidence === 'moderate'
-        ? `O acerto variou ${delta > 0 ? '+' : ''}${delta} p.p. (${previous} questões no período anterior e ${current} no atual; ${confidenceLabel}).`
+        ? `O acerto variou ${formatPoints(delta)} (${previous} questões no período anterior e ${current} no atual; ${confidenceLabel}).`
         : `Amostra insuficiente para interpretar o acerto (${previous} questões no período anterior e ${current} no atual; ${confidenceLabel}). São necessárias pelo menos ${requiredSample} questões em cada período.`;
   let combinedMessage = null;
   if (confidence === 'moderate' && delta != null) {

@@ -1,4 +1,5 @@
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
+import { formatPercent } from '../../core/format-number.js';
 import { chartSize } from '../primitives/charts/chart-size.js';
 type FormatDate = (date: string) => string;
 const label = (bucket: Record<string, any>, monthly: boolean, formatDate: FormatDate) =>
@@ -20,7 +21,7 @@ export function renderQuestionEvolution(
     designed = chartSize(designWidth, Math.round(designWidth / 3.3)),
     width = designed.width,
     height = designed.height,
-    left = 24,
+    left = 38,
     right = 16,
     top = 12,
     bottom = 32;
@@ -74,13 +75,13 @@ export function renderQuestionEvolution(
     .map((item: any, index: any) =>
       item.movingAccuracy === null
         ? ''
-        : `<circle class="question-evolution-point" cx="${x(index)}" cy="${y(item.movingAccuracy)}" r="4">${renderChartTooltip(label(item, model.monthly, formatDate) + ': média móvel ' + item.movingAccuracy + '% · ' + item.resolved + ' questões')}</circle>`
+        : `<circle class="question-evolution-point" cx="${x(index)}" cy="${y(item.movingAccuracy)}" r="4">${renderChartTooltip(label(item, model.monthly, formatDate) + ': média móvel ' + formatPercent(item.movingAccuracy) + ' · ' + item.resolved + ' questões')}</circle>`
     )
     .join('');
   const axis = [scaleLow, Math.round((scaleLow + scaleHigh) / 2), scaleHigh]
     .map(
       value =>
-        `<line class="question-evolution-grid" x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}"/><text x="0" y="${y(value) + 3}">${value}</text>`
+        `<line class="question-evolution-grid" x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}"/><text x="0" y="${y(value) + 3}">${value}%</text>`
     )
     .join('');
   const labels = model.buckets
@@ -96,7 +97,7 @@ export function renderQuestionEvolution(
   const rows = model.buckets
     .map((item: any) => {
       const correctWidth = (item.correct / item.resolved) * 100;
-      return `<li><span>${label(item, model.monthly, formatDate)}</span><div class="question-mix-track" aria-hidden="true"><span style="width:${correctWidth}%"></span></div><strong>${item.correct} acertos · ${item.errors} erros</strong><small>${item.accuracy === null ? 'Amostra pequena' : item.accuracy + '%'} · média móvel ${item.movingAccuracy === null ? 'sem amostra' : item.movingAccuracy + '%'}</small></li>`;
+      return `<li><span>${label(item, model.monthly, formatDate)}</span><div class="question-mix-track" aria-hidden="true"><span style="width:${correctWidth}%"></span></div><strong>${item.correct} acertos · ${item.errors} erros</strong><small>${item.accuracy === null ? 'Amostra pequena' : formatPercent(item.accuracy)} · média móvel ${item.movingAccuracy === null ? 'sem amostra' : formatPercent(item.movingAccuracy)}</small></li>`;
     })
     .join('');
   return renderChartFrame({
@@ -108,7 +109,7 @@ export function renderQuestionEvolution(
         ' a ' +
         label(model.buckets.at(-1), model.monthly, formatDate)
       : '',
-    evidence: model.resolved + ' questões no recorte · ' + model.accuracy + '% de acerto',
+    evidence: model.resolved + ' questões no recorte · ' + formatPercent(model.accuracy) + ' de acerto',
     legend: [
       { label: 'Precisão média móvel', tone: 'primary' },
       ...(goal === null ? [] : [{ label: `Meta de precisão (${goal}%)`, tone: 'target' }]),

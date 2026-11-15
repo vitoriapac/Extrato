@@ -1,10 +1,10 @@
 import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
-import { formatDecimal, formatPoints } from '../../core/format-number.js';
+import { formatDecimal, formatPercent, formatPoints } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 import { renderBulletBar } from '../primitives/charts/charts.js';
 type Row = Record<string, any>;
 const value = (number: number | null | undefined, suffix = '') =>
-  number == null ? '—' : `${formatDecimal(number)}${suffix}`;
+  number == null ? 'Sem dados' : suffix === '%' ? formatPercent(number) : `${formatDecimal(number)}${suffix}`;
 const signed = (number: number | null | undefined) =>
   number == null ? '—' : formatPoints(number);
 const options = [

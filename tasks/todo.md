@@ -428,9 +428,9 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 36: Linha-chave dos universos de contagem
 **Origem:** P1 de H4 (296 × 305 × 194; 463 × 842 × 686 questões); memória de trabalho de Alex e Jordan.
 **Aceite:**
-- [ ] Uma linha-chave no Diagnóstico e em Provas: "296 tópicos no edital · 194 por concluir · 305 mapeados ao histórico da banca" (valores reais, com a diferença de 9 explicada na tela)
-- [ ] Questões: "463 respondidas no período · 842 classificadas · 686 analisadas", com o critério de cada; verbo único ("respondidas", não "resolvidas")
-- [ ] Todo "N de M tópicos" nomeia o M
+- [x] Uma linha-chave no Diagnóstico e em Provas: "296 tópicos no edital · 194 por concluir · 305 mapeados ao histórico da banca" (valores reais, com a diferença de 9 explicada na tela)
+- [x] Questões: "463 respondidas no período · 842 classificadas · 686 analisadas", com o critério de cada; verbo único ("respondidas", não "resolvidas")
+- [x] Todo "N de M tópicos" nomeia o M
 **Verificação:** unit do texto com os três universos; E2E na demo conferindo que nenhum número aparece sem recorte
 **Arquivos prováveis:** `consolidated-diagnosis-renderer.ts`, `exam-matrix-controller.ts`, `exam-data-quality-renderer.ts`, `build-exam-data-quality.ts`
 **Tamanho:** S
@@ -438,11 +438,11 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 37: Um formato por grandeza
 **Origem:** P2 de H4; observações de formatos.
 **Aceite:**
-- [ ] Precisão: sempre uma casa (69,3%) em KPI, texto e gráfico; tabela de Disciplinas com a mesma regra
-- [ ] Variação em % sempre em p.p. com sinal e uma casa, inclusive "execução prioritária: −6 p.p." e "Queda de 20 p.p."; variação da Prontidão (escala /100) diz "pontos", com a regra na ajuda
-- [ ] Faixas num estilo só ("69% a 93%", "78% a 84%", "20 a 26 h/sem") em Desempenho; legenda do heatmap igual
-- [ ] Tempo sempre "34 h 2 min", inclusive donut e listas de metas; contagens com unidade ("+72 questões")
-- [ ] "—" e "—%" viram "Sem dados" com motivo curto; "−35 pts" das metas (confirmar) padronizado
+- [x] Precisão: sempre uma casa (69,3%) em KPI, texto e gráfico; tabela de Disciplinas com a mesma regra
+- [x] Variação em % sempre em p.p. com sinal e uma casa, inclusive "execução prioritária: −6 p.p." e "Queda de 20 p.p."; variação da Prontidão (escala /100) diz "pontos", com a regra na ajuda
+- [x] Faixas num estilo só ("69% a 93%", "78% a 84%", "20 a 26 h/sem") em Desempenho; legenda do heatmap igual
+- [x] Tempo sempre "34 h 2 min", inclusive donut e listas de metas; contagens com unidade ("+72 questões")
+- [x] "—" e "—%" viram "Sem dados" com motivo curto; "−35 pts" das metas (confirmar) padronizado
 **Verificação:** unit nos formatadores (`format-number.ts`, `formatStudyMinutes`); busca por `pts`, `—%` e horas coladas ("34h"); E2E e goldens conferidos antes de atualizar
 **Dependências:** Tarefa 36
 **Tamanho:** M

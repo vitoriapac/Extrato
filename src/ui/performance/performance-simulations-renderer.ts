@@ -1,7 +1,7 @@
 import { renderWindowBadge } from './window-badge.js';
 import { renderEvidenceBadge } from './evidence-badge.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
-import { formatDecimal, formatPoints } from '../../core/format-number.js';
+import { formatPercent, formatPoints } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
 import { renderSimulationTrendChart } from '../renderers/simulations-renderer.js';
 import { renderSimulationComparison } from '../renderers/simulation-comparison-renderer.js';
@@ -13,8 +13,7 @@ import {
 } from './performance-story.js';
 import { renderPerformanceSampleState } from './performance-sample-state.js';
 
-const percent = (value: number | null | undefined) =>
-  value == null ? '—' : `${formatDecimal(value)}%`;
+const percent = (value: number | null | undefined) => formatPercent(value);
 const signed = (value: number) =>
   value == null ? 'Sem comparação' : formatPoints(value);
 

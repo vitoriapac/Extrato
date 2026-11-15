@@ -45,7 +45,7 @@ export function renderConsolidatedDiagnosis(
   };
   const select = (name: string, title: string, current: string, entries: [string, string][], all = 'Todas') =>
     `<label class="diagnosis-filter">${title}<select class="select-control" data-diagnosis-filter="${name}"><option value="${name === 'sort' ? 'queue' : 'all'}">${all}</option>${entries.map(([value, text]) => `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')}</select></label>`;
-  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} tópicos</span></div>`;
+  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} itens com sinal de diagnóstico</span></div>`;
   const groups = new Map<string, { name: string; items: { item: Record<string, any>; rank: number }[] }>();
   visible.forEach(entry => {
     const { item } = entry;

@@ -1,3 +1,4 @@
+import { formatPointsMagnitude } from '../../core/format-number.js';
 import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 import { compareReadinessSnapshots } from './build-readiness-evolution.js';
@@ -68,7 +69,7 @@ export function buildWeeklyDecisionCycle({
   const priorityPercent = priority == null ? null : Math.round(priority * 10) / 10;
   if (close.comparison.accuracy.delta > 0)
     worked.push(
-      `Precisão aumentou ${close.comparison.accuracy.delta} p.p.; compare também o volume e a dificuldade das questões.`
+      `Precisão aumentou ${formatPointsMagnitude(close.comparison.accuracy.delta)}; compare também o volume e a dificuldade das questões.`
     );
   if (priority >= 80 && priority != null)
     worked.push(`Você executou ${priorityPercent}% do tempo prioritário registrado no plano.`);

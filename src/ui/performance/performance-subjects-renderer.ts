@@ -1,5 +1,5 @@
 import { renderWindowBadge } from './window-badge.js';
-import { formatDecimal, formatPoints } from '../../core/format-number.js';
+import { formatDecimal, formatPercent, formatPoints } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
 import { renderPerformanceTopicDialog } from './performance-topic-renderer.js';
@@ -15,7 +15,7 @@ import { renderPerformanceSampleState } from './performance-sample-state.js';
 type Row = Record<string, any>;
 type Esc = (value: any) => string;
 const value = (number: number | null | undefined, suffix = '') =>
-  number == null ? '—' : `${formatDecimal(number)}${suffix}`;
+  number == null ? 'Sem dados' : suffix === '%' ? formatPercent(number) : `${formatDecimal(number)}${suffix}`;
 const signed = (number: number | null | undefined) =>
   number == null ? 'Sem comparação' : formatPoints(number);
 const topicRows = (items: Row[], escapeHtml: Esc, escapeAttr: Esc) =>
@@ -50,7 +50,7 @@ export function renderPerformanceSubjects(
     .join('');
   const selection = `<div class="performance-toolbar"><label>Disciplina <select class="select-control" data-performance-subject aria-label="Disciplina analisada">${options}</select></label><button type="button" class="btn ghost small" data-analysis-nav="hoje" data-subject-id="${escapeAttr(model.subject.id)}">Ver diagnóstico</button></div>`;
   const kpis = `<section class="performance-kpis" aria-label="Indicadores da disciplina"><article class="performance-kpi"><span>Precisão pessoal ${renderWindowBadge('period', 'Período escolhido')}</span><strong>${value(model.accuracy, '%')}</strong><small>${model.activity.questions} questões · meta de precisão ${model.goal.target}%</small></article><article class="performance-kpi"><span>Domínio médio ${renderWindowBadge('history', 'Estado atual, todo o histórico')}</span><strong>${value(model.mastery, '/100')}</strong><small>${model.masteryEvidence} tópicos com evidência</small></article><article class="performance-kpi"><span>Retenção média ${renderWindowBadge('history', 'Estado atual, todo o histórico')}</span><strong>${value(model.retention, '/100')}</strong><small>${model.retentionEvidence} tópicos com evidência · estado atual</small></article><article class="performance-kpi"><span>Tendência de precisão ${renderWindowBadge('period', 'Período escolhido')}</span><strong>${signed(model.trend)}</strong><small>${range.comparePrevious ? 'Exige 10 questões em cada período' : 'Comparação desativada'}</small></article></section>`;
-  const activity = `<section class="performance-block"><h3>Atividade no período</h3><p>${formatStudyMinutes(model.activity.minutes)} estudados · ${model.activity.questions} questões resolvidas · ${model.activity.reviews} revisões concluídas.</p><p class="analytics-note">A precisão vem de questões pessoais; simulados detalhados são avaliados separadamente. Meta de precisão: ${model.goal.target}%.</p></section>`;
+  const activity = `<section class="performance-block"><h3>Atividade no período</h3><p>${formatStudyMinutes(model.activity.minutes)} estudados · ${model.activity.questions} questões respondidas · ${model.activity.reviews} revisões concluídas.</p><p class="analytics-note">A precisão vem de questões pessoais; simulados detalhados são avaliados separadamente. Meta de precisão: ${model.goal.target}%.</p></section>`;
   const first = model.topics.slice(0, 5),
     remaining = model.topics.slice(5);
   const topics = `<section class="performance-block"><h3>Tópicos</h3>${first.length ? `<ul class="performance-changes performance-topic-list">${topicRows(first, escapeHtml, escapeAttr)}</ul>${remaining.length ? `<details class="performance-more"><summary>Mostrar mais · +${remaining.length}</summary><ul class="performance-changes performance-topic-list">${topicRows(remaining, escapeHtml, escapeAttr)}</ul></details>` : ''}` : '<p class="empty-state empty-state--compact">Nenhum tópico elegível nesta disciplina.</p>'}</section>`;

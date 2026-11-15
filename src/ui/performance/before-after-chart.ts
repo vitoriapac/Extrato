@@ -1,4 +1,4 @@
-import { formatDecimal, formatPoints } from '../../core/format-number.js';
+import { formatDecimal, formatPercent, formatPoints } from '../../core/format-number.js';
 
 type Row = Record<string, any>;
 const clamp = (value: number) => Math.max(0, Math.min(100, value));
@@ -25,8 +25,8 @@ export function renderBeforeAfterChart(
       const left = clamp(Math.min(row.before, row.accuracy));
       const width = Math.max(0.5, clamp(Math.max(row.before, row.accuracy)) - left);
       const falling = row.evolution < 0;
-      const text = `${formatDecimal(row.before)}% antes, ${formatDecimal(row.accuracy)}% agora (${formatPoints(row.evolution)})${Number.isFinite(target) ? `, meta ${formatDecimal(target)}%` : ''}`;
-      return `<li class="chart-dumbbell__row"><button type="button" class="performance-topic-link" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><div class="chart-dumbbell__track" role="img" aria-label="${escapeAttr(`${row.name}: ${text}`)}"><i class="chart-dumbbell__span${falling ? ' is-falling' : ''}" style="left:${left}%;width:${width}%"></i><b class="chart-dumbbell__before" style="left:${clamp(row.before)}%"></b><b class="chart-dumbbell__after${falling ? ' is-falling' : ''}" style="left:${clamp(row.accuracy)}%"></b>${Number.isFinite(target) ? `<u class="chart-dumbbell__target" style="left:${clamp(target)}%"></u>` : ''}</div><small>${escapeHtml(`${formatDecimal(row.accuracy)}% · ${formatPoints(row.evolution)}`)}</small></li>`;
+      const text = `${formatPercent(row.before)} antes, ${formatPercent(row.accuracy)} agora (${formatPoints(row.evolution)})${Number.isFinite(target) ? `, meta ${formatDecimal(target)}%` : ''}`;
+      return `<li class="chart-dumbbell__row"><button type="button" class="performance-topic-link" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><div class="chart-dumbbell__track" role="img" aria-label="${escapeAttr(`${row.name}: ${text}`)}"><i class="chart-dumbbell__span${falling ? ' is-falling' : ''}" style="left:${left}%;width:${width}%"></i><b class="chart-dumbbell__before" style="left:${clamp(row.before)}%"></b><b class="chart-dumbbell__after${falling ? ' is-falling' : ''}" style="left:${clamp(row.accuracy)}%"></b>${Number.isFinite(target) ? `<u class="chart-dumbbell__target" style="left:${clamp(target)}%"></u>` : ''}</div><small>${escapeHtml(`${formatPercent(row.accuracy)} · ${formatPoints(row.evolution)}`)}</small></li>`;
     })
     .join('');
   const more = rows.length > shown.length ? `<p class="analytics-note">Mostrando as ${shown.length} maiores quedas de ${rows.length} disciplinas comparáveis; o mapa abaixo lista todas.</p>` : '';

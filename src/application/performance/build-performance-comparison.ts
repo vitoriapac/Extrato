@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatPointsMagnitude } from '../../core/format-number.js';
 /** Diferença mínima para um indicador deixar de ser "Estável". */
 export const COMPARISON_THRESHOLDS = Object.freeze({
   accuracy: 1,
@@ -53,7 +53,7 @@ export function buildPerformanceComparison(
       (previous.sessionCount || 0) + (current.sessionCount || 0) > 0
     ),
     metric(
-      'Questões resolvidas',
+      'Questões respondidas',
       previous.resolved,
       current.resolved,
       'questões',
@@ -75,11 +75,11 @@ export function buildPerformanceComparison(
     load = rows[3];
   if (accuracy.state === 'improved' && volume.delta != null && volume.delta >= 0) {
     insights.push(
-      `A precisão subiu ${formatDecimal(accuracy.delta)} p.p. enquanto o volume de questões ${volume.delta ? 'cresceu ' + volume.delta : 'se manteve'}. A mudança observada não indica, sozinha, sua causa.`
+      `A precisão subiu ${formatPointsMagnitude(accuracy.delta)} enquanto o volume de questões ${volume.delta ? 'cresceu ' + volume.delta : 'se manteve'}. A mudança observada não indica, sozinha, sua causa.`
     );
   } else if (accuracy.state === 'worsened') {
     insights.push(
-      `A precisão caiu ${formatDecimal(Math.abs(accuracy.delta!))} p.p. em relação ao período anterior. Confira os erros e a composição das questões antes de ajustar o plano.`
+      `A precisão caiu ${formatPointsMagnitude(accuracy.delta)} em relação ao período anterior. Confira os erros e a composição das questões antes de ajustar o plano.`
     );
   }
   if (

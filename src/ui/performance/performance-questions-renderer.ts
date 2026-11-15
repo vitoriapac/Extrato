@@ -1,6 +1,6 @@
 import { renderWindowBadge } from './window-badge.js';
 import { formatDateBR } from '../../core/format-date.js';
-import { formatDecimal, formatPoints } from '../../core/format-number.js';
+import { formatPercent, formatPoints } from '../../core/format-number.js';
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
 import { renderErrorProfileChart } from './error-profile-chart.js';
 import { renderMultiLineChart } from '../primitives/charts/charts.js';
@@ -10,8 +10,7 @@ import {
   renderPerformanceDetails,
 } from './performance-story.js';
 
-const percent = (value: number | null | undefined) =>
-  value == null ? '—' : `${formatDecimal(value)}%`;
+const percent = (value: number | null | undefined) => formatPercent(value);
 const delta = (value: number) =>
   value == null ? 'Sem base anterior' : formatPoints(value);
 
@@ -33,8 +32,8 @@ export function renderPerformanceQuestions({
       : null;
   const win = renderWindowBadge('period', range?.label || '');
   const kpis = `<section class="performance-kpis" aria-label="Indicadores de questões">
-    <article class="performance-kpi"><span>Questões resolvidas ${win}</span><strong>${analysis.questionCount}</strong><small>Respostas pessoais no período</small></article>
-    <article class="performance-kpi"><span>Precisão ${win}</span><strong>${percent(analysis.accuracy)}</strong><small>Acertos ÷ questões resolvidas</small></article>
+    <article class="performance-kpi"><span>Questões respondidas ${win}</span><strong>${analysis.questionCount}</strong><small>Respostas pessoais no período</small></article>
+    <article class="performance-kpi"><span>Precisão ${win}</span><strong>${percent(analysis.accuracy)}</strong><small>Acertos ÷ questões respondidas</small></article>
     <article class="performance-kpi"><span>Erros ${win}</span><strong>${analysis.errors}</strong><small>Inclui erros sem categoria</small></article>
     <article class="performance-kpi"><span>Evolução ${win}</span><strong>${delta(trend!)}</strong><small>${range.comparePrevious ? 'Precisão × período anterior' : 'Comparação desativada'}</small></article>
   </section>`;
@@ -72,7 +71,7 @@ export function renderPerformanceQuestions({
   const summary =
     analysis.accuracy == null
       ? 'Ainda não há precisão calculável.'
-      : `Precisão de ${formatDecimal(analysis.accuracy)}% em ${analysis.questionCount} questões respondidas.`;
+      : `Precisão de ${formatPercent(analysis.accuracy)} em ${analysis.questionCount} questões respondidas.`;
 
   const msp = multiSubjectPerformance;
   let multiLineSection = '';

@@ -108,8 +108,8 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Fase 9: Correções das críticas 8 e 9 (H4, H8, mobile e personas)
 Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red flags de Alex, Casey, Sam e Jordan. Detalhes e aceite em [todo.md](todo.md).
 - [x] Tarefa 35: Nomes da navegação e da rota (subabas Resumo, Por disciplina, Resultados das provas; rota #desempenho/resultados; mobile Início/Matérias e rótulos do roteiro da demo ficaram de fora)
-- [ ] Tarefa 36: Linha-chave dos universos de contagem (P1, H4)
-- [ ] Tarefa 37: Um formato por grandeza (P2, H4)
+- [x] Tarefa 36: Linha-chave dos universos de contagem (305 no edital · 194 por concluir · 297 com sinal · 304 mapeados; contador nomeia o universo; "respondidas" no lugar de "resolvidas" em Desempenho)
+- [x] Tarefa 37: Um formato por grandeza (precisão com uma casa, p.p. com sinal e uma casa, faixas "a", "Sem dados")
 - [ ] Tarefa 38: Um vocabulário de estado, prioridade e evidência (P2, H4)
 - [ ] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas (P2, H1)
 - [ ] Tarefa 40: Provas em um painel por vez, sem repetições, com ajuda uniforme (P1, H8, H10)

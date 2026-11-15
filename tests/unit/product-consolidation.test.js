@@ -152,8 +152,8 @@ test('visão geral de desempenho orienta investigação antes do histórico sem 
 test('desempenho separa volume de questões e sinaliza amostra pequena', () => {
   const model = { current: { resolved: 10, accuracy: 70 }, previous: { resolved: 10, accuracy: 60 }, weekly: [], changes: [], history: [], readiness: null };
   const html = renderPerformanceOverview(model, { range: { comparePrevious: true }, today: '2026-10-05', activeExamTags: [], formatDate: String, escapeHtml: String });
-  assert.ok(html.indexOf('Tempo estudado') < html.indexOf('Questões resolvidas'));
-  assert.ok(html.indexOf('Questões resolvidas') < html.indexOf('Precisão em questões'));
+  assert.ok(html.indexOf('Tempo estudado') < html.indexOf('Questões respondidas'));
+  assert.ok(html.indexOf('Questões respondidas') < html.indexOf('Precisão em questões'));
   assert.match(html, /10 questões · amostra pequena/);
   assert.doesNotMatch(html, /10 questões[^<]*10 p\.p\./);
 });

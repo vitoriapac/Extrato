@@ -47,7 +47,7 @@ function MetricBulletBar({
             {formatDecimal(currentValue)}{unit}
           </span>
           <span class="text-content-secondary text-xs">
-            (alvo: {formatDecimal(targetMin)}–{formatDecimal(targetMax)}{unit})
+            (alvo: {formatDecimal(targetMin)}{unit === '%' ? '%' : ''} a {formatDecimal(targetMax)}{unit})
           </span>
           <Tooltip
             content={`Faixa de referência: ${formatDecimal(targetMin)} a ${formatDecimal(targetMax)}${unit}`}

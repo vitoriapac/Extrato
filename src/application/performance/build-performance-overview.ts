@@ -161,7 +161,7 @@ export function buildPerformanceOverview({
         'p.p.',
         current!.resolved >= 30 && previous.resolved >= 30,
       ],
-      ['Questões resolvidas', 'resolved', 'questões', current!.resolved + previous.resolved > 0],
+      ['Questões respondidas', 'resolved', 'questões', current!.resolved + previous.resolved > 0],
       [
         'Volume de carga',
         'adherence',
