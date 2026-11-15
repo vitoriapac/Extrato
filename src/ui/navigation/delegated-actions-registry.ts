@@ -357,12 +357,7 @@ export function buildDelegatedActionHandlers(
         custom['updateExamSubject'](id, f, v);
       }
     },
-    saveExamSubjectConfig: (...args: any[]) => c.examMatrix?.saveExamSubjectConfig?.(...args),
-    cancelExamSubjectConfig: (...args: any[]) => c.examMatrix?.cancelExamSubjectConfig?.(...args),
     applyUndatedExamDate: (...args: any[]) => c.examMatrix?.applyUndatedExamDate?.(...args),
-    toggleAllExamSubjects: (...args: any[]) => c.examMatrix?.toggleAllExamSubjects?.(...args),
-    applyBulkExamSubjectConfig: (...args: any[]) =>
-      c.examMatrix?.applyBulkExamSubjectConfig?.(...args),
 
     // Today Tab / Timer Runtime
     startPlannedActivity: (...args: any[]) =>

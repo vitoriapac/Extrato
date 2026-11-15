@@ -129,8 +129,8 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 
 ### Fase 4: Prova e metas
 - [x] Tarefa 14: Subaba "Prova e metas" (5 → 4 subabas)
-- [ ] Tarefa 15a: Tabela única de leitura por disciplina, com acerto contra meta em barra
-- [ ] Tarefa 15b: Edição na linha, lote em todas as colunas e um único salvar
+- [x] Tarefa 15a: Tabela única de leitura por disciplina, com acerto contra meta em barra
+- [x] Tarefa 15b: Edição na linha, lote em todas as colunas e um único salvar
 - [ ] Tarefa 16: Três alvos viram um no modo Essencial
 - [x] Tarefa 17: Ritmo ao lado da meta de tópicos, com aviso
 

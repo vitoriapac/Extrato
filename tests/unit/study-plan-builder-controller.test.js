@@ -26,7 +26,7 @@ function createMockDeps() {
   const state = {
     examDate: '2026-12-31',
     metas: {
-      horasPorDia: { '2026-10-28': 4 },
+      horasPorDia: /** @type {Record<string, number>} */ ({ '2026-10-28': 4 }),
     },
     studyPlans: plans,
     adaptivePlanningHistory: [],

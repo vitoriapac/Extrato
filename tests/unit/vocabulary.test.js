@@ -35,7 +35,7 @@ test('resumo: contagem comparável diz de quantos simulados do histórico', () =
   const base = {
     rangeLabel: 'Últimos 30 dias',
     situation: {
-      status: 'on_track',
+      status: /** @type {const} */ ('on_track'),
       confidence: 'low',
       target: 80,
       simulationAccuracy: 81,

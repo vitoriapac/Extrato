@@ -41,7 +41,7 @@ test('relatório inclui planejamento adaptativo e resultados posteriores', async
 
 for (const width of [320, 430])
   for (const theme of ['light', 'dark'])
-    test(`configuração estratégica edita sem overflow em ${width}px no tema ${theme}`, async ({
+    test(`metas por disciplina editam sem overflow em ${width}px no tema ${theme}`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: 850 });
@@ -49,36 +49,27 @@ for (const width of [320, 430])
       if (theme === 'dark') await page.locator('#themeToggleBtn').click();
       await activateTab(page, 'metas');
       await openPlanningSubtab(page, 'prova');
-      const row = page.locator('#examBlueprintConfig .exam-subject-config').first();
-      await row.locator('summary').click();
-      await expect(row.locator('.exam-subject-row')).toBeVisible();
+      const table = page.locator('#subjectTargetEditor .subject-target-table');
+      await expect(table).toBeVisible();
       await expectNoPageOverflow(page);
-      const original = await row.locator('[name="priority"]').inputValue();
-      await row.locator('[name="priority"]').selectOption(original === 'high' ? 'low' : 'high');
-      await row.getByRole('button', { name: 'Cancelar' }).click();
-      await page
-        .locator('#examBlueprintConfig .exam-subject-config')
-        .first()
-        .locator('summary')
-        .click();
+      const priority = page.locator('#subjectTargetEditor [data-field="priority"]').first();
+      const original = await priority.inputValue();
+      const changed = original === 'high' ? 'low' : 'high';
+      await priority.selectOption(changed);
+      await expect(page.locator('#subjectTargetEditor [data-targets-pending-bar]')).toBeVisible();
+      // Descartar volta ao valor salvo; Salvar alterações grava e esconde o aviso.
+      await page.getByRole('button', { name: 'Descartar' }).click();
       await expect(
-        page
-          .locator('#examBlueprintConfig .exam-subject-config')
-          .first()
-          .locator('[name="priority"]')
+        page.locator('#subjectTargetEditor [data-field="priority"]').first()
       ).toHaveValue(original);
       await page
-        .locator('#examBlueprintConfig .exam-subject-config')
+        .locator('#subjectTargetEditor [data-field="priority"]')
         .first()
-        .locator('[name="priority"]')
-        .selectOption('high');
-      await page
-        .locator('#examBlueprintConfig .exam-subject-config')
-        .first()
-        .getByRole('button', { name: 'Salvar' })
-        .click();
+        .selectOption(changed);
+      await page.getByRole('button', { name: 'Salvar alterações' }).click();
       await expect(
-        page.locator('#examBlueprintConfig .exam-subject-config').first().locator('summary')
-      ).toContainText('Alta');
+        page.locator('#subjectTargetEditor [data-field="priority"]').first()
+      ).toHaveValue(changed);
+      await expect(page.locator('#subjectTargetEditor [data-targets-pending-bar]')).toBeHidden();
       await expectNoPageOverflow(page);
     });

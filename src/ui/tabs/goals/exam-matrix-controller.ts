@@ -15,7 +15,6 @@ import { renderExamIntelligence } from '../../renderers/exam-intelligence-render
 import { renderExamClassificationReview } from '../../renderers/exam-classification-review-renderer.js';
 import { reviewExamClassification } from '../../../application/exam-intelligence/review-exam-classification.js';
 import { buildExamMasteryMatrix } from '../../../domain/analytics/exam-mastery-matrix.js';
-import { buildSavedSubjectConfig } from '../../../application/exams/save-subject-config.js';
 import { setActiveExamTags } from '../../../application/exams/exam-scope-transition.js';
 
 export interface ExamMatrixControllerContext {
@@ -346,66 +345,6 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     examClassificationPreviousFocus = null;
   }
 
-  function saveExamSubjectConfig(subjectId: string) {
-    const details = [
-      ...ctx.document.querySelectorAll<HTMLElement>('#examBlueprintConfig .exam-subject-config'),
-    ].find(item => item.dataset.subjectId === subjectId);
-    if (!details) return;
-
-    const read = (name: string) =>
-      details.querySelector<HTMLInputElement>(`[name="${name}"]`)?.value ?? '';
-
-    const state = ctx.getState();
-    const existing = state.examBlueprint?.subjects?.find(
-      (item: any) => item.subjectId === subjectId
-    );
-    const config = buildSavedSubjectConfig(subjectId, existing, {
-      priority: read('priority'),
-      masteryTarget: read('masteryTarget'),
-      expectedQuestions: read('expectedQuestions'),
-      questionWeight: read('questionWeight'),
-      accuracyTarget: read('accuracyTarget'),
-    });
-
-    if (!config) {
-      ctx.showToast('Revise a meta, a quantidade de questões e o peso antes de salvar.');
-      return;
-    }
-
-    if (
-      !existing ||
-      [
-        'priority',
-        'masteryTarget',
-        'accuracyTarget',
-        'expectedQuestions',
-        'questionWeight',
-        'official',
-        'sourceRef',
-      ].some(
-        key =>
-          JSON.stringify((existing as Record<string, any>)[key]) !==
-          JSON.stringify((config as Record<string, any>)[key])
-      )
-    ) {
-      ctx.captureReadinessBeforeStrategy(
-        'Antes de alterar a configuração estratégica da disciplina'
-      );
-    }
-
-    if (existing) Object.assign(existing, config);
-    else state.examBlueprint.subjects.push(config);
-
-    state.examBlueprint.configuredAt = ctx.nowISO();
-    ctx.invalidatePlanPreview();
-    ctx.persistAndRender();
-    ctx.showToast('Configuração da disciplina salva.');
-  }
-
-  function cancelExamSubjectConfig() {
-    renderExamBlueprintConfig();
-  }
-
   function applyUndatedExamDate() {
     const input = ctx.document.getElementById('examUndatedDateInput') as HTMLInputElement | null;
     const val = input?.value?.trim() || '';
@@ -414,71 +353,6 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       return;
     }
     ctx.updateExamBlueprint?.('examDate', val);
-  }
-
-  function toggleAllExamSubjects(checked: boolean) {
-    ctx.document
-      .querySelectorAll<HTMLInputElement>('#examBlueprintConfig [data-exam-subject-select]')
-      .forEach(item => {
-        item.checked = Boolean(checked);
-      });
-  }
-
-  function applyBulkExamSubjectConfig() {
-    const selectedIds = [
-      ...ctx.document.querySelectorAll<HTMLInputElement>(
-        '#examBlueprintConfig [data-exam-subject-select]:checked'
-      ),
-    ].map(item => item.value);
-    if (!selectedIds.length) {
-      ctx.showToast('Selecione ao menos uma disciplina para aplicar em lote.');
-      return;
-    }
-    const priorityVal =
-      ctx.document.querySelector<HTMLSelectElement>(
-        '#examBlueprintConfig [data-exam-bulk-priority]'
-      )?.value || '';
-    const masteryRaw =
-      ctx.document
-        .querySelector<HTMLInputElement>('#examBlueprintConfig [data-exam-bulk-mastery]')
-        ?.value.trim() ?? '';
-    if (!priorityVal && masteryRaw === '') {
-      ctx.showToast('Escolha uma prioridade ou informe a meta de domínio para aplicar.');
-      return;
-    }
-    if (masteryRaw !== '' && (Number(masteryRaw) < 0 || Number(masteryRaw) > 100)) {
-      ctx.showToast('Informe uma meta de domínio entre 0% e 100%.');
-      return;
-    }
-    const state = ctx.getState();
-    ctx.captureReadinessBeforeStrategy(
-      'Antes de alterar a configuração estratégica em lote das disciplinas'
-    );
-    for (const subjectId of selectedIds) {
-      const existing = state.examBlueprint?.subjects?.find(
-        (item: any) => item.subjectId === subjectId
-      );
-      const next = buildSavedSubjectConfig(subjectId, existing, {
-        priority: priorityVal || existing?.priority || 'normal',
-        masteryTarget:
-          masteryRaw !== ''
-            ? masteryRaw
-            : existing?.masteryTarget != null
-              ? String(existing.masteryTarget)
-              : '',
-        expectedQuestions:
-          existing?.expectedQuestions != null ? String(existing.expectedQuestions) : '',
-        questionWeight: existing?.questionWeight != null ? String(existing.questionWeight) : '',
-        accuracyTarget: existing?.accuracyTarget != null ? String(existing.accuracyTarget) : '',
-      });
-      if (!next) continue;
-      if (existing) Object.assign(existing, next);
-      else state.examBlueprint.subjects.push(next);
-    }
-    state.examBlueprint.configuredAt = ctx.nowISO();
-    ctx.invalidatePlanPreview();
-    ctx.persistAndRender();
-    ctx.showToast('Configuração em lote aplicada às disciplinas selecionadas.');
   }
 
   function toggleActiveExamTag(tag: string, checked: boolean) {
@@ -670,11 +544,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     renderExamBlueprintConfig,
     updateExamClassificationReview,
     closeExamClassificationReview,
-    saveExamSubjectConfig,
-    cancelExamSubjectConfig,
     applyUndatedExamDate,
-    toggleAllExamSubjects,
-    applyBulkExamSubjectConfig,
     toggleActiveExamTag,
     bindEvents,
     getFilters: () => ({ ...examMatrixFilters }),

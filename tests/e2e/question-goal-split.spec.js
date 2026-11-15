@@ -15,13 +15,12 @@ test('metas de questões por disciplina fecham na meta global: aviso, prévia, c
   const editor = page.locator('#subjectTargetEditor');
 
   // A demo já nasce fechada: 220 na global e 220 na soma, sem aviso.
-  await expect(editor).toContainText('Meta global: 80% de acerto · 220 questões/semana');
-  await expect(editor).not.toContainText('sem meta global de questões');
+  await expect(editor).toContainText('Meta geral: 80% de acerto · 220 questões/semana');
+  await expect(editor).not.toContainText('sem meta geral de questões');
   await expect(editor).toContainText('Soma das metas por disciplina: 220 questões/semana');
   await expect(editor.locator('[data-questions-split-preview]')).toHaveCount(0);
 
   // Subir uma meta por disciplina abre a diferença; o aviso aparece e nada é reescrito sozinho.
-  await editor.locator('summary[aria-label^="Editar metas de Língua Portuguesa"]').click();
   const input = editor.getByRole('spinbutton', {
     name: 'Meta semanal de questões de Língua Portuguesa',
   });

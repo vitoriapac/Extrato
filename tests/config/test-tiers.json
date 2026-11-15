@@ -22,6 +22,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/achievement-notice.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/achievement-projection.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full.",
@@ -64,6 +69,11 @@
           "rationale": "Ciclo de persistência e restauração."
         }
       ]
+    },
+    {
+      "file": "tests/e2e/chart-sizes.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
       "file": "tests/e2e/comfort.spec.js",
@@ -247,6 +257,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/question-goal-split.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/quick-flows.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -385,6 +400,16 @@
       "rationale": "Migração de schema (cor por disciplina) e importação de backup antigo; exigido pelo gate Full."
     },
     {
+      "file": "tests/e2e/subject-compare-modes.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
+      "file": "tests/e2e/today-achievements.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/topic-strategy.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -457,6 +482,16 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/achievement-notice.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
+      "file": "tests/unit/achievement-progress-note.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/achievement-projection-history.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -472,9 +507,19 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/achievement-unlocks.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/achievement-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/achievements-controller-cache.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/achievements-controller.test.js",
@@ -500,6 +545,11 @@
       "file": "tests/unit/adherence-change-explanation.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/adherence-labels.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/adherence-model.test.js",
@@ -602,6 +652,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/beginner-gate.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/calendar-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -617,6 +672,16 @@
       "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba de calendário."
     },
     {
+      "file": "tests/unit/capacity-informed.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
+      "file": "tests/unit/capacity-review-preview.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/career-benchmark-card.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; componente Preact declarativo de comparativo de ritmo com aprovados por carreira."
@@ -627,14 +692,14 @@
       "rationale": "Contrato Node puro e determinístico; benchmarks de aprovados por carreira e agregação de ritmo recente."
     },
     {
-      "file": "tests/unit/capacity-review-preview.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
       "file": "tests/unit/chart-primitives.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato unitário rápido no Node."
+    },
+    {
+      "file": "tests/unit/chart-size.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/clerk-saas-auth.test.js",
@@ -695,6 +760,11 @@
       "file": "tests/unit/csp-headers.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/cutoff-reference.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/daily-execution.test.js",
@@ -762,6 +832,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/demo-coherence.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/demo-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -800,6 +875,11 @@
       "file": "tests/unit/diagnosis-center.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/diagnosis-groups.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/diagnostics-tab-controller.test.js",
@@ -880,6 +960,11 @@
       "file": "tests/unit/evidence-scope-migration.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/exam-cutoff-scores.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/exam-evidence-scope.test.js",
@@ -1262,6 +1347,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/performance-route.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/performance-subject-comparison-plan.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; saldo do plano e sugestões por disciplina em Desempenho."
@@ -1337,6 +1427,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/practice-link-generator.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node puro e barato; normalização de nomes de tópicos de concurso e geração de URLs de questões."
+    },
+    {
       "file": "tests/unit/practice-visual-charts.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato puro em Node para modelos de tendência semanal, pareto de erros, evolução de simulados e raio-x por disciplina."
@@ -1397,11 +1492,6 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/practice-link-generator.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node puro e barato; normalização de nomes de tópicos de concurso e geração de URLs de questões."
-    },
-    {
       "file": "tests/unit/question-analytics-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s)."
@@ -1435,6 +1525,11 @@
       "file": "tests/unit/raw-syllabus-parser.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/real-week-banner.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componente Preact de acolhimento e microcopy empática da Semana Real."
     },
     {
       "file": "tests/unit/recommend-study.test.js",
@@ -1490,11 +1585,6 @@
       "file": "tests/unit/recovery-dense-scenarios.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
-    },
-    {
-      "file": "tests/unit/real-week-banner.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; componente Preact de acolhimento e microcopy empática da Semana Real."
     },
     {
       "file": "tests/unit/recovery-mission-controller.test.js",
@@ -1627,6 +1717,11 @@
       "rationale": "Contrato Node barato; inclui estimativas de ritmo de cobertura do edital e revisões em atraso."
     },
     {
+      "file": "tests/unit/rhythm-goal-warning.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/risk-score.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1700,6 +1795,11 @@
       "file": "tests/unit/simulations-tab-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
+      "file": "tests/unit/split-question-goal.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/stability-phase-comparison.test.js",
@@ -1907,6 +2007,11 @@
       "rationale": "Contrato Node barato; componentes Preact e controller da aba Hoje."
     },
     {
+      "file": "tests/unit/today-subtabs.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/today-tab-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba Hoje e plano de estudo diário."
@@ -2022,6 +2127,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/vocabulary.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/volatile-mastery-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo analítico do Diagnóstico de Domínio Volátil / Falsa Consolidação."
@@ -2040,6 +2150,11 @@
       "file": "tests/unit/week-reconciliation.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/week-summary.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },
     {
       "file": "tests/unit/weekly-adherence.test.js",

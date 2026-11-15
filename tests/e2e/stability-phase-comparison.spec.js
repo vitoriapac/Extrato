@@ -9,6 +9,7 @@ test('Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso', 
   await openDemo(page);
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'subjects');
+  await page.locator('[data-performance-compare-mode="trend"]').click();
   const map = page.locator('.stability-map');
   await expect(map).toBeVisible();
   await expect(map.locator('.stability-map-cell')).toHaveCount(4);

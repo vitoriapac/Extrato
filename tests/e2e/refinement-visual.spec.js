@@ -88,7 +88,7 @@ for (const { name, width, theme, columns } of [
             Node.DOCUMENT_POSITION_FOLLOWING
         )
     ).toBeTruthy();
-    await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
+    await expect(page.locator('#metasContainer .meta-card')).toHaveCount(6);
     await expect(page.locator('#metasContainer .goal-group--routine')).toContainText(
       'Meta de Aderência'
     );
@@ -133,6 +133,7 @@ test('Metas usa duas colunas em tablet', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 900 });
   await openDemo(page);
   await activateTab(page, 'metas');
+  await page.locator('#metasAdjust > summary').click();
   const columns = await page
     .locator('#metasContainer')
     .evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length);

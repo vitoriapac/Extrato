@@ -171,7 +171,7 @@ test('plano de 90% da capacidade (720 min) propõe 648 e cabe nos 7 dias sem age
     retentionNeed: 30,
   }));
   const plan = buildStudyPlan({ topics, weeklyAvailableMinutes: 720, weeksUntilExam: 3 });
-  assert.equal(plan.weeklyPlannedMinutes, 648);
+  assert.equal(/** @type {any} */ (plan).weeklyPlannedMinutes, 648);
   const days = [60, 120, 120, 120, 120, 120, 60].map((availableMinutes, index) => ({
     date: `2026-11-${16 + index}`,
     availableMinutes,

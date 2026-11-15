@@ -1,7 +1,7 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { diagnosticLabel } from '../../domain/diagnostics/diagnostic-vocabulary.js';
 import { subjectColorOf } from '../../domain/subjects/subject-color.js';
-import { Icon } from '../primitives/icon.js';
+import { BulletBar } from '../primitives/charts/charts.js';
 import { render } from 'preact-render-to-string';
 
 const signed = (value: number | null | undefined) =>
@@ -21,8 +21,9 @@ export function renderSubjectTargetEditor({
   globalWeeklyQuestions = 0,
   blueprint = {},
   weeklyGoalsBySubject = new Map(),
-  draftAccuracy = new Map(),
-  draftWeeklyGoals = new Map(),
+  drafts = new Map(),
+  masteryGlobal = 80,
+  sort = { key: 'edital', dir: 'asc' },
   splitPreview = null,
 }: any) {
   const configs = new Map<string, any>(
@@ -34,20 +35,21 @@ export function renderSubjectTargetEditor({
   const subjectList = rows.map((r: any) => ({ id: r.subjectId }));
   const weeklyMap =
     weeklyGoalsBySubject instanceof Map ? weeklyGoalsBySubject : new Map<string, any>();
-  const accDraftMap = draftAccuracy instanceof Map ? draftAccuracy : new Map<string, string>();
-  const wkDraftMap = draftWeeklyGoals instanceof Map ? draftWeeklyGoals : new Map<string, string>();
+  const draftMap: Map<string, Record<string, string>> = drafts instanceof Map ? drafts : new Map();
+  const draftOf = (id: string, field: string): string | undefined => draftMap.get(id)?.[field];
 
   let sumWeekly = 0;
   for (const row of rows) {
-    const draftVal = wkDraftMap.has(row.subjectId)
-      ? wkDraftMap.get(row.subjectId)
-      : weeklyMap.get(row.subjectId)?.meta;
+    const draftVal =
+      draftOf(row.subjectId, 'weekly') !== undefined
+        ? draftOf(row.subjectId, 'weekly')
+        : weeklyMap.get(row.subjectId)?.meta;
     const numeric = Number(draftVal);
     if (Number.isFinite(numeric) && numeric > 0) sumWeekly += numeric;
   }
 
   const globalQuestions = Number(globalWeeklyQuestions) || 0;
-  const hasDirty = accDraftMap.size > 0 || wkDraftMap.size > 0;
+  const hasDirty = draftMap.size > 0;
   const splitDiff = sumWeekly - globalQuestions;
   const needsSplit = globalQuestions > 0 && sumWeekly > 0 && splitDiff !== 0 && !hasDirty;
 
@@ -91,34 +93,250 @@ export function renderSubjectTargetEditor({
           </button>
         </p>
       ) : null}
-      <details>
-        <summary>Editar metas de acerto em lote</summary>
+      <details class="subject-target-bulk-fold">
+        <summary>Aplicar a várias disciplinas</summary>
         <div class="subject-target-bulk">
           <label>
-            <input type="checkbox" data-accuracy-select-all /> Selecionar disciplinas
+            <input type="checkbox" data-row-select-all /> Selecionar disciplinas
           </label>
           <label>
-            Acerto em lote{' '}
+            Prioridade
+            <select data-bulk-field="priority">
+              <option value="">Manter</option>
+              <option value="normal">Normal</option>
+              <option value="high">Alta</option>
+              <option value="low">Baixa</option>
+            </select>
+          </label>
+          <label>
+            Peso
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              data-bulk-field="weight"
+              placeholder="Manter"
+            />
+          </label>
+          <label>
+            Meta de acerto (%)
             <input
               type="number"
               min="0"
               max="100"
               step="1"
-              data-accuracy-bulk-value
-              value={globalTarget}
+              data-bulk-field="accuracy"
+              placeholder="Manter"
             />
-            %
           </label>
-          <button type="button" class="btn small" data-accuracy-apply>
+          <label>
+            Questões por semana
+            <input type="number" min="0" step="1" data-bulk-field="weekly" placeholder="Manter" />
+          </label>
+          <button type="button" class="btn small" data-bulk-apply>
             Aplicar às selecionadas
           </button>
-          <button type="button" class="btn ghost small" data-accuracy-restore-selected>
-            Restaurar global nas selecionadas
+          <button type="button" class="btn ghost small" data-bulk-use-global>
+            Usar a meta geral de acerto nas selecionadas
           </button>
         </div>
+        <p class="metadata-text">
+          A seleção só preenche as linhas; nada é gravado até você clicar em Salvar alterações.
+        </p>
       </details>
-      <div class="subject-target-pending-bar" data-targets-pending-bar hidden={!hasDirty}>
-        <span class="metadata-text">Alterações pendentes nas metas por disciplina</span>
+      <div
+        class="performance-table-scroll subject-target-table-wrap"
+        role="region"
+        aria-label="Metas por disciplina"
+        tabIndex={0}
+      >
+        <table class="subject-target-table">
+          <caption>
+            {globalQuestions > 0
+              ? `Meta geral: ${globalTarget}% de acerto · ${globalQuestions} questões/semana.`
+              : `Meta geral: ${globalTarget}% de acerto, sem meta geral de questões: vale a soma das disciplinas.`}{' '}
+            Soma das metas por disciplina: {sumWeekly} questões/semana.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">
+                <span class="sr-only">Selecionar</span>
+              </th>
+              {HEADERS.map(col => (
+                <th
+                  scope="col"
+                  class={col.advanced ? 'col-advanced' : undefined}
+                  aria-sort={
+                    sort.key === col.key
+                      ? sort.dir === 'desc'
+                        ? 'descending'
+                        : 'ascending'
+                      : 'none'
+                  }
+                >
+                  {col.sortable ? (
+                    <button type="button" class="sort-button" data-sort={col.key}>
+                      {col.label}
+                    </button>
+                  ) : (
+                    col.label
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row: any) => {
+              const id = row.subjectId;
+              const config = configs.get(id) || {};
+              const weekly = weeklyMap.get(id);
+              const weeklySolved = Number(weekly?.solved) || 0;
+              const weeklyMeta = weekly?.meta;
+              const value = (field: string, saved: unknown): string | number => {
+                const draft = draftOf(id, field);
+                return draft !== undefined
+                  ? draft
+                  : ((saved as string | number | null | undefined) ?? '');
+              };
+              const goal = draftOf(id, 'accuracy');
+              const effectiveGoal =
+                goal !== undefined
+                  ? goal === ''
+                    ? globalTarget
+                    : Number(goal)
+                  : (config.accuracyTarget ?? globalTarget);
+              return (
+                <tr key={id} class={draftMap.has(id) ? 'is-dirty' : undefined}>
+                  <td data-label="Selecionar">
+                    <input
+                      type="checkbox"
+                      data-row-select
+                      value={id}
+                      aria-label={`Selecionar ${row.name}`}
+                    />
+                  </td>
+                  <th scope="row" data-label="Disciplina" class="subject-target-name">
+                    <span
+                      class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${subjectColorOf({ id }, subjectList)}`}
+                      aria-hidden="true"
+                    />{' '}
+                    <strong class="break-words">{row.name}</strong>
+                  </th>
+                  <td data-label="Prioridade">
+                    <select
+                      data-field="priority"
+                      data-subject={id}
+                      aria-label={`Prioridade de ${row.name}`}
+                    >
+                      {[
+                        ['normal', 'Normal'],
+                        ['high', 'Alta'],
+                        ['low', 'Baixa'],
+                      ].map(([key, label]) => (
+                        <option
+                          value={key}
+                          selected={value('priority', config.priority || 'normal') === key}
+                        >
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td data-label="Peso">
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      data-field="weight"
+                      data-subject={id}
+                      value={value('weight', config.questionWeight)}
+                      placeholder="1"
+                      aria-label={`Peso por questão de ${row.name}`}
+                    />
+                  </td>
+                  <td data-label="Questões na prova">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      data-field="expected"
+                      data-subject={id}
+                      value={value(
+                        'expected',
+                        config.expectedQuestions > 0 ? config.expectedQuestions : ''
+                      )}
+                      placeholder="—"
+                      aria-label={`Questões esperadas na prova de ${row.name}`}
+                    />
+                  </td>
+                  <td data-label="Meta de acerto">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      data-field="accuracy"
+                      data-subject={id}
+                      value={value('accuracy', config.accuracyTarget)}
+                      placeholder={String(globalTarget)}
+                      aria-label={`Meta de acerto de ${row.name}`}
+                    />
+                  </td>
+                  <td data-label="Acerto atual" class="subject-target-now">
+                    {row.state === 'insufficient' ? (
+                      <span class="metadata-text">Dados insuficientes</span>
+                    ) : (
+                      <>
+                        <BulletBar
+                          value={Number(row.accuracy)}
+                          target={Number(effectiveGoal)}
+                          label={`Acerto atual de ${row.name}`}
+                        />
+                        <small class="metadata-text">
+                          {signed(row.gap)} · {trend(row.evolution)}
+                        </small>
+                      </>
+                    )}
+                  </td>
+                  <td data-label="Questões por semana">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      data-field="weekly"
+                      data-subject={id}
+                      value={value('weekly', weeklyMeta > 0 ? weeklyMeta : '')}
+                      aria-label={`Meta semanal de questões de ${row.name}`}
+                    />
+                    {weeklyMeta > 0 && (
+                      <small class="metadata-text">
+                        {weeklySolved}/{weeklyMeta} nesta semana
+                      </small>
+                    )}
+                  </td>
+                  <td data-label="Meta de domínio" class="col-advanced">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      data-field="mastery"
+                      data-subject={id}
+                      value={value('mastery', config.masteryTarget)}
+                      placeholder={String(masteryGlobal)}
+                      aria-label={`Meta de domínio de ${row.name}`}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div class="subject-target-footer" data-targets-pending-bar hidden={!hasDirty}>
+        <span class="metadata-text" role="status">
+          Alterações não salvas nas disciplinas
+        </span>
         <div class="action-group">
           <button type="button" class="btn small" data-targets-save-all>
             Salvar alterações
@@ -128,127 +346,17 @@ export function renderSubjectTargetEditor({
           </button>
         </div>
       </div>
-      <div
-        class="performance-table-scroll subject-target-table-wrap"
-        role="region"
-        aria-label="Metas por disciplina"
-        tabIndex={0}
-      >
-        <table>
-          <caption>
-            {globalQuestions > 0
-              ? `Meta global: ${globalTarget}% de acerto · ${globalQuestions} questões/semana.`
-              : `Meta global: ${globalTarget}% de acerto, sem meta global de questões: vale a soma das disciplinas.`}{' '}
-            Soma das metas por disciplina: {sumWeekly} questões/semana.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Disciplina</th>
-              <th scope="col">Acerto atual</th>
-              <th scope="col">Diferença vs. meta</th>
-              <th scope="col">Tendência</th>
-              <th scope="col">Metas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row: any) => {
-              const id = row.subjectId;
-              const custom = configs.get(id)?.accuracyTarget;
-              const weekly = weeklyMap.get(id);
-              const weeklySolved = Number(weekly?.solved) || 0;
-              const weeklyMeta = weekly?.meta;
-              return (
-                <tr key={id}>
-                  <td data-label="Disciplina">
-                    <label class="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        data-accuracy-select
-                        value={id}
-                        aria-label={`Selecionar ${row.name}`}
-                      />
-                      <span
-                        class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${subjectColorOf({ id }, subjectList)}`}
-                        aria-hidden="true"
-                      />
-                      <strong class="break-words">{row.name}</strong>
-                    </label>
-                  </td>
-                  <td data-label="Acerto atual">
-                    {row.state === 'insufficient'
-                      ? 'Dados insuficientes'
-                      : `${formatDecimal(row.accuracy)}%`}
-                  </td>
-                  <td data-label="Diferença vs. meta">{signed(row.gap)}</td>
-                  <td data-label="Tendência">{trend(row.evolution)}</td>
-                  <td data-label="Metas">
-                    <details>
-                      <summary aria-label={`Editar metas de ${row.name}`}>
-                        Editar · {custom ?? globalTarget}% de acerto ·{' '}
-                        {weeklyMeta > 0
-                          ? `${weeklySolved}/${weeklyMeta} questões`
-                          : 'sem meta de questões'}
-                      </summary>
-                      <div class="subject-target-cell">
-                        <label>
-                          Meta de acerto (%){' '}
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="1"
-                            data-accuracy-value={id}
-                            value={accDraftMap.get(id) ?? custom ?? ''}
-                            placeholder={String(globalTarget)}
-                            aria-label={`Meta de acerto de ${row.name}`}
-                          />
-                        </label>
-                        <button type="button" class="btn ghost small" data-accuracy-save={id}>
-                          Salvar acerto
-                        </button>
-                        <button
-                          type="button"
-                          class="btn ghost small"
-                          data-accuracy-restore={id}
-                          disabled={custom == null}
-                        >
-                          Restaurar global
-                        </button>
-                      </div>
-                      <div class="subject-target-cell">
-                        <label>
-                          Questões por semana{' '}
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            data-weekly-goal-value={id}
-                            value={wkDraftMap.get(id) ?? weeklyMeta ?? ''}
-                            aria-label={`Meta semanal de questões de ${row.name}`}
-                          />
-                        </label>
-                        <button type="button" class="btn ghost small" data-weekly-goal-save>
-                          Salvar questões
-                        </button>
-                        {weeklyMeta > 0 && (
-                          <button
-                            type="button"
-                            class="icon-btn"
-                            data-weekly-goal-remove={id}
-                            aria-label={`Remover meta de questões de ${row.name}`}
-                          >
-                            <Icon name="x" size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </details>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
+
+const HEADERS: Array<{ key: string; label: string; sortable?: boolean; advanced?: boolean }> = [
+  { key: 'edital', label: 'Disciplina', sortable: true },
+  { key: 'priority', label: 'Prioridade', sortable: true },
+  { key: 'weight', label: 'Peso', sortable: true },
+  { key: 'expected', label: 'Questões na prova', sortable: true },
+  { key: 'accuracyGoal', label: 'Meta de acerto' },
+  { key: 'accuracy', label: 'Acerto atual', sortable: true },
+  { key: 'weekly', label: 'Questões por semana', sortable: true },
+  { key: 'mastery', label: 'Meta de domínio', advanced: true },
+];

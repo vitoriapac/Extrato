@@ -7,7 +7,7 @@ test('availability changes capture prospective capacity and legacy backups keep 
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(node => node.remove());
-  await openPlanningSubtab(page, 'prova');
+  await openPlanningSubtab(page, 'semana');
   await page.locator('#panel-metas details').evaluateAll(folds =>
     folds.forEach(fold => {
       fold.open = true;

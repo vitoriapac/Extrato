@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { chartSize, isNarrowViewport } from '../../src/ui/primitives/charts/chart-size.js';
 
 const withWindow = (innerWidth, fn) => {
-  globalThis.window = { innerWidth };
+  globalThis.window = /** @type {any} */ ({ innerWidth });
   try {
     return fn();
   } finally {

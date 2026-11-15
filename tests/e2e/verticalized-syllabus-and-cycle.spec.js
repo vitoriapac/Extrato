@@ -189,5 +189,5 @@ test('Ciclo flexível e cronobiologia estão disponíveis no motor e avaliam fad
   expect(evaluation.block1Subject).toBe('Português');
   expect(evaluation.advancedIndex).toBe(1);
   expect(evaluation.completedCycle).toBe(false);
-  expect(evaluation.fatigueAlert).toContain('Queda de 35 p.p.');
+  expect(evaluation.fatigueAlert).toContain('Queda de 35,0 p.p.');
 });

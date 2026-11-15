@@ -84,10 +84,9 @@ test('configuração estratégica comunica herança e conquista de cem horas', a
   });
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  await expect(page.locator('#examBlueprintConfig')).toContainText('Configuração por disciplina');
-  await expect(page.locator('#examBlueprintConfig .field-inheritance').first()).toHaveText(
-    '80% (geral)'
-  );
+  await expect(page.locator('#subjectTargetEditor')).toContainText('Prioridade');
+  // A meta de domínio herdada da geral aparece como sugestão (placeholder), não como valor salvo.
+  await expect(page.locator('#subjectTargetEditor [data-field="mastery"]').first()).toHaveAttribute('placeholder', '80');
   await activateTab(page, 'dashboard');
   await expect
     .poll(() =>
@@ -259,7 +258,7 @@ test('instruções detalham áreas, fluxos, atalhos e dúvidas', async ({ page }
   await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');
   await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');
   await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');
-  await expect(page.locator('#guide-faq .help-reference-item')).toHaveCount(5);
+  await expect(page.locator('#guide-faq .help-reference-item')).toHaveCount(6);
 });
 
 test('atalho modificado navega sem capturar números isolados', async ({ page }) => {
@@ -337,6 +336,7 @@ test('diagnóstico vazio orienta o cadastro sem inventar risco', async ({ page }
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState());
     state.subjects = [];
+    state.questoes = [{ id: 'q-empty-diag', total: 30, correct: 20, date: '2026-10-01' }];
     api.setState(state);
     api.renderAll();
   });

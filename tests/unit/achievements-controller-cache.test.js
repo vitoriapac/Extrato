@@ -19,7 +19,7 @@ function build(overrides = {}) {
   };
   let streakCalls = 0;
   const controller = createAchievementsController({
-    document: { getElementById: () => null },
+    document: /** @type {any} */ ({ getElementById: () => null }),
     getState: () => state,
     allTopics: () =>
       state.subjects.flatMap(subject =>

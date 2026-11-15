@@ -68,7 +68,7 @@ test('decorateAdvancedReveals põe "Mostrar …" antes do bloco avançado e uma 
     ownerDocument: { createElement: () => { const el = { className: '', textContent: '', addEventListener() {}, type: '' }; made.push(el); return el; } },
     before(el) { block.inserted = el; },
   };
-  const root = { querySelectorAll: () => (block.dataset.advancedReady === undefined ? [block] : []) };
+  const root = /** @type {any} */ ({ querySelectorAll: () => (block.dataset.advancedReady === undefined ? [block] : []) });
   decorateAdvancedReveals(root);
   decorateAdvancedReveals(root);
   assert.equal(made.length, 1);

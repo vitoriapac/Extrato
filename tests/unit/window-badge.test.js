@@ -33,7 +33,7 @@ test('números de aderência, "o que mudou" e simulados saem com selo de janela'
   );
   assert.match(change, /data-window="currentWeek"/);
   const summary = renderPerformanceExecutiveSummary(
-    {
+    /** @type {any} */ ({
       rangeLabel: 'Últimos 30 dias',
       situation: {
         status: 'attention',
@@ -44,7 +44,7 @@ test('números de aderência, "o que mudou" e simulados saem com selo de janela'
       },
       change: null,
       base: { resolved: 40, sessions: 5, smallSample: false },
-    },
+    }),
     { escapeHtml }
   );
   assert.match(summary, /data-window="ninetyDays"/);
@@ -52,7 +52,7 @@ test('números de aderência, "o que mudou" e simulados saem com selo de janela'
 
 test('simulados: uma casa decimal e contagem com critério e janela no resumo', () => {
   const html = renderPerformanceExecutiveSummary(
-    {
+    /** @type {any} */ ({
       rangeLabel: 'Últimos 30 dias',
       situation: {
         status: 'on_track',
@@ -64,7 +64,7 @@ test('simulados: uma casa decimal e contagem com critério e janela no resumo', 
       },
       change: null,
       base: { resolved: 40, sessions: 5, smallSample: false },
-    },
+    }),
     { escapeHtml }
   );
   assert.match(html, /3 simulados, últimos 90 dias/);

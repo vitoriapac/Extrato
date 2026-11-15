@@ -60,25 +60,22 @@ test('fase e redistribuição do plano se organizam em tela móvel', async ({ pa
   await expect(preview.locator('.exam-phase-step')).toHaveCount(4);
   expect(await preview.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   await openPlanningSubtab(page, 'prova');
-  const config = page.locator('#examBlueprintConfig .exam-subject-row').first();
-  if (await config.count()) {
-    await page
-      .locator('#examBlueprintConfig .exam-subject-config')
-      .first()
-      .locator('summary')
-      .click();
-    expect(await config.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
-    const control = config.locator('input,select').first();
-    expect(await control.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(
-      44
-    );
-  }
+  // Metas por disciplina: cada linha vira um cartão empilhado, sem rolagem horizontal e com alvos de 44 px.
+  const wrap = page.locator('#subjectTargetEditor .subject-target-table-wrap');
+  await expect(wrap).toBeVisible();
+  expect(await wrap.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  const control = page.locator('#subjectTargetEditor [data-field="weight"]').first();
+  expect(await control.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(
+    44
+  );
   const matrix = page.locator('#examMasteryMatrix .mastery-matrix');
   if (await matrix.count())
     expect(await matrix.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
 });
 
-test('configuração por disciplina começa recolhida e mantém herança nula', async ({ page }) => {
+test('a meta geral de domínio não vira meta da disciplina: a herança continua nula', async ({
+  page,
+}) => {
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.evaluate(() => {
@@ -95,11 +92,9 @@ test('configuração por disciplina começa recolhida e mantém herança nula', 
   });
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  const disclosure = page.locator('#examBlueprintConfig .exam-subject-config').first();
-  await expect(disclosure).not.toHaveAttribute('open', '');
-  await expect(disclosure.locator('summary')).toContainText('Domínio: meta geral de 80%');
-  await disclosure.locator('summary').click();
-  await expect(disclosure.locator('input[placeholder="Meta geral: 80%"]')).toBeVisible();
+  const mastery = page.locator('#subjectTargetEditor [data-field="mastery"]').first();
+  await expect(mastery).toHaveAttribute('placeholder', '80');
+  await expect(mastery).toHaveValue('');
   await page.locator('#examBlueprintConfig .exam-general-config > summary').click();
   const target = page
     .locator('#examBlueprintConfig .exam-blueprint-main label')
@@ -107,9 +102,7 @@ test('configuração por disciplina começa recolhida e mantém herança nula', 
     .locator('input');
   await target.fill('85');
   await target.press('Tab');
-  await expect(
-    page.locator('#examBlueprintConfig .exam-subject-config').first().locator('summary')
-  ).toContainText('Domínio: meta geral de 85%');
+  await expect(mastery).toHaveAttribute('placeholder', '85');
   expect(
     await page.evaluate(
       () => window.__EXTRATO_TEST__.getState().examBlueprint.subjects[0].masteryTarget

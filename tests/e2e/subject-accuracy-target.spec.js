@@ -20,10 +20,12 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
   const before = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  const config = page.locator('#examBlueprintConfig details[data-subject-id="cycle-s0"]');
-  await config.locator(':scope > summary').click();
-  await config.locator('[name="accuracyTarget"]').fill('75');
-  await config.getByRole('button', { name: 'Salvar', exact: true }).click();
+  const accuracy = page.locator(
+    '#subjectTargetEditor [data-field="accuracy"][data-subject="cycle-s0"]'
+  );
+  await accuracy.fill('75');
+  await expect(page.locator('#subjectTargetEditor [data-targets-pending-bar]')).toBeVisible();
+  await page.getByRole('button', { name: 'Salvar alterações' }).click();
   const saved = await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState());
@@ -42,19 +44,15 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
   }, saved.backup.normalized);
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  await expect(page.locator('#subjectTargetEditor [data-accuracy-value="cycle-s0"]')).toHaveValue(
-    '75'
-  );
-  await expectNoPageOverflow(page);
-  const edit = page
-    .locator('#subjectTargetEditor tr')
-    .filter({ has: page.locator('[data-accuracy-value="cycle-s0"]') })
-    .locator('summary');
   await expect(
-    page.locator('#subjectTargetEditor [data-accuracy-restore="cycle-s0"]')
-  ).toBeHidden();
-  await edit.click();
-  await page.locator('#subjectTargetEditor [data-accuracy-restore="cycle-s0"]').click();
+    page.locator('#subjectTargetEditor [data-field="accuracy"][data-subject="cycle-s0"]')
+  ).toHaveValue('75');
+  await expectNoPageOverflow(page);
+  // Voltar a herdar a meta geral: campo em branco e salvar.
+  await page
+    .locator('#subjectTargetEditor [data-field="accuracy"][data-subject="cycle-s0"]')
+    .fill('');
+  await page.getByRole('button', { name: 'Salvar alterações' }).click();
   expect(
     await page.evaluate(
       () =>

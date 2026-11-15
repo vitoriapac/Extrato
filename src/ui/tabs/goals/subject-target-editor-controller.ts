@@ -4,6 +4,7 @@ import { updateSubjectAccuracyTargets } from '../../../application/goals/update-
 import { splitQuestionGoal } from '../../../application/goals/split-question-goal.js';
 import { renderSubjectTargetEditor as renderSubjectTargetEditorView } from '../../renderers/subject-target-editor-renderer.js';
 import { runUndoable } from '../../undoable.js';
+import { buildSavedSubjectConfig } from '../../../application/exams/save-subject-config.js';
 
 export interface SubjectTargetEditorContext {
   document: Document;
@@ -28,8 +29,19 @@ export interface SubjectTargetEditorContext {
 }
 
 export function createSubjectTargetEditorController(ctx: SubjectTargetEditorContext) {
-  const draftAccuracy = new Map<string, string>();
-  const draftWeeklyGoals = new Map<string, string>();
+  // Rascunhos por disciplina e campo (priority, weight, expected, accuracy, weekly, mastery): nada é gravado antes de Salvar.
+  const drafts = new Map<string, Record<string, string>>();
+  let sort: { key: string; dir: 'asc' | 'desc' } = { key: 'edital', dir: 'asc' };
+  const setDraft = (subjectId: string, field: string, value: string) => {
+    drafts.set(subjectId, { ...(drafts.get(subjectId) || {}), [field]: value });
+  };
+  const deleteDraft = (subjectId: string, field?: string) => {
+    if (!field) return void drafts.delete(subjectId);
+    const next = { ...(drafts.get(subjectId) || {}) };
+    delete next[field];
+    if (Object.keys(next).length) drafts.set(subjectId, next);
+    else drafts.delete(subjectId);
+  };
   // Prévia da repartição da meta global: nada é gravado antes de "Confirmar".
   let splitPreview:
     { id: string; subjectId: string; name: string; before: number; after: number }[] | null = null;
@@ -71,21 +83,45 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       });
     }
 
+    const configOf = (id: string) =>
+      (state.examBlueprint?.subjects || []).find((item: any) => item.subjectId === id) || {};
+    const sortValue = (row: any): number | string => {
+      const config = configOf(row.subjectId);
+      if (sort.key === 'priority')
+        return (
+          ({ high: 0, normal: 1, low: 2 } as Record<string, number>)[config.priority || 'normal'] ??
+          1
+        );
+      if (sort.key === 'weight') return Number(config.questionWeight ?? 1);
+      if (sort.key === 'expected') return Number(config.expectedQuestions) || 0;
+      if (sort.key === 'accuracy') return row.state === 'insufficient' ? -1 : Number(row.accuracy);
+      if (sort.key === 'weekly') return weeklyGoalsBySubject.get(row.subjectId)?.meta || 0;
+      return 0;
+    };
+    const rows =
+      sort.key === 'edital'
+        ? comparison.rows
+        : [...comparison.rows].sort(
+            (a: any, b: any) =>
+              (Number(sortValue(a)) - Number(sortValue(b))) * (sort.dir === 'desc' ? -1 : 1)
+          );
+
     container.innerHTML = renderSubjectTargetEditorView({
-      rows: comparison.rows,
+      rows,
       globalTarget: state.metas?.metaAprovacao,
       globalWeeklyQuestions: state.metas?.questoesSemanal,
       blueprint: state.examBlueprint,
       weeklyGoalsBySubject,
-      draftAccuracy,
-      draftWeeklyGoals,
+      drafts,
+      masteryGlobal: state.examBlueprint?.masteryTarget,
+      sort,
       splitPreview,
     });
   }
 
   function previewQuestionGoalSplit() {
     const state = ctx.getState();
-    if (draftAccuracy.size || draftWeeklyGoals.size) {
+    if (drafts.size) {
       ctx.showToast('Salve ou descarte as alterações pendentes antes de repartir a meta.');
       return;
     }
@@ -159,7 +195,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       return;
     }
 
-    for (const id of ids) draftAccuracy.delete(id);
+    for (const id of ids) deleteDraft(id, 'accuracy');
     ctx.captureReadinessBeforeStrategy('Antes de alterar metas de acerto por disciplina');
     Object.assign(state.examBlueprint, updated, { configuredAt: ctx.nowISO() });
     ctx.invalidatePlanPreview();
@@ -173,7 +209,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     const existing = (state.metasPorDisciplina || []).find(
       (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
     );
-    draftWeeklyGoals.delete(subjectId);
+    deleteDraft(subjectId, 'weekly');
 
     if (trimmed === '' || Number(trimmed) <= 0) {
       if (existing) {
@@ -206,7 +242,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     const existing = (state.metasPorDisciplina || []).find(
       (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
     );
-    draftWeeklyGoals.delete(subjectId);
+    deleteDraft(subjectId, 'weekly');
     if (!existing) return;
     runUndoable('Meta de questões removida.', () => {
       if (ctx.subjectGoalService?.remove) {
@@ -219,72 +255,92 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     });
   }
 
+  /** Valida tudo antes de gravar; se algo estiver inválido nada muda e os rascunhos ficam. */
   function commitAllPendingDrafts() {
+    if (!drafts.size) return;
     const state = ctx.getState();
-    let changed = false;
-
-    for (const [subjectId, rawAcc] of [...draftAccuracy.entries()]) {
-      const val = rawAcc.trim() === '' ? null : Number(rawAcc);
-      const updated = updateSubjectAccuracyTargets(state.examBlueprint, [subjectId], val);
-      if (!updated) {
-        ctx.showToast('Informe uma meta entre 0% e 100%.');
-        return;
-      }
-      if (JSON.stringify(updated.subjects) !== JSON.stringify(state.examBlueprint?.subjects)) {
-        if (!changed) {
-          ctx.captureReadinessBeforeStrategy('Antes de alterar metas de acerto por disciplina');
-        }
-        Object.assign(state.examBlueprint, updated, { configuredAt: ctx.nowISO() });
-        ctx.invalidatePlanPreview();
-        changed = true;
-      }
-      draftAccuracy.delete(subjectId);
-    }
-
-    for (const [subjectId, rawWk] of [...draftWeeklyGoals.entries()]) {
-      const trimmed = rawWk.trim();
-      const existing = (state.metasPorDisciplina || []).find(
-        (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
+    const eligible = new Set(ctx.examScopedSubjects().map((item: any) => item.id));
+    const configChanges: { subjectId: string; config: any }[] = [];
+    const weeklyChanges: { subjectId: string; raw: string }[] = [];
+    for (const [subjectId, fields] of drafts) {
+      if (!eligible.has(subjectId)) continue;
+      const existing = (state.examBlueprint?.subjects || []).find(
+        (item: any) => item.subjectId === subjectId
       );
-      if (trimmed === '' || Number(trimmed) <= 0) {
-        if (existing) {
-          if (ctx.subjectGoalService?.remove) {
-            ctx.subjectGoalService.remove(existing.id);
-          } else {
-            state.metasPorDisciplina = (state.metasPorDisciplina || []).filter(
-              (md: any) => md.id !== existing.id
-            );
-          }
-          changed = true;
+      const configFields = ['priority', 'weight', 'expected', 'accuracy', 'mastery'];
+      if (configFields.some(key => fields[key] !== undefined)) {
+        const saved = (value: unknown) => (value == null ? '' : String(value));
+        const config = buildSavedSubjectConfig(subjectId, existing, {
+          priority: fields.priority ?? existing?.priority ?? 'normal',
+          masteryTarget: fields.mastery ?? saved(existing?.masteryTarget),
+          expectedQuestions:
+            fields.expected ??
+            (existing?.expectedQuestions > 0 ? saved(existing.expectedQuestions) : ''),
+          questionWeight: fields.weight ?? saved(existing?.questionWeight),
+          accuracyTarget: fields.accuracy ?? saved(existing?.accuracyTarget),
+        });
+        if (!config) {
+          ctx.showToast('Revise as metas, a quantidade de questões e o peso antes de salvar.');
+          return;
         }
-      } else {
+        configChanges.push({ subjectId, config });
+      }
+      if (fields.weekly !== undefined) weeklyChanges.push({ subjectId, raw: fields.weekly });
+    }
+    const changedConfig = configChanges.filter(({ subjectId, config }) => {
+      const existing = (state.examBlueprint?.subjects || []).find(
+        (item: any) => item.subjectId === subjectId
+      );
+      return (
+        !existing ||
+        ['priority', 'masteryTarget', 'accuracyTarget', 'expectedQuestions', 'questionWeight'].some(
+          key => JSON.stringify(existing[key]) !== JSON.stringify(config[key])
+        )
+      );
+    });
+    if (changedConfig.length)
+      ctx.captureReadinessBeforeStrategy('Antes de alterar a configuração das disciplinas');
+    drafts.clear();
+    runUndoable('Metas por disciplina atualizadas.', () => {
+      for (const { subjectId, config } of changedConfig) {
+        const existing = (state.examBlueprint.subjects || []).find(
+          (item: any) => item.subjectId === subjectId
+        );
+        if (existing) Object.assign(existing, config);
+        else state.examBlueprint.subjects.push(config);
+      }
+      if (changedConfig.length) {
+        state.examBlueprint.configuredAt = ctx.nowISO();
+        ctx.invalidatePlanPreview();
+      }
+      for (const { subjectId, raw } of weeklyChanges) {
+        const trimmed = raw.trim();
+        const existing = (state.metasPorDisciplina || []).find(
+          (md: any) => (ctx.entitySubjectId ? ctx.entitySubjectId(md) : md.subjectId) === subjectId
+        );
+        if (trimmed === '' || Number(trimmed) <= 0) {
+          if (existing) {
+            if (ctx.subjectGoalService?.remove) ctx.subjectGoalService.remove(existing.id);
+            else
+              state.metasPorDisciplina = (state.metasPorDisciplina || []).filter(
+                (md: any) => md.id !== existing.id
+              );
+          }
+          continue;
+        }
         const meta = Math.max(1, Math.round(Number(trimmed) || 1));
         if (existing) {
-          if (existing.meta !== meta) {
-            if (ctx.subjectGoalService?.update) {
-              ctx.subjectGoalService.update(existing.id, { meta });
-            } else {
-              existing.meta = meta;
-            }
-            changed = true;
-          }
+          if (existing.meta === meta) continue;
+          if (ctx.subjectGoalService?.update) ctx.subjectGoalService.update(existing.id, { meta });
+          else existing.meta = meta;
+        } else if (ctx.subjectGoalService?.create) {
+          ctx.subjectGoalService.create({ subjectId, meta });
         } else {
-          if (ctx.subjectGoalService?.create) {
-            ctx.subjectGoalService.create({ subjectId, meta });
-          } else {
-            state.metasPorDisciplina = state.metasPorDisciplina || [];
-            state.metasPorDisciplina.push({ id: `md-${subjectId}`, subjectId, meta });
-          }
-          changed = true;
+          state.metasPorDisciplina = state.metasPorDisciplina || [];
+          state.metasPorDisciplina.push({ id: `md-${subjectId}`, subjectId, meta });
         }
       }
-      draftWeeklyGoals.delete(subjectId);
-    }
-
-    ctx.persistAndRender();
-    if (changed) {
-      ctx.showToast('Metas por disciplina atualizadas.');
-    }
+    });
   }
 
   function bindEvents() {
@@ -293,130 +349,112 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
 
     const syncPendingBar = () => {
       const bar = container.querySelector<HTMLElement>('[data-targets-pending-bar]');
-      if (bar) {
-        bar.hidden = draftAccuracy.size === 0 && draftWeeklyGoals.size === 0;
-      }
+      if (bar) bar.hidden = drafts.size === 0;
     };
+    let justCommitted = false;
+    const selectedIds = () =>
+      [...container.querySelectorAll<HTMLInputElement>('[data-row-select]:checked')].map(
+        item => item.value
+      );
 
-    container.addEventListener('input', event => {
+    // Sair com alterações não salvas avisa (recarregar ou fechar a aba).
+    ctx.document.defaultView?.addEventListener('beforeunload', event => {
+      if (!drafts.size) return;
+      event.preventDefault();
+      (event as any).returnValue = '';
+    });
+
+    const record = (target: HTMLElement) => {
+      const field = target.dataset.field;
+      const subjectId = target.dataset.subject;
+      if (!field || !subjectId) return false;
+      // O Enter salva e, na sequência, o navegador ainda dispara 'change' no campo: não recriar o rascunho.
+      if (justCommitted) return true;
+      setDraft(subjectId, field, (target as HTMLInputElement | HTMLSelectElement).value);
+      syncPendingBar();
+      return true;
+    };
+    container.addEventListener('input', event => void record(event.target as HTMLElement));
+    container.addEventListener('change', event => {
       const target = event.target as HTMLElement;
-      if (target.matches('[data-accuracy-value]')) {
-        const input = target as HTMLInputElement;
-        const subjectId = input.dataset.accuracyValue!;
-        draftAccuracy.set(subjectId, input.value);
-        syncPendingBar();
-      } else if (target.matches('[data-weekly-goal-value]')) {
-        const input = target as HTMLInputElement;
-        const subjectId = input.dataset.weeklyGoalValue!;
-        draftWeeklyGoals.set(subjectId, input.value);
-        syncPendingBar();
+      if (record(target)) return;
+      if (target.matches('[data-row-select-all]')) {
+        const checked = (target as HTMLInputElement).checked;
+        container.querySelectorAll<HTMLInputElement>('[data-row-select]').forEach(input => {
+          input.checked = checked;
+        });
       }
     });
 
     container.addEventListener('keydown', event => {
       const keyEvent = event as KeyboardEvent;
       if (keyEvent.key !== 'Enter') return;
-      const target = keyEvent.target as HTMLElement;
-      if (target.matches('[data-accuracy-value]')) {
-        keyEvent.preventDefault();
-        const input = target as HTMLInputElement;
-        saveSubjectAccuracyTargets([input.dataset.accuracyValue!], input.value);
-      } else if (target.matches('[data-weekly-goal-value]')) {
-        keyEvent.preventDefault();
-        const input = target as HTMLInputElement;
-        saveWeeklyQuestionGoal(input.dataset.weeklyGoalValue!, input.value);
-      }
+      if (!(keyEvent.target as HTMLElement).matches('[data-field]')) return;
+      keyEvent.preventDefault();
+      // A troca do campo durante o redesenho dispara "change": não recriar o rascunho já salvo.
+      justCommitted = true;
+      commitAllPendingDrafts();
+      setTimeout(() => (justCommitted = false), 300);
     });
 
     container.addEventListener('click', event => {
       const target = event.target as HTMLElement;
-      const getSelected = () =>
-        [...container.querySelectorAll<HTMLInputElement>('[data-accuracy-select]:checked')].map(
-          item => item.value
-        );
 
-      const save = target.closest<HTMLElement>('[data-accuracy-save]');
-      if (save) {
-        const id = save.dataset.accuracySave!;
-        const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id;
-        const val =
-          container.querySelector<HTMLInputElement>(`[data-accuracy-value="${escaped}"]`)?.value ??
-          '';
-        saveSubjectAccuracyTargets([id], val);
-        return;
-      }
-
-      const restore = target.closest<HTMLElement>('[data-accuracy-restore]');
-      if (restore) {
-        saveSubjectAccuracyTargets([restore.dataset.accuracyRestore!], '');
-        return;
-      }
-
-      const saveWeekly = target.closest<HTMLElement>('[data-weekly-goal-save]');
-      if (saveWeekly) {
-        const input = saveWeekly
-          .closest('details')
-          ?.querySelector<HTMLInputElement>('[data-weekly-goal-value]');
-        if (input) saveWeeklyQuestionGoal(input.dataset.weeklyGoalValue!, input.value);
-        return;
-      }
-
-      const removeWeekly = target.closest<HTMLElement>('[data-weekly-goal-remove]');
-      if (removeWeekly) {
-        removeWeeklyQuestionGoal(removeWeekly.dataset.weeklyGoalRemove!);
-        return;
-      }
-
-      if (target.closest('[data-questions-split-preview]')) {
-        previewQuestionGoalSplit();
-        return;
-      }
-
-      if (target.closest('[data-questions-split-confirm]')) {
-        confirmQuestionGoalSplit();
-        return;
-      }
-
-      if (target.closest('[data-questions-split-cancel]')) {
-        cancelQuestionGoalSplit();
-        return;
-      }
-
-      if (target.closest('[data-targets-save-all]')) {
-        commitAllPendingDrafts();
-        return;
-      }
-
-      if (target.closest('[data-targets-discard]')) {
-        draftAccuracy.clear();
-        draftWeeklyGoals.clear();
+      const sorter = target.closest<HTMLElement>('[data-sort]');
+      if (sorter) {
+        const key = sorter.dataset.sort!;
+        sort =
+          sort.key === key
+            ? { key, dir: sort.dir === 'asc' ? 'desc' : 'asc' }
+            : { key, dir: key === 'accuracy' ? 'asc' : 'asc' };
         renderSubjectTargetEditor();
         return;
       }
 
-      if (target.closest('[data-accuracy-apply]')) {
-        const val =
-          container.querySelector<HTMLInputElement>('[data-accuracy-bulk-value]')?.value ?? '';
-        if (val === '') {
-          ctx.showToast('Informe o valor a aplicar.');
+      if (target.closest('[data-bulk-apply]')) {
+        const ids = selectedIds();
+        if (!ids.length) {
+          ctx.showToast('Selecione ao menos uma disciplina.');
           return;
         }
-        saveSubjectAccuracyTargets(getSelected(), val);
+        const read = (name: string) =>
+          container.querySelector<HTMLInputElement | HTMLSelectElement>(
+            `[data-bulk-field="${name}"]`
+          )?.value ?? '';
+        const values: [string, string][] = [
+          ['priority', read('priority')],
+          ['weight', read('weight')],
+          ['accuracy', read('accuracy')],
+          ['weekly', read('weekly')],
+        ];
+        const filled = values.filter(([, value]) => value !== '');
+        if (!filled.length) {
+          ctx.showToast('Escolha ou informe ao menos um valor para aplicar.');
+          return;
+        }
+        for (const id of ids) for (const [field, value] of filled) setDraft(id, field, value);
+        renderSubjectTargetEditor();
         return;
       }
 
-      if (target.closest('[data-accuracy-restore-selected]')) {
-        saveSubjectAccuracyTargets(getSelected(), '');
+      if (target.closest('[data-bulk-use-global]')) {
+        const ids = selectedIds();
+        if (!ids.length) {
+          ctx.showToast('Selecione ao menos uma disciplina.');
+          return;
+        }
+        for (const id of ids) setDraft(id, 'accuracy', '');
+        renderSubjectTargetEditor();
+        return;
       }
-    });
 
-    container.addEventListener('change', event => {
-      const target = event.target as HTMLElement;
-      if (target.matches('[data-accuracy-select-all]')) {
-        const checked = (target as HTMLInputElement).checked;
-        container.querySelectorAll<HTMLInputElement>('[data-accuracy-select]').forEach(input => {
-          input.checked = checked;
-        });
+      if (target.closest('[data-questions-split-preview]')) return void previewQuestionGoalSplit();
+      if (target.closest('[data-questions-split-confirm]')) return void confirmQuestionGoalSplit();
+      if (target.closest('[data-questions-split-cancel]')) return void cancelQuestionGoalSplit();
+      if (target.closest('[data-targets-save-all]')) return void commitAllPendingDrafts();
+      if (target.closest('[data-targets-discard]')) {
+        drafts.clear();
+        renderSubjectTargetEditor();
       }
     });
   }
@@ -425,6 +463,8 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
     renderSubjectTargetEditor,
     saveSubjectAccuracyTargets,
     saveWeeklyQuestionGoal,
+    commitAllPendingDrafts,
+    getDrafts: () => drafts,
     removeWeeklyQuestionGoal,
     previewQuestionGoalSplit,
     confirmQuestionGoalSplit,

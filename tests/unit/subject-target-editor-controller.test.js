@@ -218,11 +218,72 @@ test('repartir com alterações pendentes avisa e não calcula nada', () => {
   controller.bindEvents();
   onInput({
     target: {
-      matches: sel => sel === '[data-weekly-goal-value]',
-      dataset: { weeklyGoalValue: 'sub-1' },
+      matches: () => false,
+      dataset: { field: 'weekly', subject: 'sub-1' },
       value: '45',
     },
   });
   controller.previewQuestionGoalSplit();
   assert.ok(toasts.includes('Salve ou descarte as alterações pendentes antes de repartir a meta.'));
+});
+
+function setupCommit() {
+  const { ctx, state, doc, toasts } = createSplitContext();
+  state.examBlueprint.subjects[0].priority = 'high';
+  const captures = [];
+  ctx.captureReadinessBeforeStrategy = reason => captures.push(reason);
+  const controller = createSubjectTargetEditorController(ctx);
+  return { ctx, state, doc, toasts, captures, controller };
+}
+
+test('uma tabela única mostra prioridade, peso, questões na prova, meta de acerto, acerto atual e questões por semana', () => {
+  const { doc, controller } = setupCommit();
+  controller.renderSubjectTargetEditor();
+  const html = doc.getElementById('subjectTargetEditor').innerHTML;
+  for (const heading of ['Disciplina', 'Prioridade', 'Peso', 'Questões na prova', 'Meta de acerto', 'Acerto atual', 'Questões por semana'])
+    assert.ok(html.includes(heading), heading);
+  assert.equal((html.match(/<table/g) || []).length, 1);
+  assert.ok(html.includes('Salvar alterações'));
+  assert.doesNotMatch(html, /Salvar acerto|Salvar questões|data-accuracy-save|data-weekly-goal-save/);
+});
+
+test('Salvar alterações grava tudo de uma vez: configuração da disciplina, meta de acerto e questões por semana', () => {
+  const { state, controller, captures } = setupCommit();
+  const drafts = controller.getDrafts();
+  drafts.set('sub-1', { priority: 'low', weight: '2', expected: '12', accuracy: '70', weekly: '40' });
+  drafts.set('sub-2', { weekly: '55' });
+  controller.commitAllPendingDrafts();
+  const config = state.examBlueprint.subjects.find(item => item.subjectId === 'sub-1');
+  assert.equal(config.priority, 'low');
+  assert.equal(config.questionWeight, 2);
+  assert.equal(config.expectedQuestions, 12);
+  assert.equal(config.accuracyTarget, 70);
+  assert.equal(state.metasPorDisciplina.find(item => item.id === 'g1').meta, 40);
+  assert.equal(state.metasPorDisciplina.find(item => item.id === 'g2').meta, 55);
+  assert.equal(captures.length, 1);
+  assert.equal(drafts.size, 0);
+});
+
+test('valor inválido não grava nada e mantém os rascunhos para corrigir', () => {
+  const { state, controller, toasts } = setupCommit();
+  const before = JSON.stringify([state.examBlueprint, state.metasPorDisciplina]);
+  controller.getDrafts().set('sub-1', { weight: '0', weekly: '99' });
+  controller.commitAllPendingDrafts();
+  assert.ok(toasts.some(text => text.includes('Revise as metas')));
+  assert.equal(JSON.stringify([state.examBlueprint, state.metasPorDisciplina]), before);
+  assert.equal(controller.getDrafts().size, 1);
+});
+
+test('acerto atual vira BulletBar com texto alternativo, âmbar só abaixo da meta', async () => {
+  const { renderSubjectTargetEditor } = await import('../../src/ui/renderers/subject-target-editor-renderer.js');
+  const rows = [
+    { subjectId: 's1', name: 'Português', state: 'ok', accuracy: 60, gap: -20, evolution: 2 },
+    { subjectId: 's2', name: 'Matemática', state: 'ok', accuracy: 90, gap: 10, evolution: 0 },
+    { subjectId: 's3', name: 'Direito', state: 'insufficient', accuracy: null, gap: null, evolution: null },
+  ];
+  const html = renderSubjectTargetEditor({ rows, globalTarget: 80, blueprint: { subjects: [] } });
+  assert.match(html, /aria-label="Acerto atual de Português: 60%, meta 80%, abaixo da meta"/);
+  assert.match(html, /aria-label="Acerto atual de Matemática: 90%, meta 80%"/);
+  assert.equal((html.match(/is-below/g) || []).length, 1);
+  assert.match(html, /Dados insuficientes/);
 });

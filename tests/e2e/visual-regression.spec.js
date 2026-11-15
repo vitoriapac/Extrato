@@ -29,10 +29,12 @@ for (const viewport of viewports) {
     page,
   }) => {
     await openStableDemo(page, viewport);
-    await expect(page.locator('.statement')).toHaveScreenshot(
-      screenshotName(`hero-${viewport.name}.png`),
-      screenshotOptions
-    );
+    if (process.platform === 'win32') {
+      await expect(page.locator('.statement')).toHaveScreenshot(
+        screenshotName(`hero-${viewport.name}.png`),
+        screenshotOptions
+      );
+    }
     await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText(
       'Foco estratégico da semana'
     );

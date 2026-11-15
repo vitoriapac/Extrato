@@ -3675,3 +3675,23 @@ button.performance-window{position:relative}button.performance-window::after{con
 .performance-reading__steady{margin-top:var(--space-3);padding-top:var(--space-2);border-top:1px solid var(--border-default)}.performance-reading__steady h5{font:600 var(--text-small) var(--font-body);color:var(--text-secondary)}.performance-reading__steady ul{padding-left:1.1rem;font-size:var(--text-sm);color:var(--text-primary)}
 .diagnosis-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:var(--space-3);margin:var(--space-3) 0}.diagnosis-search{display:grid;gap:var(--space-1);font-size:var(--text-sm);color:var(--text-secondary);flex:1 1 14rem;min-width:0}.diagnosis-search input{min-width:0;width:100%}.diagnosis-filters-fold{flex:1 1 100%;order:3}.diagnosis-filters-fold>summary{cursor:pointer;min-height:44px;display:flex;align-items:center}.diagnosis-filters-fold .diagnosis-filters{margin:var(--space-2) 0}.diagnosis-toolbar .diagnosis-filters__count{margin-left:auto}.diagnosis-legend{margin:0 0 var(--space-3)}
 @media(min-width:601px){.diagnosis-filters-fold{flex:0 1 auto;order:0}}
+/* Metas por disciplina: tabela única editável, com cartões empilhados no celular. */
+.subject-target-table{width:100%;border-collapse:collapse}.subject-target-table th,.subject-target-table td{padding:var(--space-2);text-align:left;vertical-align:middle;border-bottom:1px solid var(--paper-line)}
+.subject-target-table thead th{font:600 var(--text-xs) var(--font-body);color:var(--ink-soft);white-space:nowrap}.subject-target-table .sort-button{all:unset;cursor:pointer;color:inherit;font:inherit;text-decoration:underline dotted;text-underline-offset:3px}.subject-target-table .sort-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.subject-target-table th[aria-sort=ascending] .sort-button::after{content:" ↑"}.subject-target-table th[aria-sort=descending] .sort-button::after{content:" ↓"}
+.subject-target-table input[type=number]{width:5.5rem;min-height:var(--touch-target);padding:var(--space-1) var(--space-2);font:var(--text-small) var(--font-data)}.subject-target-table select{min-height:var(--touch-target)}
+.subject-target-table tr.is-dirty{background:color-mix(in srgb,var(--accent) 8%,transparent)}.subject-target-now{min-width:9rem}.subject-target-now .chart-bullet{margin-bottom:2px}
+[data-essential="on"] .subject-target-table .col-advanced{display:none}
+.subject-target-footer{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-3);margin-top:var(--space-2);background:var(--paper);border-top:2px solid var(--heading)}.subject-target-footer[hidden]{display:none}
+.subject-target-bulk{display:flex;flex-wrap:wrap;align-items:end;gap:var(--space-3);margin:var(--space-2) 0}.subject-target-bulk label{display:flex;flex-direction:column;gap:2px;font:var(--text-xs) var(--font-body)}
+@media (max-width:640px){
+.subject-target-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.subject-target-table,.subject-target-table tbody,.subject-target-table tr,.subject-target-table td,.subject-target-table th[scope=row]{display:block;width:100%}
+.subject-target-table tr{margin:0 0 var(--space-3);padding:var(--space-2);border:1px solid var(--paper-line)}
+.subject-target-table td,.subject-target-table th[scope=row]{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);border-bottom:0;padding:var(--space-1) 0}
+.subject-target-table td::before{content:attr(data-label);font:600 var(--text-xs) var(--font-body);color:var(--ink-soft)}
+.subject-target-table th[scope=row]::before{content:none}
+.subject-target-now{display:block!important}.subject-target-now::before{display:block;margin-bottom:2px}
+}
+
+/* Laranja só para atenção (precisa de ação): evidência e métricas são neutras. */

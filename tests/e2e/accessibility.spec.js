@@ -41,15 +41,29 @@ test('mantém estrutura acessível no modo móvel e no modal', async ({ page }) 
   await expect(page.locator('#modalCancelBtn')).toBeFocused();
 });
 
-test('áreas centrais mantêm contraste e nomes acessíveis em 320 px no tema escuro', async ({ page }) => {
+test('áreas centrais mantêm contraste e nomes acessíveis em 320 px no tema escuro', async ({
+  page,
+}) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 320, height: 850 });
   await openDemo(page);
-  await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
-  for (const tab of ['dashboard', 'hoje', 'disciplinas', 'metas', 'agenda', 'questoes', 'desempenho']) {
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'dark';
+  });
+  for (const tab of [
+    'dashboard',
+    'hoje',
+    'disciplinas',
+    'metas',
+    'agenda',
+    'questoes',
+    'desempenho',
+  ]) {
     await activateTab(page, tab);
-    const results = await new AxeBuilder({ page }).include(`#panel-${tab}`)
-      .withRules(['color-contrast', 'button-name', 'label', 'select-name']).analyze();
+    const results = await new AxeBuilder({ page })
+      .include(`#panel-${tab}`)
+      .withRules(['color-contrast', 'button-name', 'label', 'select-name'])
+      .analyze();
     expect(results.violations, `Aba ${tab}`).toEqual([]);
   }
 });
@@ -61,14 +75,10 @@ test('central de diagnóstico continua acessível quando expandida', async ({ pa
   await expectAccessible(page, 'Central de diagnóstico expandida', '#panel-hoje');
 });
 
-test('configuração estratégica continua acessível quando expandida', async ({ page }) => {
+test('metas por disciplina (tabela única) continuam acessíveis', async ({ page }) => {
   await openDemo(page);
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  const disclosure = page.locator('#examBlueprintConfig .exam-subject-config').first();
-  if (await disclosure.count()) {
-    await disclosure.locator('summary').click();
-    await expect(disclosure.locator('.exam-subject-row')).toBeVisible();
-    await expectAccessible(page, 'Configuração estratégica expandida', '#examBlueprintConfig');
-  }
+  await expect(page.locator('#subjectTargetEditor .subject-target-table')).toBeVisible();
+  await expectAccessible(page, 'Metas por disciplina', '#subjectTargetEditor');
 });
