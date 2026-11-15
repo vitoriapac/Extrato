@@ -182,7 +182,7 @@ test('as subabas de Planejamento só mostram durações no formato 1 h 20 min, 2
   // Formato único "1 h 20 min", "2 h", "48 min". Recusa "1h20", "20min", "35m", "60 minutos",
   // minutos soltos antes de "de 12 h" e decimais longos. Espaço literal, não s: células vizinhas não contam.
   const refused = /d+hd*|d+min|d+m|d+[ ](?:minutos?|horas?)|d{2,} de d+ (?:h|min)|d+.d{3,}%/;
-  for (const key of ['semana', 'metas', 'fechamento', 'historico', 'prova']) {
+  for (const key of ['semana', 'prova', 'fechamento', 'historico']) {
     await openPlanningSubtab(page, key);
     await page
       .locator(`#metasSub-${key} details`)
@@ -356,4 +356,21 @@ test('Jordan: data da prova, horas por dia e plano seguindo só a ação princip
   await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();
   // Sem tópicos com carga restante a prévia diz que o plano está indisponível; o que importa é que abriu.
   await expect(page.getByRole('heading', { name: 'Plano semanal indisponível' })).toBeVisible();
+});
+
+test('Prova e metas mostra o aviso de ritmo com o próximo passo e leva às metas', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'prova');
+  const note = page.locator('#ritmoContainer .pace-next');
+  await expect(note).toBeVisible();
+  await expect(note.getByRole('button', { name: 'Ajustar meta' })).toBeVisible();
+  await expect(note.getByRole('button', { name: /Simular/ })).toBeVisible();
+  await note.getByRole('button', { name: 'Ajustar meta' }).click();
+  await expect(page.locator('#metasSub-semana')).toBeVisible();
+  await expect(page.locator('#metasAdjust')).toHaveJSProperty('open', true);
+  await expect(page.locator('#metasActiveGoals')).toBeInViewport();
 });

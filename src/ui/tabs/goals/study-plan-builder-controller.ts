@@ -20,6 +20,7 @@ import { renderRecommendationExplanation } from '../../renderers/recommendation-
 import { buildWeeklyAllocationBarVisual } from '../../../domain/planning/planning-visual-models.js';
 import { renderAllocationBar } from '../../primitives/charts/charts.js';
 import { PlanRoadmap } from './PlanRoadmap.js';
+import { selectPlanningSubtab } from '../../planning-subtabs.js';
 import { isCapacityInformed } from '../../../application/goals/capacity-informed.js';
 import { decorateAdvancedReveals } from '../../essential-mode.js';
 import { scrollBehavior } from '../../accessibility.js';
@@ -457,6 +458,16 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     renderStudyPlanBuilder();
   }
 
+  /** Leva às metas ativas, dentro de "Ajustar metas e disponibilidade" na Semana. */
+  function openGoalsAdjust() {
+    selectPlanningSubtab('semana', { doc: doc as any });
+    const fold = doc?.getElementById('metasAdjust');
+    if (fold) fold.open = true;
+    const goals = doc?.getElementById('metasActiveGoals');
+    goals?.scrollIntoView?.({ block: 'start', behavior: scrollBehavior() });
+    goals?.querySelector?.('input')?.focus?.({ preventScroll: true });
+  }
+
   function openAvailabilityAdjust() {
     const fold = doc?.getElementById('metasAdjust');
     if (!fold) return;
@@ -737,6 +748,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     calculateDailyPlanPreview,
     clearDailyPlanPreview,
     openAvailabilityAdjust,
+    openGoalsAdjust,
     setRoadmapExamDate,
     confirmDailyPlanPreview,
     undoLatestDailyPlanGeneration,

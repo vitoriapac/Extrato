@@ -41,7 +41,7 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
     window.__EXTRATO_TEST__.renderAll();
   }, saved.backup.normalized);
   await activateTab(page, 'metas');
-  await openPlanningSubtab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   await expect(page.locator('#subjectTargetEditor [data-accuracy-value="cycle-s0"]')).toHaveValue(
     '75'
   );

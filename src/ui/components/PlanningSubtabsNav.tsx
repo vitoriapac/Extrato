@@ -1,15 +1,14 @@
 import type { JSX } from 'preact';
 import { Tabs, type TabItem } from '../primitives/tabs.js';
 
-export type PlanningSubtabKey = 'semana' | 'prova' | 'metas' | 'fechamento' | 'historico';
+export type PlanningSubtabKey = 'semana' | 'prova' | 'fechamento' | 'historico';
 
 export const PLANNING_SUBTAB_DEFS: ReadonlyArray<{
   id: PlanningSubtabKey;
   label: string;
 }> = [
   { id: 'semana', label: 'Plano da semana' },
-  { id: 'prova', label: 'Prova e ritmo' },
-  { id: 'metas', label: 'Metas por disciplina' },
+  { id: 'prova', label: 'Prova e metas' },
   { id: 'fechamento', label: 'Fechamento semanal' },
   { id: 'historico', label: 'Histórico' },
 ];

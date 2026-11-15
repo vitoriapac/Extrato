@@ -671,7 +671,7 @@ test('gráficos do Planejamento, Questões e Calendário descrevem os valores em
   await openDemo(page);
 
   await activateTab(page, 'metas');
-  await openPlanningSubtab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const history = page.locator('#historicoMetasContainer .goal-history-chart');
   await expect(history).toHaveCount(3);
   await expect(
@@ -746,7 +746,7 @@ test('alvos de toque móveis, modo foco inerte, envio de metas e indicador de sa
 
   // Tabela unificada de metas por disciplina remove e restaura meta semanal de questões via Enter
   await activateTab(page, 'metas');
-  await openPlanningSubtab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const removeButtons = page.locator('#subjectTargetEditor [data-weekly-goal-remove]');
   const initialCount = await removeButtons.count();
   expect(initialCount).toBeGreaterThan(0);

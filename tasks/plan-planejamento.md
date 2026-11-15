@@ -128,11 +128,11 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Percurso do iniciante (perfil vazio) e do analítico (demo) verificados (15/11/2026; o plano confirmado do Jordan depende de conteúdo cadastrado: ver pendência no todo)
 
 ### Fase 4: Prova e metas
-- [ ] Tarefa 14: Subaba "Prova e metas" (5 → 4 subabas)
+- [x] Tarefa 14: Subaba "Prova e metas" (5 → 4 subabas)
 - [ ] Tarefa 15a: Tabela única de leitura por disciplina, com acerto contra meta em barra
 - [ ] Tarefa 15b: Edição na linha, lote em todas as colunas e um único salvar
 - [ ] Tarefa 16: Três alvos viram um no modo Essencial
-- [ ] Tarefa 17: Ritmo ao lado da meta de tópicos, com aviso
+- [x] Tarefa 17: Ritmo ao lado da meta de tópicos, com aviso
 
 ### Checkpoint 4: Prova e metas
 - [ ] Meta de acerto editável em um lugar só; ajustar 17 disciplinas com uma seleção e uma ação

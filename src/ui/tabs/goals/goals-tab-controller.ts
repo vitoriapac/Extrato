@@ -23,6 +23,7 @@ import { countStudyDaysThisWeek } from '../../../application/performance/study-d
 import { renderIconSvg } from '../../primitives/icon.js';
 import { renderGoalHistoryCharts } from '../../renderers/goal-history-chart-renderer.js';
 import { renderRhythmBurnup } from '../../renderers/rhythm-burnup-renderer.js';
+import { buildRhythmGoalWarning } from '../../../application/goals/rhythm-goal-warning.js';
 
 const DEFAULT_WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
 
@@ -588,11 +589,26 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão geral para comparar com o prazo.</div>`;
     }
 
+    const warning = buildRhythmGoalWarning({
+      goal: resolveState().metas?.semanal,
+      remaining: r.remaining,
+      daysToExam: r.daysToExam,
+      comparativo: r.comparativo,
+    });
+    const nextStep = warning
+      ? `<div class="pace-next" role="note"><p>${
+          warning.kind === 'goal-below'
+            ? `Sua meta é de <strong>${formatDecimal(warning.goal!)}</strong> tópicos por semana; para chegar à prova são necessários <strong>${formatDecimal(warning.needed!)}</strong>.`
+            : 'No ritmo atual você termina depois da prova. Aumente a meta de tópicos ou veja o efeito de estudar mais.'
+        }</p><div class="pace-next__actions"><button class="btn tertiary" type="button" data-delegated-click="openGoalsAdjust()">Ajustar meta</button><button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></div></div>`
+      : '';
+
     container.innerHTML = `
     <div class="pace-block">
       <div class="pace-line">Nos últimos 14 dias você concluiu em média <strong>${ritmoTxt}</strong>.</div>
       <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} — no ritmo atual, você termina em <strong>${r.daysNeeded} dia${r.daysNeeded === 1 ? '' : 's'}</strong> (${formatDatePt(r.finishDate!)}).</div>
       ${statusHtml}
+      ${nextStep}
       ${renderRhythmBurnup(r)}
     </div>
   `;

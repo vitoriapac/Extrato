@@ -194,7 +194,7 @@ test('PlanningSubtabsNav — renderiza Tabs sublinhadas acessíveis com aria-con
   assert.ok(html.includes('class="ui-tabs__tab metas-subtab active"'));
   assert.ok(html.includes('aria-controls="metasSub-prova"'));
   assert.equal((html.match(/aria-selected="true"/g) || []).length, 1);
-  assert.equal((html.match(/aria-selected="false"/g) || []).length, 4);
+  assert.equal((html.match(/aria-selected="false"/g) || []).length, 3);
   assert.ok(!html.includes('aria-current='));
 });
 

@@ -4,7 +4,7 @@ import { PlanningSubtabsNav, PLANNING_SUBTAB_DEFS } from './components/PlanningS
 import { scrollBehavior } from './accessibility.js';
 
 // Planejamento agrupa as seções em blocos recolhíveis; o atalho aberto fica na URL como "#planejamento/<sub-aba>".
-export const PLANNING_SUBTABS = ['semana', 'prova', 'metas', 'fechamento', 'historico'] as const;
+export const PLANNING_SUBTABS = ['semana', 'prova', 'fechamento', 'historico'] as const;
 export type PlanningSubtab = (typeof PLANNING_SUBTABS)[number];
 
 export const isPlanningSubtab = (value: unknown): value is PlanningSubtab =>
@@ -17,7 +17,9 @@ export function subtabFromHash(hash: string): PlanningSubtab | null {
   const [base, sub] = String(hash || '')
     .replace('#', '')
     .split('/');
-  return (base === 'planejamento' || base === 'metas') && isPlanningSubtab(sub) ? sub : null;
+  // "#planejamento/metas" era a sub-aba Metas por disciplina, hoje parte de "Prova e metas".
+  const key = sub === 'metas' ? 'prova' : sub;
+  return (base === 'planejamento' || base === 'metas') && isPlanningSubtab(key) ? key : null;
 }
 
 export function selectPlanningSubtab(

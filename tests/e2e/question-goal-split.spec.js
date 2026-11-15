@@ -11,7 +11,7 @@ test('metas de questões por disciplina fecham na meta global: aviso, prévia, c
   page,
 }) => {
   await openDemo(page);
-  await openPlanningSubtab(page, 'metas');
+  await openPlanningSubtab(page, 'prova');
   const editor = page.locator('#subjectTargetEditor');
 
   // A demo já nasce fechada: 220 na global e 220 na soma, sem aviso.
