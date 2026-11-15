@@ -3,7 +3,7 @@ const trajectoryLabels: Record<string, string> = {
   on_track: 'No caminho',
   attention: 'Atenção',
   at_risk: 'Em risco',
-  insufficient_data: 'Dados insuficientes',
+  insufficient_data: 'Sem evidência',
 };
 const minutes = (value: number | null | undefined) =>
   Number.isFinite(value) && value! >= 0 ? `${value} min` : 'Não registrado';

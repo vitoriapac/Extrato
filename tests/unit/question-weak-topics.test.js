@@ -40,8 +40,8 @@ test('amostra abaixo do limiar existente fica marcada como evidência insuficien
   assert.equal(result.find(row => row.topicId === 'a').insufficient, true);
   assert.equal(result.find(row => row.topicId === 'b').insufficient, false);
   const html = renderWeakTopics({ topics: result, formatDate: d => d, escapeHtml: s => s });
-  assert.match(html, /Evidência insuficiente/);
-  assert.equal(html.match(/Evidência insuficiente/g).length, 1);
+  assert.match(html, /Sem evidência/);
+  assert.equal(html.match(/Sem evidência/g).length, 1);
 });
 
 test('lista vazia vira estado vazio útil, não texto mudo', () => {

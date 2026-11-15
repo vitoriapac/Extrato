@@ -12,7 +12,7 @@ import { buildProjectionRequirements } from '../../application/projection/build-
 type Row = Record<string, any>;
 type Esc = (value: any) => string;
 const labels: Record<string, string> = {
-  insufficient_data: 'Dados insuficientes',
+  insufficient_data: 'Sem evidência',
   on_track: 'No caminho',
   attention: 'Atenção',
   at_risk: 'Em risco',
@@ -180,7 +180,7 @@ export function renderAchievementProjection(
   // "Atenção" com confiança baixa costuma ser falta de evidência, não resultado abaixo da meta: o rótulo diz isso.
   const status =
     model.status === 'attention' && model.confidence.level === 'low'
-      ? 'Atenção · pouca evidência'
+      ? 'Atenção · evidência baixa'
       : labels[model.status] || labels.insufficient_data;
   const confidence = confidenceLabels[model.confidence.level] || confidenceLabels.insufficient;
   const band = model.projection.calibratedSimulationBand;

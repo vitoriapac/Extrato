@@ -14,7 +14,7 @@ const TRAJECTORY_LABELS: Record<string, string> = {
   on_track: 'no caminho',
   attention: 'em atenção',
   at_risk: 'em risco',
-  insufficient_data: 'com dados insuficientes',
+  insufficient_data: 'sem evidência',
 };
 
 export const strategicScopeKey = (tags: unknown) =>

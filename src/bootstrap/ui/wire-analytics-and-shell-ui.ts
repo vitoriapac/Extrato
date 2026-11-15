@@ -342,7 +342,10 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
         weeklyCapacityMinutes: studyMetricsSelectors.weeklyStrategyCapacity(),
         hoursByDay: state.metas?.horasPorDia || {},
       });
-      return (model.consolidated?.topics || []).map((row: any) => row.topicId);
+      // Só os tópicos que entram na lista do Diagnóstico (os com sinal): é a mesma fila que a Leitura segue.
+      return (model.consolidated?.topics || [])
+        .filter((row: any) => row.primarySignal)
+        .map((row: any) => row.topicId);
     },
     nextBestAction: () =>
       buildNextBestAction({

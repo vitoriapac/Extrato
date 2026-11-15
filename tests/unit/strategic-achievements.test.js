@@ -84,7 +84,7 @@ test('Cobertura crítica exige todos os tópicos relevantes da disciplina com do
         item.topicId === 'two' ? { ...item, mastery: 72, evidenceStrength: 0.4 } : item
       ),
     }).criticalCoverage.missing[0],
-    /evidência insuficiente/
+    /sem evidência/
   );
 });
 

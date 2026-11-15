@@ -1,5 +1,5 @@
 const labels: Record<string, any> = {
-  insufficient_data: 'Dados insuficientes',
+  insufficient_data: 'Sem evidência',
   on_track: 'No caminho',
   attention: 'Atenção',
   at_risk: 'Em risco',

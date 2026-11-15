@@ -10,7 +10,7 @@ export function renderRecommendationOutcomeAudit(
     ['improved', 'Melhora posterior'],
     ['stable', 'Estável'],
     ['declined', 'Piora'],
-    ['insufficient', 'Dados insuficientes'],
+    ['insufficient', 'Sem evidência'],
   ];
-  return `<div class="recommendation-audit-summary">${columns.map(([key, label]) => `<div><strong>${model.total[key]}</strong><span>${label}</span></div>`).join('')}</div><div class="recommendation-audit-groups">${model.groups.map((group: any) => `<div><strong>${escapeHtml(group.label)}</strong><span>${group.executed} executadas · ${group.improved} melhora posterior · ${group.stable} estável · ${group.declined} piora · ${group.insufficient} dados insuficientes</span></div>`).join('')}</div><p class="analytics-note">Os resultados descrevem medições posteriores. Outras atividades podem ter contribuído; não há atribuição de causa às recomendações.</p>`;
+  return `<div class="recommendation-audit-summary">${columns.map(([key, label]) => `<div><strong>${model.total[key]}</strong><span>${label}</span></div>`).join('')}</div><div class="recommendation-audit-groups">${model.groups.map((group: any) => `<div><strong>${escapeHtml(group.label)}</strong><span>${group.executed} executadas · ${group.improved} melhora posterior · ${group.stable} estável · ${group.declined} piora · ${group.insufficient} sem evidência</span></div>`).join('')}</div><p class="analytics-note">Os resultados descrevem medições posteriores. Outras atividades podem ter contribuído; não há atribuição de causa às recomendações.</p>`;
 }

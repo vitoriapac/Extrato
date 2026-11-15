@@ -121,13 +121,13 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
   const selected = model.rows.find((row: any) => row.topicId === selectedTopicId);
   const audit = selected?.audit;
   const comparison = audit
-    ? `<div class="exam-matrix-comparison"><h5>Configurado × histórico</h5><p>${escape(audit.configuredSourceLabel)}: ${audit.configuredImpact == null ? 'sem dados' : `${Math.round(audit.configuredImpact)}/100`} · estimativa histórica: ${audit.historicalEstimate == null ? 'sem dados' : `${audit.historicalEstimate}/100`} · impacto usado: ${audit.validatedImpact == null ? 'sem dados' : `${Math.round(audit.validatedImpact)}/100`}.</p><p>${audit.divergence == null ? 'Evidência insuficiente para avaliar divergência.' : `Diferença de ${audit.divergence} pontos · ${audit.status === 'aligned' ? 'configuração alinhada' : audit.status === 'review' ? 'revisar configuração' : 'configuração divergente'}.`} Presença ${audit.presentExamCount} de ${audit.analyzedExamCount} provas · base histórica ${escape(audit.confidenceLabel.toLowerCase())}. ${audit.usedHistory ? 'Histórico considerado no impacto estimado.' : 'Configuração preservada.'}</p></div>`
+    ? `<div class="exam-matrix-comparison"><h5>Configurado × histórico</h5><p>${escape(audit.configuredSourceLabel)}: ${audit.configuredImpact == null ? 'sem dados' : `${Math.round(audit.configuredImpact)}/100`} · estimativa histórica: ${audit.historicalEstimate == null ? 'sem dados' : `${audit.historicalEstimate}/100`} · impacto usado: ${audit.validatedImpact == null ? 'sem dados' : `${Math.round(audit.validatedImpact)}/100`}.</p><p>${audit.divergence == null ? 'Sem evidência para avaliar a divergência.' : `Diferença de ${audit.divergence} pontos · ${audit.status === 'aligned' ? 'configuração alinhada' : audit.status === 'review' ? 'revisar configuração' : 'configuração divergente'}.`} Presença ${audit.presentExamCount} de ${audit.analyzedExamCount} provas · base histórica ${escape(audit.confidenceLabel.toLowerCase())}. ${audit.usedHistory ? 'Histórico considerado no impacto estimado.' : 'Configuração preservada.'}</p></div>`
     : '';
   const diagnosis =
     selected?.gap == null
-      ? 'Dados insuficientes para medir a lacuna.'
+      ? 'Sem evidência para medir a lacuna.'
       : selected.gap >= 30
-        ? 'Lacuna prioritária'
+        ? 'Lacuna'
         : selected.gap >= 10
           ? 'Acompanhar evolução'
           : 'Manter o domínio';
@@ -138,14 +138,14 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
     rows
       .map(
         (row: any) =>
-          `<tr><th scope="row"><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button></th><td>${row.presencePercent ?? '—'}%</td><td>${row.mastery == null ? '—' : Math.round(row.mastery)}</td><td>${row.impact == null ? '—' : Math.round(row.impact)}</td><td>${row.gap == null ? 'Dados insuficientes' : row.gap >= 30 ? 'Lacuna prioritária' : row.gap >= 10 ? 'Acompanhar' : 'Manutenção'}</td></tr>`
+          `<tr><th scope="row"><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button></th><td>${row.presencePercent ?? '—'}%</td><td>${row.mastery == null ? '—' : Math.round(row.mastery)}</td><td>${row.impact == null ? '—' : Math.round(row.impact)}</td><td>${row.gap == null ? 'Sem evidência' : row.gap >= 30 ? 'Lacuna' : row.gap >= 10 ? 'Acompanhar' : 'Manutenção'}</td></tr>`
       )
       .join('');
   const priorityCardsOf = (rows: any[]) =>
     rows
       .map(
         (row: any) =>
-          `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? '—' : Math.round(row.mastery)} · impacto ${row.impact == null ? '—' : Math.round(row.impact)} · ${row.gap == null ? 'dados insuficientes' : row.gap >= 30 ? 'lacuna prioritária' : row.gap >= 10 ? 'acompanhar' : 'manutenção'}</p></article>`
+          `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? '—' : Math.round(row.mastery)} · impacto ${row.impact == null ? '—' : Math.round(row.impact)} · ${row.gap == null ? 'sem evidência' : row.gap >= 30 ? 'lacuna' : row.gap >= 10 ? 'acompanhar' : 'manutenção'}</p></article>`
       )
       .join('');
   // Oito linhas à vista; o restante da lista fica sob "Mostrar mais · +N" (cabeçalho repetido para a tabela continuar legível).

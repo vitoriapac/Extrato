@@ -345,7 +345,7 @@ test('reversão, cooldown, escopo e falta de dados preservam o histórico em mob
   await openPerformanceSection(page, 'exam');
   await expect(page.locator('#examHistoricalMatrix')).toContainText('1 prova completa');
   await expect(page.locator('#examHistoricalMatrix')).toContainText(
-    'Evidência insuficiente para posicionar'
+    'Sem evidência para posicionar'
   );
   const candidates = await page.evaluate(() => window.__EXTRATO_TEST__.intelligenceCandidates());
   expect(candidates.some(item => item.topicId === 'cycle-t0-0')).toBe(false);

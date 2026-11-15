@@ -237,3 +237,14 @@ test('empate de pontuação: "o que mais pesa" desempata pela ordem dos cards do
   const plain = buildPreparationReading({ candidates }).pulling.map(p => p.text);
   assert.match(plain[0], /Tópico a/);
 });
+
+test('a Leitura só cita tópicos que estão na fila do Diagnóstico', () => {
+  const candidates = [gap('a', { score: 90 }), gap('b', { score: 80 }), gap('c', { score: 70 })];
+  const topics = reading => reading.pulling.map(item => item.text.match(/— ([^:]+):/)?.[1]);
+  const all = buildPreparationReading({ candidates });
+  assert.equal(topics(all).length, 3);
+  // "b" não tem sinal no Diagnóstico: fica de fora, e a ordem é a da fila.
+  const queued = buildPreparationReading({ candidates, diagnosisOrder: ['c', 'a'] });
+  assert.equal(topics(queued).length, 2);
+  assert.ok(queued.pulling.every(item => !item.text.includes(gap('b').topicName)));
+});

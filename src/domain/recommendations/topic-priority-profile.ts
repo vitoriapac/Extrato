@@ -84,7 +84,7 @@ export function compareTopicPriority(
   )
     return {
       state: 'insufficient',
-      label: 'Evidência insuficiente para avaliar a trajetória',
+      label: 'Sem evidência para avaliar a trajetória',
       reasons,
     };
   const mastery = current.mastery - previous.mastery,

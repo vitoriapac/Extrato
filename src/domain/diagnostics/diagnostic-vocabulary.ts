@@ -1,8 +1,8 @@
 // Presentation adapters only: persisted identifiers and analytical thresholds stay intact.
 export const DIAGNOSTIC_VOCABULARY = Object.freeze({
   severity: Object.freeze({
-    critical: 'Atenção prioritária',
-    important: 'Importante',
+    critical: 'Prioridade alta',
+    important: 'Prioridade média',
     monitor: 'Monitorar',
     controlled: 'Sob controle',
     insufficient: 'Sem evidência',
@@ -11,30 +11,30 @@ export const DIAGNOSTIC_VOCABULARY = Object.freeze({
     low: 'Baixa',
     moderate: 'Média',
     high: 'Alta',
-    unassessed: 'Não avaliada',
+    unassessed: 'Sem evidência',
   }),
   trend: Object.freeze({
     improving: 'Melhorando',
     stable: 'Estável',
     worsening: 'Em ajuste recente',
-    insufficient: 'Dados insuficientes',
+    insufficient: 'Sem evidência',
   }),
   outcome: Object.freeze({
     improved: 'Melhora observada',
     stable: 'Estável',
     worsened: 'Piora observada',
-    insufficient: 'Evidência insuficiente',
+    insufficient: 'Sem evidência',
     pending: 'Em acompanhamento',
   }),
 });
 export const DIAGNOSTIC_SIGNAL_LABELS = Object.freeze({
   'consolidation-risk': 'Consolidação em risco',
-  'critical-gap': 'Lacuna prioritária',
+  'critical-gap': 'Lacuna',
   plateau: 'Possível platô',
-  'priority-review': 'Revisão prioritária',
-  'critical-coverage': 'Cobertura a expandir',
+  'priority-review': 'Revisão',
+  'critical-coverage': 'Cobertura',
   'high-priority': 'Prioridade alta',
-  'collect-evidence': 'Coletar mais evidências',
+  'collect-evidence': 'Coletar evidência',
   recovery: 'Recuperação consistente',
   maintenance: 'Manutenção',
   'high-incidence': 'Alta incidência',
@@ -135,6 +135,6 @@ export function normalizeOutcome(value: unknown) {
 export function diagnosticLabel(category: string, value: string) {
   return (
     (DIAGNOSTIC_VOCABULARY as Record<string, Record<string, string>>)[category]?.[value] ||
-    'Dados insuficientes'
+    'Sem evidência'
   );
 }

@@ -110,12 +110,12 @@ Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red 
 - [x] Tarefa 35: Nomes da navegação e da rota (subabas Resumo, Por disciplina, Resultados das provas; rota #desempenho/resultados; mobile Início/Matérias e rótulos do roteiro da demo ficaram de fora)
 - [x] Tarefa 36: Linha-chave dos universos de contagem (305 no edital · 194 por concluir · 297 com sinal · 304 mapeados; contador nomeia o universo; "respondidas" no lugar de "resolvidas" em Desempenho)
 - [x] Tarefa 37: Um formato por grandeza (precisão com uma casa, p.p. com sinal e uma casa, faixas "a", "Sem dados")
-- [ ] Tarefa 38: Um vocabulário de estado, prioridade e evidência (P2, H4)
+- [x] Tarefa 38: Um vocabulário de estado, prioridade e evidência (evidência em 4 estados; Prioridade alta/média; tipo de problema à parte; tendência Em queda/Estável/Abaixo da meta/Melhorando)
 - [ ] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas (P2, H1)
 - [ ] Tarefa 40: Provas em um painel por vez, sem repetições, com ajuda uniforme (P1, H8, H10)
 - [ ] Tarefa 41: Mobile e acessibilidade (Casey, Sam; P2/P3)
 - [ ] Tarefa 42: Poder de uso e jargão (Alex, Jordan; H2, H3, H7)
-- [ ] Achado (15/11): "O que mais pesa" lista um tópico ("Direitos do consumidor") que não está na fila do Diagnóstico quando a data da demo muda; o E2E `performance-preparation-reading` passou a fixar o relógio. Investigar na T38.
+- [x] Achado (15/11), resolvido na T38: o tópico "Direitos do consumidor" não faltava na fila: ele é a Próxima ação, que sai da lista. A Leitura passou a citar só tópicos da fila (com sinal) e o E2E conta a Próxima ação como primeiro da fila, sem relógio fixo
 - [ ] Tarefa 43: Jornada emocional: o que já está firme e as boas notícias antes (P3)
 
 ### Checkpoint 9: Crítica

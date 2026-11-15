@@ -163,7 +163,8 @@ export function buildPreparationReading({
         (Number(b?.score) || 0) - (Number(a?.score) || 0) ||
         (position.get(a?.topicId) ?? Infinity) - (position.get(b?.topicId) ?? Infinity)
     )
-    .filter(item => isStrategicGap(item));
+    // Com a fila do Diagnóstico informada, um tópico fora dela não é citado: a Leitura nunca mostra o que a lista não tem.
+    .filter(item => isStrategicGap(item) && (!position.size || position.has(item.topicId)));
   // Tópico fraco dentro de disciplina forte: diz as duas coisas para o leitor não ver contradição.
   const strongSubjectNote = (gap: Row): string => {
     const stat = subjectAccuracy[gap.subjectId];

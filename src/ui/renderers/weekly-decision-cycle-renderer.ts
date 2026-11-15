@@ -24,7 +24,7 @@ export function renderWeeklyDecisionCycle(
   const guidance = buildWeeklyDecisionSummary({ cycle: model, trajectory, adherence });
   const priority = guidance!.priorities;
   const statuses: Record<string, any> = {
-    insufficient_data: 'Dados insuficientes',
+    insufficient_data: 'Sem evidência',
     on_track: 'No caminho',
     attention: 'Atenção',
     at_risk: 'Em risco',

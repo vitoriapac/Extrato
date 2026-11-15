@@ -267,8 +267,6 @@ test('A projeção até a prova mora em Simulados; a Visão geral mostra a faixa
 
 test('"O que mais pesa" segue a mesma ordem dos cards do Diagnóstico', async ({ page }) => {
   test.setTimeout(120_000);
-  // A demo é relativa à data: sem relógio fixo, a fila muda de um dia para o outro (ver tasks/plan.md, Fase 9).
-  await page.clock.install({ time: new Date('2026-11-14T12:00:00-03:00') });
   await openDemo(page);
   await activateTab(page, 'desempenho');
   const pulled = await page.locator('.performance-reading__list li span').allInnerTexts();
@@ -285,8 +283,10 @@ test('"O que mais pesa" segue a mesma ordem dos cards do Diagnóstico', async ({
       name: row.querySelector('.diagnostic-row-identity strong').textContent,
     }));
   });
-  const positions = topics.map(topic => ranked.find(card => card.name === topic)?.rank ?? -1);
-  expect(positions.every(position => position > 0)).toBe(true);
+  // O tópico que a Próxima ação já mostra sai da lista (aparece acima dela): conta como o primeiro da fila.
+  const nextAction = await page.locator('#diagnosisCenter .next-best-action').innerText();
+  const positions = topics.map(topic => ranked.find(card => card.name === topic)?.rank ?? (nextAction.includes(topic) ? 0 : -1));
+  expect(positions.every(position => position >= 0)).toBe(true);
   expect(positions).toEqual([...positions].sort((a, b) => a - b));
 });
 

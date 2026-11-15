@@ -306,7 +306,7 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   await openPerformanceSection(page, 'simulations');
   const projection = page.locator('.achievement-projection');
   await expect(projection.locator('.achievement-projection__status')).toHaveText(
-    'Dados insuficientes'
+    'Sem evidência'
   );
   const metric = label =>
     projection
@@ -357,7 +357,7 @@ test('cinco perfis percorrem a experiência consolidada com ação, contexto e l
     await expect(trajectory).toBeVisible();
     if (profile === 'beginner')
       await expect(trajectory.locator('.achievement-projection__status')).toHaveText(
-        'Dados insuficientes'
+        'Sem evidência'
       );
     if (profile === 'high_performance')
       await expect(trajectory.locator('.achievement-projection__status')).toHaveText('No caminho');

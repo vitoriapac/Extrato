@@ -9,7 +9,7 @@ const labels: Readonly<Record<string, string>> = Object.freeze({
   time_gap: 'Carga parcialmente executada',
   priority_gap: 'Prioridades pouco executadas',
   mixed: 'Carga e prioridades pendentes',
-  insufficient_data: 'Dados insuficientes',
+  insufficient_data: 'Sem evidência',
 });
 
 export function adherenceStatus(model: Record<string, any> | null | undefined) {

@@ -116,7 +116,7 @@ test('unknown historical priority stops strategic conclusions', () => {
   const frame = buildWeeklyCloseAdherence({ ...data, snapshots: [saved('2026-09-21')] });
   assert.equal(frame.assessment.status, 'insufficient_data');
   assert.equal(frame.recurring.state, 'insufficient_data');
-  assert.match(renderWeeklyAdherence(frame), /evidência insuficiente/);
+  assert.match(renderWeeklyAdherence(frame), /sem evidência/);
   assert.doesNotMatch(renderWeeklyAdherence(frame), /Revisar planejamento/);
 });
 test('saved adherence and explanations remain frozen after sessions and configuration change', () => {

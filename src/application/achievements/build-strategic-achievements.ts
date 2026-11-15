@@ -42,7 +42,7 @@ export function buildStrategicAchievements({
     .slice(0, 3)
     .map(
       (item: any) =>
-        `${item.topicName || item.name || 'Tópico'} — ${item.mastery == null ? 'domínio ainda sem medida' : item.mastery < STRATEGY_THRESHOLDS.adequateMastery ? `domínio ${Math.round(item.mastery)}/100` : 'evidência insuficiente'}`
+        `${item.topicName || item.name || 'Tópico'} — ${item.mastery == null ? 'domínio ainda sem medida' : item.mastery < STRATEGY_THRESHOLDS.adequateMastery ? `domínio ${Math.round(item.mastery)}/100` : 'sem evidência'}`
     );
   return {
     strategist: {

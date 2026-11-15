@@ -7,7 +7,7 @@ const labels: Record<string, string> = {
   unstable_execution: 'Execução irregular',
   isolated_anomaly: 'Desvio pontual observado',
   monitor: 'Acompanhar execução',
-  insufficient_data: 'Evidência insuficiente',
+  insufficient_data: 'Sem evidência',
 };
 export function sustainabilityStatus(model: Record<string, any>) {
   const weeks = (model.weeks || []).filter((week: any) => week.comparable),

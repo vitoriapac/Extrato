@@ -19,7 +19,7 @@ const STATE_LABELS: Readonly<Record<string, string>> = Object.freeze({
   worsened: 'Piora posterior observada',
   neutral: 'Resultado estável',
   pending: 'Resultado em acompanhamento',
-  insufficient: 'Evidência insuficiente',
+  insufficient: 'Sem evidência',
 });
 const numeric = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);

@@ -2,10 +2,10 @@ import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
 import { formatPercent, formatPoints } from '../../core/format-number.js';
 import { renderBeforeAfterChart } from './before-after-chart.js';
 const cells = [
-  ['attention', 'Atenção', 'Na meta, mas a precisão caiu'],
-  ['maintain', 'Manter', 'Na meta e sem queda relevante'],
-  ['intervene', 'Intervir', 'Abaixo da meta e sem melhora relevante'],
-  ['evolving', 'Evoluindo', 'Abaixo da meta, com melhora'],
+  ['attention', 'Em queda', 'Na meta, mas a precisão caiu'],
+  ['maintain', 'Estável', 'Na meta e sem queda relevante'],
+  ['intervene', 'Abaixo da meta', 'Abaixo da meta e sem melhora relevante'],
+  ['evolving', 'Melhorando', 'Abaixo da meta, com melhora'],
 ] as const;
 export function renderStabilityMap(
   model: Record<string, any>,

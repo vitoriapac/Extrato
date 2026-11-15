@@ -14,7 +14,7 @@ export function WeakTopics({ topics, formatDate }: { topics: WeakTopic[]; format
             return <li key={topic.topicId} class="weak-topics__item">
               <span class="weak-topics__name">{topic.name}{topic.subjectName && <> <small>{topic.subjectName}</small></>}</span>
               <span class="weak-topics__acc weak-topics__num">{String(topic.accuracy).replace('.', ',')}%</span>
-              <span class="weak-topics__meta"><span class="weak-topics__num">{topic.sampleSize}</span> questões · <span class="weak-topics__num">{period}</span>{topic.insufficient && <> · <strong class="weak-topics__flag">Evidência insuficiente · Amostra a ampliar</strong></>}</span>
+              <span class="weak-topics__meta"><span class="weak-topics__num">{topic.sampleSize}</span> questões · <span class="weak-topics__num">{period}</span>{topic.insufficient && <> · <strong class="weak-topics__flag">Sem evidência · Amostra a ampliar</strong></>}</span>
             </li>;
           })}
         </ol>

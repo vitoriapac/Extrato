@@ -4,7 +4,7 @@ import { planMin, planMinDelta } from './adherence-labels.js';
 export function renderPeriodComparisonDetail(model: Record<string, any>, { escapeHtml }: any = {}) {
   const format = (metric: Record<string, any>, value: number | null | undefined) =>
     value == null
-      ? 'Dados insuficientes'
+      ? 'Sem evidência'
       : metric.unit === 'min'
         ? planMin(value)
         : metric.unit === 'percentage_points'

@@ -12,9 +12,9 @@ const escape = value => String(value);
 
 test('selo de evidência: só os três estados e nada quando a evidência basta', () => {
   assert.deepEqual(Object.values(EVIDENCE_LABELS), [
-    'amostra pequena',
+    'evidência baixa · amostra pequena',
     'evidência baixa',
-    'sem dados suficientes',
+    'sem evidência',
   ]);
   assert.equal(renderEvidenceBadge(null), '');
   assert.match(renderEvidenceBadge('low', 'dica'), /data-evidence="low"[^>]*title="dica"/);

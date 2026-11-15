@@ -82,7 +82,7 @@ export function renderConsolidatedDiagnosis(
       const head = studied.slice(0, 3),
         rest = studied.slice(3);
       const unseen = noData.length
-        ? `<details class="performance-more"><summary>Sem evidência registrada · ${noData.length}</summary><template data-lazy>${listOf(noData)}</template></details>`
+        ? `<details class="performance-more"><summary>Sem evidência · ${noData.length}</summary><template data-lazy>${listOf(noData)}</template></details>`
         : '';
       const more = rest.length
         ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${listOf(rest)}</template></details>`

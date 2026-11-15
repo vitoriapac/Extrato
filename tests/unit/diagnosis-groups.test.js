@@ -319,3 +319,26 @@ test('T37: precisão com uma casa, diferença em p.p. com sinal e uma casa, e "S
   assert.match(card, /alvo: 20 a 26 h\/sem/);
   assert.match(card, /alvo: 76% a 82%/);
 });
+
+test('T38: evidência em 4 estados, prioridade alta e média, tipo de problema à parte e tendência com nomes descritivos', async () => {
+  const { diagnosticLabel, DIAGNOSTIC_VOCABULARY, diagnosticSignalLabel } = await import('../../src/domain/diagnostics/diagnostic-vocabulary.js');
+  assert.equal(diagnosticLabel('severity', 'critical'), 'Prioridade alta');
+  assert.equal(diagnosticLabel('severity', 'important'), 'Prioridade média');
+  assert.deepEqual(['high', 'moderate', 'low', 'unassessed'].map(key => diagnosticLabel('evidence', key)), ['Alta', 'Média', 'Baixa', 'Sem evidência']);
+  // O que não tem dado cai sempre em "Sem evidência", nunca em "Dados insuficientes".
+  assert.equal(diagnosticLabel('trend', 'insufficient'), 'Sem evidência');
+  assert.equal(diagnosticLabel('outcome', 'insufficient'), 'Sem evidência');
+  assert.equal(diagnosticLabel('nada', 'nada'), 'Sem evidência');
+  // O tipo de problema não carrega prioridade: Lacuna, Cobertura, Revisão, Coletar evidência.
+  assert.deepEqual(['critical-gap', 'critical-coverage', 'priority-review', 'collect-evidence'].map(diagnosticSignalLabel), ['Lacuna', 'Cobertura', 'Revisão', 'Coletar evidência']);
+  assert.doesNotMatch(JSON.stringify(DIAGNOSTIC_VOCABULARY), /Dados insuficientes|Atenção prioritária|Importante/);
+
+  const { EVIDENCE_LABELS } = await import('../../src/ui/performance/evidence-badge.js');
+  assert.ok(Object.values(EVIDENCE_LABELS).every(label => /evidência/.test(label)));
+
+  const { renderStabilityMap } = await import('../../src/ui/performance/stability-map-renderer.js');
+  const html = renderStabilityMap({ groups: { attention: [{ subjectId: 'a', name: 'A', accuracy: 85, evolution: -4 }], maintain: [], intervene: [], evolving: [], insufficient: [] }, total: 1, measured: 1 }, { escapeHtml: String, escapeAttr: String });
+  assert.match(html, /<h4>Em queda<\/h4>/);
+  assert.match(html, /<h4>Abaixo da meta<\/h4>/);
+  assert.doesNotMatch(html, /Intervir|Evoluindo|<h4>Manter/);
+});

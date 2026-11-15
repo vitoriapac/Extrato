@@ -207,7 +207,7 @@ export function buildIntelligentAlerts({
           subjectId: topic.subjectId,
           topicId: topic.topicId,
           createdAt: today,
-          reason: 'Ainda há pouca evidência para avaliar ' + topic.name + '.',
+          reason: 'Evidência baixa para avaliar ' + topic.name + '.',
           recommendedAction:
             'Registre uma sessão com questões para melhorar a evidência da análise.',
         })

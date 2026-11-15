@@ -4,7 +4,7 @@ const STATE_TITLES: Record<string, string> = {
   positive: 'Evidência de melhora',
   neutral: 'Sem melhora observável · estável',
   negative: 'Sem melhora observável · piora',
-  insufficient: 'Ainda sem evidência suficiente',
+  insufficient: 'Sem evidência',
 };
 const numeric = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);

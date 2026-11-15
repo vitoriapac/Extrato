@@ -458,7 +458,7 @@ export function calculateCareerBenchmarkComparison(
   // 3. Precisão (% de acertos)
   const accuracy = aggregates.accuracyPercent ?? 0;
   let accStatus: BenchmarkStatus = 'insufficient';
-  let accStatusLabel = aggregates.accuracyPercent === null ? 'Sem Amostra' : 'Abaixo do Alvo';
+  let accStatusLabel = aggregates.accuracyPercent === null ? 'Sem evidência' : 'Abaixo do alvo';
   let accCommentary = 'Resolva mais questões para calibrar a precisão média por disciplina.';
 
   if (aggregates.accuracyPercent !== null) {

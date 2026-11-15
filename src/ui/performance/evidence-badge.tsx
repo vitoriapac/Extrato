@@ -6,9 +6,9 @@ import { Tooltip } from '../primitives/tooltip.js';
 export type EvidenceState = 'small' | 'low' | 'insufficient';
 
 export const EVIDENCE_LABELS: Record<EvidenceState, string> = {
-  small: 'amostra pequena',
+  small: 'evidência baixa · amostra pequena',
   low: 'evidência baixa',
-  insufficient: 'sem dados suficientes',
+  insufficient: 'sem evidência',
 };
 
 export function renderEvidenceBadge(state: EvidenceState | null | undefined, title = ''): string {

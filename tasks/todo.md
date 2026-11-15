@@ -450,10 +450,10 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 38: Um vocabulário de estado, prioridade e evidência
 **Origem:** P2 de H4 (quatro vocabulários paralelos, seis usos de "evidência"); jargão de Jordan.
 **Aceite:**
-- [ ] Decisão de produto registrada (perguntar ao usuário): quais estados existem (prioridade × tendência × quadrante da Matriz) e o nome de cada um; tabela de correspondência no código
-- [ ] Prioridade e tipo de problema em chips separados ("Prioridade provisória", "Lacuna prioritária", "Atenção prioritária", "Importante", "Cobertura a expandir" não dividem a mesma coluna); ordem de urgência visível
-- [ ] Evidência: um componente com Baixa, Média e Alta; "N tópicos com evidência" só como contagem em outro estilo; "Sem evidência registrada" e "base histórica" alinhados
-- [ ] Limiar de amostra dito uma vez (30 e 10 questões: confirmar se são conceitos diferentes e nomear cada um)
+- [x] Decisão de produto registrada (perguntar ao usuário): quais estados existem (prioridade × tendência × quadrante da Matriz) e o nome de cada um; tabela de correspondência no código
+- [x] Prioridade e tipo de problema em chips separados ("Prioridade provisória", "Lacuna prioritária", "Atenção prioritária", "Importante", "Cobertura a expandir" não dividem a mesma coluna); ordem de urgência visível
+- [x] Evidência: um componente com Baixa, Média e Alta; "N tópicos com evidência" só como contagem em outro estilo; "Sem evidência registrada" e "base histórica" alinhados
+- [x] Limiar de amostra dito uma vez (30 e 10 questões: confirmar se são conceitos diferentes e nomear cada um)
 **Verificação:** unit do mapa de vocabulário; busca no bundle; E2E do Diagnóstico e da Matriz
 **Dependências:** Tarefa 36
 **Tamanho:** M

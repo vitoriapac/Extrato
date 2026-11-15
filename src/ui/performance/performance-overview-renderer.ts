@@ -52,7 +52,7 @@ const glossaryItems: Array<[string, string]> = [
   ],
   [
     'Amostra',
-    'Precisão por disciplina exige 10 respostas. Comparar períodos e ver tendência exige 30 questões em cada período.',
+    'Dois mínimos, cada um com o seu nome. Amostra da disciplina: 10 respostas para a precisão e 10 em cada período para a evolução. Amostra do tópico e da série: 30 questões para a média móvel e para comparar as metades de um período.',
   ],
 ];
 const renderGlossary = (escapeHtml: (value: any) => string) =>

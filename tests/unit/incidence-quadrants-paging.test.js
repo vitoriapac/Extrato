@@ -25,7 +25,7 @@ test('evidência insuficiente fica fechada com a contagem à vista', () => {
     row(index, { mastery: null, presencePercent: 20, confidence: 'low' })
   );
   const html = renderIncidenceQuadrants(rows);
-  assert.match(html, /<summary>Evidência insuficiente para posicionar \(9\)<\/summary>/);
+  assert.match(html, /<summary>Sem evidência para posicionar \(9\)<\/summary>/);
   assert.doesNotMatch(html, /Mostrar mais/);
 });
 
