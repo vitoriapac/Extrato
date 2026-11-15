@@ -19,7 +19,9 @@ import { buildRecommendationExplanation } from '../../../application/recommendat
 import { renderRecommendationExplanation } from '../../renderers/recommendation-explanation-renderer.js';
 import { buildWeeklyAllocationBarVisual } from '../../../domain/planning/planning-visual-models.js';
 import { renderAllocationBar } from '../../primitives/charts/charts.js';
-import { StudyPlanGuidance } from './StudyPlanGuidance.js';
+import { PlanRoadmap } from './PlanRoadmap.js';
+import { isCapacityInformed } from '../../../application/goals/capacity-informed.js';
+import { decorateAdvancedReveals } from '../../essential-mode.js';
 import { scrollBehavior } from '../../accessibility.js';
 
 const previewHeading = (title: string) =>
@@ -508,6 +510,31 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
     container.innerHTML = `<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length ? `<ol>${entries.map((item: any) => `<li><div><strong>${escapeHtml(labels[item.status] || item.status)}</strong><small>${escapeHtml(new Date(item.createdAt!).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</small></div><p>${escapeHtml(item.sourceName || (deps.getSubjectName ? deps.getSubjectName(item.sourceSubjectId!) : item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore!)} → ${formatPlanMinutes(item.sourceAfter!)} · ${escapeHtml(item.targetName || (deps.getSubjectName ? deps.getSubjectName(item.targetSubjectId!) : item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore!)} → ${formatPlanMinutes(item.targetAfter!)}</p><small>${escapeHtml(item.reasons?.join(' ') || 'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot!, { headingLevel: 4 })}${item.status === 'applied' && latestStudyPlan()?.id === item.planId ? `<button class="btn ghost small" type="button" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>` : ''}</li>`).join('')}</ol>` : '<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
   }
 
+  /** Modo Essencial: coloca "Mostrar …" antes dos blocos avançados recém-renderizados. */
+  function decorateReveals(container: any) {
+    if (typeof container?.querySelectorAll === 'function') decorateAdvancedReveals(container);
+  }
+
+  /** Perfil sem plano: o card do plano (roteiro) abre a subaba; com plano, o Resumo volta ao topo. */
+  function placePlanCard(first: boolean) {
+    const card = doc?.getElementById('metasPlanning');
+    const summary = doc?.getElementById('planExecutionCard');
+    if (!card || !summary || !card.parentElement || card.parentElement !== summary.parentElement)
+      return;
+    // 4 = DOCUMENT_POSITION_FOLLOWING: o Resumo vem depois do card.
+    const summaryFollowsCard = Boolean(card.compareDocumentPosition(summary) & 4);
+    if (first && !summaryFollowsCard) summary.before(card);
+    if (!first && summaryFollowsCard) summary.after(card);
+    // A disponibilidade, enquanto fora da dobra, anda junto com o card do plano.
+    const capacity = doc?.getElementById('metasCapacity');
+    if (
+      capacity &&
+      capacity.parentElement === card.parentElement &&
+      card.nextElementSibling !== capacity
+    )
+      card.after(capacity);
+  }
+
   function renderStudyPlanBuilder() {
     if (!doc) return;
     const container = doc.getElementById('examStudyPlan');
@@ -547,7 +574,6 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
         .reverse()
         .find((item: any) => !item.undoneAt);
       // Um só botão cheio (o passo de agora) e, com plano confirmado, no máximo dois secundários.
-      const calcIsPrimary = !latest && Boolean(deps.getState().examDate);
       const primaryAction = latest
         ? '<button class="btn" type="button" data-delegated-click="calculateDailyPlanPreview()">Agendar nos próximos 7 dias</button>'
         : deps.getState().examDate
@@ -558,6 +584,7 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       const phaseView = phaseStrategyController.view();
       const phaseProposal = latest && !phaseView ? currentPhaseStrategy() : null;
       if (latest) {
+        placePlanCard(false);
         // Medidas da semana (as mesmas do Resumo): quanto do plano já tem tarefa marcada.
         const state = deps.getState();
         const marked =
@@ -571,13 +598,23 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
           dateStyle: 'short',
           timeStyle: 'short',
         });
-        const inline = (action: string, label: string) =>
-          `<button class="btn tertiary" type="button" data-delegated-click="${action}">${label}</button>`;
-        const stateLine = `<div class="confirmed-plan-note"><strong>Plano ${formatPlanMinutes(latest.weeklyPlannedMinutes)}/semana</strong><span title="Confirmado em ${confirmedAt}">com tarefa marcada ${formatPlanMinutes(marked)} · ${missing > 0 ? `falta marcar ${formatPlanMinutes(missing)}` : 'tudo marcado'} · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span>${activeOperation ? inline('undoLatestDailyPlanGeneration()', 'Desfazer última distribuição') : ''}${phaseProposal?.state === 'proposal' ? inline('previewPhaseStrategy()', 'Revisar proposta de estratégia') : ''}${latest.phaseStrategy?.status === 'applied' ? inline('revertPhaseStrategy()', 'Reverter última estratégia por fase') : ''}</div>`;
+        const inline = (action: string, label: string, advanced = '') =>
+          `<button class="btn tertiary" type="button"${advanced ? ` data-advanced="${advanced}"` : ''} data-delegated-click="${action}">${label}</button>`;
+        const stateLine = `<div class="confirmed-plan-note"><strong>Plano ${formatPlanMinutes(latest.weeklyPlannedMinutes)}/semana</strong><span title="Confirmado em ${confirmedAt}">com tarefa marcada ${formatPlanMinutes(marked)} · ${missing > 0 ? `falta marcar ${formatPlanMinutes(missing)}` : 'tudo marcado'} · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span>${activeOperation ? inline('undoLatestDailyPlanGeneration()', 'Desfazer última distribuição') : ''}${phaseProposal?.state === 'proposal' ? inline('previewPhaseStrategy()', 'Revisar proposta de estratégia', 'estratégia por fase') : ''}${latest.phaseStrategy?.status === 'applied' ? inline('revertPhaseStrategy()', 'Reverter última estratégia por fase', 'estratégia por fase') : ''}</div>`;
         container.innerHTML = `${stateLine}<div class="study-plan-actions">${primaryAction}<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Recalcular plano</button>${whatIf}</div>${phaseProposal?.state === 'cooldown' ? `<p class="helper-text">${escapeHtml((phaseProposal as { reason?: string }).reason)}</p>` : ''}${phaseView ? renderPhaseStrategy(phaseView, { preview: phaseView.state === 'proposal', canRevert: false }) : ''}`;
+        decorateReveals(container);
         return;
       }
-      container.innerHTML = `<div class="study-plan-actions">${primaryAction}</div><p class="study-plan-more">Outras formas de planejar: ${calcIsPrimary ? '' : '<button class="btn tertiary" type="button" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>'}<button class="btn tertiary" type="button" data-delegated-click="openWhatIfSimulator()">Simular &quot;E se?&quot;</button></p>${render(h(StudyPlanGuidance, { hasPlan: false, hasExamDate: Boolean(deps.getState().examDate) }))}`;
+      // Perfil sem plano: o roteiro de 3 passos tem a única ação cheia e vem antes do Resumo vazio.
+      placePlanCard(true);
+      container.innerHTML =
+        render(
+          h(PlanRoadmap, {
+            hasExamDate: Boolean(deps.getState().examDate),
+            hasHours: isCapacityInformed(deps.getState()),
+            hasPlan: false,
+          })
+        ) + `<p class="study-plan-more">${whatIf}</p>`;
       return;
     }
 

@@ -20,6 +20,8 @@ export interface WeeklyAvailabilityGridProps {
   formattedAverage: string;
   formattedToday: string;
   days: DayGoalItem[];
+  /** Falso enquanto as horas são só o padrão do app: o resumo não apresenta o padrão como escolha. */
+  informed?: boolean;
 }
 
 export function WeeklyAvailabilityGrid({
@@ -28,24 +30,26 @@ export function WeeklyAvailabilityGrid({
   formattedAverage,
   formattedToday,
   days,
+  informed = true,
 }: WeeklyAvailabilityGridProps): JSX.Element {
+  const shown = (value: string | number) => (informed ? value : '—');
   return (
     <>
       <div class="weekly-availability-summary">
         <div>
-          <strong>{formattedTotal}</strong>
+          <strong>{shown(formattedTotal)}</strong>
           <span>disponíveis por semana</span>
         </div>
         <div>
-          <strong>{summary.activeDays}</strong>
+          <strong>{shown(summary.activeDays)}</strong>
           <span>dias com estudo</span>
         </div>
         <div>
-          <strong>{formattedAverage}</strong>
+          <strong>{shown(formattedAverage)}</strong>
           <span>média por dia ativo</span>
         </div>
         <div>
-          <strong>{formattedToday}</strong>
+          <strong>{shown(formattedToday)}</strong>
           <span>disponíveis hoje</span>
         </div>
       </div>

@@ -1,6 +1,11 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { renderAdherenceTargetSetting } from './adherence-target-renderer.js';
 
+const ADVANCED_GOALS: Record<string, string> = {
+  weeklyTopics: 'meta de tópicos na semana',
+  simulations: 'meta de simulados na semana',
+};
+
 export function renderGoals(
   model: Record<string, any>,
   { adherenceTarget, escapeHtml, initialSuggestions = [], weeklyCapacityMinutes = null }: any = {}
@@ -16,7 +21,9 @@ export function renderGoals(
             : ' dias'
           : '';
     const remaining = Math.round((item.remaining ?? 0) * 10) / 10;
-    return `<article class="meta-card"><div class="meta-info"><div class="meta-name">${escapeHtml(item.label)}</div><div class="meta-formula">${escapeHtml(item.description)}</div>${suggested ? '<small class="context-note">Sugestão inicial editável</small>' : ''}</div><div class="meta-progress-block"><div class="meta-progress-track"><div class="meta-progress-fill ${item.state === 'achieved' ? 'over' : ''}" style="width:${item.progressClamped}%"></div></div><div class="meta-progress-label"><span>${item.measured ? formatDecimal(item.current) + unit(item.current) : 'Sem dados'} / ${item.target ?? '—'}${item.target == null ? '' : unit(item.target)}</span><span>${item.progress == null ? 'Aguardando registros' : item.progress + '% da meta'}</span></div></div><label class="meta-inputs">Meta: <input type="number" min="${item.id === 'studyDays' ? 1 : 0}" ${item.id === 'accuracy' ? 'max="100"' : item.id === 'studyDays' ? 'max="7"' : ''} step="1" value="${item.target ?? 0}" aria-label="${escapeHtml(item.label)}" data-delegated-blur="updateMeta('${item.key}', this.value)">${unit(Number(item.target))}</label><small class="result-goal-status">${suggested ? 'Escolha um objetivo compatível com sua rotina' : item.state === 'achieved' ? 'Meta atingida' : item.remaining == null ? 'Aguardando registros' : `${remaining === 1 ? 'Falta' : 'Faltam'} ${formatDecimal(remaining)}${item.id === 'accuracy' ? ' p.p.' : unit(remaining)} para atingir a meta`}</small></article>`;
+    // Essencial: ficam as metas de acerto, dias e questões; as demais esperam atrás de "Mostrar …".
+    const advanced = ADVANCED_GOALS[item.id];
+    return `<article class="meta-card"${advanced ? ` data-advanced="${advanced}"` : ''}><div class="meta-info"><div class="meta-name">${escapeHtml(item.label)}</div><div class="meta-formula">${escapeHtml(item.description)}</div>${suggested ? '<small class="context-note">Sugestão inicial editável</small>' : ''}</div><div class="meta-progress-block"><div class="meta-progress-track"><div class="meta-progress-fill ${item.state === 'achieved' ? 'over' : ''}" style="width:${item.progressClamped}%"></div></div><div class="meta-progress-label"><span>${item.measured ? formatDecimal(item.current) + unit(item.current) : 'Sem dados'} / ${item.target ?? '—'}${item.target == null ? '' : unit(item.target)}</span><span>${item.progress == null ? 'Aguardando registros' : item.progress + '% da meta'}</span></div></div><label class="meta-inputs">Meta: <input type="number" min="${item.id === 'studyDays' ? 1 : 0}" ${item.id === 'accuracy' ? 'max="100"' : item.id === 'studyDays' ? 'max="7"' : ''} step="1" value="${item.target ?? 0}" aria-label="${escapeHtml(item.label)}" data-delegated-blur="updateMeta('${item.key}', this.value)">${unit(Number(item.target))}</label><small class="result-goal-status">${suggested ? 'Escolha um objetivo compatível com sua rotina' : item.state === 'achieved' ? 'Meta atingida' : item.remaining == null ? 'Aguardando registros' : `${remaining === 1 ? 'Falta' : 'Faltam'} ${formatDecimal(remaining)}${item.id === 'accuracy' ? ' p.p.' : unit(remaining)} para atingir a meta`}</small></article>`;
   };
   const group = (key: string, title: string, description: string, ids: any[], extra = '') =>
     `<section class="goal-group goal-group--${key}" aria-labelledby="goalGroup-${key}"><header class="module-heading module-heading--compact"><h4 class="module-heading__title" id="goalGroup-${key}">${title}</h4><p class="module-heading__description">${description}</p></header>${ids
@@ -41,13 +48,13 @@ export function renderGoals(
       'Rotina',
       'Consistência e crédito compatível ao planejamento.',
       ['studyDays'],
-      renderAdherenceTargetSetting(adherenceTarget)
+      `<div data-advanced="meta de aderência">${renderAdherenceTargetSetting(adherenceTarget)}</div>`
     ) +
     group(
       'volume',
       'Volume',
-      'Tópicos, questões e simulados. Disponibilidade em horas é configurada separadamente.',
-      ['weeklyTopics', 'monthlyTopics', 'questions', 'simulations'],
+      'Tópicos, questões e simulados da semana. Disponibilidade em horas é configurada separadamente.',
+      ['weeklyTopics', 'questions', 'simulations'],
       '<a class="btn ghost small" href="#metasCapacity">Configurar disponibilidade em horas</a>'
     )
   );

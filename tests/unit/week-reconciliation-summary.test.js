@@ -379,3 +379,14 @@ test('o excesso não usa caixa de alerta e o estudo avulso zerado não ocupa lin
   assert.doesNotMatch(out, /Estudo avulso, sem tarefa/);
   assert.match(out, /Estudo ligado a tarefa desta semana/);
 });
+
+test('capacidade não informada aparece como "Não informada", sem excesso nem sentença inventada', async () => {
+  const { buildWeekReconciliationFromExecution } = await import('../../src/ui/tabs/goals/week-reconciliation.js');
+  const model = {
+    capacityMinutes: 1050, capacityInformed: false, plannedMinutes: 300, studiedMinutes: 0,
+    days: [{ date: '2026-11-09' }, { date: '2026-11-15' }],
+  };
+  const out = render(h(WeekReconciliationSummary, { data: buildWeekReconciliationFromExecution(model, d => d.split('-').reverse().join('/')) }));
+  assert.match(out, /Capacidade da semana[\s\S]*?Informe as horas por dia[\s\S]*?Não informada/);
+  assert.doesNotMatch(out, /17 h 30 min|week-reconciliation__excess|falta /);
+});

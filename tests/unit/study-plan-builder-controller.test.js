@@ -231,3 +231,28 @@ test('plano confirmado rebaixa as ações secundárias a terciárias e não repe
   assert.match(html, /class="btn tertiary"[^>]*>Simular &quot;E se\?&quot;/);
   assert.doesNotMatch(html, /chart-allocation-bar|Capacidade semanal alocada/);
 });
+
+test('perfil sem plano mostra o roteiro de 3 passos com uma única ação cheia', () => {
+  const { deps, elements } = createMockDeps();
+  const state = deps.getState();
+  state.examDate = '';
+  createStudyPlanBuilderController(deps).renderStudyPlanBuilder();
+  const html = elements['examStudyPlan'].innerHTML;
+  assert.match(html, /Monte seu plano em 3 passos/);
+  assert.match(html, /aria-current="step"/);
+  assert.equal((html.match(/class="btn"/g) || []).length, 1);
+  assert.match(html, /href="#planejamento\/prova"[^>]*>\s*Definir data da prova/);
+});
+
+test('o roteiro avança: com prova e horas o passo atual é calcular a proposta; com plano ele some', () => {
+  const { deps, elements } = createMockDeps();
+  deps.getState().metas.horasPorDia = { 1: 2 };
+  const controller = createStudyPlanBuilderController(deps);
+  controller.renderStudyPlanBuilder();
+  const before = elements['examStudyPlan'].innerHTML;
+  assert.match(before, /Calcular proposta semanal/);
+  assert.equal((before.match(/is-done/g) || []).length, 2);
+  controller.calculateStudyPlanPreview();
+  controller.confirmStudyPlan();
+  assert.doesNotMatch(elements['examStudyPlan'].innerHTML, /plan-roadmap/);
+});

@@ -52,7 +52,7 @@ export function buildWeekReconciliationFromExecution(
   const range = (start: string, end: string) =>
     `${formatDate(start).slice(0, 5)} a ${formatDate(end).slice(0, 5)}`;
   return buildWeekReconciliation({
-    capacityMin: model.capacityMinutes,
+    capacityMin: model.capacityInformed === false ? 0 : model.capacityMinutes,
     plannedMin: model.plannedMinutes,
     studiedMin: model.studiedMinutes,
     links: model.strategic?.reconciliation,

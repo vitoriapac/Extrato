@@ -24,7 +24,7 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
       ? renderActionCard({
           contentHTML: renderEmptyState({
             title: 'Você ainda não possui um plano para esta semana.',
-            message: `Capacidade disponível: ${fmt(model.capacityMinutes)}. Monte o plano semanal e distribua os dias para acompanhar a execução.`,
+            message: `${model.capacityInformed === false ? 'Informe as horas por dia e m' : `Capacidade disponível: ${fmt(model.capacityMinutes)}. M`}onte o plano semanal e distribua os dias para acompanhar a execução.`,
           }),
           actions: [
             { href: '#metasPlanning', label: 'Montar planejamento', className: 'btn ghost small' },

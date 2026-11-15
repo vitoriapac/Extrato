@@ -12,6 +12,8 @@ export function createSettingsRepository({
     },
     updateDailyHours: (day: number | string, value: number) => {
       state().metas.horasPorDia[String(day)] = value;
+      // A pessoa mexeu na disponibilidade: a capacidade deixa de ser o padrão assumido.
+      state().metas.horasInformadas = true;
       return state().metas;
     },
     getSubjectGoals: () => state().metasPorDisciplina,

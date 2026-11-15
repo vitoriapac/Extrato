@@ -1,4 +1,6 @@
 import { h } from 'preact';
+import { decorateAdvancedReveals } from '../../essential-mode.js';
+import { isCapacityInformed } from '../../../application/goals/capacity-informed.js';
 import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
 import { WeeklyAvailabilityGrid } from './WeeklyAvailabilityGrid.js';
@@ -122,6 +124,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       formattedAverage,
       formattedToday,
       days,
+      informed: isCapacityInformed(state),
     });
   }
 
@@ -149,6 +152,8 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       subjects: state.subjects,
       activeExamTags: state.examBlueprint?.activeExamTags || [],
     });
+    // Antes de a pessoa informar as horas, a capacidade é só o padrão do app e não deve aparecer como número.
+    model.capacityInformed = isCapacityInformed(state);
 
     const distribution = buildStudyDistribution({
       today,
@@ -215,6 +220,8 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     const vnode = createPlanExecutionVNode();
     if (vnode) {
       mountPreact(vnode, container);
+      // Blocos avançados da Semana nascem depois da carga: o modo Essencial precisa do "Mostrar …".
+      if (typeof container.querySelectorAll === 'function') decorateAdvancedReveals(container);
     } else {
       container.innerHTML = '';
     }
@@ -454,6 +461,8 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
         accuracy: hasAccuracyEvidence ? ctx.recentPerformance().current!.accuracy : null,
         studyDays: countStudyDaysThisWeek(state.studySessions, ctx.todayISO()),
       });
+      // As metas nascem depois da carga: o modo Essencial precisa do "Mostrar …" de cada uma.
+      if (typeof container.querySelectorAll === 'function') decorateAdvancedReveals(container);
     }
     renderSelectedPeriodComparison();
   }
@@ -468,6 +477,27 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     const container = doc?.getElementById('weeklyHoursGoals');
     if (container) mountWeeklyAvailability(container);
+    placeCapacityBlock();
+  }
+
+  let capacityPlaced = false;
+
+  /** Sem capacidade informada, a disponibilidade fica fora da dobra, logo abaixo do plano; depois volta para "Ajustar". */
+  function placeCapacityBlock(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const block = doc?.getElementById('metasCapacity');
+    const plan = doc?.getElementById('metasPlanning');
+    const fold = doc?.getElementById('metasAdjust');
+    if (!block || !plan || !fold || block.parentElement == null || plan.parentElement == null)
+      return;
+    // Só na primeira renderização: ao digitar a primeira hora o bloco não pode sumir para dentro da dobra.
+    if (capacityPlaced) return;
+    capacityPlaced = true;
+    if (!isCapacityInformed(resolveState())) {
+      if (plan.nextElementSibling !== block) plan.after(block);
+    } else if (block.parentElement !== fold) {
+      fold.append(block);
+    }
   }
 
   function renderMetasPorDisciplinaSection(): void {

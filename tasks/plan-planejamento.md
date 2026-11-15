@@ -121,8 +121,8 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Crítica impeccable só da Semana, detector e axe sem regressão (4 rodadas: 26, 27, 28, 27/40; piso de 30 e meta de 4 dobras não atingidos, fechado com ressalva em 15/11/2026)
 
 ### Fase 3: Iniciante e analítico
-- [ ] Tarefa 12: Roteiro de 3 passos e blocos avançados no modo Essencial
-- [ ] Tarefa 13: Disponibilidade perto do plano e metas enxutas
+- [x] Tarefa 12: Roteiro de 3 passos e blocos avançados no modo Essencial
+- [x] Tarefa 13: Disponibilidade perto do plano e metas enxutas
 
 ### Checkpoint 3: Perfis
 - [ ] Percurso do iniciante (perfil vazio) e do analítico (demo) verificados

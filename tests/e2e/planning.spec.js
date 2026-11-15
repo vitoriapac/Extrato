@@ -229,7 +229,9 @@ test('a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico
   );
 });
 
-test('a Semana tem uma única lista de disciplinas, "Plano × estudado por disciplina"', async ({ page }) => {
+test('a Semana tem uma única lista de disciplinas, "Plano × estudado por disciplina"', async ({
+  page,
+}) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await openDemo(page);
@@ -243,12 +245,91 @@ test('a Semana tem uma única lista de disciplinas, "Plano × estudado por disci
   await expect(sub.locator('.chart-allocation-bar [class*="subject-bg-"]')).toHaveCount(0);
 });
 
-test('a nota do bloco de disciplinas usa o formato único de duração e o vocabulário da semana', async ({ page }) => {
+test('a nota do bloco de disciplinas usa o formato único de duração e o vocabulário da semana', async ({
+  page,
+}) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await openDemo(page);
   await openPlanningSubtab(page, 'semana');
   await page.locator('#studyDistribution').evaluate(node => (node.open = true));
   const note = await page.locator('#studyDistribution .analytics-note').first().textContent();
-  expect(note).toMatch(/Até hoje nesta semana: \d+ h( \d+ min)? com tarefa marcada e \d+ h( \d+ min)? estudados\./);
+  expect(note).toMatch(
+    /Até hoje nesta semana: \d+ h( \d+ min)? com tarefa marcada e \d+ h( \d+ min)? estudados\./
+  );
+});
+
+test('perfil vazio abre a Semana com o roteiro de 3 passos e uma única ação cheia', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(node => node.remove());
+  await openPlanningSubtab(page, 'semana');
+  const roadmap = page.locator('#metasSub-semana .plan-roadmap');
+  await expect(roadmap).toBeVisible();
+  await expect(roadmap.locator('li')).toHaveCount(3);
+  await expect(roadmap.locator('[aria-current="step"]')).toContainText('Data da prova');
+  // O roteiro vem antes do Resumo vazio e tem a única ação cheia da primeira tela.
+  const firstId = await page.locator('#metasSub-semana > section').first().getAttribute('id');
+  expect(firstId).toBe('metasPlanning');
+  const solid = await page
+    .locator('#metasSub-semana .btn:visible')
+    .evaluateAll(list =>
+      list.filter(b => !/ghost|tertiary|secondary/.test(b.className)).map(b => b.textContent.trim())
+    );
+  expect(solid).toEqual(['Definir data da prova']);
+});
+
+test('modo Essencial esconde os blocos avançados da Semana atrás de "Mostrar …" e o modo completo mostra tudo', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'semana');
+  const priorities = page.locator('#metasSub-semana .metas-priority-summary');
+  await page.evaluate(() => document.documentElement.removeAttribute('data-essential'));
+  await expect(priorities).toBeVisible();
+  await page.evaluate(() => document.documentElement.setAttribute('data-essential', 'on'));
+  await expect(priorities).toBeHidden();
+  const reveal = page.getByRole('button', { name: 'Mostrar execução das prioridades' });
+  await expect(reveal).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mostrar histórico de adaptações' })).toBeVisible();
+  await reveal.click();
+  await expect(priorities).toBeVisible();
+});
+
+test('perfil vazio mostra a disponibilidade fora da dobra e não inventa capacidade', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(node => node.remove());
+  await openPlanningSubtab(page, 'semana');
+  const capacity = page.locator('#metasCapacity');
+  await expect(capacity).toBeVisible();
+  expect(await capacity.evaluate(node => Boolean(node.closest('#metasAdjust')))).toBe(false);
+  const summary = page.locator('#planExecutionCard');
+  await expect(summary).toContainText('Não informada');
+  await expect(page.locator('#metasSub-semana')).not.toContainText('17 h 30 min');
+  // O passo "Horas por dia" do roteiro não aparece como feito com o padrão do app.
+  await expect(page.locator('.plan-roadmap__step.is-done')).toHaveCount(0);
+});
+
+test('metas: o modo Essencial mostra 3 e o modo completo mostra todas', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'semana');
+  await page.locator('#metasAdjust').evaluate(node => (node.open = true));
+  const cards = page.locator('#metasContainer .meta-card');
+  await page.evaluate(() => document.documentElement.setAttribute('data-essential', 'on'));
+  await expect(cards.locator('visible=true')).toHaveCount(3);
+  await page.evaluate(() => document.documentElement.removeAttribute('data-essential'));
+  // Acerto, dias, aderência, tópicos, questões e simulados; a meta mensal saiu da tela.
+  await expect(cards.locator('visible=true')).toHaveCount(6);
+  await expect(page.locator('#metasContainer')).not.toContainText('Tópicos no mês');
 });

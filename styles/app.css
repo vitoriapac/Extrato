@@ -3653,3 +3653,14 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 @media(max-width:760px){.shift-band{grid-template-columns:1fr;gap:var(--space-2)}}
 :is(.dark,[data-theme="dark"]) .chart-frame__swatch--soft{background:color-mix(in srgb,var(--chart-series-primary) 75%,var(--surface-card))}
 @media (max-width:760px),(pointer:coarse){.week-reconciliation__excess .btn{display:inline-flex;align-items:center;min-height:var(--touch-target);padding-inline:var(--space-2)}}
+/* Roteiro do perfil vazio (Semana): três passos, só o atual tem ação. */
+.plan-roadmap{margin:var(--space-2) 0 var(--space-3)}.plan-roadmap__title{margin:0 0 var(--space-2);font:600 1.125rem/1.3 var(--font-display);color:var(--heading)}
+.plan-roadmap__steps{display:grid;gap:0;margin:0;padding:0;list-style:none;border-top:1px solid var(--paper-line)}
+.plan-roadmap__step{display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--paper-line);color:var(--ink-soft)}
+.plan-roadmap__mark{display:inline-flex;align-items:center;justify-content:center;width:1.75rem;height:1.75rem;border:1px solid var(--border-control);border-radius:50%;font:600 var(--text-small) var(--font-data)}
+.plan-roadmap__label{display:flex;flex-direction:column;font:var(--text-body) var(--font-body)}.plan-roadmap__label small{font:var(--text-xs) var(--font-body);color:var(--ink-soft)}
+.plan-roadmap__step.is-current{color:var(--heading)}.plan-roadmap__step.is-current .plan-roadmap__mark{background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff)}.plan-roadmap__step.is-current .plan-roadmap__label{font-weight:600}
+.plan-roadmap__step.is-done .plan-roadmap__mark{background:var(--surface-card-muted);color:var(--chart-series-primary)}
+@media (max-width:560px){.plan-roadmap__step{grid-template-columns:2rem minmax(0,1fr)}.plan-roadmap__action{grid-column:1/-1}.plan-roadmap__action .btn{width:100%}}
+/* Essencial: metas marcadas como avançadas continuam escondidas mesmo com o display próprio do cartão. */
+[data-essential="on"] #metasContainer .meta-card[data-advanced]:not(.is-advanced-open){display:none}

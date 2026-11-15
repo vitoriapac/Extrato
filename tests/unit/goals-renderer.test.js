@@ -30,13 +30,13 @@ test('groups volume, routine and outcome without converting topic goals into hou
   assert.ok(html.indexOf('goal-group--outcome') < html.indexOf('goal-group--routine'));
   assert.ok(html.indexOf('goal-group--routine') < html.indexOf('goal-group--volume'));
   assert.match(html, /Tópicos concluídos nesta semana/);
-  assert.match(html, /Tópicos concluídos neste mês/);
+  assert.doesNotMatch(html, /Tópicos concluídos neste mês/);
   assert.match(html, /href="#metasCapacity"/);
   assert.match(html, /href="#subjectAccuracyGoals"/);
   assert.match(html, /Meta de Aderência/);
   assert.match(html, /Sem dados/);
   assert.equal(JSON.stringify(goals), before);
-  assert.equal((html.match(/class="meta-card"/g) || []).length, 7);
+  assert.equal((html.match(/class="meta-card"/g) || []).length, 6);
 });
 test('accuracy gaps use readable percentage points without floating point residue', () => {
   const model = buildResultGoalsViewModel({
@@ -91,4 +91,21 @@ test('rótulos de meta concordam no plural e dizem que a porcentagem é da meta'
   assert.match(html, /1 dia \/ 5 dias/);
   assert.match(html, /\d+% da meta/);
   assert.doesNotMatch(html, /=>/);
+});
+
+test('metas enxutas: sem meta mensal na tela; só acerto, dias e questões ficam fora de "Mostrar …"', () => {
+  const goals = { semanal: 5, mensal: 20, questoesSemanal: 100, simuladosSemanal: 1, consistenciaSemanal: 5, metaAprovacao: 80 };
+  const model = buildResultGoalsViewModel({ goals, achieved: { weeklyTopics: 2, monthlyTopics: 7, questions: 50, simulations: 1, studyDays: 3, accuracy: null } });
+  const html = renderGoals(model, { adherenceTarget: 80, escapeHtml });
+  assert.doesNotMatch(html, /Tópicos no mês/);
+  const cards = [...html.matchAll(/<article class="meta-card"([^>]*)>.*?meta-name">([^<]+)</g)].map(m => [m[2], /data-advanced/.test(m[1])]);
+  assert.deepEqual(cards, [
+    ['Meta de acerto', false],
+    ['Dias com estudo', false],
+    ['Tópicos na semana', true],
+    ['Questões na semana', false],
+    ['Simulados na semana', true],
+  ]);
+  assert.match(html, /data-advanced="meta de aderência"/);
+  assert.equal(JSON.stringify(goals).includes('mensal'), true, 'o dado salvo continua no estado');
 });

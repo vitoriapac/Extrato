@@ -61,7 +61,7 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
     data.plannedMin / data.capacityMin < 0.5;
   const balance = weekBalanceParts(data);
   const sentence = weekSummaryParts(data);
-  const excess = Math.max(0, data.plannedMin - data.capacityMin);
+  const excess = data.capacityMin > 0 ? Math.max(0, data.plannedMin - data.capacityMin) : 0;
   const hasBalance = data.capacityMin > 0 || data.plannedMin > 0 || data.studiedMin > 0;
   return (
     <section class="week-reconciliation" aria-label={`Conciliação da semana, ${data.periodLabel}`}>
@@ -75,8 +75,12 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
       )}
       <LedgerLine
         label="Capacidade da semana"
-        hint="Soma da disponibilidade dos 7 dias"
-        value={fmt(data.capacityMin)}
+        hint={
+          data.capacityMin > 0
+            ? 'Soma da disponibilidade dos 7 dias'
+            : 'Informe as horas por dia para ver a capacidade'
+        }
+        value={data.capacityMin > 0 ? fmt(data.capacityMin) : 'Não informada'}
       />
       <LedgerLine
         label="Com tarefa marcada"
