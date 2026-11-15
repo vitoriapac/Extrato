@@ -186,3 +186,34 @@ test('T28: tendência semanal dos KPIs e régua da Prontidão com faixa projetad
   assert.equal((withTrend.match(/performance-kpi__trend/g) || []).length, 3);
   assert.equal((renderPerformanceOverview({ ...base, trend: trend.slice(0, 2) }, opts).match(/performance-kpi__trend/g) || []).length, 0);
 });
+
+test('T29: barras de precisão com meta, antes × agora e lacuna × impacto', async () => {
+  const { renderPerformanceSubjectComparison } = await import('../../src/ui/performance/performance-subject-comparison-renderer.js');
+  const subject = (n, accuracy, state = 'measured') => ({ subjectId: `s${n}`, name: `Disc ${n}`, target: 80, accuracy, gap: accuracy == null ? null : accuracy - 80, evolution: 2, questions: state === 'insufficient' ? 3 : 40, state, plannedMinutes: 0, executedMinutes: 0, balanceMinutes: null, suggestion: null });
+  const comparison = renderPerformanceSubjectComparison(
+    { rows: [1, 2, 3, 4, 5, 6, 7].map(n => subject(n, 60 + n)).concat(subject(8, null, 'insufficient')), measured: 7, sort: 'gap' },
+    { escapeHtml: String, escapeAttr: String }
+  );
+  assert.equal((comparison.match(/class="chart-bullet subject-precision-bar"/g) || []).length, 7);
+  assert.match(comparison, /meta 80%/);
+  assert.match(comparison, /Mostrar mais barras · \+3/);
+  assert.match(comparison, /amostra de questões/);
+
+  const { renderBeforeAfterChart } = await import('../../src/ui/performance/before-after-chart.js');
+  const row = (id, accuracy, evolution) => ({ subjectId: id, name: `D ${id}`, accuracy, evolution });
+  const chart = renderBeforeAfterChart(
+    { groups: { attention: [row('a', 53.7, -17.7)], maintain: [row('b', 85, 1)], intervene: [], evolving: [row('c', 70, 10)] } },
+    { escapeHtml: String, escapeAttr: String, targets: { a: 80 } }
+  );
+  assert.match(chart, /D a: 71,4% antes, 53,7% agora \(−17,7 p\.p\.\), meta 80%/);
+  assert.ok(chart.indexOf('D a') < chart.indexOf('D b') && chart.indexOf('D b') < chart.indexOf('D c'));
+  assert.equal(renderBeforeAfterChart({ groups: {} }, { escapeHtml: String, escapeAttr: String }), '');
+
+  const { renderGapImpactChart } = await import('../../src/ui/performance/gap-impact-chart.js');
+  const topic = (n, subjectName, mastery, impact) => ({ granularity: 'topic', name: `T${n}`, subjectName, signals: [{ metrics: { mastery, impact } }] });
+  const gap = renderGapImpactChart([topic(1, 'Mat', 20, 90), topic(2, 'Port', 40, 80), topic(3, 'Mat', 50, 70), { granularity: 'topic', name: 'sem', subjectName: 'Mat', signals: [] }], { escapeHtml: String });
+  assert.match(gap, /primeiros 3 tópicos/);
+  assert.equal((gap.match(/gap-impact__group/g) || []).length, 2);
+  assert.match(gap, /T1: lacuna \(100 menos o domínio 20\)/);
+  assert.equal(renderGapImpactChart([topic(1, 'Mat', 20, 90), topic(2, 'Mat', 30, 80)], { escapeHtml: String }), '');
+});

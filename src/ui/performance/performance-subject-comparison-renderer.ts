@@ -1,6 +1,7 @@
 import { coverageEvidence, renderEvidenceBadge } from './evidence-badge.js';
 import { formatDecimal, formatPoints } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
+import { renderBulletBar } from '../primitives/charts/charts.js';
 type Row = Record<string, any>;
 const value = (number: number | null | undefined, suffix = '') =>
   number == null ? '—' : `${formatDecimal(number)}${suffix}`;
@@ -45,11 +46,17 @@ export function renderPerformanceSubjectComparison(
     belowGoal = model.rows.filter(
       (item: any) => item.state !== 'insufficient' && item.gap < 0
     ).length;
-  const previews = first
-    .map(
-      (item: any) =>
-        `<li><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button><span>${item.state === 'insufficient' ? `Amostra ${item.questions}/10` : value(item.accuracy, '%') + ' · meta de precisão ' + item.target + '%'}</span><span class="ui-progress" role="progressbar" aria-label="${escapeAttr(item.name)} · ${item.state === 'insufficient' ? 'amostra de questões' : 'precisão'}" aria-valuemin="0" aria-valuemax="${item.state === 'insufficient' ? 10 : 100}" aria-valuenow="${item.state === 'insufficient' ? Math.min(10, item.questions) : Math.min(100, Math.max(0, item.accuracy ?? 0))}"><i style="width:${item.state === 'insufficient' ? Math.min(100, item.questions * 10) : Math.min(100, Math.max(0, item.accuracy ?? 0))}%"></i></span><small>${item.balanceMinutes == null ? '' : `Plano: ${balance(item.balanceMinutes)} · `}${item.questions} questões${item.evolution == null ? ' · evolução sem base comparável' : ' · ' + signed(item.evolution) + ' frente ao período anterior'}</small></li>`
-    )
-    .join('');
-  return `<section class="performance-block performance-subject-comparison" id="bloco-comparacao"><div class="performance-comparison-heading"><div><h3>Comparação entre disciplinas</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.rows.length), `${model.measured} de ${model.rows.length} disciplinas com 10 questões ou mais no período`)}<details class="limits-disclosure"><summary>Como ler esta comparação</summary><p class="analytics-note">Precisão usa questões pessoais do período e exige 10 respostas. Evolução exige 10 respostas em cada período. Planejado e realizado são o tempo das atividades do plano e o estudo registrado no período; o saldo é a diferença. A sugestão é o tópico de maior prioridade já calculado para a disciplina.</p></details></div><label>Ordenar por <select class="select-control ui-select-field__control" data-performance-subject-sort>${options.map(([key, label]) => `<option value="${key}" ${model.sort === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div><p class="performance-comparison-summary"><strong>${model.measured} de ${model.rows.length}</strong> disciplinas com amostra · <strong>${questionCount}</strong> questões · <strong>${belowGoal}</strong> abaixo da meta com dados suficientes.</p><ul class="performance-subject-previews">${previews}</ul><details class="performance-more"><summary>Ver tabela detalhada</summary>${table(first, 'Disciplinas no concurso ativo')}${rest.length ? table(rest, 'Outras disciplinas no concurso ativo') : ''}</details></section>`;
+  // Barra de precisão com a marca da meta; com amostra insuficiente a barra mostra o progresso da amostra.
+  const preview = (item: any) => {
+    const insufficient = item.state === 'insufficient';
+    const bar = insufficient
+      ? `<span class="ui-progress" role="progressbar" aria-label="${escapeAttr(item.name)} · amostra de questões" aria-valuemin="0" aria-valuemax="10" aria-valuenow="${Math.min(10, item.questions)}"><i style="width:${Math.min(100, item.questions * 10)}%"></i></span>`
+      : renderBulletBar({ value: item.accuracy, target: item.target, label: `${item.name} · precisão`, unit: '%', className: 'subject-precision-bar' });
+    return `<li><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button><span>${insufficient ? `Amostra ${item.questions}/10` : value(item.accuracy, '%') + ' · meta de precisão ' + item.target + '%'}</span>${bar}<small>${item.balanceMinutes == null ? '' : `Plano: ${balance(item.balanceMinutes)} · `}${item.questions} questões${item.evolution == null ? ' · evolução sem base comparável' : ' · ' + signed(item.evolution) + ' frente ao período anterior'}</small></li>`;
+  };
+  const previews = first.map(preview).join('');
+  const morePreviews = rest.length
+    ? `<details class="performance-more"><summary>Mostrar mais barras · +${rest.length}</summary><ul class="performance-subject-previews">${rest.map(preview).join('')}</ul></details>`
+    : '';
+  return `<section class="performance-block performance-subject-comparison" id="bloco-comparacao"><div class="performance-comparison-heading"><div><h3>Comparação entre disciplinas</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.rows.length), `${model.measured} de ${model.rows.length} disciplinas com 10 questões ou mais no período`)}<details class="limits-disclosure"><summary>Como ler esta comparação</summary><p class="analytics-note">Precisão usa questões pessoais do período e exige 10 respostas. Evolução exige 10 respostas em cada período. Planejado e realizado são o tempo das atividades do plano e o estudo registrado no período; o saldo é a diferença. A sugestão é o tópico de maior prioridade já calculado para a disciplina.</p></details></div><label>Ordenar por <select class="select-control ui-select-field__control" data-performance-subject-sort>${options.map(([key, label]) => `<option value="${key}" ${model.sort === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div><p class="performance-comparison-summary"><strong>${model.measured} de ${model.rows.length}</strong> disciplinas com amostra · <strong>${questionCount}</strong> questões · <strong>${belowGoal}</strong> abaixo da meta com dados suficientes.</p><ul class="performance-subject-previews">${previews}</ul>${morePreviews}<details class="performance-more"><summary>Ver tabela detalhada</summary>${table(first, 'Disciplinas no concurso ativo')}${rest.length ? table(rest, 'Outras disciplinas no concurso ativo') : ''}</details></section>`;
 }

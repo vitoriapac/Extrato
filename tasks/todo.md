@@ -341,8 +341,8 @@ Verificação usada abaixo:
 
 ### Tarefa 29: Gráficos de Disciplinas e Diagnóstico
 **Aceite:**
-- [ ] Barras de precisão com linha da meta; inclinação antes × agora
-- [ ] Barras de lacuna × impacto dos 10 primeiros tópicos
+- [x] Barras de precisão com linha da meta; inclinação antes × agora
+- [x] Barras de lacuna × impacto dos 10 primeiros tópicos
 **Verificação:** contraste, axe, alternativa em texto
 **Dependências:** T18, T20
 **Tamanho:** M

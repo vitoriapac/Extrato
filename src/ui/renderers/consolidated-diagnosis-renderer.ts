@@ -1,5 +1,6 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { ALERT_SEVERITY_VARIANT, renderBadgeIcon } from '../primitives/badge.js';
+import { renderGapImpactChart } from '../performance/gap-impact-chart.js';
 import { renderDiagnosticSummary } from './diagnostic-summary-renderer.js';
 import { SHARED_SIGNALS_LIMITATION } from '../../application/diagnostics/build-consolidated-signals.js';
 
@@ -90,5 +91,5 @@ export function renderConsolidatedDiagnosis(
       return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'tópico' : 'tópicos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
     })
     .join('');
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por tópico, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${controls}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por tópico, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }
