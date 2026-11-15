@@ -3783,3 +3783,11 @@ button.performance-window{position:relative}button.performance-window::after{con
   .subject-target-showall{display:inline-flex;margin-top:var(--space-2)}
   .subject-target-table tr.is-extra{display:none}
 }
+
+/* Crítica 7, P2: decisão e resumo do Fechamento sem vazios nem botões esticados */
+.weekly-close-actions>.btn,.weekly-close-actions>button{justify-self:start}
+.weekly-close-line .weekly-close-adherence{margin:0;padding-top:var(--space-1)}
+
+/* Crítica 7, P2: perfil sem plano e sem estudo não mostra Resumo, zeros nem Replanejamento */
+#planExecutionCard:has(.plan-execution--empty),
+#metasSub-semana:has(.plan-execution--empty) .metas-replan{display:none}

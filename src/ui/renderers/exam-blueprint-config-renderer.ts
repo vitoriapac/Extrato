@@ -16,7 +16,10 @@ export function renderExamBlueprintConfigView({
     examDate: blueprint?.examDate || null,
     today: today || new Date().toISOString().slice(0, 10),
   });
-  const roadmapHtml = renderPhaseRoadmapTimeline({
+  // Sem data da prova, o convite com o campo de data já diz o que fazer: a régua vazia só repetiria o pedido.
+  const roadmapHtml = !blueprint?.examDate
+    ? ''
+    : renderPhaseRoadmapTimeline({
     visual: roadmapVisual,
     label: 'Régua de preparação e fases até a prova',
     className: 'mb-4',

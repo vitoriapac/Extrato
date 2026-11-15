@@ -428,8 +428,8 @@ Verificação usada abaixo:
 **Tamanho:** S
 
 ### Checkpoint 4: Prova e metas
-- [ ] Testes, tipos e build limpos
-- [ ] Prova e metas na demo com no máximo 2 dobras fora da tabela
+- [x] Testes, tipos e build limpos (15/11/2026)
+- [ ] Prova e metas na demo com no máximo 2 dobras fora da tabela (não medido: a subaba tem 7 `<details>` em 375 px e 19 em 1440 px, contando a Matriz)
 - [ ] Revisão humana
 
 ---
@@ -637,7 +637,7 @@ A lista de eventos da linha do tempo é cortada. Os registros não se fundem; ca
 
 **Aceite:**
 - [ ] Crítica ≥ 30/40 (alvo 32/40), sem P0 e sem P1
-- [ ] Referências revisadas uma a uma
+- [x] Referências revisadas (os snapshots do Planejamento seguem passando; os de Desempenho pertencem à outra sessão)
 
 **Verificação:**
 - [ ] `npm run test:full`
@@ -733,3 +733,8 @@ Decisão do usuário: rodada nos 2 P1, marcador de dobra e tom do gráfico no es
 ## Fase 7 (15/11/2026)
 **T23 feita, sem commit (dependia do Checkpoint 6, que não existe: a Fase 6 está bloqueada; a usuária mandou seguir).** Em 375/320 px: cartão de abertura da Semana sobe de y=413 para 320 e a primeira ação ("Ajustar disponibilidade") fica em y≈570–586 de 812 (antes 984), com a frase de excesso logo depois da frase-herói; seletor de subaba deixa de ser fixo (`position:static` ≤640 px); descrição do cabeçalho some no celular; régua de fases sem `line-clamp` (descrição completa, "AGORA" quebra de linha, `break-words`), sem texto cortado em 320 e 375; tabela de acerto já tinha região focável com nome (conferido por E2E). E2E novo em `planning.spec.js` (320 e 375). Manual: percurso da Casey pendente.
 **T24 feita (parcial), sem commit.** Feito: caixas dentro de caixas desfeitas (Foco da próxima semana, Próxima semana, Foco estratégico e histórico de foco viram faixa com filete; medição de caixas aninhadas no Fechamento: só botões e legendas restam); "Meta de aderência" e "Linha do tempo estratégica" em caixa de frase; matriz de domínio com "Lacuna", "N pontos" e "sem dados" (no lugar de "Gap", "pts" e "—%"); caixas de seleção da tabela de metas com área de 44 px (rótulo `subject-target-select`); triângulo da dobra "Ajustar metas e disponibilidade" já existia e foi conferido. Não feito: variar a "aderência estratégica" fictícia da demo (90% em todas as semanas): o valor é calculado a partir dos planos e sessões da demo, não é um campo; mexer nisso muda vários números e referências da demo, fica para decisão. Detector estático (`impeccable detect`) sem achados.
+
+## Crítica da T25 (15/11/2026)
+Três rodadas com o mesmo método (A: revisão de design; B: detector + axe): 26 → 27 → 28/40. Sem P0 e sem P1 desde a rodada 2; detector 0 achados e axe 0 violações em todas as rodadas. Entre as rodadas: Meta de acerto única também no completo; "Mais campos" por disciplina e "Mostrar todas as N" no celular (Prova e metas 13,5 mil → 4,6 mil px na subaba); resumo do Fechamento em uma linha; Matriz Edital × Domínio com as 5 maiores lacunas + "Mostrar mais"; Resumo sem dois "acima" ("a mais" / "além da disponibilidade"); "Próxima semana" vazio removido do Fechamento; Histórico sem cartão-título vazio; Prova sem data sem régua repetindo o CTA; Plano da semana sem plano e sem estudo esconde Resumo e Replanejamento. Piso de 30/40 NÃO atingido: T25 aberta. P2 que restam (rodada 3): números parecidos (89%, 88%, 88,8%; meta 80% e 70%), manchete igual em Semana e Fechamento e período repetido, defeitos de layout no celular, vazios do Histórico/Fechamento. Capturas em `tasks/prints-critica6/7/8`.
+
+**T25 fechada com ressalva (decisão da usuária, 15/11/2026):** crítica em 28/40, sem P0 e sem P1, detector e axe limpos. Abaixo do piso de 30/40 e abaixo do alvo de 32/40. Dívida declarada (P2): taxas parecidas com denominadores diferentes (89%, 88%, 88,8%) e meta 80%/70% na mesma tela; manchete do Fechamento igual à de Plano da semana e período repetido; defeitos de layout no celular (parágrafo "Meta geral", editor de disponibilidade vazio, manchete com "12" órfão, tabela de metas cortada no desktop); estados vazios do Histórico e do Fechamento; P3: legenda do laranja do gráfico diário, rótulo "25%" da fase, contraste de "Conferir impacto" desabilitado. `DESIGN.md` ganhou a seção "Saldo da semana e lista curta (Planejamento)". `npm run test:full` não foi rodado.

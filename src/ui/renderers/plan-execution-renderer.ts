@@ -100,7 +100,13 @@ export function renderPlanExecution(model: Record<string, any>, { formatDate }: 
         records: daysTable,
       })
     : '';
+  // Sem plano e sem estudo, o Resumo e o Replanejamento só mostrariam zeros: o CSS os esconde por este marcador.
+  const emptyMarker =
+    model.state === 'unplanned' && !(model.studiedMinutes || 0)
+      ? '<span class="plan-execution--empty" hidden></span>'
+      : '';
   return (
+    emptyMarker +
     summary +
     unplanned +
     renderStrategicExecution(model.strategic, periodLabel) +

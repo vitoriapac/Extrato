@@ -522,7 +522,10 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         }) +
         '<section class="weekly-close-act" aria-labelledby="weeklyNextTitle"><h4 class="weekly-close-act__title" id="weeklyNextTitle">A decisão</h4>' +
         ((model.weeklyClose.priorities || []).length
-          ? renderWeeklyCloseNext({ ...model.weeklyClose, priorities: [] }, options) +
+          ? // Com o ciclo de decisão, "Foco da próxima semana" já é o título do bloco: sem "Próxima semana" vazio antes.
+            (model.weeklyClose.decisionCycle
+              ? ''
+              : renderWeeklyCloseNext({ ...model.weeklyClose, priorities: [] }, options)) +
             renderWeeklyCloseActions(withTopicNames(model.weeklyClose))
           : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
         '</section>';

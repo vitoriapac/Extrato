@@ -87,12 +87,12 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 ## Lista de tarefas
 
 ### Fase 0: Defeitos e investigação (falhar cedo)
-- [ ] Tarefa 1: Meta global de questões chega ao editor por disciplina
-- [ ] Tarefa 2: Investigar o "Distribuir nos próximos 7 dias" (2h20 em 5 dias contra 12h)
-- [ ] Tarefa 3: Corrigir a legenda invertida em "Distribuição entre disciplinas"
+- [x] Tarefa 1: Meta global de questões chega ao editor por disciplina
+- [x] Tarefa 2: Investigar o "Distribuir nos próximos 7 dias" (2h20 em 5 dias contra 12h)
+- [x] Tarefa 3: Corrigir a legenda invertida em "Distribuição entre disciplinas"
 
 ### Checkpoint 0: Defeitos
-- [ ] Testes, tipos e build limpos; relatório da T2 revisado com você
+- [x] Testes, tipos e build limpos; relatório da T2 revisado com você
 
 ### Fase 1: Números coerentes
 - [x] Tarefa 4: Resumo da semana com os nomes fixos, estudado em destaque e demo vinculada ao plano
@@ -135,7 +135,7 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 17: Ritmo ao lado da meta de tópicos, com aviso
 
 ### Checkpoint 4: Prova e metas
-- [ ] Meta de acerto editável em um lugar só; ajustar 17 disciplinas com uma seleção e uma ação
+- [x] Meta de acerto editável em um lugar só; ajustar 17 disciplinas com uma seleção e uma ação
 
 ### Fase 5: Fechamento e Histórico
 - [x] Tarefa 18: Análise do Fechamento em uma dobra, com a tendência de 4 semanas
@@ -158,7 +158,7 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 ### Fase 7: Celular e acabamento
 - [x] Tarefa 23: Primeira tela e tabelas no celular
 - [x] Tarefa 24: Polimento visual e de texto
-- [ ] Tarefa 25: Crítica final e atualização das referências visuais
+- [~] Tarefa 25: Crítica final e atualização das referências visuais
 
 ### Checkpoint final
 - [ ] Crítica impeccable ≥ 30/40 (alvo 32), sem P0/P1; suíte completa passando

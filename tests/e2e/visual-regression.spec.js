@@ -36,8 +36,9 @@ for (const viewport of viewports) {
       );
     }
     const close = page.locator('#weeklyCloseDashboard');
-    await expect(close.locator('.weekly-next')).toContainText('Próxima semana');
-    await expect(close.locator('.weekly-next')).not.toContainText('Próxima ação');
+    // "Foco da próxima semana" é o único título da decisão: sem bloco "Próxima semana" vazio.
+    await expect(close.locator('.weekly-next')).toHaveCount(0);
+    await expect(close.locator('.weekly-close-actions h4')).toHaveText('Foco da próxima semana');
     // Três atos em ordem: a semana, o retrato, a decisão sobre a próxima semana.
     const acts = await close.evaluate(element =>
       [...element.children].map(child => child.querySelector('h4')?.textContent)
@@ -61,7 +62,6 @@ for (const viewport of viewports) {
     // O histórico de foco saiu do fechamento e vive na seção Histórico.
     await expect(close.locator('.weekly-focus-history')).toHaveCount(0);
     await expect(page.locator('#weeklyCloseHistoryDashboard .weekly-focus-history')).toHaveCount(1);
-    await expect(close.locator('.weekly-close-act').nth(2).locator('.weekly-next')).toHaveCount(1);
     const bounds = await close.evaluate(element => ({
       right: element.getBoundingClientRect().right,
       viewport: innerWidth,
