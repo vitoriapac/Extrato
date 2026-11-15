@@ -215,7 +215,7 @@ test('o excesso vira uma sublinha com ação para ajustar a disponibilidade', as
   });
   const out = renderPlanExecution(model, { formatDate: d => d.split('-').reverse().join('/') });
   // 5 h marcadas para 2 h de capacidade: excesso de 3 h, com a ação ao lado.
-  assert.match(out, /Marcado acima da capacidade em <strong>3 h<\/strong>/);
+  assert.match(out, /Você marcou <strong>3 h<\/strong> além da disponibilidade/);
   assert.match(out, /data-delegated-click="openAvailabilityAdjust\(\)"[^>]*>\s*Ajustar disponibilidade/);
   assert.doesNotMatch(out, /context-note--attention|tempo planejado nos dias|Só .* de capacidade têm tarefa marcada/);
 });
@@ -268,12 +268,14 @@ test('fechamento e resumo mostram os mesmos valores e rótulos para a mesma sema
     reconciliation: buildWeekReconciliationFromExecution(model, formatDate),
   });
   const resumo = renderPlanExecution(model, { formatDate });
-  for (const label of ['Capacidade da semana', 'Com tarefa marcada', 'Estudado até hoje'])
-    assert.ok(out.includes(label) && resumo.includes(label), label);
-  // Mesmos valores (1 h 20 min com tarefa marcada, 1 h estudada) nos dois lugares.
-  for (const value of ['1 h 20 min', '1 h'])
-    assert.ok(out.includes(`>${value}<`) && resumo.includes(`>${value}<`), value);
-  assert.match(out, /ledger-line--total[^>]*>.*?Estudado até hoje/);
+  // O Fechamento lê a semana em uma frase; o extrato completo fica no Resumo da semana.
+  const sentence = html =>
+    (/class="[^"]*sentence[^"]*">(.*?)<\/p>/s.exec(html)?.[1] || '').replace(/<[^>]+>/g, '').trim();
+  assert.ok(sentence(resumo).length > 0);
+  assert.equal(sentence(out), sentence(resumo));
+  assert.match(out, /class="weekly-close-line"/);
+  assert.doesNotMatch(out, /ledger-line|Capacidade da semana/);
+  assert.match(resumo, /ledger-line--total[^>]*>.*?Estudado até hoje/);
   assert.doesNotMatch(out, />Planejado<|>Realizado</);
 });
 
@@ -299,8 +301,8 @@ test('fechamento com estudo sem vínculo explica o 0% e oferece marcar o restant
     out,
     /data-delegated-click="openWeeklyAdherencePlanning\(\)"[^>]*>\s*Marcar o restante do plano/
   );
-  // A explicação vem antes das linhas do extrato.
-  assert.ok(out.indexOf('estudar fora do plano') < out.indexOf('Capacidade da semana'));
+  // A explicação vem antes da linha-resumo.
+  assert.ok(out.indexOf('estudar fora do plano') < out.indexOf('weekly-close-line'));
   assert.match(out, /Aderência ao plano<\/span><strong>0%/);
 });
 
@@ -341,7 +343,7 @@ test('frase-resumo diz o estudado contra a capacidade em três situações', asy
     buildWeekReconciliation({ periodLabel: 'x', capacityMin, plannedMin: 0, studiedMin });
   assert.equal(weekSummarySentence(d(720, 623)), 'Estudado 10 h 23 min de 12 h; falta 1 h 37 min.');
   assert.equal(weekSummarySentence(d(720, 720)), 'Estudado 12 h de 12 h: capacidade completa.');
-  assert.equal(weekSummarySentence(d(720, 810)), 'Estudado 13 h 30 min de 12 h: 1 h 30 min acima da capacidade.');
+  assert.equal(weekSummarySentence(d(720, 810)), 'Estudado 13 h 30 min de 12 h: 1 h 30 min a mais.');
   assert.equal(weekSummarySentence(d(0, 0)), null);
   assert.equal(weekSummarySentence(d(0, 30)), 'Estudado 30 min até hoje.');
 });

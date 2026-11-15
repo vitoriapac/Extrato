@@ -128,6 +128,12 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'chart-line',
   },
   {
+    label: 'Desempenho: Diagnóstico',
+    keywords: 'diagnostico lacunas prioridades matriz alt 3',
+    action: 'performance:diagnosis',
+    icon: 'chart-line',
+  },
+  {
     label: 'Desempenho: Resultados das provas',
     keywords: 'questoes simulados inteligencia da prova alt 4',
     action: 'performance:questions',
@@ -277,6 +283,11 @@ export function createSearchController(options: SearchControllerOptions) {
     } else if (typeof action === 'string' && action.startsWith('performance:')) {
       activateTab('desempenho');
       openPerformanceSection(document, action.slice('performance:'.length));
+      const sectionTarget = document.getElementById('performanceSectionContent') as HTMLElement | null;
+      if (sectionTarget) {
+        sectionTarget.tabIndex = -1;
+        sectionTarget.focus({ preventScroll: true });
+      }
     } else if (action === 'diagnosis') {
       // A central fica num <details> fechado em Desempenho, que o modo Essencial também esconde: abrir, liberar, rolar e focar.
       activateTab('desempenho');

@@ -114,11 +114,11 @@ export function PhaseRoadmapTimeline({
               class={`p-3 rounded-default border flex flex-col justify-between transition-all ${cardClass}`}
             >
               <div>
-                <div class="flex items-center justify-between gap-1 mb-1">
+                <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
                   <span class="text-xs font-semibold leading-tight break-words">{item.label}</span>
                   {isCurrent && (
                     <span
-                      class={`px-2 py-1 rounded text-xs uppercase tracking-wider ${badgeClass}`}
+                      class={`px-1 py-0.5 rounded text-xs uppercase tracking-wider ${badgeClass}`}
                     >
                       Agora
                     </span>
@@ -129,7 +129,7 @@ export function PhaseRoadmapTimeline({
                     </span>
                   )}
                 </div>
-                <p class="text-xs leading-snug line-clamp-2 text-content-secondary">
+                <p class="text-xs leading-snug break-words text-content-secondary">
                   {item.description}
                 </p>
               </div>

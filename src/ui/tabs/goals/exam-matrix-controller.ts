@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { lazyMore } from '../../lazy-more.js';
 import { mountPreact } from '../../preact-mount.js';
 import { ExamClassificationModal } from '../../modals/ExamClassificationModal.js';
 import { syncDialogOpen } from '../../primitives/dialog.js';
@@ -261,13 +262,17 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       metricsByTopic: metrics,
       activeExamTags: state.examBlueprint?.activeExamTags || [],
     });
+    const pct = (value: unknown) => (value == null ? 'sem dados' : `${value}%`);
+    // Só as 5 disciplinas com maior lacuna entram na tela; o resto vem em "Mostrar mais".
+    const limitCards = (cards: string[]) =>
+      cards.slice(0, 5).join('') + lazyMore(cards.slice(5).join(''), cards.length - 5);
 
     el.innerHTML = rows.length
-      ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows
+      ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Lacuna</span></div>${limitCards(rows
           .sort((a: any, b: any) => (b.gap ?? -999) - (a.gap ?? -999))
           .map(
             (row: any) =>
-              `<details><summary><strong>${ctx.escapeHtml(row.name)}</strong><span data-label="Cobertura">${row.coverage ?? '—'}%</span><span data-label="Domínio">${row.mastery ?? '—'}%</span><span data-label="Retenção">${row.retention ?? '—'}%</span><span data-label="Gap">${row.gap == null ? '—' : (row.gap > 0 ? '-' : '') + Math.abs(row.gap) + ' pts'}</span></summary>${row.topics
+              `<details><summary><strong>${ctx.escapeHtml(row.name)}</strong><span data-label="Cobertura">${pct(row.coverage)}</span><span data-label="Domínio">${pct(row.mastery)}</span><span data-label="Retenção">${pct(row.retention)}</span><span data-label="Lacuna">${row.gap == null ? 'sem dados' : (row.gap > 0 ? '-' : '') + Math.abs(row.gap) + ' pontos'}</span></summary>${row.topics
                 .map((t: any) => {
                   const metric = topicExamMetricForActiveScope(t);
                   const meta = [
@@ -289,8 +294,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
                   return `<div class="mastery-topic"><span>${ctx.escapeHtml(t.name)}${meta ? `<small>${ctx.escapeHtml(meta)} · estimativa por tópico</small>` : ''}</span><span data-label="Cobertura">${t.coverage}%</span><span data-label="Domínio">${t.mastery ?? '—'}%</span><span data-label="Retenção">${t.retention ?? '—'}%</span><span data-label="Estado"><span class="status-badge ${stateInfo.tone}">${ctx.escapeHtml(stateInfo.label)}</span></span></div>`;
                 })
                 .join('')}</details>`
-          )
-          .join('')}</div>`
+          ))}</div>`
       : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
   }
 
@@ -407,6 +411,34 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     });
 
     historicalMatrix?.addEventListener('click', event => {
+      const closeDetail = (event.target as HTMLElement)?.closest?.<HTMLElement>(
+        '[data-exam-matrix-close-detail]'
+      );
+      if (closeDetail) {
+        const prevId = selectedExamMatrixTopicId;
+        selectedExamMatrixTopicId = null;
+        renderHistoricalExamMatrix();
+        if (prevId) {
+          ctx.document
+            .querySelector<HTMLElement>(`#examHistoricalMatrix [data-exam-matrix-topic="${prevId}"]`)
+            ?.focus();
+        }
+        return;
+      }
+      const reset = (event.target as HTMLElement)?.closest?.<HTMLElement>(
+        '[data-exam-matrix-reset]'
+      );
+      if (reset) {
+        examMatrixFilters.scope = 'active';
+        examMatrixFilters.board = 'all';
+        examMatrixFilters.year = 'all';
+        examMatrixFilters.role = 'all';
+        examMatrixFilters.subject = 'all';
+        examMatrixFilters.search = '';
+        examMatrixFilters.sort = examMatrixFilters.mode === 'priorities' ? 'gap' : 'incidence';
+        renderHistoricalExamMatrix();
+        return;
+      }
       const mode = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-exam-matrix-mode]');
       if (mode) {
         examMatrixFilters.mode = mode.dataset.examMatrixMode;

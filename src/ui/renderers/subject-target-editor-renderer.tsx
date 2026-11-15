@@ -25,6 +25,8 @@ export function renderSubjectTargetEditor({
   masteryGlobal = 80,
   sort = { key: 'edital', dir: 'asc' },
   splitPreview = null,
+  openRows = new Set<string>(),
+  showAllRows = false,
 }: any) {
   const configs = new Map<string, any>(
     (blueprint.subjects || []).map((item: any) => [item.subjectId, item])
@@ -186,7 +188,7 @@ export function renderSubjectTargetEditor({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row: any) => {
+            {rows.map((row: any, rowIndex: number) => {
               const id = row.subjectId;
               const config = configs.get(id) || {};
               const weekly = weeklyMap.get(id);
@@ -206,14 +208,25 @@ export function renderSubjectTargetEditor({
                     : Number(goal)
                   : (config.accuracyTarget ?? globalTarget);
               return (
-                <tr key={id} class={draftMap.has(id) ? 'is-dirty' : undefined}>
+                <tr
+                  key={id}
+                  class={[
+                    draftMap.has(id) ? 'is-dirty' : '',
+                    openRows.has(id) ? 'is-open' : '',
+                    !showAllRows && rowIndex >= MOBILE_ROWS ? 'is-extra' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ') || undefined}
+                >
                   <td data-label="Selecionar">
-                    <input
-                      type="checkbox"
-                      data-row-select
-                      value={id}
-                      aria-label={`Selecionar ${row.name}`}
-                    />
+                    <label class="subject-target-select">
+                      <input
+                        type="checkbox"
+                        data-row-select
+                        value={id}
+                        aria-label={`Selecionar ${row.name}`}
+                      />
+                    </label>
                   </td>
                   <th scope="row" data-label="Disciplina" class="subject-target-name">
                     <span
@@ -221,6 +234,15 @@ export function renderSubjectTargetEditor({
                       aria-hidden="true"
                     />{' '}
                     <strong class="break-words">{row.name}</strong>
+                    <button
+                      type="button"
+                      class="btn ghost small subject-target-more"
+                      data-row-toggle={id}
+                      aria-expanded={openRows.has(id) ? 'true' : 'false'}
+                      aria-label={`${openRows.has(id) ? 'Menos' : 'Mais'} campos de ${row.name}`}
+                    >
+                      {openRows.has(id) ? 'Menos campos' : 'Mais campos'}
+                    </button>
                   </th>
                   <td data-label="Prioridade">
                     <select
@@ -332,6 +354,11 @@ export function renderSubjectTargetEditor({
             })}
           </tbody>
         </table>
+        {rows.length > MOBILE_ROWS && (
+          <button type="button" class="btn ghost small subject-target-showall" data-rows-showall>
+            {showAllRows ? 'Mostrar só as primeiras' : `Mostrar todas as ${rows.length} disciplinas`}
+          </button>
+        )}
       </div>
       <div class="subject-target-footer" data-targets-pending-bar hidden={!hasDirty}>
         <span class="metadata-text" role="status">
@@ -350,6 +377,8 @@ export function renderSubjectTargetEditor({
   );
 }
 
+// No celular, só as primeiras disciplinas aparecem até pedir "Mostrar todas".
+const MOBILE_ROWS = 6;
 const HEADERS: Array<{ key: string; label: string; sortable?: boolean; advanced?: boolean }> = [
   { key: 'edital', label: 'Disciplina', sortable: true },
   { key: 'priority', label: 'Prioridade', sortable: true },

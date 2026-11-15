@@ -47,7 +47,7 @@ for (const viewport of viewports) {
     const week = await close.evaluate(element =>
       [...element.children[0].children].map(child => child.className)
     );
-    expect(week.indexOf('week-reconciliation')).toBeLessThan(
+    expect(week.indexOf('weekly-close-line')).toBeLessThan(
       week.indexOf('weekly-close-brief editorial-disclosure')
     );
     await expect(close.locator('details')).toHaveCount(2);

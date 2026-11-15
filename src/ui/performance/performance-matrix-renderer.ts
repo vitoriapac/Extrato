@@ -42,7 +42,7 @@ export function renderPedagogicalMatrixSection(
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro font-medium text-content-secondary">
           <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green inline-block"></span>Consolidada: ${counts.consolidated}</span>
           <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber inline-block"></span>Risco de Esquecimento: ${counts.forgetting_risk}</span>
-          <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber inline-block"></span>Em Construção: ${counts.building}</span>
+          <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-info-emphasis inline-block"></span>Em Construção: ${counts.building}</span>
           <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red inline-block"></span>Vulnerabilidade Crítica: ${counts.critical}</span>
         </div>
       </div>

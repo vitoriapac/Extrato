@@ -130,32 +130,30 @@ export function CareerBenchmarkCard({
       ? 'success'
       : overallStatus === 'building'
         ? 'info'
-        : 'info';
+        : 'default';
 
   return (
     <article
-      class="card bg-surface-card border border-border-default rounded-default p-card sm:p-panel shadow-xs space-y-4"
+      class="space-y-4 border-t border-border-subtle pt-4"
       aria-labelledby="careerBenchmarkTitle"
       data-career-benchmark-card="true"
     >
       {/* Cabeçalho com Seletor e Badge */}
       <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-border-subtle">
-        <div class="flex items-center gap-3">
-          <div class="p-2 rounded bg-surface-subtle text-accent shrink-0">
-            <Icon name="chart-bar" size={20} />
-          </div>
+        <div class="flex items-start gap-2.5">
+          <Icon name="chart-bar" size={18} class="text-accent shrink-0 mt-0.5" />
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               <h3
                 id="careerBenchmarkTitle"
-                class="text-base font-semibold text-content-primary m-0"
+                class="module-heading__title m-0"
               >
                 Referência interna de ritmo
               </h3>
               <Badge variant={overallBadgeVariant}>{overallLabel}</Badge>
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
-              Sugestão de cursinhos para <strong>{career.name}</strong>, sem pesquisa com aprovados
+              Referência geral de carga para <strong>{career.name}</strong>, sem pesquisa com aprovados
               nem fonte oficial · últimos 7 dias · 100% privado no seu aparelho
             </p>
           </div>
@@ -179,7 +177,7 @@ export function CareerBenchmarkCard({
       {/* Grid com os 3 Indicadores Principais */}
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
         {/* 1. Horas Líquidas */}
-        <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+        <div class="pt-2 border-t border-border-subtle lg:border-t-0 lg:pt-0 flex flex-col justify-between">
           <MetricBulletBar
             comparison={weeklyHours}
             maxDisplay={Math.max(40, career.weeklyHours.advanced + 5)}
@@ -187,7 +185,7 @@ export function CareerBenchmarkCard({
         </div>
 
         {/* 2. Questões Semanais */}
-        <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+        <div class="pt-2 border-t border-border-subtle lg:border-t-0 lg:pt-0 flex flex-col justify-between">
           <MetricBulletBar
             comparison={weeklyQuestions}
             maxDisplay={Math.max(400, career.weeklyQuestions.advanced + 50)}
@@ -195,7 +193,7 @@ export function CareerBenchmarkCard({
         </div>
 
         {/* 3. Precisão em Questões */}
-        <div class="p-card rounded border border-border-subtle bg-surface-subtle/40 flex flex-col justify-between">
+        <div class="pt-2 border-t border-border-subtle lg:border-t-0 lg:pt-0 flex flex-col justify-between">
           <div class="text-xs mb-1">
             <WindowBadge kind="sevenDays" />
           </div>
@@ -212,14 +210,14 @@ export function CareerBenchmarkCard({
       </div>
 
       {/* Mix de tempo: atual vs referência */}
-      <div class="p-card rounded border border-border-subtle bg-surface-subtle/25 space-y-2">
-        <div class="flex justify-between items-center text-xs">
+      <div class="pt-3 border-t border-border-subtle space-y-2">
+        <div class="flex flex-wrap justify-between items-center gap-2 text-xs">
           <span class="font-medium text-content-primary">
             Mix de Estudo (Teoria / Questões / Revisão)
           </span>
           <span class="text-content-secondary text-xs">
-            Referência para {career.name}: {career.targetMix.theoryPercent}% T /{' '}
-            {career.targetMix.questionsPercent}% Q / {career.targetMix.reviewPercent}% R
+            Referência para {career.name}: {career.targetMix.theoryPercent}% Teoria /{' '}
+            {career.targetMix.questionsPercent}% Questões / {career.targetMix.reviewPercent}% Revisão
           </span>
         </div>
 

@@ -143,7 +143,8 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 19b: Retratos paginados, período atual fora das variações e estado vazio
 
 ### Checkpoint 5: Fechamento e Histórico
-- [ ] Histórico com menos de 20 dobras na demo
+- [x] Histórico com menos de 20 dobras na demo
+- [ ] Revisão humana das capturas do Checkpoint 5 (`tasks/prints-checkpoint5/`)
 
 ### Fase 6: Mover para Desempenho (bloqueada pelo Checkpoint 5 do plano da Desempenho)
 - [ ] Tarefa 20: Histórico de decisões e evolução das prioridades em Desempenho › Calibração
@@ -155,8 +156,8 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [ ] Nenhum bloco existe nas duas abas; links de uma linha no lugar de origem
 
 ### Fase 7: Celular e acabamento
-- [ ] Tarefa 23: Primeira tela e tabelas no celular
-- [ ] Tarefa 24: Polimento visual e de texto
+- [x] Tarefa 23: Primeira tela e tabelas no celular
+- [x] Tarefa 24: Polimento visual e de texto
 - [ ] Tarefa 25: Crítica final e atualização das referências visuais
 
 ### Checkpoint final

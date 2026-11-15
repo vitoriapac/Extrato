@@ -39,12 +39,12 @@ test('prévia prioriza alterações, recolhe preservadas e mantém confirmação
     escape,
     escape
   );
-  assert.match(html, /↑ Aumento de 22 min/);
-  assert.match(html, /↓ Redução de 22 min/);
+  assert.match(html, /icon-lucide-arrow-up[\s\S]*Aumento de 22 min/);
+  assert.match(html, /icon-lucide-arrow-down[\s\S]*Redução de 22 min/);
   assert.match(html, /&lt;Destino>/);
-  assert.match(html, /<summary>Disciplinas preservadas \(8\)/);
-  assert.match(html, /<summary>Mostrar mais/);
-  assert.match(html, /Ver justificativa completa/);
+  assert.match(html, /Disciplinas preservadas \(8\)/);
+  assert.match(html, /Por que esta mudança\?/);
+  assert.match(html, /<li>4<\/li>/);
   assert.match(html, /aria-labelledby="recoveryConfirmTitle"/);
   const confirmation = html.slice(html.indexOf('id="recoveryConfirmDialog"'));
   assert.doesNotMatch(confirmation, /Preservada 0/);

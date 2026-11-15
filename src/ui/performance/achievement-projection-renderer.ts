@@ -8,6 +8,8 @@ import { buildProjectionEvidenceExplanation } from '../../application/projection
 import { renderAdherenceTarget } from '../renderers/adherence-target-renderer.js';
 import { renderRecoveryPlan, formatRecoveryMinutes } from './recovery-plan-renderer.js';
 import { buildProjectionRequirements } from '../../application/projection/build-projection-requirements.js';
+import { renderIconSvg } from '../primitives/icon.js';
+import { formatLocalDate } from '../../core/date-utils.js';
 
 type Row = Record<string, any>;
 type Esc = (value: any) => string;
@@ -107,6 +109,9 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
         `<tr><th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(formatDateBR(point.date))}</time></th><td>${pct(point.value)}</td><td>${pct(model.current.targetScore)}</td></tr>`
     )
     .join('');
+  const legendLine = (cls: string) =>
+    `<svg viewBox="0 0 20 8" width="20" height="8" aria-hidden="true" class="inline-block align-middle mr-1"><line x1="0" y1="4" x2="20" y2="4" class="${cls}"/></svg>`;
+  const legendBand = `<svg viewBox="0 0 16 10" width="16" height="10" aria-hidden="true" class="inline-block align-middle mr-1"><rect x="0" y="1" width="16" height="8" rx="2" class="achievement-trajectory__band"/></svg>`;
   return `<div class="achievement-trajectory__scroll" tabindex="0" role="region" aria-label="Gráfico da trajetória de simulados"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico de simulados e tendência de 30 dias">
     <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal. Valores disponíveis abaixo.</desc>
     ${ticks}${bandSvg}
@@ -115,8 +120,7 @@ function renderTrajectory(model: Row, escapeHtml: Esc) {
     ${points.map((point: any, index: any) => `<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot${index === points.length - 1 ? ' achievement-trajectory__dot--last' : ''}" aria-hidden="true"/><circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="12" class="achievement-trajectory__hit" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
     <text x="${left}" y="${height - 7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height - 7}" text-anchor="${forecast.available ? 'middle' : 'end'}">${escapeHtml(formatDateBR(last.date))}</text>
     ${forecast.available ? `<text x="${width - right}" y="${height - 7}" text-anchor="end">30 dias</text>` : ''}
-  </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span>${forecast.available ? `<span>┄ Tendência de 30 dias</span>` : ''}<span>─ Meta</span>${bandOk ? `<span>▒ Faixa projetada ${pct(band.low)} a ${pct(band.high)}</span>` : ''}</div>
-  <details class="limits-disclosure"><summary aria-label="Limites da projeção">Como ler: limites</summary><p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p></details>
+  </svg></div><div class="achievement-trajectory__legend"><span>${legendLine('achievement-trajectory__observed')}Histórico registrado</span>${forecast.available ? `<span>${legendLine('achievement-trajectory__forecast')}Tendência de 30 dias</span>` : ''}<span>${legendLine('achievement-trajectory__target')}Meta</span>${bandOk ? `<span>${legendBand}Faixa projetada</span>` : ''}</div>
   <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
 }
 
@@ -132,7 +136,7 @@ function renderRequirements(model: Row, escapeHtml: Esc) {
       ? 'Revise a meta ou a data da prova para apresentar esta análise.'
       : 'Precisamos de mais evidências comparáveis.',
   });
-  return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p data-evidence-state="${evidence.state}">${escapeHtml(evidence.label)}. ${escapeHtml(evidence.message)}</p><ul>${requirements.map(item => `<li>${item.met ? '✓' : '○'} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length ? `<p>${escapeHtml(pending[0].guidance)}</p>` : ''}<button type="button" class="btn ghost small" ${pending[0]?.label === 'Data da prova' ? 'data-performance-open="metas"' : 'data-performance-section="simulations"'}>${pending[0]?.label === 'Data da prova' ? 'Configurar prova' : 'Registrar simulado'}</button></div>`;
+  return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p data-evidence-state="${evidence.state}">${escapeHtml(evidence.label)}. ${escapeHtml(evidence.message)}</p><ul>${requirements.map(item => `<li>${renderIconSvg(item.met ? 'check' : 'circle', { size: 14, className: 'inline-block align-text-bottom mr-1' })} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length ? `<p>${escapeHtml(pending[0].guidance)}</p>` : ''}<button type="button" class="btn ghost small" ${pending[0]?.label === 'Data da prova' ? 'data-performance-open="metas"' : 'data-performance-section="simulations"'}>${pending[0]?.label === 'Data da prova' ? 'Configurar prova' : 'Registrar simulado'}</button></div>`;
 }
 
 function renderHistory(history: Row[], escapeHtml: Esc) {
@@ -148,7 +152,7 @@ function renderHistory(history: Row[], escapeHtml: Esc) {
   const transitions = [...history]
     .map(item => labels[item.status] || labels.insufficient_data)
     .filter((label, index, list) => index === 0 || label !== list[index - 1]);
-  return `<details class="achievement-projection__details"><summary>Histórico da trajetória</summary>${transitions.length > 1 ? `<p>Estados registrados: ${escapeHtml(transitions.join(' → '))}. A sequência não indica causalidade.</p>` : ''}<ul>${rows(ordered.slice(0, 5))}</ul>${ordered.length > 5 ? `<details class="achievement-projection__details"><summary>Mostrar mais</summary><ul>${rows(ordered.slice(5))}</ul></details>` : ''}</details>`;
+  return `<details class="achievement-projection__details"><summary>Histórico da trajetória</summary>${transitions.length > 1 ? `<p>Estados registrados: ${escapeHtml(transitions.join(' → '))}. A sequência não indica causalidade.</p>` : ''}<ul>${rows(ordered.slice(0, 8))}</ul></details>`;
 }
 
 export function renderProjectionScenarioResult(result: Row, { escapeHtml }: any = {}) {
@@ -198,7 +202,7 @@ export function renderAchievementProjection(
     <div class="achievement-projection__heading"><div><h3 id="achievementProjectionTitle">Projeção até a prova</h3></div><span class="achievement-projection__status achievement-projection__status--${model.status}">${status}</span></div>
     <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">${context} · fase ${phaseLabels[model.exam.phase] || phaseLabels.undated}</p>
     <div class="achievement-projection__metrics"><div><span>Acerto em simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Faixa projetada</span><strong>${band ? `${pct(band.low)} a ${pct(band.high)}` : '—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available ? pct(forecast.central) : '—'}</strong></div></div>
-    <p class="performance-method-note">Confiança da projeção: ${confidence.toLowerCase()}. Veja a base em “Como ler: esta projeção”.</p>
+    <p class="performance-method-note">Confiança da projeção: ${confidence.toLowerCase()}. O trecho tracejado é uma tendência de 30 dias, não uma nota prevista para o dia da prova.</p>
     ${model.status === 'insufficient_data' ? renderRequirements(model, escapeHtml) : renderTrajectory(model, escapeHtml)}
     ${renderAdherenceTarget(adherenceContext, { escapeHtml })}
     <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0] || model.drivers[0] || model.confidence.reasons[0] || model.summary)}</p></div><div><strong>Para recuperar a trajetória</strong><p>${escapeHtml(model.recovery?.steps?.[0] || 'Continue registrando simulados comparáveis.')}</p></div></div>
@@ -211,6 +215,6 @@ export function renderAchievementProjection(
       <button type="button" class="btn ghost small" data-open-what-if="true" title="Simular ajustes de tempo e foco por disciplina">Simulador "E se?" por disciplina</button>
     </div>
     <dialog id="projectionScenarioDialog" class="projection-scenario" aria-labelledby="projectionScenarioTitle"><form method="dialog"><div class="projection-scenario__heading"><h3 id="projectionScenarioTitle">Simular cenário</h3><button type="submit" class="btn ghost small" aria-label="Fechar simulação">Fechar</button></div></form><p>Explore como meta, prazo e capacidade mudam a leitura e o encaixe do plano atual. Esta simulação não salva dados.</p>
-      <form data-projection-scenario-form><label>Capacidade semanal (horas)<input type="number" name="capacityHours" min="0" max="168" step="0.5" required value="${Math.round((weeklyCapacityMinutes / 60) * 10) / 10}"></label><label>Data da prova<input type="date" name="examDate" required value="${model.exam.date || ''}"></label><label>Meta de nota (%)<input type="number" name="targetScore" min="1" max="100" step="1" required value="${model.current.targetScore}"></label><button type="submit" class="btn primary">Executar simulação</button></form><div id="projectionScenarioResult" aria-live="polite"></div></dialog>
+      <form data-projection-scenario-form><label>Capacidade semanal (horas)<input type="number" name="capacityHours" min="0.5" max="168" step="0.5" required value="${Math.round((weeklyCapacityMinutes / 60) * 10) / 10}"></label><label>Data da prova<input type="date" name="examDate" min="${formatLocalDate(new Date()) || ''}" required value="${model.exam.date || ''}"></label><label>Meta de nota (%)<input type="number" name="targetScore" min="1" max="100" step="1" required value="${model.current.targetScore}"></label><button type="submit" class="btn primary">Executar simulação</button></form><div id="projectionScenarioResult" aria-live="polite"></div></dialog>
   </section>`;
 }

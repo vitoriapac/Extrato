@@ -90,7 +90,7 @@ for (const { name, width, theme, columns } of [
     ).toBeTruthy();
     await expect(page.locator('#metasContainer .meta-card')).toHaveCount(6);
     await expect(page.locator('#metasContainer .goal-group--routine')).toContainText(
-      'Meta de Aderência'
+      'Meta de aderência'
     );
     await expect(page.locator('#metasContainer .goal-group')).toHaveCount(3);
     expect(

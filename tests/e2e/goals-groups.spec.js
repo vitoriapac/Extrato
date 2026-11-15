@@ -41,7 +41,7 @@ test('grouped goals preserve topic targets and separate hours, routine and accur
   expect(metas.semanal).toBe(8);
   expect(metas.mensal).toBe(before.mensal);
   expect(metas.horasPorDia).toEqual(hours);
-  await expect(groups.locator('.goal-group--routine')).toContainText('Meta de Aderência');
+  await expect(groups.locator('.goal-group--routine')).toContainText('Meta de aderência');
   await expect(groups.locator('.goal-group--outcome')).toContainText('Meta de acerto');
   expect(
     (

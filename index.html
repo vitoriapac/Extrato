@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=810348baa181">
-<link rel="stylesheet" href="styles/app.css?v=810348baa181">
+<link rel="stylesheet" href="styles/tailwind.css?v=192bc4f4346e">
+<link rel="stylesheet" href="styles/app.css?v=192bc4f4346e">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -176,11 +176,12 @@
   <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho" data-performance-view="overview">
     <div id="performancePage"></div>
     <p class="sr-only" id="performanceStatus" role="status"></p>
-    <section class="chart-card intelligence-column performance-readiness" id="performanceReadinessCard" aria-labelledby="performanceReadinessTitle">
+    <div id="performanceDetachedParking" hidden>
+    <section class="intelligence-column performance-readiness space-y-3 border-t border-border-subtle pt-4" id="performanceReadinessCard" aria-labelledby="performanceReadinessTitle">
       <header class="module-heading module-heading--compact"><h3 class="module-heading__title" id="performanceReadinessTitle">Detalhamento dos fatores e calibração de projeções</h3></header>
       <div id="approvalDashboard"></div>
     </section>
-    <details class="decision-fold mt-4" id="performanceDecisionDetails" data-remember="performance-decision" open>
+    <details class="decision-fold mt-4" id="performanceDecisionDetails" data-remember="performance-decision">
       <summary>Queda de retenção entre avaliações</summary>
       <div class="cockpit-decision-grids space-y-4">
         <div id="cockpitVolatileMount" class="h-full"></div>
@@ -215,23 +216,24 @@
         <section class="exam-historical-matrix exam-intelligence-level" aria-label="Incidência e domínio"><h4>Incidência × domínio</h4><p class="analytics-note">Incidência é a presença do tópico nas provas da banca; domínio é o seu desempenho de 0 a 100. Compare os dois. Use os filtros para explorar concursos, bancas e anos.</p><div id="examHistoricalMatrix"></div></section>
         <section class="exam-intelligence-level" aria-label="Configuração e evidência histórica"><h4>Configuração × histórico</h4><div id="examConfigurationAudit"></div><details class="exam-intelligence-topics"><summary>Explorar tópicos de maior impacto</summary><div id="examIntelligenceSummary"></div></details></section>
         <section class="exam-intelligence-level" aria-label="Prova e situação pessoal"><h4>Prova × Você</h4><div id="examOpportunity"></div></section>
-        <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
+        <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><details class="performance-more"><summary id="examImportHeading">Adicionar evidências (importar prova em JSON)</summary><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></details></section>
       </div>
     </div>
     <details class="today-analysis-details" data-advanced="Resumo, diagnóstico e replanejamento">
       <summary>Diagnóstico consolidado do edital e replanejamento da semana</summary>
       <div class="today-analysis-grid">
-        <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Extrato Diagnóstico do Edital</h3><p class="module-heading__description" id="diagnosisHeaderMeta"></p></header><div id="diagnosisCenter"></div><p class="analytics-note">Replanejamento da semana e ajuste pós-simulado ficam em Planejamento. <button type="button" class="btn ghost small" data-performance-open="metas">Abrir Planejamento</button></p></section>
+        <section class="space-y-3 border-t border-border-subtle pt-4"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Extrato Diagnóstico do Edital</h3><p class="module-heading__description" id="diagnosisHeaderMeta"></p></header><div id="diagnosisCenter"></div><p class="analytics-note">Replanejamento da semana e ajuste pós-simulado ficam em Planejamento. <button type="button" class="btn ghost small" data-performance-open="metas">Abrir Planejamento</button></p></section>
       </div>
     </details>
     <details class="desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
       <summary>Visão complementar: lacunas e retenção por tópico</summary>
       <div class="today-analysis-grid">
-      <section class="analytics-card" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Ordenado por gravidade: combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.</p></header><div id="gapMapDashboard"></div></section>
-      <section class="performance-retention-card" aria-labelledby="performanceRetentionTitle">
+      <section class="space-y-3 border-t border-border-subtle pt-4" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Ordenado por gravidade: combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.</p></header><div id="gapMapDashboard"></div></section>
+      <section class="performance-retention-card border-t border-border-subtle pt-4" aria-labelledby="performanceRetentionTitle">
         <header class="module-heading module-heading--compact">
           <h3 class="module-heading__title" id="performanceRetentionTitle">Retenção por tópico</h3>
-          <p class="module-heading__description">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p>
+          <p class="module-heading__description">Consistência das revisões e acertos recentes por tópico.</p>
+          <details class="performance-more"><summary>Como a retenção é calculada</summary><p class="analytics-note">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
         </header>
         <div id="topicRetentionDashboard"></div>
       </section>
@@ -239,7 +241,7 @@
     </details>
     <details class="desempenho-extra-details" id="desempenho-study" data-advanced="Estudo e sessões">
       <summary>Extrato de sessões</summary>
-    <div class="chart-card" id="studySessionsCard">
+    <div class="space-y-4 border-t border-border-subtle pt-4" id="studySessionsCard">
       <div class="section-head">
         <h3 class="m-0">Histórico de sessões</h3>
         <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
@@ -293,6 +295,7 @@
       </div>
     </div>
     </details>
+    </div>
   </div>
 
   <!-- HOJE -->
@@ -717,7 +720,7 @@
     <p class="analytics-note" id="weeklyHistoryEmpty">Ainda não há retratos nem decisões salvos. Quando você salvar o primeiro fechamento semanal e aceitar recomendações, eles aparecem aqui.</p>
     <div class="metas-history-section" id="metasHistorySection" data-advanced="Retratos e histórico de decisões">
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Retratos semanais</h4></header><div id="weeklyCloseHistoryDashboard"></div></section>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Histórico de decisões</h4></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Linha do Tempo Estratégica</h4><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Evolução das prioridades</h4><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Histórico de decisões</h4></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Linha do tempo estratégica</h4><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h4 class="module-heading__title">Evolução das prioridades</h4><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
     </div>
     </section>
   </div>
@@ -766,7 +769,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=810348baa181"></script>
+  <script src="src/app.bundle.js?v=192bc4f4346e"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

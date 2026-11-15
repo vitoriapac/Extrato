@@ -33,7 +33,7 @@ test('groups volume, routine and outcome without converting topic goals into hou
   assert.doesNotMatch(html, /Tópicos concluídos neste mês/);
   assert.match(html, /href="#metasCapacity"/);
   assert.match(html, /href="#subjectAccuracyGoals"/);
-  assert.match(html, /Meta de Aderência/);
+  assert.match(html, /Meta de aderência/);
   assert.match(html, /Sem dados/);
   assert.equal(JSON.stringify(goals), before);
   assert.equal((html.match(/class="meta-card"/g) || []).length, 6);

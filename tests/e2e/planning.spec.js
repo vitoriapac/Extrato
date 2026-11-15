@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, openDemo, openPlanningSubtab } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab } from './helpers.js';
 
 test('confirma, distribui e desfaz um plano sem perder a navegação', async ({ page }) => {
   await openDemo(page);
@@ -64,7 +64,7 @@ test('fase e redistribuição do plano se organizam em tela móvel', async ({ pa
   const wrap = page.locator('#subjectTargetEditor .subject-target-table-wrap');
   await expect(wrap).toBeVisible();
   expect(await wrap.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
-  const control = page.locator('#subjectTargetEditor [data-field="weight"]').first();
+  const control = page.locator('#subjectTargetEditor [data-field="accuracy"]').first();
   expect(await control.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(
     44
   );
@@ -96,8 +96,7 @@ test('a meta geral de domínio não vira meta da disciplina: a herança continua
   await expect(mastery).toHaveAttribute('placeholder', '80');
   await expect(mastery).toHaveValue('');
   await page.locator('#examBlueprintConfig .exam-general-config > summary').click();
-  await page.evaluate(() => document.documentElement.removeAttribute('data-essential'));
-  const target = page.locator('#examBlueprintConfig .exam-blueprint-main').getByLabel('Meta geral de domínio (%)');
+  const target = page.locator('#examBlueprintConfig .exam-blueprint-main').getByLabel('Meta de acerto (%)');
   await target.fill('85');
   await target.press('Tab');
   await expect(mastery).toHaveAttribute('placeholder', '85');
@@ -207,9 +206,12 @@ test('a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico
     return rows;
   };
   const semana = await ledger('semana');
-  const fechamento = await ledger('fechamento');
-  for (const label of ['Capacidade da semana', 'Com tarefa marcada', 'Estudado até hoje'])
-    expect(fechamento[label], label).toBe(semana[label]);
+  // O Fechamento resume a mesma semana em uma frase, com a mesma conciliação.
+  const frase = async selector => (await page.locator(selector).first().innerText()).replace(/s+/g, ' ').trim();
+  await openPlanningSubtab(page, 'semana');
+  const fraseSemana = await frase('#metasSub-semana .week-reconciliation__sentence');
+  await openPlanningSubtab(page, 'fechamento');
+  expect(await frase('#metasSub-fechamento .weekly-close-line__sentence')).toBe(fraseSemana);
   // O Histórico lista o período atual com os mesmos estudado e marcado.
   await openPlanningSubtab(page, 'historico');
   await page
@@ -366,28 +368,36 @@ test('Prova e metas mostra o aviso de ritmo com o próximo passo e leva às meta
   await expect(page.locator('#metasActiveGoals')).toBeInViewport();
 });
 
-test('Prova e metas: Essencial tem um campo "Meta de acerto" que preenche nota-alvo e domínio; o completo mostra os três', async ({
+test('Prova e metas: um só campo "Meta de acerto" nos dois modos, que preenche nota-alvo e domínio', async ({
   page,
 }) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await openDemo(page);
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.evaluate(() => document.getElementById('testReport')?.remove());
+  await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
   await page.locator('.exam-general-config').evaluate(node => (node.open = true));
   const main = page.locator('.exam-blueprint-main');
-  await page.evaluate(() => document.documentElement.setAttribute('data-essential', 'on'));
-  await expect(main.getByLabel('Meta de acerto (%)')).toBeVisible();
-  await expect(main.getByLabel('Nota-alvo (%)')).toBeHidden();
-  await expect(main.getByLabel('Meta geral de domínio (%)')).toBeHidden();
-
+  for (const essential of [true, false]) {
+    await page.evaluate(on => {
+      if (on) document.documentElement.setAttribute('data-essential', 'on');
+      else document.documentElement.removeAttribute('data-essential');
+    }, essential);
+    await expect(main.getByLabel('Meta de acerto (%)')).toBeVisible();
+    await expect(main.getByLabel('Nota-alvo (%)')).toHaveCount(0);
+    await expect(main.getByLabel('Meta geral de domínio (%)')).toHaveCount(0);
+  }
   await main.getByLabel('Meta de acerto (%)').fill('73');
   await main.getByLabel('Meta de acerto (%)').blur();
-  await page.evaluate(() => document.documentElement.removeAttribute('data-essential'));
   await page.locator('.exam-general-config').evaluate(node => (node.open = true));
-  await expect(main.getByLabel('Meta de acerto (%)')).toBeHidden();
-  await expect(main.getByLabel('Nota-alvo (%)')).toHaveValue('73');
-  await expect(main.getByLabel('Meta geral de domínio (%)')).toHaveValue('73');
-  await expect(main).toContainText('A nota que você quer tirar na prova.');
+  await expect(main.getByLabel('Meta de acerto (%)')).toHaveValue('73');
+  const saved = await page.evaluate(() => {
+    const state = window.__EXTRATO_TEST__.getState();
+    return [state.examBlueprint.targetScore, state.examBlueprint.masteryTarget];
+  });
+  expect(saved).toEqual([73, 73]);
 });
 
 test('Fechamento: uma análise com tendência de 4 semanas e sinais, no máximo 2 dobras', async ({
@@ -457,4 +467,72 @@ test('Histórico vazio no Essencial explica o que vai aparecer, sem botão solit
   await openPlanningSubtab(page, 'historico');
   await expect(page.locator('#weeklyHistoryEmpty')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Mostrar Retratos e histórico de decisões/ })).toBeHidden();
+});
+
+for (const width of [320, 375]) {
+  test(`celular ${width} px: primeira ação da Semana na primeira tela, subabas fora do fixo e régua sem corte`, async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    await page.setViewportSize({ width, height: 812 });
+    await openDemo(page);
+    await openPlanningSubtab(page, 'semana');
+    await page.evaluate(() => scrollTo(0, 0));
+    const action = page.getByRole('button', { name: 'Ajustar disponibilidade' }).first();
+    const box = await action.boundingBox();
+    expect(box.y + box.height).toBeLessThanOrEqual(812);
+    expect(await page.locator('.metas-nav').evaluate(n => getComputedStyle(n).position)).toBe('static');
+
+    await openPlanningSubtab(page, 'prova');
+    const clipped = await page.locator('.chart-phase-roadmap').first().evaluate(root =>
+      [...root.querySelectorAll('*')].filter(
+        item => item.scrollWidth > item.clientWidth + 1 || item.scrollHeight > item.clientHeight + 1
+      ).length
+    );
+    expect(clipped).toBe(0);
+
+    // A tabela de acerto do Fechamento tem região rolável com nome e foco.
+    await openPlanningSubtab(page, 'historico');
+    await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
+    await page.locator('.subject-accuracy-summary').evaluate(node => (node.open = true));
+    await page.locator('.subject-accuracy-data > summary').click();
+    const region = page.getByRole('region', { name: 'Tabela de acerto por disciplina' });
+    await expect(region).toHaveAttribute('tabindex', '0');
+    await expectNoPageOverflow(page);
+  });
+}
+
+test('celular: Prova e metas mostra o essencial por disciplina e "Mais campos" abre o resto', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'prova');
+  const row = page.locator('#subjectTargetEditor tbody tr').first();
+  await expect(row.locator('[data-field="accuracy"]')).toBeVisible();
+  await expect(row.locator('[data-field="weekly"]')).toBeVisible();
+  await expect(row.locator('[data-field="priority"]')).toBeHidden();
+  await expect(row.locator('[data-field="weight"]')).toBeHidden();
+  const toggle = row.getByRole('button', { name: /^Mais campos de / });
+  await toggle.click();
+  const open = page.locator('#subjectTargetEditor tbody tr').first();
+  await expect(open.locator('[data-field="priority"]')).toBeVisible();
+  await expect(open.getByRole('button', { name: /^Menos campos de / })).toHaveAttribute('aria-expanded', 'true');
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  expect(height).toBeLessThan(10000);
+});
+
+test('Fechamento no celular: o resumo da semana é uma linha e o retrato aparece na primeira rolagem', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'fechamento');
+  await expect(page.locator('#weeklyCloseDashboard .week-reconciliation')).toHaveCount(0);
+  const retrato = page.getByRole('button', { name: 'Revisar o retrato da semana' });
+  await retrato.scrollIntoViewIfNeeded();
+  const top = await retrato.evaluate(node => node.getBoundingClientRect().top + scrollY);
+  expect(top).toBeLessThan(1200);
 });

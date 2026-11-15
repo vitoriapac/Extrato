@@ -29,7 +29,7 @@ const pending: Record<string, Record<string, string>> = {
     action: 'Ver disciplinas',
   },
   consistency: {
-    title: 'Consistência',
+    title: 'Ritmo e aderência',
     description: 'Histórico de estudo, ritmo diário e execução do plano de estudos.',
     tab: 'metas',
     action: 'Ver planejamento',
@@ -57,25 +57,31 @@ export function renderPerformanceChromeHtml({
   viewState,
   range,
   activeExamCount = 0,
+  filtersExpanded = false,
   escapeHtml,
 }: {
   viewState: { section: string; period: string; comparePrevious: boolean };
   range: { label: string; previous?: { start: string | null; end: string | null } | null };
   activeExamCount?: number;
+  filtersExpanded?: boolean;
   escapeHtml: (text: any) => string;
 }): string {
-  const hasToolbar = viewState.section !== 'diagnosis';
+  const hasToolbar = viewState.section !== 'diagnosis' && viewState.section !== 'exam';
   const scopeLabel = activeExamCount
     ? 'Concurso ativo · ' + pluralize(activeExamCount, 'escopo')
     : 'Todos os concursos';
   const prevStart = range.previous?.start;
   const prevEnd = range.previous?.end;
   const periodText =
-    viewState.section === 'diagnosis' ? 'Situação atual' : escapeHtml(range.label);
+    viewState.section === 'diagnosis'
+      ? 'Situação atual'
+      : viewState.section === 'exam'
+        ? 'Histórico da banca'
+        : escapeHtml(range.label);
   const restText = [
     // Com a barra de filtros visível, o escopo já aparece nela.
     hasToolbar ? '' : scopeLabel,
-    viewState.section === 'diagnosis' ||
+    !hasToolbar ||
     !viewState.comparePrevious ||
     !prevStart ||
     !prevEnd
@@ -91,10 +97,10 @@ export function renderPerformanceChromeHtml({
 
   const toolbarHtml = !hasToolbar
     ? ''
-    : `<div class="performance-toolbar ui-filter-bar" id="performanceToolbar" data-collapsed="true"><div class="performance-toolbar__summary"><span>${escapeHtml(range.label)}${viewState.comparePrevious && range.previous ? ' · comparando' : ''}</span><button type="button" class="btn ghost small" data-performance-filters-toggle aria-expanded="false" aria-controls="performanceToolbar">Alterar filtros</button></div><label>Período<select class="select-control ui-select-field__control" id="performancePeriod" data-performance-period><option value="7" ${viewState.period === '7' ? 'selected' : ''}>7 dias</option><option value="30" ${viewState.period === '30' ? 'selected' : ''}>30 dias</option><option value="90" ${viewState.period === '90' ? 'selected' : ''}>90 dias</option><option value="all" ${viewState.period === 'all' ? 'selected' : ''}>Tudo</option></select></label>
-    <label class="performance-compare"><input type="checkbox" id="performanceCompare" data-performance-compare ${viewState.comparePrevious ? 'checked' : ''} ${viewState.period === 'all' ? 'disabled' : ''}> Comparar período anterior</label><div class="performance-scope-control"><span>${activeExamCount ? `Concurso ativo · ${pluralize(activeExamCount, 'escopo', 'escopos')}` : 'Todos os concursos'}</span><button type="button" class="btn ghost small" data-performance-open="metas">Alterar concurso</button></div></div>`;
+    : `<div class="performance-toolbar ui-filter-bar" id="performanceToolbar" data-collapsed="${filtersExpanded ? 'false' : 'true'}"><div class="performance-toolbar__summary"><span>${escapeHtml(range.label)}${activeExamCount ? ` · ${pluralize(activeExamCount, 'concurso', 'concursos')}` : ''}${viewState.comparePrevious && range.previous ? ' · comparando' : ''}</span><button type="button" class="btn ghost small" data-performance-filters-toggle aria-expanded="${filtersExpanded ? 'true' : 'false'}" aria-controls="performanceToolbar">${filtersExpanded ? 'Recolher filtros' : 'Alterar filtros'}</button></div><label>Período<select class="select-control ui-select-field__control" id="performancePeriod" data-performance-period><option value="7" ${viewState.period === '7' ? 'selected' : ''}>7 dias</option><option value="30" ${viewState.period === '30' ? 'selected' : ''}>30 dias</option><option value="90" ${viewState.period === '90' ? 'selected' : ''}>90 dias</option><option value="all" ${viewState.period === 'all' ? 'selected' : ''}>Tudo</option></select></label>
+    <label class="performance-compare"><input type="checkbox" id="performanceCompare" data-performance-compare ${viewState.comparePrevious ? 'checked' : ''} ${viewState.period === 'all' ? 'disabled' : ''}> Comparar período anterior${viewState.period === 'all' ? ' <small class="text-content-secondary">(requer período limitado)</small>' : ''}</label><div class="performance-scope-control"><span>${activeExamCount ? `Concurso ativo · ${pluralize(activeExamCount, 'escopo', 'escopos')}` : 'Todos os concursos'}</span><button type="button" class="btn ghost small" data-performance-open="metas" title="Abre a aba Planejamento para trocar o concurso ativo" aria-label="Alterar concurso ativo (abre Planejamento)">Trocar em Planejamento</button></div></div>`;
 
-  return `${toolbarHtml}<div class="flex flex-wrap items-center justify-between gap-2"><p class="performance-scope-note">${scopeNote}</p>${renderCopyTabLink()}</div>`;
+  return `${toolbarHtml}<div class="flex flex-wrap items-center justify-between gap-2"><p class="performance-scope-note">${scopeNote} <span class="text-content-secondary hidden sm:inline">· Atalhos: Alt+1–5 subabas, Alt+6–9 período</span></p>${renderCopyTabLink()}</div>`;
 }
 
 export function renderPerformancePage({
@@ -114,8 +120,11 @@ export function renderPerformancePage({
   });
   const body = sectionHtml || renderPerformanceDefaultBody({ viewState, escapeHtml, escapeAttr });
 
-  return `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2><p>Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></div></header>
+  const labelledTab =
+    viewState.section === 'simulations' || viewState.section === 'exam' ? 'questions' : viewState.section;
+
+  return `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2></div></header>
     ${navHtml}
     ${chromeHtml}
-    <div id="performanceSectionContent" role="tabpanel" aria-labelledby="performanceTab-${viewState.section}">${body}</div></div>`;
+    <div id="performanceSectionContent" role="tabpanel" aria-labelledby="performanceTab-${labelledTab}">${body}</div></div>`;
 }

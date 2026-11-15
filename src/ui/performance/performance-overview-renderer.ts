@@ -1,6 +1,5 @@
 import { formatInteger } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
-import { renderWindowBadge } from './window-badge.js';
 import { renderWeekSummary } from './week-summary-renderer.js';
 import { formatDecimal, formatDelta, formatPoints } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
@@ -32,7 +31,7 @@ const kpiTrend = (values: Array<number | null>, label: string, unit: string) =>
     : `<span class="performance-kpi__trend">${renderSparkline({ values, label, unit, width: 120, height: 28 })}<small>${values.length} semanas completas</small></span>`;
 
 const renderGlossaryLink = () =>
-  `<p class="performance-method-note mt-4">Precisa conferir a definição de Prontidão, domínio, retenção ou aderência? <button type="button" class="btn ghost small" data-performance-open="instrucoes">Abrir termos e metodologia na Ajuda</button></p>`;
+  `<details class="performance-more mt-4"><summary>Definições de Prontidão, domínio, retenção e aderência</summary><dl class="performance-glossary mt-2"><div><dt>Prontidão</dt><dd>Índice atual (0–100) que combina cobertura do edital, domínio, retenção e ritmo recente.</dd></div><div><dt>Domínio</dt><dd>Taxa de acerto ponderada pela recência e amostra em cada tópico ou disciplina.</dd></div><div><dt>Retenção</dt><dd>Estabilidade da memória estimada pelas revisões no prazo, acertos recentes e intervalo desde a última revisão.</dd></div><div><dt>Aderência</dt><dd>Proporção do tempo ou das atividades planejadas que foi efetivamente executada no período.</dd></div></dl><p class="performance-method-note mt-2"><button type="button" class="btn ghost small" data-performance-open="instrucoes">Abrir termos e metodologia em Instruções</button></p></details>`;
 
 export function renderPerformanceOverview(
   model: Record<string, any>,
@@ -54,13 +53,12 @@ export function renderPerformanceOverview(
   const comparisonLabel = range.comparePrevious
     ? 'Comparação com período anterior'
     : 'Sem comparação';
-  const periodBadge = renderWindowBadge('period', range?.label || '');
   const trend: any[] = model.trend || [];
-  const kpis = `<p class="performance-kpi-window">${renderWindowBadge('period', range?.label || '')}<span>Os indicadores abaixo seguem o período escolhido.</span></p><section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
-    ${renderMetricCard({ label: 'Tempo estudado', windowBadge: periodBadge, trend: kpiTrend(trend.map((row: any) => Math.round((row.studiedMinutes / 60) * 10) / 10), 'Tempo estudado por semana completa', 'h'), value: formatStudyMinutes(current.studiedMinutes), detail: `${pluralize(current.sessionCount || 0, 'sessão', 'sessões')}${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
-    ${card('Questões respondidas', current.resolved ?? 0, '', 'No período selecionado', periodBadge, kpiTrend(trend.map((row: any) => row.resolved), 'Questões por semana completa', 'questões'))}
-    ${card('Precisão em questões', current.accuracy, '%', `${formatInteger(current.resolved || 0)} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, periodBadge, kpiTrend(trend.map((row: any) => row.accuracy), 'Precisão por semana completa (10 questões ou mais)', '%'))}
-    ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`, periodBadge) : ''}
+  const kpis = `<section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
+    ${renderMetricCard({ label: 'Tempo estudado', trend: kpiTrend(trend.map((row: any) => Math.round((row.studiedMinutes / 60) * 10) / 10), 'Tempo estudado por semana completa', 'h'), value: formatStudyMinutes(current.studiedMinutes), detail: `${pluralize(current.sessionCount || 0, 'sessão', 'sessões')}${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
+    ${card('Questões respondidas', current.resolved ?? 0, '', 'No período selecionado', '', kpiTrend(trend.map((row: any) => row.resolved), 'Questões por semana completa', 'questões'))}
+    ${card('Precisão em questões', current.accuracy, '%', `${formatInteger(current.resolved || 0)} questões${current.resolved > 0 && current.resolved < 30 ? ' · amostra pequena' : ''}${previous && previous.resolved >= 30 && current.resolved >= 30 && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`, '', kpiTrend(trend.map((row: any) => row.accuracy), 'Precisão por semana completa (10 questões ou mais)', '%'))}
+    ${current.pagesRead > 0 ? card('Páginas lidas', current.pagesRead, 'pág.', `${current.videoBlocksCompleted ? current.videoBlocksCompleted + ' aulas · ' : ''}Material teórico`) : ''}
   </section>`;
   const history = renderReadinessHistory(model.history, {
     formatDate,
@@ -70,7 +68,7 @@ export function renderPerformanceOverview(
     activeExamTags,
     showComparisonDetails: false,
   });
-  const planLink = `<section class="performance-block"><h3>Carga e aderência ao plano</h3><p class="analytics-note">O comparativo semanal de planejado × realizado, a linha do tempo diária e a aderência ao plano ficam reunidos em Ritmo e aderência.</p>${model.strategic?.strategicAdherence != null ? `<p class="context-note context-note--info">Execução prioritária: ${formatDecimal(model.strategic.strategicAdherence)}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>` : ''}<p class="m-0"><button type="button" class="btn ghost small" data-performance-investigate="consistency">Abrir Ritmo e aderência</button></p></section>`;
+  const planLink = `<section class="performance-block"><h3>Carga e aderência ao plano</h3><p class="analytics-note">O comparativo semanal de planejado × realizado, a linha do tempo diária e a aderência ao plano ficam reunidos em Ritmo e aderência.</p>${model.strategic?.strategicAdherence != null ? `<p class="context-note context-note--info">Execução prioritária (tempo em tarefas de alta prioridade): ${formatDecimal(model.strategic.strategicAdherence)}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>` : ''}<p class="m-0"><button type="button" class="btn ghost small" data-performance-investigate="consistency">Abrir Ritmo e aderência</button></p></section>`;
   const changes = model.changes.length
     ? `<ul class="performance-changes">${model.changes.map((item: any) => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.unit === 'min' ? formatStudyMinuteDelta(item.delta) : (item.unit === 'p.p.' ? formatPoints(item.delta) : `${item.delta > 0 ? '+' : item.delta < 0 ? '−' : ''}${shown(Math.abs(item.delta))} ${escapeHtml(item.unit)}`)}</span></li>`).join('')}</ul>`
     : '<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';

@@ -46,7 +46,8 @@ export function PerformancePageNav({
     PERFORMANCE_GROUPS[0];
   lastSectionByGroup.set(activeGroup.key, activeSection);
 
-  const primaryItems: TabItem[] = PERFORMANCE_GROUPS.map(group => {
+  const primaryItems: TabItem[] = PERFORMANCE_GROUPS.map((group, index) => {
+    const shortcut = `Alt+${index + 1}`;
     if (group.items.length === 1) {
       const [sectionKey] = group.items[0];
       const active = groupHas(group, activeSection);
@@ -58,6 +59,7 @@ export function PerformancePageNav({
         buttonProps: {
           'data-performance-section': sectionKey,
           'aria-controls': 'performanceSectionContent',
+          'aria-keyshortcuts': shortcut,
         },
       };
     }
@@ -73,6 +75,7 @@ export function PerformancePageNav({
         'data-performance-group': group.key,
         'data-performance-group-target': firstSection,
         'aria-controls': active ? `performanceSubnav-${group.key}` : undefined,
+        'aria-keyshortcuts': shortcut,
       },
     };
   });

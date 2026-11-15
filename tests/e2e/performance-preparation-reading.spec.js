@@ -182,14 +182,17 @@ test('Aderência fica numa dobra que não fecha ao trocar a semana, e os filtros
     .locator('#performanceSectionContent details')
     .filter({ has: page.locator(':scope > summary', { hasText: 'Como o plano foi cumprido' }) })
     .first();
-  // Abre por padrão (é o centro de Ritmo), e a memória das dobras continua valendo.
+  // Inicia fechada para reduzir o scroll inicial, e a memória das dobras continua valendo ao abrir.
+  await expect(fold).toHaveJSProperty('open', false);
+  await fold.locator(':scope > summary').click();
   await expect(fold).toHaveJSProperty('open', true);
   await openPerformanceSection(page, 'exam');
-  const filters = page.locator('details.exam-matrix-filters-fold');
-  await expect(filters).toHaveJSProperty('open', false);
+  const filters = page.locator('details.exam-matrix-more-filters');
+  await expect(filters).toHaveJSProperty('open', true);
   await filters.locator(':scope > summary').click();
+  await expect(filters).toHaveJSProperty('open', false);
   await page.locator('[data-exam-matrix-filter="sort"]').selectOption('impact');
-  await expect(page.locator('details.exam-matrix-filters-fold')).toHaveJSProperty('open', true);
+  await expect(page.locator('details.exam-matrix-more-filters')).toHaveJSProperty('open', false);
 });
 
 test('No celular a ação "Abrir em Hoje" aparece até a primeira tela e a Leitura mantém a ordem', async ({

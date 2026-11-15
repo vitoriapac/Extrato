@@ -87,12 +87,11 @@ test('filtros avançados da matriz cabem no celular e preservam seleção durant
   await openPerformanceSection(page, 'exam');
   const advanced = page.locator('.exam-matrix-more-filters');
   await expect(advanced).not.toHaveAttribute('open');
-  await openPerformanceFold(page, 'Filtros e busca');
-  await expect(page.locator('[data-exam-matrix-filter="scope"]')).toBeVisible();
   await expect(page.locator('[data-exam-matrix-filter="subject"]')).toBeVisible();
   await advanced.locator('summary').focus();
   await page.keyboard.press('Enter');
   await expect(advanced).toHaveAttribute('open');
+  await expect(page.locator('[data-exam-matrix-filter="scope"]')).toBeVisible();
   await page.locator('[data-exam-matrix-filter="board"]').selectOption('Cesgranrio');
   await expect(advanced).toHaveAttribute('open');
   await expect(advanced.locator('summary')).toContainText('Mais filtros (1)');

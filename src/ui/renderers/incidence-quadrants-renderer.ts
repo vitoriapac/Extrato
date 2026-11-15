@@ -11,7 +11,26 @@ const escape = (value: unknown) =>
       )[char]
   );
 
+/** Mediana da incidência entre tópicos com evidência suficiente (limitada a 10–50%), evitando quadrantes vazios em bancas dispersas. */
+export function computeIncidenceThreshold(rows: any[] = []): number {
+  const values = rows
+    .filter(
+      row =>
+        row.mastery != null &&
+        row.presencePercent != null &&
+        ['moderate', 'high'].includes(row.confidence)
+    )
+    .map(row => Number(row.presencePercent))
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+  if (!values.length) return 50;
+  const mid = Math.floor(values.length / 2);
+  const median = values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+  return Math.max(10, Math.min(50, Math.round(median)));
+}
+
 export function renderIncidenceQuadrants(rows: any[] = []) {
+  const threshold = computeIncidenceThreshold(rows);
   const groups = [
     { key: 'reinforce', label: 'Alta incidência · desenvolver domínio' },
     { key: 'maintain', label: 'Alta incidência · manter domínio' },
@@ -26,7 +45,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
       row.presencePercent == null ||
       !['moderate', 'high'].includes(row.confidence)
         ? 'insufficient'
-        : row.presencePercent >= 50
+        : row.presencePercent >= threshold
           ? row.mastery >= 70
             ? 'maintain'
             : 'reinforce'
@@ -62,13 +81,13 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
   return renderChartFrame({
     title: 'Incidência × domínio',
     description:
-      'Incidência em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',
+      `Corte em ${threshold}% de incidência (mediana observada) e 70/100 de domínio.`,
     evidence:
-      'Só evidência média ou alta permite posicionar. Evidência baixa e ausência de domínio ficam separados.',
+      'Somente tópicos com evidência média ou alta entram nos quadrantes.',
     emptyTitle: positioned ? 'Sem gráfico: os grupos estão na lista abaixo' : undefined,
     emptyMessage: positioned
-      ? `${positioned} de ${classified.length} tópicos do edital listados aqui têm evidência média ou alta e entram nos quadrantes; ${classified.length - positioned} ainda não, e ficam em "Sem evidência para posicionar". Registrar questões e revisões desses tópicos aumenta a evidência e permite posicioná-los. A lista abaixo mostra cada grupo.`
-      : `Os ${classified.length} tópicos do edital listados aqui ainda não têm evidência média ou alta para serem posicionados. A lista abaixo mostra cada grupo.`,
+      ? `${positioned} de ${classified.length} tópicos têm evidência média ou alta e aparecem na lista abaixo; os demais seguem em "Sem evidência para posicionar".`
+      : `Os ${classified.length} tópicos ainda não têm evidência média ou alta para entrar nos quadrantes. Veja a lista abaixo.`,
     records: `<div class="incidence-quadrants">${records}</div>${emptyNote}`,
   });
 }

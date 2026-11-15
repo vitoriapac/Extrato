@@ -206,7 +206,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const progressSection = doc.getElementById('performance-progress');
     const studyDetails = doc.getElementById('desempenho-study');
     const consistencyMural = doc.getElementById('performanceConsistencyMural');
-    if (panel && typeof panel.append === 'function') {
+    const detachedParking = doc.getElementById('performanceDetachedParking') || panel;
+    if (detachedParking && typeof detachedParking.append === 'function') {
       for (const node of [
         consistencyMural,
         readinessCard,
@@ -216,8 +217,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         progressSection,
         studyDetails,
       ]) {
-        if (node && node.parentElement && node.parentElement !== panel) {
-          panel.append(node);
+        if (node && node.parentElement && node.parentElement !== detachedParking) {
+          detachedParking.append(node);
         }
       }
     }
@@ -381,7 +382,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
-    const proofIndex = `<nav class="performance-modes performance-proof-index" role="group" aria-label="Seções de Resultados das provas">${[['questions', 'Questões respondidas'], ['simulations', 'Simulados realizados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`).join('')}</nav>`;
+    const proofIndex = `<div class="performance-modes performance-proof-index" role="group" aria-label="Seções de Resultados das provas">${[['questions', 'Questões respondidas'], ['simulations', 'Simulados realizados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`).join('')}</div>`;
     const sectionHtml = beginnerGate
       ? renderBeginnerState(performanceViewState.section, beginner)
       : examSection
@@ -425,7 +426,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (isRealDomTarget) {
       let navMount = target.querySelector('#performanceNavMount') as Element | null;
       if (!navMount) {
-        target.innerHTML = `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2><p>Acompanhe sua evolução, compare períodos e identifique mudanças na sua preparação.</p></div></header><div id="performanceNavMount"></div><div id="performanceChromeArea" class="contents"></div><div id="performanceSectionContent" role="tabpanel"></div></div>`;
+        target.innerHTML = `<div class="performance-page"><header class="page-header"><div class="page-header__text"><h2>Desempenho</h2></div></header><div id="performanceNavMount"></div><div id="performanceChromeArea" class="contents"></div><div id="performanceSectionContent" role="tabpanel"></div></div>`;
         navMount = target.querySelector('#performanceNavMount') as Element | null;
       }
 
@@ -447,10 +448,13 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
 
       const chromeArea = target.querySelector('#performanceChromeArea');
       if (chromeArea) {
+        const filtersExpanded =
+          chromeArea.querySelector('#performanceToolbar')?.getAttribute('data-collapsed') === 'false';
         chromeArea.innerHTML = renderPerformanceChromeHtml({
           viewState: performanceViewState,
           range,
           activeExamCount: (state.examBlueprint?.activeExamTags || []).length,
+          filtersExpanded,
           escapeHtml,
         });
       }
@@ -556,9 +560,16 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       if (block) doc.getElementById(`bloco-${block}`)?.scrollIntoView?.({ block: 'start' });
     }
     const status = doc.getElementById('performanceStatus');
-    const section = target
-      .querySelector('.performance-section-button.active[data-performance-section]')
-      ?.textContent?.trim();
+    const activeTabLabel = (
+      target.querySelector('.performance-section-button.active[data-performance-section]') ||
+      target.querySelector('.performance-section-nav [role="tab"][aria-selected="true"]')
+    )?.textContent?.trim();
+    const activeProofLabel = examSection
+      ? target
+          .querySelector('.performance-proof-index [aria-pressed="true"]')
+          ?.textContent?.trim()
+      : '';
+    const section = activeProofLabel || activeTabLabel;
     const statusText = section
       ? `Mostrando ${section}${examSection || performanceViewState.section === 'diagnosis' ? '' : ` · ${range.label}`}.`
       : '';
@@ -566,12 +577,21 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
 
     const dialog = target.querySelector('#performanceTopicDialog') as any;
     if (dialog && typeof dialog.showModal === 'function') {
+      const opener = doc.activeElement as HTMLElement | null;
+      const openedTopicId = performanceViewState.topicId;
       dialog.addEventListener(
         'close',
         () => {
           performanceViewState = updatePerformanceViewState(performanceViewState, {
             topicId: null,
           });
+          if (opener?.isConnected) {
+            opener.focus();
+          } else if (openedTopicId) {
+            (
+              target.querySelector(`[data-performance-topic="${openedTopicId}"]`) as HTMLElement | null
+            )?.focus();
+          }
         },
         { once: true }
       );

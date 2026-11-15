@@ -31,6 +31,9 @@ export interface SubjectTargetEditorContext {
 export function createSubjectTargetEditorController(ctx: SubjectTargetEditorContext) {
   // Rascunhos por disciplina e campo (priority, weight, expected, accuracy, weekly, mastery): nada é gravado antes de Salvar.
   const drafts = new Map<string, Record<string, string>>();
+  // Celular: linhas com os campos secundários abertos.
+  const openRows = new Set<string>();
+  let showAllRows = false;
   let sort: { key: string; dir: 'asc' | 'desc' } = { key: 'edital', dir: 'asc' };
   const setDraft = (subjectId: string, field: string, value: string) => {
     drafts.set(subjectId, { ...(drafts.get(subjectId) || {}), [field]: value });
@@ -116,6 +119,8 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       masteryGlobal: state.examBlueprint?.masteryTarget,
       sort,
       splitPreview,
+      openRows,
+      showAllRows,
     });
   }
 
@@ -399,6 +404,20 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
 
     container.addEventListener('click', event => {
       const target = event.target as HTMLElement;
+
+      if (target.closest('[data-rows-showall]')) {
+        showAllRows = !showAllRows;
+        renderSubjectTargetEditor();
+        return;
+      }
+
+      const rowToggle = target.closest<HTMLElement>('[data-row-toggle]');
+      if (rowToggle) {
+        const id = rowToggle.dataset.rowToggle!;
+        if (!openRows.delete(id)) openRows.add(id);
+        renderSubjectTargetEditor();
+        return;
+      }
 
       const sorter = target.closest<HTMLElement>('[data-sort]');
       if (sorter) {

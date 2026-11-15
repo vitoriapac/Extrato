@@ -1212,6 +1212,11 @@
       "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
+      "file": "tests/unit/lazy-more.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
       "file": "tests/unit/ledger-line.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -2198,6 +2203,11 @@
     },
     {
       "file": "tests/unit/weekly-close-trend-renderer.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
+      "file": "tests/unit/weekly-history-series-renderer.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node rápido e determinístico no Fast Gate."
     },

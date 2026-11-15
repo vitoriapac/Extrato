@@ -296,7 +296,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await openDemo(page);
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'fechamento');
-  await expect(page.locator('#weeklyCloseDashboard .week-reconciliation')).toBeVisible();
+  await expect(page.locator('#weeklyCloseDashboard .weekly-close-line')).toBeVisible();
   await openPlanningSubtab(page, 'historico');
   await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
   await expect(page.locator('#weeklyCloseFullAnalysis .weekly-assessment')).toContainText(
@@ -651,6 +651,7 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
 
   // The accuracy summary lives inside the weekly close analysis.
   await openPlanningSubtab(page, 'historico');
+  await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
   const accuracy = page.locator('.subject-accuracy-summary');
   await accuracy.evaluate(node => {
     node.closest('.weekly-close-analysis')?.setAttribute('open', '');

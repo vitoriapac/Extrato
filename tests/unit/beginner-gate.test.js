@@ -33,9 +33,9 @@ test('o estado vazio diz o que a aba faz, quando fica útil e quanto o aluno já
   const html = renderBeginnerState('subjects', { beginner: true, questionCount: 12, recordDays: 1 });
   assert.match(html, /data-beginner-state="subjects"/);
   assert.match(html, /compara a precisão e a tendência de cada disciplina/);
-  assert.match(html, /30 questões respondidas ou 2 semanas de registro/);
-  assert.match(html, /Você tem 12 questões e 1 dia de registro/);
+  assert.match(html, /30 questões respondidas ou 2 semanas de estudo/);
+  assert.match(html, /Você já tem 12 questões e 1 dia registrados/);
   assert.match(html, /data-performance-open="questoes"/);
-  assert.match(renderBeginnerState('diagnosis', { beginner: true, questionCount: 1, recordDays: 3 }), /Você tem 1 questão e 3 dias/);
+  assert.match(renderBeginnerState('diagnosis', { beginner: true, questionCount: 1, recordDays: 3 }), /Você já tem 1 questão e 3 dias/);
   assert.match(renderBeginnerState('questions', { beginner: true, questionCount: 0, recordDays: 0 }), /simulados e a inteligência da prova/);
 });

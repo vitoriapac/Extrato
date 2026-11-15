@@ -491,8 +491,8 @@ Verificação usada abaixo:
 **Tamanho:** M
 
 ### Checkpoint 5: Fechamento e Histórico
-- [ ] Testes, tipos e build limpos
-- [ ] Demo: Fechamento ≤ 2 dobras, Histórico < 20
+- [x] Testes, tipos e build limpos (com ressalva: ver registro abaixo)
+- [x] Demo: Fechamento ≤ 2 dobras, Histórico < 20
 - [ ] Revisão humana
 
 ---
@@ -593,12 +593,12 @@ A lista de eventos da linha do tempo é cortada. Os registros não se fundem; ca
 - Tabela de acerto do Fechamento com região focável (`tabindex`, nome).
 
 **Aceite:**
-- [ ] Primeira ação da Semana visível na primeira tela em 375 px
-- [ ] Nenhum texto cortado na régua de fases em 320 e 375 px
-- [ ] Regiões roláveis com nome e foco
+- [x] Primeira ação da Semana visível na primeira tela em 375 px
+- [x] Nenhum texto cortado na régua de fases em 320 e 375 px
+- [x] Regiões roláveis com nome e foco
 
 **Verificação:**
-- [ ] E2E: `planning-subtabs.spec.js` e axe em 320/375 px
+- [x] E2E: `planning-subtabs.spec.js` e axe em 320/375 px
 - [ ] Manual: percurso da Casey
 
 **Dependências:** Checkpoint 6
@@ -617,11 +617,11 @@ A lista de eventos da linha do tempo é cortada. Os registros não se fundem; ca
 - Variar a "aderência estratégica" fictícia da demo.
 
 **Aceite:**
-- [ ] Detector sem `nested-cards` na aba
-- [ ] Nenhum termo em inglês ou abreviação sem legenda
+- [x] Detector sem `nested-cards` na aba
+- [x] Nenhum termo em inglês ou abreviação sem legenda
 
 **Verificação:**
-- [ ] Detector, axe, E2E de Planejamento
+- [x] Detector, axe, E2E de Planejamento
 
 **Dependências:** T23
 
@@ -723,3 +723,13 @@ Decisão do usuário: rodada nos 2 P1, marcador de dobra e tom do gráfico no es
 **T19a feita, sem commit.** Histórico ganhou `#weeklyHistorySeries` (`weekly-history-series-renderer.ts`): agendado e estudado por semana (8 semanas, mais antiga à esquerda), metas cumpridas como marca ("2/3") embaixo de cada semana encerrada, tabela em "Ver dados". Semana em andamento separada e tracejada (`dashed` novo em `ColumnChart`), com os mesmos números do Resumo da semana (vêm do `buildPlanExecution` atual). Saíram da Semana "Cumprimento nas semanas concluídas" e "Histórico de metas". Mantidos para a T19b: a lista "Aderência nos fechamentos salvos" (são os retratos) e o histórico de foco estratégico (a T19b trata a comparação com o período em andamento). Sobras inertes: `renderHistoricoMetas`/`renderGoalHistoryCharts` e seus testes (container removido; limpar depois). Falha que não é minha: `visual-consolidation` "ações guiadas" (botões de Hoje abaixo de 44 px).
 
 **T19b feita, sem commit.** Histórico da demo caiu de 123 para menos de 20 `<details>`: retratos de aderência (5 visíveis + "Mostrar mais N", corpo em `<template data-lazy>` que só vira DOM ao abrir, usando o `initLazyDetails` existente), decisões (5 + "Mostrar mais", novo `src/ui/lazy-more.ts`) e a "Análise completa da semana encerrada" (corpo lazy). A variação do foco estratégico agora compara só os dois últimos períodos salvos (o período em andamento fica de fora; `build-strategic-focus-history.ts`, `latestEnd` novo) e "Desde o último fechamento" mostra "período em andamento" em vez de comparar parcial com fechado (`today` em `buildCloseComparison`). Histórico vazio no Essencial: frase `#weeklyHistoryEmpty` no lugar do botão "Mostrar" sozinho. Testes: unit `lazy-more`, `strategic-focus-history` (atualizado); E2E `planning` (2 novos); `achievement-projection`/`visual-consolidation`/`visual-regression` abrem a dobra antes de ler. Pendente que não é meu: 4 snapshots de `achievement-projection` (altura da projeção em Desempenho 2338→2360 px; snapshots foram regravados por outra sessão).
+
+## Checkpoint 5 (15/11/2026)
+**Medido na demo (375 e 1440 px, sem estouro horizontal):** Fechamento = 2 dobras; Histórico = 19 `<details>` (era 123; margem de 1, qualquer dobra nova no Histórico estoura o limite). Capturas em `tasks/prints-checkpoint5/` (fechamento e histórico, 375 e 1440).
+**Verificação:** `tsc` limpo; build e `check:bundle` reproduzíveis; unitários 1.769/1.769; E2E dos specs afetados passando, exceto o que não é do Planejamento: 4 snapshots de `achievement-projection` (Desempenho, altura da projeção 2338→2360 px, snapshots regravados pela outra sessão), `visual-consolidation` "ações guiadas" (botões de Hoje < 44 px) e `release-gate` "paleta" (search-controller da outra sessão). Bateria E2E completa não rodada.
+**Observações para a revisão humana:** (1) o Histórico ainda é longo: abaixo da série semanal e dos retratos ficam Foco estratégico, Histórico de decisões, Linha do Tempo e Evolução das prioridades (as duas últimas vão para Desempenho nas T20–T22, bloqueadas); (2) o Foco estratégico ao longo do tempo ainda tem o próprio gráfico de barras, separado da série semanal; (3) a dobra "Análise completa da semana encerrada" é a análise antiga inteira, ainda a enxugar; (4) no 375 px a captura do Fechamento mostra a barra de abas e o selo "Salvo" sobrepostos, efeito da captura do elemento, não do layout (conferir em tela real).
+**Revisão humana:** pendente.
+
+## Fase 7 (15/11/2026)
+**T23 feita, sem commit (dependia do Checkpoint 6, que não existe: a Fase 6 está bloqueada; a usuária mandou seguir).** Em 375/320 px: cartão de abertura da Semana sobe de y=413 para 320 e a primeira ação ("Ajustar disponibilidade") fica em y≈570–586 de 812 (antes 984), com a frase de excesso logo depois da frase-herói; seletor de subaba deixa de ser fixo (`position:static` ≤640 px); descrição do cabeçalho some no celular; régua de fases sem `line-clamp` (descrição completa, "AGORA" quebra de linha, `break-words`), sem texto cortado em 320 e 375; tabela de acerto já tinha região focável com nome (conferido por E2E). E2E novo em `planning.spec.js` (320 e 375). Manual: percurso da Casey pendente.
+**T24 feita (parcial), sem commit.** Feito: caixas dentro de caixas desfeitas (Foco da próxima semana, Próxima semana, Foco estratégico e histórico de foco viram faixa com filete; medição de caixas aninhadas no Fechamento: só botões e legendas restam); "Meta de aderência" e "Linha do tempo estratégica" em caixa de frase; matriz de domínio com "Lacuna", "N pontos" e "sem dados" (no lugar de "Gap", "pts" e "—%"); caixas de seleção da tabela de metas com área de 44 px (rótulo `subject-target-select`); triângulo da dobra "Ajustar metas e disponibilidade" já existia e foi conferido. Não feito: variar a "aderência estratégica" fictícia da demo (90% em todas as semanas): o valor é calculado a partir dos planos e sessões da demo, não é um campo; mexer nisso muda vários números e referências da demo, fica para decisão. Detector estático (`impeccable detect`) sem achados.

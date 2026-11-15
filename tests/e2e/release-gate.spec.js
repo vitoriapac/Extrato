@@ -52,6 +52,9 @@ for (const width of [320, 430])
       const table = page.locator('#subjectTargetEditor .subject-target-table');
       await expect(table).toBeVisible();
       await expectNoPageOverflow(page);
+      // No celular os campos secundários ficam atrás de "Mais campos".
+      const more = page.getByRole('button', { name: /^Mais campos de / }).first();
+      if (await more.isVisible()) await more.click();
       const priority = page.locator('#subjectTargetEditor [data-field="priority"]').first();
       const original = await priority.inputValue();
       const changed = original === 'high' ? 'low' : 'high';

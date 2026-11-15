@@ -1,6 +1,6 @@
 import { formatDateBR } from '../../../core/format-date.js';
 import { formatDecimal } from '../../../core/format-number.js';
-import { WeekReconciliationSummary } from './WeekReconciliationSummary.js';
+import { weekSummaryParts } from './WeekReconciliationSummary.js';
 import type { WeekReconciliation } from './week-reconciliation.js';
 
 export function WeeklyCloseKpis({
@@ -51,18 +51,30 @@ export function WeeklyCloseKpis({
     </p>
   );
 
-  if (reconciliation)
+  if (reconciliation) {
+    // O detalhe da conciliação (barra de saldo, ledger) mora em Plano da semana: aqui só a leitura em uma linha.
+    const sentence = weekSummaryParts(reconciliation);
     return (
       <>
         {note}
-        <WeekReconciliationSummary data={reconciliation} />
-        <p class="weekly-close-adherence">
-          <span>Aderência ao plano</span>
-          <strong>{credit == null ? '—' : `${formatDecimal(credit)}%`}</strong>
-        </p>
+        <section class="weekly-close-line" aria-label="Resumo da semana">
+          <p class="weekly-close-line__period">{reconciliation.periodLabel}</p>
+          {sentence && (
+            <p class="weekly-close-line__sentence">
+              {sentence.before}
+              <strong>{sentence.hero}</strong>
+              {sentence.after}
+            </p>
+          )}
+          <p class="weekly-close-adherence">
+            <span>Aderência ao plano</span>
+            <strong>{credit == null ? '—' : `${formatDecimal(credit)}%`}</strong>
+          </p>
+        </section>
         {cutoff}
       </>
     );
+  }
 
   return (
     <>

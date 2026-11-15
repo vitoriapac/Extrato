@@ -2230,7 +2230,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .achievement-projection__details{border-top:1px solid var(--border-subtle);padding-top:var(--space-2)}
 .achievement-projection__details summary{cursor:pointer;font-weight:600}
 .achievement-projection__story{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2) var(--space-4);border-block:1px solid var(--border-subtle);padding-block:var(--space-3)}
-.achievement-projection__story>div{min-width:0}.achievement-projection__story strong{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted,var(--ink))}.achievement-projection__story p{margin:var(--space-1) 0 0}
+.achievement-projection__story>div{min-width:0}.achievement-projection__story strong{font-size:.75rem;color:var(--ink-muted,var(--ink))}.achievement-projection__story p{margin:var(--space-1) 0 0}
 .achievement-projection__requirements{display:grid;gap:var(--space-2);padding:var(--space-3);background:var(--surface-card,var(--paper));border-left:3px solid var(--accent)}
 .achievement-projection__requirements p,.achievement-projection__requirements ul{margin:0}.achievement-projection__requirements ul{padding-left:var(--space-4)}
 .achievement-trajectory__scroll:focus-visible,.achievement-trajectory__hit:focus-visible,.achievement-trajectory__future:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -2252,7 +2252,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .recovery-dialog__actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--space-3);margin-top:var(--space-4)}
 @media(max-width:430px){.recovery-allocation{grid-template-columns:1fr}.recovery-dialog .projection-scenario__heading{align-items:flex-start}.recovery-dialog .projection-scenario__heading h3{min-width:0}.recovery-dialog .projection-scenario__heading button{flex-shrink:0}}
 @media(max-width:600px){.achievement-projection__story,.projection-scenario__comparison{grid-template-columns:1fr}.projection-scenario form[data-projection-scenario-form]{grid-template-columns:1fr}.projection-scenario{padding:var(--space-3)}}
-@media(max-width:600px){.achievement-projection__heading{flex-direction:column}.achievement-projection__metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.achievement-projection__heading{flex-direction:column}.achievement-projection__metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.performance-topic-groups{grid-template-columns:1fr}}
 .performance-table-scroll{max-height:340px;overflow:auto}
 .performance-table-scroll table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
 .performance-table-scroll caption{text-align:left;padding-bottom:var(--space-2);font-size:12px}
@@ -3696,10 +3696,6 @@ button.performance-window{position:relative}button.performance-window::after{con
 
 /* Laranja só para atenção (precisa de ação): evidência e métricas são neutras. */
 
-/* T16: no Essencial, um campo "Meta de acerto" no lugar de nota-alvo e meta de domínio */
-.exam-target-simple{display:none!important}
-[data-essential="on"] .exam-target-simple{display:flex!important}
-[data-essential="on"] .exam-target-full{display:none!important}
 .exam-blueprint-main label small{color:var(--text-secondary);font:var(--text-small) var(--font-body);text-transform:none}
 
 /* T18: análise do Fechamento em uma dobra, com tendência de 4 semanas e sinais em lista curta */
@@ -3725,3 +3721,65 @@ button.performance-window{position:relative}button.performance-window::after{con
 #weeklyHistoryEmpty{display:none}
 [data-essential="on"] #weeklyHistoryEmpty.is-empty{display:block}
 .lazy-more-item{list-style:none}
+
+/* T23: no celular o Planejamento chega mais cedo à primeira ação */
+@media(max-width:640px){
+  #panel-metas .page-header{margin-bottom:var(--space-3)}
+  #panel-metas .page-header p{display:none}
+  .metas-nav{position:static;top:auto;z-index:auto;margin-bottom:var(--space-3);padding:var(--space-1)}
+  #planExecutionCard .module-heading__description{display:none}
+  .week-reconciliation>*{order:4}
+  .week-reconciliation>.week-reconciliation__period{order:1}
+  .week-reconciliation>.week-reconciliation__sentence{order:2}
+  .week-reconciliation>.week-reconciliation__excess{order:3}
+}
+
+/* T24: sem cartão dentro de cartão no Fechamento e no Histórico; área de toque de 44 px nas caixas da tabela */
+.weekly-close-act>.weekly-close-actions,
+.weekly-close-act>.weekly-next,
+#weeklyCloseFullAnalysis .weekly-strategic-focus,
+.weekly-close-analysis .weekly-strategic-focus,
+#weeklyCloseHistoryDashboard .weekly-focus-history{margin-top:var(--space-4);padding:var(--space-4) 0 0;border:0;border-top:1px solid var(--paper-line);border-radius:0;background:transparent}
+.subject-target-select{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;cursor:pointer}
+.subject-target-select input[type=checkbox]{width:20px;height:20px}
+
+/* Crítica 6, P1: no celular cada disciplina mostra só o essencial; o resto abre em "Mais campos" */
+.subject-target-more{display:none}
+.subject-target-table .sort-button{display:inline-flex;align-items:center}
+@media(pointer:coarse),(max-width:760px){.subject-target-table .sort-button{min-height:var(--touch-target,44px)}}
+@media(max-width:640px){
+  .subject-target-more{display:inline-flex;margin-left:auto}
+  .subject-target-table tr:not(.is-open) td:is([data-label="Prioridade"],[data-label="Peso"],[data-label="Questões na prova"],[data-label="Meta de domínio"]){display:none}
+}
+
+/* Crítica 6, P1: no Fechamento o resumo da semana é uma linha; o detalhe fica em Plano da semana */
+.weekly-close-line{display:grid;gap:var(--space-1);margin:var(--space-2) 0 var(--space-3)}
+.weekly-close-line__period{margin:0;font:var(--text-micro) var(--font-data);color:var(--text-secondary)}
+.weekly-close-line__sentence{margin:0;font:500 1.25rem/1.35 var(--font-display);color:var(--heading)}
+.weekly-close-line__sentence strong{font-weight:700}
+
+/* Crítica 6, P1: cartão compacto no celular: metas lado a lado */
+@media(max-width:640px){
+  .subject-target-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--space-3)}
+  .subject-target-table tr>*{grid-column:1/-1}
+  .subject-target-table td:is([data-label="Meta de acerto"],[data-label="Questões por semana"]){grid-column:auto;flex-direction:column;align-items:flex-start}
+  .subject-target-table td:is([data-label="Meta de acerto"],[data-label="Questões por semana"]) input{width:100%}
+}
+@media(max-width:640px){
+  .subject-target-table td.subject-target-now{order:1}
+  .subject-target-table td[data-label="Meta de acerto"]{order:2}
+  .subject-target-table td[data-label="Questões por semana"]{order:3}
+}
+@media(max-width:640px){
+  .subject-target-table tr{position:relative}
+  .subject-target-table td[data-label="Selecionar"]{position:absolute;top:var(--space-2);left:0;width:44px;padding:0;justify-content:center}
+  .subject-target-table td[data-label="Selecionar"]::before{content:none}
+  .subject-target-table th.subject-target-name{padding-left:48px;min-height:44px}
+}
+
+/* Crítica 7, P2: no celular só as 6 primeiras disciplinas até pedir todas */
+.subject-target-showall{display:none}
+@media(max-width:640px){
+  .subject-target-showall{display:inline-flex;margin-top:var(--space-2)}
+  .subject-target-table tr.is-extra{display:none}
+}

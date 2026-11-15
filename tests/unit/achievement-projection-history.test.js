@@ -108,6 +108,6 @@ test('card distingue observado de tendência e não declara nota na prova', () =
   const html = renderAchievementProjection(model, { escapeHtml });
   assert.match(html, /Histórico registrado/);
   assert.match(html, /Tendência de 30 dias/);
-  assert.match(html, /não uma nota estimada para a data da prova/);
+  assert.match(html, /não uma nota prevista para o dia da prova/);
   assert.match(html, /Como ler: esta projeção/);
 });

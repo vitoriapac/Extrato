@@ -39,12 +39,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
     advancedCount +
     (model.filters.subject && model.filters.subject !== 'all' ? 1 : 0) +
     (model.filters.search ? 1 : 0);
-  const controls = `<details class="exam-matrix-filters-fold" data-fold-key="exam-filters"><summary>Filtros e busca${activeFilters ? ` (${activeFilters} ${activeFilters === 1 ? 'ativo' : 'ativos'})` : ''}</summary><div class="exam-matrix-filters">
-    <label>Concurso<select data-exam-matrix-filter="scope">${options(
-      scopeOptions,
-      (item: Record<string, any>) => item.value,
-      (item: Record<string, any>) => item.label
-    )}</select></label>
+  const controls = `<div class="exam-matrix-filters-bar"><div class="exam-matrix-filters">
     <label>Disciplina<select data-exam-matrix-filter="subject">${options(
       [
         { value: 'all', label: 'Todas' },
@@ -65,7 +60,12 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
       (item: Record<string, any>) => item.label
     )}</select></label>
     <label class="exam-matrix-search">Buscar tópico<input type="search" data-exam-matrix-search value="${escape(model.filters.search)}" placeholder="Nome do tópico"></label>
-    <details class="exam-matrix-more-filters"><summary>Mais filtros${advancedCount ? ` (${advancedCount})` : ''}</summary><div class="exam-matrix-extra-filters">
+    <details class="exam-matrix-more-filters" data-fold-key="exam-more-filters"><summary>Mais filtros${advancedCount ? ` (${advancedCount})` : ''}</summary><div class="exam-matrix-extra-filters">
+      <label>Concurso<select data-exam-matrix-filter="scope">${options(
+        scopeOptions,
+        (item: Record<string, any>) => item.value,
+        (item: Record<string, any>) => item.label
+      )}</select></label>
       <label>Banca<select data-exam-matrix-filter="board">${options(
         [
           { value: 'all', label: 'Todas' },
@@ -94,7 +94,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
         (item: Record<string, any>) => item.label
       )}</select></label>
     </div></details>
-  </div></details><div class="exam-matrix-modes" role="group" aria-label="Visualização da matriz"><button type="button" class="btn ghost small ${model.filters.mode === 'history' ? 'active' : ''}" data-exam-matrix-mode="history" aria-pressed="${model.filters.mode === 'history'}">Histórico</button><button type="button" class="btn ghost small ${model.filters.mode === 'priorities' ? 'active' : ''}" data-exam-matrix-mode="priorities" aria-pressed="${model.filters.mode === 'priorities'}">Prioridades</button><button type="button" class="btn ghost small" data-exam-matrix-mode="quadrants" aria-pressed="${model.filters.mode === 'quadrants'}">Incidência × domínio</button></div>`;
+  </div>${activeFilters ? '<p class="m-0 mt-2"><button type="button" class="btn ghost small" data-exam-matrix-reset>Limpar filtros</button></p>' : ''}</div><div class="exam-matrix-modes" role="group" aria-label="Visualização da matriz"><button type="button" class="btn ghost small ${model.filters.mode === 'history' ? 'active' : ''}" data-exam-matrix-mode="history" aria-pressed="${model.filters.mode === 'history'}">Histórico</button><button type="button" class="btn ghost small ${model.filters.mode === 'priorities' ? 'active' : ''}" data-exam-matrix-mode="priorities" aria-pressed="${model.filters.mode === 'priorities'}">Prioridades</button><button type="button" class="btn ghost small ${model.filters.mode === 'quadrants' ? 'active' : ''}" data-exam-matrix-mode="quadrants" aria-pressed="${model.filters.mode === 'quadrants'}">Incidência × domínio</button></div>`;
   const summary = `<p class="analytics-note">${model.exams.length} ${model.exams.length === 1 ? 'prova completa' : 'provas completas'} · ${model.analyzedQuestionCount} ${model.analyzedQuestionCount === 1 ? 'questão da banca analisada' : 'questões da banca analisadas'}${model.partialExamCount ? ` · ${model.partialExamCount} ${model.partialExamCount === 1 ? 'prova parcial fora' : 'provas parciais fora'} do denominador` : ''}. Cada célula informa o número de questões; a intensidade é apenas um apoio visual.</p>`;
   if (model.state === 'empty' && model.filters.mode !== 'quadrants')
     return `${controls}${summary}<p class="analytics-note">Nenhuma prova completa corresponde aos filtros. Ajuste o escopo ou importe uma prova com cobertura completa.</p>`;
@@ -132,7 +132,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
           ? 'Acompanhar evolução'
           : 'Manter o domínio';
   const detail = selected
-    ? `<section class="exam-matrix-detail" aria-label="Detalhamento de ${escape(selected.name)}"><h4>${escape(selected.subjectName)} — ${escape(selected.name)}</h4><div class="exam-matrix-detail-grid"><div><h5>Prova</h5><p><strong>Incidência ${selected.presencePercent ?? '—'}%</strong> · ${selected.presentExamCount} de ${selected.examCount} provas · ${selected.questionCount} questões</p><p>Participação ${selected.participationPercent ?? '—'}% · impacto ${selected.impact == null ? 'sem dados' : `${Math.round(selected.impact)}/100`} · base histórica ${escape(selected.confidenceLabel.toLowerCase())}</p></div><div><h5>Você · Sua situação</h5><p>Seu domínio ${selected.mastery == null ? 'sem dados' : `${Math.round(selected.mastery)}/100`} · retenção ${selected.retention == null ? 'sem dados' : `${Math.round(selected.retention)}/100`}</p><p>${selected.personalQuestionCount} questões pessoais · precisão ${selected.personalAccuracy == null ? 'sem dados' : selected.personalAccuracy + '%'}</p><p>Tendência ${escape(selected.trend?.direction || 'sem dados')} · prioridade ${selected.priority == null ? 'sem dados' : `${Math.round(selected.priority)}/100`}</p></div></div><p><strong>Diagnóstico:</strong> ${diagnosis}</p><details><summary>Questões por prova</summary><ul>${selected.cells.map((cell: any) => `<li>${escape(cell.examName)} (${cell.year}): ${cellText(cell.count)}${cell.weight == null ? '' : ` · peso somado ${cell.weight}`}</li>`).join('')}</ul></details>${comparison}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver ações de estudo em Hoje</button></section>`
+    ? `<section class="exam-matrix-detail" aria-label="Detalhamento de ${escape(selected.name)}"><div class="flex flex-wrap items-center justify-between gap-2"><h4 class="m-0">${escape(selected.subjectName)} — ${escape(selected.name)}</h4><button type="button" class="btn ghost small" data-exam-matrix-close-detail aria-label="Fechar detalhe do tópico">Fechar detalhe</button></div><div class="exam-matrix-detail-grid"><div><h5>Prova</h5><p><strong>Incidência ${selected.presencePercent ?? '—'}%</strong> · ${selected.presentExamCount} de ${selected.examCount} provas · ${selected.questionCount} questões</p><p>Participação ${selected.participationPercent ?? '—'}% · impacto ${selected.impact == null ? 'sem dados' : `${Math.round(selected.impact)}/100`} · base histórica ${escape(selected.confidenceLabel.toLowerCase())}</p></div><div><h5>Você · Sua situação</h5><p>Seu domínio ${selected.mastery == null ? 'sem dados' : `${Math.round(selected.mastery)}/100`} · retenção ${selected.retention == null ? 'sem dados' : `${Math.round(selected.retention)}/100`}</p><p>${selected.personalQuestionCount} questões pessoais · precisão ${selected.personalAccuracy == null ? 'sem dados' : selected.personalAccuracy + '%'}</p><p>Tendência ${escape(selected.trend?.direction || 'sem dados')} · prioridade ${selected.priority == null ? 'sem dados' : `${Math.round(selected.priority)}/100`}</p></div></div><p><strong>Diagnóstico:</strong> ${diagnosis}</p><details><summary>Questões por prova</summary><ul>${selected.cells.map((cell: any) => `<li>${escape(cell.examName)} (${cell.year}): ${cellText(cell.count)}${cell.weight == null ? '' : ` · peso somado ${cell.weight}`}</li>`).join('')}</ul></details>${comparison}<button class="btn ghost small" type="button" data-performance-open="hoje">Ver ações de estudo em Hoje</button></section>`
     : '';
   const priorityRowsOf = (rows: any[]) =>
     rows
@@ -165,10 +165,13 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
   return html;
 }
 
+import { computeIncidenceThreshold } from './incidence-quadrants-renderer.js';
+
 export function renderExamOpportunity(model: Record<string, any>) {
+  const threshold = computeIncidenceThreshold(model.rows);
   const candidates = model.rows.filter(
     (row: any) =>
-      row.presencePercent >= 50 &&
+      row.presencePercent >= threshold &&
       row.mastery != null &&
       row.mastery < 70 &&
       ['moderate', 'high'].includes(row.confidence)
@@ -181,6 +184,6 @@ export function renderExamOpportunity(model: Record<string, any>) {
   );
   const row = candidates[0];
   if (!row)
-    return '<p class="analytics-note">Nenhum tópico deste recorte reúne incidência em 50% ou mais das provas, domínio abaixo de 70/100 e evidência média ou alta, então não há oportunidade a destacar. Ajuste os filtros da matriz para ver outros recortes. Esta leitura usa só a incidência histórica; a lista de tópicos prioritários usa a prioridade calculada do app.</p>';
-  return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade no recorte</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · base histórica ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-analysis-nav="hoje" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
+    return `<div class="empty-state empty-state--compact"><strong>Sem oportunidade destacada neste recorte</strong><p class="m-0">Nenhum tópico reúne os 3 critérios ao mesmo tempo (ajuste os filtros para explorar outros recortes):</p><ul class="m-0 mt-1 pl-4 text-xs"><li>Incidência de ${threshold}% ou mais nas provas analisadas</li><li>Domínio abaixo de 70/100</li><li>Evidência média ou alta nos seus registros</li></ul></div>`;
+  return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade na banca (não altera a Prioridade de hoje)</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · base histórica ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-performance-investigate="diagnosis" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
 }

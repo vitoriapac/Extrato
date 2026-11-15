@@ -42,7 +42,7 @@ export function weekSummaryParts(
   const diff = data.capacityMin - data.studiedMin;
   if (diff > 0) return { before: `${studied}; `, hero: `falta ${fmt(diff)}`, after: '.' };
   if (diff === 0) return { before: `${studied}: `, hero: 'capacidade completa', after: '.' };
-  return { before: `${studied}: `, hero: `${fmt(-diff)} acima da capacidade`, after: '.' };
+  return { before: `${studied}: `, hero: `${fmt(-diff)} a mais`, after: '.' };
 }
 
 export function weekSummarySentence(data: WeekReconciliation): string | null {
@@ -108,8 +108,8 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
       )}
       {excess > 0 && (
         <p class="week-reconciliation__excess" role="note">
-          Marcado acima da capacidade em <strong>{fmt(excess)}</strong>: há mais tarefa do que a
-          disponibilidade informada.{' '}
+          Você marcou <strong>{fmt(excess)}</strong> além da disponibilidade: há mais tarefa do que
+          cabe nos dias informados.{' '}
           <button
             type="button"
             class="btn tertiary"

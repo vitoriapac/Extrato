@@ -59,7 +59,8 @@ test('histórico mostra cinco registros e expande os restantes sem recalcular pa
   }));
   const saved = structuredClone(history);
   const html = renderAchievementProjection(model, { history, escapeHtml });
-  assert.match(html, /Mostrar mais/);
+  assert.match(html, /Histórico da trajetória/);
+  assert.match(html, /2026-09-07/);
   assert.match(html, /Em risco → Atenção/);
   assert.deepEqual(history, saved);
   assert.match(html, /Ver valores do gráfico/);
@@ -220,7 +221,7 @@ test('hierarquia da projeção preserva resultado, meta e confiança contextual 
     before = JSON.stringify(model),
     html = renderAchievementProjection(model, { escapeHtml });
   assert.ok(html.indexOf('<span>Acerto em simulados comparáveis') < html.indexOf('<span>Meta de nota'));
-  assert.ok(html.indexOf('achievement-projection__metrics') < html.indexOf('Veja a base em'));
+  assert.ok(html.indexOf('achievement-projection__metrics') < html.indexOf('Como ler: esta projeção'));
   assert.match(html, /decision-explanation/);
   assert.doesNotMatch(html, /<details[^>]*decision-explanation[^>]* open/);
   assert.equal(html.split(escapeHtml(model.summary)).length - 1, 1);
