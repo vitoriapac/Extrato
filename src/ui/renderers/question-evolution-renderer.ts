@@ -8,7 +8,7 @@ const label = (bucket: Record<string, any>, monthly: boolean, formatDate: Format
 
 export function renderQuestionEvolution(
   model: Record<string, any>,
-  { formatDate }: { formatDate: FormatDate }
+  { formatDate, targetPercent = null }: { formatDate: FormatDate; targetPercent?: number | null }
 ) {
   if (model.state === 'empty')
     return renderChartFrame({
@@ -35,15 +35,32 @@ export function renderQuestionEvolution(
       ? 0
       : ((times[index] - times[0]) / span) * (width - left - right));
   // Escala ajustada aos dados (como nos simulados): com 2 ou 3 pontos, 0 a 100 deixaria a linha achatada.
-  const values: number[] = model.buckets
-    .map((item: any) => item.movingAccuracy)
-    .filter((value: unknown): value is number => typeof value === 'number');
+  const goal = Number.isFinite(targetPercent) ? Math.max(0, Math.min(100, targetPercent as number)) : null;
+  const values: number[] = [
+    ...model.buckets
+      .map((item: any) => item.movingAccuracy)
+      .filter((value: unknown): value is number => typeof value === 'number'),
+    ...(goal === null ? [] : [goal]),
+  ];
   const scaleLow = values.length ? Math.max(0, Math.floor((Math.min(...values) - 5) / 10) * 10) : 0;
   const scaleHigh = values.length
     ? Math.min(100, Math.max(scaleLow + 20, Math.ceil((Math.max(...values) + 5) / 10) * 10))
     : 100;
   const y = (value: number) =>
     top + ((scaleHigh - value) / (scaleHigh - scaleLow)) * (height - top - bottom);
+  // Períodos com menos de 30 questões não têm média móvel: ficam sombreados, para a lacuna não parecer erro do gráfico.
+  const slot = Math.max(10, (width - left - right) / Math.max(1, model.buckets.length));
+  const thin = model.buckets
+    .map((item: any, index: number) =>
+      item.movingAccuracy === null
+        ? `<rect class="question-evolution-thin" x="${Math.max(left, x(index) - slot / 2)}" y="${top}" width="${slot}" height="${height - top - bottom}"><title>${label(item, model.monthly, formatDate)}: amostra pequena (${item.resolved} questões)</title></rect>`
+        : ''
+    )
+    .join('');
+  const goalLine =
+    goal === null
+      ? ''
+      : `<line class="question-evolution-goal" x1="${left}" x2="${width - right}" y1="${y(goal)}" y2="${y(goal)}"/>`;
   const segments = [];
   for (let index = 1; index < model.buckets.length; index++) {
     const previous = model.buckets[index - 1].movingAccuracy,
@@ -74,7 +91,7 @@ export function renderQuestionEvolution(
     .join('');
   const chart =
     model.state === 'ready'
-      ? `<div class="question-evolution-scroll"><svg aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;min-width:${width}px;max-width:none;height:auto">${axis}${segments.join('')}${points}${labels}</svg></div>`
+      ? `<div class="question-evolution-scroll"><svg aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;min-width:${width}px;max-width:none;height:auto">${thin}${axis}${goalLine}${segments.join('')}${points}${labels}</svg></div>`
       : '<p class="analytics-note">A linha aparece após dois períodos com média móvel sustentada por pelo menos 30 questões.</p>';
   const rows = model.buckets
     .map((item: any) => {
@@ -92,7 +109,11 @@ export function renderQuestionEvolution(
         label(model.buckets.at(-1), model.monthly, formatDate)
       : '',
     evidence: model.resolved + ' questões no recorte · ' + model.accuracy + '% de acerto',
-    legend: [{ label: 'Precisão média móvel', tone: 'primary' }],
+    legend: [
+      { label: 'Precisão média móvel', tone: 'primary' },
+      ...(goal === null ? [] : [{ label: `Meta de precisão (${goal}%)`, tone: 'target' }]),
+      ...(model.buckets.some((item: any) => item.movingAccuracy === null) ? [{ label: 'Amostra pequena (menos de 30 questões)', tone: 'muted' }] : []),
+    ],
     chart: model.state === 'ready' ? chart : '',
     emptyMessage:
       'São necessários dois períodos com média móvel sustentada por pelo menos 30 questões.',

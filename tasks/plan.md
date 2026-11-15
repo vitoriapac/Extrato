@@ -91,7 +91,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 ### Fase 7: Visual e iniciante
 - [x] Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
 - [x] Tarefa 29: Gráficos de Disciplinas e Diagnóstico
-- [ ] Tarefa 30: Gráficos de Provas
+- [x] Tarefa 30: Gráficos de Provas
 - [ ] Tarefa 31: Gráficos de Ritmo
 - [ ] Tarefa 32: Estados vazios do modo iniciante
 

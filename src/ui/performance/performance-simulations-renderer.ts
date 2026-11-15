@@ -18,6 +18,12 @@ const percent = (value: number | null | undefined) =>
 const signed = (value: number) =>
   value == null ? 'Sem comparação' : formatPoints(value);
 
+/** Faixa calibrada com simulados comparáveis; sem ela, o gráfico fica só com notas e meta. */
+const projectedBand = (model: Record<string, any> | null | undefined) => {
+  const band = model?.projection?.calibratedSimulationBand;
+  return Number.isFinite(band?.low) && Number.isFinite(band?.high) ? { low: band.low as number, high: band.high as number } : null;
+};
+
 export function renderPerformanceSimulations(
   model: Record<string, any>,
   { range, targetScore, formatDate, escapeHtml, escapeAttr = escapeHtml, projection = null }: any = {}
@@ -48,6 +54,7 @@ export function renderPerformanceSimulations(
     formatDate,
     escapeHtml,
     targetScore,
+    band: projectedBand(projection?.model),
   });
   const comparison = renderSimulationComparison(model.comparison, { formatDate, escapeHtml });
   const calibration = renderProjectionCalibration(model.calibration);

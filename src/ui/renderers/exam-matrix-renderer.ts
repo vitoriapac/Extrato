@@ -1,4 +1,5 @@
 import { renderIncidenceQuadrants } from './incidence-quadrants-renderer.js';
+import { renderIncidenceBySubject } from '../performance/incidence-by-subject-chart.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
@@ -160,7 +161,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
   const historyTable = (rows: any[], caption: string) =>
     `<div class="exam-matrix-table-wrap"><table class="exam-matrix-table"><caption>${caption}</caption><thead><tr><th scope="col">Tópico</th>${columns}<th scope="col">Incidência</th></tr></thead><tbody>${desktopOf(rows)}</tbody></table></div>`;
   const history = `${historyTable(firstRows, 'Matriz histórica por tópico e prova')}<div class="exam-matrix-cards">${mobileOf(firstRows)}</div>${more(`${historyTable(restRows, 'Demais tópicos da matriz histórica')}<div class="exam-matrix-cards">${mobileOf(restRows)}</div>`)}`;
-  const html = `${controls}${summary}${model.rows.length ? (model.filters.mode === 'quadrants' ? renderIncidenceQuadrants(model.rows) : model.filters.mode === 'priorities' ? priorities : history) : '<p class="analytics-note">Nenhum tópico corresponde à busca e aos filtros.</p>'}${detail}`;
+  const html = `${controls}${summary}${model.state === 'empty' ? '' : renderIncidenceBySubject(model.rows, model.analyzedQuestionCount)}${model.rows.length ? (model.filters.mode === 'quadrants' ? renderIncidenceQuadrants(model.rows) : model.filters.mode === 'priorities' ? priorities : history) : '<p class="analytics-note">Nenhum tópico corresponde à busca e aos filtros.</p>'}${detail}`;
   return html;
 }
 

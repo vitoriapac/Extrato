@@ -217,3 +217,33 @@ test('T29: barras de precisão com meta, antes × agora e lacuna × impacto', as
   assert.match(gap, /T1: lacuna \(100 menos o domínio 20\)/);
   assert.equal(renderGapImpactChart([topic(1, 'Mat', 20, 90), topic(2, 'Mat', 30, 80)], { escapeHtml: String }), '');
 });
+
+test('T30: meta e amostra pequena na precisão, faixa projetada nos simulados, peso na prova × domínio', async () => {
+  const { renderQuestionEvolution } = await import('../../src/ui/renderers/question-evolution-renderer.js');
+  const bucket = (key, resolved, movingAccuracy) => ({ key, resolved, correct: Math.round(resolved * 0.7), errors: resolved - Math.round(resolved * 0.7), accuracy: 70, movingAccuracy });
+  const model = { state: 'ready', monthly: false, resolved: 200, accuracy: 70, buckets: [bucket('2026-10-05', 40, 70), bucket('2026-10-12', 12, null), bucket('2026-10-19', 50, 74), bucket('2026-10-26', 50, 76)] };
+  const html = renderQuestionEvolution(model, { formatDate: d => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`, targetPercent: 80 });
+  assert.match(html, /question-evolution-goal/);
+  assert.equal((html.match(/question-evolution-thin/g) || []).length, 1);
+  assert.match(html, /Meta de precisão \(80%\)/);
+  assert.match(html, /amostra pequena \(12 questões\)/);
+  assert.doesNotMatch(renderQuestionEvolution(model, { formatDate: String }), /question-evolution-goal/);
+
+  const { renderSimulationTrendChart } = await import('../../src/ui/renderers/simulations-renderer.js');
+  const items = [1, 2, 3].map(n => ({ nome: `S${n}`, date: `2026-10-0${n}`, correct: 70 + n, total: 100 }));
+  const args = { items, scoreFor: item => item.correct, formatDate: d => d, escapeHtml: String, targetScore: 80 };
+  const withBand = renderSimulationTrendChart({ ...args, band: { low: 69, high: 93 } });
+  assert.match(withBand, /simulation-band/);
+  assert.match(withBand, /Faixa projetada para a prova \(69% a 93%\)/);
+  assert.doesNotMatch(renderSimulationTrendChart(args), /simulation-band/);
+
+  const { renderIncidenceBySubject } = await import('../../src/ui/performance/incidence-by-subject-chart.js');
+  const row = (subjectName, questionCount, mastery) => ({ subjectName, questionCount, mastery });
+  const out = renderIncidenceBySubject([row('Mat', 20, 40), row('Mat', 10, 60), row('Port', 40, null), row('Inf', 30, 80)], 100);
+  assert.match(out, /Mat: 30% das questões analisadas/);
+  assert.match(out, /Mat: domínio médio 50 de 100, em 2 tópicos/);
+  assert.match(out, /sem domínio medido/);
+  assert.ok(out.indexOf('Port') < out.indexOf('Inf'));
+  assert.equal(renderIncidenceBySubject([row('A', 5, 1), row('B', 5, 1)], 10), '');
+  assert.equal(renderIncidenceBySubject([row('A', 5, 1)], 0), '');
+});

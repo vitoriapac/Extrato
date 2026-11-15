@@ -80,16 +80,20 @@ export function renderSimulationTrendChart({
   formatDate,
   escapeHtml,
   targetScore = null,
+  band = null,
 }: {
   items?: Row[];
   scoreFor: (item: Row) => number;
   formatDate: (date: string) => string;
   escapeHtml: Esc;
   targetScore?: number | string | null;
+  /** Faixa projetada para a prova (% de nota): barra à direita do último simulado, não uma faixa histórica. */
+  band?: { low: number; high: number } | null;
 }) {
+  const hasBand = Boolean(band && Number.isFinite(band.low) && Number.isFinite(band.high));
   const { width, height } = chartSize(640, 160),
     padLeft = 30,
-    padRight = 12,
+    padRight = hasBand ? 40 : 12,
     padTop = 12,
     padBottom = 26;
   const plotWidth = width - padLeft - padRight,
@@ -102,7 +106,7 @@ export function renderSimulationTrendChart({
     Number.isFinite(Number(targetScore)) && targetScore !== null && targetScore !== ''
       ? Math.max(0, Math.min(100, Number(targetScore)))
       : null;
-  const known = goalValue === null ? scores : [...scores, goalValue];
+  const known = [...scores, ...(goalValue === null ? [] : [goalValue]), ...(hasBand ? [band!.low, band!.high] : [])];
   const rawLow = known.length ? Math.min(...known) : 0,
     rawHigh = known.length ? Math.max(...known) : 100;
   const low = Math.max(0, Math.floor((rawLow - 5) / 10) * 10),
@@ -131,6 +135,9 @@ export function renderSimulationTrendChart({
     )
     .join('');
   const goal = goalValue;
+  const bandShape = hasBand
+    ? `<rect class="simulation-band" x="${width - padRight + 8}" y="${yFor(Math.min(100, band!.high))}" width="16" height="${Math.max(2, yFor(Math.max(0, band!.low)) - yFor(Math.min(100, band!.high)))}" rx="2"><title>Faixa projetada para a prova: ${formatDecimal(band!.low)}% a ${formatDecimal(band!.high)}%</title></rect><text class="simulation-band-label" x="${width - padRight + 16}" y="${height - 6}" text-anchor="middle">prova</text>`
+    : '';
   const goalLine =
     goal === null
       ? ''
@@ -154,10 +161,11 @@ export function renderSimulationTrendChart({
     legend: [
       { label: 'Nota do simulado', tone: 'primary' },
       ...(goal === null ? [] : [{ label: 'Meta configurada', tone: 'target' }]),
+      ...(hasBand ? [{ label: `Faixa projetada para a prova (${formatDecimal(band!.low)}% a ${formatDecimal(band!.high)}%)`, tone: 'soft' }] : []),
     ],
     // Série com menos de 3 pontos não desenha tendência: os resultados ficam em texto, logo abaixo.
     chart: items.length >= 3
-      ? `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}${goalLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`
+      ? `<div class="chart-scroll" tabindex="0" role="region" aria-label="Gráfico com rolagem horizontal"><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}${goalLine}${bandShape}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg></div>`
       : '',
     emptyMessage: items.length
       ? `Com ${items.length === 1 ? '1 simulado' : `${items.length} simulados`} ainda não há tendência para desenhar. Os resultados estão logo abaixo.`

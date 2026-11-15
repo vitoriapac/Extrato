@@ -40,7 +40,7 @@ export function renderPerformanceSection(
         recoveryPlan: pageModel.recoveryPlan,
       });
     case 'questions':
-      return renderPerformanceQuestions({ ...pageModel, range, formatDate, escapeHtml });
+      return renderPerformanceQuestions({ ...pageModel, range, formatDate, escapeHtml, targetScore });
     case 'simulations':
       return renderPerformanceSimulations(pageModel.model, {
         range,

@@ -349,8 +349,8 @@ Verificação usada abaixo:
 
 ### Tarefa 30: Gráficos de Provas
 **Aceite:**
-- [ ] Precisão com meta e amostra pequena sombreada; perfil de erros fora da dobra
-- [ ] Simulados com faixa projetada sobreposta; incidência por disciplina com domínio ao lado
+- [x] Precisão com meta e amostra pequena sombreada; perfil de erros fora da dobra
+- [x] Simulados com faixa projetada sobreposta; incidência por disciplina com domínio ao lado
 **Verificação:** contraste, axe, alternativa em texto
 **Dependências:** T17
 **Tamanho:** M

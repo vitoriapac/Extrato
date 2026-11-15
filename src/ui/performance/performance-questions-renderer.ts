@@ -23,6 +23,7 @@ export function renderPerformanceQuestions({
   range,
   formatDate,
   escapeHtml,
+  targetScore = null,
 }: any = {}) {
   if (!analysis.questionCount)
     return '<div class="empty-state empty-state--compact" role="status"><strong>Sem questões neste período</strong><p>Registre questões pessoais vinculadas a tópicos do concurso ativo para acompanhar precisão, volume e erros.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar questões</button></div>';
@@ -120,5 +121,5 @@ export function renderPerformanceQuestions({
     </section>`;
   }
 
-  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}${multiLineSection}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(evolution, { formatDate })}</section>${renderPerformanceDetails('Volume, erros e tópicos', volume + errors + topics)}`;
+  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}${multiLineSection}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(evolution, { formatDate, targetPercent: targetScore == null || targetScore === '' ? null : Number(targetScore) })}</section>${errors}${renderPerformanceDetails('Volume e tópicos', volume + topics)}`;
 }
