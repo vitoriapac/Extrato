@@ -365,8 +365,8 @@ Verificação usada abaixo:
 
 ### Tarefa 32: Estados vazios do modo iniciante
 **Aceite:**
-- [ ] Com menos de 30 questões pessoais ou 2 semanas de registro, abas analíticas mostram estado vazio que diz quando ficam úteis
-- [ ] Visão geral e Ritmo sempre completas
+- [x] Com menos de 30 questões pessoais ou 2 semanas de registro, abas analíticas mostram estado vazio que diz quando ficam úteis
+- [x] Visão geral e Ritmo sempre completas
 **Verificação:** E2E com usuário novo; unit do limite
 **Dependências:** Checkpoint 5
 **Tamanho:** S

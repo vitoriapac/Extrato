@@ -93,7 +93,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 29: Gráficos de Disciplinas e Diagnóstico
 - [x] Tarefa 30: Gráficos de Provas
 - [x] Tarefa 31: Gráficos de Ritmo
-- [ ] Tarefa 32: Estados vazios do modo iniciante
+- [x] Tarefa 32: Estados vazios do modo iniciante (Disciplinas, Diagnóstico e o bloco Questões de Provas; limite: menos de 30 questões e menos de 14 dias de registro)
 
 ### Checkpoint final
 - [ ] Todos os critérios atendidos (inclui a Fase 9); `/impeccable critique` ≥ 32/40; pronto para revisão

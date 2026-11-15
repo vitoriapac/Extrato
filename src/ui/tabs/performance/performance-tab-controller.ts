@@ -25,6 +25,8 @@ import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
 import { buildCutoffReference } from '../../../domain/analytics/cutoff-reference.js';
+import { assessBeginner } from '../../../domain/analytics/beginner-gate.js';
+import { renderBeginnerState } from '../../performance/performance-beginner-state.js';
 import {
   detectCareerCluster,
   aggregateRecentActivity,
@@ -328,13 +330,26 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               ? deps.topicHistoryService.list({ topicId, includeLifecycle: false })
               : [],
         });
+    // Poucos registros: as abas analíticas mostram só o estado vazio (Visão geral e Ritmo seguem completas).
+    const beginner = assessBeginner({
+      questions: state.questoes || [],
+      sessions: state.studySessions || [],
+      today,
+    });
+    // Em Provas só o bloco de Questões (dados pessoais) é gateado: Simulados tem o próprio estado vazio e a
+    // Inteligência da prova é histórico da banca, que não depende do registro do aluno.
+    const beginnerGate =
+      beginner.beginner && ['subjects', 'diagnosis'].includes(performanceViewState.section);
+    const beginnerQuestions = beginner.beginner && examSection;
     const proofModels = examSection
       ? {
-          questions: buildModelFor({ ...performanceViewState, section: 'questions' }),
+          questions: beginnerQuestions
+            ? null
+            : buildModelFor({ ...performanceViewState, section: 'questions' }),
           simulations: buildModelFor({ ...performanceViewState, section: 'simulations' }),
         }
       : null;
-    const pageModel = examSection ? null : buildModelFor(performanceViewState);
+    const pageModel = examSection || beginnerGate ? null : buildModelFor(performanceViewState);
 
     const renderOptions = {
       range,
@@ -355,9 +370,17 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
     const proofIndex = `<nav class="performance-proof-index" aria-label="Seções de Provas">${[['questions', 'Questões'], ['simulations', 'Simulados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-proof-jump="${key}">${label}</button>`).join('')}</nav>`;
-    const sectionHtml = examSection
+    const sectionHtml = beginnerGate
+      ? renderBeginnerState(performanceViewState.section, beginner)
+      : examSection
       ? proofIndex +
-        proofBlock('questions', 'Questões', renderPerformanceSection(proofModels!.questions, renderOptions)) +
+        proofBlock(
+          'questions',
+          'Questões',
+          beginnerQuestions
+            ? renderBeginnerState('questions', beginner)
+            : renderPerformanceSection(proofModels!.questions!, renderOptions)
+        ) +
         proofBlock('simulations', 'Simulados', renderPerformanceSection(proofModels!.simulations, renderOptions)) +
         proofBlock(
           'exam',

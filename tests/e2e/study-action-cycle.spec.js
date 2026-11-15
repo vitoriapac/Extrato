@@ -45,6 +45,14 @@ for (const source of ['overview', 'today', 'diagnosis'])
       source === 'overview' ? 'dashboard' : source === 'diagnosis' ? 'desempenho' : 'hoje'
     );
     if (source === 'diagnosis') {
+      // Sem registro o Diagnóstico mostra o estado do modo iniciante (T32): 30 questões sem tópico o liberam.
+      await page.evaluate(() => {
+        const api = window.__EXTRATO_TEST__,
+          state = structuredClone(api.getState());
+        state.questoes = [{ id: 'cycle-q', date: new Date().toISOString().slice(0, 10), resolved: 30, correct: 18 }];
+        api.setState(state);
+        api.renderAll();
+      });
       await openPerformanceSection(page, 'diagnosis');
       // Ações de estudo da demo vêm de tópicos "sem evidência", que ficam em dobras sob demanda.
       await page.evaluate(() => {
