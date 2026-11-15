@@ -131,14 +131,14 @@ T23 celular, T24 polimento, T25 crítica final ── depois de tudo
 - [x] Tarefa 14: Subaba "Prova e metas" (5 → 4 subabas)
 - [x] Tarefa 15a: Tabela única de leitura por disciplina, com acerto contra meta em barra
 - [x] Tarefa 15b: Edição na linha, lote em todas as colunas e um único salvar
-- [ ] Tarefa 16: Três alvos viram um no modo Essencial
+- [x] Tarefa 16: Três alvos viram um no modo Essencial
 - [x] Tarefa 17: Ritmo ao lado da meta de tópicos, com aviso
 
 ### Checkpoint 4: Prova e metas
 - [ ] Meta de acerto editável em um lugar só; ajustar 17 disciplinas com uma seleção e uma ação
 
 ### Fase 5: Fechamento e Histórico
-- [ ] Tarefa 18: Análise do Fechamento em uma dobra, com a tendência de 4 semanas
+- [x] Tarefa 18: Análise do Fechamento em uma dobra, com a tendência de 4 semanas
 - [ ] Tarefa 19a: Uma série semanal no Histórico no lugar de quatro
 - [ ] Tarefa 19b: Retratos paginados, período atual fora das variações e estado vazio
 

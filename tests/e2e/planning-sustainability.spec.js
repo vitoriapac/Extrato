@@ -91,8 +91,8 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
     api.renderAll();
   }, state);
   await activateTab(page, 'metas');
-  await openPlanningSubtab(page, 'fechamento');
-  const close = page.locator('#weeklyCloseDashboard'),
+  await openPlanningSubtab(page, 'historico');
+  const close = page.locator('#weeklyCloseFullAnalysis'),
     section = close.locator('.planning-sustainability').first();
   await close.locator('.weekly-close-analysis > summary').click();
   await expect(section).toContainText('Carga acima da execução recente');
@@ -113,8 +113,9 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
   // "Abrir disponibilidade" lands on the capacity card in Plano da semana.
   await expect(page.locator('#metasCapacity')).toBeVisible();
   await openPlanningSubtab(page, 'fechamento');
-  await close.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
-  await close.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
+  const record = page.locator('#weeklyCloseDashboard');
+  await record.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
+  await record.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
   const snapshot = await page.evaluate(() =>
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))
   );
@@ -154,9 +155,9 @@ for (const [width, theme] of [
     await expect(page.locator('.adherence-change')).toContainText('O que mudou?');
     await expectNoPageOverflow(page);
     await activateTab(page, 'metas');
-    await openPlanningSubtab(page, 'fechamento');
-    await page.locator('#weeklyCloseDashboard .weekly-close-analysis > summary').click();
-    const section = page.locator('#weeklyCloseDashboard .planning-sustainability').first();
+    await openPlanningSubtab(page, 'historico');
+    await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
+    const section = page.locator('#weeklyCloseFullAnalysis .planning-sustainability').first();
     await expect(section).toContainText('Carga acima da execução recente');
     await expect(section).toContainText('4 comparáveis');
     if (process.platform === 'win32')
@@ -170,7 +171,7 @@ for (const [width, theme] of [
     expect(
       (
         await new AxeBuilder({ page })
-          .include('#weeklyCloseDashboard .planning-sustainability')
+          .include('#weeklyCloseFullAnalysis .planning-sustainability')
           .withTags(['wcag2a', 'wcag2aa'])
           .analyze()
       ).violations

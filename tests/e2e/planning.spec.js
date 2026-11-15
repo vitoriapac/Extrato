@@ -367,3 +367,46 @@ test('Prova e metas mostra o aviso de ritmo com o próximo passo e leva às meta
   await expect(page.locator('#metasAdjust')).toHaveJSProperty('open', true);
   await expect(page.locator('#metasActiveGoals')).toBeInViewport();
 });
+
+test('Prova e metas: Essencial tem um campo "Meta de acerto" que preenche nota-alvo e domínio; o completo mostra os três', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'prova');
+  await page.locator('.exam-general-config').evaluate(node => (node.open = true));
+  const main = page.locator('.exam-blueprint-main');
+  await page.evaluate(() => document.documentElement.setAttribute('data-essential', 'on'));
+  await expect(main.getByLabel('Meta de acerto (%)')).toBeVisible();
+  await expect(main.getByLabel('Nota-alvo (%)')).toBeHidden();
+  await expect(main.getByLabel('Meta geral de domínio (%)')).toBeHidden();
+
+  await main.getByLabel('Meta de acerto (%)').fill('73');
+  await main.getByLabel('Meta de acerto (%)').blur();
+  await page.evaluate(() => document.documentElement.removeAttribute('data-essential'));
+  await page.locator('.exam-general-config').evaluate(node => (node.open = true));
+  await expect(main.getByLabel('Meta de acerto (%)')).toBeHidden();
+  await expect(main.getByLabel('Nota-alvo (%)')).toHaveValue('73');
+  await expect(main.getByLabel('Meta geral de domínio (%)')).toHaveValue('73');
+  await expect(main).toContainText('A nota que você quer tirar na prova.');
+});
+
+test('Fechamento: uma análise com tendência de 4 semanas e sinais, no máximo 2 dobras', async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDemo(page);
+  await openPlanningSubtab(page, 'fechamento');
+  const close = page.locator('#weeklyCloseDashboard');
+  expect(await close.locator('details').count()).toBeLessThanOrEqual(2);
+  await close.locator('.weekly-close-brief > summary').click();
+  await expect(close.getByRole('heading', { name: 'Últimas 4 semanas' })).toBeVisible();
+  await expect(close.getByRole('heading', { name: 'Sinais da semana' })).toBeVisible();
+  await close.getByText('Ver dados', { exact: true }).click();
+  await expect(close.locator('.plan-execution-table')).toBeVisible();
+  // A análise longa continua disponível no Histórico.
+  await openPlanningSubtab(page, 'historico');
+  await expect(page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary')).toBeVisible();
+});

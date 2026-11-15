@@ -70,6 +70,11 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
   }
 
   function updateExamBlueprint(field: string, value: any, { refresh = true }: any = {}) {
+    // Modo Essencial: um só campo de meta preenche nota-alvo e meta geral de domínio.
+    if (field === 'allTargets') {
+      updateExamBlueprint('targetScore', value, { refresh: false });
+      return updateExamBlueprint('masteryTarget', value, { refresh });
+    }
     const state = getState();
     const nextValue =
       field === 'examDate'

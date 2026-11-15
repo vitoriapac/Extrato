@@ -35,31 +35,27 @@ for (const viewport of viewports) {
         screenshotOptions
       );
     }
-    await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText(
-      'Foco estratégico da semana'
-    );
     const close = page.locator('#weeklyCloseDashboard');
     await expect(close.locator('.weekly-next')).toContainText('Próxima semana');
-    await expect(close.locator('.weekly-decision-summary')).toContainText('Decisão sugerida');
     await expect(close.locator('.weekly-next')).not.toContainText('Próxima ação');
     // Três atos em ordem: a semana, o retrato, a decisão sobre a próxima semana.
     const acts = await close.evaluate(element =>
       [...element.children].map(child => child.querySelector('h4')?.textContent)
     );
     expect(acts).toEqual(['A semana', 'O retrato', 'A decisão']);
-    // A semana mostra os três números; a análise completa fica num único disclosure, na ordem de antes.
+    // A semana mostra os três números e uma única dobra, com a tendência de 4 semanas e os sinais.
     const week = await close.evaluate(element =>
       [...element.children[0].children].map(child => child.className)
     );
     expect(week.indexOf('week-reconciliation')).toBeLessThan(
-      week.indexOf('weekly-close-analysis editorial-disclosure')
+      week.indexOf('weekly-close-brief editorial-disclosure')
     );
-    const analysis = await close.evaluate(element =>
-      [...element.querySelector('.weekly-close-analysis').children].map(child => child.className)
-    );
-    expect(analysis.indexOf('weekly-assessment')).toBeLessThan(
-      analysis.indexOf('weekly-strategic-focus')
-    );
+    await expect(close.locator('details')).toHaveCount(2);
+    await expect(close.locator('.weekly-close-brief .weekly-signals')).toHaveCount(1);
+    // A análise longa e o foco estratégico moram no Histórico.
+    const full = page.locator('#weeklyCloseFullAnalysis');
+    await expect(full.locator('.weekly-strategic-focus')).toContainText('Foco estratégico da semana');
+    await expect(full.locator('.weekly-decision-summary')).toContainText('Decisão sugerida');
     // O histórico de foco saiu do fechamento e vive na seção Histórico.
     await expect(close.locator('.weekly-focus-history')).toHaveCount(0);
     await expect(page.locator('#weeklyCloseHistoryDashboard .weekly-focus-history')).toHaveCount(1);

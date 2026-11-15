@@ -171,6 +171,7 @@ test('T28: tendência semanal dos KPIs e régua da Prontidão com faixa projetad
     howAmI: { readiness: { value: 47, detail: null, verdict: null }, projection: { text: 't', low: 69, high: 93, target: 80 }, rhythm: null },
     pulling: [],
     whatToDo: { state: 'x', action: null, reason: null, deficit: null, recovery: false },
+    steady: [],
     evidence: [],
   };
   const html = renderPreparationReading(reading);
@@ -360,6 +361,7 @@ test('T39: o selo do período diz a janela real e a Leitura avisa que as janelas
     howAmI: { readiness: { value: 47, detail: null, verdict: null }, projection: null, rhythm: null },
     pulling: [],
     whatToDo: { state: 'x', action: null, reason: null, deficit: null, recovery: false },
+    steady: [],
     evidence: [],
   };
   assert.match(renderPreparationReading(reading), /data-window-note="true"[^>]*>Janelas diferentes: o ritmo e o que falta são dos últimos 7 dias/);

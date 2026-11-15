@@ -297,7 +297,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'fechamento');
   await expect(page.locator('#weeklyCloseDashboard .week-reconciliation')).toBeVisible();
-  await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText(
+  await expect(page.locator('#weeklyCloseFullAnalysis .weekly-assessment')).toContainText(
     'Diagnóstico'
   );
   await openPlanningSubtab(page, 'semana');
@@ -308,7 +308,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
     await expect(rows.first().locator('.data-score')).toContainText(/Gravidade \d+\/100/);
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'prova');
-  const strategicRow = page.locator('#examBlueprintConfig .exam-subject-row').first();
+  const strategicRow = page.locator('#subjectTargetEditor .subject-target-table tbody tr').first();
   expect(await strategicRow.evaluate(row => row.scrollWidth <= row.clientWidth + 1)).toBe(true);
 });
 
@@ -648,7 +648,7 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   );
 
   // The accuracy summary lives inside the weekly close analysis.
-  await openPlanningSubtab(page, 'fechamento');
+  await openPlanningSubtab(page, 'historico');
   const accuracy = page.locator('.subject-accuracy-summary');
   await accuracy.evaluate(node => {
     node.closest('.weekly-close-analysis')?.setAttribute('open', '');

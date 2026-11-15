@@ -22,7 +22,7 @@ for (const { width, theme } of [
     await page.setViewportSize({ width, height: 900 });
     await openDemo(page);
     if (theme === 'dark') await page.locator('#themeToggleBtn').click();
-    await expect(page.locator('#weeklyCloseDashboard .projection-close-context')).toHaveCount(1);
+    await expect(page.locator('#weeklyCloseFullAnalysis .projection-close-context')).toHaveCount(1);
     await activateTab(page, 'desempenho');
     // A projeção até a prova mora em Simulados.
   await openPerformanceSection(page, 'simulations');
@@ -525,8 +525,8 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
   await expect(page.locator('#projections')).toBeFocused();
   await expect(page.locator('#projections')).toContainText('não acrescenta horas');
   await activateTab(page, 'metas');
-  await openPlanningSubtab(page, 'fechamento');
-  const close = page.locator('#weeklyCloseDashboard');
+  await openPlanningSubtab(page, 'historico');
+  const close = page.locator('#weeklyCloseFullAnalysis');
   await close.locator('.weekly-close-analysis > summary').click();
   await expect(close.getByRole('region', { name: 'Síntese para a próxima decisão' })).toContainText(
     'Decisão sugerida'

@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-351 arquivos Node e 76 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+352 arquivos Node e 76 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -442,6 +442,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/weekly-close-modal-controller.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-record-renderer.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-snapshot.test.js | node | Fechamento | critical | — | contract | none |
+| tests/unit/weekly-close-trend-renderer.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-performance-brief.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |

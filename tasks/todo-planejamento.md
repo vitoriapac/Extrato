@@ -397,12 +397,12 @@ Verificação usada abaixo:
 **Descrição:** Nota-alvo, meta geral de domínio e meta de acerto aparecem como três "80%". No modo Essencial, um campo "Meta de acerto" preenche os outros dois. No modo completo, os três aparecem com uma frase cada, dizendo o que medem.
 
 **Aceite:**
-- [ ] Essencial: um campo; completo: três com explicação curta
-- [ ] Valores salvos existentes preservados
+- [x] Essencial: um campo; completo: três com explicação curta
+- [x] Valores salvos existentes preservados
 
 **Verificação:**
-- [ ] Unit: teste do formulário de opções gerais
-- [ ] E2E: `planning.spec.js`
+- [x] Unit: teste do formulário de opções gerais
+- [x] E2E: `planning.spec.js`
 
 **Dependências:** T15b
 
@@ -440,13 +440,13 @@ Verificação usada abaixo:
 **Descrição:** "Ver análise completa da semana" hoje abre 9 dobras. Passa a ser uma dobra só, que mostra um `WeeklyTrendChart` das últimas 4 semanas (estudado e agendado) e os sinais da semana em lista curta. O que for série histórica longa vai para o Histórico (T19a). O ato "A decisão" termina num estado claro, não num botão desabilitado sem explicação.
 
 **Aceite:**
-- [ ] Fechamento com no máximo 2 dobras na demo
-- [ ] Tendência de 4 semanas com "Ver dados"
-- [ ] "Conferir impacto" desabilitado diz o que falta
+- [x] Fechamento com no máximo 2 dobras na demo
+- [x] Tendência de 4 semanas com "Ver dados"
+- [x] "Conferir impacto" desabilitado diz o que falta
 
 **Verificação:**
-- [ ] Unit: `tests/unit/weekly-close-record-renderer.test.js`, `tests/unit/weekly-close-actions.test.js`
-- [ ] E2E: `planning-sustainability.spec.js`
+- [x] Unit: `tests/unit/weekly-close-record-renderer.test.js`, `tests/unit/weekly-close-actions.test.js`
+- [x] E2E: `planning-sustainability.spec.js`
 
 **Dependências:** T5
 
@@ -717,3 +717,5 @@ Decisão do usuário: rodada nos 2 P1, marcador de dobra e tom do gráfico no es
 **T14 feita, sem commit.** Quatro subabas (Plano da semana, Prova e metas, Fechamento semanal, Histórico). `prova` agora tem Configuração estratégica, Matriz (avançada), Metas por disciplina, Estimativa de ritmo e Histórico de metas; a chave `metas` saiu (`#planejamento/metas` e `#metas/metas` abrem `prova`); tablist e seletor do celular com 4 opções, setas/Home/End conferidos em E2E. **T17 feita, sem commit.** `buildRhythmGoalWarning` (meta < necessário, ex. 12 contra 15,1, ou ritmo termina depois da prova) mostra `.pace-next` no bloco de ritmo com "Ajustar meta" (nova ação `openGoalsAdjust`: vai à Semana, abre a dobra e foca as metas) e "Simular E se?"; o gráfico de burn-up existente foi reaproveitado. **Pendentes: T15a, T15b e T16.** Exigem substituir a Configuração por disciplina (exam-blueprint-config-renderer + exam-matrix-controller) e a tabela de metas (subject-target-editor) por uma tabela única editável com um salvar; é a maior refatoração da Fase 4, com E2E em goals-groups, adherence-target, subject-accuracy-target e planning, e merece uma rodada própria. Falhas fora do escopo: visual-consolidation (FAQ, Diagnóstico vazio), da sessão da Desempenho.
 
 **T15a + T15b feitas, sem commit.** "Metas por disciplina" virou uma tabela única editável (prioridade, peso, questões na prova, meta de acerto, meta semanal, domínio; acerto atual em `BulletBar` com texto alternativo; ordenação por coluna; colunas avançadas ocultas no Essencial; cartões ≤640 px). Edição na linha grava só rascunho; um rodapé fixo "Salvar alterações / Descartar" valida tudo antes e grava de uma vez (um Desfazer), Enter também salva; lote nas colunas; "usar meta geral". A lista antiga por disciplina e suas ações (`saveExamSubjectConfig` etc.) foram removidas. Bug achado no E2E: o Enter salvava e o `change` disparado no redesenho recriava o rascunho (bloqueava "Repartir a meta"); corrigido com guarda `justCommitted`. Testes: unitários do editor, `planning`, `question-goal-split`, `subject-accuracy-target`, `accessibility`, `release-gate`, `refinement-visual` (teste de duas colunas agora abre `#metasAdjust`). Falha fora do escopo: `release-gate` "paleta" (search-controller da outra sessão).
+
+**T18 feita, sem commit.** Fechamento tem 2 dobras na demo ("Ver análise da semana" e o "Ver dados" do gráfico): tendência de 4 semanas (agendado × estudado, `weekly-close-trend-renderer.ts`) e "Sinais da semana" em lista curta (≤2 acertos, ≤3 revisões, resultados medidos). Decisão da usuária: a análise longa antiga (sustentabilidade, composição do tempo, comparação com a trajetória, foco estratégico, decisões anteriores) foi movida inteira para o Histórico, na dobra "Análise completa da semana encerrada" (`#weeklyCloseFullAnalysis`); a T19a a enxuga. "Conferir impacto" desabilitado já explica o que falta (dica `weeklyPreviewHint`). Testes: unitários 1.762; E2E `planning` (novo), `planning-sustainability`, `weekly-adherence`, `achievement-projection`, `visual-consolidation` (também corrigido o seletor da tabela da T15), `visual-regression` ajustados ao novo lugar.

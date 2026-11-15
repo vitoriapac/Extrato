@@ -12,14 +12,6 @@ export function renderPerformanceConsistency(
   model: Record<string, any>,
   { formatDate, escapeHtml, range, capacityMinutes = null }: any = {}
 ) {
-  const cells = model.heatmap
-    .map((day: any) => {
-      const level = day.minutes === 0 ? 0 : day.minutes < 30 ? 1 : day.minutes < 90 ? 2 : 3;
-      return `<span class="performance-heatmap-day level-${level} rounded-xs transition-transform hover:scale-110" role="img" title="${escapeHtml(formatDate(day.date))}: ${day.minutes} min" aria-label="${escapeHtml(formatDate(day.date))}: ${day.minutes} minutos estudados"></span>`;
-    })
-    .join('');
-  const heatmap = `<section class="performance-block"><h3>Dias com atividade</h3><p class="analytics-note">${pluralize(model.activeDays, 'dia', 'dias')} com estudo no período. ${model.heatmapLimited ? 'Últimos 90 dias do período.' : 'Dias do período.'} Cada dia informa os minutos em texto acessível.</p><div class="performance-heatmap" role="group" aria-label="Minutos estudados por dia">${cells}</div><div class="heatmap-legend flex items-center justify-end gap-2 text-xs text-content-secondary mt-3" aria-hidden="true"><span>Menos</span><span class="performance-heatmap-day level-0 w-3 h-3 rounded-xs inline-block" title="0 min"></span><span class="performance-heatmap-day level-1 w-3 h-3 rounded-xs inline-block" title="<30 min"></span><span class="performance-heatmap-day level-2 w-3 h-3 rounded-xs inline-block" title="<90 min"></span><span class="performance-heatmap-day level-3 w-3 h-3 rounded-xs inline-block" title="≥90 min"></span><span>Mais</span></div></section>`;
-
   // Linha do tempo com colunas empilhadas e cores das matérias
   const timeline = model.studyTimeline;
   let timelineHtml = '';
@@ -79,5 +71,5 @@ export function renderPerformanceConsistency(
   const weeklyHtml = weeklyChart
     ? `<section class="performance-block" aria-label="Planejado e realizado por semana"><h3>Planejado × realizado por semana</h3><p class="analytics-note">Tempo estudado frente ao tempo planejado em cada semana${capacityMinutes > 0 ? ', com a capacidade semanal do plano como referência' : ''}.</p>${weeklyChart}</section>`
     : '';
-  return `${synthesis}${weeklyHtml}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml, 'performance-details', true) : ''}${renderPerformanceDetails('Como o plano foi cumprido: aderência, execução prioritária e crédito semanal', renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml, windowLabel: range?.label }), 'performance-details adherence-fold', true)}<div class="performance-shift mt-4" id="bloco-turno"><div id="shiftEnergyMount"></div></div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
+  return `${synthesis}${weeklyHtml}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml, 'performance-details', true) : ''}${renderPerformanceDetails('Como o plano foi cumprido: aderência, execução prioritária e crédito semanal', renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml, windowLabel: range?.label }), 'performance-details adherence-fold', true)}<div class="performance-shift mt-4" id="bloco-turno"><div id="shiftEnergyMount"></div></div>`;
 }

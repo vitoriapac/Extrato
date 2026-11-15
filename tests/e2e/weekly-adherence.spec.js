@@ -102,8 +102,8 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
     api.setState(result.normalized);
     api.renderAll();
   }, state);
-  await openPlanningSubtab(page, 'fechamento');
-  const close = page.locator('#weeklyCloseDashboard');
+  await openPlanningSubtab(page, 'historico');
+  const close = page.locator('#weeklyCloseFullAnalysis');
   await close.locator('.weekly-close-analysis > summary').click();
   await expect(close.getByRole('region', { name: 'Síntese para a próxima decisão' })).toContainText(
     'Decisão sugerida'
@@ -152,8 +152,10 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   });
   expect(after).toEqual(before);
   await activateTab(page, 'metas');
-  await close.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
-  await close.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
+  await openPlanningSubtab(page, 'fechamento');
+  const record = page.locator('#weeklyCloseDashboard');
+  await record.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
+  await record.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
   const frozen = await page.evaluate(() =>
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))
   );

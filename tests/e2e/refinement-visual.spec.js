@@ -170,5 +170,5 @@ test('Desempenho mantém orientação dentro dos cards quando não há dados', a
   await expect(page.locator('#performanceSectionContent [data-beginner-state]')).toHaveCount(0);
   await openPerformanceSection(page, 'consistency');
   await expect(page.locator('#performanceSectionContent [data-beginner-state]')).toHaveCount(0);
-  await expect(page.locator('#performanceSectionContent')).toContainText('0 dias com estudo');
+  await expect(page.locator('#performanceSectionContent')).toContainText('Atividade: 0 dias');
 });

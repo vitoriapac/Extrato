@@ -23,8 +23,8 @@ import { createSustainabilityController } from '../../ui/controllers/sustainabil
 import {
   renderWeeklyClose,
   renderWeeklyCloseKpis,
-  renderWeeklyCloseNext,
   renderWeeklyStrategicFocus,
+  renderWeeklyCloseNext,
   renderPeriodComparison,
   renderGapMap,
   renderDecisionHistory,
@@ -32,18 +32,19 @@ import {
   renderStrategicFocusHistory,
 } from '../../ui/renderers/studytrack32-renderer.js';
 import { renderWeeklyDecisionCycle } from '../../ui/renderers/weekly-decision-cycle-renderer.js';
+import { renderDisclosure as renderAnalyticalDisclosure } from '../../ui/components/analytical-presentation.js';
+import { buildProjectionCloseContext } from '../../application/projection/index.js';
+import { renderProjectionCloseContext } from '../../ui/renderers/projection-close-context-renderer.js';
 import {
   renderPriorityHistory,
   renderCloseComparison,
   renderStrategicTimeline,
 } from '../../ui/renderers/strategic-history-renderer.js';
-import { renderDisclosure as renderAnalyticalDisclosure } from '../../ui/components/analytical-presentation.js';
 import { renderAdherenceCloseHistory } from '../../ui/renderers/weekly-adherence-renderer.js';
 import { renderPhaseComparison } from '../../ui/renderers/phase-comparison-renderer.js';
-import { buildProjectionCloseContext } from '../../application/projection/index.js';
-import { renderProjectionCloseContext } from '../../ui/renderers/projection-close-context-renderer.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../ui/accessibility.js';
+import { renderWeeklyCloseTrend, renderWeeklySignals } from '../../ui/renderers/weekly-close-trend-renderer.js';
 import { renderWeeklyCloseRecord } from '../../ui/renderers/weekly-close-record-renderer.js';
 import { openSectionFor } from '../../ui/remembered-sections.js';
 import { buildPlanExecution } from '../../application/goals/build-plan-execution.js';
@@ -452,39 +453,27 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     }
 
     if (close) {
-      const trajectory = deps.currentAchievementProjection
-        ? deps.currentAchievementProjection().model
-        : null;
-      const trajectoryClose = buildProjectionCloseContext({
-        current: trajectory,
-        snapshots: state.projectionSnapshots || [],
-        activeExamTags: model.activeExamTags,
-        periodStart: model.period.start,
-        today: todayISO(),
-      });
       const candidate = weeklyCloseCandidate();
       // Mesma fonte do Resumo da semana: o Fechamento só muda a apresentação.
+      const execution = buildPlanExecution({
+        today: todayISO(),
+        dailyPlans: state.dailyPlans,
+        sessions: (state.studySessions || []).map((item: any) => ({
+          ...item,
+          subjectId: deps.entitySubjectId ? deps.entitySubjectId(item) : item.subjectId,
+        })),
+        hoursByDay: state.metas?.horasPorDia,
+        subjects: state.subjects,
+        activeExamTags: state.examBlueprint?.activeExamTags || [],
+      });
       const weekReconciliation = () =>
         buildWeekReconciliationFromExecution(
-          {
-            ...buildPlanExecution({
-              today: todayISO(),
-              dailyPlans: state.dailyPlans,
-              sessions: (state.studySessions || []).map((item: any) => ({
-                ...item,
-                subjectId: deps.entitySubjectId ? deps.entitySubjectId(item) : item.subjectId,
-              })),
-              hoursByDay: state.metas?.horasPorDia,
-              subjects: state.subjects,
-              activeExamTags: state.examBlueprint?.activeExamTags || [],
-            }),
-            capacityInformed: isCapacityInformed(state),
-          },
+          { ...execution, capacityInformed: isCapacityInformed(state) },
           formatDateBR
         );
       // Redesenhar depois de uma ação não pode fechar a análise que o estudante abriu.
       const analysisOpen = Boolean(
-        (close.querySelector?.('.weekly-close-analysis') as HTMLDetailsElement | null)?.open
+        (close.querySelector?.('.weekly-close-brief') as HTMLDetailsElement | null)?.open
       );
       close.innerHTML =
         '<section class="weekly-close-act" aria-labelledby="weeklyWeekTitle"><h4 class="weekly-close-act__title" id="weeklyWeekTitle">A semana</h4>' +
@@ -492,30 +481,20 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
           ...options,
           reconciliation: weekReconciliation(),
         }) +
-        // A semana lê-se nos três números; a análise inteira fica num único disclosure.
-        `<details class="weekly-close-analysis editorial-disclosure"${analysisOpen ? ' open' : ''}><summary>Ver análise completa da semana</summary>` +
-        renderWeeklyClose(model.weeklyClose, {
-          ...options,
-          includeNext: false,
-          includeKpis: false,
+        // A semana lê-se nos três números; a análise é uma dobra só: tendência de 4 semanas e sinais.
+        `<details class="weekly-close-brief editorial-disclosure"${analysisOpen ? ' open' : ''}><summary>Ver análise da semana</summary>` +
+        renderWeeklyCloseTrend({
+          history: (execution as any).history || [],
+          formatMinutes: formatPlanMinutes,
+          formatDate: formatDateBR,
+          escapeHtml,
         }) +
-        renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
-          adherence: model.weeklyClose.adherence,
-          trajectory: trajectoryClose,
+        renderWeeklySignals({
+          worked: model.weeklyClose.decisionCycle?.worked || [],
+          attention: model.weeklyClose.decisionCycle?.attention || [],
+          outcomesCount: (model.weeklyClose.decisionCycle?.outcomes || []).length,
+          escapeHtml,
         }) +
-        renderAnalyticalDisclosure({
-          title: 'Comparar a semana e a trajetória',
-          className: 'weekly-comparison-detail',
-          contentHTML:
-            renderCloseComparison(
-              buildCloseComparison({
-                current: model,
-                snapshots: state.weeklyCloseSnapshots || [],
-                activeExamTags: model.activeExamTags,
-              })
-            ) + renderProjectionCloseContext(trajectoryClose, { escapeHtml }),
-        }) +
-        renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus) +
         '</details></section>' +
         renderWeeklyCloseRecord({
           close: model.weeklyClose,
@@ -545,6 +524,44 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
             renderWeeklyCloseActions(withTopicNames(model.weeklyClose))
           : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
         '</section>';
+    }
+    // A análise longa da semana encerrada mora no Histórico; o Fechamento só mostra a tendência e os sinais.
+    const fullAnalysis = doc.getElementById('weeklyCloseFullAnalysis');
+    if (fullAnalysis) {
+      const trajectory = deps.currentAchievementProjection
+        ? deps.currentAchievementProjection().model
+        : null;
+      const trajectoryClose = buildProjectionCloseContext({
+        current: trajectory,
+        snapshots: state.projectionSnapshots || [],
+        activeExamTags: model.activeExamTags,
+        periodStart: model.period.start,
+        today: todayISO(),
+      });
+      const fullOpen = Boolean(
+        (fullAnalysis.querySelector?.('.weekly-close-analysis') as HTMLDetailsElement | null)?.open
+      );
+      fullAnalysis.innerHTML =
+        `<details class="chart-card weekly-close-analysis editorial-disclosure"${fullOpen ? ' open' : ''}><summary>Análise completa da semana encerrada</summary>` +
+        renderWeeklyClose(model.weeklyClose, { ...options, includeNext: false, includeKpis: false }) +
+        renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
+          adherence: model.weeklyClose.adherence,
+          trajectory: trajectoryClose,
+        }) +
+        renderAnalyticalDisclosure({
+          title: 'Comparar a semana e a trajetória',
+          className: 'weekly-comparison-detail',
+          contentHTML:
+            renderCloseComparison(
+              buildCloseComparison({
+                current: model,
+                snapshots: state.weeklyCloseSnapshots || [],
+                activeExamTags: model.activeExamTags,
+              })
+            ) + renderProjectionCloseContext(trajectoryClose, { escapeHtml }),
+        }) +
+        renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus) +
+        '</details>';
     }
     const closeHistory = doc.getElementById('weeklyCloseHistoryDashboard');
     if (closeHistory) {
