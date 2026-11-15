@@ -98,8 +98,8 @@ export function buildStudyDistributionModel({
   // Ordena por duração decrescente
   rawSlices.sort((a, b) => b.seconds - a.seconds);
 
-  // As 6 maiores ficam nomeadas; o restante vira uma fatia neutra (a paleta tem 8 cores).
-  const MAX_NAMED = 6;
+  // As 8 maiores ficam nomeadas (a paleta tem 8 cores); o restante vira uma fatia neutra.
+  const MAX_NAMED = 8;
   if (rawSlices.length > MAX_NAMED + 1) {
     const rest = rawSlices.splice(MAX_NAMED);
     rawSlices.push({

@@ -11,11 +11,13 @@ export interface WeeklyPlanRecord {
 export interface PlannedVsActualChartOptions {
   formatDate: (dateStr: string) => string;
   escapeHtml: (text: string) => string;
+  /** Minutos que o plano semanal comporta; desenha uma linha de referência. */
+  capacityMinutes?: number | null;
 }
 
 export function renderPlannedVsActualChart(
   weekly: WeeklyPlanRecord[],
-  { formatDate, escapeHtml }: PlannedVsActualChartOptions
+  { formatDate, escapeHtml, capacityMinutes = null }: PlannedVsActualChartOptions
 ): string {
   if (!weekly || !weekly.length) return '';
 
@@ -30,7 +32,11 @@ export function renderPlannedVsActualChart(
   const chartWidth = width - left - right;
   const chartHeight = height - top - bottom;
 
-  const rawMax = Math.max(...validWeeks.map(w => Math.max(w.plannedMinutes, w.studiedMinutes)));
+  const capacity = Number.isFinite(capacityMinutes) && (capacityMinutes as number) > 0 ? (capacityMinutes as number) : null;
+  const rawMax = Math.max(
+    ...validWeeks.map(w => Math.max(w.plannedMinutes, w.studiedMinutes)),
+    capacity ?? 0
+  );
   const maxMinutes = Math.max(60, Math.ceil(rawMax / 60) * 60);
 
   const yFor = (minutes: number) =>
@@ -55,6 +61,11 @@ export function renderPlannedVsActualChart(
         `<line x1="${left}" x2="${width - right}" y1="${line.y.toFixed(1)}" y2="${line.y.toFixed(1)}" class="chart-grid-line" stroke="currentColor" stroke-opacity="0.12" stroke-dasharray="3 3"/><text x="${left - 6}" y="${(line.y + 3.5).toFixed(1)}" text-anchor="end" class="chart-axis-label" font-size="12">${escapeHtml(line.label)}</text>`
     )
     .join('');
+
+  const capacityHtml =
+    capacity === null
+      ? ''
+      : `<line x1="${left}" x2="${width - right}" y1="${yFor(capacity).toFixed(1)}" y2="${yFor(capacity).toFixed(1)}" class="chart-capacity-line"><title>Capacidade do plano: ${formatStudyMinutes(capacity)} por semana</title></line>`;
 
   const barsHtml = validWeeks
     .map((week, index) => {
@@ -97,12 +108,14 @@ export function renderPlannedVsActualChart(
     <div class="planned-actual-chart__legend flex items-center justify-end gap-4 text-xs text-content-secondary mb-2" aria-hidden="true">
       <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-content-primary/25"></span> Planejado</span>
       <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-primary"></span> Realizado (na meta)</span>
-      <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-warning-emphasis"></span> Em curso / abaixo</span>
+      <span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-xs bg-warning-emphasis"></span> Em curso / abaixo</span>${capacity === null ? '' : `
+      <span class="inline-flex items-center gap-2"><span class="chart-capacity-key"></span> Capacidade do plano (${formatStudyMinutes(capacity)}/sem)</span>`}
     </div>
     <div class="planned-actual-chart__canvas overflow-x-auto">
       <svg viewBox="0 0 ${width} ${height}" class="w-full min-w-[540px] max-w-full" role="img" aria-label="Comparação semanal entre carga planejada e realizada">
         ${gridHtml}
         ${barsHtml}
+        ${capacityHtml}
       </svg>
     </div>
   </div>`;

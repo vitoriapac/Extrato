@@ -2,16 +2,15 @@ import { renderWindowBadge } from './window-badge.js';
 import { pluralize } from '../../core/utils.js';
 import { renderPerformanceDetails } from './performance-story.js';
 import { renderAdherenceAnalysis } from '../renderers/adherence-renderer.js';
-import {
-  renderStackedColumnChart,
-  renderDonutChart,
-} from '../primitives/charts/charts.js';
+import { renderStackedColumnChart } from '../primitives/charts/charts.js';
+import { renderPlannedVsActualChart } from './planned-actual-chart.js';
+import { renderTimeBySubjectBars } from './time-by-subject-bars.js';
 import { formatDecimal } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 
 export function renderPerformanceConsistency(
   model: Record<string, any>,
-  { formatDate, escapeHtml, range }: any = {}
+  { formatDate, escapeHtml, range, capacityMinutes = null }: any = {}
 ) {
   const cells = model.heatmap
     .map((day: any) => {
@@ -62,36 +61,12 @@ export function renderPerformanceConsistency(
   const distribution = model.studyDistribution;
   let distributionHtml = '';
   if (distribution && distribution.slices.length > 0) {
-    const donut = renderDonutChart({
-      slices: distribution.slices,
-      totalSeconds: distribution.totalSeconds,
-      size: 200,
-    });
-    const legend = distribution.slices
-      .map(
-        (slice: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${slice.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(slice.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${formatStudyMinutes(slice.seconds / 60)} <span class="text-micro font-sans text-content-secondary">(${formatDecimal(slice.percentage)}%)</span></div></li>`
-      )
-      .join('');
-
     distributionHtml = `<section class="performance-block" aria-label="Distribuição do tempo de estudo">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-        <div>
-          <h3 class="m-0">Tempo de estudo por disciplina</h3>
-          <p class="analytics-note m-0">Distribuição percentual da carga horária dedicada a cada matéria no período.</p>
-        </div>
+      <div class="mb-3">
+        <h3 class="m-0">Tempo de estudo por disciplina</h3>
+        <p class="analytics-note m-0">Carga horária dedicada a cada matéria no período: as 8 com mais tempo e as demais somadas.</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mt-3">
-        <div class="flex justify-center p-3">
-          ${donut}
-        </div>
-        <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">Divisão da carga horária</h4>
-          <ul class="m-0 p-0 list-none space-y-1">
-            ${legend}
-          </ul>
-        </div>
-      </div>
+      ${renderTimeBySubjectBars(distribution, { escapeHtml })}
     </section>`;
   }
 
@@ -100,5 +75,9 @@ export function renderPerformanceConsistency(
     model.plannedMinutes > 0 && model.adherence != null
       ? `<section class="performance-synthesis" id="bloco-sintese" aria-label="Síntese da consistência"><p class="performance-synthesis__lead">${renderWindowBadge('period', range?.label || '')} ${escapeHtml(range?.label || 'No período')}: ${escapeHtml(formatStudyMinutes(model.studiedMinutes))} estudados de ${escapeHtml(formatStudyMinutes(model.plannedMinutes))} planejados (${formatDecimal(model.adherence)}% do tempo planejado), em ${pluralize(model.activeDays, 'dia', 'dias')} com estudo.</p><p class="analytics-note m-0">É tempo total, sem exigir vínculo com o plano. Aderência ao plano, execução prioritária e crédito semanal usam outras bases e ficam em "Como o plano foi cumprido", logo abaixo, cada uma com a sua janela.</p>${model.plannedMinutes > model.studiedMinutes ? `<p class="analytics-note m-0">Faltam ${escapeHtml(formatStudyMinutes(model.plannedMinutes - model.studiedMinutes))} para igualar o planejado neste período.</p><div class="performance-reading__actions"><button type="button" class="btn ghost small" data-performance-adjust-plan>Ajustar plano</button></div>` : ''}</section>`
       : '';
-  return `${synthesis}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml, 'performance-details', true) : ''}${renderPerformanceDetails('Como o plano foi cumprido: aderência, execução prioritária e crédito semanal', renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml }), 'performance-details adherence-fold', true)}<div class="performance-shift mt-4" id="bloco-turno"><div id="shiftEnergyMount"></div></div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
+  const weeklyChart = renderPlannedVsActualChart(model.weekly || [], { formatDate, escapeHtml, capacityMinutes });
+  const weeklyHtml = weeklyChart
+    ? `<section class="performance-block" aria-label="Planejado e realizado por semana"><h3>Planejado × realizado por semana</h3><p class="analytics-note">Tempo estudado frente ao tempo planejado em cada semana${capacityMinutes > 0 ? ', com a capacidade semanal do plano como referência' : ''}.</p>${weeklyChart}</section>`
+    : '';
+  return `${synthesis}${weeklyHtml}${timelineHtml}${distributionHtml ? renderPerformanceDetails('Distribuição do tempo por disciplina', distributionHtml, 'performance-details', true) : ''}${renderPerformanceDetails('Como o plano foi cumprido: aderência, execução prioritária e crédito semanal', renderAdherenceAnalysis(model.adherenceAnalysis, { formatDate, escapeHtml }), 'performance-details adherence-fold', true)}<div class="performance-shift mt-4" id="bloco-turno"><div id="shiftEnergyMount"></div></div>${renderPerformanceDetails('Calendário de estudo', heatmap)}`;
 }

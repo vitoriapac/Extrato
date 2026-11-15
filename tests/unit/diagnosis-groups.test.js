@@ -247,3 +247,32 @@ test('T30: meta e amostra pequena na precisão, faixa projetada nos simulados, p
   assert.equal(renderIncidenceBySubject([row('A', 5, 1), row('B', 5, 1)], 10), '');
   assert.equal(renderIncidenceBySubject([row('A', 5, 1)], 0), '');
 });
+
+test('T31: linha da capacidade, barras de tempo por disciplina e faixas por turno', async () => {
+  const { renderPlannedVsActualChart } = await import('../../src/ui/performance/planned-actual-chart.js');
+  const weekly = [{ start: '2026-10-05', plannedMinutes: 600, studiedMinutes: 500 }, { start: '2026-10-12', plannedMinutes: 600, studiedMinutes: 700 }];
+  const withCap = renderPlannedVsActualChart(weekly, { formatDate: String, escapeHtml: String, capacityMinutes: 1260 });
+  assert.match(withCap, /chart-capacity-line/);
+  assert.match(withCap, /Capacidade do plano \(21 h\/sem\)/);
+  assert.doesNotMatch(renderPlannedVsActualChart(weekly, { formatDate: String, escapeHtml: String }), /chart-capacity-line/);
+  assert.doesNotMatch(renderPlannedVsActualChart(weekly, { formatDate: String, escapeHtml: String, capacityMinutes: 0 }), /chart-capacity-line/);
+
+  const { renderTimeBySubjectBars } = await import('../../src/ui/performance/time-by-subject-bars.js');
+  const slices = Array.from({ length: 11 }, (_, n) => ({ subjectId: `d${n + 1}`, subjectName: `D${n + 1}`, seconds: (20 - n) * 600, percentage: 5 + n, colorSlot: (n % 8) + 1 }));
+  slices.push({ subjectId: '__outras', subjectName: 'Outras disciplinas', seconds: 99999, percentage: 40, colorSlot: 0 });
+  const bars = renderTimeBySubjectBars({ slices, totalSeconds: 100000 }, { escapeHtml: String });
+  assert.equal((bars.match(/time-bars__row/g) || []).length, 9);
+  assert.ok(bars.lastIndexOf('Outras disciplinas') > bars.lastIndexOf('D8'));
+  assert.match(bars, /Outras disciplinas: /);
+  assert.match(bars, /D1: 3 h 20 min/);
+  assert.equal(renderTimeBySubjectBars({ slices: [], totalSeconds: 0 }, { escapeHtml: String }), '');
+
+  const { h } = await import('preact');
+  const { renderToString } = await import('preact-render-to-string');
+  const { ShiftEnergyCard } = await import('../../src/ui/tabs/performance/ShiftEnergyCard.js');
+  const { buildShiftEnergyViewModel } = await import('../../src/application/analytics/build-shift-energy-view-model.js');
+  const html = renderToString(h(ShiftEnergyCard, { model: buildShiftEnergyViewModel({ sessions: [{ startedAt: '2026-10-15T08:00:00Z', durationSeconds: 3600, focusLevel: 'deep', questionsResolved: 10, questionsCorrect: 9 }] }) }));
+  assert.equal((html.match(/class="shift-band[ "]/g) || []).length, 3);
+  assert.match(html, /precisão de 90%/);
+  assert.match(html, /sem questões registradas/);
+});

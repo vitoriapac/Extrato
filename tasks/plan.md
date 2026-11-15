@@ -92,7 +92,7 @@ Tarefas detalhadas: [todo.md](todo.md).
 - [x] Tarefa 28: Régua da Prontidão e minigráficos dos KPIs
 - [x] Tarefa 29: Gráficos de Disciplinas e Diagnóstico
 - [x] Tarefa 30: Gráficos de Provas
-- [ ] Tarefa 31: Gráficos de Ritmo
+- [x] Tarefa 31: Gráficos de Ritmo
 - [ ] Tarefa 32: Estados vazios do modo iniciante
 
 ### Checkpoint final

@@ -345,6 +345,12 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       escapeAttr,
       targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
       compareMode: performanceViewState.compareMode,
+      // O que o plano semanal comporta (horas por dia × 60); sem horas cadastradas não há linha de capacidade.
+      weeklyCapacityMinutes:
+        Object.values(state.metas?.horasPorDia || {}).reduce<number>(
+          (sum, hours) => sum + (Number(hours) || 0),
+          0
+        ) * 60 || null,
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;

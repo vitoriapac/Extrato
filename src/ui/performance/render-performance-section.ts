@@ -16,6 +16,7 @@ export function renderPerformanceSection(
     escapeAttr,
     targetScore,
     compareMode,
+    weeklyCapacityMinutes = null,
   }: any = {}
 ) {
   switch (pageModel.section) {
@@ -68,7 +69,7 @@ export function renderPerformanceSection(
         compareMode,
       });
     case 'consistency':
-      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml })}<div id="performanceConsistencyMuralMount" class="mt-4"></div><div id="performanceCareerBenchmarkMount" class="mt-4"></div>`;
+      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml, capacityMinutes: weeklyCapacityMinutes })}<div id="performanceConsistencyMuralMount" class="mt-4"></div><div id="performanceCareerBenchmarkMount" class="mt-4"></div>`;
     case 'diagnosis':
       return `<div id="performanceDiagnosisMount" class="space-y-4"></div>${renderPedagogicalMatrixSection(pageModel.pedagogicalMatrix, { escapeHtml })}<div id="performanceDiagnosisGapsMount" class="space-y-4 mt-4"></div>`;
     default:

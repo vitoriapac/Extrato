@@ -357,8 +357,8 @@ Verificação usada abaixo:
 
 ### Tarefa 31: Gráficos de Ritmo
 **Aceite:**
-- [ ] Barras semanais planejado × realizado com linha da capacidade
-- [ ] Barras de tempo por disciplina (top 8 + outras) no lugar do donut; faixas por turno
+- [x] Barras semanais planejado × realizado com linha da capacidade
+- [x] Barras de tempo por disciplina (top 8 + outras) no lugar do donut; faixas por turno
 **Verificação:** contraste, axe, alternativa em texto
 **Dependências:** T22
 **Tamanho:** M

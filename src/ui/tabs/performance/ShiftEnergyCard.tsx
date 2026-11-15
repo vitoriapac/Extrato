@@ -67,63 +67,49 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
         </div>
       </header>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+      <div class="shift-bands" role="list" aria-label="Horas e precisão por turno">
         {shifts.map(shift => {
           const iconName = SHIFT_ICONS[shift.shift] || 'clock';
+          const accuracy = shift.averageAccuracy;
+          const deepFocus = periodFocus
+            ? periodFocus.byShift[shift.shift]?.percent
+            : shift.deepFocusPercent;
           return (
-            <div
-              key={shift.shift}
-              class={`p-card rounded-default border-t transition-all ${
-                shift.isPeak
-                  ? 'border-brand bg-surface-subtle/60 ring-1 ring-brand/20'
-                  : 'border-border-subtle bg-surface-subtle/30'
-              }`}
-            >
-              <div class="flex items-center justify-between gap-1 mb-2">
-                <div class="flex items-center gap-2">
-                  <div
-                    class={`p-1 rounded ${shift.isPeak ? 'text-accent bg-accent/10' : 'text-content-secondary bg-surface-subtle'}`}
-                  >
-                    <Icon name={iconName} size={16} />
-                  </div>
-                  <span class="text-xs font-semibold text-content-primary">{shift.shiftLabel}</span>
-                </div>
+            <div key={shift.shift} role="listitem" class={`shift-band${shift.isPeak ? ' is-peak' : ''}`}>
+              <div class="shift-band__head">
+                <span class="shift-band__icon">
+                  <Icon name={iconName} size={16} />
+                </span>
+                <span class="text-xs font-semibold text-content-primary">{shift.shiftLabel}</span>
                 {shift.isPeak && <Badge variant="success">Melhor</Badge>}
               </div>
-
-              <div class="space-y-2 text-xs">
-                <div class="flex justify-between items-center text-content-secondary">
+              <div class="shift-band__metric">
+                <div class="flex justify-between items-center text-xs text-content-secondary">
                   <span>Horas de estudo:</span>
                   <span class="font-mono font-medium text-content-primary">
-                    {formatStudyMinutes(shift.hoursSpent * 60)} (
-                    {shift.timePercent}%)
+                    {formatStudyMinutes(shift.hoursSpent * 60)} ({shift.timePercent}%)
                   </span>
                 </div>
-
-                <div class="w-full h-2 bg-surface-subtle rounded overflow-hidden">
-                  <div
-                    class={`h-full rounded ${shift.isPeak ? 'bg-brand' : 'bg-brand-secondary/60'}`}
-                    style={{ width: `${shift.timePercent}%` }}
-                  />
+                <div class="shift-band__track" role="img" aria-label={`${shift.shiftLabel}: ${shift.timePercent}% do tempo de estudo`}>
+                  <i class="shift-band__fill is-hours" style={{ width: `${Math.max(0, Math.min(100, shift.timePercent))}%` }} />
                 </div>
-
-                <div class="flex justify-between items-center text-content-secondary pt-1">
+              </div>
+              <div class="shift-band__metric">
+                <div class="flex justify-between items-center text-xs text-content-secondary">
                   <span>Precisão em questões:</span>
                   <span class="font-mono font-semibold text-content-primary">
-                    {shift.averageAccuracy !== null ? `${shift.averageAccuracy}%` : '—'}
+                    {accuracy !== null ? `${accuracy}%` : '—'}
                   </span>
                 </div>
-
-                <div class="flex justify-between items-center text-content-secondary">
-                  <span>Foco profundo{periodFocus ? ' (período)' : ''}:</span>
-                  <span class="font-mono text-content-primary">
-                    {periodFocus
-                      ? periodFocus.byShift[shift.shift]?.percent != null
-                        ? `${periodFocus.byShift[shift.shift].percent}%`
-                        : '—'
-                      : `${shift.deepFocusPercent}%`}
-                  </span>
+                <div class="shift-band__track" role="img" aria-label={accuracy !== null ? `${shift.shiftLabel}: precisão de ${accuracy}%` : `${shift.shiftLabel}: sem questões registradas`}>
+                  {accuracy !== null && (
+                    <i class="shift-band__fill is-accuracy" style={{ width: `${Math.max(0, Math.min(100, accuracy))}%` }} />
+                  )}
                 </div>
+              </div>
+              <div class="shift-band__focus text-xs text-content-secondary">
+                <span>Foco profundo{periodFocus ? ' (período)' : ''}:</span>{' '}
+                <span class="font-mono text-content-primary">{deepFocus != null ? `${deepFocus}%` : '—'}</span>
               </div>
             </div>
           );
