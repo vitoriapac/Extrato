@@ -8,8 +8,10 @@ test('subabas de Desempenho são tablist com setas, Home e End', async ({ page }
   const tablist = page.getByRole('tablist', { name: 'Análises de desempenho' });
   const tabs = tablist.getByRole('tab');
   await expect(tabs).toHaveCount(5);
-  await expect(tabs.nth(3)).toHaveText('Provas');
+  await expect(tabs.nth(3)).toHaveText('Resultados das provas');
   await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
+  // Nomes que não repetem as abas de topo "Visão geral" e "Disciplinas".
+  await expect(tabs).toHaveText(['Resumo', 'Por disciplina', 'Diagnóstico', 'Resultados das provas', 'Ritmo e aderência']);
   await expect(tabs.first()).toHaveAttribute('tabindex', '0');
   await expect(tabs.nth(1)).toHaveAttribute('tabindex', '-1');
   await expect(page.locator('#performanceSectionContent')).toHaveAttribute('role', 'tabpanel');
@@ -40,23 +42,46 @@ test('Provas é uma aba só com três seções, e as rotas antigas levam à seç
 }) => {
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  await page.getByRole('tab', { name: 'Provas', exact: true }).click();
+  await page.getByRole('tab', { name: 'Resultados das provas', exact: true }).click();
   // Sem segundo nível de abas: Questões, Simulados e Inteligência da prova são seções da mesma página.
   await expect(page.locator('#panel-desempenho').getByRole('tablist')).toHaveCount(1);
   await expect(page.locator('#performanceSectionContent .performance-proof__title')).toHaveText([
-    'Questões',
-    'Simulados',
+    'Questões respondidas',
+    'Simulados realizados',
     'Inteligência da prova',
   ]);
   for (const route of ['simulations', 'exam']) {
     await page.evaluate(hash => {
       window.location.hash = hash;
     }, `#desempenho/${route}`);
-    await expect(page.getByRole('tab', { name: 'Provas', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('tab', { name: 'Resultados das provas', exact: true })).toHaveAttribute(
       'aria-selected',
       'true'
     );
     await expect(page.locator(`#prova-${route}`)).toBeInViewport();
+  }
+});
+
+test('endereços novos e antigos levam a Resultados das provas e o endereço mostrado é o novo', async ({ page }) => {
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  const cases = [
+    ['resultados', 'resultados'],
+    ['simulados', 'simulados'],
+    ['inteligencia', 'inteligencia'],
+    ['questions', 'resultados'],
+    ['simulations', 'simulados'],
+    ['exam', 'inteligencia'],
+    ['exams', 'inteligencia'],
+    ['provas', 'resultados'],
+  ];
+  for (const [route, shown] of cases) {
+    await page.evaluate(hash => {
+      window.location.hash = '#desempenho/diagnosis';
+      window.location.hash = hash;
+    }, `#desempenho/${route}`);
+    await expect(page.getByRole('tab', { name: 'Resultados das provas', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await expect.poll(() => page.evaluate(() => window.location.hash)).toBe(`#desempenho/${shown}`);
   }
 });
 

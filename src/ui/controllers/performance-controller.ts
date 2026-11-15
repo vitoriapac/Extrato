@@ -1,3 +1,4 @@
+import { routeOfSection } from '../performance/performance-route.js';
 import { updatePerformanceViewState } from '../../application/performance/performance-view-state.js';
 import { scrollBehavior } from '../accessibility.js';
 
@@ -128,7 +129,7 @@ export function createPerformanceController({
         if (copy) {
           const section =
             document.getElementById('panel-desempenho')?.dataset.performanceView || 'overview';
-          const url = `${window.location.origin}${window.location.pathname}#desempenho/${section}${copy.dataset.performanceCopyLink ? `/${copy.dataset.performanceCopyLink}` : ''}`;
+          const url = `${window.location.origin}${window.location.pathname}#desempenho/${routeOfSection(section)}${copy.dataset.performanceCopyLink ? `/${copy.dataset.performanceCopyLink}` : ''}`;
           const label = copy.textContent;
           const ariaLabel = copy.getAttribute('aria-label');
           const say = (text: string, name: string) => {

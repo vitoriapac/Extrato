@@ -5,18 +5,18 @@ export interface PerformanceGroupDef {
   key: string;
   label: string;
   items: ReadonlyArray<[string, string]>;
-  /** Seções que moram na mesma página do item único (Provas: questões, simulados e prova). */
+  /** Seções que moram na mesma página do item único (Resultados das provas: questões, simulados e inteligência da prova). */
   alsoSections?: ReadonlyArray<string>;
 }
 
 export const PERFORMANCE_GROUPS: ReadonlyArray<PerformanceGroupDef> = [
-  { key: 'overview', label: 'Visão geral', items: [['overview', 'Visão geral']] },
-  { key: 'subjects', label: 'Disciplinas', items: [['subjects', 'Por disciplina']] },
+  { key: 'overview', label: 'Resumo', items: [['overview', 'Resumo']] },
+  { key: 'subjects', label: 'Por disciplina', items: [['subjects', 'Por disciplina']] },
   { key: 'diagnosis', label: 'Diagnóstico', items: [['diagnosis', 'Diagnóstico']] },
   {
     key: 'proofs',
-    label: 'Provas',
-    items: [['questions', 'Provas']],
+    label: 'Resultados das provas',
+    items: [['questions', 'Resultados das provas']],
     alsoSections: ['simulations', 'exam'],
   },
   { key: 'consistency', label: 'Ritmo e aderência', items: [['consistency', 'Ritmo e aderência']] },

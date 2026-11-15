@@ -267,6 +267,8 @@ test('A projeção até a prova mora em Simulados; a Visão geral mostra a faixa
 
 test('"O que mais pesa" segue a mesma ordem dos cards do Diagnóstico', async ({ page }) => {
   test.setTimeout(120_000);
+  // A demo é relativa à data: sem relógio fixo, a fila muda de um dia para o outro (ver tasks/plan.md, Fase 9).
+  await page.clock.install({ time: new Date('2026-11-14T12:00:00-03:00') });
   await openDemo(page);
   await activateTab(page, 'desempenho');
   const pulled = await page.locator('.performance-reading__list li span').allInnerTexts();

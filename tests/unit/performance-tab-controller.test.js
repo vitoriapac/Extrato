@@ -93,7 +93,7 @@ test('PerformanceTabController — renderPerformance renderiza container princip
 
   controller.renderPerformance();
   assert.ok(elements['performancePage'].innerHTML.length > 0);
-  assert.match(elements['performancePage'].innerHTML, /Visão geral|Disciplinas/);
+  assert.match(elements['performancePage'].innerHTML, /Resumo|Por disciplina/);
   // O benchmark mora em Consistência; a Visão geral não o carrega.
   assert.doesNotMatch(elements['performancePage'].innerHTML, /performanceCareerBenchmarkMount/);
 });

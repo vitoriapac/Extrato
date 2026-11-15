@@ -25,6 +25,7 @@ import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
 import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
 import { buildCutoffReference } from '../../../domain/analytics/cutoff-reference.js';
+import { routeOfSection, sectionFromRoute } from '../../performance/performance-route.js';
 import { assessBeginner } from '../../../domain/analytics/beginner-gate.js';
 import { renderBeginnerState } from '../../performance/performance-beginner-state.js';
 import {
@@ -103,13 +104,19 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       if ((doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho')
         renderPerformance();
     });
-  const hashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
+  const rawHashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
+  const hashSection = rawHashSection ? sectionFromRoute(rawHashSection) : rawHashSection;
   // Voltar e URLs coladas mudam o hash sem recarregar: a seção acompanha.
   doc?.defaultView?.addEventListener?.('hashchange', () => {
     const hash = doc?.defaultView?.location?.hash || '';
     if (!/^#desempenho(\/|$)/.test(hash)) return;
-    const next = /^#desempenho\/([a-z]+)/.exec(hash)?.[1] ?? 'overview';
-    if (!PERFORMANCE_SECTIONS.includes(next) || next === performanceViewState.section) return;
+    const nextRoute = /^#desempenho\/([a-z]+)/.exec(hash)?.[1];
+    const next = nextRoute ? sectionFromRoute(nextRoute) : 'overview';
+    if (!PERFORMANCE_SECTIONS.includes(next)) return;
+    // Endereço antigo ("#desempenho/exams") vira o novo, mesmo quando a seção já é a aberta.
+    const canonical = hash.replace(/^#desempenho\/[a-z]+/, `#desempenho/${routeOfSection(next)}`);
+    if (nextRoute && canonical !== hash) doc?.defaultView?.history?.replaceState(null, '', canonical);
+    if (next === performanceViewState.section) return;
     performanceViewState = updatePerformanceViewState(performanceViewState, { section: next });
     if ((doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho')
       renderPerformance();
@@ -369,19 +376,19 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
-    const proofIndex = `<nav class="performance-proof-index" aria-label="Seções de Provas">${[['questions', 'Questões'], ['simulations', 'Simulados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-proof-jump="${key}">${label}</button>`).join('')}</nav>`;
+    const proofIndex = `<nav class="performance-proof-index" aria-label="Seções de Resultados das provas">${[['questions', 'Questões respondidas'], ['simulations', 'Simulados realizados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-proof-jump="${key}">${label}</button>`).join('')}</nav>`;
     const sectionHtml = beginnerGate
       ? renderBeginnerState(performanceViewState.section, beginner)
       : examSection
       ? proofIndex +
         proofBlock(
           'questions',
-          'Questões',
+          'Questões respondidas',
           beginnerQuestions
             ? renderBeginnerState('questions', beginner)
             : renderPerformanceSection(proofModels!.questions!, renderOptions)
         ) +
-        proofBlock('simulations', 'Simulados', renderPerformanceSection(proofModels!.simulations, renderOptions)) +
+        proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations, renderOptions)) +
         proofBlock(
           'exam',
           'Inteligência da prova',
@@ -531,11 +538,12 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (win && /^#desempenho(\/|$)/.test(win.location.hash)) {
       // Âncora de bloco ("#desempenho/subjects/comparacao"): vale só na seção a que pertence.
       const anchored = /^#desempenho\/([a-z]+)\/([a-z0-9-]+)/.exec(win.location.hash);
-      const block = anchored && anchored[1] === performanceViewState.section ? anchored[2] : '';
+      const block =
+        anchored && sectionFromRoute(anchored[1]) === performanceViewState.section ? anchored[2] : '';
       const base =
         performanceViewState.section === 'overview'
           ? '#desempenho'
-          : `#desempenho/${performanceViewState.section}`;
+          : `#desempenho/${routeOfSection(performanceViewState.section)}`;
       const next = block
         ? `${base === '#desempenho' ? '#desempenho/overview' : base}/${block}`
         : base;

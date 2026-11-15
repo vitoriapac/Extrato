@@ -416,10 +416,11 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 35: Nomes da navegação e da rota
 **Origem:** P1 de H4 nas duas rodadas.
 **Aceite:**
-- [ ] Decisão de nomes registrada antes de codar (perguntar ao usuário): a área hoje é "Questões & Simulados" (global), "Provas" (subaba), "Questões" (âncora interna) e `#desempenho/questions` (rota)
-- [ ] Um nome para a subaba, a âncora e a rota (o hash antigo continua redirecionando); âncora interna "Questões" renomeada para não repetir o nome da área
-- [ ] Subabas "Visão geral" e "Disciplinas" não repetem o rótulo das abas globais "Visão geral" e "Matérias" (ou a diferença fica explícita no rótulo); mobile "Início/Matérias" revisado junto
-- [ ] Rótulos de acessibilidade do roteiro da demo ("Ir para Questões e Simulados") iguais aos visíveis
+- [x] Decisão de nomes registrada antes de codar (perguntar ao usuário): a área hoje é "Questões & Simulados" (global), "Provas" (subaba), "Questões" (âncora interna) e `#desempenho/questions` (rota)
+- [x] Um nome para a subaba, a âncora e a rota (o hash antigo continua redirecionando); âncora interna "Questões" renomeada para não repetir o nome da área
+- [x] Subabas "Visão geral" e "Disciplinas" não repetem o rótulo das abas globais "Visão geral" e "Matérias" (ou a diferença fica explícita no rótulo); mobile "Início/Matérias" revisado junto
+- [x] Rótulos de acessibilidade do roteiro da demo ("Ir para Questões e Simulados") iguais aos visíveis
+**Feito (15/11/2026):** subabas Resumo, Por disciplina, Diagnóstico, Resultados das provas e Ritmo e aderência; âncoras Questões respondidas, Simulados realizados e Inteligência da prova; rotas públicas `#desempenho/resultados|simulados|inteligencia`, com `questions`, `simulations`, `exam`, `exams` e `provas` como aliases que se reescrevem para o endereço novo. Ficaram de fora: o nome "Início/Matérias" da barra mobile e os rótulos do roteiro da demo (nomes de aba de topo, decisão separada).
 **Verificação:** unit de rotas; E2E de navegação e redirecionamento; busca no bundle pelos nomes antigos
 **Arquivos prováveis:** `performance-tab-controller.ts`, `performance-controller.ts`, rotas em `src/ui/tabs`, `index.html`, `help-content.ts`, specs de navegação
 **Tamanho:** M

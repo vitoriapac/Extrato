@@ -551,7 +551,7 @@ export function buildWeeklyPerformanceBrief({
     });
     addLink({ label: 'Planejamento', icon: 'map-2', kind: 'tab', target: 'metas' });
   } else if (weakestSubject && overdueReviews > 0) {
-    p3 = `Para os próximos dias, vale focar em duas frentes simples: abra a seção Disciplinas ou a aba Questões & Simulados para revisar os assuntos de ${weakestSubject.name} em que houve mais erros, e passe na aba Agenda para colocar em dia ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
+    p3 = `Para os próximos dias, vale focar em duas frentes simples: abra a seção Por disciplina ou a aba Questões & Simulados para revisar os assuntos de ${weakestSubject.name} em que houve mais erros, e passe na aba Agenda para colocar em dia ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
     addLink({
       label: `${weakestSubject.name}: ver análise (menor acerto da semana)`,
       icon: 'chart-dots',
@@ -572,7 +572,7 @@ export function buildWeeklyPerformanceBrief({
       target: 'agenda',
     });
   } else if (weakestSubject) {
-    p3 = `Para transformar essa leitura em resultado prático, vale abrir a seção Disciplinas para ver quais assuntos de ${weakestSubject.name} puxaram seus acertos para baixo, ou ir direto à aba Questões & Simulados para treinar uma nova bateria dessa matéria.`;
+    p3 = `Para transformar essa leitura em resultado prático, vale abrir a seção Por disciplina para ver quais assuntos de ${weakestSubject.name} puxaram seus acertos para baixo, ou ir direto à aba Questões & Simulados para treinar uma nova bateria dessa matéria.`;
     addLink({
       label: `${weakestSubject.name}: ver análise (menor acerto da semana)`,
       icon: 'chart-dots',
@@ -608,7 +608,7 @@ export function buildWeeklyPerformanceBrief({
       target: 'questions',
     });
   } else if (current.planFulfillmentPct != null && current.planFulfillmentPct < 65) {
-    p3 = `Como o tempo estudado ficou distante da sua meta da semana, considere abrir a aba Planejamento para ajustar sua carga horária à sua rotina real, ou confira a seção Consistência para acompanhar seu ritmo diário com calma.`;
+    p3 = `Como o tempo estudado ficou distante da sua meta da semana, considere abrir a aba Planejamento para ajustar sua carga horária à sua rotina real, ou confira a seção Ritmo e aderência para acompanhar seu ritmo diário com calma.`;
     addLink({ label: 'Ajustar Planejamento', icon: 'map-2', kind: 'tab', target: 'metas' });
     addLink({
       label: 'Ver Consistência',
@@ -618,7 +618,7 @@ export function buildWeeklyPerformanceBrief({
     });
     addLink({ label: 'Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
   } else {
-    p3 = `Com a rotina em dia e bom aproveitamento, você pode avançar nos próximos conteúdos na aba Disciplinas, aprofundar a evolução de acertos na seção Questões${current.simulationsCount > 0 ? ' ou conferir o detalhamento da sua nota na seção Simulados' : ' ou acompanhar sua regularidade em Consistência'}.`;
+    p3 = `Com a rotina em dia e bom aproveitamento, você pode avançar nos próximos conteúdos na aba Disciplinas, aprofundar a evolução de acertos na seção Questões${current.simulationsCount > 0 ? ' ou conferir o detalhamento da sua nota em Resultados das provas' : ' ou acompanhar sua regularidade em Ritmo e aderência'}.`;
     addLink({
       label: 'Abrir aba Disciplinas',
       icon: 'book',
@@ -626,14 +626,14 @@ export function buildWeeklyPerformanceBrief({
       target: 'disciplinas',
     });
     addLink({
-      label: 'Ver seção Questões',
+      label: 'Ver resultado das questões',
       icon: 'help-circle',
       kind: 'section',
       target: 'questions',
     });
     if (current.simulationsCount > 0) {
       addLink({
-        label: 'Ver seção Simulados',
+        label: 'Ver resultado dos simulados',
         icon: 'certificate',
         kind: 'section',
         target: 'simulations',

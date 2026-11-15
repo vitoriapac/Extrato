@@ -168,7 +168,7 @@ test('PerformancePageNav e renderPerformancePage — usa Tabs em dois níveis se
   assert.equal((proofsNav.match(/role="tablist"/g) || []).length, 1);
   assert.ok(!proofsNav.includes('ui-tabs__list--contained'));
   assert.ok(proofsNav.includes('id="performanceTab-questions"'));
-  assert.ok(proofsNav.includes('>Provas<'));
+  assert.ok(proofsNav.includes('>Resultados das provas<'));
   assert.ok(!proofsNav.includes('performanceSubnav-proofs'));
   assert.ok(!proofsNav.includes('aria-current='));
 
