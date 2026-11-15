@@ -398,7 +398,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Acesso rápido e atalhos',
         summary: 'Encontre áreas, ações e tópicos pelo teclado.',
         paragraphs: [
-          'Ctrl + K (ou Cmd + K no Mac) abre a busca global de ações, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas, na ordem das abas. Esc fecha busca, menu ou modal. Com uma aba em foco, use setas, Home e End para navegar.',
+          'Ctrl + K (ou Cmd + K no Mac) abre a busca global de ações, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas, na ordem das abas. Em Desempenho, Alt + 1–5 troca de subaba (Resumo, Por disciplina, Diagnóstico, Resultados das provas, Ritmo e aderência) e Alt + 6–9 muda o período (7 dias, 30 dias, 90 dias, todo o histórico); a busca global também abre cada subaba. Esc fecha busca, menu ou modal. Com uma aba em foco, use setas, Home e End para navegar.',
         ],
       },
       {

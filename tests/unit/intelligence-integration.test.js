@@ -274,7 +274,7 @@ test('saúde da revisão alimenta a prioridade com o mesmo contrato dos demais s
     assert.ok(key in scored);
   assert.equal(scored.algorithmVersion, 5);
   assert.ok(scored.factors.reviewHealthRisk > 40);
-  assert.ok(scored.reasons.includes('saúde da revisão requer atenção'));
+  assert.ok(scored.reasons.includes('saúde da revisão (revisões feitas no prazo) requer atenção'));
 });
 
 test('queda forte eleva risco e prioridade usando o mesmo fator', () => {

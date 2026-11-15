@@ -50,6 +50,8 @@ export interface PreparationReading {
     /** Há plano de recuperação na trajetória (situação de atenção ou risco). */
     recovery: boolean;
   };
+  /** O que já está firme (disciplinas na meta, simulados, semana cumprida): vem antes do alerta, só com evidência. */
+  steady: string[];
   /** O que falta registrar para a leitura ficar mais firme; nunca omitido. */
   evidence: string[];
 }
@@ -81,6 +83,7 @@ export function buildPreparationReading({
   candidates = [],
   diagnosisOrder = [],
   subjectAccuracy = {},
+  accuracyTarget = 80,
 }: {
   range?: Row;
   model?: Row;
@@ -93,6 +96,8 @@ export function buildPreparationReading({
   diagnosisOrder?: string[];
   /** Precisão em questões por disciplina (id → acerto e questões), do mesmo escopo da leitura. */
   subjectAccuracy?: Record<string, { accuracy: number | null; resolved: number }>;
+  /** Meta de precisão (%) para contar as disciplinas que já estão nela. */
+  accuracyTarget?: number;
 } = {}): PreparationReading {
   const evidence: string[] = [];
 
@@ -218,6 +223,26 @@ export function buildPreparationReading({
       ? `Faltam ${formatStudyMinutes(week.plannedMinutes - week.studiedMinutes)} para igualar o planejado nos últimos 7 dias.`
       : null;
 
+  // O que já está firme: só números com evidência (10 questões na disciplina), sem elogio vazio.
+  const steady: string[] = [];
+  const onTarget = Object.values(subjectAccuracy).filter(
+    stat => stat.accuracy != null && stat.resolved >= 10 && stat.accuracy >= accuracyTarget
+  ).length;
+  if (onTarget > 0)
+    steady.push(
+      `${onTarget} ${onTarget === 1 ? 'disciplina já está' : 'disciplinas já estão'} na meta de precisão de ${round(accuracyTarget)}% (10 questões ou mais, todo o histórico).`
+    );
+  const simulation = finite(projection?.current?.simulationAccuracy);
+  const simulationTarget = finite(projection?.current?.targetScore);
+  if (simulation != null && simulationTarget != null && simulation >= simulationTarget)
+    steady.push(
+      `O resultado central dos simulados comparáveis (${round(simulation)}%) está na meta de ${round(simulationTarget)}%.`
+    );
+  if (week && week.plannedMinutes > 0 && week.studiedMinutes >= week.plannedMinutes)
+    steady.push(
+      `Semana cumprida: ${formatStudyMinutes(week.studiedMinutes)} estudados de ${formatStudyMinutes(week.plannedMinutes)} planejados nos últimos 7 dias.`
+    );
+
   void range;
   return {
     howAmI: {
@@ -237,6 +262,7 @@ export function buildPreparationReading({
       rhythm: rhythmText ? { text: rhythmText } : null,
     },
     pulling,
+    steady,
     whatToDo: {
       state: best?.state || 'INSUFFICIENT_EVIDENCE',
       action,

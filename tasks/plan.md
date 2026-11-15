@@ -114,9 +114,9 @@ Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red 
 - [x] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas
 - [x] Tarefa 40: Resultados das provas em um painel por vez (mobile 3,4 / 3,6 / 4,1 mil px), quadrantes recolhidos no mobile, dobras de método com "Como ler:"
 - [x] Tarefa 41: Mobile e acessibilidade (heatmap vira lista de 12 semanas no celular, subabas em uma linha, overflow de 1024 px corrigido, axe sem violações de contraste nos dois temas, siglas da Matriz com nome completo)
-- [ ] Tarefa 42: Poder de uso e jargão (Alex, Jordan; H2, H3, H7)
+- [x] Tarefa 42: Poder de uso e jargão (busca e dobra Filtros com Restaurar padrão no Diagnóstico, atalhos Alt+1–9 e comandos no Ctrl+K, definições inline; ordenação de 6 critérios não replicada: o Diagnóstico já tem Ordenar disciplinas)
 - [x] Achado (15/11), resolvido na T38: o tópico "Direitos do consumidor" não faltava na fila: ele é a Próxima ação, que sai da lista. A Leitura passou a citar só tópicos da fila (com sinal) e o E2E conta a Próxima ação como primeiro da fila, sem relógio fixo
-- [ ] Tarefa 43: Jornada emocional: o que já está firme e as boas notícias antes (P3)
+- [x] Tarefa 43: Jornada emocional: bloco "O que já está firme" na Leitura da Visão geral e "N já sob controle" no Diagnóstico (P3)
 
 ### Checkpoint 9: Crítica
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3 (28/40 na rodada 9)

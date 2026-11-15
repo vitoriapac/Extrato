@@ -412,7 +412,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await first.locator('.diagnostic-detail > summary').click();
   await expect(first.locator('.diagnostic-detail__body')).toBeVisible();
   // O aviso comum fica uma vez no topo da lista, não em cada card.
-  await expect(page.locator('#diagnosisCenter .diagnosis-consolidated > .analytics-note')).toContainText(
+  await expect(page.locator('#diagnosisCenter .diagnosis-consolidated > .analytics-note:not(.diagnosis-legend)')).toContainText(
     'evidências e volumes não são somados'
   );
   await expectNoPageOverflow(page);

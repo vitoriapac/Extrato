@@ -494,10 +494,10 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 42: Poder de uso e jargão
 **Origem:** Alex e Jordan; H2, H3, H7.
 **Aceite:**
-- [ ] Diagnóstico: filtros num controle "Filtros" (≤ 4 opções visíveis por vez) com "Restaurar padrão" e contagem de filtros ativos; busca textual de tópicos no topo
-- [ ] Atalho para a janela de tempo (7/30/90) e para trocar de subaba (decidir teclas; documentar na ajuda e no Ctrl+K)
-- [ ] Ordenação de 6 critérios de Disciplinas também no Diagnóstico onde fizer sentido (decidir)
-- [ ] Jargão com definição inline curta: "Saúde da revisão", "Incidência × domínio", "Lacuna prioritária", "Prioridade provisória"
+- [x] Diagnóstico: filtros num controle "Filtros" (≤ 4 opções visíveis por vez) com "Restaurar padrão" e contagem de filtros ativos; busca textual de tópicos no topo
+- [x] Atalho para a janela de tempo (7/30/90) e para trocar de subaba (decidir teclas; documentar na ajuda e no Ctrl+K)
+- [x] Ordenação de 6 critérios de Disciplinas também no Diagnóstico onde fizer sentido (decidido: não replicar; o Diagnóstico já tem "Ordenar disciplinas" e agora a busca)
+- [x] Jargão com definição inline curta: "Saúde da revisão", "Incidência × domínio", "Lacuna prioritária", "Prioridade provisória"
 **Verificação:** E2E de teclado e de restaurar filtros; unit do filtro por texto
 **Dependências:** Tarefa 38
 **Tamanho:** M
@@ -505,8 +505,8 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 43: Jornada emocional
 **Origem:** crítica 9 (chegada em alerta, meio desanimador, boas notícias escondidas em Simulados).
 **Aceite:**
-- [ ] Visão geral e Diagnóstico mostram o que já está firme (ex.: disciplinas na meta, simulados em alta) junto do alerta, sem elogio vazio
-- [ ] "Meta atingida" e a melhor notícia da semana aparecem fora do último subtab
+- [x] Visão geral e Diagnóstico mostram o que já está firme (ex.: disciplinas na meta, simulados em alta) junto do alerta, sem elogio vazio
+- [x] "Meta atingida" e a melhor notícia da semana aparecem fora do último subtab
 **Verificação:** unit do texto; revisão humana do tom
 **Dependências:** Tarefa 40
 **Tamanho:** S

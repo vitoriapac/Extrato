@@ -73,7 +73,10 @@ export interface DiagnosticsTabControllerOptions {
 
 export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOptions) {
   let currentConsolidatedDiagnosis: any = null;
-  const diagnosisFilters: Record<string, string> = { severity: 'all', evidence: 'all', sort: 'queue' };
+  const DEFAULT_DIAGNOSIS_FILTERS = { severity: 'all', evidence: 'all', sort: 'queue', search: '' };
+  const diagnosisFilters: Record<string, string> = { ...DEFAULT_DIAGNOSIS_FILTERS };
+  // Digitar na busca redesenha a lista: o foco e o cursor voltam ao campo depois do desenho.
+  let restoreSearchFocus = false;
   let filtersWired = false;
   const reconcileAlerts = opts.reconcileAlerts || defaultReconcileAlerts;
   const renderIntelligentAlerts = opts.renderIntelligentAlerts || defaultRenderIntelligentAlerts;
@@ -164,6 +167,17 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
         diagnosisFilters[name] = event.target.value;
         renderDiagnosisCenter();
       });
+      container.addEventListener?.('input', (event: any) => {
+        if (!event.target?.matches?.('[data-diagnosis-search]')) return;
+        diagnosisFilters.search = event.target.value;
+        restoreSearchFocus = true;
+        renderDiagnosisCenter();
+      });
+      container.addEventListener?.('click', (event: any) => {
+        if (!event.target?.closest?.('[data-diagnosis-reset]')) return;
+        Object.assign(diagnosisFilters, DEFAULT_DIAGNOSIS_FILTERS);
+        renderDiagnosisCenter();
+      });
     }
 
     const state = opts.getState();
@@ -231,6 +245,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       inScope: scopedTopics.length,
       remaining: countRemainingTopics(scopedTopics),
       withSignal,
+      controlled: consolidated?.summary?.topics?.controlled ?? null,
       inNextAction: Math.max(0, withSignal - signalCount(dropSuggestedTopic(diagnosis, nextAction?.action))),
     });
 
@@ -260,6 +275,15 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'vencida')} na Agenda</summary>${secondaryHtml}</details>`;
 
     container.innerHTML += `<details class="diagnosis-method-details"><summary>Como ler: sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
+
+    if (restoreSearchFocus) {
+      restoreSearchFocus = false;
+      const input = container.querySelector?.('[data-diagnosis-search]') as HTMLInputElement | null;
+      if (input) {
+        input.focus();
+        input.setSelectionRange?.(input.value.length, input.value.length);
+      }
+    }
 
     const search = opts.locationSearch ? opts.locationSearch() : '';
     if (search.includes('debug=decisions')) {

@@ -161,6 +161,7 @@ test('Diagnóstico recebe Matriz, ordenações (Balanço, Radar) e Queda; Por di
   await balance.locator(':scope > summary').click();
   // Balanço e Radar viraram ordenações do Extrato.
   await expect(page.getByRole('heading', { name: /Radar de Vulnerabilidades|Balanço: Tempo/ })).toHaveCount(0);
+  await page.locator('details[data-fold-key=diagnosis-filters] > summary').click();
   await page.locator('[data-diagnosis-filter=sort]').selectOption('allocation');
   await expect(page.locator('.diagnosis-group > summary').first()).toContainText('edital');
   await page.locator('[data-diagnosis-filter=sort]').selectOption('vulnerable');
@@ -314,4 +315,32 @@ test('a linha-chave dos universos bate entre Diagnóstico, cabeçalho e Resultad
   expect([examScope, examRemaining]).toEqual([inScope, remaining]);
   expect(mapped).toBeLessThanOrEqual(examScope);
   await expect(page.locator('#examIntelligenceOverview strong')).toContainText('tópicos do edital mapeados ao histórico da banca');
+});
+
+test('atalhos Alt, busca e restaurar padrão no Diagnóstico, e o que já está firme na Leitura', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDemo(page);
+  await activateTab(page, 'desempenho');
+  // Visão geral: o que já está firme aparece junto da Leitura, com texto de evidência.
+  await expect(page.locator('[data-steady="true"] li').first()).toContainText(/na meta|cumprida/);
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('Alt+3');
+  await expect(page.getByRole('tab', { name: 'Diagnóstico', exact: true })).toHaveAttribute('aria-selected', 'true');
+  const count = page.locator('.diagnosis-filters__count');
+  const total = await count.innerText();
+  const search = page.locator('[data-diagnosis-search]');
+  await search.fill('consumidor');
+  await expect(search).toBeFocused();
+  await expect(count).not.toHaveText(total);
+  await expect(page.locator('.diagnosis-filters-fold > summary')).toContainText('1 ativo');
+  await page.getByRole('button', { name: 'Restaurar padrão' }).click();
+  await expect(count).toHaveText(total);
+  await expect(page.locator('[data-diagnosis-search]')).toHaveValue('');
+  // Período: Alt + 6 é 7 dias (e o atalho não dispara dentro de um campo de texto).
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('Alt+1');
+  await expect(page.getByRole('tab', { name: 'Resumo', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('Alt+6');
+  await expect(page.locator('#performancePeriod')).toHaveValue('7');
 });

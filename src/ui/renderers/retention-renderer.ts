@@ -34,7 +34,7 @@ export function renderTopicRetentionDashboard({
           value: row.r.value,
           unit: '/100',
           message:
-            'Registre questões ou revisões vinculadas para estimar retenção. Saúde da revisão é um indicador separado.',
+            'Registre questões ou revisões vinculadas para estimar retenção. Saúde da revisão (revisões feitas no prazo) é um indicador separado.',
           confidence: row.r.confidence,
         }),
         score = evidence.state === EVIDENCE_STATES.NO_DATA ? null : row.r.value,

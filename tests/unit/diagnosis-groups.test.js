@@ -406,9 +406,61 @@ test('T41: a sigla da Matriz diz o nome completo e a grade do heatmap tem a list
   const { h } = await import('preact');
   const { renderToString } = await import('preact-render-to-string');
   const { ActivityHeatmap } = await import('../../src/ui/primitives/charts/ActivityHeatmap.js');
-  const days = Array.from({ length: 21 }, (_, n) => ({ date: `2026-10-${String(n + 5).padStart(2, '0')}`, dayOfWeek: (n + 0) % 7, level: n % 3, selected: false, tooltip: `dia ${n}` }));
-  const out = renderToString(h(ActivityHeatmap, { mode: 'calendar', calendarVisual: { days, monthLabels: [], weeks: 3 }, hasActivity: true }));
+  const days = Array.from({ length: 21 }, (_, n) => ({ date: `2026-10-${String(n + 5).padStart(2, '0')}`, dayOfWeek: (n + 0) % 7, weekIndex: Math.floor(n / 7), value: n % 3, level: n % 3, selected: false, tooltip: `dia ${n}`, summary: {} }));
+  const out = renderToString(h(ActivityHeatmap, { mode: 'calendar', calendarVisual: { weeksCount: 3, days, monthLabels: [], weekdayLabels: [], maxLevel: 4, activeDaysCount: 14, totalDaysCount: 21 }, hasActivity: true }));
   assert.match(out, /class="heatmap-weekly-mobile"/);
   assert.match(out, /heatmap-grid-wrap/);
   assert.ok((out.match(/<li[ >]/g) || []).length >= 3);
+});
+
+test('T42: busca de tópicos, filtros numa dobra com contagem e restaurar padrão', () => {
+  const withFilters = filters => render(filters);
+  const base = withFilters({});
+  assert.match(base, /data-diagnosis-search/);
+  assert.match(base, /<details class="diagnosis-filters-fold" data-fold-key="diagnosis-filters"><summary>Filtros<\/summary>/);
+  assert.doesNotMatch(base, /data-diagnosis-reset/);
+  assert.match(base, /<strong>Lacuna:<\/strong>/);
+  assert.match(base, /<strong>Prioridade provisória:<\/strong>/);
+  const searched = withFilters({ search: 'tópico 3' });
+  assert.match(searched, /1 de 5 itens/);
+  assert.match(searched, /<summary>Filtros \(1 ativo\)<\/summary>/);
+  assert.match(searched, /data-diagnosis-reset/);
+  // A busca ignora acentos e maiúsculas e olha também o nome da disciplina.
+  assert.match(withFilters({ search: 'TOPICO 1' }), /1 de 5 itens/);
+  assert.match(withFilters({ search: 'disciplina c' }), /2 de 5 itens/);
+  assert.match(withFilters({ search: 'xyz' }), /0 de 5 itens/);
+  const combined = withFilters({ severity: 'critical', search: 'disciplina c' });
+  assert.match(combined, /<summary>Filtros \(2 ativos\)<\/summary>/);
+});
+
+test('T42: Alt + 1–5 troca de subaba, Alt + 6–9 muda o período e o resto é ignorado', async () => {
+  const { performanceShortcut } = await import('../../src/ui/controllers/performance-controller.js');
+  const key = (n, extra = {}) => ({ altKey: true, code: `Digit${n}`, ...extra });
+  assert.deepEqual([1, 2, 3, 4, 5].map(n => performanceShortcut(key(n))?.section), ['overview', 'subjects', 'diagnosis', 'questions', 'consistency']);
+  assert.deepEqual([6, 7, 8, 9].map(n => performanceShortcut(key(n))?.period), ['7', '30', '90', 'all']);
+  assert.equal(performanceShortcut({ code: 'Digit1' }), null);
+  assert.equal(performanceShortcut(key(1, { ctrlKey: true })), null);
+  assert.equal(performanceShortcut(key(1, { shiftKey: true })), null);
+  assert.equal(performanceShortcut({ altKey: true, code: 'KeyA' }), null);
+});
+
+test('T43: a Leitura diz o que já está firme antes do alerta, só com evidência', async () => {
+  const { buildPreparationReading } = await import('../../src/application/performance/build-preparation-reading.js');
+  const reading = buildPreparationReading({
+    subjectAccuracy: { a: { accuracy: 85, resolved: 40 }, b: { accuracy: 90, resolved: 4 }, c: { accuracy: 60, resolved: 50 }, d: { accuracy: 82, resolved: 12 } },
+    accuracyTarget: 80,
+    weeklyBrief: { current: { plannedMinutes: 600, studiedMinutes: 650 } },
+    projection: { current: { simulationAccuracy: 83.4, targetScore: 80 } },
+  });
+  assert.equal(reading.steady.length, 3);
+  assert.match(reading.steady[0], /^2 disciplinas já estão na meta de precisão de 80%/);
+  assert.match(reading.steady[1], /resultado central dos simulados comparáveis \(83%\) está na meta de 80%/);
+  assert.match(reading.steady[2], /Semana cumprida/);
+  const none = buildPreparationReading({ subjectAccuracy: { b: { accuracy: 95, resolved: 5 } }, weeklyBrief: { current: { plannedMinutes: 600, studiedMinutes: 100 } } });
+  assert.deepEqual(none.steady, []);
+  const { renderPreparationReading } = await import('../../src/ui/performance/preparation-reading-renderer.js');
+  assert.match(renderPreparationReading({ ...reading, howAmI: { readiness: { value: 47, detail: null, verdict: null }, projection: null, rhythm: null } }), /data-steady="true"><h5 class="m-0">O que já está firme<\/h5>/);
+
+  const { renderTopicUniverse } = await import('../../src/ui/performance/topic-universe.js');
+  assert.match(renderTopicUniverse({ inScope: 305, remaining: 194, withSignal: 297, controlled: 12 }), /194 por concluir · 297 com sinal de diagnóstico · 12 já sob controle/);
 });

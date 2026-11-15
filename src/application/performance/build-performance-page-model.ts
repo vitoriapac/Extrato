@@ -154,6 +154,7 @@ export function buildPerformancePageModel({
         nextBestAction,
         candidates,
         diagnosisOrder,
+        accuracyTarget: Number(globalTarget) || 80,
         subjectAccuracy: (() => {
           const totals: Record<string, { resolved: number; correct: number }> = {};
           for (const q of scope.questions?.included || []) {

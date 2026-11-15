@@ -2,6 +2,17 @@ import { routeOfSection } from '../performance/performance-route.js';
 import { updatePerformanceViewState } from '../../application/performance/performance-view-state.js';
 import { scrollBehavior } from '../accessibility.js';
 
+/** Alt + 1–5 troca de subaba; Alt + 6–9 muda o período (7 dias, 30 dias, 90 dias, todo o histórico). */
+const SHORTCUT_SECTIONS = ['overview', 'subjects', 'diagnosis', 'questions', 'consistency'];
+const SHORTCUT_PERIODS = ['7', '30', '90', 'all'];
+export function performanceShortcut(event: any = {}) {
+  if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return null;
+  const match = /^Digit([1-9])$/.exec(event.code || '');
+  if (!match) return null;
+  const n = Number(match[1]);
+  return n <= 5 ? { section: SHORTCUT_SECTIONS[n - 1] } : { period: SHORTCUT_PERIODS[n - 6] };
+}
+
 export function createPerformanceController({
   document,
   getViewState,
@@ -16,6 +27,16 @@ export function createPerformanceController({
     setViewState(updatePerformanceViewState(getViewState(), patch));
   return {
     register() {
+      document.addEventListener('keydown', (event: any) => {
+        const patch = performanceShortcut(event);
+        if (!patch) return;
+        if (!document.getElementById('panel-desempenho')?.classList?.contains('active')) return;
+        const target = event.target as HTMLElement | null;
+        if (target && (/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable)) return;
+        event.preventDefault();
+        update(patch);
+        render();
+      });
       document.addEventListener('click', (event: any) => {
         const jump = event.target.closest('[data-performance-jump]');
         if (!jump) return;

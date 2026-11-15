@@ -13,6 +13,8 @@ export interface TopicUniverse {
   mapped?: number | null;
   /** Tópicos com sinal que aparecem em "Próxima ação", acima da lista. */
   inNextAction?: number | null;
+  /** Tópicos já sob controle (manutenção ou recuperação consistente): o que está firme. */
+  controlled?: number | null;
 }
 
 export const countRemainingTopics = (topics: Array<Record<string, any>>) =>
@@ -21,11 +23,12 @@ export const countRemainingTopics = (topics: Array<Record<string, any>>) =>
 const topics = (count: number) => `${count} ${count === 1 ? 'tópico' : 'tópicos'}`;
 
 export function renderTopicUniverse(universe: TopicUniverse): string {
-  const { inScope, remaining, withSignal, mapped, inNextAction } = universe;
+  const { inScope, remaining, withSignal, mapped, inNextAction, controlled } = universe;
   if (!Number.isFinite(inScope) || inScope <= 0) return '';
   const parts = [`${topics(inScope)} no edital`];
   if (remaining != null) parts.push(`${remaining} por concluir`);
   if (withSignal != null) parts.push(`${withSignal} com sinal de diagnóstico`);
+  if (controlled) parts.push(`${controlled} já sob controle`);
   if (mapped != null) parts.push(`${mapped} mapeados ao histórico da banca`);
   const notes: string[] = [];
   if (withSignal != null && withSignal < inScope)

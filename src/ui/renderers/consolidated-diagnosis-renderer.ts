@@ -33,10 +33,18 @@ export function renderConsolidatedDiagnosis(
   const ranked = rows.map((item, index) => ({ item, rank: index }));
   const severity = filters.severity || 'all',
     evidence = filters.evidence || 'all',
-    sort = filters.sort || 'queue';
+    sort = filters.sort || 'queue',
+    search = String(filters.search || '').trim();
+  const fold = (text: unknown) =>
+    String(text ?? '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase();
+  const needle = fold(search);
   const matches = ({ item }: { item: Record<string, any> }) =>
     (severity === 'all' || item.severity === severity) &&
-    (evidence === 'all' || item.evidenceQuality === evidence);
+    (evidence === 'all' || item.evidenceQuality === evidence) &&
+    (!needle || fold(item.name).includes(needle) || fold(item.subjectName).includes(needle));
   const visible = ranked.filter(matches);
   const options = (key: 'severity' | 'evidenceQuality', label: (item: Record<string, any>) => string) => {
     const seen = new Map<string, string>();
@@ -45,7 +53,9 @@ export function renderConsolidatedDiagnosis(
   };
   const select = (name: string, title: string, current: string, entries: [string, string][], all = 'Todas') =>
     `<label class="diagnosis-filter">${title}<select class="select-control" data-diagnosis-filter="${name}"><option value="${name === 'sort' ? 'queue' : 'all'}">${all}</option>${entries.map(([value, text]) => `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')}</select></label>`;
-  const controls = `<div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}<span class="diagnosis-filters__count">${visible.length} de ${rows.length} itens com sinal de diagnóstico</span></div>`;
+  // No topo só a busca, a contagem e o controle "Filtros" (≤ 4 opções à vista); os três filtros ficam na dobra.
+  const activeFilters = [severity !== 'all', evidence !== 'all', sort !== 'queue', Boolean(search)].filter(Boolean).length;
+  const controls = `<div class="diagnosis-toolbar"><label class="diagnosis-search">Buscar tópico<input type="search" class="select-control" data-diagnosis-search value="${escapeAttr(search)}" placeholder="Nome do tópico ou da disciplina" autocomplete="off"></label><details class="diagnosis-filters-fold" data-fold-key="diagnosis-filters"${activeFilters ? ' open' : ''}><summary>Filtros${activeFilters ? ` (${activeFilters} ${activeFilters === 1 ? 'ativo' : 'ativos'})` : ''}</summary><div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}</div></details>${activeFilters ? '<button type="button" class="btn ghost small" data-diagnosis-reset>Restaurar padrão</button>' : ''}<span class="diagnosis-filters__count" role="status">${visible.length} de ${rows.length} itens com sinal de diagnóstico</span></div><p class="analytics-note diagnosis-legend"><strong>Lacuna:</strong> domínio abaixo do esperado em tópico de impacto alto na prova. <strong>Prioridade provisória:</strong> prioridade alta com evidência baixa; pode mudar com mais registros.</p>`;
   const groups = new Map<string, { name: string; items: { item: Record<string, any>; rank: number }[] }>();
   visible.forEach(entry => {
     const { item } = entry;
