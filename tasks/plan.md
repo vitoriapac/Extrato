@@ -111,7 +111,7 @@ Origem: críticas de 14/11 (28/40; H4 = 2, H8 = 2), observações menores e red 
 - [x] Tarefa 36: Linha-chave dos universos de contagem (305 no edital · 194 por concluir · 297 com sinal · 304 mapeados; contador nomeia o universo; "respondidas" no lugar de "resolvidas" em Desempenho)
 - [x] Tarefa 37: Um formato por grandeza (precisão com uma casa, p.p. com sinal e uma casa, faixas "a", "Sem dados")
 - [x] Tarefa 38: Um vocabulário de estado, prioridade e evidência (evidência em 4 estados; Prioridade alta/média; tipo de problema à parte; tendência Em queda/Estável/Abaixo da meta/Melhorando)
-- [ ] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas (P2, H1)
+- [x] Tarefa 39: Selo de janela com a janela real e janelas lado a lado explicadas
 - [ ] Tarefa 40: Provas em um painel por vez, sem repetições, com ajuda uniforme (P1, H8, H10)
 - [ ] Tarefa 41: Mobile e acessibilidade (Casey, Sam; P2/P3)
 - [ ] Tarefa 42: Poder de uso e jargão (Alex, Jordan; H2, H3, H7)

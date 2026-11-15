@@ -461,9 +461,9 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 39: Selo de janela com a janela real
 **Origem:** crítica 9 (23 de 33 selos dizem "período"; "Faltam 2 h 32 min" × "Faltam 12 h 14 min" lado a lado); H1.
 **Aceite:**
-- [ ] O selo diz a janela ("30 dias", "7 dias", "todo o histórico") em vez de "período"; mantém a posição colada ao rótulo decidida na T9
-- [ ] Onde duas janelas aparecem lado a lado, uma frase diz que são janelas diferentes
-- [ ] Linha de escopo única por bloco ("Últimos 30 dias · comparação: …") e o mesmo padrão no Diagnóstico ("Situação atual · …")
+- [x] O selo diz a janela ("30 dias", "7 dias", "todo o histórico") em vez de "período"; mantém a posição colada ao rótulo decidida na T9
+- [x] Onde duas janelas aparecem lado a lado, uma frase diz que são janelas diferentes
+- [x] Linha de escopo única por bloco ("Últimos 30 dias · comparação: …") e o mesmo padrão no Diagnóstico ("Situação atual · …")
 **Verificação:** unit do `renderWindowBadge`; E2E contando selos sem "período"; goldens revisados
 **Dependências:** Tarefa 37
 **Tamanho:** S

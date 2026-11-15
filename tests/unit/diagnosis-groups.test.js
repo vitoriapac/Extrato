@@ -342,3 +342,36 @@ test('T38: evidência em 4 estados, prioridade alta e média, tipo de problema �
   assert.match(html, /<h4>Abaixo da meta<\/h4>/);
   assert.doesNotMatch(html, /Intervir|Evoluindo|<h4>Manter/);
 });
+
+test('T39: o selo do período diz a janela real e a Leitura avisa que as janelas são diferentes', async () => {
+  const { renderWindowBadge, windowBadgeLabel } = await import('../../src/ui/performance/window-badge.js');
+  assert.equal(windowBadgeLabel('period', 'Últimos 30 dias'), '30 dias');
+  assert.equal(windowBadgeLabel('period', 'Últimos 7 dias'), '7 dias');
+  assert.equal(windowBadgeLabel('period', 'Todo o histórico'), 'todo o histórico');
+  // Sem rótulo reconhecível cai no genérico; os outros tipos não mudam.
+  assert.equal(windowBadgeLabel('period', ''), 'período');
+  assert.equal(windowBadgeLabel('period', 'Período indisponível'), 'período');
+  assert.equal(windowBadgeLabel('currentWeek', 'Últimos 30 dias'), 'semana atual');
+  assert.match(renderWindowBadge('period', 'Últimos 90 dias'), />90 dias<\/span>/);
+  assert.match(renderWindowBadge('period', 'Últimos 90 dias'), /title="Últimos 90 dias"/);
+
+  const { renderPreparationReading } = await import('../../src/ui/performance/preparation-reading-renderer.js');
+  const reading = {
+    howAmI: { readiness: { value: 47, detail: null, verdict: null }, projection: null, rhythm: null },
+    pulling: [],
+    whatToDo: { state: 'x', action: null, reason: null, deficit: null, recovery: false },
+    evidence: [],
+  };
+  assert.match(renderPreparationReading(reading), /data-window-note="true"[^>]*>Janelas diferentes: o ritmo e o que falta são dos últimos 7 dias/);
+  assert.doesNotMatch(renderPreparationReading({ ...reading, howAmI: { ...reading.howAmI, readiness: null } }), /data-window-note/);
+
+  const { renderAdherenceMetrics } = await import('../../src/ui/renderers/adherence-renderer.js');
+  const model = {
+    summary: { temporalAdherence: 70, matchedMinutes: 60, plannedMinutes: 90, executedMinutes: 80, volumeRatio: 88, additionalMinutes: 0, excessLinkedMinutes: 0, incompatibleMinutes: 0, otherPeriodMinutes: 0 },
+    priority: { classifiedCoverage: 100, plannedMinutes: 60, executedMinutes: 50, adherence: 80, unknownPlannedMinutes: 0, completedActivities: 1, plannedActivities: 1, partiallyExecutedActivities: 0 },
+    subjects: [],
+  };
+  const html = renderAdherenceMetrics(model, { escapeHtml: String, windowLabel: 'Últimos 30 dias' });
+  assert.equal((html.match(/>30 dias<\/span>/g) || []).length, 5);
+  assert.doesNotMatch(html, />período<\/span>/);
+});
