@@ -116,24 +116,6 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
         </div>
       </div>
 
-      <section class="readiness-projection-summary" aria-label="Resumo da projeção">
-        <h3 class="analytical-title">Projeção atual</h3>
-        <p class="analytical-result">
-          {projection.available ? `Faixa projetada: ${projection.low}% a ${projection.high}%` : 'Dados insuficientes'}
-        </p>
-        <p class="supporting-text">
-          {projection.available
-            ? `Confiança da projeção: ${String(projection.calibration.confidenceLabel).toLowerCase()} · ${projection.evidence.observationCount} simulados comparáveis · ${projection.evidence.sampleSize} questões na amostra.`
-            : 'Ainda não há evidências comparáveis suficientes para estimar uma faixa atual. Continue registrando seus resultados.'}{' '}
-          A faixa não representa chance de aprovação.
-        </p>
-        <Raw
-          html={renderActionGroup({
-            label: 'Investigar a projeção',
-            actions: [{ label: 'Ver projeção em Simulados', attributes: { 'data-performance-jump': 'simulations' } }],
-          })}
-        />
-      </section>
 
       <details class="readiness-explanation editorial-disclosure">
         <summary>Como ler: cálculo do índice</summary>

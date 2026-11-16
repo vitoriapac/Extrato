@@ -233,10 +233,9 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
       await expectNoPageOverflow(page);
       const root = page.locator('#approvalDashboard'),
         detail = root.locator('.readiness-explanation');
-      await expect(root.locator('.analytical-result')).toBeVisible();
-      await expect(
-        root.getByRole('button', { name: 'Ver projeção em Simulados', exact: true })
-      ).toBeVisible();
+      await expect(root.locator('.kpi-grid')).toBeVisible();
+      // A faixa projetada não se repete aqui: mora no topo e em Simulados.
+      await expect(root.locator('.readiness-projection-summary')).toHaveCount(0);
       await expect(detail).not.toHaveAttribute('open', '');
       await expect(
         root.getByRole('button', { name: 'Entenda o Índice de Prontidão' })
@@ -420,7 +419,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
 
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'overview');
-  await openPerformanceFold(page, 'Prontidão, trajetória e carga');
+  await openPerformanceFold(page, 'Evolução da Prontidão');
   const explanation = page.locator('.readiness-change-explanation');
   await expect(explanation).toBeVisible();
   await explanation.locator(':scope > summary').click();

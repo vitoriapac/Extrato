@@ -388,7 +388,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       : examSection
       ? proofIndex +
         (performanceViewState.section === 'simulations'
-          ? proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations!, renderOptions))
+          ? proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations!, renderOptions) + '<div id="simulationsCalibrationMount"></div>')
           : performanceViewState.section === 'exam'
             ? proofBlock(
                 'exam',
@@ -496,6 +496,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
 
     if (examSection) {
       // O hub da Inteligência da prova só entra na página quando o painel dela está aberto.
+      if (performanceViewState.section === 'simulations') {
+        syncCalibration();
+      }
       if (performanceViewState.section === 'exam') {
         target.querySelector('#examIntelligenceMount')?.append(examHub!);
         if (deps.renderExamIntelligenceSection) deps.renderExamIntelligenceSection();
@@ -691,6 +694,25 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
         deps.applyConfirmedRecoveryPlan ? deps.applyConfirmedRecoveryPlan(signature) : undefined,
     }).register();
   }
+
+  // Como a faixa foi calculada e calibrada mora com a projeção, em Simulados. O original fica escondido no card de
+  // Prontidão; a cópia acompanha o card quando ele é redesenhado por outro controlador.
+  let currentCalibration: HTMLDetailsElement | null = null;
+  const syncCalibration = () => {
+    const mount = doc?.getElementById('simulationsCalibrationMount');
+    const source = doc?.querySelector('#performanceReadinessCard .readiness-investigation');
+    if (!mount || !source) return;
+    const copy = source.cloneNode(true) as HTMLDetailsElement;
+    const summary = copy.querySelector(':scope > summary');
+    if (summary) summary.textContent = 'Como a faixa foi calculada e calibrada';
+    // A tela é redesenhada com frequência: lembra se a dobra estava aberta.
+    copy.open = currentCalibration?.open ?? false;
+    currentCalibration = copy;
+    mount.replaceChildren(copy);
+  };
+  const approvalCard = doc?.getElementById('approvalDashboard');
+  if (approvalCard && typeof MutationObserver !== 'undefined')
+    new MutationObserver(syncCalibration).observe(approvalCard, { childList: true });
 
   return {
     recordProgressSnapshot,

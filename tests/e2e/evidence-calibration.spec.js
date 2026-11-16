@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow } from './helpers.js';
+import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
 import { buildStrategicCycleFixture } from '../fixtures/strategic-cycle.js';
 test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
@@ -20,14 +20,10 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
     structuredClone(window.__EXTRATO_TEST__.getState().projectionSnapshots)
   );
   expect(initial.length).toBeGreaterThan(0);
-  await page
-    .getByText('Prontidão, trajetória e carga', { exact: true })
-    .locator('xpath=ancestor::details[1]')
-    .evaluate(fold => {
-      fold.open = true;
-    });
-  await page.locator('#approvalDashboard .readiness-investigation > summary').click();
-  const quality = page.locator('#approvalDashboard .evidence-quality').first();
+  // A calibração da faixa mora em Simulados.
+  await openPerformanceSection(page, 'simulations');
+  await page.locator('#simulationsCalibrationMount .readiness-investigation > summary').click();
+  const quality = page.locator('#simulationsCalibrationMount .evidence-quality').first();
   await quality.locator('summary').focus();
   await page.keyboard.press('Enter');
   await expect(quality).toHaveAttribute('open', '');
@@ -45,7 +41,7 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
     api.setState(state);
     api.renderAll();
   });
-  await expect(page.locator('#approvalDashboard .projection-calibration-list')).toContainText(
+  await expect(page.locator('#simulationsCalibrationMount .projection-calibration-list')).toContainText(
     '30/09/2026'
   );
   const result = await page.evaluate(() => {
@@ -60,15 +56,15 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
   expect(result.validation.valid, result.validation.message).toBe(true);
   expect(result.validation.normalized.projectionSnapshots).toEqual(result.snapshots);
   const calibration = page
-    .locator('#approvalDashboard .projection-calibration-list > details')
+    .locator('#simulationsCalibrationMount .projection-calibration-list > details')
     .first();
-  await page
-    .getByText('Prontidão, trajetória e carga', { exact: true })
-    .locator('xpath=ancestor::details[1]')
-    .evaluate(fold => {
-      fold.open = true;
-    });
-  await page.locator('#approvalDashboard .readiness-investigation > summary').click();
+  // A calibração da faixa mora em Simulados.
+  await openPerformanceSection(page, 'simulations');
+  // A dobra lembra que já foi aberta; só abre se ainda estiver fechada.
+  const investigation = page.locator('#simulationsCalibrationMount .readiness-investigation');
+  if (!(await investigation.evaluate(node => node.open))) await investigation.locator(':scope > summary').click();
+  // A rolagem suave da página impede o clique de ver o elemento parado: leva até ele sem animação.
+  await calibration.locator(':scope > summary').evaluate(node => node.scrollIntoView({ behavior: 'instant', block: 'center' }));
   await calibration.locator(':scope > summary').click();
   await expect(calibration.locator('svg[role="img"]')).toBeVisible();
   for (const width of [320, 375, 390, 430]) {

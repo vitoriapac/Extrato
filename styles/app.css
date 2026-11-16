@@ -3790,3 +3790,6 @@ button.performance-window{position:relative}button.performance-window::after{con
   .subject-target-footer{bottom:calc(var(--bottom-nav-height,56px) + env(safe-area-inset-bottom))}
   .subject-target-table-wrap caption,.subject-target-table caption{display:block;width:100%;text-align:left}
 }
+
+/* A calibração da faixa mora em Simulados; no card de Prontidão o original fica escondido. */
+#performanceReadinessCard .readiness-investigation{display:none}

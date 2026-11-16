@@ -31,16 +31,14 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
     getMetricDataState: () => {},
     metricStateLabel: () => {},
   });
-  assert.match(html, /evidências comparáveis suficientes para estimar/);
-  assert.match(html, /data-performance-jump="simulations"/);
+  assert.match(html, /Aguardando simulados comparáveis/);
+  // A faixa projetada não se repete no card: mora no topo e em Simulados.
+  assert.doesNotMatch(html, /Projeção atual|readiness-projection-summary|Ver projeção em Simulados/);
   assert.doesNotMatch(html, /<details[^>]* open/);
   assert.match(html, /readiness-investigation/);
   assert.deepEqual(input, before);
-  assert.match(html, /class="analytical-result">Dados insuficientes/);
   assert.match(html, /class="readiness-explanation editorial-disclosure"/);
-  assert.ok(html.indexOf('Ver projeção em Simulados') < html.indexOf('<details'));
   assert.ok(html.indexOf('data-help-topic-link="readiness"') > html.indexOf('<details'));
-  assert.match(html, /role="group" aria-label="Investigar a projeção"/);
   const measured = {
     ...input,
     projection: {
@@ -60,10 +58,8 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
     metricStateLabel: () => {},
   });
   const visible = measuredHTML.slice(0, measuredHTML.indexOf('<details'));
-  assert.match(visible, /Faixa projetada: 70% a 78%/);
-  assert.match(visible, /Confiança da projeção: baixa/);
-  assert.match(visible, /5 simulados comparáveis/);
-  assert.doesNotMatch(visible, /Média móvel|projection-calibration-list/);
+  assert.doesNotMatch(visible, /Faixa projetada|Média móvel|projection-calibration-list/);
+  assert.match(measuredHTML, /5 simulados comparáveis/);
   const summary = renderWeeklyCloseSummary(
     {
       state: 'ready',

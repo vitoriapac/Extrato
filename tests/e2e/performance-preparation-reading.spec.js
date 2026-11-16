@@ -124,7 +124,7 @@ test('Dobras de Desempenho continuam abertas quando a tela é redesenhada', asyn
   await openDemo(page);
   await activateTab(page, 'desempenho');
   const fold = page.locator('#performanceSectionContent details', {
-    has: page.locator(':scope > summary', { hasText: 'Prontidão, trajetória e carga' }),
+    has: page.locator(':scope > summary', { hasText: 'Evolução da Prontidão' }),
   });
   await fold.locator(':scope > summary').click();
   await expect(fold).toHaveJSProperty('open', true);
@@ -133,7 +133,7 @@ test('Dobras de Desempenho continuam abertas quando a tela é redesenhada', asyn
   await page.locator('#performancePeriod').selectOption('90');
   await expect(
     page.locator('#performanceSectionContent details', {
-      has: page.locator(':scope > summary', { hasText: 'Prontidão, trajetória e carga' }),
+      has: page.locator(':scope > summary', { hasText: 'Evolução da Prontidão' }),
     })
   ).toHaveJSProperty('open', true);
 });
