@@ -44,7 +44,6 @@ export const RENDER_SCOPE_SECTIONS = {
     'metas de horas por dia',
     'metas de acerto por disciplina',
     'metas por disciplina',
-    'histórico de metas',
     'ritmo',
   ]),
   hoje: new Set([
@@ -95,7 +94,6 @@ export interface BuildRenderSectionsOptions {
   renderWeeklyHoursGoals: () => void;
   renderSubjectTargetEditor: () => void;
   renderMetasPorDisciplina: () => void;
-  renderHistoricoMetas: () => void;
   renderRitmo: () => void;
   renderExecutiveSummary: () => void;
   renderDiagnosisCenter: () => void;
@@ -143,7 +141,6 @@ export function buildRenderSections(opts: BuildRenderSectionsOptions): Array<[st
     ['metas de horas por dia', opts.renderWeeklyHoursGoals],
     ['metas de acerto por disciplina', opts.renderSubjectTargetEditor],
     ['metas por disciplina', opts.renderMetasPorDisciplina],
-    ['histórico de metas', opts.renderHistoricoMetas],
     ['ritmo', opts.renderRitmo],
     ['resumo executivo', opts.renderExecutiveSummary],
     ['central de diagnóstico', opts.renderDiagnosisCenter],

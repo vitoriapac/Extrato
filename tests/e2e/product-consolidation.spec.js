@@ -387,7 +387,8 @@ test('cinco perfis percorrem a experiência consolidada com ação, contexto e l
     await expectNoPageOverflow(page);
     await activateTab(page, 'dashboard');
     await expect(page.locator('#weeklyCloseDashboard')).not.toBeEmpty();
-    await expect(page.locator('.weekly-comparison-detail')).not.toHaveAttribute('open', '');
+    // A análise longa e a comparação só entram no DOM quando a dobra do Histórico abre.
+    await expect(page.locator('.weekly-comparison-detail')).toHaveCount(0);
     await expectNoPageOverflow(page);
   }
 });

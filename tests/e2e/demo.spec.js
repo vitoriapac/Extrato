@@ -5,6 +5,7 @@ import {
   activateTab,
   openSessionLog,
   openPerformanceSection,
+  openPlanningSubtab,
 } from './helpers.js';
 
 test('desempenho do simulado separa consulta e edição', async ({ page }) => {
@@ -310,7 +311,9 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar', asy
   await expect(page.locator('#panel-agenda .mobile-filter-toggle')).toHaveText('Filtros (1 ativo)');
   await expect(page.locator('#agendaBody')).toContainText('Atrasadas');
   await page.locator('[data-tab="metas"]').evaluate(button => button.click());
-  await expect(page.locator('#weeklyCloseDashboard')).toContainText('Diagnóstico');
+  await openPlanningSubtab(page, 'historico');
+  await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
+  await expect(page.locator('#weeklyCloseFullAnalysis')).toContainText('Diagnóstico');
   await expect(page.locator('#decisionHistoryDashboard .data-row').first()).toBeAttached();
 });
 

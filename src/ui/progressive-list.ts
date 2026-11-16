@@ -63,7 +63,6 @@ const LISTS = [
   ['.performance-topic-analysis', ':scope > li'],
   ['.weekly-decision-results', ':scope > li'],
   ['.phase-strategy-changes', ':scope > li'],
-  ['#historicoMetasContainer tbody', ':scope > tr'],
   ['.adaptive-history > ol', ':scope > li'],
   ['.weekly-focus-history > ol', ':scope > li'],
   ['.study-plan-details', ':scope > .study-plan-topic'],

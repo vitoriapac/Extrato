@@ -21,7 +21,6 @@ import { buildPeriodComparisonViewModel as defaultBuildPeriodComparisonViewModel
 import { renderPeriodComparisonDetail as defaultRenderPeriodComparisonDetail } from '../../renderers/period-comparison-detail-renderer.js';
 import { countStudyDaysThisWeek } from '../../../application/performance/study-day-count.js';
 import { renderIconSvg } from '../../primitives/icon.js';
-import { renderGoalHistoryCharts } from '../../renderers/goal-history-chart-renderer.js';
 import { renderRhythmBurnup } from '../../renderers/rhythm-burnup-renderer.js';
 import { buildRhythmGoalWarning } from '../../../application/goals/rhythm-goal-warning.js';
 
@@ -70,7 +69,6 @@ export interface GoalsTabControllerContext {
   somarQuestoesNaSemana?: () => number;
   contarSimuladosNaSemana?: () => number;
   recentPerformance?: () => any;
-  computeWeeklyHistory?: (weeksCount?: number) => any[];
   addMetaDisciplina?: (subjectId: string, rawMeta: string) => void;
   computeRitmo?: () => any;
 }
@@ -325,58 +323,6 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       .join('');
   }
 
-  function renderHistoricoMetas(container: any, weeks: any[]): void {
-    const state = resolveState();
-    const formatDate = ctx.formatDatePt || (d => d);
-    const badge = (ok: boolean, current: any) =>
-      current
-        ? `<span class="wk-current">em andamento</span>`
-        : ok
-          ? `<span class="wk-ok inline-flex items-center gap-1">${renderIconSvg('check', { size: 12 })} cumprida</span>`
-          : `<span class="wk-fail inline-flex items-center gap-1">${renderIconSvg('x', { size: 12 })} não cumprida</span>`;
-    // Semanas anteriores ao primeiro registro não são listadas; a nota diz onde o histórico começa.
-    const lived = weeks.filter(w => !w.beforeStart);
-    const firstLived = lived.filter(w => !w.current).at(-1);
-    const note =
-      lived.length === weeks.length
-        ? ''
-        : `<p class="analytics-note">${
-            firstLived
-              ? `O histórico começa na semana de ${formatDate(firstLived.weekStart)}, com o seu primeiro registro.`
-              : 'As semanas encerradas aparecem aqui à medida que você registra estudo.'
-          }</p>`;
-    weeks = lived;
-
-    container.innerHTML = `${renderGoalHistoryCharts(weeks, state.metas || {}, { formatDate })}
-    <div class="weekly-history-table-wrap" tabindex="0" role="region" aria-label="Histórico de metas das últimas semanas; use as setas para percorrer as colunas">
-    <table class="weekly-history-table">
-      <thead>
-        <tr>
-          <th>Semana</th>
-          <th>Tópicos</th>
-          <th>Questões</th>
-          <th>Simulados</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${weeks
-          .map(
-            w => `
-          <tr>
-            <td data-label="Semana">${formatDate(w.weekStart)} – ${formatDate(w.weekEnd)}</td>
-            <td data-label="Tópicos">${w.topicsConcl}/${state.metas?.semanal ?? 0} ${badge(w.semanalOk, w.current)}</td>
-            <td data-label="Questões">${w.questoesResolved}/${state.metas?.questoesSemanal ?? 0} ${badge(w.questoesOk, w.current)}</td>
-            <td data-label="Simulados">${w.simuladosCount}/${state.metas?.simuladosSemanal ?? 0} ${badge(w.simuladosOk, w.current)}</td>
-          </tr>
-        `
-          )
-          .join('')}
-      </tbody>
-    </table>
-    </div>${note}
-  `;
-  }
-
   function renderSelectedPeriodComparison(
     container?: any,
     presetEl?: any,
@@ -509,14 +455,6 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     renderMetasPorDisciplina(container, sel);
   }
 
-  function renderHistoricoMetasSection(): void {
-    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
-    const container = doc?.getElementById('historicoMetasContainer');
-    if (container && ctx.computeWeeklyHistory) {
-      renderHistoricoMetas(container, ctx.computeWeeklyHistory(8));
-    }
-  }
-
   function bindEvents(): void {
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     if (!doc) return;
@@ -621,13 +559,11 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     mountPlanExecution,
     renderMetas,
     renderMetasPorDisciplina,
-    renderHistoricoMetas,
     renderSelectedPeriodComparison,
     renderMetasSection,
     renderPlanExecutionSection,
     renderWeeklyHoursGoalsSection,
     renderMetasPorDisciplinaSection,
-    renderHistoricoMetasSection,
     renderRitmo,
     bindEvents,
   };

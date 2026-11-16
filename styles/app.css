@@ -2704,13 +2704,6 @@ body:has(#panel-dashboard.active [data-welcome-hero]) #demoEmptyCta{display:none
 .chart-columns__bar--primary{fill:var(--chart-series-primary)}.chart-columns__bar--attention{fill:var(--chart-series-secondary)}.chart-columns__bar--muted{fill:var(--border-control)}
 .chart-columns__bar.is-zero{fill:var(--border-control)}
 .chart-columns__target{stroke:var(--chart-series-secondary);stroke-width:1.5;stroke-dasharray:4 3}
-.goal-history-charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4);margin:0 0 var(--space-2)}
-.goal-history-chart{margin:0;display:grid;gap:var(--space-2)}
-.goal-history-chart figcaption{display:grid;gap:2px;font-size:var(--text-small);color:var(--text-secondary)}.goal-history-chart figcaption strong{color:var(--text-primary);font-weight:600}
-.goal-history-chart figcaption .is-below{color:var(--amber);font-weight:600}
-.goal-history-chart .chart-columns{height:40px}
-.goal-history-legend{margin:0 0 var(--space-3);font-size:var(--text-micro);color:var(--text-secondary)}
-@media(max-width:600px){.goal-history-charts{grid-template-columns:1fr}}
 .chart-columns__bar--soft{fill:color-mix(in srgb,var(--chart-series-primary) 45%,var(--surface-card))}
 .chart-frame__swatch--soft{background:color-mix(in srgb,var(--chart-series-primary) 45%,var(--surface-card))}.chart-frame__swatch--muted{background:var(--border-control)}
 .chart-frame__plot>.plan-execution-columns{height:72px}
@@ -3791,3 +3784,9 @@ button.performance-window{position:relative}button.performance-window::after{con
 /* Crítica 7, P2: perfil sem plano e sem estudo não mostra Resumo, zeros nem Replanejamento */
 #planExecutionCard:has(.plan-execution--empty),
 #metasSub-semana:has(.plan-execution--empty) .metas-replan{display:none}
+
+/* Percurso da Casey: a barra de salvar não fica sob a barra de abas e a legenda ocupa a largura toda */
+@media(max-width:760px){
+  .subject-target-footer{bottom:calc(var(--bottom-nav-height,56px) + env(safe-area-inset-bottom))}
+  .subject-target-table-wrap caption,.subject-target-table caption{display:block;width:100%;text-align:left}
+}

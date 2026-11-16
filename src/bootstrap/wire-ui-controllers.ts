@@ -335,7 +335,6 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
         planningUi.subjectTargetEditorController.renderSubjectTargetEditor(),
       renderMetasPorDisciplina: () =>
         planningUi.goalsTabController.renderMetasPorDisciplinaSection(),
-      renderHistoricoMetas: () => planningUi.goalsTabController.renderHistoricoMetasSection(),
       renderRitmo: () => planningUi.goalsTabController.renderRitmo(),
       renderExecutiveSummary: () => analyticsUi.diagnosticsTabController.renderExecutiveSummary(),
       renderDiagnosisCenter: () => analyticsUi.diagnosticsTabController.renderDiagnosisCenter(),

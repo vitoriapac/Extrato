@@ -110,7 +110,6 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     somarQuestoesNaSemana: studyMetricsSelectors.somarQuestoesNaSemana,
     contarSimuladosNaSemana: studyMetricsSelectors.contarSimuladosNaSemana,
     recentPerformance: approvalReadinessService.recentPerformance,
-    computeWeeklyHistory: studyMetricsSelectors.computeWeeklyHistory,
     addMetaDisciplina: goalsBlueprintService.addMetaDisciplina,
     computeRitmo: studyCandidateService.computeRitmo,
   });

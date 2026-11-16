@@ -429,7 +429,7 @@ Verificação usada abaixo:
 
 ### Checkpoint 4: Prova e metas
 - [x] Testes, tipos e build limpos (15/11/2026)
-- [ ] Prova e metas na demo com no máximo 2 dobras fora da tabela (não medido: a subaba tem 7 `<details>` em 375 px e 19 em 1440 px, contando a Matriz)
+- [~] Prova e metas na demo com no máximo 2 dobras fora da tabela (medido em 15/11: 1 dobra de configuração + 5 linhas expansíveis da Matriz; atende só se as linhas da Matriz contarem como tabela, decisão da usuária)
 - [ ] Revisão humana
 
 ---
@@ -738,3 +738,5 @@ Decisão do usuário: rodada nos 2 P1, marcador de dobra e tom do gráfico no es
 Três rodadas com o mesmo método (A: revisão de design; B: detector + axe): 26 → 27 → 28/40. Sem P0 e sem P1 desde a rodada 2; detector 0 achados e axe 0 violações em todas as rodadas. Entre as rodadas: Meta de acerto única também no completo; "Mais campos" por disciplina e "Mostrar todas as N" no celular (Prova e metas 13,5 mil → 4,6 mil px na subaba); resumo do Fechamento em uma linha; Matriz Edital × Domínio com as 5 maiores lacunas + "Mostrar mais"; Resumo sem dois "acima" ("a mais" / "além da disponibilidade"); "Próxima semana" vazio removido do Fechamento; Histórico sem cartão-título vazio; Prova sem data sem régua repetindo o CTA; Plano da semana sem plano e sem estudo esconde Resumo e Replanejamento. Piso de 30/40 NÃO atingido: T25 aberta. P2 que restam (rodada 3): números parecidos (89%, 88%, 88,8%; meta 80% e 70%), manchete igual em Semana e Fechamento e período repetido, defeitos de layout no celular, vazios do Histórico/Fechamento. Capturas em `tasks/prints-critica6/7/8`.
 
 **T25 fechada com ressalva (decisão da usuária, 15/11/2026):** crítica em 28/40, sem P0 e sem P1, detector e axe limpos. Abaixo do piso de 30/40 e abaixo do alvo de 32/40. Dívida declarada (P2): taxas parecidas com denominadores diferentes (89%, 88%, 88,8%) e meta 80%/70% na mesma tela; manchete do Fechamento igual à de Plano da semana e período repetido; defeitos de layout no celular (parágrafo "Meta geral", editor de disponibilidade vazio, manchete com "12" órfão, tabela de metas cortada no desktop); estados vazios do Histórico e do Fechamento; P3: legenda do laranja do gráfico diário, rótulo "25%" da fase, contraste de "Conferir impacto" desabilitado. `DESIGN.md` ganhou a seção "Saldo da semana e lista curta (Planejamento)". `npm run test:full` não foi rodado.
+
+**Revisão assistida (15/11/2026):** conferi os Checkpoints 2 a 5 contra os critérios, com capturas e medições; resultado e ressalvas em `tasks/revisoes-pendentes.md`. As revisões humanas seguem abertas, à espera da assinatura da usuária.

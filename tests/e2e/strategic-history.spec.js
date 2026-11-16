@@ -95,7 +95,14 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
     api.setState(state);
     api.renderAll();
   });
-  await expect(page.locator('#weeklyCloseDashboard .close-comparison')).toContainText('Precisão');
+  await openPlanningSubtab(page, 'historico');
+  await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
+  await page.locator('#weeklyCloseFullAnalysis .weekly-comparison-detail > summary').click();
+  // O período ainda está em andamento: a comparação com o fechado só aparece quando ele terminar.
+  await expect(page.locator('#weeklyCloseFullAnalysis .close-comparison')).toContainText(
+    'O período ainda está em andamento'
+  );
+  await openPlanningSubtab(page, 'fechamento');
   await page
     .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
     .click();

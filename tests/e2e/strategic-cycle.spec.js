@@ -164,9 +164,13 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'fechamento');
-  await expect(page.locator('#weeklyCloseDashboard')).toContainText(
+  // A análise completa da semana encerrada mora no Histórico, numa dobra que só renderiza ao abrir.
+  await openPlanningSubtab(page, 'historico');
+  await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
+  await expect(page.locator('#weeklyCloseFullAnalysis')).toContainText(
     'Da semana encerrada ao próximo plano'
   );
+  await openPlanningSubtab(page, 'fechamento');
   await page
     .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
     .click();
