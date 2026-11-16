@@ -522,18 +522,18 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 49: Despejos de "sem evidência"
 **Origem:** "Sem evidência para posicionar (217)" abre +15,5 mil px; "Sem evidência · 16" no Diagnóstico, +4,5 mil px; "Mostrar mais · +57" e "+18" na matriz, +4 mil e +1,3 mil px.
 **Aceite:**
-- [ ] Os três despejos viram uma linha com a contagem ("217 tópicos sem evidência") e a ação de coletar evidência; a lista completa só sai por um botão que abre o Diagnóstico filtrado em "Sem evidência"
-- [ ] A matriz de quadrantes não repete os mesmos tópicos em listas longas; a Inteligência da prova aberta fica abaixo de 6 mil px na demo
-- [ ] Nenhum tópico deixa de ser alcançável: o filtro "Sem evidência" do Diagnóstico lista todos
+- [x] Os três despejos viram uma linha com a contagem ("217 tópicos sem evidência") e a ação de coletar evidência; a lista completa só sai por um botão que abre o Diagnóstico filtrado em "Sem evidência"
+- [x] A matriz de quadrantes não repete os mesmos tópicos em listas longas; a Inteligência da prova aberta fica abaixo de 6 mil px na demo
+- [x] Nenhum tópico deixa de ser alcançável: o filtro "Sem evidência" do Diagnóstico lista todos
 **Verificação:** E2E que conta os tópicos antes e depois e mede a altura; unit do texto da contagem
 **Tamanho:** M
 
 ### Tarefa 50: Uma só explicação da projeção
 **Origem:** em Simulados, "Como ler: esta projeção", "Faixa, confiança e limites", "Como a faixa foi calculada e calibrada", "Qualidade da evidência", "Base e limites" e "Cenário de redução" explicam o mesmo cálculo.
 **Aceite:**
-- [ ] Uma dobra "Como a faixa foi calculada" com base e limites, qualidade da evidência, calibração e cenário, em uma ordem só
-- [ ] "O que seria necessário?" continua separada (é ação, não explicação)
-- [ ] A cópia oculta do card de Prontidão deixa de existir (a investigação passa a ser renderizada só em Simulados)
+- [x] Uma dobra "Como a faixa foi calculada" com base e limites, qualidade da evidência, calibração e cenário, em uma ordem só
+- [x] "O que seria necessário?" continua separada (é ação, não explicação)
+- [x] A cópia oculta do card de Prontidão deixa de existir (a investigação passa a ser renderizada só em Simulados)
 **Verificação:** E2E `evidence-calibration` e goldens da projeção; unit do card de Prontidão
 **Dependências:** Tarefa 49
 **Tamanho:** M
@@ -541,47 +541,50 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 51: Um "Como ler esta aba" por subaba
 **Origem:** "Como ler: limites" aparece em Por disciplina, Diagnóstico, Provas e Resumo, com uma ou duas frases cada.
 **Aceite:**
-- [ ] Cada subaba tem uma só dobra "Como ler esta aba" com os limites e os critérios daquela subaba
-- [ ] Os "Como ler: …" que explicam um gráfico específico ficam junto do gráfico
+- [x] Cada subaba tem uma só dobra "Como ler esta aba" com os limites e os critérios daquela subaba
+- [x] Os "Como ler: …" que explicam um gráfico específico ficam junto do gráfico
 **Verificação:** E2E que conta as dobras "Como ler" por subaba (no máximo uma de aba mais as de gráfico)
 **Tamanho:** S
 
 ### Tarefa 52: Tirar as redundâncias
 **Aceite:**
-- [ ] Diagnóstico: "Visão complementar: lacunas e retenção por tópico" sai; "Como a retenção é calculada" vira link da Queda de retenção
-- [ ] Diagnóstico: "Ver evidências" por cartão passa a um aviso comum por grupo; o grupo "Língua Inglesa · 0 com evidência" vira uma linha no cabeçalho
-- [ ] Resumo: "Comparação e principais mudanças" mantém só "Principais mudanças" e os critérios; a tabela "Período atual × anterior" e o bloco-link de Carga saem
-- [ ] Simulados: "Histórico da trajetória" vira uma linha no bloco da projeção
+- [x] Diagnóstico: "Visão complementar: lacunas e retenção por tópico" sai; "Como a retenção é calculada" vira link da Queda de retenção
+- [x] Diagnóstico: "Ver evidências" por cartão passa a um aviso comum por grupo; o grupo "Língua Inglesa · 0 com evidência" vira uma linha no cabeçalho
+- [x] Resumo: "Comparação e principais mudanças" mantém só "Principais mudanças" e os critérios; a tabela "Período atual × anterior" e o bloco-link de Carga saem
+- [x] Simulados: "Histórico da trajetória" vira uma linha no bloco da projeção
 **Verificação:** E2E por tela (ausência das dobras antigas; conteúdo útil mantido); busca no bundle pelos nomes antigos
 **Dependências:** Tarefas 49 a 51
 **Tamanho:** M
 
 ### Tarefa 53: Por disciplina e tempo sem repetição
-**Decidir antes:** manter barras e tabela como duas dobras, ou uma visão única com alternância (Barras / Tabela). Recomendado: alternância, com a tabela como padrão para A e E e barras como padrão em modo iniciante.
+**Decidido (16/11):** visão única com alternância Tabela | Barras; tabela como padrão para todos (o modo iniciante nem mostra a aba). O tempo por disciplina de Ritmo não foi alterado.
 **Aceite:**
-- [ ] Por disciplina mostra os mesmos dados uma vez, com a alternância escolhida
-- [ ] "Distribuição do tempo por disciplina" (Ritmo) e "Atividade" (Por disciplina) não repetem o mesmo número; uma linha leva à outra
+- [x] Por disciplina mostra os mesmos dados uma vez, com a alternância escolhida
+- [x] "Distribuição do tempo por disciplina" (Ritmo) e "Atividade" (Por disciplina) não repetem o mesmo número; uma linha leva à outra
 **Verificação:** E2E de alternância e de teclado; golden mobile de Por disciplina
 **Dependências:** Tarefa 52
 **Tamanho:** M
 
 ### Tarefa 54: Mover e normalizar
 **Aceite:**
-- [ ] "Definições de Prontidão, domínio, retenção e aderência" sai do fim do Resumo e vira definição inline junto do primeiro termo (ou "?" no cabeçalho), sem sumir da Ajuda
-- [ ] "Referência de carreira" e a frase "Sugestão de cursinhos": decidir entre mover para Planejamento ou remover; a cópia comercial sai de Ritmo
-- [ ] "Mais filtros" (Inteligência da prova) deixa de ser uma dobra aberta por padrão; "Filtros do mapa" segue o mesmo padrão dos outros filtros
+- [x] "Definições de Prontidão, domínio, retenção e aderência" sai do fim do Resumo e vira definição inline junto do primeiro termo (ou "?" no cabeçalho), sem sumir da Ajuda
+- [x] "Referência de carreira": movida para Planejamento > Prova e metas (dobra "Referência de ritmo por carreira"); a frase "Sugestão de cursinhos" não existe no código, só "sem pesquisa com aprovados" no card
+- [x] "Mais filtros" (Inteligência da prova) deixa de ser uma dobra aberta por padrão; "Filtros do mapa" segue o mesmo padrão dos outros filtros
 **Verificação:** unit do vocabulário; E2E das definições inline
 **Dependências:** Tarefa 52
 **Tamanho:** S
 
 ### Tarefa 55: Achatar o aninhamento
 **Aceite:**
-- [ ] "Como o plano foi cumprido" tem no máximo um nível de dobra interna (hoje 7 dobras, em dois níveis)
-- [ ] "Evolução da Prontidão" tem no máximo duas dobras internas (hoje 4)
-- [ ] Nenhuma dobra importante some: a composição do tempo, a aderência por disciplina e a execução por semana continuam alcançáveis
+- [x] "Como o plano foi cumprido" tem no máximo um nível de dobra interna (hoje 7 dobras, em dois níveis)
+- [x] "Evolução da Prontidão" tem no máximo duas dobras internas (hoje 4)
+- [x] Nenhuma dobra importante some: a composição do tempo, a aderência por disciplina e a execução por semana continuam alcançáveis
 **Verificação:** E2E que mede o nível máximo de `<details>` aninhados por subaba (≤ 2)
 **Dependências:** Tarefas 50 e 52
 **Tamanho:** M
+
+
+**Notas de entrega (T49 a T55):** o Mapa de lacunas (#gapMapDashboard) ficou estacionado e escondido, porque o fechamento semanal e três E2E ainda o usam. Quem tem poucos registros vê o Diagnóstico sem cartões nos grupos até clicar em "Ver os N". Os goldens da projeção ficaram mais altos porque a dobra única contém a calibração.
 
 ### Checkpoint 11
 - [ ] Altura com dobras abertas medida antes e depois, por subaba, no desktop e no celular

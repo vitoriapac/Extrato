@@ -22,6 +22,7 @@ import { ShiftEnergyCard } from './ShiftEnergyCard.js';
 import { NARROW_CHART_BREAKPOINT } from '../../primitives/charts/chart-size.js';
 import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
+import { decorateTermHints } from '../../essential-mode.js';
 import { CareerBenchmarkCard } from '../../components/CareerBenchmarkCard.js';
 import { buildCutoffReference } from '../../../domain/analytics/cutoff-reference.js';
 import { routeOfSection, sectionFromRoute } from '../../performance/performance-route.js';
@@ -373,6 +374,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       escapeAttr,
       targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
       compareMode: performanceViewState.compareMode,
+      subjectView: performanceViewState.subjectView,
       // O que o plano semanal comporta (horas por dia × 60); sem horas cadastradas não há linha de capacidade.
       weeklyCapacityMinutes:
         Object.values(state.metas?.horasPorDia || {}).reduce<number>(
@@ -388,7 +390,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       : examSection
       ? proofIndex +
         (performanceViewState.section === 'simulations'
-          ? proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations!, renderOptions) + '<div id="simulationsCalibrationMount"></div>')
+          ? proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations!, renderOptions))
           : performanceViewState.section === 'exam'
             ? proofBlock(
                 'exam',
@@ -478,6 +480,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             escapeHtml,
             escapeAttr,
           });
+        // Termos com "?" (Prontidão etc.) ganham a definição curta junto do primeiro uso.
+        decorateTermHints(sectionContent as unknown as ParentNode);
         // Radar e progresso moram em painéis do mesmo painel de Desempenho, fora do conteúdo da subaba.
         const panel = (target as Element).closest?.('#panel-desempenho') || target;
         fitCharts(panel as Element);
@@ -695,24 +699,17 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     }).register();
   }
 
-  // Como a faixa foi calculada e calibrada mora com a projeção, em Simulados. O original fica escondido no card de
-  // Prontidão; a cópia acompanha o card quando ele é redesenhado por outro controlador.
-  let currentCalibration: HTMLDetailsElement | null = null;
+  // A calibração da faixa mora dentro de "Como a faixa foi calculada", em Simulados. A origem fica estacionada e é
+  // renderizada pelo controlador de Prontidão; a cópia acompanha quando ele redesenha.
   const syncCalibration = () => {
     const mount = doc?.getElementById('simulationsCalibrationMount');
-    const source = doc?.querySelector('#performanceReadinessCard .readiness-investigation');
+    const source = doc?.querySelector('#readinessInvestigationSource > .readiness-calibration');
     if (!mount || !source) return;
-    const copy = source.cloneNode(true) as HTMLDetailsElement;
-    const summary = copy.querySelector(':scope > summary');
-    if (summary) summary.textContent = 'Como a faixa foi calculada e calibrada';
-    // A tela é redesenhada com frequência: lembra se a dobra estava aberta.
-    copy.open = currentCalibration?.open ?? false;
-    currentCalibration = copy;
-    mount.replaceChildren(copy);
+    mount.replaceChildren(source.cloneNode(true));
   };
-  const approvalCard = doc?.getElementById('approvalDashboard');
-  if (approvalCard && typeof MutationObserver !== 'undefined')
-    new MutationObserver(syncCalibration).observe(approvalCard, { childList: true });
+  const calibrationSource = doc?.getElementById('readinessInvestigationSource');
+  if (calibrationSource && typeof MutationObserver !== 'undefined')
+    new MutationObserver(syncCalibration).observe(calibrationSource, { childList: true });
 
   return {
     recordProgressSnapshot,

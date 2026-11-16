@@ -94,7 +94,7 @@ test('PerformanceTabController — renderPerformance renderiza container princip
   controller.renderPerformance();
   assert.ok(elements['performancePage'].innerHTML.length > 0);
   assert.match(elements['performancePage'].innerHTML, /Resumo|Por disciplina/);
-  // O benchmark mora em Consistência; a Visão geral não o carrega.
+  // A referência de ritmo por carreira mora em Planejamento (Prova e metas); Desempenho não a carrega.
   assert.doesNotMatch(elements['performancePage'].innerHTML, /performanceCareerBenchmarkMount/);
 });
 

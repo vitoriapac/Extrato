@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { render as renderToString } from 'preact-render-to-string';
-import { ReadinessOverviewView } from '../components/readiness-overview.js';
+import { ReadinessInvestigationView, ReadinessOverviewView } from '../components/readiness-overview.js';
 
 // Presentation only: the application supplies measured values and frozen history.
 // Marcação declarativa em Preact; o contrato de string dos controllers permanece. escapeHtml/escapeAttr
@@ -36,4 +36,9 @@ export function renderReadinessOverview(
       metricStateLabel,
     })
   );
+}
+
+/** Investigação da faixa projetada (calibração, base e limites), para a dobra de Simulados. */
+export function renderReadinessInvestigation(props: any) {
+  return renderToString(h(ReadinessInvestigationView, props));
 }

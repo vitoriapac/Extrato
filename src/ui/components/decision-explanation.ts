@@ -7,6 +7,7 @@ export function renderDecisionExplanation(
     confidence = '',
     method = '',
     helpTopic = null,
+    footer = '',
   }: {
     title?: string;
     factors?: Array<Record<string, any>>;
@@ -14,6 +15,8 @@ export function renderDecisionExplanation(
     confidence?: string;
     method?: string;
     helpTopic?: string | null;
+    /** HTML já montado, no fim da dobra (ex.: ponto de montagem da calibração). */
+    footer?: string;
   },
   {
     escapeHtml,
@@ -30,15 +33,16 @@ export function renderDecisionExplanation(
     (evidence ? '<p>' + escapeHtml(evidence) + '</p>' : '') +
     (confidence ? '<p>' + escapeHtml(confidence) + '</p>' : '') +
     (method
-      ? '<details class="projection-evidence-method"><summary>Como ler: faixa, confiança e limites</summary>' +
+      ? '<div class="projection-evidence-method"><h5>Faixa, confiança e limites</h5>' +
         (helpTopic
           ? '<button type="button" class="btn ghost small" data-help-topic-link="' +
             escapeAttr(helpTopic) +
             '">Entenda faixa e confiança na ajuda</button>'
           : '') +
         method +
-        '</details>'
+        '</div>'
       : '') +
+    footer +
     '</details>'
   );
 }

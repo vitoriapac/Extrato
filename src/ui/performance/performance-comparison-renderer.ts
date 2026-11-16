@@ -1,40 +1,5 @@
 import { COMPARISON_THRESHOLDS } from '../../application/performance/build-performance-comparison.js';
-import { formatDecimal, formatDelta } from '../../core/format-number.js';
-import {
-  planMin as formatStudyMinutes,
-  planMinDelta as formatStudyMinuteDelta,
-} from '../renderers/adherence-labels.js';
-import { renderInsightCard, renderTrendIndicator } from '../components/analytical-presentation.js';
-type Row = Record<string, any>;
-const labels: Record<string, string> = {
-  improved: 'Melhorou',
-  worsened: 'Piorou',
-  stable: 'Estável',
-  insufficient: 'Amostra insuficiente',
-};
-const shown = (row: Row, value: number | null | undefined) =>
-  value == null
-    ? '—'
-    : row.unit === 'min'
-      ? formatStudyMinutes(value)
-      : row.unit === 'questões'
-        ? String(value)
-        : `${formatDecimal(value)}%`;
-const delta = (row: Row) =>
-  row.delta == null
-    ? '—'
-    : row.unit === 'min'
-      ? formatStudyMinuteDelta(row.delta)
-      : `${formatDelta(row.delta)} ${row.unit}`;
-
-export function renderPerformanceComparison(model: Row, { escapeHtml }: any = {}) {
-  if (model.state === 'disabled')
-    return '<section class="performance-block"><h3>Comparação de períodos</h3><p class="analytics-note">Escolha 7, 30 ou 90 dias e ative a comparação para ver dois intervalos de mesma duração.</p></section>';
-  const rows = model.rows
-    .map(
-      (row: any) =>
-        `<tr><th scope="row">${escapeHtml(row.label)}</th><td>${shown(row, row.before)}</td><td>${shown(row, row.after)}</td><td>${row.state === 'insufficient' ? '—' : delta(row)}</td><td>${renderTrendIndicator({ label: labels[row.state], state: row.state, className: 'performance-comparison-state' })}</td></tr>`
-    )
-    .join('');
-  return `<section class="performance-block"><h3>Período atual × anterior</h3><p class="analytics-note">Períodos de mesma duração. Indicadores sem base suficiente ficam sem classificação. Um indicador só sai de "Estável" acima de ${COMPARISON_THRESHOLDS.accuracy} p.p. na precisão, ${COMPARISON_THRESHOLDS.minutes} min no tempo estudado, ${COMPARISON_THRESHOLDS.questions} questões e ${COMPARISON_THRESHOLDS.load} p.p. no volume de carga.</p><details class="performance-comparison-method"><summary>Como ler: critérios da comparação</summary><p>A precisão exige 30 questões em cada período; a aderência exige ao menos 1h planejada em cada um.</p></details><div class="performance-table-scroll"><table class="performance-comparison-table"><caption>Indicadores dos dois períodos de mesma duração</caption><thead><tr><th>Indicador</th><th>Anterior</th><th>Atual</th><th>Diferença</th><th>Leitura</th></tr></thead><tbody>${rows}</tbody></table></div><h4>O que os dados sugerem</h4><ul class="performance-insights">${model.insights.map((text: any) => renderInsightCard({ text, tag: 'li' })).join('')}</ul></section>`;
+/** Critérios que decidem quando um indicador sai de "Estável"; a tabela e os insights da comparação já estão nos KPIs e na história. */
+export function renderComparisonCriteria(): string {
+  return `<p class="analytics-note">Períodos de mesma duração. Um indicador só sai de "Estável" acima de ${COMPARISON_THRESHOLDS.accuracy} p.p. na precisão, ${COMPARISON_THRESHOLDS.minutes} min no tempo estudado, ${COMPARISON_THRESHOLDS.questions} questões e ${COMPARISON_THRESHOLDS.load} p.p. no volume de carga. A precisão exige 30 questões em cada período; a aderência exige ao menos 1h planejada em cada um.</p>`;
 }

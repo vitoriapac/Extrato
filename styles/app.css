@@ -2437,7 +2437,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 #approvalDashboard .readiness-projection-summary p{margin:0}
 #approvalDashboard .readiness-projection-summary .action-group{margin-top:var(--space-2)}
 #approvalDashboard .readiness-explanation{margin:0;padding:0;border:0;border-top:1px solid var(--border-subtle);background:transparent}
-#approvalDashboard .readiness-investigation{margin:0}
+.readiness-calibration{display:grid;gap:var(--space-3);margin:0}.projection-evidence-method{display:grid;gap:var(--space-2);margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--paper-line)}.projection-evidence-method h5{font:600 var(--text-small) var(--font-body);color:var(--text-secondary);margin:0}
 #approvalDashboard .editorial-disclosure p,#approvalDashboard .editorial-disclosure li{line-height:var(--line-height-body)}
 #approvalDashboard .editorial-disclosure .action-group{margin-top:var(--space-content-action)}
 #approvalDashboard .upcoming-list{margin-top:var(--space-4)}
@@ -2882,8 +2882,8 @@ html[data-density="compact"] .overview-section-heading{margin-top:var(--space-6)
 .advanced-reveal,.term-hint{display:none}
 [data-essential="on"] [data-advanced]:not(.is-advanced-open){display:none}
 [data-essential="on"] .advanced-reveal:not([hidden]){display:inline-flex;margin:var(--space-2) 0 var(--space-4)}
-[data-essential="on"] .term-hint{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:4px;padding:0;vertical-align:middle;background:transparent;border:1px solid currentColor;border-radius:50%;color:inherit;font:600 var(--text-micro)/1 var(--font-body);cursor:pointer;opacity:.8}
-[data-essential="on"] .term-hint:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+[data-essential="on"] .term-hint,.performance-reading .term-hint,#approvalDashboard .term-hint{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:4px;padding:0;vertical-align:middle;background:transparent;border:1px solid currentColor;border-radius:50%;color:inherit;font:600 var(--text-micro)/1 var(--font-body);cursor:pointer;opacity:.8}
+[data-essential="on"] .term-hint:focus-visible,.performance-reading .term-hint:focus-visible,#approvalDashboard .term-hint:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .term-hint-text{display:block;max-width:32ch;margin-top:4px;font:400 12px/1.4 var(--font-body);letter-spacing:0;text-transform:none}
 .term-hint-text[hidden]{display:none}
 /* Inline with the status text, so the folded list adds no height to the first screen. */
@@ -2891,7 +2891,7 @@ html[data-density="compact"] .overview-section-heading{margin-top:var(--space-6)
 .readiness-factors>summary{display:inline}
 .readiness-factors>summary{cursor:pointer;color:var(--on-brand);font:12px var(--font-body);text-decoration:underline;text-underline-offset:2px}
 .readiness-factors>summary:focus-visible{outline:2px solid var(--brand-on-header);outline-offset:2px}
-[data-essential="on"] .term-hint::before{content:"?"}
+[data-essential="on"] .term-hint::before,.performance-reading .term-hint::before,#approvalDashboard .term-hint::before{content:"?"}
 /* Cronômetro parado fora do modo foco = "Sessão livre": só o contexto e Iniciar; no modo foco, o relógio 00:00 e controles adequados aparecem. */
 body:not(.timer-focus-active) .study-timer-card.is-idle .timer-display{display:none}
 .study-timer-card.is-idle :is(#timerResetBtn,#timerFinishBtn,#timerPipBtn){display:none}
@@ -3777,5 +3777,3 @@ button.performance-window{position:relative}button.performance-window::after{con
   .subject-target-table-wrap caption,.subject-target-table caption{display:block;width:100%;text-align:left}
 }
 
-/* A calibração da faixa mora em Simulados; no card de Prontidão o original fica escondido. */
-#performanceReadinessCard .readiness-investigation{display:none}

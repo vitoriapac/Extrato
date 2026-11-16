@@ -30,6 +30,8 @@ function levelTone(approvalState: string, level: AnyRecord): string {
   return level.cor === 'danger' ? 'warn' : level.cor;
 }
 
+const FACTOR_TERMS: Record<string, string> = { Domínio: 'dominio', Retenção: 'retencao' };
+
 function FactorBar({
   label,
   item,
@@ -46,7 +48,7 @@ function FactorBar({
   return (
     <div class={`bar-row metric-row metric-row--${dataState}`} title={item.detail}>
       <div class="bar-label">
-        {label}
+        {FACTOR_TERMS[label] ? <span data-term={FACTOR_TERMS[label]}>{label}</span> : label}
         <small>{stateLabel}</small>
       </div>
       <div
@@ -84,13 +86,9 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
     m,
     level,
     confidence,
-    projection,
-    projectionHistory,
     factors,
     approvalState,
     approvalLabel,
-    diagnostics,
-    candidates,
     getMetricDataState,
     metricStateLabel,
   } = props;
@@ -153,10 +151,18 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
           />
         </div>
       </details>
+    </>
+  );
+}
 
-      <details class="readiness-investigation editorial-disclosure">
-        <summary>Investigar a faixa e o diagnóstico</summary>
-        <div>
+/**
+ * Base, limites, qualidade da evidência, calibração e cenário da faixa projetada. Mora na dobra "Como a faixa foi
+ * calculada" de Simulados; o card de Prontidão só mostra o índice e seus fatores.
+ */
+export function ReadinessInvestigationView(props: ReadinessOverviewViewProps): JSX.Element {
+  const { projection, projectionHistory, diagnostics, candidates } = props;
+  return (
+    <div class="readiness-calibration">
           {projection.available ? (
             <section class="performance-forecast" aria-label="Projeção de desempenho">
               <div>
@@ -191,8 +197,6 @@ export function ReadinessOverviewView(props: ReadinessOverviewViewProps): JSX.El
               <li key={index}>{text}</li>
             ))}
           </ul>
-        </div>
-      </details>
-    </>
+</div>
   );
 }

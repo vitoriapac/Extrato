@@ -197,7 +197,7 @@ test('explicação separa amostra, faixa atual, tendência e nota futura sem mut
   assert.match(explanation.bandMeaning, /não é uma nota prevista/);
   assert.match(explanation.trendMeaning, /não é extrapolada/);
   const html = renderAchievementProjection(model, { escapeHtml });
-  assert.match(html, /Como ler: faixa, confiança e limites/);
+  assert.match(html, /Faixa, confiança e limites/);
   assert.match(html, /no máximo confiança moderada/);
 });
 test('confiança explica composição desconhecida e calibração sem promover o nível', () => {
@@ -221,7 +221,7 @@ test('hierarquia da projeção preserva resultado, meta e confiança contextual 
     before = JSON.stringify(model),
     html = renderAchievementProjection(model, { escapeHtml });
   assert.ok(html.indexOf('<span>Acerto em simulados comparáveis') < html.indexOf('<span>Meta de nota'));
-  assert.ok(html.indexOf('achievement-projection__metrics') < html.indexOf('Como ler: esta projeção'));
+  assert.ok(html.indexOf('achievement-projection__metrics') < html.indexOf('Como a faixa foi calculada'));
   assert.match(html, /decision-explanation/);
   assert.doesNotMatch(html, /<details[^>]*decision-explanation[^>]* open/);
   assert.equal(html.split(escapeHtml(model.summary)).length - 1, 1);

@@ -16,6 +16,7 @@ export function renderPerformanceSection(
     escapeAttr,
     targetScore,
     compareMode,
+    subjectView,
     weeklyCapacityMinutes = null,
   }: any = {}
 ) {
@@ -67,9 +68,10 @@ export function renderPerformanceSection(
         comparison: pageModel.comparison,
         stabilityMap: pageModel.stabilityMap,
         compareMode,
+        subjectView,
       });
     case 'consistency':
-      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml, capacityMinutes: weeklyCapacityMinutes })}<div id="performanceConsistencyMuralMount" class="mt-4"></div><details class="performance-details mt-4"><summary>Turnos e referência de ritmo</summary><div class="performance-shift" id="bloco-turno"><div id="shiftEnergyMount"></div></div><div id="performanceCareerBenchmarkMount" class="mt-4"></div></details>`;
+      return `${renderPerformanceConsistency(pageModel.model, { range, formatDate, escapeHtml, capacityMinutes: weeklyCapacityMinutes })}<div id="performanceConsistencyMuralMount" class="mt-4"></div><details class="performance-details mt-4"><summary>Turnos de estudo</summary><div class="performance-shift" id="bloco-turno"><div id="shiftEnergyMount"></div></div></details>`;
     case 'diagnosis':
       return `<div id="performanceDiagnosisMount" class="space-y-4"></div>${renderPedagogicalMatrixSection(pageModel.pedagogicalMatrix, { escapeHtml })}<div id="performanceDiagnosisGapsMount" class="space-y-4 mt-4"></div>`;
     default:

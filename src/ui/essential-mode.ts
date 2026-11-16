@@ -5,12 +5,16 @@ export const TERM_HINTS: Readonly<Record<string, string>> = Object.freeze({
   conteudo: 'Parte dos tópicos do edital que você já concluiu.',
   revisoes: 'Revisões marcadas de hoje em diante, na agenda e no calendário.',
   sequencia: 'Dias seguidos com estudo, questões ou simulado registrados.',
+  dominio: 'Taxa de acerto ponderada pela recência e pela amostra em cada tópico ou disciplina.',
+  retencao: 'Estabilidade da memória, estimada pelas revisões no prazo, pelos acertos recentes e pelo intervalo desde a última revisão.',
+  aderencia: 'Parte do tempo ou das atividades planejadas que foi executada no período.',
 });
 
 let hintCount = 0;
 
 /** Adds a "?" next to each [data-term] label that shows its short hint when pressed. */
 export function decorateTermHints(root: ParentNode = document) {
+  if (typeof root?.querySelectorAll !== 'function') return;
   root.querySelectorAll<HTMLElement>('[data-term]:not([data-term-ready])').forEach(label => {
     const hint = TERM_HINTS[label.dataset.term || ''];
     if (!hint) return;

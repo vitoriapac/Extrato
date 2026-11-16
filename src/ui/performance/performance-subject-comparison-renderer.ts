@@ -26,7 +26,7 @@ const balance = (number: number | null | undefined) =>
 
 export function renderPerformanceSubjectComparison(
   model: Row,
-  { escapeHtml, escapeAttr }: any = {}
+  { escapeHtml, escapeAttr, view = 'table' }: any = {}
 ) {
   if (!model.rows.length) return '';
   const renderRows = (rows: Row[]) =>
@@ -58,5 +58,14 @@ export function renderPerformanceSubjectComparison(
   const morePreviews = rest.length
     ? `<details class="performance-more"><summary>Mostrar mais barras · +${rest.length}</summary><ul class="performance-subject-previews">${rest.map(preview).join('')}</ul></details>`
     : '';
-  return `<section class="performance-block performance-subject-comparison" id="bloco-comparacao"><div class="performance-comparison-heading"><div><h3>Comparação entre disciplinas</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.rows.length), `${model.measured} de ${model.rows.length} disciplinas com 10 questões ou mais no período`)}<details class="limits-disclosure"><summary>Como ler esta comparação</summary><p class="analytics-note">Precisão usa questões pessoais do período e exige 10 respostas. Evolução exige 10 respostas em cada período. Planejado e realizado são o tempo das atividades do plano e o estudo registrado no período; o saldo é a diferença. A sugestão é o tópico de maior prioridade já calculado para a disciplina.</p></details></div><label>Ordenar por <select class="select-control ui-select-field__control" data-performance-subject-sort>${options.map(([key, label]) => `<option value="${key}" ${model.sort === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div><p class="performance-comparison-summary"><strong>${model.measured} de ${model.rows.length}</strong> disciplinas com amostra · <strong>${questionCount}</strong> questões · <strong>${belowGoal}</strong> abaixo da meta com dados suficientes.</p><ul class="performance-subject-previews">${previews}</ul>${morePreviews}<details class="performance-more"><summary>Ver tabela detalhada</summary>${table(first, 'Disciplinas no concurso ativo')}${rest.length ? table(rest, 'Outras disciplinas no concurso ativo') : ''}</details></section>`;
+  // Os mesmos dados, uma visão por vez: tabela (padrão) ou barras. Cinco linhas à vista e o resto sob "Mostrar mais".
+  const asBars = view === 'bars';
+  const viewNav = `<div class="performance-modes performance-view-toggle" role="group" aria-label="Formato da comparação">${[['table', 'Tabela'], ['bars', 'Barras']].map(([key, text]) => `<button type="button" class="btn ghost small" data-performance-subject-view="${key}" aria-pressed="${(key === 'bars') === asBars}">${text}</button>`).join('')}</div>`;
+  const moreRows = rest.length
+    ? `<details class="performance-more"><summary>Mostrar mais linhas · +${rest.length}</summary>${table(rest, 'Outras disciplinas no concurso ativo')}</details>`
+    : '';
+  const body = asBars
+    ? `<ul class="performance-subject-previews">${previews}</ul>${morePreviews}`
+    : `${table(first, 'Disciplinas no concurso ativo')}${moreRows}`;
+  return `<section class="performance-block performance-subject-comparison" id="bloco-comparacao"><div class="performance-comparison-heading"><div><h3>Comparação entre disciplinas</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.rows.length), `${model.measured} de ${model.rows.length} disciplinas com 10 questões ou mais no período`)}</div><label>Ordenar por <select class="select-control ui-select-field__control" data-performance-subject-sort>${options.map(([key, label]) => `<option value="${key}" ${model.sort === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div><p class="performance-comparison-summary"><strong>${model.measured} de ${model.rows.length}</strong> disciplinas com amostra · <strong>${questionCount}</strong> questões · <strong>${belowGoal}</strong> abaixo da meta com dados suficientes.</p>${viewNav}${body}</section>`;
 }

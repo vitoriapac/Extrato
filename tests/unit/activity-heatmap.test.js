@@ -206,13 +206,13 @@ test('renderActivityHeatmap com controls traz título, período e filtros dentro
   assert.match(html, /aria-label="Período do heatmap"/);
   assert.match(html, /<option value="52" selected[^>]*>Últimas 52 semanas/);
   assert.match(html, /Todo o período/);
-  assert.match(html, /Filtros do mapa<\/summary>/);
+  assert.match(html, /Filtros<\/summary>/);
   assert.doesNotMatch(html, /<details[^>]*\sopen/);
   assert.match(html, /Português &lt;b>/);
 
   const active = renderActivityHeatmap({ mode: 'calendar', calendarVisual, metric: 'questions', controls });
   assert.match(active, /<details[^>]*\sopen/);
-  assert.match(active, /Filtros do mapa \(ativos\)/);
+  assert.match(active, /Filtros \(ativos\)/);
 
   assert.doesNotMatch(renderActivityHeatmap({ mode: 'calendar', calendarVisual }), /Consistência de estudos|Filtros do mapa/);
 });

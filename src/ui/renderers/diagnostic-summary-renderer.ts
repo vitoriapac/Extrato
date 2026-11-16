@@ -36,7 +36,10 @@ export function renderDiagnosticSummary(
   const supporting = (item.signals || [])
     .filter(
       (signal: any) =>
-        signal !== primary && signal.active && signal.kind !== 'recommendation-available'
+        signal !== primary &&
+        signal.active &&
+        // "Coletar evidência" repete a mesma frase em cada cartão: o cartão já mostra "Evidência: …" e a legenda explica.
+        !['recommendation-available', 'collect-evidence'].includes(signal.kind)
     )
     .filter(
       (signal: any, index: any, rows: any) =>
@@ -55,9 +58,11 @@ export function renderDiagnosticSummary(
     ownLimitation || period
       ? `<details class="diagnostic-detail__method"><summary>Ver metodologia</summary><template data-lazy>${ownLimitation ? `<p>${escapeHtml(ownLimitation)}</p>` : ''}${period ? `<p>Período observado: ${escapeHtml(period)}.</p>` : ''}</template></details>`
       : '';
+  // Sem medidas, sem sinais de apoio e sem metodologia, não há o que abrir: a dobra vazia sai.
+  const hasDetail = primaryMeasurements.length > 0 || supporting.length > 0 || Boolean(method);
   return `<p class="diagnostic-primary-reason"><strong>${escapeHtml(diagnosticSignalLabel(item.primarySignal))}</strong>${reason ? ` · ${escapeHtml(reason)}` : ''}</p>
     <p class="diagnostic-quality">Evidência: ${escapeHtml(item.evidence?.label || 'Não avaliada')}</p>
-    ${renderDisclosure({
+    ${!hasDetail ? '' : renderDisclosure({
       title: 'Ver evidências',
       className: 'diagnostic-detail',
       bodyClassName: 'diagnostic-detail__body',

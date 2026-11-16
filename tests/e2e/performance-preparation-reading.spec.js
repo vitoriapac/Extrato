@@ -57,7 +57,7 @@ test('Comparação por disciplina mostra o saldo do plano e a âncora do bloco �
   await expect(block).toBeVisible();
   await expect(block).toBeInViewport();
   expect(await page.evaluate(() => window.location.hash)).toBe('#desempenho/subjects/comparacao');
-  await block.locator('summary', { hasText: 'Ver tabela detalhada' }).click();
+  // A tabela é a visão padrão da comparação; o Saldo do plano está nela sem abrir nada.
   await expect(block.getByRole('columnheader', { name: 'Saldo do plano' }).first()).toBeVisible();
   await expect(block.getByRole('columnheader', { name: 'Sugestão' }).first()).toBeVisible();
   await expect(block.locator('tbody td', { hasText: /faltam|sobram/ }).first()).toBeVisible();
@@ -188,11 +188,12 @@ test('Aderência fica numa dobra que não fecha ao trocar a semana, e os filtros
   await expect(fold).toHaveJSProperty('open', true);
   await openPerformanceSection(page, 'exam');
   const filters = page.locator('details.exam-matrix-more-filters');
-  await expect(filters).toHaveJSProperty('open', true);
-  await filters.locator(':scope > summary').click();
+  // Os Filtros nascem fechados (como os outros); a escolha de abrir sobrevive ao redesenho.
   await expect(filters).toHaveJSProperty('open', false);
+  await filters.locator(':scope > summary').click();
+  await expect(filters).toHaveJSProperty('open', true);
   await page.locator('[data-exam-matrix-filter="sort"]').selectOption('impact');
-  await expect(page.locator('details.exam-matrix-more-filters')).toHaveJSProperty('open', false);
+  await expect(page.locator('details.exam-matrix-more-filters')).toHaveJSProperty('open', true);
 });
 
 test('No celular a ação "Abrir em Hoje" aparece até a primeira tela e a Leitura mantém a ordem', async ({

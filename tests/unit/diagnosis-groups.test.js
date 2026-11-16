@@ -193,12 +193,23 @@ test('T29: barras de precisão com meta, antes × agora e lacuna × impacto', as
   const subject = (n, accuracy, state = 'measured') => ({ subjectId: `s${n}`, name: `Disc ${n}`, target: 80, accuracy, gap: accuracy == null ? null : accuracy - 80, evolution: 2, questions: state === 'insufficient' ? 3 : 40, state, plannedMinutes: 0, executedMinutes: 0, balanceMinutes: null, suggestion: null });
   const comparison = renderPerformanceSubjectComparison(
     { rows: [1, 2, 3, 4, 5, 6, 7].map(n => subject(n, 60 + n)).concat(subject(8, null, 'insufficient')), measured: 7, sort: 'gap' },
-    { escapeHtml: String, escapeAttr: String }
+    { escapeHtml: String, escapeAttr: String, view: 'bars' }
   );
   assert.equal((comparison.match(/class="chart-bullet subject-precision-bar"/g) || []).length, 7);
   assert.match(comparison, /meta 80%/);
   assert.match(comparison, /Mostrar mais barras · \+3/);
   assert.match(comparison, /amostra de questões/);
+  // Uma visão por vez: nas barras não há tabela, e na tabela (padrão) não há barras.
+  assert.doesNotMatch(comparison, /<table/);
+  assert.match(comparison, /data-performance-subject-view="bars" aria-pressed="true"/);
+  const table = renderPerformanceSubjectComparison(
+    { rows: [1, 2, 3, 4, 5, 6, 7].map(n => subject(n, 60 + n)).concat(subject(8, null, 'insufficient')), measured: 7, sort: 'gap' },
+    { escapeHtml: String, escapeAttr: String }
+  );
+  assert.match(table, /<table/);
+  assert.doesNotMatch(table, /subject-precision-bar/);
+  assert.match(table, /Mostrar mais linhas · \+3/);
+  assert.match(table, /data-performance-subject-view="table" aria-pressed="true"/);
 
   const { renderBeforeAfterChart } = await import('../../src/ui/performance/before-after-chart.js');
   const row = (id, accuracy, evolution) => ({ subjectId: id, name: `D ${id}`, accuracy, evolution });
@@ -305,7 +316,7 @@ test('T37: precisão com uma casa, diferença em p.p. com sinal e uma casa, e "S
 
   const { renderPerformanceSubjectComparison } = await import('../../src/ui/performance/performance-subject-comparison-renderer.js');
   const row = (n, accuracy, state = 'measured') => ({ subjectId: `s${n}`, name: `D${n}`, target: 80, accuracy, gap: accuracy == null ? null : accuracy - 80, evolution: -6, questions: 40, state, plannedMinutes: 0, executedMinutes: 0, balanceMinutes: null, suggestion: null });
-  const html = renderPerformanceSubjectComparison({ rows: [row(1, 55), row(2, 53.7)], measured: 2, sort: 'gap' }, { escapeHtml: String, escapeAttr: String });
+  const html = renderPerformanceSubjectComparison({ rows: [row(1, 55), row(2, 53.7)], measured: 2, sort: 'gap' }, { escapeHtml: String, escapeAttr: String, view: 'bars' });
   assert.match(html, /55,0% · meta de precisão 80%/);
   assert.match(html, /53,7% · meta de precisão 80%/);
   assert.doesNotMatch(html, /−6 p\.p\./);
@@ -393,7 +404,8 @@ test('T40: os quadrantes ficam numa dobra que o controller abre ou fecha conform
 
   const { renderStabilityMap } = await import('../../src/ui/performance/stability-map-renderer.js');
   const map = renderStabilityMap({ groups: { attention: [{ subjectId: 'a', name: 'A', accuracy: 85, evolution: -4 }], maintain: [], intervene: [], evolving: [], insufficient: [] }, total: 1, measured: 1 }, { escapeHtml: String, escapeAttr: String });
-  assert.match(map, /<summary aria-label="Limites de estabilidade">Como ler: limites<\/summary>/);
+  // O "Como ler" da comparação e do mapa vive num guia único da aba, em Por disciplina.
+  assert.doesNotMatch(map, /limits-disclosure|Como ler/);
 });
 
 test('T41: a sigla da Matriz diz o nome completo e a grade do heatmap tem a lista de 12 semanas para o celular', async () => {

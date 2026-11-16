@@ -22,7 +22,10 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
   expect(initial.length).toBeGreaterThan(0);
   // A calibração da faixa mora em Simulados.
   await openPerformanceSection(page, 'simulations');
-  await page.locator('#simulationsCalibrationMount .readiness-investigation > summary').click();
+  await page
+    .locator('.achievement-projection__details > summary')
+    .filter({ hasText: 'Como a faixa foi calculada' })
+    .click();
   const quality = page.locator('#simulationsCalibrationMount .evidence-quality').first();
   await quality.locator('summary').focus();
   await page.keyboard.press('Enter');
@@ -61,8 +64,10 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
   // A calibração da faixa mora em Simulados.
   await openPerformanceSection(page, 'simulations');
   // A dobra lembra que já foi aberta; só abre se ainda estiver fechada.
-  const investigation = page.locator('#simulationsCalibrationMount .readiness-investigation');
-  if (!(await investigation.evaluate(node => node.open))) await investigation.locator(':scope > summary').click();
+  const explanation = page.locator('.achievement-projection__details', {
+    has: page.locator(':scope > summary', { hasText: 'Como a faixa foi calculada' }),
+  });
+  if (!(await explanation.evaluate(node => node.open))) await explanation.locator(':scope > summary').click();
   // A rolagem suave da página impede o clique de ver o elemento parado: leva até ele sem animação.
   await calibration.locator(':scope > summary').evaluate(node => node.scrollIntoView({ behavior: 'instant', block: 'center' }));
   await calibration.locator(':scope > summary').click();

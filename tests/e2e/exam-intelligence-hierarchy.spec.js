@@ -94,7 +94,7 @@ test('filtros avançados da matriz cabem no celular e preservam seleção durant
   await expect(page.locator('[data-exam-matrix-filter="scope"]')).toBeVisible();
   await page.locator('[data-exam-matrix-filter="board"]').selectOption('Cesgranrio');
   await expect(advanced).toHaveAttribute('open');
-  await expect(advanced.locator('summary')).toContainText('Mais filtros (1)');
+  await expect(advanced.locator('summary')).toContainText('Filtros (1 ativo)');
   await expect(page.locator('[data-exam-matrix-filter="board"]')).toHaveValue('Cesgranrio');
   for (const width of [320, 375, 390, 430, 768]) {
     await page.setViewportSize({ width, height: 800 });

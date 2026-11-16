@@ -174,6 +174,12 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
         renderDiagnosisCenter();
       });
       container.addEventListener?.('click', (event: any) => {
+        const apply = event.target?.closest?.('[data-diagnosis-severity]');
+        if (apply) {
+          diagnosisFilters.severity = apply.dataset.diagnosisSeverity;
+          renderDiagnosisCenter();
+          return;
+        }
         if (!event.target?.closest?.('[data-diagnosis-reset]')) return;
         Object.assign(diagnosisFilters, DEFAULT_DIAGNOSIS_FILTERS);
         renderDiagnosisCenter();
@@ -277,7 +283,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       diagnosisHtml +
       `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'vencida')} na Agenda</summary>${secondaryHtml}</details>`;
 
-    container.innerHTML += `<details class="diagnosis-method-details"><summary>Como ler: sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
+    container.innerHTML += `<details class="diagnosis-method-details"><summary>Como ler esta aba</summary>${renderPreparationSignals(preparationSignals)}<p class="analytics-note">A contagem não altera automaticamente o plano. A relevância vem da prioridade e do impacto já calculados.</p></details>`;
 
     if (restoreSearchFocus) {
       restoreSearchFocus = false;

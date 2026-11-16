@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=53399a5b2250">
-<link rel="stylesheet" href="styles/app.css?v=53399a5b2250">
+<link rel="stylesheet" href="styles/tailwind.css?v=0572a04508fa">
+<link rel="stylesheet" href="styles/app.css?v=0572a04508fa">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -177,6 +177,8 @@
     <div id="performancePage"></div>
     <p class="sr-only" id="performanceStatus" role="status"></p>
     <div id="performanceDetachedParking" hidden>
+    <div id="readinessInvestigationSource"></div>
+    <section class="space-y-3 border-t border-border-subtle pt-4" data-advanced="Mapa de lacunas" aria-hidden="true"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Ordenado por gravidade: combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.</p></header><div id="gapMapDashboard"></div></section>
     <section class="intelligence-column performance-readiness space-y-3 border-t border-border-subtle pt-4" id="performanceReadinessCard" aria-labelledby="performanceReadinessTitle">
       <header class="module-heading module-heading--compact"><h3 class="module-heading__title" id="performanceReadinessTitle">Fatores do índice</h3></header>
       <div id="approvalDashboard"></div>
@@ -225,15 +227,14 @@
         <section class="space-y-3 border-t border-border-subtle pt-4"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Extrato Diagnóstico do Edital</h3><p class="module-heading__description" id="diagnosisHeaderMeta"></p></header><div id="diagnosisCenter"></div><p class="analytics-note">Replanejamento da semana e ajuste pós-simulado ficam em Planejamento. <button type="button" class="btn ghost small" data-performance-open="metas">Abrir Planejamento</button></p></section>
       </div>
     </details>
-    <details class="desempenho-extra-details" id="desempenho-gaps" data-advanced="Lacunas, replanejamento e retenção">
-      <summary>Visão complementar: lacunas e retenção por tópico</summary>
+    <details class="desempenho-extra-details" id="desempenho-gaps" data-advanced="Retenção por tópico">
+      <summary>Retenção por tópico</summary>
       <div class="today-analysis-grid">
-      <section class="space-y-3 border-t border-border-subtle pt-4" data-advanced="Mapa de lacunas"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Ordenado por gravidade: combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A fila de estudo oficial é a do Extrato Diagnóstico do Edital.</p></header><div id="gapMapDashboard"></div></section>
       <section class="performance-retention-card border-t border-border-subtle pt-4" aria-labelledby="performanceRetentionTitle">
         <header class="module-heading module-heading--compact">
           <h3 class="module-heading__title" id="performanceRetentionTitle">Retenção por tópico</h3>
           <p class="module-heading__description">Consistência das revisões e acertos recentes por tópico.</p>
-          <details class="performance-more"><summary>Como a retenção é calculada</summary><p class="analytics-note">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
+          <p class="analytics-note">Como é calculada: revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p>
         </header>
         <div id="topicRetentionDashboard"></div>
       </section>
@@ -702,6 +703,7 @@
       <div id="ritmoContainer"></div>
     </div>
 
+    <details class="chart-card decision-fold" id="careerBenchmarkFold" data-remember="planning-career-benchmark"><summary>Referência de ritmo por carreira</summary><div id="performanceCareerBenchmarkMount"></div></details>
     </section>
     <section class="metas-subpanel" id="metasSub-fechamento" data-metas-subpanel="fechamento" role="tabpanel" aria-labelledby="metasTab-fechamento" tabindex="0" hidden>
     <section class="chart-card metas-close-section" id="metasCloseSection" data-metas-section aria-labelledby="metasCloseTitle">
@@ -755,7 +757,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=53399a5b2250"></script>
+  <script src="src/app.bundle.js?v=0572a04508fa"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

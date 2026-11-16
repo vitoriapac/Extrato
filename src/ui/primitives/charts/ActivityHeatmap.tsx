@@ -183,7 +183,7 @@ export function ActivityHeatmap({
 
       {controls && (
         <details class="heatmap-filters" open={filtersActive}>
-          <summary>Filtros do mapa{filtersActive ? ' (ativos)' : ''}</summary>
+          <summary>Filtros{filtersActive ? ' (ativos)' : ''}</summary>
           <div class="heatmap-toolbar">
             <select
               aria-label="Métrica do heatmap"

@@ -9,7 +9,11 @@
  */
 
 import { classifyApprovalScore as defaultClassifyApprovalScore } from '../../../domain/analytics/approval-metrics.js';
-import { renderReadinessOverview as defaultRenderReadinessOverview } from '../../renderers/readiness-overview-renderer.js';
+import { decorateTermHints } from '../../essential-mode.js';
+import {
+  renderReadinessOverview as defaultRenderReadinessOverview,
+  renderReadinessInvestigation,
+} from '../../renderers/readiness-overview-renderer.js';
 import { renderReadinessHistory as defaultRenderReadinessHistory } from '../../renderers/readiness-history-renderer.js';
 import { renderTopicRetentionDashboard as defaultRenderTopicRetentionDashboardView } from '../../renderers/retention-renderer.js';
 import {
@@ -217,6 +221,16 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
       },
       { escapeHtml, escapeAttr, getMetricDataState, metricStateLabel }
     );
+    decorateTermHints(el);
+    // Calibração da faixa: renderizada à parte, para a dobra de Simulados (o card de Prontidão não a mostra).
+    const investigationSource = document.getElementById('readinessInvestigationSource');
+    if (investigationSource)
+      investigationSource.innerHTML = renderReadinessInvestigation({
+        projection,
+        projectionHistory,
+        diagnostics: gerarDiagnosticoAprovacao(m),
+        candidates: intelligenceCandidates(),
+      });
     renderTopicRetentionDashboard();
     const readinessHistory = document.getElementById('readinessHistoryDashboard');
     if (readinessHistory) {

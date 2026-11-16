@@ -46,6 +46,7 @@ export function renderConsolidatedDiagnosis(
     (evidence === 'all' || item.evidenceQuality === evidence) &&
     (!needle || fold(item.name).includes(needle) || fold(item.subjectName).includes(needle));
   const visible = ranked.filter(matches);
+  const filtering = severity !== 'all' || evidence !== 'all' || Boolean(needle);
   const options = (key: 'severity' | 'evidenceQuality', label: (item: Record<string, any>) => string) => {
     const seen = new Map<string, string>();
     rows.forEach(item => seen.has(item[key]) || seen.set(item[key], label(item)));
@@ -89,17 +90,23 @@ export function renderConsolidatedDiagnosis(
       // Conteúdo sem registro nenhum ainda não é fraqueza: fica à parte, depois do que já foi estudado.
       const noData = group.items.filter(({ item }) => item.primarySignal === 'collect-evidence');
       const studied = group.items.filter(({ item }) => item.primarySignal !== 'collect-evidence');
-      const head = studied.slice(0, 3),
-        rest = studied.slice(3);
-      const unseen = noData.length
-        ? `<details class="performance-more"><summary>Sem evidência · ${noData.length}</summary><template data-lazy>${listOf(noData)}</template></details>`
-        : '';
-      const more = rest.length
-        ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${listOf(rest)}</template></details>`
-        : '';
-      const inner = (head.length ? listOf(head) : '') + more + unseen;
+      // Três cartões à vista; o resto do grupo entra na lista progressiva (sem dobra dentro da dobra do grupo).
+      // Sem filtro de evidência, o conteúdo sem registro não vira lista em cada disciplina: a contagem está no título do
+      // grupo e há um caminho só, acima da lista. Com algum filtro ligado, eles aparecem aqui.
+      const unseen = noData.length && filtering ? listOf(noData) : '';
+      const inner = (studied.length ? listOf(studied) : '') + unseen;
+      // Grupo sem nada para abrir (só conteúdo sem evidência) é uma linha, não uma dobra vazia.
+      if (!inner)
+        return `<p class="diagnosis-group-line"><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'tópico' : 'tópicos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</p>`;
       return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'tópico' : 'tópicos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
     })
     .join('');
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por tópico, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  const unseenAll = ordered.flatMap(([, group]) =>
+    group.items.filter(({ item }: any) => item.primarySignal === 'collect-evidence')
+  );
+  const unseenNote =
+    !filtering && unseenAll.length
+      ? `<p class="analytics-note diagnosis-unseen-note"><strong>${unseenAll.length}</strong> ${unseenAll.length === 1 ? 'tópico ainda sem evidência fica' : 'tópicos ainda sem evidência ficam'} fora dos grupos abaixo. <button type="button" class="btn ghost small" data-diagnosis-severity="${escapeAttr(unseenAll[0].item.severity)}">Ver os ${unseenAll.length}</button></p>`
+      : '';
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por tópico, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }

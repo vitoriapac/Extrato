@@ -5,7 +5,7 @@ import { formatDecimal, formatDelta, formatPoints } from '../../core/format-numb
 import { presentEvidence } from '../evidence-state.js';
 import { formatStudyMinutes, formatStudyMinuteDelta } from '../format-study-time.js';
 import { renderReadinessHistory } from '../renderers/readiness-history-renderer.js';
-import { renderPerformanceComparison } from './performance-comparison-renderer.js';
+import { renderComparisonCriteria } from './performance-comparison-renderer.js';
 import {
   renderPerformanceStory,
   renderPerformanceSummary,
@@ -29,9 +29,6 @@ const kpiTrend = (values: Array<number | null>, label: string, unit: string) =>
   values.filter(value => value != null && value > 0).length < 3
     ? ''
     : `<span class="performance-kpi__trend">${renderSparkline({ values, label, unit, width: 120, height: 28 })}<small>${values.length} semanas completas</small></span>`;
-
-const renderGlossaryLink = () =>
-  `<details class="performance-more mt-4"><summary>Definições de Prontidão, domínio, retenção e aderência</summary><dl class="performance-glossary mt-2"><div><dt>Prontidão</dt><dd>Índice atual (0–100) que combina cobertura do edital, domínio, retenção e ritmo recente.</dd></div><div><dt>Domínio</dt><dd>Taxa de acerto ponderada pela recência e amostra em cada tópico ou disciplina.</dd></div><div><dt>Retenção</dt><dd>Estabilidade da memória estimada pelas revisões no prazo, acertos recentes e intervalo desde a última revisão.</dd></div><div><dt>Aderência</dt><dd>Proporção do tempo ou das atividades planejadas que foi efetivamente executada no período.</dd></div></dl><p class="performance-method-note mt-2"><button type="button" class="btn ghost small" data-performance-open="instrucoes">Abrir termos e metodologia em Instruções</button></p></details>`;
 
 export function renderPerformanceOverview(
   model: Record<string, any>,
@@ -68,7 +65,6 @@ export function renderPerformanceOverview(
     activeExamTags,
     showComparisonDetails: false,
   });
-  const planLink = `<section class="performance-block"><h3>Carga e aderência ao plano</h3><p class="analytics-note">O comparativo semanal de planejado × realizado, a linha do tempo diária e a aderência ao plano ficam reunidos em Ritmo e aderência.</p>${model.strategic?.strategicAdherence != null ? `<p class="context-note context-note--info">Execução prioritária (tempo em tarefas de alta prioridade): ${formatDecimal(model.strategic.strategicAdherence)}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>` : ''}<p class="m-0"><button type="button" class="btn ghost small" data-performance-investigate="consistency">Abrir Ritmo e aderência</button></p></section>`;
   const changes = model.changes.length
     ? `<ul class="performance-changes">${model.changes.map((item: any) => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.unit === 'min' ? formatStudyMinuteDelta(item.delta) : (item.unit === 'p.p.' ? formatPoints(item.delta) : `${item.delta > 0 ? '+' : item.delta < 0 ? '−' : ''}${shown(Math.abs(item.delta))} ${escapeHtml(item.unit)}`)}</span></li>`).join('')}</ul>`
     : '<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';
@@ -81,5 +77,5 @@ export function renderPerformanceOverview(
   const readingHtml = renderWeekSummary(weekSummary, { escapeHtml });
   const preparationHtml = renderPreparationReading(preparationReading);
   const followupHtml = renderRecommendationFollowupSummary(recommendationFollowup, { escapeHtml });
-  return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${renderPerformanceDetails('Evolução da Prontidão', `${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Comparação e principais mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${planLink}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}${renderGlossaryLink()}`;
+  return `${preparationHtml}${followupHtml}${readingHtml}${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${renderPerformanceDetails('Evolução da Prontidão', `${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section><div id="performanceReadinessMount"></div>`, 'performance-details performance-details--trajectory')}${renderPerformanceDetails('Principais mudanças', `<section class="performance-block">${changes}${range.comparePrevious ? renderComparisonCriteria() : ''}</section>`)}`;
 }

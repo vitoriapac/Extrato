@@ -173,7 +173,8 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
 
     const advanced = container.querySelector<HTMLDetailsElement>('.exam-matrix-more-filters');
     if (advanced)
-      advanced.open = advancedWasOpen ?? !ctx.window.matchMedia?.('(max-width:600px)')?.matches;
+      // Fechada por padrão (como os outros Filtros); a escolha da pessoa sobrevive ao redesenho.
+      advanced.open = advancedWasOpen ?? false;
 
     for (const [key, value] of Object.entries(examMatrixFilters)) {
       const select = container.querySelector<HTMLSelectElement>(

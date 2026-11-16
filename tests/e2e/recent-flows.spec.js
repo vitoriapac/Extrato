@@ -18,7 +18,7 @@ test.describe('validação dos fluxos recentes', () => {
     await expect(page.locator('#weeklyCloseDashboard')).toBeAttached();
     await expect(page.locator('#gapMapDashboard')).toBeAttached();
     await expect(page.locator('#postSimulationReplanDashboard')).toBeAttached();
-    await expect(page.locator('#approvalDashboard')).toContainText(
+    await expect(page.locator('#readinessInvestigationSource')).toContainText(
       /cenário|projeção|disponibilidade/i
     );
   });

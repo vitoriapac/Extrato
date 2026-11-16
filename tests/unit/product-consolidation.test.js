@@ -7,7 +7,7 @@ import {
 import { buildReadinessChangeExplanation } from '../../src/application/readiness/build-readiness-change-explanation.js';
 import { renderPerformanceOverview } from '../../src/ui/performance/performance-overview-renderer.js';
 import { createPerformanceController } from '../../src/ui/controllers/performance-controller.js';
-import { renderReadinessOverview } from '../../src/ui/renderers/readiness-overview-renderer.js';
+import { renderReadinessOverview, renderReadinessInvestigation } from '../../src/ui/renderers/readiness-overview-renderer.js';
 import { renderWeeklyCloseSummary } from '../../src/ui/renderers/overview-renderer.js';
 
 test('resumos de Prontidão e fechamento preservam valores, insuficiência e detalhe acessível', () => {
@@ -31,11 +31,11 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
     getMetricDataState: () => {},
     metricStateLabel: () => {},
   });
-  assert.match(html, /Aguardando simulados comparáveis/);
-  // A faixa projetada não se repete no card: mora no topo e em Simulados.
+    // A faixa projetada não se repete no card: mora no topo e em Simulados.
   assert.doesNotMatch(html, /Projeção atual|readiness-projection-summary|Ver projeção em Simulados/);
   assert.doesNotMatch(html, /<details[^>]* open/);
-  assert.match(html, /readiness-investigation/);
+  // A calibração da faixa mora em Simulados, não no card.
+  assert.doesNotMatch(html, /readiness-investigation|Investigar a faixa/);
   assert.deepEqual(input, before);
   assert.match(html, /class="readiness-explanation editorial-disclosure"/);
   assert.ok(html.indexOf('data-help-topic-link="readiness"') > html.indexOf('<details'));
@@ -59,7 +59,7 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
   });
   const visible = measuredHTML.slice(0, measuredHTML.indexOf('<details'));
   assert.doesNotMatch(visible, /Faixa projetada|Média móvel|projection-calibration-list/);
-  assert.match(measuredHTML, /5 simulados comparáveis/);
+  assert.match(renderReadinessInvestigation(measured), /5 simulados comparáveis/);
   const summary = renderWeeklyCloseSummary(
     {
       state: 'ready',
@@ -136,12 +136,12 @@ test('visão geral de desempenho orienta investigação antes do histórico sem 
     escapeHtml: value => String(value),
   });
   assert.ok(html.indexOf('Resumo interpretativo') < html.indexOf('Prontidão ao longo do tempo'));
-  assert.ok(html.indexOf('Como sua preparação evoluiu') < html.indexOf('Carga e aderência ao plano'));
+  // O bloco-link de Carga e a tabela Período atual × anterior saíram: os KPIs e Ritmo já cobrem.
+  assert.doesNotMatch(html, /Carga e aderência ao plano|Período atual × anterior/);
   // A Prontidão vive só na Leitura da preparação; o KPI duplicado saiu.
   assert.doesNotMatch(html, /Histórico comparável indisponível/);
   assert.doesNotMatch(html, /Investigar o resultado/);
   assert.match(html, /não é uma probabilidade de aprovação/);
-  assert.match(html, /data-performance-investigate="consistency"/);
   assert.deepEqual(model, before);
 });
 

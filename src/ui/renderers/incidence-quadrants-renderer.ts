@@ -59,6 +59,7 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
   const list = (items: any[]) => `<ul>${items.map(item).join('')}</ul>`;
   // Cinco por grupo, o resto sob "Mostrar mais"; a ordem é a escolhida no filtro "Ordenar por".
   const visibleItems = 5;
+  const MORE_ITEMS = 10;
   const emptyGroups: string[] = [];
   const records = groups
     .map(group => {
@@ -67,11 +68,16 @@ export function renderIncidenceQuadrants(rows: any[] = []) {
         emptyGroups.push(group.label);
         return '';
       }
-      // Sem evidência o grupo não orienta decisão: fica fechado, só com a contagem à vista.
-      if (group.key === 'insufficient' && items.length > visibleItems)
-        return `<section class="incidence-quadrant"><details class="performance-more"><summary>${group.label} (${items.length})</summary><template data-lazy>${list(items)}</template></details></section>`;
+      const diagnosisLink = (text: string) =>
+        `<p class="analytics-note incidence-quadrant__rest">${text} <button type="button" class="btn ghost small" data-performance-jump="diagnosis">Abrir o Diagnóstico</button></p>`;
+      // Sem evidência o grupo não orienta decisão: só a contagem e o caminho para o Diagnóstico, sem despejar a lista.
+      if (group.key === 'insufficient')
+        return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${diagnosisLink(`${items.length} ${items.length === 1 ? 'tópico ainda não tem' : 'tópicos ainda não têm'} evidência para entrar nos quadrantes; todos estão no Diagnóstico, com a ação de coletar evidência.`)}</section>`;
+      // Cinco à vista, mais ${MORE_ITEMS} sob "Mostrar mais"; o que passar disso fica no Diagnóstico.
       const rest = items.slice(visibleItems);
-      return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${list(items.slice(0, visibleItems))}${rest.length ? `<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary><template data-lazy>${list(rest)}</template></details>` : ''}</section>`;
+      const more = rest.slice(0, MORE_ITEMS);
+      const beyond = rest.length - more.length;
+      return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${list(items.slice(0, visibleItems))}${more.length ? `<details class="performance-more"><summary>Mostrar mais · +${more.length}</summary><template data-lazy>${list(more)}</template></details>` : ''}${beyond > 0 ? diagnosisLink(`Mais ${beyond} ${beyond === 1 ? 'tópico' : 'tópicos'} neste grupo, na ordem escolhida em "Ordenar por".`) : ''}</section>`;
     })
     .join('');
   // Grupos vazios viram uma linha só, em vez de uma seção com título e aviso cada.

@@ -60,7 +60,7 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
       (item: Record<string, any>) => item.label
     )}</select></label>
     <label class="exam-matrix-search">Buscar tópico<input type="search" data-exam-matrix-search value="${escape(model.filters.search)}" placeholder="Nome do tópico"></label>
-    <details class="exam-matrix-more-filters" data-fold-key="exam-more-filters"><summary>Mais filtros${advancedCount ? ` (${advancedCount})` : ''}</summary><div class="exam-matrix-extra-filters">
+    <details class="exam-matrix-more-filters" data-fold-key="exam-more-filters"><summary>Filtros${advancedCount ? ` (${advancedCount} ${advancedCount === 1 ? 'ativo' : 'ativos'})` : ''}</summary><div class="exam-matrix-extra-filters">
       <label>Concurso<select data-exam-matrix-filter="scope">${options(
         scopeOptions,
         (item: Record<string, any>) => item.value,

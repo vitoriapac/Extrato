@@ -29,15 +29,12 @@ for (const { width, theme } of [
     await expect(page.locator('.achievement-projection__status')).toBeVisible();
     const explanation = page
       .locator('.achievement-projection__details')
-      .filter({ has: page.locator('summary', { hasText: 'Como ler: esta projeção' }) });
+      .filter({ has: page.locator('summary', { hasText: 'Como a faixa foi calculada' }) });
     await explanation.locator(':scope > summary').click();
     const method = explanation.locator('.projection-evidence-method');
-    await expect(method).not.toHaveAttribute('open');
-    await method.locator('summary').focus();
-    await page.keyboard.press('Enter');
+    await expect(method).toBeVisible();
     await expect(method).toContainText('não é uma nota prevista no dia da prova');
     await expect(method).toContainText('no máximo confiança moderada');
-    await method.locator('summary').click();
     await expect(explanation).toContainText('Prontidão é um índice de preparação');
     await expect(
       page
@@ -521,9 +518,8 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
   ).toBeVisible();
   await page
     .locator('.achievement-projection__details > summary')
-    .filter({ hasText: 'Como ler: esta projeção' })
+    .filter({ hasText: 'Como a faixa foi calculada' })
     .click();
-  await page.locator('.projection-evidence-method > summary').click();
   await page.getByRole('button', { name: 'Entenda faixa e confiança na ajuda' }).click();
   await expect(page.locator('#projections')).toBeFocused();
   await expect(page.locator('#projections')).toContainText('não acrescenta horas');

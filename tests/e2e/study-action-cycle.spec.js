@@ -54,7 +54,8 @@ for (const source of ['overview', 'today', 'diagnosis'])
         api.renderAll();
       });
       await openPerformanceSection(page, 'diagnosis');
-      // Ações de estudo da demo vêm de tópicos "sem evidência", que ficam em dobras sob demanda.
+      // Ações de estudo da demo vêm de tópicos "sem evidência": o aviso do topo tem o botão que os mostra nos grupos.
+      await page.locator('.diagnosis-unseen-note').getByRole('button', { name: /^Ver os / }).click();
       await page.evaluate(() => {
         const root = document.querySelector('#diagnosisCenter');
         for (let i = 0; i < 3; i++)

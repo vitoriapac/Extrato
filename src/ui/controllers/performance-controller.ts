@@ -80,6 +80,12 @@ export function createPerformanceController({
           render();
           return;
         }
+        const subjectView = event.target.closest('[data-performance-subject-view]');
+        if (subjectView) {
+          update({ subjectView: subjectView.dataset.performanceSubjectView });
+          render();
+          return;
+        }
         const compareMode = event.target.closest('[data-performance-compare-mode]');
         if (compareMode) {
           update({ compareMode: compareMode.dataset.performanceCompareMode });
