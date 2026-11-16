@@ -806,10 +806,10 @@
     min-width:170px;text-align:center;text-transform:none;letter-spacing:normal;
   }
   .month-nav-btn{
-    background:var(--action-primary-bg);color:var(--action-primary-text);border:none;border-radius:var(--radius-control);
+    background:transparent;color:var(--heading);border:1px solid var(--action-outline);border-radius:var(--radius-control);
     padding:8px 12px;font-size:13px;cursor:pointer;min-width:var(--control-height);min-height:var(--control-height);
   }
-  .month-nav-btn:hover{background:var(--action-primary-hover);}
+  .month-nav-btn:hover{background:var(--action-primary-bg);color:var(--action-primary-text);}
   .month-grid-wrap{position:relative;overflow-x:auto;max-width:100%;}
   .month-grid{
     display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;
@@ -1609,8 +1609,8 @@ footer{font-size:var(--text-xs)}
 .module-heading__eyebrow{color:var(--accent);font:600 var(--text-micro)/1.4 var(--font-body);letter-spacing:.09em;text-transform:uppercase}
 .module-heading .module-heading__title{margin:0;color:var(--heading);font:600 clamp(19px,2vw,24px)/1.25 var(--font-display)}
 /* Hierarquia: título de página (h2) > título de seção (h3) > rótulo mono do card. O h3 de seção não herda o rótulo do .chart-card. */
-.module-heading h2.module-heading__title,.section-title{font-size:clamp(1.5rem,2.4vw,1.875rem);line-height:1.2}
-.module-heading h3.module-heading__title,.module-heading.module-heading--compact .module-heading__title{font-size:clamp(17px,1.6vw,19px);text-transform:none;letter-spacing:normal}
+.module-heading h2.module-heading__title,h2.section-title{font-size:clamp(1.5rem,2.4vw,1.875rem);line-height:1.2}
+.module-heading h3.module-heading__title,h3.section-title,.module-heading.module-heading--compact .module-heading__title{font-size:clamp(17px,1.6vw,19px);text-transform:none;letter-spacing:normal}
 /* Cabeçalho de página: o mesmo em Desempenho, Planejamento e Agenda. Sem eyebrow; ações, quando há, à direita. */
 .page-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--space-3) var(--space-6);margin:0 0 var(--space-8);padding:0 0 var(--space-4);border-bottom:1px solid var(--border-default)}
 .page-header__text{display:grid;flex:1 1 320px;gap:var(--space-2);min-width:0}
@@ -2428,7 +2428,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .weekly-decision-summary,.weekly-decision-summary section{min-width:0;overflow-wrap:anywhere}
 
 /* Editorial text roles are opt-in; existing module scales remain unchanged. */
-.analytical-title{margin:0;color:var(--heading);font:var(--font-weight-semibold) var(--text-lg)/var(--line-height-heading) var(--font-body)}
+.analytical-title{margin:0;color:var(--heading);font:var(--font-weight-semibold) clamp(17px,1.6vw,19px)/var(--line-height-heading) var(--font-display)}
 .analytical-result{margin:0;color:var(--text-primary);font:var(--font-weight-semibold) var(--text-title)/var(--line-height-heading) var(--font-body)}
 .supporting-text{color:var(--text-secondary);font:var(--font-weight-regular) var(--text-body)/var(--line-height-body) var(--font-body);max-width:70ch}
 .analytical-metadata{color:var(--text-secondary);font:var(--font-weight-medium) var(--text-caption)/var(--line-height-body) var(--font-body)}
@@ -3547,7 +3547,7 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .today-layout-grid__main>#study-timer:has(>#sessionResult:not([hidden])){order:-1}
 
 /* Texto auxiliar da Agenda: medida de leitura confortável em telas largas. */
-#panel-agenda .helper-text--compact{max-width:72ch}
+#panel-agenda .helper-text--compact{max-width:72ch}#panel-agenda .calendar-helper-text{max-width:none}
 
 /* Plano da semana: um botão cheio e as outras formas de planejar como links. */
 .study-plan-more{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);margin:var(--space-2) 0 0;font-size:var(--text-small);color:var(--text-secondary)}
