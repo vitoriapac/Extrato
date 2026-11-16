@@ -2800,23 +2800,35 @@
 
 /* ===== RODAPÉ GLOBAL (src/ui/shell/AppFooter.tsx) ===== */
 @layer components {
+  body:has(#appFooter) {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body:has(#appFooter) > main.wrap {
+    flex: 1 0 auto;
+    padding-bottom: var(--space-12);
+  }
+
   .app-footer-shell {
-    margin-top: var(--space-10);
-    padding: var(--space-8) var(--space-8) var(--space-6);
-    border-radius: var(--radius-card);
-    border: 1px solid var(--footer-border);
+    width: 100%;
+    margin-top: 0;
+    padding: var(--space-10) 0 var(--space-8);
     border-top: 3px solid var(--footer-secondary);
     background-color: var(--footer-bg);
     color: var(--footer-text);
     font-family: var(--font-body);
     font-size: var(--text-sm);
     text-align: left;
-    box-shadow: 0 4px 16px var(--shadow-color);
   }
 
   .app-footer {
     display: grid;
     gap: var(--space-6);
+    width: min(100%, 1280px);
+    margin-inline: auto;
+    padding-inline: clamp(16px, 2.5vw, 32px);
   }
 
   .app-footer__columns {
@@ -2962,12 +2974,22 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
     margin: 0;
     padding-top: var(--space-4);
     border-top: 1px solid var(--footer-border-subtle);
     color: var(--footer-text-muted);
     font-size: var(--text-xs);
+  }
+
+  .app-footer__signature-brand,
+  .app-footer__signature-origin {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
   }
 
   .app-footer__signature strong {
@@ -2979,20 +3001,32 @@
     color: var(--footer-secondary);
   }
 
+  .app-footer__heart {
+    color: var(--footer-secondary);
+    fill: var(--footer-secondary);
+    margin-inline: 2px;
+  }
+
   @media (pointer: coarse) {
     .app-footer__link {
       min-height: 2.75rem;
     }
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 760px) {
     .app-footer-shell {
-      padding: var(--space-6) var(--space-4) var(--space-5);
+      padding: var(--space-8) 0 calc(var(--bottom-nav-height, 64px) + var(--space-6) + env(safe-area-inset-bottom));
     }
+  }
 
+  @media (max-width: 720px) {
     .app-footer__columns {
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-5);
+    }
+
+    .app-footer__signature {
+      justify-content: flex-start;
     }
   }
 

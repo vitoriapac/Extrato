@@ -138,6 +138,7 @@ const iconMapping = {
   'cloud-off': 'cloud-off',
   // Acolhimento e Empatia
   'heart-handshake': 'heart-handshake',
+  heart: 'heart',
   // CommandPalette, Collapsible, Stepper & Table
   'arrow-up': 'arrow-up',
   'arrow-down': 'arrow-down',

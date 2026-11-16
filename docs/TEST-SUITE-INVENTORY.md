@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-354 arquivos Node e 76 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+354 arquivos Node e 80 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -52,7 +52,11 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/legacy-backup.spec.js | browser | Backup | critical | 2.9 | journey | none |
 | tests/e2e/navigation-hash.spec.js | browser | Aplicação | functional | — | journey | none |
 | tests/e2e/onboarding.spec.js | browser | Onboarding | functional | 60.1 | journey, viewport | none |
+| tests/e2e/performance-evidence-dumps.spec.js | browser | Desempenho | functional | — | journey, demo | none |
+| tests/e2e/performance-fold-depth.spec.js | browser | Desempenho | functional | — | journey, demo | none |
+| tests/e2e/performance-numbers.spec.js | browser | Desempenho | functional | — | journey, demo | none |
 | tests/e2e/performance-preparation-reading.spec.js | browser | Desempenho | functional | — | journey, demo, viewport | none |
+| tests/e2e/performance-reading-guides.spec.js | browser | Desempenho | functional | — | journey, demo | none |
 | tests/e2e/performance-tablist.spec.js | browser | Desempenho | functional | — | journey, demo, viewport | none |
 | tests/e2e/planning-subtabs.spec.js | browser | Planejamento | critical | — | journey, demo, viewport | none |
 | tests/e2e/planning-sustainability.spec.js | browser | Sustentabilidade | critical | 168.8 | journey, visual-comparison, demo, viewport | windows-only |

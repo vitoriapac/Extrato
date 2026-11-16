@@ -11,6 +11,7 @@ import { Icon } from '../primitives/icon.js';
  */
 export interface AppFooterProps {
   onOpenSearch?: () => void;
+  onOpenLegal?: (tab: 'terms' | 'privacy') => void;
 }
 
 export const APP_FOOTER_SHORTCUTS = Object.freeze([
@@ -19,7 +20,19 @@ export const APP_FOOTER_SHORTCUTS = Object.freeze([
   { keys: ['Esc'], label: 'fecha' },
 ]);
 
-export function AppFooter({ onOpenSearch }: AppFooterProps) {
+export function AppFooter({ onOpenSearch, onOpenLegal }: AppFooterProps) {
+  const openLegal = (tab: 'terms' | 'privacy') => {
+    if (onOpenLegal) {
+      onOpenLegal(tab);
+      return;
+    }
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      window.dispatchEvent(
+        new CustomEvent(tab === 'privacy' ? 'open-legal-privacy' : 'open-legal-terms')
+      );
+    }
+  };
+
   return (
     <div class="app-footer">
       <div class="app-footer__columns">
@@ -118,6 +131,30 @@ export function AppFooter({ onOpenSearch }: AppFooterProps) {
                 Buscar no app
               </button>
             </li>
+            <li>
+              <button
+                type="button"
+                class="app-footer__link"
+                id="openLegalTermsBtn"
+                aria-haspopup="dialog"
+                onClick={() => openLegal('terms')}
+              >
+                <Icon name="scale" size={14} class="icon-inline" />
+                Termos de uso
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="app-footer__link"
+                id="openLegalPrivacyBtn"
+                aria-haspopup="dialog"
+                onClick={() => openLegal('privacy')}
+              >
+                <Icon name="lock" size={14} class="icon-inline" />
+                Política de privacidade
+              </button>
+            </li>
           </ul>
         </section>
       </div>
@@ -138,11 +175,19 @@ export function AppFooter({ onOpenSearch }: AppFooterProps) {
         ))}
       </p>
 
-      <p class="app-footer__signature">
-        <strong>Extrato de Estudos</strong>
-        <span aria-hidden="true">·</span>
-        <span>Planejamento, revisão e diagnóstico para concursos</span>
-      </p>
+      <div class="app-footer__signature">
+        <p class="app-footer__signature-brand">
+          <strong>Extrato de Estudos</strong>
+          <span aria-hidden="true">·</span>
+          <span>Planejamento, revisão e diagnóstico para concursos</span>
+        </p>
+        <p class="app-footer__signature-origin">
+          Feito com{' '}
+          <Icon name="heart" size={14} class="icon-inline app-footer__heart" />
+          <span class="sr-only">amor</span>{' '}
+          para estudantes brasileiros
+        </p>
+      </div>
     </div>
   );
 }

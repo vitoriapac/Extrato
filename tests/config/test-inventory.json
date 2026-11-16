@@ -878,6 +878,87 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/e2e/performance-evidence-dumps.spec.js",
+      "layer": "browser",
+      "area": "Desempenho",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey",
+        "demo"
+      ],
+      "imports": [
+        "@playwright/test",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/e2e/performance-fold-depth.spec.js",
+      "layer": "browser",
+      "area": "Desempenho",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey",
+        "demo"
+      ],
+      "imports": [
+        "@playwright/test",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/e2e/performance-numbers.spec.js",
+      "layer": "browser",
+      "area": "Desempenho",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey",
+        "demo"
+      ],
+      "imports": [
+        "@playwright/test",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 4,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/e2e/performance-preparation-reading.spec.js",
       "layer": "browser",
       "area": "Desempenho",
@@ -893,6 +974,33 @@
         "./helpers.js"
       ],
       "staticTestDeclarations": 16,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/e2e/performance-reading-guides.spec.js",
+      "layer": "browser",
+      "area": "Desempenho",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey",
+        "demo"
+      ],
+      "imports": [
+        "@playwright/test",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6732,7 +6840,7 @@
         "node:assert/strict",
         "../../src/ui/renderers/incidence-quadrants-renderer.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -8359,7 +8467,7 @@
         "../../src/application/performance/build-preparation-reading.js",
         "../../src/ui/performance/preparation-reading-renderer.js"
       ],
-      "staticTestDeclarations": 17,
+      "staticTestDeclarations": 18,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
