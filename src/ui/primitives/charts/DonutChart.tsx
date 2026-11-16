@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { donutGeometry } from './geometry.js';
-import { formatDecimal } from '../../../core/format-number.js';
+import { formatDecimal, formatPercent } from '../../../core/format-number.js';
 
 export interface DonutChartSliceInput {
   subjectId: string;
@@ -75,7 +75,7 @@ export function DonutChart({
             stroke-dashoffset={item.dashoffset}
             transform={`rotate(-90 ${cx} ${cy})`}
           >
-            <title>{`${slice.subjectName}: ${formatDecimal(slice.seconds / 3600)}h (${formatDecimal(slice.percentage)}%)`}</title>
+            <title>{`${slice.subjectName}: ${formatDecimal(slice.seconds / 3600)}h (${formatPercent(slice.percentage)})`}</title>
           </circle>
         );
       })}

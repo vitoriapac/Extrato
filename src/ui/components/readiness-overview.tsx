@@ -58,11 +58,11 @@ function FactorBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={score}
-        aria-valuetext={empty ? 'aguardando dados' : `${item.score}%`}
+        aria-valuetext={empty ? 'aguardando dados' : `${item.score}/100`}
       >
         <div class="bar-fill" style={`width:${score}%`} />
       </div>
-      <div class="bar-pct">{empty ? '—' : `${item.score}%`}</div>
+      <div class="bar-pct">{empty ? '—' : `${item.score}/100`}</div>
     </div>
   );
 }

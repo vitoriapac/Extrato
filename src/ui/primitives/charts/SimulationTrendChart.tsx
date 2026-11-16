@@ -1,4 +1,4 @@
-import { formatPoints } from '../../../core/format-number.js';
+import { formatPercent, formatPoints } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { simulationTrendGeometry } from './geometry.js';
@@ -50,14 +50,14 @@ export function SimulationTrendChart({
         <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
           <span class="text-content-secondary text-xs block font-medium mb-1">Média Recente</span>
           <div class="text-base font-semibold font-data text-content-primary">
-            {averageScore !== null ? `${averageScore}%` : '—'}
+            {averageScore !== null ? formatPercent(averageScore) : '—'}
           </div>
         </div>
 
         <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
           <span class="text-content-secondary text-xs block font-medium mb-1">Melhor Nota</span>
           <div class="text-base font-semibold font-data text-success-emphasis">
-            {bestScore !== null ? `${bestScore}%` : '—'}
+            {bestScore !== null ? formatPercent(bestScore) : '—'}
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export function SimulationTrendChart({
           </span>
           <div class="flex items-center gap-2">
             <span class="text-base font-semibold font-data text-content-primary">
-              {latestScore !== null ? `${latestScore}%` : '—'}
+              {latestScore !== null ? formatPercent(latestScore) : '—'}
             </span>
             {scoreDelta !== null && (
               <span
@@ -211,7 +211,7 @@ export function SimulationTrendChart({
                   stroke-width="2.5"
                   class="cursor-pointer chart-point-interactive"
                 >
-                  <title>{`${pt.name} (${pt.date}): ${pt.score}% (${pt.correct}/${pt.total})`}</title>
+                  <title>{`${pt.name} (${pt.date}): ${formatPercent(pt.score)} (${pt.correct}/${pt.total})`}</title>
                 </circle>
 
                 {/* Rótulo com a nota acima do ponto */}

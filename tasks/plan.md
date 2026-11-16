@@ -145,9 +145,19 @@ Origem: análise de 16/11 das ~60 dobras fechadas de Desempenho (necessária, ú
 - [x] Tarefa 54: Mover e normalizar (definições com "?" junto do termo; referência de carreira em Planejamento > Prova e metas; Filtros fechados e no mesmo padrão)
 - [x] Tarefa 55: Achatar o aninhamento (Como o plano foi cumprido: 7 dobras internas; Evolução da Prontidão: 4)
 
-### Checkpoint 11: Dobras
+### Checkpoint 11: Dobras (crítica 13: 27/40; H4, H6 e H8 em 2; fica aberto)
 - [ ] Altura das telas com dobras abertas medida antes e depois (maior ganho esperado: Inteligência da prova, de ~15,5 mil px, e Diagnóstico, de ~4,5 mil px)
 - [ ] As alternativas acessíveis ("Ver valores do gráfico", "Dias com atividade por semana, em texto") seguem presentes
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
+### Fase 13: Números e prioridade única (crítica 13)
+Origem: crítica de 16/11 (27/40). Os três heurísticos travados (H4, H6, H8) vêm de números que mudam com a janela, formatos misturados e vários "primeiros" na mesma aba.
+- [x] Tarefa 56: Tendência da Prontidão independente do período (sempre os dois últimos fechamentos; um só valor nas duas posições)
+- [x] Tarefa 57: Um formatador por grandeza (milhar com ponto, percentual com uma casa, singular e plural, sem ",0" falso)
+- [x] Tarefa 58: Um rótulo por contagem de "sem evidência" (233, 217 e 16 deixam de ter o mesmo nome)
+- [x] Tarefa 59: Uma prioridade só (a Próxima ação marcada na fila; cada bloco secundário diz por qual critério ordena)
+
+### Checkpoint 13: Crítica
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
 
 ## Grafo de dependências

@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatPercent } from '../../core/format-number.js';
 import { formatStudyMinutes } from '../format-study-time.js';
 
 type Row = Record<string, any>;
@@ -29,7 +29,7 @@ export function renderTimeBySubjectBars(
   const rows = top
     .map(item => {
       const width = Math.max(1, Math.round((item.seconds / max) * 100));
-      const text = `${formatStudyMinutes(item.seconds / 60)} (${formatDecimal(item.percentage)}%)`;
+      const text = `${formatStudyMinutes(item.seconds / 60)} (${formatPercent(item.percentage)})`;
       return `<li class="time-bars__row"><span class="time-bars__name">${escapeHtml(item.name)}</span><div class="time-bars__track" role="img" aria-label="${escapeHtml(`${item.name}: ${text}`)}"><i class="${item.colorSlot ? `subject-color-${item.colorSlot}` : 'is-other'}" style="width:${width}%"></i></div><span class="time-bars__value">${text}</span></li>`;
     })
     .join('');

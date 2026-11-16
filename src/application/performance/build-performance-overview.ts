@@ -108,6 +108,12 @@ export function buildPerformanceOverview({
       ).at(-1)
     : null;
   const latest = history.at(-1) || null;
+  // Os dois últimos fechamentos salvos, qualquer que seja o período: a tendência da Prontidão não muda ao trocar de janela.
+  const closings = readinessHistoryForScope(readinessSnapshots, activeExamTags, null, null);
+  const latestClosing = closings.at(-1) || null;
+  const previousClosing = closings.at(-2) || null;
+  const closingComparison = compareReadinessSnapshots(previousClosing, latestClosing);
+  const readinessClosingDelta = closingComparison.state === 'comparable' ? closingComparison.delta : null;
   // Never infer an old score from current records. Only saved snapshots are compared.
   const readinessComparison = compareReadinessSnapshots(prior, latest);
   const readinessDelta =
@@ -186,7 +192,8 @@ export function buildPerformanceOverview({
     readiness,
     readinessDelta,
     readinessComparison,
-    readinessPair: { previous: prior, current: latest },
+    readinessClosingDelta,
+    readinessPair: { previous: previousClosing, current: latestClosing },
     history,
     weekly,
     trend: buildKpiTrend(today, questions, sessions),

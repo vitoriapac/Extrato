@@ -8,8 +8,8 @@ test('T49: tópicos sem evidência viram contagem e caminho, não listas de cent
 
   // Inteligência da prova: a lista de "sem evidência para posicionar" não é despejada.
   await openPerformanceSection(page, 'exam');
-  const insufficient = page.locator('.incidence-quadrant', { hasText: 'Sem evidência para posicionar' });
-  await expect(insufficient).toContainText(/tópicos ainda não têm evidência/);
+  const insufficient = page.locator('.incidence-quadrant', { hasText: 'Sem evidência suficiente para posicionar' });
+  await expect(insufficient).toContainText(/tópicos ainda não têm domínio medido/);
   await expect(insufficient.locator('.exam-matrix-topic')).toHaveCount(0);
   await expect(insufficient.getByRole('button', { name: 'Abrir o Diagnóstico' })).toBeVisible();
   const examHeight = await page.locator('#panel-desempenho').evaluate(node => node.scrollHeight);

@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatPercent } from '../../core/format-number.js';
 
 export interface ErrorCategoryRecord {
   label: string;
@@ -67,7 +67,7 @@ export function renderErrorProfileChart({
         </div>
         <div class="flex items-center gap-3">
           <span class="text-content-secondary">${part.count} ${part.count === 1 ? 'erro' : 'erros'}</span>
-          <span class="font-semibold text-content-primary w-10 text-right">${formatDecimal(share)}%</span>
+          <span class="font-semibold text-content-primary w-10 text-right">${formatPercent(share)}</span>
         </div>
       </div>`;
     })

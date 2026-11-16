@@ -591,3 +591,48 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 - [ ] As alternativas acessíveis ("Ver valores do gráfico", "Dias com atividade por semana, em texto") seguem presentes
 - [ ] E2E, tipos e goldens revisados
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
+## Fase 13: Números e prioridade única
+
+**Origem:** crítica 13 (16/11/2026, 27/40; H4, H6 e H8 em 2). A Fase 12 enxugou as dobras, mas a nota não se mexeu: o que pesa é consistência numérica e prioridade.
+
+### Tarefa 56: Tendência da Prontidão independente do período
+**Origem:** com 30 dias o Resumo diz "−3 pontos, em queda"; com 90 dias, "+10 pontos, em alta"; a dobra Evolução da Prontidão diz "−4" para os mesmos fechamentos.
+**Aceite:**
+- [x] "Tendência entre os dois últimos fechamentos" e o "N pontos" usam sempre os dois últimos fechamentos semanais salvos, qualquer que seja o período
+- [x] A frase do Resumo e a dobra Evolução da Prontidão mostram o mesmo valor (mesma fonte)
+- [x] A lista "Principais mudanças" mantém a comparação por período, com o rótulo que já diz isso
+**Verificação:** unit com dois períodos e os mesmos fechamentos; E2E trocando 30 para 90 dias sem mudar o texto da tendência
+**Tamanho:** S
+
+### Tarefa 57: Um formatador por grandeza
+**Aceite:**
+- [x] Milhar sempre com ponto em Desempenho ("1.247" em todo lugar)
+- [x] Percentuais com uma casa em todo lugar de Desempenho (sem "75%" ao lado de "66,9%" e sem "70,0%" ao lado de "72%")
+- [x] Singular e plural certos ("1 revisão", "1 questão")
+- [x] Escalas nomeadas igual: "36/100" para índices e "36%" para percentuais, sem misturar na mesma dobra
+**Verificação:** E2E `pt-br-format` ampliado com milhar, plural e ",0"; unit dos formatadores
+**Tamanho:** M
+
+### Tarefa 58: Um rótulo por contagem de "sem evidência"
+**Aceite:**
+- [x] O Diagnóstico chama de "sem nenhum registro" o que não tem dado; a Inteligência da prova chama de "sem evidência suficiente para posicionar" o que não entra nos quadrantes
+- [x] Cada contagem diz o critério na própria linha
+**Verificação:** unit dos textos; E2E que lê as duas contagens
+**Dependências:** Tarefa 57
+**Tamanho:** S
+
+### Tarefa 59: Uma prioridade só
+**Aceite:**
+- [x] A diferença entre a fila e a Próxima ação está dita em texto (a Próxima ação sai da fila, por decisão da T38; não ganhou marca dentro dela)
+- [x] "O que mais pesa", "Lacuna × impacto", "Maior oportunidade na banca" e o ponto de atenção da projeção dizem em uma palavra por qual critério ordenam, em vez de uma nota "não substitui a Prioridade de hoje"
+**Verificação:** unit dos rótulos; revisão humana
+**Dependências:** Tarefa 58
+**Tamanho:** M
+
+
+**Notas de entrega (T56 a T59):** não tratados, por escolha: foco perdido após "Ver os N", "Restaurar padrão" e Tabela/Barras; hint de atalhos por período; os 3 achados de axe da crítica 13 (h5 no bloco de faixa, tabela rolável de Questões, "?" de 24 px); selo de janela como span; laranja como série.
+
+### Checkpoint 13
+- [ ] E2E, tipos e goldens revisados
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3

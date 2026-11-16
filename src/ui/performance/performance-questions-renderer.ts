@@ -34,15 +34,15 @@ export function renderPerformanceQuestions({
       : null;
   const win = renderWindowBadge('period', range?.label || '');
   const kpis = `<section class="performance-kpis ui-metric-group" aria-label="Indicadores de questões">
-    ${renderMetricCard({ label: 'Questões respondidas', windowBadge: win, value: String(analysis.questionCount), detail: 'Respostas pessoais no período' })}
+    ${renderMetricCard({ label: 'Questões respondidas', windowBadge: win, value: formatInteger(analysis.questionCount), detail: 'Respostas pessoais no período' })}
     ${renderMetricCard({ label: 'Precisão', windowBadge: win, value: percent(analysis.accuracy), detail: 'Acertos ÷ questões respondidas' })}
-    ${renderMetricCard({ label: 'Erros', windowBadge: win, value: String(analysis.errors), detail: 'Inclui erros sem categoria' })}
+    ${renderMetricCard({ label: 'Erros', windowBadge: win, value: formatInteger(analysis.errors), detail: 'Inclui erros sem categoria' })}
     ${renderMetricCard({ label: 'Evolução', windowBadge: win, value: delta(trend!), detail: range.comparePrevious ? 'Precisão × período anterior' : 'Comparação desativada' })}
   </section>`;
   const buckets = evolution.buckets
     .map(
       (row: any) =>
-        `<tr><th scope="row">${escapeHtml(formatDateBR(row.key))}</th><td>${row.resolved}</td><td>${row.correct}</td><td>${row.errors}</td><td>${percent(row.accuracy)}</td></tr>`
+        `<tr><th scope="row">${escapeHtml(formatDateBR(row.key))}</th><td>${formatInteger(row.resolved)}</td><td>${formatInteger(row.correct)}</td><td>${formatInteger(row.errors)}</td><td>${percent(row.accuracy)}</td></tr>`
     )
     .join('');
   const volume = `<section class="performance-block"><h3>Volume × precisão</h3>${buckets ? `<div class="performance-table-scroll"><table><caption>Acertos, erros e precisão por período (a linha de tendência precisa de amostra mínima).</caption><thead><tr><th>Período</th><th>Questões</th><th>Acertos</th><th>Erros</th><th>Precisão</th></tr></thead><tbody>${buckets}</tbody></table></div>` : '<p class="empty-state empty-state--compact">Sem questões neste período.</p>'}</section>`;
@@ -93,7 +93,7 @@ export function renderPerformanceQuestions({
     const subRows = msp.series
       .map(
         (s: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${s.totalCorrect}/${s.totalResolved} <strong class="text-content-primary">(${s.overallAccuracy == null ? '—' : `${s.overallAccuracy}%`})</strong></div></li>`
+          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${s.totalCorrect}/${s.totalResolved} <strong class="text-content-primary">(${s.overallAccuracy == null ? '—' : formatPercent(s.overallAccuracy)})</strong></div></li>`
       )
       .join('');
 
@@ -110,7 +110,7 @@ export function renderPerformanceQuestions({
         </div>
         <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <div class="mb-3">
-            <span class="text-3xl font-semibold font-display text-content-primary">${msp.overallAccuracy == null ? '—' : `${msp.overallAccuracy}%`}</span>
+            <span class="text-3xl font-semibold font-display text-content-primary">${msp.overallAccuracy == null ? '—' : formatPercent(msp.overallAccuracy)}</span>
             <p class="text-xs text-content-secondary m-0">${formatInteger(msp.totalResolved)} questões · ${msp.totalCorrect} acertos</p>
             <span class="text-xs font-medium text-content-secondary mt-1 inline-block">Precisão geral no período</span>
           </div>

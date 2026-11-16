@@ -40,5 +40,5 @@ export function renderGapImpactChart(
       return `<section class="gap-impact__group"><h4>${escapeHtml(subject)}</h4><ul>${lines}</ul></section>`;
     })
     .join('');
-  return `<section class="performance-block gap-impact" aria-label="Lacuna e impacto dos primeiros tópicos"><h3>Lacuna × impacto · primeiros ${topics.length} tópicos</h3><p class="analytics-note gap-impact__legend"><span aria-hidden="true"><b class="gap-impact__key is-gap"></b> lacuna (100 − domínio) · <b class="gap-impact__key is-impact"></b> impacto na prova</span> · escalas de 0 a 100. A fila abaixo traz o restante.</p>${body}</section>`;
+  return `<section class="performance-block gap-impact" aria-label="Lacuna e impacto dos primeiros tópicos"><h3>Lacuna × impacto · primeiros ${topics.length} tópicos</h3><p class="analytics-note gap-impact__legend"><span aria-hidden="true"><b class="gap-impact__key is-gap"></b> lacuna (100 − domínio) · <b class="gap-impact__key is-impact"></b> impacto na prova</span> · escalas de 0 a 100, na ordem da fila abaixo.</p>${body}</section>`;
 }

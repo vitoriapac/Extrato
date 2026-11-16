@@ -25,8 +25,8 @@ test('sem evidência vira contagem e caminho para o Diagnóstico, sem lista', ()
     row(index, { mastery: null, presencePercent: 20, confidence: 'low' })
   );
   const html = renderIncidenceQuadrants(rows);
-  assert.match(html, /<h5>Sem evidência para posicionar \(9\)<\/h5>/);
-  assert.match(html, /9 tópicos ainda não têm evidência/);
+  assert.match(html, /<h5>Sem evidência suficiente para posicionar \(9\)<\/h5>/);
+  assert.match(html, /9 tópicos ainda não têm domínio medido/);
   assert.match(html, /data-performance-jump="diagnosis"/);
   assert.doesNotMatch(html, /Mostrar mais|exam-matrix-topic/);
 });

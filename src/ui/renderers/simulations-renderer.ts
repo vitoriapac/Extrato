@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPercent } from '../../core/format-number.js';
 import { chartSize } from '../primitives/charts/chart-size.js';
 import { renderChartFrame } from '../chart-components.js';
 import { renderIconSvg } from '../primitives/icon.js';
@@ -23,8 +23,8 @@ export function renderSimulationRead({
   const hasBreakdown = Boolean(item.breakdown?.length);
   const details = `<button class="btn ghost small ${hasBreakdown ? 'has-notes' : ''}" data-delegated-click="toggleBreakdown('${item.id}')">${expanded ? 'Ocultar detalhes' : 'Ver desempenho'}</button>`;
   if (mobile)
-    return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(view.date)}</div><div class="mobile-card-title">${escapeHtml(view.name)}</div></div><button class="btn ghost small" data-delegated-click="editSimulation('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${view.correct} / ${view.total}</span><strong>Nota ${formatDecimal(view.score)}%</strong>${details}</div></article></td></tr>${expanded ? breakdownHtml : ''}`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${item.id}"><td>${escapeHtml(view.date)}</td><td><div class="row-primary">${escapeHtml(view.name)}</div></td><td class="number-cell">${view.correct}</td><td class="number-cell">${view.total}</td><td class="number-cell">${formatDecimal(view.score)}%</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${item.id}')">Editar</button></td></tr>${expanded ? breakdownHtml : ''}`;
+    return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(view.date)}</div><div class="mobile-card-title">${escapeHtml(view.name)}</div></div><button class="btn ghost small" data-delegated-click="editSimulation('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${view.correct} / ${view.total}</span><strong>Nota ${formatPercent(view.score)}</strong>${details}</div></article></td></tr>${expanded ? breakdownHtml : ''}`;
+  return `<tr class="history-read-row history-desktop-row" data-id="${item.id}"><td>${escapeHtml(view.date)}</td><td><div class="row-primary">${escapeHtml(view.name)}</div></td><td class="number-cell">${view.correct}</td><td class="number-cell">${view.total}</td><td class="number-cell">${formatPercent(view.score)}</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${item.id}')">Editar</button></td></tr>${expanded ? breakdownHtml : ''}`;
 }
 
 export function renderSimulationBreakdown({
@@ -117,13 +117,13 @@ export function renderSimulationTrendChart({
   const grid = gridValues
     .map(
       value =>
-        `<line class="chart-grid" x1="${padLeft}" y1="${yFor(value)}" x2="${width - padRight}" y2="${yFor(value)}"></line><text x="2" y="${yFor(value) + 3}">${formatDecimal(value)}%</text>`
+        `<line class="chart-grid" x1="${padLeft}" y1="${yFor(value)}" x2="${width - padRight}" y2="${yFor(value)}"></line><text x="2" y="${yFor(value) + 3}">${formatPercent(value)}</text>`
     )
     .join('');
   const dots = items
     .map(
       (item, index) =>
-        `<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(scores[index])}" r="3"><title>${escapeHtml(item.nome || 'Simulado')} (${formatDate(item.date)}): ${formatDecimal(scores[index])}%</title></circle>`
+        `<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(scores[index])}" r="3"><title>${escapeHtml(item.nome || 'Simulado')} (${formatDate(item.date)}): ${formatPercent(scores[index])}</title></circle>`
     )
     .join('');
   const labels = items
@@ -136,7 +136,7 @@ export function renderSimulationTrendChart({
     .join('');
   const goal = goalValue;
   const bandShape = hasBand
-    ? `<rect class="simulation-band" x="${width - padRight + 8}" y="${yFor(Math.min(100, band!.high))}" width="16" height="${Math.max(2, yFor(Math.max(0, band!.low)) - yFor(Math.min(100, band!.high)))}" rx="2"><title>Faixa projetada para a prova: ${formatDecimal(band!.low)}% a ${formatDecimal(band!.high)}%</title></rect><text class="simulation-band-label" x="${width - padRight + 16}" y="${height - 6}" text-anchor="middle">prova</text>`
+    ? `<rect class="simulation-band" x="${width - padRight + 8}" y="${yFor(Math.min(100, band!.high))}" width="16" height="${Math.max(2, yFor(Math.max(0, band!.low)) - yFor(Math.min(100, band!.high)))}" rx="2"><title>Faixa projetada para a prova: ${formatPercent(band!.low)} a ${formatPercent(band!.high)}</title></rect><text class="simulation-band-label" x="${width - padRight + 16}" y="${height - 6}" text-anchor="middle">prova</text>`
     : '';
   const goalLine =
     goal === null
@@ -145,7 +145,7 @@ export function renderSimulationTrendChart({
   const history = items
     .map(
       (item, index) =>
-        `<li><span>${escapeHtml(item.nome || 'Simulado')} · ${formatDate(item.date)}</span><strong>${formatDecimal(scores[index])}%</strong></li>`
+        `<li><span>${escapeHtml(item.nome || 'Simulado')} · ${formatDate(item.date)}</span><strong>${formatPercent(scores[index])}</strong></li>`
     )
     .join('');
   return renderChartFrame({

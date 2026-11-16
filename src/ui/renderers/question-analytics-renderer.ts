@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatPercent } from '../../core/format-number.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
 import { buildSubjectWeeklyTrendVisual } from '../../domain/practice/practice-visual-models.js';
 import { renderWeeklyTrendChart } from '../primitives/charts/charts.js';
@@ -6,8 +6,8 @@ import { renderWeeklyTrendChart } from '../primitives/charts/charts.js';
 export function renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend }: any) {
   return (
     [
-      ['Precisão', accuracy === null ? '—' : `${formatDecimal(accuracy)}%`],
-      ['Cobertura por tópico', `${formatDecimal(coverage)}%`],
+      ['Precisão', accuracy === null ? '—' : `${formatPercent(accuracy)}`],
+      ['Cobertura por tópico', `${formatPercent(coverage)}`],
       ['Questões', resolved],
     ]
       .map(

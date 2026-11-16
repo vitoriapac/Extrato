@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { multiLineGeometry, MultiLineSeriesInput } from './geometry.js';
-import { formatDecimal } from '../../../core/format-number.js';
+import { formatPercent } from '../../../core/format-number.js';
 import { chartSize } from './chart-size.js';
 
 export interface MultiLineChartProps {
@@ -83,7 +83,7 @@ export function MultiLineChart({
                   cy={dot.y}
                   r={3.5}
                 >
-                  <title>{`${s.name} (${periodLabels[dot.periodIndex]}): ${formatDecimal(dot.accuracy)}%`}</title>
+                  <title>{`${s.name} (${periodLabels[dot.periodIndex]}): ${formatPercent(dot.accuracy)}`}</title>
                 </circle>
               ))}
             </g>

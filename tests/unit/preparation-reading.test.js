@@ -248,3 +248,16 @@ test('a Leitura só cita tópicos que estão na fila do Diagnóstico', () => {
   assert.equal(topics(queued).length, 2);
   assert.ok(queued.pulling.every(item => !item.text.includes(gap('b').topicName)));
 });
+
+test('T56: a tendência da Prontidão usa os dois últimos fechamentos, não o delta do período', () => {
+  const readiness = { value: 46, availableFactors: ['coverage', 'mastery', 'retention'] };
+  const pair = { previous: { date: '2026-11-01', score: 56 }, current: { date: '2026-11-08', score: 53 } };
+  // Com um período longo, o delta por período seria +10; a tendência continua −3 (os mesmos fechamentos).
+  const reading = buildPreparationReading({
+    model: { readiness, readinessDelta: 10, readinessClosingDelta: -3, readinessPair: pair },
+    weeklyBrief: { current: week() },
+  });
+  assert.equal(reading.howAmI.readiness.verdict.state, 'down');
+  assert.match(reading.howAmI.readiness.detail, /−3 pontos frente ao fechamento anterior/);
+  assert.doesNotMatch(reading.howAmI.readiness.detail, /\+10/);
+});

@@ -58,7 +58,7 @@ test('perfil de erros em Pareto: ordem decrescente, acumulado em texto e resumo 
   );
   const labels = [...html.matchAll(/error-profile-label"> ([^<]+)</g)].map(m => m[1]);
   assert.deepEqual(labels, ['Interpretação', 'Conteúdo', 'Desatenção']);
-  const cumulative = [...html.matchAll(/acumulado (\d+)%/g)].map(m => Number(m[1]));
+  const cumulative = [...html.matchAll(/acumulado (\d+),0%/g)].map(m => Number(m[1]));
   assert.deepEqual(cumulative, [60, 85, 100]);
   assert.match(html, /style="left:85%"/);
   assert.match(html, /As 2 primeiras categorias somam 85% dos erros\./);

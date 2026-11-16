@@ -106,7 +106,7 @@ export function renderConsolidatedDiagnosis(
   );
   const unseenNote =
     !filtering && unseenAll.length
-      ? `<p class="analytics-note diagnosis-unseen-note"><strong>${unseenAll.length}</strong> ${unseenAll.length === 1 ? 'tópico ainda sem evidência fica' : 'tópicos ainda sem evidência ficam'} fora dos grupos abaixo. <button type="button" class="btn ghost small" data-diagnosis-severity="${escapeAttr(unseenAll[0].item.severity)}">Ver os ${unseenAll.length}</button></p>`
+      ? `<p class="analytics-note diagnosis-unseen-note"><strong>${unseenAll.length}</strong> ${unseenAll.length === 1 ? 'tópico sem nenhum registro ainda fica' : 'tópicos sem nenhum registro ainda ficam'} fora dos grupos abaixo. <button type="button" class="btn ghost small" data-diagnosis-severity="${escapeAttr(unseenAll[0].item.severity)}">Ver os ${unseenAll.length}</button></p>`
       : '';
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por tópico, com evidências disponíveis para consulta. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por tópico, com evidências disponíveis para consulta. A fila ordena por gravidade e impacto na prova; a Próxima ação, acima, combina isso com o plano de hoje e pode vir de outro tópico. ${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }

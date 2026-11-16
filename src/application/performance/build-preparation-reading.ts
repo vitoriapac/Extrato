@@ -113,18 +113,20 @@ export function buildPreparationReading({
   const closingNote = closingDiffers
     ? ` O valor acima é o de hoje (${formatSignedPoints(readinessValue! - Number(pair!.current.score))} frente a esse fechamento).${demoClosing ? ' Na demonstração, os fechamentos são fictícios.' : ''}`
     : '';
+  // A tendência usa os dois últimos fechamentos (independente do período); sem o campo novo, cai no delta do período.
+  const closingDelta = model.readinessClosingDelta !== undefined ? model.readinessClosingDelta : model.readinessDelta;
   const readinessDetailBase =
-    model.readinessDelta != null && pair?.current && pair?.previous
+    closingDelta != null && pair?.current && pair?.previous
       ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}${
-          model.readinessDelta === 0
+          closingDelta === 0
             ? ', igual ao fechamento anterior.'
-            : `, ${model.readinessDelta > 0 ? '+' : '−'}${Math.abs(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} frente ao fechamento anterior.`
+            : `, ${closingDelta > 0 ? '+' : '−'}${Math.abs(closingDelta)} ${Math.abs(closingDelta) === 1 ? 'ponto' : 'pontos'} frente ao fechamento anterior.`
         }`
       : pair?.current
         ? `Último fechamento (${formatDateBR(pair.current.date)}): ${pair.current.score}.`
         : null;
   const readinessDetail = readinessDetailBase ? readinessDetailBase + closingNote : null;
-  const delta = finite(model.readinessDelta);
+  const delta = finite(closingDelta);
   const readinessVerdict: ReadinessVerdict =
     delta == null
       ? null
@@ -133,7 +135,7 @@ export function buildPreparationReading({
         : delta < 0
           ? { state: 'down', text: 'Tendência entre os dois últimos fechamentos: em queda' }
           : { state: 'up', text: 'Tendência entre os dois últimos fechamentos: em alta' };
-  if (readinessValue != null && model.readinessDelta == null)
+  if (readinessValue != null && closingDelta == null)
     evidence.push('Sem fechamento anterior comparável: a Prontidão aparece sem variação.');
   const band = projection?.projection?.calibratedSimulationBand;
   const low = finite(band?.low),
