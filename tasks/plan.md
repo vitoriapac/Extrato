@@ -132,6 +132,24 @@ Origem: crítica de 15/11 (avaliadores A e B). Ordem: consistência, fila, mobil
 ### Checkpoint 10: Crítica
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
 
+### Fase 11: Correções da crítica 12 (concluída em 16/11, sem nova nota)
+Origem: avaliadores A e B da rodada 12 (27/40). Entregue: precisão com uma casa na evolução, semana e comparação; milhar com ponto; "54, 0 pontos"; total de turnos exato; comparação mantida após Tudo; subabas em duas linhas no mobile; contador "N aparece em Próxima ação"; "1 sessão"; Resumo sem "Projeção atual" duplicada e dobra "Evolução da Prontidão"; calibração da faixa movida para Simulados. Fica para a Fase 12 o que for de dobras; os ",0" falsos, o laranja e a prioridade única seguem abertos (T44, T45, T47).
+
+### Fase 12: Dobras fechadas (enxugar, fundir, mover)
+Origem: análise de 16/11 das ~60 dobras fechadas de Desempenho (necessária, útil, redundante, trivial) para iniciante, analítico e experiente. Detalhes e aceite em [todo.md](todo.md).
+- [ ] Tarefa 49: Despejos de "sem evidência" (217 tópicos, 16, +57/+18): contagem e ação no lugar das listas
+- [ ] Tarefa 50: Uma só explicação da projeção em Simulados (fundir 4 a 5 dobras)
+- [ ] Tarefa 51: Um "Como ler esta aba" por subaba (fundir os 4 "Como ler: limites")
+- [ ] Tarefa 52: Tirar as redundâncias (Visão complementar, Ver evidências por cartão, tabela Período atual × anterior, bloco-link de Carga, Histórico da trajetória, grupo de uma linha)
+- [ ] Tarefa 53: Por disciplina: barras e tabela numa visão com alternância; tempo por disciplina sem repetir entre Por disciplina e Ritmo
+- [ ] Tarefa 54: Mover e normalizar (Definições para perto do termo, referência de carreira, "Mais filtros" aberta, "Filtros do mapa")
+- [ ] Tarefa 55: Achatar o aninhamento (Como o plano foi cumprido: 7 dobras internas; Evolução da Prontidão: 4)
+
+### Checkpoint 11: Dobras
+- [ ] Altura das telas com dobras abertas medida antes e depois (maior ganho esperado: Inteligência da prova, de ~15,5 mil px, e Diagnóstico, de ~4,5 mil px)
+- [ ] As alternativas acessíveis ("Ver valores do gráfico", "Dias com atividade por semana, em texto") seguem presentes
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
 ## Grafo de dependências
 
 ```
@@ -143,6 +161,7 @@ T23 ── T24 ── T25 ── T27      T26 (paralela, dados)
 T16 ── T28..T31 (gráficos usam as regras de tamanho)
 T17..T22 ── T32
 T35 ── T36 ── T37, T38 ── T39 ── T40 ── T41, T42, T43 ── Checkpoint 9
+T49, T50, T51 ── T52 ── T53, T54 ── T55 ── Checkpoint 11
 ```
 
 ## Riscos e mitigações
