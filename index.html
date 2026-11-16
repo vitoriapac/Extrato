@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=9747c31b0a57">
-<link rel="stylesheet" href="styles/app.css?v=9747c31b0a57">
+<link rel="stylesheet" href="styles/tailwind.css?v=53399a5b2250">
+<link rel="stylesheet" href="styles/app.css?v=53399a5b2250">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -727,21 +727,10 @@
     <div id="helpCenter"></div>
   </div>
 
-  <footer>
-    <div class="footer-primary-row">
-      <span>Salvo automaticamente no seu navegador — extrato gerado localmente</span>
-      <div class="footer-actions">
-        <button class="btn ghost small" id="enterDemoBtn" aria-describedby="enterDemoNote">Explorar demonstração</button><small class="footer-demo-note" id="enterDemoNote">Dados fictícios, separados dos seus.</small>
-        <button type="button" class="btn ghost small" id="openSalesLandingBtn" aria-haspopup="dialog">Apresentação</button>
-        <button type="button" class="btn ghost small" id="openSaasPlansBtn" aria-haspopup="dialog">Planos Free &amp; Pro</button>
-        <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-database icon-inline" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>Gerenciar dados e backups</button>
-      </div>
-    </div>
-    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
-  </footer>
+  <footer class="app-footer-shell" id="appFooter" aria-label="Rodapé do Extrato de Estudos"></footer>
 </main>
 
-<button class="back-to-top" id="backToTopBtn" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">↑<span>Topo</span></button>
+<button class="back-to-top" id="backToTopBtn" type="button" aria-label="Voltar ao topo" title="Voltar ao topo"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-up" aria-hidden="true"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg><span>Topo</span></button>
 
 <div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">Salvo</div>
 <div id="toastViewportMount"></div>
@@ -766,7 +755,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=9747c31b0a57"></script>
+  <script src="src/app.bundle.js?v=53399a5b2250"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

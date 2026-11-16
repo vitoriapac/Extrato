@@ -1302,6 +1302,11 @@
       "rationale": "Contrato Node barato; modais declarativos via <dialog>, camada CSS única e higiene da Onda 4."
     },
     {
+      "file": "tests/unit/app-footer.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; rodapé global preserva IDs dos controladores, blocos acessíveis e linha de atalhos."
+    },
+    {
       "file": "tests/unit/opportunity-cost-analytics.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo analítico puro de custo de oportunidade, pontos por hora (PPH) e priorização marginal."

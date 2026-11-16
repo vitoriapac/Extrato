@@ -36,6 +36,7 @@
   --chart-series-target:color-mix(in srgb,var(--ink-soft) 80%,transparent);
   --chart-grid:color-mix(in srgb,var(--paper-line) 85%,var(--ink-soft));
   --wizard-disabled-bg:#D9DFDA;--wizard-disabled-text:#66756D;
+  --footer-bg:#1E3F35;--footer-surface:#16322A;--footer-kbd-bg:color-mix(in srgb,black 35%,#1E3F35);--footer-text:#F4F6F4;--footer-text-muted:#A8D3B8;--footer-border:color-mix(in srgb,#A8D3B8 22%,transparent);--footer-border-subtle:color-mix(in srgb,#A8D3B8 14%,transparent);--footer-secondary:#E9953F;--footer-secondary-hover:#F2A862;
   color-scheme:light;
 }
 

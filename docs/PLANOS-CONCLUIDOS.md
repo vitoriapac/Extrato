@@ -965,3 +965,32 @@ Oito rodadas de crítica (26 a 27 de 40) mostraram que os defeitos mecânicos es
   - `src/app.ts` inalterado (`git diff -- src/app.ts` vazio, **370 linhas**).
   - Auditoria `npx impeccable detect` sem violações (`[]`) em desktop (`1280×800`) e mobile (`390×844`) na etapa de inspeção visual, além dos suites Playwright de Planejamento/histórico/consolidação visual (`planning-subtabs.spec.js`, `strategic-history.spec.js`, `visual-consolidation.spec.js`).
   - Pós-polimento final de CSS e rebuild completo (`npm run build`, `app.bundle.js` com `1.810.755` bytes): Fast Gate (`npm run test:fast`) verde em **54,51 s** com **1.560 testes unitários** aprovados em `UTC` e `America/Sao_Paulo`, `check:syntax` (`1.146` arquivos), `check:types`, `check:types:tests`, `check:bundle`, auditoria de `404` arquivos de teste e `smoke.spec.js`.
+
+---
+
+## 29. Rodapé Global Preact 11 em Verde Musgo e Detalhes Âmbar (15/11/2026)
+
+- **Objetivo Concluído:** Criar e integrar o rodapé global da aplicação (`AppFooter.tsx`, montado via `mount-app-footer.ts`), com três colunas temáticas (`Produto`, `Seus dados`, `Ajuda`), linha de atalhos de teclado com visual mecânico `<kbd>` e assinatura institucional, estilizado no **verde musgo** da marca (`#1E3F35`) independente do tema, com a **cor secundária** (`--secondary` / âmbar `#E9953F`) aplicada aos detalhes visuais.
+- **Componentização e Contratos de UI:**
+  - `src/ui/shell/AppFooter.tsx`: componente declarativo Preact 11 que preserva integralmente os IDs públicos ligados pelos controladores de bootstrap (`#openSalesLandingBtn`, `#openSaasPlansBtn`, `#enterDemoBtn` com `aria-describedby="enterDemoNote"` e `#openDataManagementBtn`).
+  - `src/ui/shell/mount-app-footer.ts`: montagem única e limpa no composition root (`wire-ui-controllers.ts`), associando o atalho de busca ao controlador global (`Ctrl+K`).
+  - Substituição da seta de caractere de texto no botão flutuante `#backToTopBtn` por ícone SVG nativo Lucide (`arrow-up` 1.5px), assegurando estrita conformidade com a diretriz Zero Emojis / Zero caracteres Unicode decorativos.
+- **Identidade de Cor e Design Tokens:**
+  - `styles/tokens.css`: definição das variáveis semânticas `--footer-bg: #1E3F35;`, `--footer-surface: #16322A;`, `--footer-kbd-bg: color-mix(in srgb, black 35%, #1E3F35);`, `--footer-text: #F4F6F4;`, `--footer-text-muted: #A8D3B8;`, `--footer-border: color-mix(in srgb, #A8D3B8 22%, transparent);`, `--footer-border-subtle: color-mix(in srgb, #A8D3B8 14%, transparent);`, `--footer-secondary: #E9953F;` e `--footer-secondary-hover: #F2A862;`.
+  - As variáveis do rodapé foram definidas no `:root` e mantidas ativas sem inversão em `[data-theme="dark"]`, garantindo uma moldura verde musgo constante que espelha e equilibra o cabeçalho `.statement`.
+  - Aplicação dos detalhes em cor secundária (`--secondary`):
+    - Friso de acento superior de 3px no topo do rodapé (`border-top: 3px solid var(--footer-secondary)`).
+    - Títulos de colunas em caixa alta com tracking editorial (`.app-footer__title`).
+    - Todos os 9 ícones vetoriais Lucide (`sparkles`, `crown`, `play`, `database`, `shield-check`, `file-text`, `help-circle`, `search`, `command`).
+    - Teclas `<kbd>` com borda inferior de 2px de relevo tátil na cor secundária.
+    - Hover de links com sublinhado e texto em `--footer-secondary-hover` (`#F2A862`) e anel de foco em `--footer-secondary`.
+    - Assinatura com destaque em "Extrato de Estudos" e no separador `·`.
+- **Acessibilidade e Governança:**
+  - Contraste WCAG AAA (10,4:1 no texto principal e 6,8:1 nas notas secundárias).
+  - Zero valores hexadecimais soltos em JSX ou `@layer components`.
+  - Zero novas funções em `src/app.ts`.
+  - Teste unitário dedicado `tests/unit/app-footer.test.js` registrado em `tests/config/test-tiers.json` e `tests/config/test-inventory.json`.
+- **Validação:**
+  - `npm run check:types`: aprovado sem erros.
+  - Fast Gate (`npm run test:fast`): aprovado em **58,86 s** (1.771 testes unitários em UTC e São Paulo).
+  - Playwright: `tests/e2e/visual-consolidation.spec.js` (26/26 aprovados).

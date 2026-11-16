@@ -28,6 +28,7 @@ import {
   createPreferencesController,
 } from './ui/controllers/preferences-controller.js';
 import { decorateAdvancedReveals, decorateTermHints } from './ui/essential-mode.js';
+import { mountAppFooter } from './ui/shell/mount-app-footer.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
 import { configureUndo } from './ui/undoable.js';
@@ -80,6 +81,8 @@ const essentialController = createEssentialController({ document, storage: local
 document
   .getElementById('essentialToggleBtn')
   ?.addEventListener('click', () => essentialController.toggle());
+// O rodapé precisa existir antes dos controladores que ligam listeners nos seus botões.
+mountAppFooter(document);
 decorateAdvancedReveals(document);
 decorateTermHints(document);
 

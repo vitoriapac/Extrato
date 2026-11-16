@@ -122,6 +122,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/amicro-chart-transitions.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/analytics-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/analytics.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/app-footer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-foundation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-selectors.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-state-store.test.js | node | Estado | critical | — | contract | none |
@@ -224,7 +225,6 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/focus-shift.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-duration.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-number.test.js | node | Aplicação | functional | — | contract | none |
-| tests/unit/goal-history-chart.test.js | node | Metas | critical | — | contract, viewport | none |
 | tests/unit/goal-service.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-components.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-renderer.test.js | node | Metas | functional | — | contract | none |

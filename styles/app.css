@@ -858,16 +858,6 @@
   }
   .empty-state p{margin:8px 0 16px;font-size:13px;}
 
-  footer{
-    margin-top:40px;text-align:center;font-family:var(--font-body);
-    font-size:var(--text-micro);color:var(--ink-soft);letter-spacing:0.03em;
-  }
-  .footer-primary-row{
-    display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;
-  }
-  .footer-actions{
-    display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;
-  }
   .data-management-dialog .backup-block{
     margin-top:0;border:0;padding:0;background:transparent;
   }
@@ -1284,8 +1274,7 @@ table.log thead th,
 .day-number,
 .cal-event,
 .cal-event-more,
-table.cal thead th,
-footer{font-size:var(--text-xs)}
+table.cal thead th{font-size:var(--text-xs)}
 
 .row-secondary,
 .kpi-cell .l,
@@ -2563,8 +2552,6 @@ body:has(#moreTabButton[aria-expanded="true"]) .save-indicator{visibility:hidden
 .weekly-record-stamp span+span{font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)}
 @media (prefers-reduced-motion:reduce){.weekly-record-stamp{animation:none}}
 
-/* Nota ao lado da demonstração: deixa claro que ela não toca nos dados do estudante. */
-.footer-demo-note{align-self:center;color:var(--text-secondary);font-size:var(--text-xs);line-height:1.4}
 /* Nav icons: icon before the label on desktop, above it in the bottom bar, alone under 375px. */
 .tab-btn:not(.more-tab-btn){display:inline-flex;align-items:center;justify-content:center;gap:8px;padding-inline:12px}
 /* Tablet estreito: as 8 abas somavam 759px em 715px e cortavam "Instruções"; 8px de respiro lateral as faz caber. */
@@ -2919,7 +2906,6 @@ body:not(.timer-focus-active) .study-timer-card.is-idle .timer-display{display:n
 .overview-detail-links{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);margin:0 0 var(--space-4);color:var(--ink-soft);font-size:var(--text-small,14px)}
 
 .statement-account{min-width:0;overflow-wrap:anywhere}
-footer>span{display:block;font-size:13px;color:var(--ink)}
 
 .metas-subpanel{margin:0 0 var(--space-4)}
 .metas-subpanel[hidden]{display:none}

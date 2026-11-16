@@ -11,6 +11,8 @@ Este pacote estabelece a base para reorganizar Metas, Desempenho e as demais ár
 | Subárea | `--surface-subtle` | Evidência e controles dentro de uma unidade. |
 | Destaque | `--surface-highlight` | Atenção sem competir com a ação principal. |
 | Primária | `--surface-primary` | Uma decisão ou resultado dominante. |
+| Rodapé (Musgo) | `--footer-bg` | Verde musgo institucional (`#1E3F35`) constante em ambos os temas. |
+| Superfície Rodapé | `--footer-surface` | Bloco sutil interno de atalhos (`#16322A`). |
 
 Texto, bordas e acentos usam `--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-primary`, `--border-default`, `--border-emphasis`, `--accent-primary` e `--accent-warning`. Todos se resolvem a partir dos tokens de tema existentes; não há cor branca literal nos componentes. Os tokens legados continuam disponíveis durante a migração, para não mudar telas não revisadas.
 
@@ -22,6 +24,7 @@ A escala canônica é 4, 8, 12, 16, 24, 32, 48 e 64 px (`--space-1/2/3/4/6/8/12/
 - `renderSectionHeader`, `renderEmptyState` e `renderMetricCard` em `src/ui/components/presentation.ts` centralizam HTML e escape de texto. `module-heading` continua sendo o cabeçalho existente; `.ui-section-header` fornece o ritmo editorial para novas seções.
 - Os contratos reutilizáveis em Preact (`src/ui/primitives/`) e `@layer components` de `styles/tailwind.input.css` abrangem `.ui-metric-group`/`.ui-metric`, `.ui-progress`, `.ui-filter-bar`, `.ui-data-table`, `.ui-action-menu`, `.ui-tabs`/`.ui-segmented`, `.ui-popover`, `.ui-menu`, `.ui-select-field`/`.ui-combobox`, `.ui-tooltip`, `.ui-toast`/`.ui-toast-viewport`, `.ui-dialog` e `.ui-bottom-sheet` (operando via Top Layer nativo `<dialog>` com `syncModalShell`). Barras exigem valor textual próximo ou nome/valor acessíveis. Tabelas largas ficam em região com rolagem por teclado; menus, popovers e combobox mantêm nome, navegação por teclado (`Arrow`, `Home`/`End`, `Escape`) e foco explícitos.
 - Estados vazios devem dizer qual dado falta e qual registro ou ação o produz. O componente não inventa métricas ausentes.
+- O rodapé global (`src/ui/shell/AppFooter.tsx`, `.app-footer-shell`) atua como fechamento equilibrado com o cabeçalho `.statement`, mantendo o verde musgo (`--footer-bg: #1E3F35`) e borda/detalhes na cor secundária âmbar (`--secondary: #E9953F`). Atalhos usam `<kbd>` mecânico com relevo tátil de 2px, texto em alto contraste (`#F4F6F4`, 10,4:1) e notas em sálvia (`#A8D3B8`, 6,8:1). Zero emojis Unicode, ícones vetoriais Lucide `1.5px` e preservação dos IDs de bootstrap.
 
 Gráficos e Desempenho já usam os renderers compartilhados. A barra de filtros, a faixa de métricas e a tabela de Desempenho usam as classes comuns sem perder os estilos específicos da visão. Os próximos pacotes devem trocar um componente antigo quando revisarem sua página, removendo a regra antiga correspondente.
 

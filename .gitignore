@@ -32,6 +32,8 @@ graphify-out/*
 .impeccable/*
 !.impeccable/design.json
 .agents/skills/impeccable/scripts/bin/
+.taste-skill/
+tasks/prints-*/
 
 # Build de producao e variaveis locais
 dist/
