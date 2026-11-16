@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
@@ -31,6 +31,10 @@ export function LegalComplianceView({
 }: LegalComplianceViewProps) {
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy' | 'rights'>(initialTab);
   const [copiedEmail, setCopiedEmail] = useState(false);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const documentMap: Record<'terms' | 'privacy' | 'rights', LegalDocument> = {
     terms: TERMS_OF_SERVICE,
@@ -176,23 +180,23 @@ export function LegalComplianceView({
       )}
 
       {/* Conteúdo das Cláusulas com Legal Design */}
-      <div class="flex flex-col gap-stack max-h-[52vh] overflow-y-auto pr-1">
+      <div class="flex flex-col gap-stack max-h-[62vh] overflow-y-auto pr-1">
         {currentDoc.sections.map((section, idx) => (
           <article
             key={section.id || idx}
             class="p-card rounded-default bg-surface-card border border-border-default flex flex-col gap-3"
           >
             {/* Título da Seção */}
-            <h4 class="text-xs font-semibold text-text leading-snug">{section.title}</h4>
+            <h4 class="text-sm font-semibold text-text leading-snug">{section.title}</h4>
 
             {/* Caixa de Legal Design (Linguagem Simples) */}
-            <div class="p-3 rounded bg-surface-subtle border border-border-subtle text-xs text-secondary leading-relaxed">
+            <div class="p-3 rounded bg-surface-subtle border border-border-subtle text-sm text-secondary leading-relaxed">
               <strong class="font-semibold text-text block mb-1">Em linguagem simples:</strong>
               {section.simpleSummary}
             </div>
 
             {/* Texto Formal Contratual */}
-            <div class="space-y-2 text-xs text-secondary leading-relaxed pt-1">
+            <div class="space-y-2 text-sm text-secondary leading-relaxed pt-1">
               {section.content.map((p, pIdx) => (
                 <p key={pIdx}>{p}</p>
               ))}
@@ -221,7 +225,7 @@ export function LegalComplianceView({
         open={open}
         onClose={onClose || (() => {})}
         title="Conformidade Legal & Privacidade"
-        maxWidth="xl"
+        maxWidth="4xl"
         className="max-h-[92vh]"
       >
         {content}
