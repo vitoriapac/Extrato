@@ -26,6 +26,7 @@ import {
   recommendationActionKind,
   recommendationActionLabel,
 } from '../../../application/recommendations/recommendation-action.js';
+import { revalidateNextBestAction } from '../../../application/diagnostics/build-next-best-action.js';
 import { createRecommendationController } from '../../../application/recommendations/recommendation-controller.js';
 import { createReplanController } from '../../../application/planning/replan-controller.js';
 import { renderIconSvg } from '../../primitives/icon.js';
@@ -880,11 +881,26 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
   });
 
   function executeStudyRecommendation(id: string, source = 'today') {
+    const state = getState();
+    const dismissedIds = (state.recommendationFeedback || [])
+      .filter((fb: any) => fb?.decision === 'dismissed' || fb?.decision === 'rejected')
+      .map((fb: any) => String(fb.recommendationId || fb.id || ''))
+      .filter(Boolean);
+
     const dailyPriority = dailyExecutionController?.build?.()?.priority;
     if (
       dailyPriority?.unplannedAction &&
       (dailyPriority.action?.id === id || dailyPriority.action?.recommendationId === id)
     ) {
+      const check = revalidateNextBestAction({
+        action: dailyPriority.action,
+        activeExamTags: state.examBlueprint?.activeExamTags || [],
+        dismissedIds,
+      });
+      if (!check.valid) {
+        showToast(check.reason || 'Recomendação indisponível no contexto atual.');
+        return false;
+      }
       return startStudyRecommendation(id, source);
     }
     return recommendationController.execute(id, { source });

@@ -72,6 +72,7 @@ export interface NextActionCardProps {
   explanationHtml?: string;
   dataAttributes?: Record<string, string>;
   onExecuteAction?: () => void;
+  onOpenTopicIntelligence?: () => void;
 }
 
 export function NextActionCard({
@@ -84,6 +85,7 @@ export function NextActionCard({
   explanationHtml = '',
   dataAttributes = {},
   onExecuteAction,
+  onOpenTopicIntelligence,
 }: NextActionCardProps): JSX.Element {
   if (!model) {
     if (emptyState?.isFirstRun) {
@@ -296,6 +298,17 @@ export function NextActionCard({
         {/* 6. O que devo fazer a seguir? (Botão de ação principal e atalhos de questões) */}
         <div className="overview-action-buttons flex flex-wrap items-center gap-2">
           {renderActionButton()}
+          {onOpenTopicIntelligence && (
+            <button
+              type="button"
+              onClick={onOpenTopicIntelligence}
+              className="btn btn--subtle text-xs inline-flex items-center gap-1 px-3 py-2 rounded border border-border-default bg-surface-card hover:bg-surface-subtle text-primary transition-colors cursor-pointer"
+              aria-label={`Abrir Ficha Inteligente de ${what.topicName}`}
+            >
+              <Icon name="sparkles" size={13} class="shrink-0 text-secondary" />
+              <span>Detalhar ficha</span>
+            </button>
+          )}
           {(practiceLinks || model.practiceLinks) && (
             <div
               className="practice-action-links inline-flex items-center gap-2"

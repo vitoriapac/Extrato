@@ -464,6 +464,23 @@ export function createStateMigrator({
     data.schemaVersion = 32;
     return data;
   }
+
+  function migrateV32toV33(data: Record<string, any>) {
+    if (!Array.isArray(data.topicEquivalences)) {
+      data.topicEquivalences = [];
+    }
+    data.schemaVersion = 33;
+    return data;
+  }
+
+  function migrateV33toV34(data: Record<string, any>) {
+    if (!Array.isArray(data.studyMaterials)) {
+      data.studyMaterials = [];
+    }
+    data.schemaVersion = 34;
+    return data;
+  }
+
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -499,6 +516,8 @@ export function createStateMigrator({
         29: migrateV29toV30,
         30: migrateV30toV31,
         31: migrateV31toV32,
+        32: migrateV32toV33,
+        33: migrateV33toV34,
       },
     });
   }

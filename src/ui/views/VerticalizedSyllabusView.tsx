@@ -30,6 +30,7 @@ export interface VerticalizedSyllabusViewProps {
   subjects: VerticalizedSubjectItem[];
   onToggleStage?: (topicId: string, stage: keyof TopicStageChecklist, done: boolean) => void;
   onStartStudy?: (subjectId: string, topicId: string) => void;
+  onOpenTopicIntelligence?: (subjectId: string, topicId: string) => void;
   onImportParsedSyllabus?: (result: RawSyllabusParsedResult) => void;
 }
 
@@ -37,6 +38,7 @@ export function VerticalizedSyllabusView({
   subjects = [],
   onToggleStage,
   onStartStudy,
+  onOpenTopicIntelligence,
   onImportParsedSyllabus,
 }: VerticalizedSyllabusViewProps) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('all');
@@ -289,6 +291,18 @@ export function VerticalizedSyllabusView({
                             <span>QC</span>
                           </a>
                         </div>
+
+                        {onOpenTopicIntelligence && (
+                          <button
+                            type="button"
+                            class="px-2.5 py-1 rounded text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-secondary hover:text-primary inline-flex items-center gap-1 cursor-pointer"
+                            onClick={() => onOpenTopicIntelligence(subject.id, topic.id)}
+                            aria-label={`Abrir Ficha Inteligente de ${topic.name}`}
+                          >
+                            <Icon name="sparkles" size={12} />
+                            <span>Ficha</span>
+                          </button>
+                        )}
 
                         <button
                           type="button"

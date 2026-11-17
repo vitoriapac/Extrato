@@ -23,6 +23,8 @@ export const PERSISTENT_COLLECTIONS = Object.freeze([
   'metasPorDisciplina',
   'errorFlashcards',
   'learningJournal',
+  'topicEquivalences',
+  'studyMaterials',
 ] as const);
 
 export const PERSISTENT_OBJECTS = Object.freeze([

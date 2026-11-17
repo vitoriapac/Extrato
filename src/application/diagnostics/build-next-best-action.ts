@@ -20,7 +20,13 @@ export function buildNextBestAction({
   activePlan = null,
   weeklyCapacityMinutes = 0,
   projection = null,
+  activeExamTags = [],
 }: any = {}) {
+  const normalizedExamTags = Array.isArray(activeExamTags)
+    ? activeExamTags.map(tag => String(tag).trim()).filter(Boolean).sort()
+    : [];
+  const examScopeKey = normalizedExamTags.join('|') || 'all';
+
   for (const recommendation of recommendations) {
     const action = buildStudyAction(recommendation, { source: 'diagnosis' });
     if (
@@ -32,6 +38,14 @@ export function buildNextBestAction({
       (recommendation.status && recommendation.status !== 'pending')
     )
       continue;
+    if (
+      normalizedExamTags.length > 0 &&
+      Array.isArray(recommendation.examTags) &&
+      recommendation.examTags.length > 0 &&
+      !recommendation.examTags.some((tag: string) => normalizedExamTags.includes(String(tag).trim()))
+    ) {
+      continue;
+    }
     const row =
       diagnosis?.topics?.find(
         (item: any) => item.subjectId === action.subjectId && item.topicId === action.topicId
@@ -71,6 +85,7 @@ export function buildNextBestAction({
       weeklyPlannedMinutes: activePlan?.weeklyPlannedMinutes ?? null,
       currentAllocationMinutes: allocation?.minutes ?? null,
       activePlanId: activePlan?.id || null,
+      examScopeKey,
     };
   }
   const rows = diagnosis?.rows || [...(diagnosis?.topics || []), ...(diagnosis?.subjects || [])];
@@ -98,4 +113,80 @@ export function buildNextBestAction({
     reason:
       'Ainda não há evidência suficiente para indicar uma ação. Registre sessões, questões e revisões vinculadas a tópicos.',
   };
+}
+
+export interface RevalidateNextBestActionInput {
+  action: Record<string, any> | null | undefined;
+  expectedExamScopeKey?: string | null;
+  activeExamTags?: string[];
+  recommendations?: Array<Record<string, any>>;
+  dismissedIds?: Iterable<string>;
+}
+
+export interface RevalidateNextBestActionResult {
+  valid: boolean;
+  reason: string | null;
+  refreshedAction: Record<string, any> | null;
+}
+
+/**
+ * Revalida uma ação de recomendação no momento do clique (Ciclo 1.1),
+ * impedindo execução de recomendação recusada, expirada ou de outro concurso.
+ */
+export function revalidateNextBestAction({
+  action,
+  expectedExamScopeKey = null,
+  activeExamTags = [],
+  recommendations = [],
+  dismissedIds = [],
+}: RevalidateNextBestActionInput): RevalidateNextBestActionResult {
+  if (!action || !action.id || !action.topicId) {
+    return { valid: false, reason: 'Ação inválida ou sem tópico associado.', refreshedAction: null };
+  }
+
+  const currentScopeKey =
+    (Array.isArray(activeExamTags)
+      ? activeExamTags.map(tag => String(tag).trim()).filter(Boolean).sort().join('|')
+      : '') || 'all';
+  if (expectedExamScopeKey && expectedExamScopeKey !== currentScopeKey) {
+    return {
+      valid: false,
+      reason: 'O concurso ativo foi alterado. Atualize a recomendação antes de iniciar.',
+      refreshedAction: null,
+    };
+  }
+
+  const dismissed = new Set(Array.from(dismissedIds, id => String(id)));
+  const recId = String(action.recommendationId || action.id);
+  if (dismissed.has(recId) || dismissed.has(String(action.id))) {
+    return {
+      valid: false,
+      reason: 'Esta recomendação já foi recusada ou encerrada.',
+      refreshedAction: null,
+    };
+  }
+
+  if (recommendations.length > 0) {
+    const match = recommendations.find(rec => {
+      const candidateId = String(rec.recommendationId || rec.id || '');
+      return candidateId === recId || (rec.subjectId === action.subjectId && rec.topicId === action.topicId);
+    });
+    if (
+      !match ||
+      match.available === false ||
+      match.eligible === false ||
+      match.canStudy === false ||
+      (match.status && match.status !== 'pending')
+    ) {
+      return {
+        valid: false,
+        reason: 'Esta recomendação não está mais elegível no momento.',
+        refreshedAction: null,
+      };
+    }
+    const refreshed = buildStudyAction(match, { source: action.source || 'diagnosis' });
+    return { valid: Boolean(refreshed), reason: refreshed ? null : 'Ação indisponível.', refreshedAction: refreshed };
+  }
+
+  return { valid: true, reason: null, refreshedAction: action };
 }

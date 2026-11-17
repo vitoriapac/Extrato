@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-357 arquivos Node e 81 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+360 arquivos Node e 81 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -389,6 +389,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/structured-content-import.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/study-cycle-engine.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-day-count.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/study-material.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-plan-builder-controller.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/study-plan.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/study-recommendation-controller.test.js | node | Recomendações | functional | — | contract | none |
@@ -418,9 +419,11 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/today-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-analytics-view.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-bookmark.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/topic-canonical-identity.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-exam-profile.test.js | node | Inteligência da prova | functional | — | contract | none |
 | tests/unit/topic-history-service.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/topic-incidence.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/topic-intelligence.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-mastery-calibration.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-performance.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/topic-signals.test.js | node | Aplicação | functional | — | contract | none |

@@ -13,6 +13,7 @@ import { EXAM_PRIORITIES } from '../state/strategic.js';
 import { EXAM_INTELLIGENCE_CONFIG } from '../domain/exam-intelligence/config.js';
 import { validateExam } from '../domain/exam-intelligence/exam.js';
 import { validateExamQuestion } from '../domain/exam-intelligence/exam-question.js';
+import { sanitizeMaterialUrl, STUDY_MATERIAL_KINDS } from '../domain/study-material.js';
 import { validAchievementProjectionSnapshot } from '../application/projection/achievement-projection-history.js';
 import { validCapacityRecord } from '../domain/planning/capacity-history.js';
 import { validateBackupEnvelope } from './migration-service.js';
@@ -601,6 +602,10 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
   if (flashcardError) return fail(flashcardError);
   const journalError = validateLearningJournal(data.learningJournal);
   if (journalError) return fail(journalError);
+  const equivalenceError = validateTopicEquivalences(data.topicEquivalences);
+  if (equivalenceError) return fail(equivalenceError);
+  const materialsError = validateStudyMaterials(data.studyMaterials);
+  if (materialsError) return fail(materialsError);
   const cycleError = validateStudyCycle(data.studyCycle);
   if (cycleError) return fail(cycleError);
   return { valid: true };
@@ -645,6 +650,71 @@ function validateLearningJournal(entries: unknown): string {
       return `A entrada "${entry.id}" do diário possui dificuldade inválida.`;
     if (entry.energyRating != null && !VALID_JOURNAL_ENERGY.has(String(entry.energyRating)))
       return `A entrada "${entry.id}" do diário possui nível de energia inválido.`;
+  }
+  return '';
+}
+
+function validateTopicEquivalences(entries: unknown): string {
+  if (entries === undefined) return '';
+  if (!Array.isArray(entries)) return 'O campo "topicEquivalences" deve ser uma lista.';
+  if (entries.length > 20000) return 'O campo "topicEquivalences" excede o limite seguro.';
+  const seen = new Set<string>();
+  const text = (value: unknown, max: number) => typeof value === 'string' && value.length <= max;
+  for (const entry of entries) {
+    if (!isPlainObject(entry)) return 'Uma equivalência de tópico não é um objeto válido.';
+    if (!isSafeId(entry.id) || seen.has(entry.id)) {
+      return 'O backup contém equivalências com identificador inválido ou duplicado.';
+    }
+    seen.add(entry.id);
+    if (!isSafeId(entry.topicId) || !isSafeId(entry.canonicalTopicId)) {
+      return 'Uma equivalência de tópico possui referência de tópico inválida.';
+    }
+    if (!text(entry.preservedOriginalName, 300) || !text(entry.canonicalName, 300)) {
+      return 'Uma equivalência de tópico possui nome inválido.';
+    }
+    if (entry.source !== 'manual' && entry.source !== 'catalog') {
+      return 'Uma equivalência de tópico possui origem inválida.';
+    }
+    if (typeof entry.confirmedAt !== 'string' || !entry.confirmedAt) {
+      return 'Uma equivalência de tópico não possui data de confirmação.';
+    }
+  }
+  return '';
+}
+
+const VALID_MATERIAL_KINDS = new Set<string>(STUDY_MATERIAL_KINDS);
+
+function validateStudyMaterials(entries: unknown): string {
+  if (entries === undefined) return '';
+  if (!Array.isArray(entries)) return 'O campo "studyMaterials" deve ser uma lista.';
+  if (entries.length > 50000) return 'O campo "studyMaterials" excede o limite seguro.';
+  const seen = new Set<string>();
+  const text = (value: unknown, max: number) => typeof value === 'string' && value.length <= max;
+  for (const entry of entries) {
+    if (!isPlainObject(entry)) return 'Um material de estudo não é um objeto válido.';
+    if (!isSafeId(entry.id) || seen.has(entry.id)) {
+      return 'O backup contém materiais com identificador inválido ou duplicado.';
+    }
+    seen.add(entry.id);
+    if (!isSafeId(entry.subjectId)) return 'Um material de estudo possui disciplina inválida.';
+    if (entry.topicId != null && !isSafeId(entry.topicId)) {
+      return 'Um material de estudo possui tópico inválido.';
+    }
+    if (!text(entry.title, 200) || !entry.title.trim()) {
+      return 'Um material de estudo possui título inválido.';
+    }
+    if (!VALID_MATERIAL_KINDS.has(String(entry.kind))) {
+      return 'Um material de estudo possui tipo inválido.';
+    }
+    if (entry.url != null && entry.url !== '' && !sanitizeMaterialUrl(entry.url)) {
+      return 'Um material de estudo possui URL insegura ou inválida.';
+    }
+    if (typeof entry.isPrimary !== 'boolean') {
+      return 'Um material de estudo possui indicador principal inválido.';
+    }
+    if (typeof entry.createdAt !== 'string' || typeof entry.updatedAt !== 'string') {
+      return 'Um material de estudo não possui timestamps válidos.';
+    }
   }
   return '';
 }
@@ -771,6 +841,8 @@ export function validateBackupData(
     'metasPorDisciplina',
     'errorFlashcards',
     'learningJournal',
+    'topicEquivalences',
+    'studyMaterials',
   ];
   const envelope = validateBackupEnvelope(data, {
     currentVersion: options.currentSchemaVersion ?? CURRENT_SCHEMA_VERSION,

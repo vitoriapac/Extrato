@@ -146,6 +146,32 @@ export interface LearningJournalEntry {
   updatedAt: string;
 }
 
+export interface TopicEquivalenceRecord {
+  id: string;
+  topicId: string;
+  preservedOriginalName: string;
+  canonicalTopicId: string;
+  canonicalName: string;
+  source: 'manual' | 'catalog';
+  confirmedAt: string;
+}
+
+export type StudyMaterialKind = 'pdf' | 'video' | 'article' | 'questions' | 'other';
+
+export interface StudyMaterial {
+  id: string;
+  examId?: string | null;
+  subjectId: string;
+  topicId?: string | null;
+  title: string;
+  kind: StudyMaterialKind;
+  url?: string | null;
+  isPrimary: boolean;
+  archived?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StudySession {
   id: string;
   date: string;
@@ -498,6 +524,8 @@ export interface AppState {
   metasPorDisciplina: SubjectGoal[];
   errorFlashcards?: ErrorFlashcard[];
   learningJournal?: LearningJournalEntry[];
+  topicEquivalences?: TopicEquivalenceRecord[];
+  studyMaterials?: StudyMaterial[];
   studyCycle?: Record<string, any> | null;
   lastBackupAt: string | null;
   /** When the user last downloaded a backup file (F7); lastBackupAt is the automatic in-browser copy. */

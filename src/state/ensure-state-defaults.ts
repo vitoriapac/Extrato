@@ -52,6 +52,8 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   if (!Array.isArray(state.planningCapacityHistory)) state.planningCapacityHistory = [];
   if (!Array.isArray(state.errorFlashcards)) state.errorFlashcards = [];
   if (!Array.isArray(state.learningJournal)) state.learningJournal = [];
+  if (!Array.isArray(state.topicEquivalences)) state.topicEquivalences = [];
+  if (!Array.isArray(state.studyMaterials)) state.studyMaterials = [];
   if (state.studyCycle === undefined) state.studyCycle = null;
   if (!['agenda', 'sequence'].includes(state.executionMode)) state.executionMode = 'sequence';
 

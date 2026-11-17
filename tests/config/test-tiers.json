@@ -1927,6 +1927,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/study-material.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato para Central de Materiais por Tópico e sanitização de URLs."
+    },
+    {
       "file": "tests/unit/study-day-count.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -2250,6 +2255,16 @@
       "file": "tests/unit/weekly-history-series-renderer.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node rápido e determinístico no Fast Gate."
+    },
+    {
+      "file": "tests/unit/topic-canonical-identity.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato para Identidade Canônica de Tópicos e migração v32 -> v34."
+    },
+    {
+      "file": "tests/unit/topic-intelligence.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato para Ficha Inteligente do Tópico e revalidação de Próxima Ação."
     },
     {
       "file": "tests/unit/weekly-performance-brief.test.js",

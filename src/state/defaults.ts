@@ -67,6 +67,8 @@ export function createDefaultState(): AppState {
     metasPorDisciplina: [],
     errorFlashcards: [],
     learningJournal: [],
+    topicEquivalences: [],
+    studyMaterials: [],
     studyCycle: null,
     lastBackupAt: null,
     lastExportAt: null,

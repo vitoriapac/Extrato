@@ -61,6 +61,7 @@ Extrato de Estudos é uma aplicação web para planejar estudos, registrar sess�
 - **Comparativo com Aprovados por Carreira (`CareerBenchmarkCard.tsx`):** Benchmarks de horas semanais, volume de questões, acerto e mix pedagógico (Teoria, Questões, Revisões) para 5 carreiras na aba Desempenho, 100% privado e executado localmente no navegador.
 - **Tracking de Páginas Lidas & Blocos de Vídeo-aula:** Registro opcional de páginas lidas e blocos assistidos no término da sessão, com avanço automático do marcador (`TopicBookmark.currentUnit`) e exibição nos cards de metas da aba Hoje e Desempenho.
 - **Acolhimento da Semana Real & Microcopy Empática (`RealWeekBanner.tsx`):** Banner acolhedor na aba Hoje quando há imprevistos, recalibração inteligente de horas em 1 clique e eliminação de termos punitivos (*"Atenção prioritária"*, *"Revisões para regularizar"*, *"Sua semana mudou? Reajuste sua capacidade sem culpa"*).
+- **Ficha Inteligente do Tópico, Identidade Canônica e Central de Materiais ([contratos](docs/CICLOS-1-2-3-CONTRATOS.md)):** agregador contextual somente-leitura por tópico (`TopicIntelligenceView`) com revalidação de Próxima Ação (`revalidateNextBestAction`), catálogo híbrido de equivalência canônica sem fusão automática (`topicEquivalences`, schema v33), painel comparativo do edital (`EditalPriorityPanel`) e biblioteca de materiais por URL sanitizada (`StudyMaterial`, schema v34).
 
 ## Rotas Diretas e Deep Linking via URL
 
