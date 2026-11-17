@@ -562,14 +562,14 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
           return (
             '<section class="weekly-close-act" data-weekly-ritual-summary="true" aria-labelledby="weeklyRitualTitle">' +
             '<h4 class="weekly-close-act__title" id="weeklyRitualTitle">Ritual de fechamento inteligente</h4>' +
-            `<p class="m-0 text-xs text-content-secondary"><strong>${escapeHtml(ritual.window.windowLabel)}</strong> · ${escapeHtml(ritual.window.periodLabel)} · ${escapeHtml(ritual.confidence.label)} · ${escapeHtml(formatPlanMinutes(ritual.metrics.studiedMinutes))} em ${ritual.metrics.sessionsCount} sessões · ${ritual.metrics.resolved} questões</p>` +
+            `<p class="m-0 text-xs text-content-secondary"><strong>${escapeHtml(ritual.window.windowLabel)}</strong> · <span class="font-data">${escapeHtml(ritual.window.periodLabel)}</span> · ${escapeHtml(ritual.confidence.label)} · <span class="font-data">${escapeHtml(formatPlanMinutes(ritual.metrics.studiedMinutes))} em ${ritual.metrics.sessionsCount} sessões · ${ritual.metrics.resolved} questões</span></p>` +
             (ritual.comparisonWarning
               ? `<p class="m-0 text-xs text-content-secondary">${escapeHtml(ritual.comparisonWarning)}</p>`
               : '') +
-            '<div class="grid grid-cols-1 md:grid-cols-3 gap-2">' +
-            `<div class="p-3 rounded bg-surface-subtle border border-border-subtle space-y-1"><strong class="text-xs text-content-primary block">O que funcionou</strong>${workedHtml}</div>` +
-            `<div class="p-3 rounded bg-surface-subtle border border-border-subtle space-y-1"><strong class="text-xs text-content-primary block">O que precisa de atenção</strong>${attentionHtml}</div>` +
-            `<div class="p-3 rounded bg-surface-subtle border border-border-subtle space-y-1"><strong class="text-xs text-content-primary block">Uma melhoria para testar</strong><p class="m-0 text-content-secondary text-xs">${escapeHtml(improvementDetail)}</p></div>` +
+            '<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-border-subtle">' +
+            `<div class="space-y-1"><strong class="text-xs text-content-primary block">O que funcionou</strong>${workedHtml}</div>` +
+            `<div class="space-y-1"><strong class="text-xs text-content-primary block">O que precisa de atenção</strong>${attentionHtml}</div>` +
+            `<div class="space-y-1"><strong class="text-xs text-content-primary block">Uma melhoria para testar</strong><p class="m-0 text-content-secondary text-xs">${escapeHtml(improvementDetail)}</p></div>` +
             '</div>' +
             reflectionHtml +
             '</section>'

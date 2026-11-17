@@ -478,7 +478,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     });
   }
 
-  function renderStudyCycleCenterSection(): void {
+  function renderStudyCycleCenterSection(forceVisible = false): void {
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     if (!doc || typeof globalThis.document === 'undefined') return;
     const subSemana = doc.getElementById('metasSub-semana') as HTMLElement | null;
@@ -502,7 +502,16 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
 
     const state = resolveState() || {};
     const activeSubs = (state.subjects || []).filter((s: any) => s && !s.archived);
-    if (activeSubs.length === 0) {
+    const hasPlanningContext = Boolean(
+      forceVisible ||
+        state.examDate ||
+        isCapacityInformed(state) ||
+        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+        (Array.isArray(state.studySessions) && state.studySessions.length > 0) ||
+        state.studyCycle ||
+        state.executionMode === 'sequence'
+    );
+    if (activeSubs.length === 0 || !hasPlanningContext) {
       mount.hidden = true;
       const before = mount.previousElementSibling as HTMLElement | null;
       if (before?.classList?.contains('advanced-reveal')) before.hidden = true;
@@ -586,7 +595,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     ctx.activateTab?.('metas');
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     (doc?.getElementById('metasTab-semana') as HTMLElement | null)?.click?.();
-    renderStudyCycleCenterSection();
+    renderStudyCycleCenterSection(true);
     const mount = doc?.getElementById('metasCycleCenterMount') as HTMLElement | null;
     if (mount && !mount.hidden) {
       revealAdvanced(mount);

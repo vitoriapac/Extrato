@@ -1,4 +1,5 @@
 import { Dialog } from '../primitives/dialog.js';
+import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
 
@@ -61,20 +62,20 @@ export function FirstAccessModal({
 
         {/* Opções de Início */}
         <div className="grid grid-cols-1 gap-4 pt-1">
-          {/* Opção 1: Montar plano guiado (Recomendado) */}
-          <article className="relative rounded-default border-2 border-accent/50 bg-accent/5 p-card transition-colors hover:border-accent flex flex-col items-stretch gap-4">
+          {/* Opção 1: Montar plano guiado */}
+          <article className="relative rounded-default border border-border-emphasis bg-surface-card p-card transition-colors hover:border-border-hover flex flex-col items-stretch gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-4">
-              <div className="p-3 rounded-full bg-accent/10 text-accent shrink-0">
-                <Icon name="rocket" size={22} class="shrink-0" />
+              <div className="p-3 rounded-default bg-surface-subtle text-accent shrink-0">
+                <Icon name="compass" size={20} class="shrink-0" />
               </div>
               <div className="min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <h4 className="text-base font-semibold text-content-primary m-0">
                     Montar meu plano guiado
                   </h4>
-                  <span className="status-badge status-badge--highlight font-semibold uppercase tracking-wide">
+                  <Badge variant="info" icon={false}>
                     Recomendado
-                  </span>
+                  </Badge>
                 </div>
                 <p className="text-xs text-content-secondary m-0 leading-relaxed">
                   Assistente rápido em 4 passos: prazo da prova, horas semanais e pacote
@@ -97,7 +98,7 @@ export function FirstAccessModal({
           {/* Opção 2: Demonstração Interativa */}
           <article className="rounded-default border border-border-default bg-surface-card p-card transition-colors hover:border-border-hover flex flex-col items-stretch gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-4">
-              <div className="p-3 rounded-full bg-surface-subtle text-content-secondary shrink-0">
+              <div className="p-3 rounded-default bg-surface-subtle text-content-secondary shrink-0">
                 <Icon name="player-play" size={20} class="shrink-0" />
               </div>
               <div className="min-w-0 space-y-1">
@@ -149,9 +150,9 @@ export function FirstAccessModal({
               type="button"
               onClick={onOpenSalesLanding}
               className="btn tertiary text-xs"
-              aria-label="Ver apresentação completa e planos Free e Pro"
+              aria-label="Ver apresentação e recursos do aplicativo"
             >
-              Ver apresentação e planos (Free / Pro)
+              Ver apresentação e recursos
             </button>
           )}
         </footer>

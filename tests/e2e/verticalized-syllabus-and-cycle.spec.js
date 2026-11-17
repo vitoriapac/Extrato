@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { generateDemoData } from '../../src/demo/demo-generator.js';
-import { activateTab } from './helpers.js';
+import { activateTab, openDemo } from './helpers.js';
 
 async function prepare(page) {
   await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
@@ -277,4 +277,21 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
   await expect(ritualSection).toContainText('Ritual de fechamento inteligente');
   await expect(ritualSection).toContainText('O que funcionou');
   await expect(ritualSection).toContainText('Uma melhoria para testar');
+});
+
+test('Demo Visão Geral renderiza Copiloto e Saúde do Edital sem erros de console nem #appErrorState', async ({
+  page,
+}) => {
+  const runtimeErrors = [];
+  page.on('pageerror', err => runtimeErrors.push(err.message));
+  page.on('console', msg => {
+    if (msg.type() === 'error') runtimeErrors.push(msg.text());
+  });
+
+  await openDemo(page);
+  await activateTab(page, 'dashboard');
+  await expect(page.locator('#appErrorState')).toBeHidden();
+  await expect(page.locator('#overviewCopilotMount [data-overview-copilot="true"]')).toBeVisible();
+  await expect(page.locator('#cockpitSyllabusHealthMount')).not.toBeEmpty();
+  expect(runtimeErrors.filter(text => /isDemoMode|Falha em visão geral/i.test(text))).toEqual([]);
 });

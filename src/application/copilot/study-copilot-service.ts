@@ -79,6 +79,7 @@ export interface BuildStudyCopilotInput {
   recommendationFeedback?: Array<Record<string, any>>;
   activeExamTags?: string[];
   studyDaysCount?: number;
+  plannedNextItem?: Record<string, any> | null;
 }
 
 function findBookmarkTarget(
@@ -126,6 +127,7 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     weeklyCloseSnapshots = [],
     recommendationFeedback = [],
     activeExamTags = [],
+    plannedNextItem = null,
   } = input;
 
   const nextBest = buildNextBestAction({
@@ -167,17 +169,22 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     limitations.push('Você está explorando o perfil de demonstração; nenhuma leitura altera seus dados.');
   }
 
-  // COP-01: O que estudar agora?
-  const whatNowHeadline = canonicalAction
-    ? `${nextBest.subjectName} — ${nextBest.topicName}`
-    : !hasAnySubjects
-      ? 'Cadastre ou escolha sua prova para receber a primeira recomendação'
-      : 'Sem ação prioritária elegível agora';
+  // COP-01: O que estudar agora? Alinha com a Próxima ação (item planejado de hoje ou motor único).
+  const hasPlannedNext = Boolean(plannedNextItem?.subjectId && plannedNextItem?.topicId);
+  const whatNowHeadline = hasPlannedNext
+    ? `${plannedNextItem!.subjectName || 'Disciplina'} — ${plannedNextItem!.topicName || 'Tópico'}`
+    : canonicalAction
+      ? `${nextBest.subjectName} — ${nextBest.topicName}`
+      : !hasAnySubjects
+        ? 'Cadastre ou escolha sua prova para receber a primeira recomendação'
+        : 'Sem ação prioritária elegível agora';
 
-  const whatNowBody = canonicalAction
-    ? `${nextBest.label}${canonicalAction.suggestedMinutes ? ` (${formatPlanMinutes(canonicalAction.suggestedMinutes)})` : ''}. A sugestão vem exatamente do mesmo motor usado na aba Hoje.`
-    : nextBest.reason ||
-      'Ainda não há registros suficientes. Faça uma primeira sessão rápida ou registre questões para destravar a prioridade.';
+  const whatNowBody = hasPlannedNext
+    ? `Próximo bloco do plano de hoje${plannedNextItem!.plannedMinutes ? ` (${formatPlanMinutes(plannedNextItem!.plannedMinutes)})` : ''}. Alinhado à Próxima ação${canonicalAction && canonicalAction.topicId !== plannedNextItem!.topicId ? `; fora do plano, o diagnóstico prioriza ${nextBest.subjectName} — ${nextBest.topicName}` : ''}.`
+    : canonicalAction
+      ? `${nextBest.label}${canonicalAction.suggestedMinutes ? ` (${formatPlanMinutes(canonicalAction.suggestedMinutes)})` : ''}. A sugestão vem exatamente do mesmo motor usado na aba Hoje.`
+      : nextBest.reason ||
+        'Ainda não há registros suficientes. Faça uma primeira sessão rápida ou registre questões para destravar a prioridade.';
 
   const whatNow: CopilotAnswer = {
     key: 'what_now',
@@ -188,10 +195,14 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
       ? `Prioridade ${Math.round(Number(canonicalAction.priority) || 0)}/100 · ${nextBest.evidence}`
       : null,
     limitations: [...limitations],
-    actionLabel: canonicalAction ? nextBest.label || null : 'Abrir Estudo Rápido',
-    actionKind: canonicalAction ? 'execute_action' : 'open_quick_study',
-    targetSubjectId: canonicalAction?.subjectId || null,
-    targetTopicId: canonicalAction?.topicId || null,
+    actionLabel: hasPlannedNext
+      ? 'Seguir próximo bloco do plano'
+      : canonicalAction
+        ? nextBest.label || null
+        : 'Abrir Estudo Rápido',
+    actionKind: hasPlannedNext || canonicalAction ? 'execute_action' : 'open_quick_study',
+    targetSubjectId: plannedNextItem?.subjectId || canonicalAction?.subjectId || null,
+    targetTopicId: plannedNextItem?.topicId || canonicalAction?.topicId || null,
   };
 
   // COP-02: Por quê? (prova x você x ação)

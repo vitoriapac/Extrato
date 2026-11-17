@@ -863,12 +863,21 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   }
 
   function handleDeleteJournalEntry(entryId: string): void {
-    const state = getState();
-    state.learningJournal = deleteLearningJournalEntry(state.learningJournal || [], entryId);
-    scheduleSave();
-    _showToast('Anotação removida do Diário.');
-    renderStudyAssistantBar();
-    renderTodayJournalSidebar();
+    const remove = () => {
+      const state = getState();
+      state.learningJournal = deleteLearningJournalEntry(state.learningJournal || [], entryId);
+      scheduleSave();
+      _showToast('Anotação removida do Diário.');
+      renderStudyAssistantBar();
+      renderTodayJournalSidebar();
+    };
+    if (ctx.showConfirm) {
+      ctx.showConfirm('Remover esta anotação do Diário de Aprendizagem?', remove, undefined, {
+        confirmLabel: 'Remover anotação',
+      });
+    } else {
+      remove();
+    }
   }
 
   function handleCreateReviewFromJournal(entry: any): void {

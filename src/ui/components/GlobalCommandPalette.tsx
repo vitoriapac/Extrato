@@ -71,11 +71,6 @@ export function GlobalCommandPalette({
                 icon={(cmd.icon || 'bolt') as IconName}
                 forceMount
                 className="search-result-item search-command"
-                trailing={
-                  <span class="command-palette-badge command-badge-action" aria-hidden="true">
-                    Ação
-                  </span>
-                }
                 onSelect={() => onExecuteCommand(cmd)}
               />
             ))}
@@ -91,11 +86,6 @@ export function GlobalCommandPalette({
                 icon={(cmd.icon || 'compass') as IconName}
                 forceMount
                 className="search-result-item search-command"
-                trailing={
-                  <span class="command-palette-badge command-badge-nav" aria-hidden="true">
-                    Navegação
-                  </span>
-                }
                 onSelect={() => onExecuteCommand(cmd)}
               />
             ))}

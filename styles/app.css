@@ -3776,4 +3776,12 @@ button.performance-window{position:relative}button.performance-window::after{con
   .subject-target-footer{bottom:calc(var(--bottom-nav-height,56px) + env(safe-area-inset-bottom))}
   .subject-target-table-wrap caption,.subject-target-table caption{display:block;width:100%;text-align:left}
 }
+@media(max-width:760px),(pointer:coarse){
+  button.statement-title.brand-home,
+  button.compact-brand.brand-home{min-height:44px;display:inline-flex;align-items:center}
+}
+#metasCycleCenterMount,
+#todayJournalSidebarMount,
+#todayStudyAssistantMount,
+#overviewCopilotMount{scroll-margin-top:calc(var(--sticky-stack-height,52px) + var(--overview-nav-height,54px) + var(--space-4))}
 

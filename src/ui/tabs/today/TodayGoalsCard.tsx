@@ -94,7 +94,7 @@ export function TodayGoalsCard({
               de {metaHorasFormatado} · {pctTempo}%
             </div>
             {paginasHoje > 0 && (
-              <div class="text-xs text-secondary mt-1 font-medium">
+              <div class="text-xs text-content-secondary mt-1 font-medium font-data">
                 {paginasHoje} {paginasHoje === 1 ? 'página lida' : 'páginas lidas'}
               </div>
             )}

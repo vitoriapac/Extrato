@@ -101,9 +101,10 @@ export interface DashboardTabControllerDeps {
   selectSessionHistoryDate?: (dateStr: string) => void;
   planStartDate?: () => string;
   nowISO?: () => string;
-  isDemoMode?: () => boolean;
+  isDemoMode?: boolean | (() => boolean);
   getCurrentStudyRecommendations?: () => any[];
   getLatestStudyPlan?: () => any;
+  getDailyPriority?: () => any;
   weeklyStrategyCapacity?: () => number;
   openAssistantPanel?: (
     panel: 'none' | 'quick' | 'copilot' | 'journal' | 'cycle_config' | 'weekly_closing',
@@ -238,106 +239,114 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
 
   function renderOverviewCopilotCard(hasConfigured: boolean, state: any, today: string): void {
     if (!doc || typeof globalThis.document === 'undefined') return;
-    const analyticsDisclosure = doc.getElementById('cockpitAnalyticsDisclosure') as HTMLElement | null;
-    if (!analyticsDisclosure || analyticsDisclosure.ownerDocument !== globalThis.document) return;
+    try {
+      const analyticsDisclosure = doc.getElementById('cockpitAnalyticsDisclosure') as HTMLElement | null;
+      if (!analyticsDisclosure || analyticsDisclosure.ownerDocument !== globalThis.document) return;
 
-    let mount = doc.getElementById('overviewCopilotMount') as HTMLElement | null;
-    if (!mount && hasConfigured) {
-      const created = doc.createElement('div') as HTMLElement;
-      created.id = 'overviewCopilotMount';
-      analyticsDisclosure.insertBefore(created, analyticsDisclosure.firstChild);
-      mount = created;
-    }
-    if (!mount || mount.ownerDocument !== globalThis.document) return;
-    mount.hidden = !hasConfigured;
-    if (!hasConfigured) return;
+      let mount = doc.getElementById('overviewCopilotMount') as HTMLElement | null;
+      if (!mount && hasConfigured) {
+        const created = doc.createElement('div') as HTMLElement;
+        created.id = 'overviewCopilotMount';
+        analyticsDisclosure.insertBefore(created, analyticsDisclosure.firstChild);
+        mount = created;
+      }
+      if (!mount || mount.ownerDocument !== globalThis.document) return;
+      mount.hidden = !hasConfigured;
+      if (!hasConfigured) return;
 
-    const candidates = deps.intelligenceCandidates ? deps.intelligenceCandidates() : [];
-    const recs = deps.getCurrentStudyRecommendations ? deps.getCurrentStudyRecommendations() : [];
-    const subjects = state?.subjects || [];
-    const copilot = buildStudyCopilotViewModel({
-      today,
-      nowISO: deps.nowISO ? deps.nowISO() : new Date().toISOString(),
-      isDemo: deps.isDemoMode ? deps.isDemoMode() : false,
-      recommendations: recs,
-      candidates,
-      activePlan: deps.getLatestStudyPlan ? deps.getLatestStudyPlan() : null,
-      weeklyCapacityMinutes: deps.weeklyStrategyCapacity ? deps.weeklyStrategyCapacity() : 0,
-      studyCycle: state?.studyCycle || null,
-      overdueReviews: collectOverviewOverdueReviews(today),
-      subjects,
-      sessions: state?.studySessions || [],
-      questions: state?.questoes || [],
-      dailyPlans: state?.dailyPlans || [],
-      weeklyCloseSnapshots: state?.weeklyCloseSnapshots || [],
-      recommendationFeedback: state?.recommendationFeedback || [],
-      activeExamTags: state?.examBlueprint?.activeExamTags || [],
-    });
+      const candidates = deps.intelligenceCandidates ? deps.intelligenceCandidates() : [];
+      const recs = deps.getCurrentStudyRecommendations ? deps.getCurrentStudyRecommendations() : [];
+      const subjects = state?.subjects || [];
+      const isDemo =
+        typeof deps.isDemoMode === 'function' ? Boolean(deps.isDemoMode()) : Boolean(deps.isDemoMode);
+      const dailyPriority = deps.getDailyPriority ? deps.getDailyPriority() : null;
+      const copilot = buildStudyCopilotViewModel({
+        today,
+        nowISO: deps.nowISO ? deps.nowISO() : new Date().toISOString(),
+        isDemo,
+        recommendations: recs,
+        candidates,
+        activePlan: deps.getLatestStudyPlan ? deps.getLatestStudyPlan() : null,
+        weeklyCapacityMinutes: deps.weeklyStrategyCapacity ? deps.weeklyStrategyCapacity() : 0,
+        studyCycle: state?.studyCycle || null,
+        overdueReviews: collectOverviewOverdueReviews(today),
+        subjects,
+        sessions: state?.studySessions || [],
+        questions: state?.questoes || [],
+        dailyPlans: state?.dailyPlans || [],
+        weeklyCloseSnapshots: state?.weeklyCloseSnapshots || [],
+        recommendationFeedback: state?.recommendationFeedback || [],
+        activeExamTags: state?.examBlueprint?.activeExamTags || [],
+        plannedNextItem: dailyPriority?.nextItem || null,
+      });
 
-    const executeCopilotAnswer = (answer: CopilotAnswer) => {
-      if (answer.actionKind === 'open_quick_study') {
-        if (deps.openAssistantPanel) deps.openAssistantPanel('quick', { quickMinutes: 30 });
-        else deps.activateTab?.('hoje');
-        return;
-      }
-      if (answer.actionKind === 'open_planning_preview') {
-        deps.activateTab?.('metas');
-        deps.openPlanningPreview?.();
-        return;
-      }
-      if (answer.actionKind === 'open_weekly_close') {
-        if (deps.openWeeklyClose) deps.openWeeklyClose();
-        else deps.openAssistantPanel?.('weekly_closing');
-        return;
-      }
-      if (answer.actionKind === 'execute_action') {
-        const check = revalidateCopilotAction(
-          copilot.action || {
-            subjectId: answer.targetSubjectId,
-            topicId: answer.targetTopicId,
-            activityType: 'study',
-          },
-          { candidates, recommendations: recs, subjects }
-        );
-        if (!check.valid) {
-          deps.showToast?.(check.reason || 'A orientação precisa ser atualizada.');
-          renderOverviewCopilotCard(true, deps.getState ? deps.getState() : {}, todayISO());
-          return;
-        }
-        if (deps.startGuidedTimerSession) {
-          deps.startGuidedTimerSession({
-            subjectId: answer.targetSubjectId || copilot.action?.subjectId || null,
-            topicId: answer.targetTopicId || copilot.action?.topicId || null,
-            type: copilot.action?.activityType || 'study',
-            targetMinutes: copilot.action?.suggestedMinutes || null,
-            recommendationId: copilot.recommendationId,
-            recommendationSource: 'today',
-            sessionOrigin: 'copilot',
-          });
-        } else if (deps.openAssistantPanel) {
-          deps.openAssistantPanel('copilot');
-        } else {
-          deps.activateTab?.('hoje');
-        }
-      }
-    };
-
-    mountPreact(
-      h(OverviewCopilotCard, {
-        copilot,
-        selectedQuestion: selectedCopilotQuestion,
-        onSelectQuestion: key => {
-          selectedCopilotQuestion = key;
-          renderOverviewCopilotCard(true, deps.getState ? deps.getState() : {}, todayISO());
-        },
-        onExecuteAnswer: executeCopilotAnswer,
-        onQuickStudy30: () => {
+      const executeCopilotAnswer = (answer: CopilotAnswer) => {
+        if (answer.actionKind === 'open_quick_study') {
           if (deps.openAssistantPanel) deps.openAssistantPanel('quick', { quickMinutes: 30 });
           else deps.activateTab?.('hoje');
-        },
-      }),
-      mount
-    );
+          return;
+        }
+        if (answer.actionKind === 'open_planning_preview') {
+          deps.activateTab?.('metas');
+          deps.openPlanningPreview?.();
+          return;
+        }
+        if (answer.actionKind === 'open_weekly_close') {
+          if (deps.openWeeklyClose) deps.openWeeklyClose();
+          else deps.openAssistantPanel?.('weekly_closing');
+          return;
+        }
+        if (answer.actionKind === 'execute_action') {
+          const check = revalidateCopilotAction(
+            copilot.action || {
+              subjectId: answer.targetSubjectId,
+              topicId: answer.targetTopicId,
+              activityType: 'study',
+            },
+            { candidates, recommendations: recs, subjects }
+          );
+          if (!check.valid) {
+            deps.showToast?.(check.reason || 'A orientação precisa ser atualizada.');
+            renderOverviewCopilotCard(true, deps.getState ? deps.getState() : {}, todayISO());
+            return;
+          }
+          if (deps.startGuidedTimerSession) {
+            deps.startGuidedTimerSession({
+              subjectId: answer.targetSubjectId || copilot.action?.subjectId || null,
+              topicId: answer.targetTopicId || copilot.action?.topicId || null,
+              type: copilot.action?.activityType || 'study',
+              targetMinutes: copilot.action?.suggestedMinutes || null,
+              recommendationId: copilot.recommendationId,
+              recommendationSource: 'today',
+              sessionOrigin: 'copilot',
+            });
+          } else if (deps.openAssistantPanel) {
+            deps.openAssistantPanel('copilot');
+          } else {
+            deps.activateTab?.('hoje');
+          }
+        }
+      };
+
+      mountPreact(
+        h(OverviewCopilotCard, {
+          copilot,
+          selectedQuestion: selectedCopilotQuestion,
+          onSelectQuestion: key => {
+            selectedCopilotQuestion = key;
+            renderOverviewCopilotCard(true, deps.getState ? deps.getState() : {}, todayISO());
+          },
+          onExecuteAnswer: executeCopilotAnswer,
+          onQuickStudy30: () => {
+            if (deps.openAssistantPanel) deps.openAssistantPanel('quick', { quickMinutes: 30 });
+            else deps.activateTab?.('hoje');
+          },
+        }),
+        mount
+      );
+    } catch (err) {
+      console.error('Falha ao atualizar Copiloto na Visão Geral:', err);
+    }
   }
 
   function mountCockpitSidebar(container: Element, props: CockpitSidebarCardsProps): void {

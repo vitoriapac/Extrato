@@ -637,6 +637,7 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   assert.match(copilotHtml, /Copiloto de Estudos Guiado/);
   assert.match(copilotHtml, /Estudo rápido: 30 min/);
   assert.match(copilotHtml, /Tenho 30 minutos/);
+  assert.match(copilotHtml, /Mais perguntas \(3\)/);
   assert.doesNotMatch(copilotHtml, /\p{Extended_Pictographic}/u);
 
   const cyclePreview = buildStudyCyclePreview({
@@ -673,6 +674,7 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   );
   assert.match(cycleCenterHtml, /Central do Ciclo de Estudos 2\.0/);
   assert.match(cycleCenterHtml, /Confirmar nova versão do ciclo/);
+  assert.match(cycleCenterHtml, /Ver sequência de 2 blocos/);
   assert.match(cycleCenterHtml, /1 h/);
   assert.doesNotMatch(cycleCenterHtml, /subject-distribution-row|plan-impact-row|plan-execution-table/);
   assert.doesNotMatch(cycleCenterHtml, /\p{Extended_Pictographic}/u);

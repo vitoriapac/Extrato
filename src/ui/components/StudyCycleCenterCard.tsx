@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useState } from 'preact/hooks';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 import type { StudyCycleMode, StudyCycleQueue } from '../../domain/planning/study-cycle-engine.js';
 import { Badge } from '../primitives/badge.js';
@@ -29,8 +30,14 @@ export interface StudyCycleCenterCardProps {
   onGoToTodayCycle: () => void;
 }
 
+const DEFAULT_VISIBLE_SHARES = 4;
+const DEFAULT_VISIBLE_BLOCKS = 6;
+
 export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Element {
   const { executionMode, cycle, cycleLap, cycleDraft } = props;
+  const [showAllShares, setShowAllShares] = useState(false);
+  const [showAllBlocks, setShowAllBlocks] = useState(false);
+
   const currentBlock =
     cycle && Array.isArray(cycle.blocks) && cycle.blocks.length > 0
       ? cycle.blocks[Math.max(0, Math.min(cycle.blocks.length - 1, cycle.currentBlockIndex))]
@@ -44,11 +51,25 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
         ? 'success'
         : 'info';
 
+  const versionSuffix = (cycle?.version || 1) > 1 ? ` · revisão ${cycle?.version}` : '';
   const statusBadgeLabel = !cycle
     ? 'Novo ciclo em prévia'
     : cycle.status === 'paused'
-      ? `Pausado · v${cycle.version || 1}`
-      : `Ativo · Volta ${cycleLap.round} · v${cycle.version || 1}`;
+      ? `Pausado${versionSuffix}`
+      : `Ativo · Volta ${cycleLap.round}${versionSuffix}`;
+
+  const subjectShares = cycleDraft.preview?.subjectShares || [];
+  const visibleShares = showAllShares
+    ? subjectShares
+    : subjectShares.slice(0, DEFAULT_VISIBLE_SHARES);
+
+  const isManualMode = cycleDraft.mode === 'manual';
+  const draftBlocks = cycleDraft.preview?.cycle.blocks || [];
+  const visibleBlocks = showAllBlocks
+    ? draftBlocks
+    : isManualMode
+      ? draftBlocks.slice(0, DEFAULT_VISIBLE_BLOCKS)
+      : [];
 
   return (
     <Card
@@ -62,10 +83,10 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
         <div class="space-y-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2">
             <Icon name="repeat" size={16} class="icon-inline text-accent shrink-0" />
-            <h3 id="studyCycleCenterTitle" class="m-0 text-base font-semibold text-content-primary">
+            <h3 id="studyCycleCenterTitle" class="module-heading__title m-0 text-content-primary">
               Central do Ciclo de Estudos 2.0
             </h3>
-            <Badge variant={statusBadgeVariant} icon={false}>
+            <Badge variant={statusBadgeVariant} icon={false} className="font-data">
               {statusBadgeLabel}
             </Badge>
           </div>
@@ -76,7 +97,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
 
         <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Modo de execução em Hoje">
           <Button
-            variant={executionMode === 'agenda' ? 'secondary' : 'ghost'}
+            variant={executionMode === 'agenda' ? 'tonal' : 'secondary'}
             size="small"
             aria-pressed={executionMode === 'agenda'}
             onClick={() => props.onSetExecutionMode('agenda')}
@@ -84,7 +105,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
             <span>Agenda do dia</span>
           </Button>
           <Button
-            variant={executionMode === 'sequence' ? 'secondary' : 'ghost'}
+            variant={executionMode === 'sequence' ? 'tonal' : 'secondary'}
             size="small"
             aria-pressed={executionMode === 'sequence'}
             onClick={() => props.onSetExecutionMode('sequence')}
@@ -95,11 +116,13 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
       </div>
 
       {cycle && currentBlock && (
-        <div class="p-3 rounded bg-surface-subtle border border-border-subtle flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="pt-3 border-t border-border-subtle border-l-3 border-l-accent pl-3 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="space-y-0.5 min-w-0">
             <div class="text-content-primary font-medium">
               Próximo bloco: <strong>{currentBlock.subjectName}</strong> ·{' '}
-              {formatPlanMinutes(currentBlock.remainingMinutes ?? currentBlock.durationMinutes)}
+              <span class="font-data">
+                {formatPlanMinutes(currentBlock.remainingMinutes ?? currentBlock.durationMinutes)}
+              </span>
               {currentBlock.remainingMinutes != null ? ' restantes' : ''}
             </div>
             <div class="text-content-secondary font-data">
@@ -121,7 +144,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
         </div>
       )}
 
-      <div class="flex flex-wrap items-end gap-3 text-xs">
+      <div class="pt-3 border-t border-border-subtle flex flex-wrap items-end gap-3 text-xs">
         <label class="flex flex-col gap-1">
           <span class="text-content-secondary">Distribuição do ciclo</span>
           <select
@@ -143,7 +166,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
 
         <label class="flex flex-col gap-1">
           <span class="text-content-secondary">
-            Duração do bloco ({formatPlanMinutes(cycleDraft.blockDurationMinutes)})
+            Duração do bloco (<span class="font-data">{formatPlanMinutes(cycleDraft.blockDurationMinutes)}</span>)
           </span>
           <input
             type="number"
@@ -166,65 +189,131 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
       {cycleDraft.preview && (
         <div class="space-y-3 text-xs">
           <p class="m-0 text-content-secondary">
-            Prévia não destrutiva: <strong class="text-content-primary">{cycleDraft.preview.blocksCount} blocos</strong> ·{' '}
-            {formatPlanMinutes(cycleDraft.preview.totalDurationMinutes)} por volta completa.
+            Prévia não destrutiva:{' '}
+            <strong class="text-content-primary font-data">
+              {cycleDraft.preview.blocksCount} blocos
+            </strong>{' '}
+            · <span class="font-data">{formatPlanMinutes(cycleDraft.preview.totalDurationMinutes)}</span>{' '}
+            por volta completa.
           </p>
 
-          {cycleDraft.preview.subjectShares.length > 0 && (
-            <div class="flex flex-wrap gap-1.5" aria-label="Participação das disciplinas no ciclo">
-              {cycleDraft.preview.subjectShares.map(share => (
-                <span
-                  key={share.subjectId}
-                  class="px-2 py-1 rounded bg-surface-subtle border border-border-subtle text-content-secondary"
+          {subjectShares.length > 0 && (
+            <div class="space-y-1.5">
+              <div
+                class="divide-y divide-border-subtle border-t border-b border-border-subtle"
+                aria-label="Participação das disciplinas no ciclo"
+              >
+                {visibleShares.map(share => (
+                  <div
+                    key={share.subjectId}
+                    class="flex items-center justify-between gap-3 py-1.5 text-content-secondary"
+                  >
+                    <strong class="text-content-primary font-medium truncate">
+                      {share.subjectName}
+                    </strong>
+                    <span class="font-data shrink-0">
+                      {formatPlanMinutes(share.minutes)} ({share.sharePct}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {subjectShares.length > DEFAULT_VISIBLE_SHARES && (
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  aria-expanded={showAllShares}
+                  onClick={() => setShowAllShares(prev => !prev)}
                 >
-                  <strong class="text-content-primary">{share.subjectName}</strong> ·{' '}
-                  {formatPlanMinutes(share.minutes)} ({share.sharePct}%)
-                </span>
-              ))}
+                  {showAllShares
+                    ? 'Recolher disciplinas'
+                    : `Mostrar todas as ${subjectShares.length} disciplinas`}
+                </Button>
+              )}
             </div>
           )}
 
-          {cycleDraft.preview.cycle.blocks.length > 0 && (
-            <ul class="space-y-1.5 m-0 p-0 list-none max-h-56 overflow-y-auto">
-              {cycleDraft.preview.cycle.blocks.map((block, index) => (
-                <li
-                  key={block.id}
-                  class="flex items-center justify-between gap-2 p-2 rounded bg-surface-subtle border border-border-subtle"
-                >
-                  <span class="truncate text-content-primary">
-                    {index + 1}. <strong>{block.subjectName}</strong> ·{' '}
-                    {formatPlanMinutes(block.durationMinutes)}
-                  </span>
-                  <span class="inline-flex gap-1 shrink-0">
+          {draftBlocks.length > 0 && (
+            <div class="space-y-2">
+              {!isManualMode && !showAllBlocks ? (
+                <div class="flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="tertiary"
+                    size="small"
+                    aria-expanded={false}
+                    onClick={() => setShowAllBlocks(true)}
+                  >
+                    Ver sequência de {draftBlocks.length} blocos
+                  </Button>
+                  <Button
+                    variant="tertiary"
+                    size="small"
+                    onClick={() =>
+                      props.onChangeCycleDraftConfig('manual', cycleDraft.blockDurationMinutes)
+                    }
+                  >
+                    Personalizar ordem (modo Manual)
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <ul class="m-0 p-0 list-none max-h-60 overflow-y-auto divide-y divide-border-subtle border-t border-b border-border-subtle">
+                    {visibleBlocks.map((block, index) => (
+                      <li
+                        key={block.id}
+                        class="flex items-center justify-between gap-2 py-1.5"
+                      >
+                        <span class="truncate text-content-primary">
+                          <span class="font-data text-content-secondary">{index + 1}.</span>{' '}
+                          <strong>{block.subjectName}</strong> ·{' '}
+                          <span class="font-data">{formatPlanMinutes(block.durationMinutes)}</span>
+                        </span>
+                        {isManualMode && (
+                          <span class="inline-flex gap-1 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="small"
+                              disabled={index === 0}
+                              aria-label={`Mover ${block.subjectName} para cima na central do ciclo`}
+                              onClick={() => props.onMoveCycleDraftBlock(index, index - 1)}
+                            >
+                              <Icon name="arrow-up" size={12} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="small"
+                              disabled={index === draftBlocks.length - 1}
+                              aria-label={`Mover ${block.subjectName} para baixo na central do ciclo`}
+                              onClick={() => props.onMoveCycleDraftBlock(index, index + 1)}
+                            >
+                              <Icon name="arrow-down" size={12} />
+                            </Button>
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {(draftBlocks.length > DEFAULT_VISIBLE_BLOCKS || !isManualMode) && (
                     <Button
-                      variant="ghost"
+                      variant="tertiary"
                       size="small"
-                      disabled={index === 0}
-                      aria-label={`Mover ${block.subjectName} para cima na central do ciclo`}
-                      onClick={() => props.onMoveCycleDraftBlock(index, index - 1)}
+                      aria-expanded={showAllBlocks}
+                      onClick={() => setShowAllBlocks(prev => !prev)}
                     >
-                      <Icon name="arrow-up" size={12} />
+                      {showAllBlocks
+                        ? 'Recolher blocos'
+                        : `Mostrar todos os ${draftBlocks.length} blocos`}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="small"
-                      disabled={index === cycleDraft.preview!.cycle.blocks.length - 1}
-                      aria-label={`Mover ${block.subjectName} para baixo na central do ciclo`}
-                      onClick={() => props.onMoveCycleDraftBlock(index, index + 1)}
-                    >
-                      <Icon name="arrow-down" size={12} />
-                    </Button>
-                  </span>
-                </li>
-              ))}
-            </ul>
+                  )}
+                </>
+              )}
+            </div>
           )}
 
           {cycleDraft.preview.errors.length > 0 && (
             <p class="m-0 text-red">{cycleDraft.preview.errors[0]}</p>
           )}
 
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle">
             <Button
               variant="secondary"
               size="small"
