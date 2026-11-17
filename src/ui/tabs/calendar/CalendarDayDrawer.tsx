@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import type { DailyCalendarLoad, UnifiedCalendarItem } from '../../../domain/calendar/calendar-projection.js';
+import { formatPlanMinutes } from '../../../core/format-duration.js';
 import { CALENDAR_ACTIVITY_LABELS } from '../../../state/schema.js';
 import { Button } from '../../primitives/button.js';
 import { Icon } from '../../primitives/icon.js';
@@ -27,10 +28,7 @@ function kindLabel(kind: UnifiedCalendarItem['kind']): string {
 
 function formatLoadMinutes(minutes: number): string {
   if (minutes <= 0) return '0 min estimados';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (!h) return `${m} min estimados`;
-  return m ? `${h}h ${m}min estimados` : `${h}h estimadas`;
+  return `${formatPlanMinutes(minutes)} estimados`;
 }
 
 export function CalendarDayDrawer({
@@ -67,7 +65,7 @@ export function CalendarDayDrawer({
           </h4>
           <p class="text-xs font-mono tabular-nums text-content-secondary m-0">
             {items.length} {items.length === 1 ? 'atividade' : 'atividades'} · {formatLoadMinutes(load.totalMinutes)}
-            {availableMinutes > 0 ? ` · Disponível: ${formatLoadMinutes(availableMinutes).replace(' estimadas', '').replace(' estimados', '')}` : ''}
+            {availableMinutes > 0 ? ` · Disponível: ${formatPlanMinutes(availableMinutes)}` : ''}
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -241,6 +239,7 @@ export function CalendarDayDrawer({
                       <Button
                         type="button"
                         size="small"
+                        disabled={!rescheduleDate || rescheduleDate === item.date}
                         onClick={() => {
                           if (rescheduleDate && rescheduleDate !== item.date) {
                             onRescheduleItem(item.id, rescheduleDate);

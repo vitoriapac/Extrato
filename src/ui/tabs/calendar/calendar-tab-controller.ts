@@ -291,6 +291,29 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     });
   }
 
+  function getCalendarRowModel(item: CalendarItem) {
+    const view = calendarViewModel(item);
+    const days = diasParaRevisao(item.date);
+    let daysLabel = '—';
+    if (item.status === 'Concluído') daysLabel = 'Concluído';
+    else if (days === 0) daysLabel = 'Hoje';
+    else if (typeof days === 'number' && days < 0)
+      daysLabel = `${Math.abs(days)} ${Math.abs(days) === 1 ? 'dia' : 'dias'} em atraso`;
+    else if (typeof days === 'number' && days > 0)
+      daysLabel = `Em ${days} ${days === 1 ? 'dia' : 'dias'}`;
+    return {
+      date: view.date,
+      week: view.week,
+      subject: view.subject,
+      status: view.status,
+      reviewType: view.reviewType,
+      pending: view.pending,
+      daysLabel,
+      statusClass: STATUS_CLASS[item.status as keyof typeof STATUS_CLASS] || '',
+      isToday: item.date === todayISO(),
+    };
+  }
+
   function renderHtml(): string {
     const rows = getFilteredAndSortedRows();
 
@@ -311,6 +334,27 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!doc) return;
     const body = doc.getElementById('calBody');
     if (!body) return;
+    if (canMountPreact(body)) {
+      const rows = getFilteredAndSortedRows();
+      mountPreact(
+        h(CalendarTable, {
+          rows,
+          visibleLimit: calendarUiState.visible ?? DEFAULT_LIST_VISIBLE_ITEMS,
+          editingId: calendarUiState.editingId ?? null,
+          mobile: isMobileHistoryLayout(),
+          getRowModel: getCalendarRowModel,
+          onCompleteItem: completeCalendarItem,
+          onEditItem: editCalendarItem,
+          onAddItem: () => openActivityModalForDate((calendarUiState as any).selectedDate || todayISO()),
+          onShowMore: () => changeCalendarLimit(5),
+          onShowLess: resetCalendarLimit,
+          renderReadRow: renderCalendarReadRow,
+          renderEditRow: renderCalendarEditRow,
+        }),
+        body
+      );
+      return;
+    }
     body.innerHTML = renderHtml();
   }
 
@@ -916,6 +960,53 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     return ics;
   }
 
+  function updateAgendaFiltersUi() {
+    const doc = getDoc();
+    if (!doc) return;
+    const values = [
+      (doc.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '',
+      (doc.getElementById('agendaFilterStatus') as HTMLSelectElement)?.value || '',
+      (doc.getElementById('agendaFilterMes') as HTMLSelectElement)?.value || '',
+      (doc.getElementById('agendaFilterTipo') as HTMLSelectElement)?.value || '',
+      getActivityKindFilter(),
+    ];
+    const activeCount = values.filter(Boolean).length;
+    const toggleBtn = doc.getElementById('agendaFiltersToggleBtn');
+    if (toggleBtn) {
+      toggleBtn.textContent = activeCount > 0 ? `Filtros (${activeCount})` : 'Filtros';
+    }
+    const clearBtn = doc.getElementById('clearAgendaFiltersBtn') as HTMLElement | null;
+    if (clearBtn) {
+      clearBtn.hidden = activeCount === 0;
+    }
+  }
+
+  function clearAgendaFilters() {
+    const doc = getDoc();
+    if (!doc) return;
+    for (const id of [
+      'agendaFilterSubject',
+      'agendaFilterStatus',
+      'agendaFilterMes',
+      'agendaFilterTipo',
+      'agendaFilterActivityKind',
+      'calFilterSubject',
+      'calFilterStatus',
+      'calFilterMes',
+      'calFilterTipo',
+    ]) {
+      const el = doc.getElementById(id) as HTMLSelectElement | null;
+      if (el) el.value = '';
+    }
+    if (calendarUiState.filters) {
+      calendarUiState.filters.activityKind = '';
+    }
+    calendarController?.clearFilters();
+    updateAgendaFiltersUi();
+    renderCalendar();
+    renderMonthCalendar();
+  }
+
   function bindEvents(doc?: any) {
     const d = doc || getDoc();
     if (!d) return;
@@ -987,7 +1078,32 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     d.getElementById('agendaFilterActivityKind')?.addEventListener('change', (event: any) => {
       if (!calendarUiState.filters) calendarUiState.filters = {};
       calendarUiState.filters.activityKind = event.target?.value || '';
+      updateAgendaFiltersUi();
       renderMonthCalendar();
+    });
+
+    for (const id of ['agendaFilterSubject', 'agendaFilterStatus', 'agendaFilterMes', 'agendaFilterTipo']) {
+      d.getElementById(id)?.addEventListener('change', updateAgendaFiltersUi);
+    }
+
+    d.getElementById('clearAgendaFiltersBtn')?.addEventListener('click', clearAgendaFilters);
+
+    const closePopovers = () => {
+      for (const id of ['agendaMoreActions', 'agendaMoreFilters']) {
+        const el = d.getElementById(id) as HTMLDetailsElement | null;
+        if (el?.open) el.open = false;
+      }
+    };
+    d.addEventListener?.('keydown', (event: any) => {
+      if (event.key === 'Escape') closePopovers();
+    });
+    d.addEventListener?.('click', (event: any) => {
+      for (const id of ['agendaMoreActions', 'agendaMoreFilters']) {
+        const el = d.getElementById(id) as HTMLDetailsElement | null;
+        if (el?.open && !el.contains?.(event.target)) {
+          el.open = false;
+        }
+      }
     });
 
     const monthContainer = d.getElementById('monthCalendar');

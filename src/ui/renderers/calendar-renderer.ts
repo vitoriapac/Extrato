@@ -69,7 +69,7 @@ export function renderCalendarMonth({
   const busiest = Math.max(0, ...pending.values());
   const loadLevel = (count: number) => (count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0);
   let html =
-    `<p id="calendarScrollHelp" class="text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use a visualização Semana ou Lista. Clique em um dia para ver ou adicionar atividades.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
+    `<p id="calendarScrollHelp" class="text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use as setas do teclado.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
       .map(day => `<div class="month-header">${day}</div>`)
       .join('');
@@ -103,7 +103,7 @@ export function renderCalendarMonth({
   )
     .map(
       ([stage, label]) =>
-        `<li><span class="cal-event event-${stage}" aria-hidden="true">Aa</span>${label}</li>`
+        `<li><span class="cal-event event-${stage} inline-block w-3 h-3 p-0" aria-hidden="true"></span>${label}</li>`
     )
     .join('')}<li><span class="cal-load-swatch" aria-hidden="true"><i class="load-1"></i><i class="load-2"></i><i class="load-3"></i></span>Fundo do dia: mais escuro, mais revisões pendentes</li></ul>`;
   return {

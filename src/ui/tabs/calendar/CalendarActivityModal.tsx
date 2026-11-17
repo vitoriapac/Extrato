@@ -53,6 +53,11 @@ const EMPTY_DRAFT: CalendarActivityDraft = {
   description: '',
 };
 
+const LABEL_CLASS =
+  'block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1';
+const CONTROL_CLASS =
+  'w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40';
+
 export function CalendarActivityModal({
   open,
   isNew,
@@ -66,12 +71,14 @@ export function CalendarActivityModal({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<'title' | 'date' | 'endTime' | null>(null);
 
   useEffect(() => {
     const next = initialDraft || EMPTY_DRAFT;
     setDraft(next);
     setConfirmDelete(false);
     setError(null);
+    setErrorField(null);
     const hasAdvancedData = Boolean(
       next.startTime ||
         next.endTime ||
@@ -91,21 +98,37 @@ export function CalendarActivityModal({
     value: CalendarActivityDraft[K]
   ) => {
     setDraft(prev => ({ ...prev, [key]: value }));
-    if (error) setError(null);
+    if (error) {
+      setError(null);
+      setErrorField(null);
+    }
+  };
+
+  const focusField = (id: string) => {
+    if (typeof document !== 'undefined') {
+      document.getElementById(id)?.focus();
+    }
   };
 
   const handleSubmit = (e: Event) => {
     e.preventDefault();
     if (!draft.title.trim()) {
       setError('Informe um título para a atividade.');
+      setErrorField('title');
+      focusField('calActivityTitle');
       return;
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date)) {
       setError('Informe uma data válida.');
+      setErrorField('date');
+      focusField('calActivityDate');
       return;
     }
     if (draft.startTime && draft.endTime && draft.endTime <= draft.startTime) {
       setError('O horário de término deve ser posterior ao horário de início.');
+      setErrorField('endTime');
+      setShowAdvanced(true);
+      setTimeout(() => focusField('calActivityEnd'), 0);
       return;
     }
     onSave({
@@ -143,29 +166,24 @@ export function CalendarActivityModal({
 
         <div class="space-y-3">
           <div>
-            <label
-              for="calActivityTitle"
-              class="block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1"
-            >
+            <label for="calActivityTitle" class={LABEL_CLASS}>
               Título
             </label>
             <input
               id="calActivityTitle"
               type="text"
               required
+              aria-invalid={errorField === 'title'}
               placeholder={titlePlaceholder[draft.kind] || titlePlaceholder.task}
               value={draft.title}
               onInput={e => updateField('title', (e.currentTarget as HTMLInputElement).value)}
-              class="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
+              class={CONTROL_CLASS}
             />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label
-                for="calActivityKind"
-                class="block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1"
-              >
+              <label for="calActivityKind" class={LABEL_CLASS}>
                 Tipo
               </label>
               <select
@@ -174,7 +192,7 @@ export function CalendarActivityModal({
                 onChange={e =>
                   updateField('kind', (e.currentTarget as HTMLSelectElement).value as CalendarActivityKind)
                 }
-                class="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
+                class={CONTROL_CLASS}
               >
                 {CALENDAR_ACTIVITY_KINDS.map(kind => (
                   <option key={kind} value={kind}>
@@ -185,19 +203,17 @@ export function CalendarActivityModal({
             </div>
 
             <div>
-              <label
-                for="calActivityDate"
-                class="block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1"
-              >
+              <label for="calActivityDate" class={LABEL_CLASS}>
                 Data
               </label>
               <input
                 id="calActivityDate"
                 type="date"
                 required
+                aria-invalid={errorField === 'date'}
                 value={draft.date}
                 onChange={e => updateField('date', (e.currentTarget as HTMLInputElement).value)}
-                class="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm font-mono tabular-nums text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
+                class={`${CONTROL_CLASS} font-mono tabular-nums`}
               />
             </div>
           </div>
@@ -218,7 +234,7 @@ export function CalendarActivityModal({
             <div class="mt-3 space-y-3">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label for="calActivityStart" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivityStart" class={LABEL_CLASS}>
                     Início
                   </label>
                   <input
@@ -226,23 +242,24 @@ export function CalendarActivityModal({
                     type="time"
                     value={draft.startTime}
                     onChange={e => updateField('startTime', (e.currentTarget as HTMLInputElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={`${CONTROL_CLASS} font-mono tabular-nums`}
                   />
                 </div>
                 <div>
-                  <label for="calActivityEnd" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivityEnd" class={LABEL_CLASS}>
                     Término
                   </label>
                   <input
                     id="calActivityEnd"
                     type="time"
+                    aria-invalid={errorField === 'endTime'}
                     value={draft.endTime}
                     onChange={e => updateField('endTime', (e.currentTarget as HTMLInputElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={`${CONTROL_CLASS} font-mono tabular-nums`}
                   />
                 </div>
                 <div>
-                  <label for="calActivityMinutes" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivityMinutes" class={LABEL_CLASS}>
                     Duração (min)
                   </label>
                   <input
@@ -253,21 +270,21 @@ export function CalendarActivityModal({
                     placeholder="Ex: 60"
                     value={draft.estimatedMinutes}
                     onInput={e => updateField('estimatedMinutes', (e.currentTarget as HTMLInputElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={`${CONTROL_CLASS} font-mono tabular-nums`}
                   />
                 </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label for="calActivitySubject" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivitySubject" class={LABEL_CLASS}>
                     Disciplina
                   </label>
                   <select
                     id="calActivitySubject"
                     value={draft.subjectId}
                     onChange={e => updateField('subjectId', (e.currentTarget as HTMLSelectElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={CONTROL_CLASS}
                   >
                     <option value="">Sem disciplina específica</option>
                     {subjects.map(sub => (
@@ -279,14 +296,14 @@ export function CalendarActivityModal({
                 </div>
 
                 <div>
-                  <label for="calActivityStatus" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivityStatus" class={LABEL_CLASS}>
                     Status
                   </label>
                   <select
                     id="calActivityStatus"
                     value={draft.status}
                     onChange={e => updateField('status', (e.currentTarget as HTMLSelectElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={CONTROL_CLASS}
                   >
                     {STATUS_OPTIONS.map(st => (
                       <option key={st} value={st}>
@@ -300,7 +317,7 @@ export function CalendarActivityModal({
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label for="calActivityLocation" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivityLocation" class={LABEL_CLASS}>
                     Local
                   </label>
                   <input
@@ -309,11 +326,11 @@ export function CalendarActivityModal({
                     placeholder="Ex: Escola Municipal, Sala 12"
                     value={draft.location}
                     onInput={e => updateField('location', (e.currentTarget as HTMLInputElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={CONTROL_CLASS}
                   />
                 </div>
                 <div>
-                  <label for="calActivityUrl" class="block text-xs font-medium text-content-secondary mb-1">
+                  <label for="calActivityUrl" class={LABEL_CLASS}>
                     Link de referência
                   </label>
                   <input
@@ -322,13 +339,13 @@ export function CalendarActivityModal({
                     placeholder="https://..."
                     value={draft.externalUrl}
                     onInput={e => updateField('externalUrl', (e.currentTarget as HTMLInputElement).value)}
-                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                    class={CONTROL_CLASS}
                   />
                 </div>
               </div>
 
               <div>
-                <label for="calActivityRecurrence" class="block text-xs font-medium text-content-secondary mb-1">
+                <label for="calActivityRecurrence" class={LABEL_CLASS}>
                   Recorrência
                 </label>
                 <select
@@ -340,7 +357,7 @@ export function CalendarActivityModal({
                       (e.currentTarget as HTMLSelectElement).value as CalendarRecurrenceRule
                     )
                   }
-                  class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                  class={CONTROL_CLASS}
                 >
                   {CALENDAR_RECURRENCE_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>
@@ -351,7 +368,7 @@ export function CalendarActivityModal({
               </div>
 
               <div>
-                <label for="calActivityDesc" class="block text-xs font-medium text-content-secondary mb-1">
+                <label for="calActivityDesc" class={LABEL_CLASS}>
                   Observações
                 </label>
                 <textarea
@@ -360,7 +377,7 @@ export function CalendarActivityModal({
                   placeholder="Tema, banca, documentos necessários ou detalhes..."
                   value={draft.description}
                   onInput={e => updateField('description', (e.currentTarget as HTMLTextAreaElement).value)}
-                  class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary"
+                  class={CONTROL_CLASS}
                 />
               </div>
             </div>
@@ -385,8 +402,9 @@ export function CalendarActivityModal({
               <div class="inline-flex items-center gap-1.5">
                 <Button
                   type="button"
+                  variant="ghost"
                   size="small"
-                  className="bg-danger text-on-brand hover:opacity-90"
+                  className="border border-danger bg-surface text-danger hover:bg-danger/10"
                   onClick={() => onDelete(draft.id!)}
                 >
                   Confirmar exclusão

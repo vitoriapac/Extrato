@@ -6,6 +6,7 @@ import {
   sortCalendarItemsForDay,
   type UnifiedCalendarItem,
 } from '../../../domain/calendar/calendar-projection.js';
+import { formatPlanMinutes } from '../../../core/format-duration.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
 import { CALENDAR_ACTIVITY_LABELS } from '../../../state/schema.js';
 import { Button } from '../../primitives/button.js';
@@ -57,7 +58,7 @@ export function CalendarWeekView({
       <div class="calendar-month-toolbar">
         <button
           type="button"
-          class="month-nav-btn"
+          class="month-nav-btn inline-flex items-center justify-center"
           aria-label="Semana anterior"
           onClick={onPrevWeek}
         >
@@ -66,7 +67,7 @@ export function CalendarWeekView({
         <h3 class="m-0 font-serif text-base font-semibold text-content-primary">{rangeLabel}</h3>
         <button
           type="button"
-          class="month-nav-btn"
+          class="month-nav-btn inline-flex items-center justify-center"
           aria-label="Próxima semana"
           onClick={onNextWeek}
         >
@@ -131,7 +132,7 @@ export function CalendarWeekView({
                   <span class="font-mono tabular-nums">{dayNum}</span>
                   {dayLoad.totalMinutes > 0 && (
                     <span class="font-mono tabular-nums text-xs font-normal text-content-secondary">
-                      · {Math.round(dayLoad.totalMinutes)}m
+                      · {formatPlanMinutes(dayLoad.totalMinutes)}
                     </span>
                   )}
                 </button>
@@ -147,7 +148,7 @@ export function CalendarWeekView({
 
               <div class="space-y-1.5 flex-1">
                 {dayItems.length === 0 ? (
-                  <p class="text-xs text-content-secondary/70 m-0">Livre</p>
+                  <p class="text-xs text-content-secondary m-0">Livre</p>
                 ) : (
                   dayItems.map(item => {
                     const kindText =

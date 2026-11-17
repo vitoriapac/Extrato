@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=82c4eec555ce">
-<link rel="stylesheet" href="styles/app.css?v=82c4eec555ce">
+<link rel="stylesheet" href="styles/tailwind.css?v=edf9fdc2b295">
+<link rel="stylesheet" href="styles/app.css?v=edf9fdc2b295">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -435,9 +435,9 @@
     <header class="page-header">
       <div class="page-header__text"><h2>Sua Agenda de Preparação</h2><p>Compromissos, simulados, redações, tarefas de estudo e revisões espaçadas num só lugar.</p></div>
       <div class="page-header__actions">
-        <details class="relative">
+        <details class="relative" id="agendaMoreActions">
           <summary class="btn ghost list-none cursor-pointer">Mais ações</summary>
-          <div class="absolute right-0 mt-1 z-20 flex flex-col gap-1 rounded-lg border border-border bg-surface p-1.5 shadow-md min-w-[220px]">
+          <div class="absolute right-0 mt-1 z-20 flex flex-col gap-1 rounded-lg border border-border bg-surface p-1.5 shadow-[0_10px_24px_var(--shadow-color)] min-w-[220px]">
             <button class="btn ghost small justify-start" id="autoGenBtn" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-refresh icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>Gerar revisões dos concluídos</button>
             <button class="btn ghost small justify-start" id="exportCalendarIcsBtn" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-calendar icon-inline" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>Exportar .ics</button>
           </div>
@@ -451,27 +451,7 @@
       <p class="helper-text helper-text--compact">Revisões espaçadas nascem ao concluir tópicos em Disciplinas (24h, 7 e 30 dias); atividades personalizadas incluem tarefas, simulados, redações e eventos. <a href="#instrucoes" class="text-brand dark:text-accent hover:underline inline-flex items-center gap-1 text-xs font-medium ml-1" title="Ver modelo de retenção e curva de esquecimento nas Instruções">Entenda o modelo de retenção <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a></p>
     </details>
 
-    <div class="kpi-grid" id="calIndicadores"></div>
-
-    <div class="agenda-summary-grid">
-      <div class="chart-card" id="agendaAtrasadasCard">
-        <h3>Revisões e tarefas pendentes</h3>
-        <ul class="upcoming-list" id="calAtrasadas"></ul>
-      </div>
-
-      <div class="chart-card">
-        <h3>Tarefas do dia</h3>
-        <ul class="upcoming-list" id="calTarefasHoje"></ul>
-      </div>
-
-      <div class="chart-card">
-        <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
-        <ul class="upcoming-list" id="upcomingList"></ul>
-        <div id="upcomingFooter"></div>
-      </div>
-    </div>
-
-    <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
+    <button class="btn ghost small mobile-filter-toggle" id="agendaFiltersToggleBtn" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
     <div class="cal-filters responsive-filters" id="agendaFilters">
       <div id="agendaFilterSubjectMount" class="agenda-filter-subject-mount"></div>
       <label for="agendaFilterStatus" class="sr-only">Filtrar por status</label>
@@ -483,10 +463,6 @@
         <option>Concluído</option>
         <option value="Atrasadas">Atrasadas</option>
       </select>
-      <label for="agendaFilterMes" class="sr-only">Filtrar por mês</label>
-      <select class="select-control ui-select-field__control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
-      <label for="agendaFilterTipo" class="sr-only">Filtrar revisões por tipo</label>
-      <select class="select-control ui-select-field__control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
       <label for="agendaFilterActivityKind" class="sr-only">Filtrar por categoria de atividade</label>
       <select class="select-control ui-select-field__control" id="agendaFilterActivityKind" aria-label="Filtrar por categoria de atividade">
         <option value="">Todas as categorias</option>
@@ -497,6 +473,16 @@
         <option value="manual_review">Revisão manual</option>
         <option value="review">Revisão espaçada</option>
       </select>
+      <details class="relative" id="agendaMoreFilters">
+        <summary class="btn ghost small list-none cursor-pointer">Mais filtros</summary>
+        <div class="mt-2 flex flex-wrap gap-2 rounded-lg border border-border bg-surface p-2 shadow-[0_10px_24px_var(--shadow-color)]">
+          <label for="agendaFilterMes" class="sr-only">Filtrar por mês</label>
+          <select class="select-control ui-select-field__control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
+          <label for="agendaFilterTipo" class="sr-only">Filtrar revisões por tipo</label>
+          <select class="select-control ui-select-field__control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
+        </div>
+      </details>
+      <button type="button" class="btn ghost small" id="clearAgendaFiltersBtn" hidden>Limpar filtros</button>
     </div>
     <!-- Espelho dos filtros acima: o controlador das tarefas lê estes selects; a ponte copia o valor. -->
     <div id="calendarFilters" hidden>
@@ -513,7 +499,7 @@
 
     <section class="agenda-section" aria-labelledby="agendaTasksTitle">
       <div class="section-head">
-        <h3 class="section-title" id="agendaTasksTitle">Tarefas de estudo</h3>
+        <h3 class="section-title" id="agendaTasksTitle">Calendário de preparação</h3>
         <div id="calendarViewSwitchMount"></div>
       </div>
 
@@ -547,13 +533,38 @@
               <th style="width:70px;">Semana</th>
               <th>Disciplina</th>
               <th style="width:130px;">Status</th>
-              <th style="width:150px;">Tipo de tarefa</th>
-              <th style="width:120px;">Prioridade</th>
+              <th style="width:150px;">Categoria / Tipo</th>
+              <th style="width:120px;">Prazo</th>
               <th style="width:36px;"><span class="sr-only">Ações</span></th>
             </tr>
           </thead>
           <tbody id="calBody"></tbody>
         </table>
+      </div>
+    </section>
+
+    <section class="agenda-section" aria-labelledby="agendaStatusTitle">
+      <div class="section-head">
+        <h3 class="section-title" id="agendaStatusTitle">Status das revisões e tarefas</h3>
+      </div>
+      <div class="kpi-grid" id="calIndicadores"></div>
+
+      <div class="agenda-summary-grid">
+        <div class="chart-card" id="agendaAtrasadasCard">
+          <h3>Revisões e tarefas pendentes</h3>
+          <ul class="upcoming-list" id="calAtrasadas"></ul>
+        </div>
+
+        <div class="chart-card">
+          <h3>Tarefas do dia</h3>
+          <ul class="upcoming-list" id="calTarefasHoje"></ul>
+        </div>
+
+        <div class="chart-card">
+          <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
+          <ul class="upcoming-list" id="upcomingList"></ul>
+          <div id="upcomingFooter"></div>
+        </div>
       </div>
     </section>
 
@@ -777,7 +788,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=82c4eec555ce"></script>
+  <script src="src/app.bundle.js?v=edf9fdc2b295"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
