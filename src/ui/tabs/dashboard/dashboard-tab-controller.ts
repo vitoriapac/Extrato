@@ -48,10 +48,7 @@ import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-render
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
 import { buildOverviewStanding } from '../../../application/analytics/build-overview-standing.js';
 import { renderMiniComparisonChart } from '../../performance/weekly-performance-brief-renderer.js';
-import {
-  renderOverviewEvidence,
-  renderOverviewStanding,
-} from '../../renderers/overview-standing-renderer.js';
+import { renderOverviewEvidence } from '../../renderers/overview-standing-renderer.js';
 import { OverviewCopilotCard } from '../../components/OverviewCopilotCard.js';
 import {
   buildStudyCopilotViewModel,
@@ -488,11 +485,9 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       note.hidden = !hasConfigured;
     }
 
-    const standingMount = doc.getElementById('overviewStanding');
     const evidenceMount = doc.getElementById('overviewEvidence');
-    if (standingMount || evidenceMount) {
-      if (standingMount) standingMount.hidden = !hasConfigured;
-      if (evidenceMount) evidenceMount.hidden = !hasConfigured;
+    if (evidenceMount) {
+      evidenceMount.hidden = !hasConfigured;
       if (hasConfigured) {
         let readiness: any = null;
         try {
@@ -508,13 +503,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
           matrixRows: deps.examMatrixRows ? deps.examMatrixRows() : [],
           readiness,
         });
-        if (standingMount)
-          standingMount.innerHTML = renderOverviewStanding(standing, {
-            escapeHtml,
-            formatDate: formatDatePt,
-          });
         // A evidência fica na coluna de Atenção, abaixo da Carga de revisões.
-        if (evidenceMount) evidenceMount.innerHTML = renderOverviewEvidence(standing.evidence);
+        evidenceMount.innerHTML = renderOverviewEvidence(standing.evidence);
       }
     }
     // O mural histórico mora em Desempenho > Consistência; a Visão geral mostra só as últimas 4 semanas.
