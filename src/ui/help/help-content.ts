@@ -47,9 +47,9 @@ const BASE_HELP_CATEGORIES: any[] = [
       {
         id: 'overview',
         title: 'Visão Geral',
-        summary: 'Seu painel principal de acompanhamento.',
+        summary: 'Seu painel diário de decisão e ritmo.',
         paragraphs: [
-          'Reúne Índice de Prontidão, progresso, foco da semana, recomendações, evolução, riscos, oportunidades e conquistas. O índice resume sinais da preparação; não é probabilidade de aprovação.',
+          'Reúne Próxima ação, Atenção (pendências e carga de revisões), Fase atual da preparação, Copiloto de Estudos Guiado, Resumo dos últimos 7 dias, Constância e Saldo do edital. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
         ],
         action: { label: 'Abrir Visão Geral', target: 'overview' },
       },
@@ -63,19 +63,51 @@ const BASE_HELP_CATEGORIES: any[] = [
       {
         id: 'today-guide',
         title: 'Hoje',
-        summary: 'A próxima ação e o plano do dia em um só lugar.',
+        summary: 'Ciclo de Estudos, plano do dia, Estudo Rápido e Conquistas em um só lugar.',
         paragraphs: [
-          'O card Hoje na Visão Geral mostra o tempo planejado, o estudo realizado e a próxima atividade. Inicie pelo card para vincular a sessão à tarefa. O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões. Estudo sem vínculo aparece como adicional.',
-          'Após registrar, editar ou excluir uma sessão, o progresso é atualizado. Uma recomendação fora do plano deve ser revisada antes de mudar a carga. Após Recovery, confira atividades geradas por uma versão anterior do plano. Pendências ficam disponíveis na aba Hoje, sem fechamento diário obrigatório.',
+          'Na aba Hoje você alterna entre o Ciclo de estudos (padrão) e a Agenda do dia. No topo da barra assistente ficam o próximo bloco do ciclo com gráfico de donut por disciplina e atalhos para Estudo Rápido ("Tenho X minutos"), Orientação guiada (Copiloto) e Diário de Aprendizagem.',
+          'O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões. Estudo sem vínculo aparece como adicional. A subaba Conquistas reúne os marcos desbloqueados e os próximos alvos sem interferir nas prioridades.',
+        ],
+        action: { label: 'Abrir Hoje', target: 'today' },
+      },
+      {
+        id: 'study-cycle-guide',
+        title: 'Ciclo de Estudos 2.0 e Gráfico de Donut',
+        kind: 'feature',
+        summary: 'Fila rotativa por disciplina com blocos de 15 a 120 minutos e divisão visual em donut.',
+        keywords: ['ciclo de estudos', 'sequência flexível', 'donut', 'blocos', 'adaptativo', 'equilibrado'],
+        concepts: ['ciclo de estudos', 'fila rotativa', 'gráfico de donut'],
+        questions: ['Como funciona o Ciclo de Estudos?', 'O que o gráfico de donut mostra?'],
+        paragraphs: [
+          'O Ciclo de Estudos organiza suas matérias em uma fila circular de blocos de 15 a 120 minutos. Se você não puder estudar em um dia, o ciclo apenas pausa e retoma exatamente de onde parou, sem gerar falsos atrasos no calendário.',
+          'O gráfico de donut exibe em tempo real a proporção de minutos e o número de blocos de cada disciplina nos modos Adaptativo (ponderado por peso no edital e lacunas), Equilibrado (igual por matéria) ou Manual (ordem personalizada).',
+        ],
+        bullets: [
+          'Confirmar uma nova versão do ciclo preserva voltas e sessões anteriores.',
+          'Se o diagnóstico apontar prioridade urgente fora da fila, você pode estudá-la direto pelo Copiloto sem perder sua posição no ciclo.',
+        ],
+        action: { label: 'Abrir Hoje', target: 'today' },
+      },
+      {
+        id: 'copilot-and-journal',
+        title: 'Copiloto, Estudo Rápido e Diário',
+        kind: 'feature',
+        summary: 'Respostas auditáveis, blocos curtos para imprevistos e registro qualitativo.',
+        keywords: ['copiloto', 'orientação guiada', 'estudo rápido', 'tenho x minutos', 'diário de aprendizagem'],
+        concepts: ['copiloto de estudos', 'estudo rápido', 'diário de aprendizagem'],
+        questions: ['Como o Copiloto decide o que estudar?', 'Para que serve o Diário de Aprendizagem?'],
+        paragraphs: [
+          'O Copiloto de Estudos Guiado responde perguntas práticas ("O que estudar agora?", "Tenho 30 minutos", "Como foi minha semana?", "Por que meu ciclo sugere X?") usando somente seus dados locais, sem alterar planos automaticamente.',
+          'O Estudo Rápido ("Tenho X minutos") monta uma sessão de 15, 30, 45 ou 60 minutos aproveitando revisões vencidas, prioridade ou bloco do ciclo. O Diário de Aprendizagem registra dúvidas, energia e dificuldade por sessão, permitindo transformar uma dúvida em revisão agendada.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
       },
       {
         id: 'subjects',
         title: 'Disciplinas e tópicos',
-        summary: 'A estrutura que conecta conteúdo e desempenho.',
+        summary: 'Estrutura de conteúdo, Edital Verticalizado e importação.',
         paragraphs: [
-          'Cada disciplina reúne tópicos. Sessões, questões, revisões, domínio e histórico ficam associados ao tópico quando você o informa. Cadastre manualmente ou importe um edital; conteúdos compartilhados entre concursos podem reutilizar o progresso.',
+          'Cada disciplina reúne tópicos com metas de domínio, incidência e vínculo com questões e revisões. Além da lista padrão, você pode alternar para o Edital Verticalizado (checklist por etapas: teoria, resumo, questões e revisão) ou usar o Importador de Edital Bruto / PDF para estruturar matérias e tópicos rapidamente.',
         ],
         bullets: [
           'Tags identificam em quais concursos cada tópico aparece.',
@@ -196,10 +228,10 @@ const BASE_HELP_CATEGORIES: any[] = [
     entries: [
       {
         id: 'planning',
-        title: 'Planejar a semana',
-        summary: 'Compare disponibilidade, proposta e execução.',
+        title: 'Planejar a semana e Central do Ciclo',
+        summary: 'Compare disponibilidade, proposta semanal e divisão do Ciclo em donut.',
         paragraphs: [
-          'Defina as horas disponíveis, gere uma proposta semanal e confira a distribuição por disciplina, tópico e atividade. O plano até a prova considera capacidade e pendências. Confirme antes de salvar; déficit e excedente indicam quando a carga não cabe.',
+          'Defina as horas disponíveis, gere uma proposta semanal e confira a distribuição por disciplina, tópico e atividade. Na mesma subaba Semana fica a Central do Ciclo de Estudos 2.0, com gráfico de donut, estimativa de dias por volta e dicas do Copiloto para ajustar a duração dos blocos.',
         ],
         action: { label: 'Abrir planejamento', target: 'planning' },
       },
@@ -233,10 +265,10 @@ const BASE_HELP_CATEGORIES: any[] = [
       },
       {
         id: 'weekly',
-        title: 'Fechamento semanal',
-        summary: 'Entenda o que foi planejado, executado e medido.',
+        title: 'Fechamento semanal inteligente',
+        summary: 'Ritual objetivo do que funcionou, o que ajustar e retrato imutável.',
         paragraphs: [
-          'O fechamento reúne tempo, questões, acerto, lacunas, diagnóstico e próxima ação. O foco estratégico indica a parcela do tempo dedicada a tópicos de alto impacto; não é uma meta de 100%. Melhora ou estabilidade só aparece quando há resultado posterior medido no período.',
+          'O Fechamento Semanal reúne tempo estudado, questões, acerto, o que funcionou na semana, pontos de revisão, sugestões de prioridade e um resumo narrativo. Salvar gera um retrato versionado e imutável no Histórico sem sobrescrever períodos anteriores.',
         ],
         bullets: [
           'Salve o fechamento para comparar semanas do mesmo concurso.',
@@ -396,9 +428,9 @@ const BASE_HELP_CATEGORIES: any[] = [
       {
         id: 'guide-shortcuts',
         title: 'Acesso rápido e atalhos',
-        summary: 'Encontre áreas, ações e tópicos pelo teclado.',
+        summary: 'Encontre áreas, comandos e tópicos pelo teclado.',
         paragraphs: [
-          'Ctrl + K (ou Cmd + K no Mac) abre a busca global de ações, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas, na ordem das abas. Em Desempenho, Alt + 1–5 troca de subaba (Resumo, Por disciplina, Diagnóstico, Resultados das provas, Ritmo e aderência) e Alt + 6–9 muda o período (7 dias, 30 dias, 90 dias, todo o histórico); a busca global também abre cada subaba. Esc fecha busca, menu ou modal. Com uma aba em foco, use setas, Home e End para navegar.',
+          'Ctrl + K (ou Cmd + K no Mac) abre a busca global com acesso direto a Estudo Rápido, Copiloto, Diário de Aprendizagem, Central do Ciclo, Ver conquistas, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas, na ordem das abas. Em Desempenho, Alt + 1–5 troca de subaba e Alt + 6–9 muda o período. Esc fecha busca, menu ou modal.',
         ],
       },
       {
@@ -962,6 +994,14 @@ export const HELP_GLOSSARY = [
     'Recovery',
     'Proposta de reorganização segura do planejamento, com capacidade preservada e aplicação confirmada.',
   ],
+  [
+    'Ciclo de Estudos',
+    'Fila rotativa contínua de blocos por disciplina que pausa nos dias sem estudo sem gerar falsos atrasos.',
+  ],
+  [
+    'Copiloto de Estudos',
+    'Assistente determinístico que explica prioridades, ciclo e semana usando apenas seus dados locais.',
+  ],
 ];
 
 export const HELP_FAQ = [
@@ -984,6 +1024,10 @@ export const HELP_FAQ = [
   [
     'Por que o app conta simulados de formas diferentes?',
     'São três contas, cada uma com o seu critério e a sua janela. A aba Simulados mostra a média simples dos simulados do período escolhido. A faixa projetada usa a mediana dos 3 últimos simulados comparáveis (mesma meta, prova e composição). O fator Simulados da Prontidão usa a média ponderada dos 5 últimos simulados de todo o histórico, sem filtro de composição.',
+  ],
+  [
+    'Qual a diferença entre Ciclo de Estudos e Agenda do dia?',
+    'O Ciclo de Estudos (padrão) segue uma fila rotativa contínua entre disciplinas e retoma de onde você parou sem acumular atrasos; a Agenda do dia fixa tarefas em datas específicas do calendário.',
   ],
   [
     'O aplicativo funciona sem internet?',
