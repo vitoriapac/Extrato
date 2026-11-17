@@ -235,6 +235,46 @@ export function validateStudyCycleBlocks(
   };
 }
 
+export interface StudyCycleSubjectShare {
+  subjectId: string;
+  subjectName: string;
+  minutes: number;
+  blocks: number;
+  sharePct: number;
+}
+
+export function computeStudyCycleSubjectShares(
+  blocks: StudyCycleBlock[] = []
+): StudyCycleSubjectShare[] {
+  const bySubject = new Map<
+    string,
+    { subjectId: string; subjectName: string; minutes: number; blocks: number }
+  >();
+  let totalMinutes = 0;
+
+  for (const block of blocks) {
+    if (block.enabled === false) continue;
+    const duration = Math.max(0, Number(block.durationMinutes) || 0);
+    const current = bySubject.get(block.subjectId) || {
+      subjectId: block.subjectId,
+      subjectName: block.subjectName,
+      minutes: 0,
+      blocks: 0,
+    };
+    current.minutes += duration;
+    current.blocks += 1;
+    totalMinutes += duration;
+    bySubject.set(block.subjectId, current);
+  }
+
+  return [...bySubject.values()]
+    .map(item => ({
+      ...item,
+      sharePct: totalMinutes > 0 ? Math.round((item.minutes / totalMinutes) * 100) : 0,
+    }))
+    .sort((a, b) => b.minutes - a.minutes);
+}
+
 /**
  * Gera uma prévia não destrutiva de distribuição do ciclo (CIC-02, CIC-03).
  */
@@ -276,25 +316,8 @@ export function buildStudyCyclePreview(
     cycle = buildStudyCycleQueue({ ...options, mode, nowISO });
   }
 
-  const bySubject = new Map<string, { subjectId: string; subjectName: string; minutes: number; blocks: number }>();
-  for (const block of cycle.blocks) {
-    if (block.enabled === false) continue;
-    const current = bySubject.get(block.subjectId) || {
-      subjectId: block.subjectId,
-      subjectName: block.subjectName,
-      minutes: 0,
-      blocks: 0,
-    };
-    current.minutes += block.durationMinutes;
-    current.blocks += 1;
-    bySubject.set(block.subjectId, current);
-  }
-
   const totalMinutes = cycle.totalDurationMinutes || 0;
-  const subjectShares = [...bySubject.values()].map(item => ({
-    ...item,
-    sharePct: totalMinutes > 0 ? Math.round((item.minutes / totalMinutes) * 100) : 0,
-  }));
+  const subjectShares = computeStudyCycleSubjectShares(cycle.blocks);
 
   return {
     valid: errors.length === 0 && cycle.blocks.length > 0,

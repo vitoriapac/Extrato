@@ -13,9 +13,14 @@ import {
   LEARNING_JOURNAL_TAG_LABELS,
 } from '../../domain/journal/learning-journal-engine.js';
 import type { LearningJournalEntry, LearningJournalTag } from '../../core/types.js';
-import type { StudyCycleMode, StudyCycleQueue } from '../../domain/planning/study-cycle-engine.js';
+import {
+  computeStudyCycleSubjectShares,
+  type StudyCycleMode,
+  type StudyCycleQueue,
+} from '../../domain/planning/study-cycle-engine.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
+import { StudyCycleDonut } from './StudyCycleDonut.js';
 
 export type AssistantPanelKind =
   | 'none'
@@ -176,12 +181,174 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
   const showJournalFilters = journalEntries.length > 0 || hasActiveJournalFilters;
   const activeSubjects = subjects.filter(s => s && !s.archived);
   const selectedFormSubject = activeSubjects.find(s => s.id === journalForm.subjectId) || null;
+  const activeCycleShares =
+    cycle && Array.isArray(cycle.blocks) && cycle.blocks.length > 0
+      ? computeStudyCycleSubjectShares(cycle.blocks)
+      : cycleDraft.preview?.subjectShares || [];
+
+  const cyclePanelNode =
+    executionMode === 'sequence' ? (
+      <section
+        class="space-y-3 min-w-0 pb-3 border-b border-border-subtle"
+        aria-label="Ciclo de Estudos"
+        data-study-cycle-panel="true"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <Icon name="repeat" size={16} class="text-accent shrink-0" />
+            <strong class="module-heading__title text-content-primary">
+              {cycle ? cycle.name : 'Ciclo de Estudos 2.0'}
+            </strong>
+            {cycle && (
+              <span class="status-pill status-pill--default font-data">
+                {cycle.status === 'paused' ? 'Pausado' : `Volta ${cycleLap.round}`}
+                {(cycle.version || 1) > 1 ? ` · revisão ${cycle.version}` : ''}
+              </span>
+            )}
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            {props.onOpenPlanningCycle && (
+              <Button variant="ghost" size="small" onClick={props.onOpenPlanningCycle}>
+                <span>Central em Planejamento</span>
+                <Icon name="chevron-right" size={13} class="icon-inline" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="small"
+              onClick={() =>
+                props.onTogglePanel(activePanel === 'cycle_config' ? 'none' : 'cycle_config')
+              }
+            >
+              <Icon name="settings" size={14} class="icon-inline shrink-0" />
+              <span>{cycle ? 'Configurar ciclo' : 'Montar ciclo'}</span>
+            </Button>
+          </div>
+        </div>
+
+        {currentBlock ? (
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-content-secondary">
+              <span>
+                Próximo bloco:{' '}
+                <strong class="text-content-primary">{currentBlock.subjectName}</strong> ·{' '}
+                <span class="font-data">
+                  {formatPlanMinutes(currentBlock.remainingMinutes ?? currentBlock.durationMinutes)}
+                </span>
+                {currentBlock.remainingMinutes != null ? ' restantes' : ''}
+              </span>
+              <span class="font-data">
+                {cycleLap.completedBlocks} concluídos · {cycleLap.skippedBlocks} pulados de{' '}
+                {cycleLap.totalBlocks} ({cycleLap.executedCoveragePct}% executado)
+              </span>
+            </div>
+
+            {upcomingBlocks.length > 0 && (
+              <p class="text-xs text-content-secondary m-0">
+                Depois:{' '}
+                <span class="font-data">
+                  {upcomingBlocks
+                    .map(b => `${b.subjectName} (${formatPlanMinutes(b.durationMinutes)})`)
+                    .join(' → ')}
+                </span>
+              </p>
+            )}
+
+            {cycleDivergence.diverges && (
+              <p
+                class="text-xs text-content-secondary border-l-3 border-l-accent pl-3 py-0.5 m-0"
+                role="note"
+              >
+                <Icon name="alert-circle" size={13} class="icon-inline text-accent" />{' '}
+                {cycleDivergence.explanation}
+              </p>
+            )}
+
+            {activePanel !== 'cycle_config' && activeCycleShares.length > 0 && (
+              <StudyCycleDonut
+                shares={activeCycleShares}
+                subjects={activeSubjects}
+                size={116}
+                strokeWidth={14}
+                centerLabel="por volta"
+                compact
+                maxVisibleLegend={4}
+              />
+            )}
+
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <Button
+                variant="primary"
+                size="small"
+                disabled={cycle?.status === 'paused'}
+                onClick={props.onStartCycleBlock}
+              >
+                <Icon name="play" size={13} class="icon-inline" />
+                <span>Iniciar bloco</span>
+              </Button>
+              <Button variant="secondary" size="small" onClick={props.onToggleCyclePause}>
+                <Icon name={cycle?.status === 'paused' ? 'play' : 'pause'} size={13} class="icon-inline" />
+                <span>{cycle?.status === 'paused' ? 'Retomar ciclo' : 'Pausar ciclo'}</span>
+              </Button>
+              <div class="flex items-center gap-1 flex-wrap">
+                <input
+                  type="text"
+                  class="select-control text-xs py-1 px-2"
+                  style="max-width: 11rem;"
+                  aria-label="Motivo opcional para pular bloco"
+                  placeholder="Motivo opcional"
+                  value={cycleSkipReason}
+                  onInput={e => props.onSkipReasonChange(e.currentTarget.value)}
+                />
+                <Button variant="ghost" size="small" onClick={props.onSkipCycleBlock}>
+                  <span>Pular bloco</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div class="space-y-3">
+            <p class="text-xs text-content-secondary m-0">
+              Estude em fila rotativa por blocos de 15 a 120 minutos sem gerar atrasos automáticos em dias sem estudo.
+            </p>
+            {activePanel !== 'cycle_config' && activeCycleShares.length > 0 && (
+              <StudyCycleDonut
+                shares={activeCycleShares}
+                subjects={activeSubjects}
+                size={116}
+                strokeWidth={14}
+                centerLabel="prévia"
+                compact
+                maxVisibleLegend={4}
+              />
+            )}
+            {cycleDraft.preview?.valid && (
+              <div class="flex flex-wrap items-center gap-2">
+                <Button variant="primary" size="small" onClick={props.onConfirmCycleDraft}>
+                  <Icon name="play" size={13} class="icon-inline" />
+                  <span>Ativar ciclo recomendado</span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => props.onTogglePanel('cycle_config')}
+                >
+                  <span>Ajustar blocos</span>
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+    ) : null;
 
   return (
     <div
       class="today-assistant-bar mt-3 pt-3 border-t border-border-subtle space-y-3 min-w-0"
       data-today-assistant-bar="true"
     >
+      {cyclePanelNode}
+
       {/* Linha compacta de atalhos funcionais (3 gatilhos principais + presets de duração) */}
       <div
         class="flex flex-wrap items-center gap-2"
@@ -256,122 +423,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         </Button>
       </div>
 
-      {/* Painel Ciclo de Estudos 2.0 quando modo Sequência flexível estiver ativo */}
-      {executionMode === 'sequence' && (
-        <section
-          class="pt-3 border-t border-border-subtle space-y-2 min-w-0"
-          aria-label="Ciclo de Estudos"
-          data-study-cycle-panel="true"
-        >
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <Icon name="repeat" size={16} class="text-accent shrink-0" />
-              <strong class="module-heading__title text-content-primary">
-                {cycle ? cycle.name : 'Ciclo de Estudos 2.0'}
-              </strong>
-              {cycle && (
-                <span class="status-pill status-pill--default font-data">
-                  {cycle.status === 'paused' ? 'Pausado' : `Volta ${cycleLap.round}`}
-                  {(cycle.version || 1) > 1 ? ` · revisão ${cycle.version}` : ''}
-                </span>
-              )}
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5">
-              {props.onOpenPlanningCycle && (
-                <Button variant="ghost" size="small" onClick={props.onOpenPlanningCycle}>
-                  <span>Central em Planejamento</span>
-                  <Icon name="chevron-right" size={13} class="icon-inline" />
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="small"
-                onClick={() =>
-                  props.onTogglePanel(activePanel === 'cycle_config' ? 'none' : 'cycle_config')
-                }
-              >
-                <Icon name="settings" size={14} class="icon-inline shrink-0" />
-                <span>{cycle ? 'Configurar ciclo' : 'Montar ciclo'}</span>
-              </Button>
-            </div>
-          </div>
-
-          {currentBlock ? (
-            <div class="space-y-2">
-              <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-content-secondary">
-                <span>
-                  Próximo bloco:{' '}
-                  <strong class="text-content-primary">{currentBlock.subjectName}</strong> ·{' '}
-                  <span class="font-data">
-                    {formatPlanMinutes(currentBlock.remainingMinutes ?? currentBlock.durationMinutes)}
-                  </span>
-                  {currentBlock.remainingMinutes != null ? ' restantes' : ''}
-                </span>
-                <span class="font-data">
-                  {cycleLap.completedBlocks} concluídos · {cycleLap.skippedBlocks} pulados de{' '}
-                  {cycleLap.totalBlocks} ({cycleLap.executedCoveragePct}% executado)
-                </span>
-              </div>
-
-              {upcomingBlocks.length > 0 && (
-                <p class="text-xs text-content-secondary m-0">
-                  Depois:{' '}
-                  <span class="font-data">
-                    {upcomingBlocks
-                      .map(b => `${b.subjectName} (${formatPlanMinutes(b.durationMinutes)})`)
-                      .join(' → ')}
-                  </span>
-                </p>
-              )}
-
-              {cycleDivergence.diverges && (
-                <p
-                  class="text-xs text-content-secondary border-l-3 border-l-accent pl-3 py-0.5 m-0"
-                  role="note"
-                >
-                  <Icon name="alert-circle" size={13} class="icon-inline text-accent" />{' '}
-                  {cycleDivergence.explanation}
-                </p>
-              )}
-
-              <div class="flex flex-wrap items-center gap-2 pt-1">
-                <Button
-                  variant="primary"
-                  size="small"
-                  disabled={cycle?.status === 'paused'}
-                  onClick={props.onStartCycleBlock}
-                >
-                  <Icon name="play" size={13} class="icon-inline" />
-                  <span>Iniciar bloco</span>
-                </Button>
-                <Button variant="secondary" size="small" onClick={props.onToggleCyclePause}>
-                  <Icon name={cycle?.status === 'paused' ? 'play' : 'pause'} size={13} class="icon-inline" />
-                  <span>{cycle?.status === 'paused' ? 'Retomar ciclo' : 'Pausar ciclo'}</span>
-                </Button>
-                <div class="flex items-center gap-1 flex-wrap">
-                  <input
-                    type="text"
-                    class="select-control text-xs py-1 px-2"
-                    style="max-width: 11rem;"
-                    aria-label="Motivo opcional para pular bloco"
-                    placeholder="Motivo opcional"
-                    value={cycleSkipReason}
-                    onInput={e => props.onSkipReasonChange(e.currentTarget.value)}
-                  />
-                  <Button variant="ghost" size="small" onClick={props.onSkipCycleBlock}>
-                    <span>Pular bloco</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p class="text-xs text-content-secondary m-0">
-              Monte uma fila flexível de blocos de 15 a 120 minutos sem gerar atrasos automáticos em dias sem estudo.
-            </p>
-          )}
-        </section>
-      )}
-
       {/* Configurador do Ciclo 2.0 com prévia obrigatória */}
       {activePanel === 'cycle_config' && (
         <section
@@ -429,6 +480,16 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
                 Prévia: <strong class="font-data text-content-primary">{cycleDraft.preview.blocksCount} blocos</strong> ·{' '}
                 <span class="font-data">{formatPlanMinutes(cycleDraft.preview.totalDurationMinutes)}</span> por volta completa. Alterações criam nova versão sem reescrever voltas passadas.
               </p>
+              {cycleDraft.preview.subjectShares.length > 0 && (
+                <StudyCycleDonut
+                  shares={cycleDraft.preview.subjectShares}
+                  subjects={activeSubjects}
+                  size={136}
+                  strokeWidth={16}
+                  centerLabel="por volta"
+                  maxVisibleLegend={5}
+                />
+              )}
               {cycleDraft.preview.cycle.blocks.length > 0 && (
                 <ul class="divide-y divide-border-subtle border-t border-b border-border-subtle m-0 p-0 list-none max-h-48 overflow-y-auto">
                   {cycleDraft.preview.cycle.blocks.map((block, index) => (

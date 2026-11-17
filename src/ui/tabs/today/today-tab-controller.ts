@@ -985,7 +985,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     if (!mount) return;
 
     const state = getState();
-    const executionMode: ExecutionMode = state?.executionMode === 'sequence' ? 'sequence' : 'agenda';
+    const executionMode: ExecutionMode = state?.executionMode === 'agenda' ? 'agenda' : 'sequence';
     const subjects = state?.subjects || [];
     const candidates = ctx.intelligenceCandidates ? ctx.intelligenceCandidates() : [];
     const recs = getCurrentStudyRecommendations() || [];
@@ -1300,7 +1300,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   function renderExecutionModeSwitch(): void {
     if (!doc) return;
     const state = getState();
-    const mode: ExecutionMode = state?.executionMode === 'sequence' ? 'sequence' : 'agenda';
+    const mode: ExecutionMode = state?.executionMode === 'agenda' ? 'agenda' : 'sequence';
     const mount = doc.getElementById('todayExecutionModeMount') as Element | null;
     if (
       mount &&

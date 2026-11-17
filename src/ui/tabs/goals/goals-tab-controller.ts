@@ -508,8 +508,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
         isCapacityInformed(state) ||
         (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
         (Array.isArray(state.studySessions) && state.studySessions.length > 0) ||
-        state.studyCycle ||
-        state.executionMode === 'sequence'
+        state.studyCycle
     );
     if (activeSubs.length === 0 || !hasPlanningContext) {
       mount.hidden = true;
@@ -527,12 +526,13 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
 
     syncCycleDraftFromState();
     const cycle = (state.studyCycle || null) as StudyCycleQueue | null;
-    const executionMode = state.executionMode === 'sequence' ? 'sequence' : 'agenda';
+    const executionMode = state.executionMode === 'agenda' ? 'agenda' : 'sequence';
 
     mountPreact(
       h(StudyCycleCenterCard, {
         executionMode,
         cycle,
+        subjects: activeSubs,
         cycleLap: computeStudyCycleLapSummary(cycle),
         cycleDraft: cycleDraftState,
         onSetExecutionMode: mode => {

@@ -6,11 +6,13 @@ import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Card } from '../primitives/card.js';
 import { Icon } from '../primitives/icon.js';
+import { StudyCycleDonut } from './StudyCycleDonut.js';
 import type { CycleDraftState } from './TodayStudyAssistantBar.js';
 
 export interface StudyCycleCenterCardProps {
   executionMode: 'agenda' | 'sequence';
   cycle: StudyCycleQueue | null;
+  subjects?: Array<{ id?: string; color?: unknown }>;
   cycleLap: {
     round: number;
     totalBlocks: number;
@@ -30,12 +32,10 @@ export interface StudyCycleCenterCardProps {
   onGoToTodayCycle: () => void;
 }
 
-const DEFAULT_VISIBLE_SHARES = 4;
 const DEFAULT_VISIBLE_BLOCKS = 6;
 
 export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Element {
-  const { executionMode, cycle, cycleLap, cycleDraft } = props;
-  const [showAllShares, setShowAllShares] = useState(false);
+  const { executionMode, cycle, cycleLap, cycleDraft, subjects = [] } = props;
   const [showAllBlocks, setShowAllBlocks] = useState(false);
 
   const currentBlock =
@@ -59,9 +59,6 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
       : `Ativo · Volta ${cycleLap.round}${versionSuffix}`;
 
   const subjectShares = cycleDraft.preview?.subjectShares || [];
-  const visibleShares = showAllShares
-    ? subjectShares
-    : subjectShares.slice(0, DEFAULT_VISIBLE_SHARES);
 
   const isManualMode = cycleDraft.mode === 'manual';
   const draftBlocks = cycleDraft.preview?.cycle.blocks || [];
@@ -97,20 +94,20 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
 
         <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Modo de execução em Hoje">
           <Button
-            variant={executionMode === 'agenda' ? 'tonal' : 'secondary'}
+            variant={executionMode === 'sequence' ? 'secondary' : 'ghost'}
+            size="small"
+            aria-pressed={executionMode === 'sequence'}
+            onClick={() => props.onSetExecutionMode('sequence')}
+          >
+            <span>Ciclo de estudos</span>
+          </Button>
+          <Button
+            variant={executionMode === 'agenda' ? 'secondary' : 'ghost'}
             size="small"
             aria-pressed={executionMode === 'agenda'}
             onClick={() => props.onSetExecutionMode('agenda')}
           >
             <span>Agenda do dia</span>
-          </Button>
-          <Button
-            variant={executionMode === 'sequence' ? 'tonal' : 'secondary'}
-            size="small"
-            aria-pressed={executionMode === 'sequence'}
-            onClick={() => props.onSetExecutionMode('sequence')}
-          >
-            <span>Sequência flexível</span>
           </Button>
         </div>
       </div>
@@ -198,38 +195,14 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
           </p>
 
           {subjectShares.length > 0 && (
-            <div class="space-y-1.5">
-              <div
-                class="divide-y divide-border-subtle border-t border-b border-border-subtle"
-                aria-label="Participação das disciplinas no ciclo"
-              >
-                {visibleShares.map(share => (
-                  <div
-                    key={share.subjectId}
-                    class="flex items-center justify-between gap-3 py-1.5 text-content-secondary"
-                  >
-                    <strong class="text-content-primary font-medium truncate">
-                      {share.subjectName}
-                    </strong>
-                    <span class="font-data shrink-0">
-                      {formatPlanMinutes(share.minutes)} ({share.sharePct}%)
-                    </span>
-                  </div>
-                ))}
-              </div>
-              {subjectShares.length > DEFAULT_VISIBLE_SHARES && (
-                <Button
-                  variant="tertiary"
-                  size="small"
-                  aria-expanded={showAllShares}
-                  onClick={() => setShowAllShares(prev => !prev)}
-                >
-                  {showAllShares
-                    ? 'Recolher disciplinas'
-                    : `Mostrar todas as ${subjectShares.length} disciplinas`}
-                </Button>
-              )}
-            </div>
+            <StudyCycleDonut
+              shares={subjectShares}
+              subjects={subjects}
+              size={160}
+              strokeWidth={18}
+              centerLabel="por volta"
+              maxVisibleLegend={4}
+            />
           )}
 
           {draftBlocks.length > 0 && (

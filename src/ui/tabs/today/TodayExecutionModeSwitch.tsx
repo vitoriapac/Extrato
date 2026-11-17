@@ -16,8 +16,8 @@ export function TodayExecutionModeSwitch({ value, onChange }: TodayExecutionMode
       value={value}
       onChange={onChange}
       options={[
-        { value: 'agenda', label: 'Agenda', id: 'executionAgendaBtn' },
-        { value: 'sequence', label: 'Sequência flexível', id: 'executionSequenceBtn' },
+        { value: 'sequence', label: 'Ciclo de estudos', id: 'executionSequenceBtn' },
+        { value: 'agenda', label: 'Agenda do dia', id: 'executionAgendaBtn' },
       ]}
     />
   );

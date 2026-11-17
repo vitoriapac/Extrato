@@ -645,10 +645,13 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
     blockDurationMinutes: 60,
     nowISO: '2026-11-16T10:00:00.000Z',
   });
+  assert.equal(createDefaultState().executionMode, 'sequence');
+
   const cycleCenterHtml = render(
     h(StudyCycleCenterCard, {
       executionMode: 'sequence',
       cycle: cyclePreview.cycle,
+      subjects: SUBJECTS,
       cycleLap: {
         round: 1,
         totalBlocks: cyclePreview.blocksCount,
@@ -676,6 +679,10 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   assert.match(cycleCenterHtml, /Confirmar nova versão do ciclo/);
   assert.match(cycleCenterHtml, /Ver sequência de 2 blocos/);
   assert.match(cycleCenterHtml, /1 h/);
+  assert.match(cycleCenterHtml, /data-study-cycle-donut="true"/);
+  assert.match(cycleCenterHtml, /chart-donut/);
+  assert.match(cycleCenterHtml, /chart-donut__slice/);
+  assert.ok(cycleCenterHtml.indexOf('Ciclo de estudos') < cycleCenterHtml.indexOf('Agenda do dia'));
   assert.doesNotMatch(cycleCenterHtml, /subject-distribution-row|plan-impact-row|plan-execution-table/);
   assert.doesNotMatch(cycleCenterHtml, /\p{Extended_Pictographic}/u);
 

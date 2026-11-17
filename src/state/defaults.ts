@@ -14,7 +14,7 @@ export function createDefaultState(): AppState {
     exams: [],
     examQuestions: [],
     planningCapacityHistory: [],
-    executionMode: 'agenda',
+    executionMode: 'sequence',
     metas: {
       ...INITIAL_GOAL_VALUES,
       horasDiarias: 2.5,
