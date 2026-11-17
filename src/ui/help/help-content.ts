@@ -49,7 +49,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Visão Geral',
         summary: 'Seu painel diário de decisão e ritmo.',
         paragraphs: [
-          'Reúne Próxima ação, Atenção (pendências e carga de revisões), Fase atual da preparação, Copiloto de Estudos Guiado, Resumo dos últimos 7 dias, Constância e Saldo do edital. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
+          'Reúne Próxima ação, Atenção (pendências e carga de revisões), Fase atual da preparação, Leitura do Extrato, Resumo dos últimos 7 dias, Constância e Saldo do edital. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
         ],
         action: { label: 'Abrir Visão Geral', target: 'overview' },
       },
@@ -65,14 +65,14 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Hoje',
         summary: 'Ciclo de Estudos, plano do dia, Estudo Rápido e Conquistas em um só lugar.',
         paragraphs: [
-          'Na aba Hoje você alterna entre o Ciclo de estudos (padrão) e a Agenda do dia. No topo da barra assistente ficam o próximo bloco do ciclo com gráfico de donut por disciplina e atalhos para Estudo Rápido ("Tenho X minutos"), Orientação guiada (Copiloto) e Diário de Aprendizagem.',
+          'Na aba Hoje você alterna entre o Ciclo de estudos (padrão) e a Agenda do dia. No topo da barra assistente ficam o próximo bloco do ciclo com gráfico de donut por disciplina e atalhos para Estudo Rápido ("Tenho X minutos"), Leitura do Extrato e Diário de Aprendizagem.',
           'O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões. Estudo sem vínculo aparece como adicional. A subaba Conquistas reúne os marcos desbloqueados e os próximos alvos sem interferir nas prioridades.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
       },
       {
         id: 'study-cycle-guide',
-        title: 'Ciclo de Estudos 2.0 e Gráfico de Donut',
+        title: 'Ciclo de Estudos e Gráfico de Donut',
         kind: 'feature',
         summary: 'Fila rotativa por disciplina com blocos de 15 a 120 minutos e divisão visual em donut.',
         keywords: ['ciclo de estudos', 'sequência flexível', 'donut', 'blocos', 'adaptativo', 'equilibrado'],
@@ -84,20 +84,20 @@ const BASE_HELP_CATEGORIES: any[] = [
         ],
         bullets: [
           'Confirmar uma nova versão do ciclo preserva voltas e sessões anteriores.',
-          'Se o diagnóstico apontar prioridade urgente fora da fila, você pode estudá-la direto pelo Copiloto sem perder sua posição no ciclo.',
+          'Se o diagnóstico apontar prioridade urgente fora da fila, você pode estudá-la direto pela Leitura do Extrato sem perder sua posição no ciclo.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
       },
       {
         id: 'copilot-and-journal',
-        title: 'Copiloto, Estudo Rápido e Diário',
+        title: 'Leitura do Extrato, Estudo Rápido e Diário',
         kind: 'feature',
         summary: 'Respostas auditáveis, blocos curtos para imprevistos e registro qualitativo.',
-        keywords: ['copiloto', 'orientação guiada', 'estudo rápido', 'tenho x minutos', 'diário de aprendizagem'],
-        concepts: ['copiloto de estudos', 'estudo rápido', 'diário de aprendizagem'],
-        questions: ['Como o Copiloto decide o que estudar?', 'Para que serve o Diário de Aprendizagem?'],
+        keywords: ['leitura do extrato', 'copiloto', 'orientação guiada', 'estudo rápido', 'tenho x minutos', 'diário de aprendizagem'],
+        concepts: ['leitura do extrato', 'estudo rápido', 'diário de aprendizagem'],
+        questions: ['Como a Leitura do Extrato decide o que estudar?', 'Para que serve o Diário de Aprendizagem?'],
         paragraphs: [
-          'O Copiloto de Estudos Guiado responde perguntas práticas ("O que estudar agora?", "Tenho 30 minutos", "Como foi minha semana?", "Por que meu ciclo sugere X?") usando somente seus dados locais, sem alterar planos automaticamente.',
+          'A Leitura do Extrato responde perguntas práticas ("O que estudar agora?", "Tenho 30 minutos", "Como foi minha semana?", "Por que meu ciclo sugere X?") usando somente seus dados locais, sem alterar planos automaticamente.',
           'O Estudo Rápido ("Tenho X minutos") monta uma sessão de 15, 30, 45 ou 60 minutos aproveitando revisões vencidas, prioridade ou bloco do ciclo. O Diário de Aprendizagem registra dúvidas, energia e dificuldade por sessão, permitindo transformar uma dúvida em revisão agendada.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
@@ -231,7 +231,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Planejar a semana e Central do Ciclo',
         summary: 'Compare disponibilidade, proposta semanal e divisão do Ciclo em donut.',
         paragraphs: [
-          'Defina as horas disponíveis, gere uma proposta semanal e confira a distribuição por disciplina, tópico e atividade. Na mesma subaba Semana fica a Central do Ciclo de Estudos 2.0, com gráfico de donut, estimativa de dias por volta e dicas do Copiloto para ajustar a duração dos blocos.',
+          'Defina as horas disponíveis, gere uma proposta semanal e confira a distribuição por disciplina, tópico e atividade. Na mesma subaba Semana fica a Central do Ciclo de Estudos, com gráfico de donut, estimativa de dias por volta e dicas da Leitura do Extrato para ajustar a duração dos blocos.',
         ],
         action: { label: 'Abrir planejamento', target: 'planning' },
       },
@@ -430,7 +430,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Acesso rápido e atalhos',
         summary: 'Encontre áreas, comandos e tópicos pelo teclado.',
         paragraphs: [
-          'Ctrl + K (ou Cmd + K no Mac) abre a busca global com acesso direto a Estudo Rápido, Copiloto, Diário de Aprendizagem, Central do Ciclo, Ver conquistas, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas, na ordem das abas. Em Desempenho, Alt + 1–5 troca de subaba e Alt + 6–9 muda o período. Esc fecha busca, menu ou modal.',
+          'Ctrl + K (ou Cmd + K no Mac) abre a busca global com acesso direto a Estudo Rápido, Leitura do Extrato, Diário de Aprendizagem, Central do Ciclo, Ver conquistas, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas, na ordem das abas. Em Desempenho, Alt + 1–5 troca de subaba e Alt + 6–9 muda o período. Esc fecha busca, menu ou modal.',
         ],
       },
       {
@@ -999,8 +999,8 @@ export const HELP_GLOSSARY = [
     'Fila rotativa contínua de blocos por disciplina que pausa nos dias sem estudo sem gerar falsos atrasos.',
   ],
   [
-    'Copiloto de Estudos',
-    'Assistente determinístico que explica prioridades, ciclo e semana usando apenas seus dados locais.',
+    'Leitura do Extrato',
+    'Painel determinístico que explica prioridades, ciclo e semana usando apenas seus dados locais.',
   ],
 ];
 

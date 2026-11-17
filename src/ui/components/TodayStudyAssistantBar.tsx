@@ -1,25 +1,22 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import { formatPlanMinutes } from '../../core/format-duration.js';
-import { formatDateBR } from '../../core/format-date.js';
 import type {
   CopilotAnswer,
   CopilotQuestionKey,
   CopilotViewModel,
 } from '../../application/copilot/study-copilot-service.js';
 import type { QuickStudyFocusMode, QuickStudyProposal } from '../../domain/quick-study/quick-study-engine.js';
-import {
-  LEARNING_JOURNAL_TAGS,
-  LEARNING_JOURNAL_TAG_LABELS,
-} from '../../domain/journal/learning-journal-engine.js';
 import type { LearningJournalEntry, LearningJournalTag } from '../../core/types.js';
 import {
   computeStudyCycleSubjectShares,
   type StudyCycleMode,
   type StudyCycleQueue,
 } from '../../domain/planning/study-cycle-engine.js';
+import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
+import { StudyCycleBlockList } from './StudyCycleBlockList.js';
 import { StudyCycleDonut } from './StudyCycleDonut.js';
 
 export type AssistantPanelKind =
@@ -103,6 +100,7 @@ export interface TodayStudyAssistantBarProps {
   onOpenQuickPreset?: (minutes: number) => void;
   onStartQuickStudy: () => void;
   onOpenPlanningCycle?: () => void;
+  onOpenJournalSidebar?: () => void;
   onSelectCopilotQuestion: (key: CopilotQuestionKey) => void;
   onExecuteCopilotAnswer: (answer: CopilotAnswer) => void;
   onChangeJournalFilter: (patch: Partial<{ subjectId: string; tag: string; query: string }>) => void;
@@ -146,8 +144,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
     copilot,
     copilotQuestion,
     journalEntries,
-    journalFilters,
-    journalForm,
     weeklyClosing,
   } = props;
 
@@ -175,12 +171,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         ...primaryCopilotQuestions,
         ...secondaryCopilotQuestions.filter(item => item.key === copilotQuestion),
       ];
-  const hasActiveJournalFilters = Boolean(
-    journalFilters.subjectId || journalFilters.tag || journalFilters.query.trim()
-  );
-  const showJournalFilters = journalEntries.length > 0 || hasActiveJournalFilters;
   const activeSubjects = subjects.filter(s => s && !s.archived);
-  const selectedFormSubject = activeSubjects.find(s => s.id === journalForm.subjectId) || null;
   const activeCycleShares =
     cycle && Array.isArray(cycle.blocks) && cycle.blocks.length > 0
       ? computeStudyCycleSubjectShares(cycle.blocks)
@@ -197,13 +188,13 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           <div class="flex items-center gap-2 min-w-0">
             <Icon name="repeat" size={16} class="text-accent shrink-0" />
             <strong class="module-heading__title text-content-primary">
-              {cycle ? cycle.name : 'Ciclo de Estudos 2.0'}
+              {cycle ? cycle.name : 'Ciclo de Estudos'}
             </strong>
             {cycle && (
-              <span class="status-pill status-pill--default font-data">
+              <Badge variant={cycle.status === 'paused' ? 'warning' : 'default'} icon={false} className="font-data">
                 {cycle.status === 'paused' ? 'Pausado' : `Volta ${cycleLap.round}`}
                 {(cycle.version || 1) > 1 ? ` · revisão ${cycle.version}` : ''}
-              </span>
+              </Badge>
             )}
           </div>
           <div class="flex flex-wrap items-center gap-2">
@@ -375,7 +366,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
     >
       {cyclePanelNode}
 
-      {/* Linha compacta de atalhos funcionais (3 gatilhos principais + presets de duração) */}
+      {/* Linha compacta de atalhos funcionais (3 gatilhos principais) */}
       <div
         class="flex flex-wrap items-center gap-2"
         role="toolbar"
@@ -392,35 +383,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           <span>Tenho X minutos</span>
         </Button>
 
-        <div
-          class="inline-flex flex-wrap items-center gap-1"
-          role="group"
-          aria-label="Atalhos diretos de Estudo Rápido"
-        >
-          {QUICK_MINUTES_PRESETS.map(mins => {
-            const selected = activePanel === 'quick' && quickMinutes === mins;
-            return (
-              <Button
-                key={`quick-chip-${mins}`}
-                variant={selected ? 'tonal' : 'ghost'}
-                size="small"
-                aria-pressed={selected}
-                aria-label={`Estudo rápido de ${mins} minutos`}
-                onClick={() => {
-                  if (props.onOpenQuickPreset) {
-                    props.onOpenQuickPreset(mins);
-                  } else {
-                    props.onChangeQuickConfig(mins, quickFocus);
-                    props.onTogglePanel('quick');
-                  }
-                }}
-              >
-                <span class="font-data">{mins} min</span>
-              </Button>
-            );
-          })}
-        </div>
-
         <Button
           variant={activePanel === 'copilot' ? 'tonal' : 'secondary'}
           size="small"
@@ -429,15 +391,19 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           onClick={() => props.onTogglePanel(activePanel === 'copilot' ? 'none' : 'copilot')}
         >
           <Icon name="compass" size={14} class="icon-inline shrink-0" />
-          <span>Orientação guiada</span>
+          <span>Leitura do Extrato</span>
         </Button>
 
         <Button
-          variant={activePanel === 'journal' ? 'tonal' : 'secondary'}
+          variant="secondary"
           size="small"
-          aria-expanded={activePanel === 'journal'}
-          aria-controls="todayJournalPanel"
-          onClick={() => props.onTogglePanel(activePanel === 'journal' ? 'none' : 'journal')}
+          onClick={() => {
+            if (props.onOpenJournalSidebar) {
+              props.onOpenJournalSidebar();
+            } else {
+              props.onTogglePanel('none');
+            }
+          }}
         >
           <Icon name="book" size={14} class="icon-inline shrink-0" />
           <span>
@@ -516,42 +482,14 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
                   maxVisibleLegend={5}
                 />
               )}
-              {cycleDraft.preview.cycle.blocks.length > 0 && (
-                <ul class="divide-y divide-border-subtle border-t border-b border-border-subtle m-0 p-0 list-none max-h-48 overflow-y-auto">
-                  {cycleDraft.preview.cycle.blocks.map((block, index) => (
-                    <li
-                      key={block.id}
-                      class="flex items-center justify-between gap-2 py-1.5"
-                    >
-                      <span class="truncate">
-                        <span class="font-data text-content-secondary">{index + 1}.</span>{' '}
-                        <strong>{block.subjectName}</strong> ·{' '}
-                        <span class="font-data">{formatPlanMinutes(block.durationMinutes)}</span>
-                      </span>
-                      <span class="inline-flex gap-1 shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="small"
-                          disabled={index === 0}
-                          aria-label={`Mover bloco ${block.subjectName} para cima`}
-                          onClick={() => props.onMoveCycleDraftBlock(index, index - 1)}
-                        >
-                          <Icon name="arrow-up" size={12} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="small"
-                          disabled={index === cycleDraft.preview!.cycle.blocks.length - 1}
-                          aria-label={`Mover bloco ${block.subjectName} para baixo`}
-                          onClick={() => props.onMoveCycleDraftBlock(index, index + 1)}
-                        >
-                          <Icon name="arrow-down" size={12} />
-                        </Button>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <StudyCycleBlockList
+                blocks={cycleDraft.preview.cycle.blocks}
+                isManualMode={cycleDraft.mode === 'manual'}
+                onMoveBlock={props.onMoveCycleDraftBlock}
+                onEnableManualMode={() =>
+                  props.onChangeCycleDraftConfig('manual', cycleDraft.blockDurationMinutes)
+                }
+              />
               {cycleDraft.preview.errors.length > 0 && (
                 <p class="text-red m-0">{cycleDraft.preview.errors[0]}</p>
               )}
@@ -575,7 +513,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
       {activePanel === 'quick' && (
         <section
           id="todayQuickStudyPanel"
-          class="pt-3 border-t border-border-subtle space-y-3 min-w-0"
+          class="pt-4 border-t border-border-subtle space-y-4 min-w-0"
           aria-label="Modo Estudo Rápido"
         >
           <div class="flex items-center justify-between gap-2">
@@ -587,9 +525,30 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             </Button>
           </div>
 
-          <div class="flex flex-wrap items-center gap-3 text-xs">
+          <div class="flex flex-wrap items-center gap-4 text-xs">
+            <div
+              class="inline-flex flex-wrap items-center gap-2"
+              role="group"
+              aria-label="Atalhos de duração do Estudo Rápido"
+            >
+              {QUICK_MINUTES_PRESETS.map(mins => {
+                const selected = quickMinutes === mins;
+                return (
+                  <Button
+                    key={`quick-chip-${mins}`}
+                    variant={selected ? 'tonal' : 'secondary'}
+                    size="small"
+                    aria-pressed={selected}
+                    aria-label={`Estudo rápido de ${mins} minutos`}
+                    onClick={() => props.onChangeQuickConfig(mins, quickFocus)}
+                  >
+                    <span class="font-data">{mins} min</span>
+                  </Button>
+                );
+              })}
+            </div>
             <label class="inline-flex items-center gap-2 text-content-secondary">
-              <span>Tempo personalizado (min):</span>
+              <span>Tempo personalizado (10–180 min):</span>
               <input
                 type="number"
                 class="select-control font-data text-xs py-1 px-2"
@@ -608,7 +567,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             </label>
           </div>
 
-          <div class="flex flex-wrap gap-1.5" role="group" aria-label="Foco da sessão rápida">
+          <div class="flex flex-wrap gap-2" role="group" aria-label="Foco da sessão rápida">
             {QUICK_FOCUS_OPTIONS.filter(opt => opt.key !== 'cycle' || Boolean(currentBlock)).map(opt => {
               const selected = quickFocus === opt.key;
               return (
@@ -649,29 +608,29 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         </section>
       )}
 
-      {/* Funcionalidade E: Copiloto de Estudos Guiado */}
+      {/* Funcionalidade E: Leitura do Extrato */}
       {activePanel === 'copilot' && (
         <section
           id="todayCopilotPanel"
-          class="pt-3 border-t border-border-subtle space-y-3 min-w-0"
-          aria-label="Copiloto de Estudos Guiado"
+          class="pt-4 border-t border-border-subtle space-y-4 min-w-0"
+          aria-label="Leitura do Extrato"
         >
           <div class="flex items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2">
               <Icon name="compass" size={16} class="text-accent shrink-0" />
               <strong class="module-heading__title text-content-primary">
-                Copiloto de Estudos Guiado
+                Leitura do Extrato
               </strong>
-              <span class="status-pill status-pill--info">
+              <Badge variant="info" icon={false}>
                 {copilot.confidence.label}
-              </span>
+              </Badge>
             </div>
-            <Button variant="ghost" size="small" aria-label="Fechar orientação guiada" onClick={() => props.onTogglePanel('none')}>
+            <Button variant="ghost" size="small" aria-label="Fechar Leitura do Extrato" onClick={() => props.onTogglePanel('none')}>
               <Icon name="x" size={14} />
             </Button>
           </div>
 
-          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Perguntas rápidas">
+          <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas rápidas">
             {visibleCopilotQuestions.map(item => {
               const selected = copilotQuestion === item.key;
               return (
@@ -700,7 +659,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             )}
           </div>
 
-          <div class="pt-2.5 border-t border-border-subtle border-l-3 border-l-accent pl-3 space-y-1.5 text-xs">
+          <div class="pt-4 border-t border-border-subtle border-l-3 border-l-accent pl-4 space-y-2 text-xs">
             <strong class="text-sm text-content-primary block">{activeAnswer.headline}</strong>
             <p class="text-content-primary m-0 leading-relaxed">{activeAnswer.body}</p>
             {activeAnswer.evidenceSummary && (
@@ -714,7 +673,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             {activeAnswer.actionLabel && activeAnswer.actionKind !== 'none' && (
               <div class="pt-1">
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   size="small"
                   onClick={() => props.onExecuteCopilotAnswer(activeAnswer)}
                 >
@@ -728,257 +687,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
       )}
 
       {/* Funcionalidade C: Diário de Aprendizagem */}
-      {activePanel === 'journal' && (
-        <section
-          id="todayJournalPanel"
-          class="pt-3 border-t border-border-subtle space-y-3 min-w-0"
-          aria-label="Diário de Aprendizagem"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <Icon name="book" size={16} class="text-accent shrink-0" />
-              <strong class="module-heading__title text-content-primary">
-                Diário de Aprendizagem (opcional)
-              </strong>
-            </div>
-            <Button variant="ghost" size="small" aria-label="Fechar diário" onClick={() => props.onTogglePanel('none')}>
-              <Icon name="x" size={14} />
-            </Button>
-          </div>
-
-          <div class="pt-2.5 border-t border-border-subtle space-y-2 text-xs">
-            {journalForm.sessionId && (
-              <p class="m-0 text-content-primary font-medium">
-                Anotação vinculada à sessão selecionada (1 entrada editável por sessão).
-              </p>
-            )}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <select
-                class="select-control"
-                aria-label="Disciplina da anotação"
-                value={journalForm.subjectId}
-                onChange={e =>
-                  props.onChangeJournalForm({ subjectId: e.currentTarget.value, topicId: '' })
-                }
-              >
-                <option value="">Sem disciplina vinculada</option>
-                {activeSubjects.map(sub => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                class="select-control"
-                aria-label="Tópico da anotação"
-                value={journalForm.topicId}
-                onChange={e => props.onChangeJournalForm({ topicId: e.currentTarget.value })}
-              >
-                <option value="">Sem tópico específico</option>
-                {(selectedFormSubject?.topics || [])
-                  .filter((t: any) => !t.archived)
-                  .map((t: any) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            <div class="flex flex-wrap gap-1.5" role="group" aria-label="Etiquetas do aprendizado">
-              {LEARNING_JOURNAL_TAGS.map(tag => {
-                const selected = journalForm.tags.includes(tag);
-                return (
-                  <Button
-                    key={tag}
-                    variant={selected ? 'tonal' : 'secondary'}
-                    size="small"
-                    aria-pressed={selected}
-                    onClick={() =>
-                      props.onChangeJournalForm({
-                        tags: selected
-                          ? journalForm.tags.filter(t => t !== tag)
-                          : [...journalForm.tags, tag],
-                      })
-                    }
-                  >
-                    {LEARNING_JOURNAL_TAG_LABELS[tag]}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <select
-                class="select-control"
-                aria-label="Dificuldade percebida no diário"
-                value={journalForm.difficultyRating}
-                onChange={e =>
-                  props.onChangeJournalForm({ difficultyRating: e.currentTarget.value as any })
-                }
-              >
-                <option value="">Dificuldade (opcional)</option>
-                <option value="easy">Fácil</option>
-                <option value="medium">Média</option>
-                <option value="hard">Difícil</option>
-              </select>
-              <select
-                class="select-control"
-                aria-label="Energia na sessão"
-                value={journalForm.energyRating}
-                onChange={e =>
-                  props.onChangeJournalForm({ energyRating: e.currentTarget.value as any })
-                }
-              >
-                <option value="">Energia (opcional)</option>
-                <option value="high">Alta</option>
-                <option value="normal">Normal</option>
-                <option value="low">Baixa</option>
-              </select>
-            </div>
-
-            <textarea
-              class="select-control w-full"
-              rows={2}
-              maxLength={1000}
-              aria-label="Registrar o que aprendeu, dúvida ou pegadinha"
-              placeholder="Registrar o que aprendeu, dúvida ou pegadinha (até 1.000 caracteres)..."
-              value={journalForm.note}
-              onInput={e => props.onChangeJournalForm({ note: e.currentTarget.value })}
-            />
-            <input
-              type="text"
-              class="select-control w-full"
-              maxLength={500}
-              aria-label="Próximo passo opcional"
-              placeholder="Próximo passo (ex.: resolver 10 questões de prazo)"
-              value={journalForm.nextStep}
-              onInput={e => props.onChangeJournalForm({ nextStep: e.currentTarget.value })}
-            />
-            <div class="flex flex-wrap gap-2">
-              <Button variant="primary" size="small" onClick={props.onSaveJournalEntry}>
-                <Icon name="check" size={13} class="icon-inline" />
-                <span>Salvar anotação</span>
-              </Button>
-            </div>
-          </div>
-
-          {showJournalFilters && (
-            <div class="pt-2.5 border-t border-border-subtle flex flex-wrap gap-2 text-xs">
-              <select
-                class="select-control"
-                aria-label="Filtrar diário por disciplina"
-                value={journalFilters.subjectId}
-                onChange={e => props.onChangeJournalFilter({ subjectId: e.currentTarget.value })}
-              >
-                <option value="">Todas as disciplinas</option>
-                {activeSubjects.map(sub => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                class="select-control"
-                aria-label="Filtrar diário por etiqueta"
-                value={journalFilters.tag}
-                onChange={e => props.onChangeJournalFilter({ tag: e.currentTarget.value })}
-              >
-                <option value="">Todas as etiquetas</option>
-                {LEARNING_JOURNAL_TAGS.map(tag => (
-                  <option key={tag} value={tag}>
-                    {LEARNING_JOURNAL_TAG_LABELS[tag]}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="search"
-                class="select-control"
-                aria-label="Buscar nas anotações do diário"
-                placeholder="Buscar por disciplina, assunto ou etiqueta..."
-                value={journalFilters.query}
-                onInput={e => props.onChangeJournalFilter({ query: e.currentTarget.value })}
-              />
-            </div>
-          )}
-
-          {journalEntries.length === 0 ? (
-            <div class="space-y-2 text-xs text-content-secondary">
-              <p class="m-0">
-                {hasActiveJournalFilters
-                  ? 'Nenhuma anotação encontrada para o filtro atual.'
-                  : 'Nenhuma anotação encontrada. O diário é totalmente opcional e nunca penaliza suas métricas.'}
-              </p>
-              {hasActiveJournalFilters && (
-                <Button
-                  variant="tertiary"
-                  size="small"
-                  onClick={() => props.onChangeJournalFilter({ subjectId: '', tag: '', query: '' })}
-                >
-                  Limpar filtros
-                </Button>
-              )}
-            </div>
-          ) : (
-            <ul class="m-0 p-0 list-none max-h-56 overflow-y-auto divide-y divide-border-subtle border-t border-border-subtle">
-              {journalEntries.slice(0, 12).map(entry => (
-                <li
-                  key={entry.id}
-                  class="py-2 text-xs space-y-1"
-                >
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="font-medium text-content-primary">
-                      <span class="font-data">{formatDateBR(entry.localDate)}</span> ·{' '}
-                      {entry.subjectNameSnapshot || 'Estudo livre'}
-                      {entry.topicNameSnapshot ? ` — ${entry.topicNameSnapshot}` : ''}
-                    </span>
-                    <div class="flex items-center gap-1">
-                      {entry.topicId &&
-                        (entry.tags.includes('duvida') ||
-                          entry.tags.includes('revisar') ||
-                          entry.tags.includes('pegadinha')) && (
-                          <Button
-                            variant="ghost"
-                            size="small"
-                            onClick={() => props.onCreateReviewFromJournal(entry)}
-                          >
-                            <span>Transformar em revisão</span>
-                          </Button>
-                        )}
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        aria-label="Excluir anotação do diário"
-                        onClick={() => props.onDeleteJournalEntry(entry.id)}
-                      >
-                        <Icon name="trash" size={12} />
-                      </Button>
-                    </div>
-                  </div>
-                  {entry.note && <p class="m-0 text-content-primary">{entry.note}</p>}
-                  {entry.nextStep && (
-                    <p class="m-0 text-content-secondary">Próximo passo: {entry.nextStep}</p>
-                  )}
-                  {entry.tags.length > 0 && (
-                    <div class="flex flex-wrap gap-1.5">
-                      {entry.tags.map(t => (
-                        <span
-                          key={t}
-                          class="status-pill status-pill--default px-1.5 py-0.5 rounded"
-                        >
-                          {LEARNING_JOURNAL_TAG_LABELS[t] || t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
-
-      {/* Funcionalidade D: Fechamento Semanal Inteligente */}
       {activePanel === 'weekly_closing' && weeklyClosing && (
         <section
           id="todayWeeklyClosingPanel"

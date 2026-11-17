@@ -613,7 +613,8 @@ test('UI: renderSessionResult oferece prompt opcional só com sessionId e TodayS
   );
 
   assert.match(html, /Tenho X minutos/);
-  assert.match(html, /Orientação guiada/);
+  assert.match(html, /Leitura do Extrato/);
+  assert.doesNotMatch(html, /todayJournalPanel/);
   assert.doesNotMatch(html, /\p{Extended_Pictographic}/u);
 });
 
@@ -635,7 +636,7 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
       onQuickStudy30: () => {},
     })
   );
-  assert.match(copilotHtml, /Copiloto de Estudos Guiado/);
+  assert.match(copilotHtml, /Leitura do Extrato/);
   assert.match(copilotHtml, /Estudo rápido: 30 min/);
   assert.match(copilotHtml, /Tenho 30 minutos/);
   assert.match(copilotHtml, /Mais perguntas \(3\)/);
@@ -710,7 +711,8 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
       onGoToTodayCycle: () => {},
     })
   );
-  assert.match(cycleCenterHtml, /Central do Ciclo de Estudos 2\.0/);
+  assert.match(cycleCenterHtml, /Central do Ciclo de Estudos/);
+  assert.doesNotMatch(cycleCenterHtml, /Central do Ciclo de Estudos 2\.0/);
   assert.match(cycleCenterHtml, /Confirmar nova versão do ciclo/);
   assert.match(cycleCenterHtml, /Ver sequência de 2 blocos/);
   assert.match(cycleCenterHtml, /1 h/);
@@ -721,6 +723,37 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   assert.ok(cycleCenterHtml.indexOf('Ciclo de estudos') < cycleCenterHtml.indexOf('Agenda do dia'));
   assert.doesNotMatch(cycleCenterHtml, /subject-distribution-row|plan-impact-row|plan-execution-table/);
   assert.doesNotMatch(cycleCenterHtml, /\p{Extended_Pictographic}/u);
+
+  const manualCycleCenterHtml = render(
+    h(StudyCycleCenterCard, {
+      executionMode: 'sequence',
+      cycle: cyclePreview.cycle,
+      subjects: SUBJECTS,
+      cycleLap: {
+        round: 1,
+        totalBlocks: cyclePreview.blocksCount,
+        completedBlocks: 0,
+        skippedBlocks: 0,
+        partialBlocks: 0,
+        resolvedBlocks: 0,
+        executedCoveragePct: 0,
+        actualMinutesInRound: 0,
+      },
+      cycleDraft: {
+        mode: 'manual',
+        blockDurationMinutes: 60,
+        preview: cyclePreview,
+      },
+      onSetExecutionMode: () => {},
+      onToggleCyclePause: () => {},
+      onChangeCycleDraftConfig: () => {},
+      onMoveCycleDraftBlock: () => {},
+      onConfirmCycleDraft: () => {},
+      onGoToTodayCycle: () => {},
+    })
+  );
+  assert.match(manualCycleCenterHtml, /draggable="true"|draggable/);
+  assert.match(manualCycleCenterHtml, /Posição de Português/);
 
   const journalEntry = upsertLearningJournalEntry(
     [],

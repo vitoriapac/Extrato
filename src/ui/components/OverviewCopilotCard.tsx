@@ -51,7 +51,7 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
         <div class="flex flex-wrap items-center gap-2 min-w-0">
           <Icon name="compass" size={16} class="icon-inline text-accent shrink-0" />
           <h2 id="overviewCopilotTitle" class="module-heading__title m-0 text-content-primary">
-            Copiloto de Estudos Guiado
+            Leitura do Extrato
           </h2>
           <Badge variant="info" icon={false}>
             {copilot.confidence.label}
@@ -65,7 +65,7 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
           onClick={props.onQuickStudy30}
         >
           <Icon name="clock" size={14} class="icon-inline shrink-0" />
-          <span class="font-data">Estudo rápido: 30 min</span>
+          <span>Estudo rápido: 30 min</span>
         </Button>
       </div>
 
@@ -73,7 +73,7 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
         Orientação atual: <strong class="text-content-primary">{copilot.title}</strong>
       </p>
 
-      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas ao Copiloto na Visão Geral">
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas da Leitura do Extrato na Visão Geral">
         {visibleQuestions.map(item => {
           const isSelected = selectedQuestion === item.key;
           return (
@@ -101,7 +101,7 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
         )}
       </div>
 
-      <div class="pt-3 border-t border-border-subtle border-l-3 border-l-accent pl-3 space-y-1.5 text-xs">
+      <div class="pt-4 border-t border-border-subtle border-l-3 border-l-accent pl-4 space-y-2 text-xs">
         <strong class="text-sm text-content-primary block">{activeAnswer.headline}</strong>
         <p class="m-0 text-content-primary leading-relaxed">{activeAnswer.body}</p>
         {activeAnswer.evidenceSummary && (

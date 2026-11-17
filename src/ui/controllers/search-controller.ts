@@ -182,8 +182,8 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'clock',
   },
   {
-    label: 'Abrir Copiloto de Estudos Guiado',
-    keywords: 'copiloto orientacao guiada o que estudar agora duvida decisao',
+    label: 'Abrir Leitura do Extrato',
+    keywords: 'leitura extrato copiloto orientacao guiada o que estudar agora duvida decisao',
     action: 'copilot',
     icon: 'compass',
   },
@@ -194,7 +194,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'book',
   },
   {
-    label: 'Configurar Ciclo de Estudos 2.0',
+    label: 'Configurar Ciclo de Estudos',
     keywords: 'ciclo estudos sequencia flexivel blocos rotacao configurar central',
     action: 'study-cycle-center',
     icon: 'repeat',

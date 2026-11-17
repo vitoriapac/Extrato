@@ -1048,7 +1048,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           })
         : null;
 
-    if (assistantPanel === 'cycle_config' && !cycleDraftState.preview) {
+    if ((assistantPanel === 'cycle_config' || (executionMode === 'sequence' && !cycle)) && !cycleDraftState.preview) {
       refreshCycleDraftPreview();
     }
 
@@ -1158,6 +1158,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           renderStudyAssistantBar();
         },
         onOpenPlanningCycle: handleOpenPlanningCycle,
+        onOpenJournalSidebar: () => {
+          journalSidebarFormOpen = true;
+          renderTodayJournalSidebar();
+          const sidebarMount = doc?.getElementById('todayJournalSidebarMount') as HTMLElement | null;
+          sidebarMount?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+        },
         onStartQuickStudy: () => {
           if (!ctx.startGuidedTimerSession) return;
           ctx.startGuidedTimerSession({
@@ -1267,6 +1273,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       quickMinutes = Math.max(10, Math.min(180, Math.round(opts.quickMinutes)));
     }
     if (panel === 'journal') {
+      assistantPanel = 'none';
       journalSidebarFormOpen = true;
       if (opts.sessionId) {
         const state = getState();

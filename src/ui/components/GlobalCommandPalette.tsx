@@ -114,8 +114,24 @@ export function GlobalCommandPalette({
         )}
         {!hasResults && (
           <CommandPaletteEmpty icon="search" alwaysRender>
-            Nada encontrado para &ldquo;{trimmedQuery || query}&rdquo;. Tente uma palavra mais curta
-            ou o nome de uma aba; a Central de Ajuda fica em Instruções.
+            <span>
+              Nada encontrado para &ldquo;{trimmedQuery || query}&rdquo;. Tente uma palavra mais
+              curta ou o nome de uma aba.
+            </span>
+            <button
+              type="button"
+              class="btn ghost small mt-2"
+              onClick={() =>
+                onExecuteCommand({
+                  label: 'Abrir Instruções',
+                  keywords: 'instrucoes ajuda',
+                  tab: 'instrucoes',
+                  icon: 'help-circle',
+                })
+              }
+            >
+              Abrir Instruções
+            </button>
           </CommandPaletteEmpty>
         )}
       </CommandPaletteList>

@@ -262,7 +262,7 @@ export function TodayJournalSidebarCard(props: TodayJournalSidebarCardProps): JS
       ) : (
         <ul class="m-0 p-0 list-none max-h-64 overflow-y-auto divide-y divide-border-subtle border-t border-border-subtle">
           {entries.slice(0, 8).map(entry => (
-            <li key={entry.id} class="py-2.5 text-xs space-y-1">
+            <li key={entry.id} class="py-2 text-xs space-y-2">
               <div class="flex items-start justify-between gap-2">
                 <span class="font-medium text-content-primary leading-snug">
                   <span class="font-data">{formatDateBR(entry.localDate)}</span> ·{' '}
@@ -299,9 +299,9 @@ export function TodayJournalSidebarCard(props: TodayJournalSidebarCardProps): JS
               )}
 
               {entry.tags.length > 0 && (
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex flex-wrap gap-2">
                   {entry.tags.map(t => (
-                    <span key={t} class="status-pill status-pill--default px-1.5 py-0.5 rounded">
+                    <span key={t} class="status-pill status-pill--default px-2 py-0.5 rounded">
                       {LEARNING_JOURNAL_TAG_LABELS[t] || t}
                     </span>
                   ))}

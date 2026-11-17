@@ -6,6 +6,7 @@ import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Card } from '../primitives/card.js';
 import { Icon } from '../primitives/icon.js';
+import { StudyCycleBlockList } from './StudyCycleBlockList.js';
 import { StudyCycleDonut } from './StudyCycleDonut.js';
 import type { CycleDraftState } from './TodayStudyAssistantBar.js';
 
@@ -63,11 +64,6 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
 
   const isManualMode = cycleDraft.mode === 'manual';
   const draftBlocks = cycleDraft.preview?.cycle.blocks || [];
-  const visibleBlocks = showAllBlocks
-    ? draftBlocks
-    : isManualMode
-      ? draftBlocks.slice(0, DEFAULT_VISIBLE_BLOCKS)
-      : [];
 
   return (
     <Card
@@ -82,7 +78,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
           <div class="flex flex-wrap items-center gap-2">
             <Icon name="repeat" size={16} class="icon-inline text-accent shrink-0" />
             <h3 id="studyCycleCenterTitle" class="module-heading__title m-0 text-content-primary">
-              Central do Ciclo de Estudos 2.0
+              Central do Ciclo de Estudos
             </h3>
             <Badge variant={statusBadgeVariant} icon={false} className="font-data">
               {statusBadgeLabel}
@@ -239,56 +235,17 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
                   </Button>
                 </div>
               ) : (
-                <>
-                  <ul class="m-0 p-0 list-none max-h-60 overflow-y-auto divide-y divide-border-subtle border-t border-b border-border-subtle">
-                    {visibleBlocks.map((block, index) => (
-                      <li
-                        key={block.id}
-                        class="flex items-center justify-between gap-2 py-2"
-                      >
-                        <span class="truncate text-content-primary">
-                          <span class="font-data text-content-secondary">{index + 1}.</span>{' '}
-                          <strong>{block.subjectName}</strong> ·{' '}
-                          <span class="font-data">{formatPlanMinutes(block.durationMinutes)}</span>
-                        </span>
-                        {isManualMode && (
-                          <span class="inline-flex gap-1 shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="small"
-                              disabled={index === 0}
-                              aria-label={`Mover ${block.subjectName} para cima na central do ciclo`}
-                              onClick={() => props.onMoveCycleDraftBlock(index, index - 1)}
-                            >
-                              <Icon name="arrow-up" size={12} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="small"
-                              disabled={index === draftBlocks.length - 1}
-                              aria-label={`Mover ${block.subjectName} para baixo na central do ciclo`}
-                              onClick={() => props.onMoveCycleDraftBlock(index, index + 1)}
-                            >
-                              <Icon name="arrow-down" size={12} />
-                            </Button>
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  {(draftBlocks.length > DEFAULT_VISIBLE_BLOCKS || !isManualMode) && (
-                    <Button
-                      variant="tertiary"
-                      size="small"
-                      aria-expanded={showAllBlocks}
-                      onClick={() => setShowAllBlocks(prev => !prev)}
-                    >
-                      {showAllBlocks
-                        ? 'Recolher blocos'
-                        : `Mostrar todos os ${draftBlocks.length} blocos`}
-                    </Button>
-                  )}
-                </>
+                <StudyCycleBlockList
+                  blocks={draftBlocks}
+                  isManualMode={isManualMode}
+                  onMoveBlock={props.onMoveCycleDraftBlock}
+                  onEnableManualMode={() =>
+                    props.onChangeCycleDraftConfig('manual', cycleDraft.blockDurationMinutes)
+                  }
+                  maxVisible={DEFAULT_VISIBLE_BLOCKS}
+                  showAll={showAllBlocks}
+                  onToggleShowAll={() => setShowAllBlocks(prev => !prev)}
+                />
               )}
             </div>
           )}
@@ -298,16 +255,26 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
           )}
 
           <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border-subtle">
-            <Button
-              variant="secondary"
-              size="small"
-              disabled={!cycleDraft.preview.valid}
-              onClick={props.onConfirmCycleDraft}
-            >
-              <Icon name="check" size={13} class="icon-inline" />
-              <span>Confirmar nova versão do ciclo</span>
-            </Button>
-            <span class="text-content-secondary">
+            <div class="flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={!cycleDraft.preview.valid}
+                onClick={props.onConfirmCycleDraft}
+              >
+                <Icon name="check" size={13} class="icon-inline" />
+                <span>Confirmar nova versão do ciclo</span>
+              </Button>
+              {cycle &&
+                (cycleDraft.mode !== (cycle.mode || 'adaptive') ||
+                  cycleDraft.blockDurationMinutes !==
+                    (cycle.blocks?.[0]?.durationMinutes || 60)) && (
+                  <Badge variant="warning" icon={false}>
+                    Prévia alterada
+                  </Badge>
+                )}
+            </div>
+            <span class="text-xs text-content-secondary">
               Nova versão preserva voltas e sessões anteriores.
             </span>
           </div>

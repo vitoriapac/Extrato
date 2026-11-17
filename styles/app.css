@@ -3543,7 +3543,15 @@ body:not([data-active-tab]:not([data-active-tab="dashboard"])) .sticky-shell.is-
 .exam-subject-check{min-width:24px;justify-content:center}
 .exam-subject-bulk input[type=checkbox],.exam-subject-check input[type=checkbox],.active-exams input[type=checkbox],.subject-target-bulk input[type=checkbox],.subject-target-table-wrap input[type=checkbox]{width:16px;height:16px;flex:none}
 
-.brand-home img{display:inline-block;vertical-align:middle;margin-right:.4em;width:1.1em;height:1.1em}
+button.statement-title.brand-home,
+button.compact-brand.brand-home{display:inline-flex;align-items:center;gap:12px}
+button.compact-brand.brand-home{gap:8px}
+.brand-home img{display:block;flex-shrink:0;margin-right:0;width:1.35em;height:1.35em;object-fit:contain}
+.theme-toggle-label{display:none}
+@media(min-width:768px){
+  .global-search-row .theme-toggle-btn{width:auto;padding:0 12px;gap:8px;font-size:var(--text-small);font-weight:var(--font-weight-medium)}
+  .theme-toggle-label{display:inline;white-space:nowrap}
+}
 
 /* Desempenho: texto lido a partir de 13–14px (12px fica para rótulos de eixo) e números em colunas alinhadas. */
 #panel-desempenho{--text-micro:.8125rem;--text-caption:.8125rem;--text-label:.8125rem;--text-xs:.8125rem;--text-sm:.875rem}

@@ -207,21 +207,21 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
   await expect(quickPanel).toBeVisible();
   await expect(quickPanel).toContainText('Proposta (30 min)');
 
-  // Copiloto de Estudos Guiado
-  await bar.getByRole('button', { name: 'Orientação guiada' }).click();
+  // Leitura do Extrato
+  await bar.getByRole('button', { name: 'Leitura do Extrato' }).click();
   const copilotPanel = page.locator('#todayCopilotPanel');
   await expect(copilotPanel).toBeVisible();
   await expect(copilotPanel).toContainText('O que estudar agora?');
 
-  // Diário de Aprendizagem com sanitização
+  // Diário de Aprendizagem (atalho da barra abre o card lateral único, com sanitização)
   await bar.getByRole('button', { name: /Diário de aprendizagem/ }).click();
-  const journalPanel = page.locator('#todayJournalPanel');
-  await expect(journalPanel).toBeVisible();
-  await journalPanel
-    .getByLabel('Registrar o que aprendeu, dúvida ou pegadinha')
+  const journalSidebar = page.locator('#todayJournalSidebarMount [data-today-journal-sidebar="true"]');
+  await expect(journalSidebar).toBeVisible();
+  await journalSidebar
+    .getByLabel('O que aprendeu, dúvida ou pegadinha')
     .fill('<script>alert(1)</script>Nota salva na aba Hoje');
-  await journalPanel.getByRole('button', { name: 'Salvar anotação' }).click();
-  await expect(journalPanel).toContainText('Nota salva na aba Hoje');
+  await journalSidebar.getByRole('button', { name: 'Salvar no Diário' }).click();
+  await expect(journalSidebar).toContainText('Nota salva na aba Hoje');
 
   // Sequência flexível e montagem/confirmação de Ciclo 2.0
   await page.locator('#executionSequenceBtn').click();
@@ -237,19 +237,19 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
 }) => {
   await prepare(page);
 
-  // 1. Visão Geral: Copiloto de Estudos Guiado + atalho Estudo rápido: 30 min
+  // 1. Visão Geral: Leitura do Extrato + atalho Estudo rápido: 30 min
   await activateTab(page, 'dashboard');
   const copilotCard = page.locator('#overviewCopilotMount [data-overview-copilot="true"]');
   await expect(copilotCard).toBeVisible();
-  await expect(copilotCard).toContainText('Copiloto de Estudos Guiado');
+  await expect(copilotCard).toContainText('Leitura do Extrato');
   await copilotCard.getByRole('button', { name: 'Estudo rápido de 30 minutos' }).click();
 
-  // 2. Hoje: redirecionamento abre Estudo Rápido em 30 min e chip de 15 min alterna em 1 clique
+  // 2. Hoje: redirecionamento abre Estudo Rápido em 30 min e chip de 15 min dentro do painel alterna em 1 clique
   await expect(page.locator('#panel-hoje')).toBeVisible();
   const quickPanel = page.locator('#todayQuickStudyPanel');
   await expect(quickPanel).toBeVisible();
   await expect(quickPanel).toContainText('Proposta (30 min)');
-  await page.getByRole('button', { name: 'Estudo rápido de 15 minutos' }).click();
+  await quickPanel.getByRole('button', { name: 'Estudo rápido de 15 minutos' }).click();
   await expect(quickPanel).toContainText('Proposta (15 min)');
 
   // 3. Hoje lateral: card permanente do Diário de Aprendizagem aceita registro inline
