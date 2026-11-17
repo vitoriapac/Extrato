@@ -52,9 +52,13 @@ export function renderSessionResult(
     model.subjectId && model.rawType !== 'questions'
       ? `<button class="btn tonal small chain-questions-btn" type="button" data-delegated-click="chainQuestionsForTopic('${escapeAttr(model.subjectId)}', '${escapeAttr(model.topicId || '')}')">${renderIconSvg('list-check', { size: 14, className: 'icon-inline' })}Registrar questões deste tópico →</button>`
       : '';
-  const actionCluster = chainQuestionsBtn
-    ? `<div class="session-result-actions">${chainQuestionsBtn}${button}</div>`
-    : button;
+  const journalBtn = model.sessionId
+    ? `<button class="btn ghost small session-journal-btn" type="button" data-delegated-click="openSessionJournalEntry('${escapeAttr(model.sessionId)}')">${renderIconSvg('book', { size: 14, className: 'icon-inline' })}Registrar o que aprendeu?</button>`
+    : '';
+  const actionCluster =
+    chainQuestionsBtn || journalBtn
+      ? `<div class="session-result-actions">${chainQuestionsBtn}${journalBtn}${button}</div>`
+      : button;
   const next = model.plan
     ? `<p>Próxima atividade do plano: <strong>${escapeHtml(model.plan.label)}</strong></p>${model.plan.suggestion ? `<p>Sugestão fora do plano: ${escapeHtml(model.plan.suggestion)}</p>` : ''}${actionCluster}`
     : model.next

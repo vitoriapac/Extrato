@@ -1,6 +1,11 @@
 import { sameStudyActionTarget } from '../../application/recommendations/recommendation-action.js';
 import { buildSessionResultViewModel } from '../../application/sessions/build-session-result-view-model.js';
 import {
+  getCurrentCycleBlock,
+  recordStudyCycleBlockExecution,
+  type StudyCycleQueue,
+} from '../../domain/planning/study-cycle-engine.js';
+import {
   buildCompletedSessionRecord,
   findDailyPlanItem as findDailyPlanItemCoordinator,
   formatTimer,
@@ -360,6 +365,9 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       recommendationSource: null,
       recommendationType: null,
       prioritySnapshot: null,
+      sessionOrigin: null,
+      cycleId: null,
+      cycleBlockId: null,
     });
     guidedStudyService.reset();
     pipTimer.close();
@@ -447,6 +455,59 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     startTimer();
     renderPlanoHoje();
     timerUiController.openStudyTimerFocus();
+  }
+
+  function startGuidedTimerSession(opts: {
+    subjectId?: string | null;
+    topicId?: string | null;
+    type?: string;
+    targetMinutes?: number | null;
+    strategy?: any;
+    recommendationId?: string | null;
+    recommendationSource?: string | null;
+    recommendationType?: string | null;
+    prioritySnapshot?: number | null;
+    sessionOrigin?: 'regular' | 'cycle' | 'quick' | 'copilot';
+    cycleId?: string | null;
+    cycleBlockId?: string | null;
+  } = {}) {
+    const state = getState();
+    if (timerSeconds > 0) {
+      showToast('Finalize ou zere a sessão atual antes de iniciar outra atividade.');
+      return false;
+    }
+    if (opts.topicId) {
+      const candidate = intelligenceCandidates().find(
+        (candidate: any) => candidate.topicId === opts.topicId
+      );
+      if (candidate && (candidate.archived || candidate.blockedPrerequisites?.length)) {
+        showToast(
+          'Esta atividade aguarda pré-requisitos ou possui um tópico arquivado.'
+        );
+        return false;
+      }
+    }
+    Object.assign(state.activeTimer, {
+      subjectId: opts.subjectId || null,
+      topicId: opts.topicId || null,
+      type: opts.type || 'study',
+      planItemId: null,
+      targetMinutes: opts.targetMinutes != null && opts.targetMinutes > 0 ? Math.round(opts.targetMinutes) : null,
+      strategy: opts.strategy || null,
+      strategyStep: 0,
+      recommendationId: opts.recommendationId || null,
+      recommendationSource: opts.recommendationSource || null,
+      recommendationType: opts.recommendationType || null,
+      prioritySnapshot: opts.prioritySnapshot ?? null,
+      sessionOrigin: opts.sessionOrigin || 'regular',
+      cycleId: opts.cycleId || null,
+      cycleBlockId: opts.cycleBlockId || null,
+    });
+    populateTimerContextControls();
+    startTimer();
+    renderPlanoHoje();
+    timerUiController.openStudyTimerFocus();
+    return true;
   }
 
   const sessionModalController = createSessionModalController({
@@ -545,7 +606,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         }),
         achievement: getAchievementNote(),
       },
-      { escapeHtml }
+      { escapeHtml, escapeAttr }
     );
     if (document.body.classList.contains('timer-focus-active')) {
       timerUiController.clearTimerFocusReturnTab();
@@ -643,6 +704,26 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         );
         if (guidedStudyService.current()) guidedStudyService.complete(session);
         else sessionService.complete(session);
+        const state = getState();
+        const cycle = state.studyCycle as StudyCycleQueue | null | undefined;
+        if (cycle && cycle.status !== 'paused') {
+          const currentBlock = getCurrentCycleBlock(cycle);
+          const matchesCycle =
+            Boolean(session.cycleBlockId && currentBlock?.id === session.cycleBlockId) ||
+            (state.executionMode === 'sequence' &&
+              Boolean(currentBlock?.subjectId && session.subjectId === currentBlock.subjectId));
+          if (matchesCycle) {
+            const cycleResult = recordStudyCycleBlockExecution(cycle, {
+              sessionId: session.id,
+              actualMinutes: Math.max(1, Math.round((Number(session.durationSeconds) || 0) / 60)),
+              source: (session.origin as any) || 'cycle',
+              nowISO: nowISO(),
+            });
+            if (cycleResult.status !== 'duplicate') {
+              state.studyCycle = cycleResult.cycle;
+            }
+          }
+        }
         persistAndRender();
         const dayAfter = dayBefore ? getDailyExecutionItems() : null;
         const outcome = {
@@ -733,6 +814,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     populateTimerTopicSelect,
     populateTimerContextControls,
     startPlannedActivity,
+    startGuidedTimerSession,
     startTimer,
     pauseTimer,
     resetTimer,

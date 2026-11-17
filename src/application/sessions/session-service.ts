@@ -105,6 +105,10 @@ export function createSessionService({
   };
   return Object.freeze({
     complete: (input: Row) => {
+      if (input?.id && typeof repository.findById === 'function') {
+        const existing = repository.findById(input.id);
+        if (existing) return existing;
+      }
       const linkedItem = findPlanItem(input.planItemId)?.item || null,
         recommendationId =
           input.recommendationId ||

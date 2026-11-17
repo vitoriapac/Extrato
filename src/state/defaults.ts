@@ -66,6 +66,8 @@ export function createDefaultState(): AppState {
     achievementsBaselined: false,
     metasPorDisciplina: [],
     errorFlashcards: [],
+    learningJournal: [],
+    studyCycle: null,
     lastBackupAt: null,
     lastExportAt: null,
     updatedAt: null,

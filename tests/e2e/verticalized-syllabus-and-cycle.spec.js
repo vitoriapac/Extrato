@@ -191,3 +191,43 @@ test('Ciclo flexível e cronobiologia estão disponíveis no motor e avaliam fad
   expect(evaluation.completedCycle).toBe(false);
   expect(evaluation.fatigueAlert).toContain('Queda de 35,0 p.p.');
 });
+
+test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estudos 2.0', async ({
+  page,
+}) => {
+  await prepare(page);
+  await activateTab(page, 'hoje');
+
+  const bar = page.locator('[data-today-assistant-bar="true"]');
+  await expect(bar).toBeVisible();
+
+  // Modo Estudo Rápido
+  await bar.getByRole('button', { name: 'Tenho X minutos' }).click();
+  const quickPanel = page.locator('#todayQuickStudyPanel');
+  await expect(quickPanel).toBeVisible();
+  await expect(quickPanel).toContainText('Proposta (30 min)');
+
+  // Copiloto de Estudos Guiado
+  await bar.getByRole('button', { name: 'Orientação guiada' }).click();
+  const copilotPanel = page.locator('#todayCopilotPanel');
+  await expect(copilotPanel).toBeVisible();
+  await expect(copilotPanel).toContainText('O que estudar agora?');
+
+  // Diário de Aprendizagem com sanitização
+  await bar.getByRole('button', { name: /Diário de aprendizagem/ }).click();
+  const journalPanel = page.locator('#todayJournalPanel');
+  await expect(journalPanel).toBeVisible();
+  await journalPanel
+    .getByLabel('Registrar o que aprendeu, dúvida ou pegadinha')
+    .fill('<script>alert(1)</script>Nota salva na aba Hoje');
+  await journalPanel.getByRole('button', { name: 'Salvar anotação' }).click();
+  await expect(journalPanel).toContainText('Nota salva na aba Hoje');
+
+  // Sequência flexível e montagem/confirmação de Ciclo 2.0
+  await page.locator('#executionSequenceBtn').click();
+  const cyclePanel = page.locator('[data-study-cycle-panel="true"]');
+  await expect(cyclePanel).toBeVisible();
+  await cyclePanel.getByRole('button', { name: /Montar ciclo|Configurar ciclo/ }).click();
+  await bar.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();
+  await expect(cyclePanel).toContainText('Próximo bloco:');
+});

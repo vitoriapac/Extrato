@@ -10,10 +10,33 @@ import { simulateWhatIfScenario } from '../domain/forecasts/what-if-simulator.js
 import { buildFinalStretchBanner } from '../domain/planning/final-stretch-policy.js';
 import {
   advanceStudyCycleQueue,
+  applyStudyCycleVersion,
+  buildStudyCyclePreview,
   buildStudyCycleQueue,
+  computeStudyCycleLapSummary,
+  explainCycleVsPriority,
   getCurrentCycleBlock,
   peekUpcomingCycleBlocks,
+  recordStudyCycleBlockExecution,
+  reorderStudyCycleBlocks,
+  setStudyCycleStatus,
+  skipStudyCycleBlock,
+  validateStudyCycleBlocks,
 } from '../domain/planning/study-cycle-engine.js';
+import { buildQuickStudyProposal } from '../domain/quick-study/quick-study-engine.js';
+import {
+  buildJournalReviewProposal,
+  filterLearningJournalEntries,
+  upsertLearningJournalEntry,
+} from '../domain/journal/learning-journal-engine.js';
+import {
+  buildWeeklyClosingRitualViewModel,
+  finalizeWeeklyClosingIdempotent,
+} from '../application/weekly-closing/weekly-closing-ritual.js';
+import {
+  buildStudyCopilotViewModel,
+  revalidateCopilotAction,
+} from '../application/copilot/study-copilot-service.js';
 import { calculateAdaptiveInterval } from '../domain/reviews.js';
 import { CURRENT_SCHEMA_VERSION, DIFFICULTY_OPTIONS, STATUS_OPTIONS } from '../state/schema.js';
 import { validateNormalizedBackup } from '../storage/backup-validator.js';
@@ -134,6 +157,23 @@ export function createTestBridgeConfig(options: CreateTestBridgeConfigOptions) {
       getCurrentCycleBlock,
       advanceStudyCycleQueue,
       peekUpcomingCycleBlocks,
+      validateStudyCycleBlocks,
+      buildStudyCyclePreview,
+      reorderStudyCycleBlocks,
+      applyStudyCycleVersion,
+      setStudyCycleStatus,
+      recordStudyCycleBlockExecution,
+      skipStudyCycleBlock,
+      computeStudyCycleLapSummary,
+      explainCycleVsPriority,
+      buildQuickStudyProposal,
+      upsertLearningJournalEntry,
+      filterLearningJournalEntries,
+      buildJournalReviewProposal,
+      buildWeeklyClosingRitualViewModel,
+      finalizeWeeklyClosingIdempotent,
+      buildStudyCopilotViewModel,
+      revalidateCopilotAction,
       analyzeFocusAndEnergy,
       renderVerticalizedSyllabus: () =>
         uiControllers.subjectsTabController.renderVerticalizedSyllabus(),

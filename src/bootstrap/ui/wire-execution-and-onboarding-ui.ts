@@ -239,6 +239,14 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     hasActivityToday: () => studyMetricsSelectors.getActivityDates().has(todayISO()),
     diasParaRevisao,
     startOfWeek,
+    addDays,
+    showConfirm,
+    persistAndRender,
+    intelligenceCandidates: studyCandidateService.intelligenceCandidates,
+    startGuidedTimerSession: opts => studyTimerRuntime.startGuidedTimerSession(opts),
+    createManualReview: payload => services.reviewService?.createManualReview?.(payload),
+    calculateStudyPlanPreview,
+    openWeeklyClose: deps.openWeeklyClose,
     onOpenRecoveryMission: () => recoveryMissionController?.open(),
     onRecalibrateWeek: () => {
       studyRecommendationController?.calculateReplanPreview();

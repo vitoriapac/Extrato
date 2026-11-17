@@ -25,7 +25,45 @@ import { renderDailyExecution } from '../../renderers/daily-execution-renderer.j
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 import { pickPlanAchievementMark } from '../../../application/achievements/achievement-progress-note.js';
-import { parseLocalDate } from '../../../core/date-utils.js';
+import { addLocalDays, parseLocalDate } from '../../../core/date-utils.js';
+import {
+  TodayStudyAssistantBar,
+  type AssistantPanelKind,
+  type CycleDraftState,
+  type JournalFormState,
+} from '../../components/TodayStudyAssistantBar.js';
+import {
+  applyStudyCycleVersion,
+  buildStudyCyclePreview,
+  computeStudyCycleLapSummary,
+  explainCycleVsPriority,
+  getCurrentCycleBlock,
+  reorderStudyCycleBlocks,
+  setStudyCycleStatus,
+  skipStudyCycleBlock,
+  type StudyCycleQueue,
+} from '../../../domain/planning/study-cycle-engine.js';
+import {
+  buildQuickStudyProposal,
+  type QuickStudyFocusMode,
+} from '../../../domain/quick-study/quick-study-engine.js';
+import {
+  buildJournalReviewProposal,
+  deleteLearningJournalEntry,
+  filterLearningJournalEntries,
+  upsertLearningJournalEntry,
+} from '../../../domain/journal/learning-journal-engine.js';
+import {
+  buildWeeklyClosingRitualViewModel,
+  finalizeWeeklyClosingIdempotent,
+} from '../../../application/weekly-closing/weekly-closing-ritual.js';
+import {
+  buildStudyCopilotViewModel,
+  revalidateCopilotAction,
+  type CopilotAnswer,
+  type CopilotQuestionKey,
+} from '../../../application/copilot/study-copilot-service.js';
+import type { OverdueReviewItem } from '../../../domain/recovery/recovery-mission-engine.js';
 
 const PRIORITY_TIER_EMOJI: Record<string, string> = {
   Alta: 'alert-circle',
@@ -82,6 +120,14 @@ export interface TodayTabControllerContext {
   hasActivityToday?: () => boolean;
   onOpenRecoveryMission?: () => void;
   onRecalibrateWeek?: () => void;
+  intelligenceCandidates?: () => any[];
+  startGuidedTimerSession?: (opts: any) => boolean;
+  createManualReview?: (payload: any) => any;
+  calculateStudyPlanPreview?: () => void;
+  openWeeklyClose?: () => void;
+  addDays?: (iso: string, days: number) => string;
+  showConfirm?: (message: string, onConfirm: () => void, onCancel?: () => void, opts?: any) => void;
+  persistAndRender?: () => void;
 }
 
 export function createTodayTabController(ctx: TodayTabControllerContext) {
@@ -128,6 +174,27 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   } = ctx;
 
   let demoFirstStepsDismissed = false;
+  let assistantPanel: AssistantPanelKind = 'none';
+  let quickMinutes = 30;
+  let quickFocus: QuickStudyFocusMode = 'priority';
+  let copilotQuestion: CopilotQuestionKey = 'what_now';
+  let cycleSkipReason = '';
+  let cycleDraftState: CycleDraftState = {
+    mode: 'adaptive',
+    blockDurationMinutes: 60,
+    preview: null,
+  };
+  const journalFilters = { subjectId: '', tag: '', query: '' };
+  let journalForm: JournalFormState = {
+    sessionId: null,
+    subjectId: '',
+    topicId: '',
+    difficultyRating: '',
+    energyRating: '',
+    tags: [],
+    note: '',
+    nextStep: '',
+  };
 
   function createExecutionSummaryVNode(model: {
     availableMinutes: number;
@@ -687,6 +754,447 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderPlanoHoje();
   }
 
+  function computeSubjectWeightsForCycle(state: any, candidates: any[]): Record<string, number> {
+    const weights: Record<string, number> = {};
+    const bpSubjects = state?.examBlueprint?.subjects || [];
+    for (const row of bpSubjects) {
+      if (!row?.subjectId) continue;
+      const w = Number(row.questionWeight || 1) * (row.priority === 'high' ? 1.5 : 1);
+      weights[row.subjectId] = Math.max(1, Math.min(5, Math.round(w * 1.5)));
+    }
+    for (const c of candidates) {
+      if (c?.subjectId && (Number(c.score) || 0) >= 75) {
+        weights[c.subjectId] = Math.min(5, Math.max(weights[c.subjectId] || 1, 3));
+      }
+    }
+    return weights;
+  }
+
+  function refreshCycleDraftPreview() {
+    const state = getState();
+    const activeSubs = (state.subjects || []).filter((s: any) => s && !s.archived);
+    const candidates = ctx.intelligenceCandidates ? ctx.intelligenceCandidates() : [];
+    const customBlocks =
+      cycleDraftState.mode === 'manual' && state.studyCycle?.blocks?.length
+        ? state.studyCycle.blocks
+        : activeSubs.map((s: any, idx: number) => ({
+            id: `block-${s.id}-${idx + 1}`,
+            subjectId: s.id,
+            subjectName: s.name,
+            durationMinutes: cycleDraftState.blockDurationMinutes,
+            order: idx + 1,
+          }));
+    cycleDraftState.preview = buildStudyCyclePreview({
+      id: state.studyCycle?.id || 'default-cycle',
+      name: state.studyCycle?.name || 'Ciclo de Estudos Principal',
+      examId: state.examBlueprint?.activeExamTags?.[0] || null,
+      mode: cycleDraftState.mode,
+      subjects: activeSubs,
+      subjectWeights: computeSubjectWeightsForCycle(state, candidates),
+      blockDurationMinutes: cycleDraftState.blockDurationMinutes,
+      customBlocks,
+      activeSubjectIds: activeSubs.map((s: any) => s.id),
+      nowISO: nowISO(),
+    });
+  }
+
+  function collectOverdueReviewsForQuickStudy(): OverdueReviewItem[] {
+    const today = todayISO();
+    const list = getRevisoesUnificadas() || [];
+    return list
+      .filter((r: any) => r?.date && r.date < today && r.status !== 'Concluído')
+      .map((r: any) => ({
+        id: String(r.id || uid('rev')),
+        origin: r.origem || 'Agenda de Revisões',
+        date: r.date,
+        subjectId: r.subjectId || null,
+        subjectName: r.subject || 'Disciplina',
+        topicId: r.topicId || r.topicRef || null,
+        topicName: r.label ? String(r.label).split('·')[0].trim() : 'Revisão',
+        daysOverdue: Math.max(1, Math.abs(diasParaRevisao(r.date) || 1)),
+      }));
+  }
+
+  function renderStudyAssistantBar(): void {
+    if (!doc || typeof globalThis.document === 'undefined') return;
+    const container = doc.getElementById('planoHojeContent');
+    const parent = container?.parentNode as HTMLElement | null;
+    if (!container || !parent || parent.ownerDocument !== globalThis.document) return;
+
+    let mount = doc.getElementById('todayStudyAssistantMount') as Element | null;
+    if (!mount) {
+      const created = doc.createElement('div') as HTMLElement;
+      created.id = 'todayStudyAssistantMount';
+      parent.insertBefore(created, container.nextSibling);
+      mount = created;
+    }
+    if (!mount) return;
+
+    const state = getState();
+    const executionMode: ExecutionMode = state?.executionMode === 'sequence' ? 'sequence' : 'agenda';
+    const subjects = state?.subjects || [];
+    const candidates = ctx.intelligenceCandidates ? ctx.intelligenceCandidates() : [];
+    const recs = getCurrentStudyRecommendations() || [];
+    const cycle = (state?.studyCycle || null) as StudyCycleQueue | null;
+    const currentBlock = cycle ? getCurrentCycleBlock(cycle) : null;
+    const overdueReviews = collectOverdueReviewsForQuickStudy();
+    const today = todayISO();
+
+    const quickProposal = buildQuickStudyProposal({
+      durationMinutes: quickMinutes,
+      focusMode: quickFocus,
+      candidates,
+      overdueReviews,
+      currentCycleBlock: currentBlock,
+      subjects,
+      source: 'today',
+    });
+
+    const copilot = buildStudyCopilotViewModel({
+      today,
+      nowISO: nowISO(),
+      isDemo: isDemoMode(),
+      recommendations: recs,
+      candidates,
+      activePlan: latestStudyPlan(),
+      weeklyCapacityMinutes: weeklyStrategyCapacity(),
+      studyCycle: cycle,
+      overdueReviews,
+      subjects,
+      sessions: state.studySessions || [],
+      questions: state.questoes || [],
+      dailyPlans: state.dailyPlans || [],
+      weeklyCloseSnapshots: state.weeklyCloseSnapshots || [],
+      recommendationFeedback: state.recommendationFeedback || [],
+      activeExamTags: state.examBlueprint?.activeExamTags || [],
+    });
+
+    const filteredJournal = filterLearningJournalEntries(state.learningJournal || [], {
+      subjectId: journalFilters.subjectId || null,
+      tag: journalFilters.tag || null,
+      query: journalFilters.query || null,
+    });
+
+    const weeklyClosing =
+      assistantPanel === 'weekly_closing'
+        ? buildWeeklyClosingRitualViewModel({
+            today,
+            sessions: state.studySessions || [],
+            questions: state.questoes || [],
+            dailyPlans: state.dailyPlans || [],
+            reviews: getRevisoesUnificadas(),
+            simulations: state.simulados || [],
+            subjects,
+            weeklyCloseSnapshots: state.weeklyCloseSnapshots || [],
+            learningJournal: state.learningJournal || [],
+            recommendations: recs,
+            activeExamTags: state.examBlueprint?.activeExamTags || [],
+            studyCycle: cycle,
+          })
+        : null;
+
+    if (assistantPanel === 'cycle_config' && !cycleDraftState.preview) {
+      refreshCycleDraftPreview();
+    }
+
+    mountPreact(
+      h(TodayStudyAssistantBar, {
+        activePanel: assistantPanel,
+        executionMode,
+        subjects,
+        cycle,
+        cycleLap: computeStudyCycleLapSummary(cycle),
+        cycleDivergence: explainCycleVsPriority(cycle, recs[0] || null),
+        cycleSkipReason,
+        cycleDraft: cycleDraftState,
+        quickMinutes,
+        quickFocus,
+        quickProposal,
+        copilot,
+        copilotQuestion,
+        journalEntries: filteredJournal,
+        journalFilters: { ...journalFilters },
+        journalForm: { ...journalForm },
+        weeklyClosing,
+        onTogglePanel: panel => {
+          assistantPanel = panel;
+          if (panel === 'cycle_config') refreshCycleDraftPreview();
+          renderStudyAssistantBar();
+        },
+        onStartCycleBlock: () => {
+          if (!cycle || !currentBlock || cycle.status === 'paused') return;
+          if (!ctx.startGuidedTimerSession) return;
+          const match = candidates.find((c: any) => c.subjectId === currentBlock.subjectId);
+          ctx.startGuidedTimerSession({
+            subjectId: currentBlock.subjectId,
+            topicId: currentBlock.topicId || match?.topicId || null,
+            type: currentBlock.preferredActivity || 'study',
+            targetMinutes: currentBlock.remainingMinutes ?? currentBlock.durationMinutes,
+            sessionOrigin: 'cycle',
+            cycleId: cycle.id,
+            cycleBlockId: currentBlock.id,
+          });
+        },
+        onToggleCyclePause: () => {
+          if (!cycle) return;
+          state.studyCycle = setStudyCycleStatus(
+            cycle,
+            cycle.status === 'paused' ? 'active' : 'paused',
+            nowISO()
+          );
+          scheduleSave();
+          renderStudyAssistantBar();
+        },
+        onSkipReasonChange: value => {
+          cycleSkipReason = value;
+          renderStudyAssistantBar();
+        },
+        onSkipCycleBlock: () => {
+          if (!cycle) return;
+          const skipped = skipStudyCycleBlock(cycle, {
+            reason: cycleSkipReason || null,
+            nowISO: nowISO(),
+            executionId: uid('cycle-skip'),
+          });
+          state.studyCycle = skipped.cycle;
+          cycleSkipReason = '';
+          scheduleSave();
+          _showToast('Bloco pulado na sequência sem gerar atraso no calendário.');
+          renderStudyAssistantBar();
+        },
+        onChangeCycleDraftConfig: (mode, duration) => {
+          cycleDraftState.mode = mode;
+          cycleDraftState.blockDurationMinutes = duration;
+          refreshCycleDraftPreview();
+          renderStudyAssistantBar();
+        },
+        onMoveCycleDraftBlock: (fromIdx, toIdx) => {
+          if (!cycleDraftState.preview?.cycle) return;
+          cycleDraftState.preview = {
+            ...cycleDraftState.preview,
+            cycle: reorderStudyCycleBlocks(cycleDraftState.preview.cycle, fromIdx, toIdx, nowISO()),
+          };
+          renderStudyAssistantBar();
+        },
+        onConfirmCycleDraft: () => {
+          if (!cycleDraftState.preview?.valid) return;
+          state.studyCycle = applyStudyCycleVersion(
+            state.studyCycle,
+            cycleDraftState.preview.cycle,
+            nowISO()
+          );
+          state.executionMode = 'sequence';
+          assistantPanel = 'none';
+          cycleDraftState.preview = null;
+          scheduleSave();
+          _showToast('Nova versão do ciclo confirmada sem reescrever o histórico.');
+          renderPlanoHoje();
+        },
+        onChangeQuickConfig: (minutes, focus) => {
+          quickMinutes = minutes;
+          quickFocus = focus;
+          renderStudyAssistantBar();
+        },
+        onStartQuickStudy: () => {
+          if (!ctx.startGuidedTimerSession) return;
+          ctx.startGuidedTimerSession({
+            subjectId: quickProposal.subjectId,
+            topicId: quickProposal.topicId,
+            type: quickProposal.activityType,
+            targetMinutes: quickProposal.plannedMinutes,
+            strategy: quickProposal.strategy,
+            recommendationId: quickProposal.action?.recommendationId || null,
+            recommendationSource: quickProposal.action?.source || 'today',
+            recommendationType: quickProposal.activityType,
+            prioritySnapshot: quickProposal.action?.priority ?? null,
+            sessionOrigin: quickProposal.origin,
+            cycleId: quickProposal.cycleBlockId ? cycle?.id || null : null,
+            cycleBlockId: quickProposal.cycleBlockId,
+          });
+        },
+        onSelectCopilotQuestion: key => {
+          copilotQuestion = key;
+          renderStudyAssistantBar();
+        },
+        onExecuteCopilotAnswer: (answer: CopilotAnswer) => {
+          if (answer.actionKind === 'open_quick_study') {
+            quickMinutes = 30;
+            assistantPanel = 'quick';
+            renderStudyAssistantBar();
+            return;
+          }
+          if (answer.actionKind === 'open_planning_preview') {
+            _activateTab('metas');
+            ctx.calculateStudyPlanPreview?.();
+            return;
+          }
+          if (answer.actionKind === 'open_weekly_close') {
+            if (ctx.openWeeklyClose) ctx.openWeeklyClose();
+            else {
+              assistantPanel = 'weekly_closing';
+              renderStudyAssistantBar();
+            }
+            return;
+          }
+          if (answer.actionKind === 'execute_action') {
+            const check = revalidateCopilotAction(
+              copilot.action || {
+                subjectId: answer.targetSubjectId,
+                topicId: answer.targetTopicId,
+                activityType: 'study',
+              },
+              { candidates, recommendations: recs, subjects }
+            );
+            if (!check.valid) {
+              _showToast(check.reason || 'A orientação precisa ser atualizada.');
+              renderStudyAssistantBar();
+              return;
+            }
+            ctx.startGuidedTimerSession?.({
+              subjectId: answer.targetSubjectId || copilot.action?.subjectId || null,
+              topicId: answer.targetTopicId || copilot.action?.topicId || null,
+              type: copilot.action?.activityType || 'study',
+              targetMinutes: copilot.action?.suggestedMinutes || null,
+              recommendationId: copilot.recommendationId,
+              recommendationSource: 'today',
+              sessionOrigin: 'copilot',
+            });
+          }
+        },
+        onChangeJournalFilter: patch => {
+          Object.assign(journalFilters, patch);
+          renderStudyAssistantBar();
+        },
+        onChangeJournalForm: patch => {
+          Object.assign(journalForm, patch);
+          renderStudyAssistantBar();
+        },
+        onSaveJournalEntry: () => {
+          if (!journalForm.note.trim() && !journalForm.tags.length && !journalForm.nextStep.trim()) {
+            _showToast('Escreva uma observação ou selecione uma etiqueta antes de salvar.');
+            return;
+          }
+          const sub = subjects.find((s: any) => s.id === journalForm.subjectId);
+          const top = sub?.topics?.find((t: any) => t.id === journalForm.topicId);
+          const res = upsertLearningJournalEntry(
+            state.learningJournal || [],
+            {
+              examId: state.examBlueprint?.activeExamTags?.[0] || null,
+              sessionId: journalForm.sessionId,
+              subjectId: journalForm.subjectId || null,
+              subjectNameSnapshot: sub?.name || '',
+              topicId: journalForm.topicId || null,
+              topicNameSnapshot: top?.name || '',
+              localDate: todayISO(),
+              difficultyRating: journalForm.difficultyRating || null,
+              energyRating: journalForm.energyRating || null,
+              tags: journalForm.tags,
+              note: journalForm.note,
+              nextStep: journalForm.nextStep,
+            },
+            { nowISO, todayISO, idGenerator: uid }
+          );
+          state.learningJournal = res.entries;
+          journalForm = {
+            sessionId: null,
+            subjectId: '',
+            topicId: '',
+            difficultyRating: '',
+            energyRating: '',
+            tags: [],
+            note: '',
+            nextStep: '',
+          };
+          scheduleSave();
+          _showToast(res.updated ? 'Anotação da sessão atualizada no diário.' : 'Anotação salva no Diário.');
+          renderStudyAssistantBar();
+        },
+        onDeleteJournalEntry: entryId => {
+          state.learningJournal = deleteLearningJournalEntry(state.learningJournal || [], entryId);
+          scheduleSave();
+          _showToast('Anotação removida do Diário.');
+          renderStudyAssistantBar();
+        },
+        onCreateReviewFromJournal: entry => {
+          const proposal = buildJournalReviewProposal(entry, {
+            todayISO,
+            addDays: (iso, d) => ctx.addDays?.(iso, d) || addLocalDays(iso, d) || iso,
+          });
+          if (!proposal || !ctx.createManualReview) return;
+          const create = () => {
+            ctx.createManualReview?.({
+              topicId: proposal.topicId,
+              subjectId: proposal.subjectId,
+              date: proposal.scheduledDate,
+              tipo: proposal.tipo,
+            });
+            ctx.persistAndRender?.();
+            _showToast(`Revisão agendada para ${formatDatePt(proposal.scheduledDate)}.`);
+          };
+          if (ctx.showConfirm) {
+            ctx.showConfirm(
+              `Criar tarefa de revisão (${proposal.tipo}) para "${proposal.topicName}" em ${formatDatePt(proposal.scheduledDate)}?`,
+              create,
+              undefined,
+              { confirmLabel: 'Confirmar revisão' }
+            );
+          } else {
+            create();
+          }
+        },
+        onConfirmWeeklyClosingSnapshot: () => {
+          if (!weeklyClosing) return;
+          state.weeklyCloseSnapshots = state.weeklyCloseSnapshots || [];
+          const outcome = finalizeWeeklyClosingIdempotent(
+            state.weeklyCloseSnapshots,
+            weeklyClosing,
+            { nowISO, idGenerator: uid }
+          );
+          scheduleSave();
+          _showToast(
+            outcome.status === 'already_finalized'
+              ? 'Este fechamento semanal já estava registrado e permanece imutável.'
+              : 'Fechamento semanal registrado no histórico.'
+          );
+          renderStudyAssistantBar();
+        },
+        onTestWeeklyImprovement: () => {
+          _activateTab('metas');
+          ctx.calculateStudyPlanPreview?.();
+        },
+      }),
+      mount
+    );
+  }
+
+  function openAssistantPanel(panel: AssistantPanelKind, opts: { sessionId?: string } = {}) {
+    assistantPanel = panel;
+    if (panel === 'journal' && opts.sessionId) {
+      const state = getState();
+      const session = (state.studySessions || []).find((s: any) => s.id === opts.sessionId);
+      const existing = (state.learningJournal || []).find(
+        (e: any) => e.sessionId === opts.sessionId
+      );
+      journalForm = {
+        sessionId: opts.sessionId,
+        subjectId: existing?.subjectId || session?.subjectId || '',
+        topicId: existing?.topicId || session?.topicId || '',
+        difficultyRating: existing?.difficultyRating || '',
+        energyRating: existing?.energyRating || '',
+        tags: existing?.tags ? [...existing.tags] : [],
+        note: existing?.note || '',
+        nextStep: existing?.nextStep || '',
+      };
+    }
+    if (panel === 'cycle_config') refreshCycleDraftPreview();
+    _activateTab('hoje');
+    renderStudyAssistantBar();
+    doc?.getElementById('todayStudyAssistantMount')?.scrollIntoView?.({
+      behavior: 'smooth',
+      block: 'center',
+    });
+  }
+
   function renderExecutionModeSwitch(): void {
     if (!doc) return;
     const state = getState();
@@ -743,6 +1251,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderWeeklyRhythmCard();
     renderFirstStepsMissionCard();
     renderRealWeekBanner();
+    renderStudyAssistantBar();
 
     if (!plan && priorities.length === 0) {
       container.innerHTML =
@@ -1059,6 +1568,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderMetasHoje,
     renderWeeklyRhythmCard,
     renderSimuladosPlanejados,
+    renderStudyAssistantBar,
+    openAssistantPanel,
     bindEvents,
   };
 }

@@ -214,6 +214,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       planningUi.studyPlanBuilderController.calculateDailyPlanPreview(),
     getDailyPlanPreview: () => planningUi.studyPlanBuilderController.getDailyPlanPreview(),
     confirmDailyPlanPreview: () => planningUi.studyPlanBuilderController.confirmDailyPlanPreview(),
+    openWeeklyClose: () => planningUi.weeklyCloseModalController.openWeeklyClose(),
   });
 
   registerDelegatedActions({

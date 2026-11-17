@@ -1107,6 +1107,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/five-features-master-plan.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato cobrindo Ciclo 2.0, Estudo Rápido, Diário, Fechamento Inteligente e Copiloto sem browser."
+    },
+    {
       "file": "tests/unit/focus-energy-analytics.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

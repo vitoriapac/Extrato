@@ -63,6 +63,7 @@ export function buildSessionResultViewModel(
         }
       : null;
   return {
+    sessionId: session.id || null,
     type: typeLabels[session.type] || 'Sessão',
     subject,
     topic,

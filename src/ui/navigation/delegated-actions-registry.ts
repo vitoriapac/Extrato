@@ -362,6 +362,10 @@ export function buildDelegatedActionHandlers(
     // Today Tab / Timer Runtime
     startPlannedActivity: (...args: any[]) =>
       (c.studyTimerRuntime?.startPlannedActivity || c.today?.startPlannedActivity)?.(...args),
+    openSessionJournalEntry: (sessionId?: string) =>
+      c.today?.openAssistantPanel?.('journal', { sessionId }),
+    openQuickStudyModal: () => c.today?.openAssistantPanel?.('quick'),
+    openStudyCopilot: () => c.today?.openAssistantPanel?.('copilot'),
   };
 
   return composeDelegatedActionHandlers(defaultHandlers, custom);

@@ -2049,7 +2049,7 @@
         "../../src/demo/demo-generator.js",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6184,6 +6184,53 @@
         "../../src/application/selectors/first-activity-date.js"
       ],
       "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/five-features-master-plan.test.js",
+      "layer": "node",
+      "area": "Planejamento",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "preact",
+        "preact-render-to-string",
+        "../../src/state/defaults.js",
+        "../../src/state/state-boundaries.js",
+        "../../src/storage/backup-validator.js",
+        "../../src/domain/sessions/study-session.js",
+        "../../src/application/sessions/session-service.js",
+        "../../src/repositories/collection-repository.js",
+        "../../src/repositories/planning-repository.js",
+        "../../src/repositories/sessions-repository.js",
+        "../../src/domain/planning/study-cycle-engine.js",
+        "../../src/domain/quick-study/quick-study-engine.js",
+        "../../src/domain/journal/learning-journal-engine.js",
+        "../../src/application/weekly-closing/weekly-closing-ritual.js",
+        "../../src/application/copilot/study-copilot-service.js",
+        "../../src/application/sessions/build-session-result-view-model.js",
+        "../../src/ui/renderers/session-result-renderer.js",
+        "../../src/ui/components/TodayStudyAssistantBar.js"
+      ],
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

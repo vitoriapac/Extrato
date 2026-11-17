@@ -51,6 +51,8 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   if (!Array.isArray(state.weeklyCloseSnapshots)) state.weeklyCloseSnapshots = [];
   if (!Array.isArray(state.planningCapacityHistory)) state.planningCapacityHistory = [];
   if (!Array.isArray(state.errorFlashcards)) state.errorFlashcards = [];
+  if (!Array.isArray(state.learningJournal)) state.learningJournal = [];
+  if (state.studyCycle === undefined) state.studyCycle = null;
   if (!['agenda', 'sequence'].includes(state.executionMode)) state.executionMode = 'agenda';
 
   const metaDefaults = {

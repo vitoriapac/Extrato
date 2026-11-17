@@ -22,6 +22,7 @@ export const PERSISTENT_COLLECTIONS = Object.freeze([
   'topicHistory',
   'metasPorDisciplina',
   'errorFlashcards',
+  'learningJournal',
 ] as const);
 
 export const PERSISTENT_OBJECTS = Object.freeze([
@@ -31,6 +32,7 @@ export const PERSISTENT_OBJECTS = Object.freeze([
   'activeTimer',
   'achievementsUnlocked',
   'achievementUnlocks',
+  'studyCycle',
 ] as const);
 
 export interface OnboardingUiState {

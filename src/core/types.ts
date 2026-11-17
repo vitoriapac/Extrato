@@ -124,6 +124,28 @@ export interface SimulationRecord {
 
 export type StudyActivityType = 'study' | 'review' | 'questions' | 'simulation';
 
+export type StudySessionOrigin = 'regular' | 'cycle' | 'quick' | 'copilot';
+
+export type LearningJournalTag = 'entendi' | 'duvida' | 'pegadinha' | 'revisar' | 'estrategia';
+
+export interface LearningJournalEntry {
+  id: string;
+  examId: string | null;
+  sessionId: string | null;
+  subjectId: string | null;
+  subjectNameSnapshot: string;
+  topicId: string | null;
+  topicNameSnapshot: string;
+  localDate: string;
+  difficultyRating: 'easy' | 'medium' | 'hard' | null;
+  energyRating: 'high' | 'normal' | 'low' | null;
+  tags: LearningJournalTag[];
+  note: string;
+  nextStep: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StudySession {
   id: string;
   date: string;
@@ -132,6 +154,10 @@ export interface StudySession {
   durationSeconds: number;
   type?: StudyActivityType;
   source?: string;
+  origin?: StudySessionOrigin | null;
+  cycleId?: string | null;
+  cycleVersion?: number | null;
+  cycleBlockId?: string | null;
   planItemId?: string | null;
   recommendationId?: string | null;
   createdAt?: string;
@@ -204,6 +230,9 @@ export interface ActiveTimerState {
   recommendationSource: string | null;
   recommendationType: string | null;
   prioritySnapshot: number | null;
+  sessionOrigin?: StudySessionOrigin | null;
+  cycleId?: string | null;
+  cycleBlockId?: string | null;
 }
 
 export interface CalendarItem {
@@ -445,6 +474,8 @@ export interface AppState {
   achievementsBaselined: boolean;
   metasPorDisciplina: SubjectGoal[];
   errorFlashcards?: ErrorFlashcard[];
+  learningJournal?: LearningJournalEntry[];
+  studyCycle?: Record<string, any> | null;
   lastBackupAt: string | null;
   /** When the user last downloaded a backup file (F7); lastBackupAt is the automatic in-browser copy. */
   lastExportAt?: string | null;

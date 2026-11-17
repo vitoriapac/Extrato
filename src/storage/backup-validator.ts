@@ -599,7 +599,79 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém metadados de prontidão inválidos.');
   const flashcardError = validateErrorFlashcards(data.errorFlashcards);
   if (flashcardError) return fail(flashcardError);
+  const journalError = validateLearningJournal(data.learningJournal);
+  if (journalError) return fail(journalError);
+  const cycleError = validateStudyCycle(data.studyCycle);
+  if (cycleError) return fail(cycleError);
   return { valid: true };
+}
+
+const VALID_JOURNAL_TAGS = new Set(['entendi', 'duvida', 'pegadinha', 'revisar', 'estrategia']);
+const VALID_JOURNAL_DIFFICULTY = new Set(['easy', 'medium', 'hard']);
+const VALID_JOURNAL_ENERGY = new Set(['high', 'normal', 'low']);
+
+/**
+ * Valida o Diário de Aprendizagem. O campo é opcional para compatibilidade com backups
+ * legados e preserva entradas mesmo que a sessão, disciplina ou tópico tenham sido excluídos.
+ */
+function validateLearningJournal(entries: unknown): string {
+  if (entries === undefined) return '';
+  if (!Array.isArray(entries)) return 'O campo "learningJournal" deve ser uma lista.';
+  if (entries.length > 50000)
+    return 'O campo "learningJournal" excede o limite seguro de 50.000 registros.';
+  const seen = new Set<string>();
+  const text = (value: unknown, max: number) => typeof value === 'string' && value.length <= max;
+  for (const entry of entries) {
+    if (!isPlainObject(entry)) return 'Uma entrada do diário não é um objeto válido.';
+    if (!isSafeId(entry.id)) return 'Uma entrada do diário possui identificador inválido.';
+    if (seen.has(entry.id))
+      return `O identificador "${entry.id}" aparece mais de uma vez no diário.`;
+    seen.add(entry.id);
+    if (!isISODate(entry.localDate))
+      return `A entrada "${entry.id}" do diário possui data local inválida.`;
+    if (!text(entry.note ?? '', 1000) || !text(entry.nextStep ?? '', 500))
+      return `A entrada "${entry.id}" do diário excede o limite de texto permitido.`;
+    if (
+      entry.tags !== undefined &&
+      (!Array.isArray(entry.tags) ||
+        entry.tags.length > 10 ||
+        entry.tags.some(tag => typeof tag !== 'string' || !VALID_JOURNAL_TAGS.has(tag)))
+    )
+      return `A entrada "${entry.id}" do diário possui etiquetas inválidas.`;
+    if (
+      entry.difficultyRating != null &&
+      !VALID_JOURNAL_DIFFICULTY.has(String(entry.difficultyRating))
+    )
+      return `A entrada "${entry.id}" do diário possui dificuldade inválida.`;
+    if (entry.energyRating != null && !VALID_JOURNAL_ENERGY.has(String(entry.energyRating)))
+      return `A entrada "${entry.id}" do diário possui nível de energia inválido.`;
+  }
+  return '';
+}
+
+function validateStudyCycle(cycle: unknown): string {
+  if (cycle == null) return '';
+  if (!isPlainObject(cycle)) return 'O campo "studyCycle" deve ser um objeto válido.';
+  if (!isSafeId(cycle.id) || !Array.isArray(cycle.blocks))
+    return 'O ciclo de estudos possui estrutura inválida.';
+  if (cycle.blocks.length > 500)
+    return 'O ciclo de estudos excede o limite seguro de 500 blocos.';
+  const blockIds = new Set<string>();
+  for (const block of cycle.blocks) {
+    if (!isPlainObject(block) || !isSafeId(block.id))
+      return 'Um bloco do ciclo possui identificador inválido.';
+    if (blockIds.has(block.id))
+      return `O bloco "${block.id}" aparece duplicado no ciclo de estudos.`;
+    blockIds.add(block.id);
+    if (
+      typeof block.durationMinutes !== 'number' ||
+      !Number.isFinite(block.durationMinutes) ||
+      block.durationMinutes < 15 ||
+      block.durationMinutes > 120
+    )
+      return `O bloco "${block.id}" possui duração fora da faixa permitida (15 a 120 min).`;
+  }
+  return '';
 }
 
 const FLASHCARD_STATUSES = ['pending', 'reviewing', 'mastered'];
@@ -698,6 +770,7 @@ export function validateBackupData(
     'topicHistory',
     'metasPorDisciplina',
     'errorFlashcards',
+    'learningJournal',
   ];
   const envelope = validateBackupEnvelope(data, {
     currentVersion: options.currentSchemaVersion ?? CURRENT_SCHEMA_VERSION,

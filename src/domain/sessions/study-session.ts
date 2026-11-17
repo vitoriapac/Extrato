@@ -1,5 +1,6 @@
 export const STUDY_SESSION_TYPES = Object.freeze(['study', 'review', 'questions', 'simulation']);
 export const STUDY_SESSION_SOURCES = Object.freeze(['manual', 'plan', 'recommendation', 'import']);
+export const STUDY_SESSION_ORIGINS = Object.freeze(['regular', 'cycle', 'quick', 'copilot']);
 export const RECOMMENDATION_SESSION_SOURCES = Object.freeze([
   'overview',
   'today',
@@ -68,6 +69,14 @@ export function normalizeStudySession(
     recommendationId,
     type,
     source,
+    origin: STUDY_SESSION_ORIGINS.includes(input.origin)
+      ? input.origin
+      : input.cycleBlockId
+        ? 'cycle'
+        : null,
+    cycleId: nullable(input.cycleId),
+    cycleBlockId: nullable(input.cycleBlockId),
+    cycleVersion: finiteOrNull(input.cycleVersion),
     questionsResolved,
     correctAnswers: Math.min(questionsResolved, nonNegativeInteger(input.correctAnswers)),
     prioritySnapshot: finiteOrNull(input.prioritySnapshot),
