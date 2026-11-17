@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import {
+  computeDailyCalendarLoad,
   getWeekDates,
   sortCalendarItemsForDay,
   type UnifiedCalendarItem,
@@ -62,7 +63,7 @@ export function CalendarWeekView({
         >
           <Icon name="chevron-left" size={16} />
         </button>
-        <h3 class="m-0 text-sm font-semibold text-content-primary">{rangeLabel}</h3>
+        <h3 class="m-0 font-serif text-base font-semibold text-content-primary">{rangeLabel}</h3>
         <button
           type="button"
           class="month-nav-btn"
@@ -89,12 +90,13 @@ export function CalendarWeekView({
           const isSelected = date === selectedDate;
           const isDropTarget = dragOverDate === date;
           const dayItems = sortCalendarItemsForDay(items.filter(item => item.date === date));
+          const dayLoad = computeDailyCalendarLoad(items, date);
 
           return (
             <div
               key={date}
               data-calendar-drop-date={date}
-              class={`rounded-xl border p-2.5 flex flex-col gap-2 min-h-[140px] transition-colors ${
+              class={`rounded-lg border p-2.5 flex flex-col gap-2 min-h-[140px] transition-colors ${
                 isDropTarget
                   ? 'border-brand bg-brand/5'
                   : isSelected
@@ -126,7 +128,12 @@ export function CalendarWeekView({
                   class="inline-flex items-center gap-1.5 text-left text-xs font-semibold text-content-primary hover:underline"
                 >
                   <span class="text-content-secondary">{weekday}</span>
-                  <span>{dayNum}</span>
+                  <span class="font-mono tabular-nums">{dayNum}</span>
+                  {dayLoad.totalMinutes > 0 && (
+                    <span class="font-mono tabular-nums text-xs font-normal text-content-secondary">
+                      · {Math.round(dayLoad.totalMinutes)}m
+                    </span>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -140,7 +147,7 @@ export function CalendarWeekView({
 
               <div class="space-y-1.5 flex-1">
                 {dayItems.length === 0 ? (
-                  <p class="text-[11px] text-content-secondary/70 m-0">Livre</p>
+                  <p class="text-xs text-content-secondary/70 m-0">Livre</p>
                 ) : (
                   dayItems.map(item => {
                     const kindText =
@@ -161,7 +168,7 @@ export function CalendarWeekView({
                           if (item.origem === 'Calendário') onEditItem(item.id);
                           else onSelectDate(date);
                         }}
-                        class={`w-full text-left rounded-lg border px-2 py-1.5 text-xs transition-colors ${
+                        class={`w-full text-left rounded-md border px-2 py-1.5 text-xs transition-colors ${
                           item.isEvent
                             ? 'border-accent/50 bg-accent/10 text-content-primary'
                             : isCompleted
@@ -169,9 +176,11 @@ export function CalendarWeekView({
                               : 'border-border bg-surface-elevated text-content-primary hover:border-brand/50'
                         }`}
                       >
-                        <div class="flex items-center justify-between gap-1 text-[10px] text-content-secondary">
+                        <div class="flex items-center justify-between gap-1 text-xs text-content-secondary">
                           <span>{kindText}</span>
-                          {item.startTime && <span>{item.startTime}</span>}
+                          {item.startTime && (
+                            <span class="font-mono tabular-nums">{item.startTime}</span>
+                          )}
                         </div>
                         <div class="font-medium truncate">{item.title}</div>
                       </button>

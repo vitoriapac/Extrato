@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useState } from 'preact/hooks';
 import type { DailyCalendarLoad, UnifiedCalendarItem } from '../../../domain/calendar/calendar-projection.js';
 import { CALENDAR_ACTIVITY_LABELS } from '../../../state/schema.js';
 import { Button } from '../../primitives/button.js';
@@ -46,20 +47,25 @@ export function CalendarDayDrawer({
   onRegisterSimulationResult,
   onClose,
 }: CalendarDayDrawerProps): JSX.Element | null {
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState<string>('');
+
   if (!date) return null;
   const isOverloaded = availableMinutes > 0 && load.totalMinutes > availableMinutes;
+  const allActionableDone =
+    items.length > 0 && items.every(item => item.status === 'Concluído' || item.isEvent);
 
   return (
     <section
-      class="mt-4 rounded-xl border border-border bg-surface-elevated p-4 space-y-3"
+      class="mt-4 rounded-lg border border-border bg-surface-elevated p-4 space-y-3"
       aria-label={`Compromissos de ${formattedDate}`}
     >
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h4 class="text-sm font-semibold text-content-primary m-0">
+          <h4 class="font-serif text-base font-semibold text-content-primary m-0">
             {formattedDate}
           </h4>
-          <p class="text-xs text-content-secondary m-0">
+          <p class="text-xs font-mono tabular-nums text-content-secondary m-0">
             {items.length} {items.length === 1 ? 'atividade' : 'atividades'} · {formatLoadMinutes(load.totalMinutes)}
             {availableMinutes > 0 ? ` · Disponível: ${formatLoadMinutes(availableMinutes).replace(' estimadas', '').replace(' estimados', '')}` : ''}
           </p>
@@ -85,6 +91,15 @@ export function CalendarDayDrawer({
           </Button>
         </div>
       </div>
+
+      {allActionableDone && (
+        <div
+          role="status"
+          class="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs text-content-primary"
+        >
+          Dia em dia — todas as atividades acionáveis desta data foram concluídas.
+        </div>
+      )}
 
       {isOverloaded && (
         <div
@@ -118,15 +133,15 @@ export function CalendarDayDrawer({
             return (
               <li
                 key={item.key}
-                class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-2"
+                class="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2.5"
               >
                 <div class="min-w-0 flex-1 space-y-0.5">
                   <div class="flex flex-wrap items-center gap-2">
-                    <span class="inline-flex items-center rounded-md border border-border bg-surface-elevated px-1.5 py-0.5 text-[11px] font-medium text-content-secondary">
+                    <span class="inline-flex items-center rounded-md border border-border bg-surface-elevated px-2 py-0.5 text-xs font-medium text-content-secondary">
                       {kindLabel(item.kind)}
                     </span>
                     {item.startTime && (
-                      <span class="inline-flex items-center gap-1 text-xs text-content-secondary">
+                      <span class="inline-flex items-center gap-1 text-xs font-mono tabular-nums text-content-secondary">
                         <Icon name="clock" size={12} />
                         {item.startTime}
                         {item.endTime ? `–${item.endTime}` : ''}
@@ -186,7 +201,7 @@ export function CalendarDayDrawer({
                         Registrar resultado
                       </Button>
                     )}
-                  {canEdit && !item.isRecurringInstance && (
+                  {canEdit && !item.isRecurringInstance && reschedulingId !== item.id && (
                     <>
                       <Button
                         type="button"
@@ -196,24 +211,54 @@ export function CalendarDayDrawer({
                       >
                         Editar
                       </Button>
+                      <Button
+                        type="button"
+                        size="small"
+                        variant="ghost"
+                        onClick={() => {
+                          setReschedulingId(item.id);
+                          setRescheduleDate(item.date);
+                        }}
+                      >
+                        Reagendar
+                      </Button>
+                    </>
+                  )}
+                  {canEdit && !item.isRecurringInstance && reschedulingId === item.id && (
+                    <div class="inline-flex flex-wrap items-center gap-1.5">
                       <label class="sr-only" for={`reschedule-${item.id}`}>
-                        Reagendar data de {item.title}
+                        Nova data de {item.title}
                       </label>
                       <input
                         id={`reschedule-${item.id}`}
                         type="date"
-                        value={item.date}
-                        title="Reagendar para outra data"
-                        aria-label={`Reagendar data de ${item.title}`}
-                        onChange={e => {
-                          const nextDate = (e.currentTarget as HTMLInputElement).value;
-                          if (nextDate && nextDate !== item.date) {
-                            onRescheduleItem(item.id, nextDate);
-                          }
-                        }}
-                        class="rounded border border-border bg-surface px-1.5 py-1 text-xs text-content-secondary"
+                        value={rescheduleDate}
+                        onChange={e =>
+                          setRescheduleDate((e.currentTarget as HTMLInputElement).value)
+                        }
+                        class="rounded-md border border-border-strong bg-surface px-2 py-1 text-xs font-mono tabular-nums text-content-primary"
                       />
-                    </>
+                      <Button
+                        type="button"
+                        size="small"
+                        onClick={() => {
+                          if (rescheduleDate && rescheduleDate !== item.date) {
+                            onRescheduleItem(item.id, rescheduleDate);
+                          }
+                          setReschedulingId(null);
+                        }}
+                      >
+                        Mover
+                      </Button>
+                      <Button
+                        type="button"
+                        size="small"
+                        variant="ghost"
+                        onClick={() => setReschedulingId(null)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
                   )}
                 </div>
               </li>

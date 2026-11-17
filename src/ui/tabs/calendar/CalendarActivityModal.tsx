@@ -64,11 +64,13 @@ export function CalendarActivityModal({
 }: CalendarActivityModalProps): JSX.Element {
   const [draft, setDraft] = useState<CalendarActivityDraft>(initialDraft || EMPTY_DRAFT);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const next = initialDraft || EMPTY_DRAFT;
     setDraft(next);
+    setConfirmDelete(false);
     setError(null);
     const hasAdvancedData = Boolean(
       next.startTime ||
@@ -102,10 +104,22 @@ export function CalendarActivityModal({
       setError('Informe uma data válida.');
       return;
     }
+    if (draft.startTime && draft.endTime && draft.endTime <= draft.startTime) {
+      setError('O horário de término deve ser posterior ao horário de início.');
+      return;
+    }
     onSave({
       ...draft,
       title: draft.title.trim(),
     });
+  };
+
+  const titlePlaceholder: Record<CalendarActivityKind, string> = {
+    task: 'Ex: Resolver 30 questões de Direito Administrativo',
+    mock_exam: 'Ex: Simulado Completo #3',
+    essay: 'Ex: Redação sobre tecnologia e trabalho',
+    event: 'Ex: Dia da prova / Prazo de inscrição',
+    manual_review: 'Ex: Revisar Controle de Constitucionalidade',
   };
 
   return (
@@ -129,23 +143,29 @@ export function CalendarActivityModal({
 
         <div class="space-y-3">
           <div>
-            <label for="calActivityTitle" class="block text-xs font-medium text-content-secondary mb-1">
+            <label
+              for="calActivityTitle"
+              class="block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1"
+            >
               Título
             </label>
             <input
               id="calActivityTitle"
               type="text"
               required
-              placeholder="Ex: Simulado completo, Redação sobre tecnologia, Dia da prova..."
+              placeholder={titlePlaceholder[draft.kind] || titlePlaceholder.task}
               value={draft.title}
               onInput={e => updateField('title', (e.currentTarget as HTMLInputElement).value)}
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
+              class="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
             />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label for="calActivityKind" class="block text-xs font-medium text-content-secondary mb-1">
+              <label
+                for="calActivityKind"
+                class="block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1"
+              >
                 Tipo
               </label>
               <select
@@ -154,7 +174,7 @@ export function CalendarActivityModal({
                 onChange={e =>
                   updateField('kind', (e.currentTarget as HTMLSelectElement).value as CalendarActivityKind)
                 }
-                class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
+                class="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
               >
                 {CALENDAR_ACTIVITY_KINDS.map(kind => (
                   <option key={kind} value={kind}>
@@ -165,7 +185,10 @@ export function CalendarActivityModal({
             </div>
 
             <div>
-              <label for="calActivityDate" class="block text-xs font-medium text-content-secondary mb-1">
+              <label
+                for="calActivityDate"
+                class="block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1"
+              >
                 Data
               </label>
               <input
@@ -174,7 +197,7 @@ export function CalendarActivityModal({
                 required
                 value={draft.date}
                 onChange={e => updateField('date', (e.currentTarget as HTMLInputElement).value)}
-                class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
+                class="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm font-mono tabular-nums text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40"
               />
             </div>
           </div>
@@ -346,17 +369,37 @@ export function CalendarActivityModal({
 
         <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <div>
-            {!isNew && draft.id && onDelete && (
+            {!isNew && draft.id && onDelete && !confirmDelete && (
               <Button
                 type="button"
                 variant="ghost"
                 size="small"
                 className="text-danger hover:bg-danger/10 inline-flex items-center gap-1"
-                onClick={() => onDelete(draft.id!)}
+                onClick={() => setConfirmDelete(true)}
               >
                 <Icon name="trash" size={14} />
                 <span>Excluir</span>
               </Button>
+            )}
+            {!isNew && draft.id && onDelete && confirmDelete && (
+              <div class="inline-flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  size="small"
+                  className="bg-danger text-on-brand hover:opacity-90"
+                  onClick={() => onDelete(draft.id!)}
+                >
+                  Confirmar exclusão
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="small"
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Manter
+                </Button>
+              </div>
             )}
           </div>
           <div class="flex items-center gap-2">

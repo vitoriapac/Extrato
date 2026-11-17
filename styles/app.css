@@ -3824,4 +3824,4 @@ button.performance-window{position:relative}button.performance-window::after{con
 #panel-agenda:not([data-calendar-view]) .calendar-agenda-view,
 #panel-agenda:not([data-calendar-view]) .calendar-week-view{display:none}
 .month-day.selected{outline:2px solid var(--brand);outline-offset:-2px}
-.cal-event.event-marco{border-left:3px solid var(--amber)}
+.cal-event.event-marco{background:var(--highlight-bg);border:1px solid var(--amber);color:var(--ink)}

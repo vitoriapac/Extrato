@@ -999,6 +999,10 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         if (date) {
           (calendarUiState as any).selectedDate = date;
           renderMonthCalendar();
+          d.getElementById('calendarDayDrawerMount')?.scrollIntoView?.({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
         }
       });
       monthContainer.addEventListener('keydown', (event: any) => {
@@ -1010,6 +1014,10 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         if (date) {
           (calendarUiState as any).selectedDate = date;
           renderMonthCalendar();
+          d.getElementById('calendarDayDrawerMount')?.scrollIntoView?.({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
         }
       });
       monthContainer.addEventListener('dragstart', (event: any) => {
