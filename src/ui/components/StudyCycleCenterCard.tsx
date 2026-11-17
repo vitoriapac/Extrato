@@ -13,6 +13,7 @@ export interface StudyCycleCenterCardProps {
   executionMode: 'agenda' | 'sequence';
   cycle: StudyCycleQueue | null;
   subjects?: Array<{ id?: string; color?: unknown }>;
+  copilotHint?: string | null;
   cycleLap: {
     round: number;
     totalBlocks: number;
@@ -35,7 +36,7 @@ export interface StudyCycleCenterCardProps {
 const DEFAULT_VISIBLE_BLOCKS = 6;
 
 export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Element {
-  const { executionMode, cycle, cycleLap, cycleDraft, subjects = [] } = props;
+  const { executionMode, cycle, cycleLap, cycleDraft, subjects = [], copilotHint = null } = props;
   const [showAllBlocks, setShowAllBlocks] = useState(false);
 
   const currentBlock =
@@ -72,12 +73,12 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
     <Card
       as="section"
       variant="default"
-      className="mt-4 space-y-4 min-w-0"
+      className="mt-6 space-y-6 min-w-0"
       aria-labelledby="studyCycleCenterTitle"
       data-study-cycle-center="true"
     >
-      <div class="flex flex-wrap items-start justify-between gap-2">
-        <div class="space-y-1 min-w-0">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="space-y-2 min-w-0">
           <div class="flex flex-wrap items-center gap-2">
             <Icon name="repeat" size={16} class="icon-inline text-accent shrink-0" />
             <h3 id="studyCycleCenterTitle" class="module-heading__title m-0 text-content-primary">
@@ -92,7 +93,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Modo de execução em Hoje">
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Modo de execução em Hoje">
           <Button
             variant={executionMode === 'sequence' ? 'secondary' : 'ghost'}
             size="small"
@@ -113,8 +114,8 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
       </div>
 
       {cycle && currentBlock && (
-        <div class="pt-3 border-t border-border-subtle border-l-3 border-l-accent pl-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div class="space-y-0.5 min-w-0">
+        <div class="pt-4 border-t border-border-subtle border-l-3 border-l-accent pl-4 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div class="space-y-1 min-w-0">
             <div class="text-content-primary font-medium">
               Próximo bloco: <strong>{currentBlock.subjectName}</strong> ·{' '}
               <span class="font-data">
@@ -141,7 +142,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
         </div>
       )}
 
-      <div class="pt-3 border-t border-border-subtle flex flex-wrap items-end gap-3 text-xs">
+      <div class="pt-4 border-t border-border-subtle flex flex-wrap items-end gap-4 text-xs">
         <label class="flex flex-col gap-1">
           <span class="text-content-secondary">Distribuição do ciclo</span>
           <select
@@ -184,7 +185,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
       </div>
 
       {cycleDraft.preview && (
-        <div class="space-y-3 text-xs">
+        <div class="space-y-4 text-xs">
           <p class="m-0 text-content-secondary">
             Prévia não destrutiva:{' '}
             <strong class="text-content-primary font-data">
@@ -205,10 +206,20 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
             />
           )}
 
+          {copilotHint && (
+            <p
+              class="m-0 text-xs text-content-secondary border-l-3 border-l-accent pl-4 py-1 flex items-start gap-2"
+              data-cycle-copilot-hint="true"
+            >
+              <Icon name="compass" size={14} class="icon-inline text-accent shrink-0 mt-0.5" />
+              <span>{copilotHint}</span>
+            </p>
+          )}
+
           {draftBlocks.length > 0 && (
             <div class="space-y-2">
               {!isManualMode && !showAllBlocks ? (
-                <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-wrap items-center gap-4">
                   <Button
                     variant="tertiary"
                     size="small"
@@ -233,7 +244,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
                     {visibleBlocks.map((block, index) => (
                       <li
                         key={block.id}
-                        class="flex items-center justify-between gap-2 py-1.5"
+                        class="flex items-center justify-between gap-2 py-2"
                       >
                         <span class="truncate text-content-primary">
                           <span class="font-data text-content-secondary">{index + 1}.</span>{' '}
@@ -286,7 +297,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
             <p class="m-0 text-red">{cycleDraft.preview.errors[0]}</p>
           )}
 
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle">
+          <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border-subtle">
             <Button
               variant="secondary"
               size="small"

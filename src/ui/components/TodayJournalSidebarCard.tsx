@@ -41,7 +41,7 @@ export function TodayJournalSidebarCard(props: TodayJournalSidebarCardProps): JS
     <Card
       as="section"
       variant="default"
-      className="chart-card space-y-3 min-w-0"
+      className="chart-card space-y-4 min-w-0"
       aria-labelledby="todayJournalSidebarTitle"
       data-today-journal-sidebar="true"
     >
@@ -72,7 +72,7 @@ export function TodayJournalSidebarCard(props: TodayJournalSidebarCardProps): JS
       </p>
 
       {formOpen && (
-        <div class="pt-3 border-t border-border-subtle space-y-2.5 text-xs">
+        <div class="pt-4 border-t border-border-subtle space-y-4 text-xs">
           {form.sessionId && (
             <p class="m-0 text-content-primary font-medium">
               Anotação vinculada à sessão selecionada (1 entrada editável por sessão).

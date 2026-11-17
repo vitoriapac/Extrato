@@ -1008,6 +1008,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       today,
       nowISO: nowISO(),
       isDemo: isDemoMode(),
+      executionMode,
       recommendations: recs,
       candidates,
       activePlan: latestStudyPlan(),
@@ -1051,6 +1052,21 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       refreshCycleDraftPreview();
     }
 
+    const startCurrentCycleBlock = (): void => {
+      if (!cycle || !currentBlock || cycle.status === 'paused') return;
+      if (!ctx.startGuidedTimerSession) return;
+      const match = candidates.find((c: any) => c.subjectId === currentBlock.subjectId);
+      ctx.startGuidedTimerSession({
+        subjectId: currentBlock.subjectId,
+        topicId: currentBlock.topicId || match?.topicId || null,
+        type: currentBlock.preferredActivity || 'study',
+        targetMinutes: currentBlock.remainingMinutes ?? currentBlock.durationMinutes,
+        sessionOrigin: 'cycle',
+        cycleId: cycle.id,
+        cycleBlockId: currentBlock.id,
+      });
+    };
+
     mountPreact(
       h(TodayStudyAssistantBar, {
         activePanel: assistantPanel,
@@ -1075,20 +1091,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           if (panel === 'cycle_config') refreshCycleDraftPreview();
           renderStudyAssistantBar();
         },
-        onStartCycleBlock: () => {
-          if (!cycle || !currentBlock || cycle.status === 'paused') return;
-          if (!ctx.startGuidedTimerSession) return;
-          const match = candidates.find((c: any) => c.subjectId === currentBlock.subjectId);
-          ctx.startGuidedTimerSession({
-            subjectId: currentBlock.subjectId,
-            topicId: currentBlock.topicId || match?.topicId || null,
-            type: currentBlock.preferredActivity || 'study',
-            targetMinutes: currentBlock.remainingMinutes ?? currentBlock.durationMinutes,
-            sessionOrigin: 'cycle',
-            cycleId: cycle.id,
-            cycleBlockId: currentBlock.id,
-          });
-        },
+        onStartCycleBlock: startCurrentCycleBlock,
         onToggleCyclePause: () => {
           if (!cycle) return;
           state.studyCycle = setStudyCycleStatus(
@@ -1177,6 +1180,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           renderStudyAssistantBar();
         },
         onExecuteCopilotAnswer: (answer: CopilotAnswer) => {
+          if (answer.actionKind === 'start_cycle_block') {
+            startCurrentCycleBlock();
+            return;
+          }
           if (answer.actionKind === 'open_quick_study') {
             quickMinutes = 30;
             assistantPanel = 'quick';

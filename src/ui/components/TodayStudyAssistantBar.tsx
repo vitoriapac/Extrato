@@ -189,7 +189,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
   const cyclePanelNode =
     executionMode === 'sequence' ? (
       <section
-        class="space-y-3 min-w-0 pb-3 border-b border-border-subtle"
+        class="space-y-4 min-w-0 pb-4 border-b border-border-subtle"
         aria-label="Ciclo de Estudos"
         data-study-cycle-panel="true"
       >
@@ -206,7 +206,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
               </span>
             )}
           </div>
-          <div class="flex flex-wrap items-center gap-1.5">
+          <div class="flex flex-wrap items-center gap-2">
             {props.onOpenPlanningCycle && (
               <Button variant="ghost" size="small" onClick={props.onOpenPlanningCycle}>
                 <span>Central em Planejamento</span>
@@ -227,7 +227,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         </div>
 
         {currentBlock ? (
-          <div class="space-y-3">
+          <div class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-content-secondary">
               <span>
                 Próximo bloco:{' '}
@@ -254,14 +254,40 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
               </p>
             )}
 
-            {cycleDivergence.diverges && (
-              <p
-                class="text-xs text-content-secondary border-l-3 border-l-accent pl-3 py-0.5 m-0"
+            {cycleDivergence.diverges ? (
+              <div
+                class="text-xs text-content-secondary border-l-3 border-l-accent pl-4 py-1 space-y-2"
                 role="note"
               >
-                <Icon name="alert-circle" size={13} class="icon-inline text-accent" />{' '}
-                {cycleDivergence.explanation}
-              </p>
+                <p class="m-0">
+                  <Icon name="alert-circle" size={13} class="icon-inline text-accent" />{' '}
+                  {cycleDivergence.explanation}
+                </p>
+                {copilot.answers.cycle_vs_diagnosis?.actionKind === 'execute_action' &&
+                  copilot.answers.cycle_vs_diagnosis?.actionLabel && (
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      onClick={() =>
+                        props.onExecuteCopilotAnswer(copilot.answers.cycle_vs_diagnosis)
+                      }
+                    >
+                      <Icon name="compass" size={13} class="icon-inline" />
+                      <span>{copilot.answers.cycle_vs_diagnosis.actionLabel}</span>
+                    </Button>
+                  )}
+              </div>
+            ) : (
+              copilot.cycleInsight && (
+                <p
+                  class="text-xs text-content-secondary border-l-3 border-l-accent pl-4 py-1 m-0 flex items-start gap-2"
+                  role="note"
+                  data-cycle-copilot-insight="true"
+                >
+                  <Icon name="compass" size={13} class="icon-inline text-accent shrink-0 mt-0.5" />
+                  <span>{copilot.cycleInsight}</span>
+                </p>
+              )
             )}
 
             {activePanel !== 'cycle_config' && activeCycleShares.length > 0 && (
@@ -344,7 +370,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
 
   return (
     <div
-      class="today-assistant-bar mt-3 pt-3 border-t border-border-subtle space-y-3 min-w-0"
+      class="today-assistant-bar mt-6 pt-4 border-t border-border-subtle space-y-4 min-w-0"
       data-today-assistant-bar="true"
     >
       {cyclePanelNode}
@@ -426,7 +452,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
       {/* Configurador do Ciclo 2.0 com prévia obrigatória */}
       {activePanel === 'cycle_config' && (
         <section
-          class="pt-3 border-t border-border-subtle space-y-3 min-w-0"
+          class="pt-4 border-t border-border-subtle space-y-4 min-w-0"
           aria-label="Configurar ciclo de estudos"
         >
           <div class="flex items-center justify-between gap-2">
@@ -435,7 +461,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
               <Icon name="x" size={14} />
             </Button>
           </div>
-          <div class="flex flex-wrap gap-3 text-xs">
+          <div class="flex flex-wrap gap-4 text-xs">
             <label class="flex flex-col gap-1">
               <span class="text-content-secondary">Modo</span>
               <select

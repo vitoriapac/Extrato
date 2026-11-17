@@ -65,7 +65,7 @@ export function FirstAccessModal({
           {/* Opção 1: Montar plano guiado */}
           <article className="relative rounded-default border border-border-emphasis bg-surface-card p-card transition-colors hover:border-border-hover flex flex-col items-stretch gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-4">
-              <div className="p-3 rounded-default bg-surface-subtle text-accent shrink-0">
+              <div className="p-4 rounded-default bg-surface-subtle text-accent shrink-0">
                 <Icon name="compass" size={20} class="shrink-0" />
               </div>
               <div className="min-w-0 space-y-1">

@@ -37,7 +37,13 @@ export interface CopilotAnswer {
   evidenceSummary: string | null;
   limitations: string[];
   actionLabel: string | null;
-  actionKind: 'execute_action' | 'open_quick_study' | 'open_planning_preview' | 'open_weekly_close' | 'none';
+  actionKind:
+    | 'execute_action'
+    | 'open_quick_study'
+    | 'open_planning_preview'
+    | 'open_weekly_close'
+    | 'start_cycle_block'
+    | 'none';
   targetSubjectId?: string | null;
   targetTopicId?: string | null;
 }
@@ -54,6 +60,7 @@ export interface CopilotViewModel {
     level: 'high' | 'moderate' | 'low';
     label: string;
   };
+  cycleInsight: string | null;
   answers: Record<CopilotQuestionKey, CopilotAnswer>;
   questionsList: CopilotAnswer[];
   mutatedState: false;
@@ -63,6 +70,7 @@ export interface BuildStudyCopilotInput {
   today: string;
   nowISO: string;
   isDemo?: boolean;
+  executionMode?: 'agenda' | 'sequence';
   recommendations?: Array<Record<string, any>>;
   candidates?: Array<Record<string, any>>;
   diagnosis?: Record<string, any> | null;
@@ -107,11 +115,56 @@ function findBookmarkTarget(
   return { bookmarked, latestSession };
 }
 
+export function buildStudyCycleCopilotHint({
+  cycle = null,
+  mode = 'adaptive',
+  totalDurationMinutes = 0,
+  weeklyCapacityMinutes = 0,
+  topRec = null,
+}: {
+  cycle?: StudyCycleQueue | null;
+  mode?: string;
+  totalDurationMinutes?: number;
+  weeklyCapacityMinutes?: number;
+  topRec?: Record<string, any> | null;
+}): string | null {
+  const recentExecutions = Array.isArray(cycle?.executions) ? cycle!.executions.slice(-4) : [];
+  const interruptedCount = recentExecutions.filter(
+    ex => ex && (ex.status === 'skipped' || ex.status === 'partial')
+  ).length;
+  if (interruptedCount >= 2) {
+    return 'Você pulou ou interrompeu blocos recentes no ciclo — considere reduzir a duração do bloco para 40–45 min.';
+  }
+
+  const parts: string[] = [];
+  if (mode === 'adaptive') {
+    parts.push('Modo Adaptativo pondera peso no edital e lacunas de domínio.');
+  } else if (mode === 'balanced') {
+    parts.push('Modo Equilibrado distribui blocos iguais entre as disciplinas ativas.');
+  } else if (mode === 'manual') {
+    parts.push('Modo Manual preserva a ordem personalizada dos blocos sem alterar voltas passadas.');
+  }
+
+  const cycleMinutes = Number(totalDurationMinutes || cycle?.totalDurationMinutes || 0);
+  if (weeklyCapacityMinutes > 0 && cycleMinutes > 0) {
+    const daysPerLap = Math.max(1, Math.round((cycleMinutes / weeklyCapacityMinutes) * 7));
+    parts.push(`Com sua disponibilidade semanal, 1 volta completa leva cerca de ${daysPerLap} ${daysPerLap === 1 ? 'dia' : 'dias'}.`);
+  }
+
+  const currentBlock = cycle ? getCurrentCycleBlock(cycle) : null;
+  if (currentBlock && topRec?.subjectName && topRec.subjectId !== currentBlock.subjectId) {
+    parts.push(`Diagnóstico destaca ${topRec.subjectName} como prioridade urgente fora da fila.`);
+  }
+
+  return parts.length > 0 ? parts.join(' ') : null;
+}
+
 export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): CopilotViewModel {
   const {
     today,
     nowISO,
     isDemo = false,
+    executionMode = 'sequence',
     recommendations = [],
     candidates = [],
     diagnosis = null,
@@ -169,40 +222,70 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     limitations.push('Você está explorando o perfil de demonstração; nenhuma leitura altera seus dados.');
   }
 
-  // COP-01: O que estudar agora? Alinha com a Próxima ação (item planejado de hoje ou motor único).
+  // COP-01: O que estudar agora? Prioriza item planejado explícito (Visão Geral) ou bloco atual do Ciclo em Hoje.
   const hasPlannedNext = Boolean(plannedNextItem?.subjectId && plannedNextItem?.topicId);
+  const currentCycleBlock =
+    studyCycle && studyCycle.status !== 'paused' ? getCurrentCycleBlock(studyCycle) : null;
+  const preferCycleNow = executionMode === 'sequence' && Boolean(currentCycleBlock) && !hasPlannedNext;
+
   const whatNowHeadline = hasPlannedNext
     ? `${plannedNextItem!.subjectName || 'Disciplina'} — ${plannedNextItem!.topicName || 'Tópico'}`
-    : canonicalAction
-      ? `${nextBest.subjectName} — ${nextBest.topicName}`
-      : !hasAnySubjects
-        ? 'Cadastre ou escolha sua prova para receber a primeira recomendação'
-        : 'Sem ação prioritária elegível agora';
+    : preferCycleNow && currentCycleBlock
+      ? `${currentCycleBlock.subjectName} — bloco do ciclo`
+      : canonicalAction
+        ? `${nextBest.subjectName} — ${nextBest.topicName}`
+        : !hasAnySubjects
+          ? 'Cadastre ou escolha sua prova para receber a primeira recomendação'
+          : 'Sem ação prioritária elegível agora';
+
+  const cycleBlockMinutes = currentCycleBlock
+    ? currentCycleBlock.remainingMinutes ?? currentCycleBlock.durationMinutes
+    : 0;
 
   const whatNowBody = hasPlannedNext
     ? `Próximo bloco do plano de hoje${plannedNextItem!.plannedMinutes ? ` (${formatPlanMinutes(plannedNextItem!.plannedMinutes)})` : ''}. Alinhado à Próxima ação${canonicalAction && canonicalAction.topicId !== plannedNextItem!.topicId ? `; fora do plano, o diagnóstico prioriza ${nextBest.subjectName} — ${nextBest.topicName}` : ''}.`
-    : canonicalAction
-      ? `${nextBest.label}${canonicalAction.suggestedMinutes ? ` (${formatPlanMinutes(canonicalAction.suggestedMinutes)})` : ''}. A sugestão vem exatamente do mesmo motor usado na aba Hoje.`
-      : nextBest.reason ||
-        'Ainda não há registros suficientes. Faça uma primeira sessão rápida ou registre questões para destravar a prioridade.';
+    : preferCycleNow && currentCycleBlock
+      ? `Próximo bloco da sua fila rotativa (${formatPlanMinutes(cycleBlockMinutes)}).${canonicalAction && canonicalAction.subjectId !== currentCycleBlock.subjectId ? ` Fora do ciclo, o diagnóstico aponta ${nextBest.subjectName} — ${nextBest.topicName}.` : ' Fila alinhada ao diagnóstico atual.'}`
+      : canonicalAction
+        ? `${nextBest.label}${canonicalAction.suggestedMinutes ? ` (${formatPlanMinutes(canonicalAction.suggestedMinutes)})` : ''}. A sugestão vem exatamente do mesmo motor usado na aba Hoje.`
+        : nextBest.reason ||
+          'Ainda não há registros suficientes. Faça uma primeira sessão rápida ou registre questões para destravar a prioridade.';
 
   const whatNow: CopilotAnswer = {
     key: 'what_now',
     question: 'O que estudar agora?',
     headline: whatNowHeadline,
     body: whatNowBody,
-    evidenceSummary: canonicalAction
-      ? `Prioridade ${Math.round(Number(canonicalAction.priority) || 0)}/100 · ${nextBest.evidence}`
-      : null,
+    evidenceSummary: preferCycleNow && currentCycleBlock
+      ? `Volta ${(studyCycle?.completedCyclesCount || 0) + 1} · ${formatPlanMinutes(cycleBlockMinutes)} na fila do ciclo.`
+      : canonicalAction
+        ? `Prioridade ${Math.round(Number(canonicalAction.priority) || 0)}/100 · ${nextBest.evidence}`
+        : null,
     limitations: [...limitations],
     actionLabel: hasPlannedNext
       ? 'Seguir próximo bloco do plano'
-      : canonicalAction
-        ? nextBest.label || null
-        : 'Abrir Estudo Rápido',
-    actionKind: hasPlannedNext || canonicalAction ? 'execute_action' : 'open_quick_study',
-    targetSubjectId: plannedNextItem?.subjectId || canonicalAction?.subjectId || null,
-    targetTopicId: plannedNextItem?.topicId || canonicalAction?.topicId || null,
+      : preferCycleNow
+        ? 'Iniciar bloco do ciclo'
+        : canonicalAction
+          ? nextBest.label || null
+          : 'Abrir Estudo Rápido',
+    actionKind: hasPlannedNext
+      ? 'execute_action'
+      : preferCycleNow
+        ? 'start_cycle_block'
+        : canonicalAction
+          ? 'execute_action'
+          : 'open_quick_study',
+    targetSubjectId: hasPlannedNext
+      ? plannedNextItem?.subjectId || null
+      : preferCycleNow && currentCycleBlock
+        ? currentCycleBlock.subjectId
+        : canonicalAction?.subjectId || null,
+    targetTopicId: hasPlannedNext
+      ? plannedNextItem?.topicId || null
+      : preferCycleNow && currentCycleBlock
+        ? currentCycleBlock.topicId || null
+        : canonicalAction?.topicId || null,
   };
 
   // COP-02: Por quê? (prova x você x ação)
@@ -306,11 +389,14 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
 
   // COP-06: Por que meu ciclo sugere X e o diagnóstico Y?
   const cycleDiff = explainCycleVsPriority(studyCycle, topRec);
+  const canExecutePriorityOutOfCycle = Boolean(
+    studyCycle && cycleDiff.diverges && topRec?.subjectId && topRec?.topicId
+  );
   const cycleVsDiagnosis: CopilotAnswer = {
     key: 'cycle_vs_diagnosis',
     question: 'Por que meu ciclo sugere X e o diagnóstico Y?',
     headline: !studyCycle
-      ? 'Nenhum ciclo de sequência flexível configurado'
+      ? 'Nenhum ciclo de estudos configurado'
       : cycleDiff.diverges
         ? `Ciclo (${cycleDiff.currentBlockSubject}) × Prioridade (${cycleDiff.recommendedSubject})`
         : `Ciclo e diagnóstico alinhados em ${cycleDiff.currentBlockSubject || 'sua fila'}`,
@@ -318,11 +404,21 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
       ? cycleDiff.explanation
       : 'Você está no modo Agenda ou ainda não criou blocos no Ciclo de Estudos. Quando ativar o ciclo, explicaremos qualquer diferença antes de qualquer troca.',
     evidenceSummary: studyCycle
-      ? `Volta ${(studyCycle.completedCyclesCount || 0) + 1} · versão ${studyCycle.version || 1}.`
+      ? `Volta ${(studyCycle.completedCyclesCount || 0) + 1} · revisão ${studyCycle.version || 1}.`
       : null,
     limitations: [],
-    actionLabel: studyCycle && cycleDiff.diverges ? 'Conferir prévia do planejamento' : null,
-    actionKind: studyCycle && cycleDiff.diverges ? 'open_planning_preview' : 'none',
+    actionLabel: canExecutePriorityOutOfCycle
+      ? `Estudar ${cycleDiff.recommendedSubject} agora`
+      : studyCycle && cycleDiff.diverges
+        ? 'Conferir prévia do planejamento'
+        : null,
+    actionKind: canExecutePriorityOutOfCycle
+      ? 'execute_action'
+      : studyCycle && cycleDiff.diverges
+        ? 'open_planning_preview'
+        : 'none',
+    targetSubjectId: canExecutePriorityOutOfCycle ? topRec!.subjectId : null,
+    targetTopicId: canExecutePriorityOutOfCycle ? topRec!.topicId : null,
   };
 
   // COP-07: Onde parei?
@@ -367,6 +463,14 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     where_left_off: whereLeftOff,
   };
 
+  const cycleInsight = buildStudyCycleCopilotHint({
+    cycle: studyCycle,
+    mode: studyCycle?.mode || 'adaptive',
+    totalDurationMinutes: studyCycle?.totalDurationMinutes || 0,
+    weeklyCapacityMinutes,
+    topRec,
+  });
+
   return {
     recommendationId: canonicalAction?.recommendationId || topRec?.recommendationId || null,
     title: whatNow.headline,
@@ -375,12 +479,13 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
       : 'Sem dados suficientes para recomendação personalizada.',
     limitations,
     action: canonicalAction,
-    source: canonicalAction ? 'today' : !hasAnySubjects ? 'empty' : 'diagnosis',
+    source: preferCycleNow ? 'cycle' : canonicalAction ? 'today' : !hasAnySubjects ? 'empty' : 'diagnosis',
     generatedAt: nowISO,
     confidence: {
       level: confidenceLevel,
       label: confidenceLabel,
     },
+    cycleInsight,
     answers,
     questionsList: [
       whatNow,

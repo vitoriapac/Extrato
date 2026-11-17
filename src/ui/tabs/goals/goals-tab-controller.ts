@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import { decorateAdvancedReveals, revealAdvanced } from '../../essential-mode.js';
+import { buildStudyCycleCopilotHint } from '../../../application/copilot/study-copilot-service.js';
 import { isCapacityInformed } from '../../../application/goals/capacity-informed.js';
 import { StudyCycleCenterCard } from '../../components/StudyCycleCenterCard.js';
 import type { CycleDraftState } from '../../components/TodayStudyAssistantBar.js';
@@ -527,12 +528,27 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     syncCycleDraftFromState();
     const cycle = (state.studyCycle || null) as StudyCycleQueue | null;
     const executionMode = state.executionMode === 'agenda' ? 'agenda' : 'sequence';
+    const weeklyHoursMap = state.metas?.horasPorDia;
+    const weeklyHoursTotal = isCapacityInformed(state)
+      ? weeklyHoursMap && typeof weeklyHoursMap === 'object'
+        ? Object.values(weeklyHoursMap).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0)
+        : Math.max(0, Number(state.metas?.horasDiarias || 0)) * 7
+      : 0;
+    const weeklyCapacityMinutes = Math.round(weeklyHoursTotal * 60);
+    const copilotHint = buildStudyCycleCopilotHint({
+      cycle,
+      mode: cycleDraftState.mode,
+      totalDurationMinutes: cycleDraftState.preview?.totalDurationMinutes || 0,
+      weeklyCapacityMinutes,
+      topRec: null,
+    });
 
     mountPreact(
       h(StudyCycleCenterCard, {
         executionMode,
         cycle,
         subjects: activeSubs,
+        copilotHint,
         cycleLap: computeStudyCycleLapSummary(cycle),
         cycleDraft: cycleDraftState,
         onSetExecutionMode: mode => {

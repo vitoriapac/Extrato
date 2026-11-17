@@ -58,8 +58,8 @@ export function StudyCycleDonut({
     <div
       class={
         compact
-          ? 'grid grid-cols-1 sm:grid-cols-[auto_1fr] items-center gap-3'
-          : 'grid grid-cols-1 md:grid-cols-[auto_1fr] items-center gap-5'
+          ? 'grid grid-cols-1 sm:grid-cols-[auto_1fr] items-center gap-4'
+          : 'grid grid-cols-1 md:grid-cols-[auto_1fr] items-center gap-6'
       }
       data-study-cycle-donut="true"
     >
@@ -74,7 +74,7 @@ export function StudyCycleDonut({
         />
       </div>
 
-      <div class="space-y-1.5 min-w-0">
+      <div class="space-y-2 min-w-0">
         <div
           class="divide-y divide-border-subtle border-t border-b border-border-subtle"
           aria-label="Participação das disciplinas no ciclo"
@@ -87,7 +87,7 @@ export function StudyCycleDonut({
             return (
               <div
                 key={share.subjectId}
-                class="flex items-center justify-between gap-3 py-1.5 text-xs text-content-secondary"
+                class="flex items-center justify-between gap-4 py-2 text-xs text-content-secondary"
               >
                 <span class="flex items-center gap-2 min-w-0">
                   <span

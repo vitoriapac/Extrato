@@ -43,7 +43,7 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
     <Card
       as="section"
       variant="default"
-      className="mb-4 space-y-3 min-w-0"
+      className="mb-6 space-y-4 min-w-0"
       aria-labelledby="overviewCopilotTitle"
       data-overview-copilot="true"
     >
@@ -73,7 +73,7 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
         Orientação atual: <strong class="text-content-primary">{copilot.title}</strong>
       </p>
 
-      <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Perguntas ao Copiloto na Visão Geral">
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas ao Copiloto na Visão Geral">
         {visibleQuestions.map(item => {
           const isSelected = selectedQuestion === item.key;
           return (

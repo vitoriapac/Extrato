@@ -38,6 +38,7 @@ import {
 } from '../../src/application/weekly-closing/weekly-closing-ritual.js';
 import {
   buildStudyCopilotViewModel,
+  buildStudyCycleCopilotHint,
   revalidateCopilotAction,
 } from '../../src/application/copilot/study-copilot-service.js';
 import { buildSessionResultViewModel } from '../../src/application/sessions/build-session-result-view-model.js';
@@ -647,11 +648,45 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   });
   assert.equal(createDefaultState().executionMode, 'sequence');
 
+  const copilotHint = buildStudyCycleCopilotHint({
+    cycle: cyclePreview.cycle,
+    mode: 'adaptive',
+    totalDurationMinutes: cyclePreview.totalDurationMinutes,
+    weeklyCapacityMinutes: 600,
+  });
+  assert.match(copilotHint || '', /Modo Adaptativo/);
+  assert.match(copilotHint || '', /1 volta completa leva cerca de/);
+
+  const skippedHint = buildStudyCycleCopilotHint({
+    cycle: {
+      ...cyclePreview.cycle,
+      executions: [
+        { id: 'e1', cycleId: 'c1', cycleVersion: 1, blockId: 'b1', subjectId: 's1', round: 1, sessionId: null, plannedMinutes: 60, actualMinutes: 0, status: 'skipped', reason: null, timestamp: '2026-11-16T10:00:00Z', source: 'cycle' },
+        { id: 'e2', cycleId: 'c1', cycleVersion: 1, blockId: 'b2', subjectId: 's2', round: 1, sessionId: null, plannedMinutes: 60, actualMinutes: 20, status: 'partial', reason: null, timestamp: '2026-11-16T11:00:00Z', source: 'cycle' },
+      ],
+    },
+    mode: 'adaptive',
+    totalDurationMinutes: cyclePreview.totalDurationMinutes,
+  });
+  assert.match(skippedHint || '', /40–45 min/);
+
+  const cycleCopilot = buildStudyCopilotViewModel({
+    today: '2026-11-16',
+    nowISO: '2026-11-16T12:00:00.000Z',
+    executionMode: 'sequence',
+    studyCycle: cyclePreview.cycle,
+    subjects: SUBJECTS,
+    recommendations: [{ subjectId: 's2', subjectName: 'Direito Constitucional', topicId: 't2', topicName: 'Direitos Fundamentais', priority: 90 }],
+  });
+  assert.equal(cycleCopilot.source, 'cycle');
+  assert.equal(cycleCopilot.answers.what_now.actionKind, 'start_cycle_block');
+
   const cycleCenterHtml = render(
     h(StudyCycleCenterCard, {
       executionMode: 'sequence',
       cycle: cyclePreview.cycle,
       subjects: SUBJECTS,
+      copilotHint,
       cycleLap: {
         round: 1,
         totalBlocks: cyclePreview.blocksCount,
@@ -680,6 +715,7 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   assert.match(cycleCenterHtml, /Ver sequência de 2 blocos/);
   assert.match(cycleCenterHtml, /1 h/);
   assert.match(cycleCenterHtml, /data-study-cycle-donut="true"/);
+  assert.match(cycleCenterHtml, /data-cycle-copilot-hint="true"/);
   assert.match(cycleCenterHtml, /chart-donut/);
   assert.match(cycleCenterHtml, /chart-donut__slice/);
   assert.ok(cycleCenterHtml.indexOf('Ciclo de estudos') < cycleCenterHtml.indexOf('Agenda do dia'));
