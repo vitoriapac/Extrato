@@ -16,6 +16,7 @@ export interface PedagogicalMatrixItem {
   questionsResolved: number;
   quadrant: PedagogicalQuadrant;
   quadrantLabel: string;
+  recommendedAction: string;
 }
 
 export interface PedagogicalMatrixModel {
@@ -44,17 +45,33 @@ export function classifyPedagogicalQuadrant(
   retention: number,
   thresholdMastery = 70,
   thresholdRetention = 60
-): { quadrant: PedagogicalQuadrant; quadrantLabel: string } {
+): { quadrant: PedagogicalQuadrant; quadrantLabel: string; recommendedAction: string } {
   if (mastery >= thresholdMastery && retention >= thresholdRetention) {
-    return { quadrant: 'consolidated', quadrantLabel: 'Consolidada' };
+    return {
+      quadrant: 'consolidated',
+      quadrantLabel: 'Consolidada',
+      recommendedAction: 'Revisões de manutenção',
+    };
   }
   if (mastery >= thresholdMastery && retention < thresholdRetention) {
-    return { quadrant: 'forgetting_risk', quadrantLabel: 'Risco de Esquecimento' };
+    return {
+      quadrant: 'forgetting_risk',
+      quadrantLabel: 'Risco de Esquecimento',
+      recommendedAction: 'Consolidar com revisões',
+    };
   }
   if (mastery < thresholdMastery && retention >= thresholdRetention) {
-    return { quadrant: 'building', quadrantLabel: 'Em Construção' };
+    return {
+      quadrant: 'building',
+      quadrantLabel: 'Em Construção',
+      recommendedAction: 'Prática direcionada',
+    };
   }
-  return { quadrant: 'critical', quadrantLabel: 'Vulnerabilidade Crítica' };
+  return {
+    quadrant: 'critical',
+    quadrantLabel: 'Vulnerabilidade Crítica',
+    recommendedAction: 'Retomar fundamentos',
+  };
 }
 
 /**
@@ -81,7 +98,7 @@ export function buildPedagogicalMatrixModel({
     const studyMinutes = Math.max(0, Number(s.studyMinutes) || 0);
     const questionsResolved = Math.max(0, Number(s.questionsResolved) || 0);
 
-    const { quadrant, quadrantLabel } = classifyPedagogicalQuadrant(
+    const { quadrant, quadrantLabel, recommendedAction } = classifyPedagogicalQuadrant(
       mastery,
       retention,
       thresholdMastery,
@@ -100,6 +117,7 @@ export function buildPedagogicalMatrixModel({
       questionsResolved,
       quadrant,
       quadrantLabel,
+      recommendedAction,
     });
   }
 

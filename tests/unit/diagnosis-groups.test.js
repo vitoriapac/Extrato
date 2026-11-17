@@ -478,3 +478,101 @@ test('T43: a Leitura diz o que já está firme antes do alerta, só com evidênc
   const { renderTopicUniverse } = await import('../../src/ui/performance/topic-universe.js');
   assert.match(renderTopicUniverse({ inScope: 305, remaining: 194, withSignal: 297, controlled: 12 }), /194 por concluir · 297 com sinal de diagnóstico · 12 já sob controle/);
 });
+
+test('Auditoria 4.2/4.5/4.6: seleção de até 3 disciplinas em Questões, ação na Matriz/Assunto e bateria curta em Simulados', async () => {
+  const { createPerformanceViewState, updatePerformanceViewState } = await import(
+    '../../src/application/performance/performance-view-state.js'
+  );
+  let state = createPerformanceViewState();
+  state = updatePerformanceViewState(state, { toggleQuestionSubject: 's1' });
+  state = updatePerformanceViewState(state, { toggleQuestionSubject: 's2' });
+  state = updatePerformanceViewState(state, { toggleQuestionSubject: 's3' });
+  state = updatePerformanceViewState(state, { toggleQuestionSubject: 's4' });
+  assert.deepEqual(state.selectedQuestionSubjects, ['s2', 's3', 's4']);
+  state = updatePerformanceViewState(state, { toggleQuestionSubject: 's3' });
+  assert.deepEqual(state.selectedQuestionSubjects, ['s2', 's4']);
+
+  const { renderPerformanceQuestions } = await import(
+    '../../src/ui/performance/performance-questions-renderer.js'
+  );
+  const subjectsList = Array.from({ length: 6 }, (_, i) => ({
+    subjectId: `s${i + 1}`,
+    subjectName: `Disciplina ${i + 1}`,
+    colorSlot: (i % 8) + 1,
+    totalResolved: i === 0 ? 10 : 50,
+    totalCorrect: i === 0 ? 8 : 40,
+    overallAccuracy: 80,
+    points: [{ periodKey: '2026-11-01', accuracy: 80 }],
+  }));
+  const qHtml = renderPerformanceQuestions({
+    evolution: { state: 'ready', monthly: false, resolved: 260, accuracy: 80, buckets: [] },
+    analysis: { questionCount: 260, accuracy: 80, errors: 52, errorCategories: [], uncategorizedErrors: 52, topics: [] },
+    multiSubjectPerformance: {
+      series: subjectsList,
+      periods: ['2026-11-01'],
+      periodLabels: ['01/11'],
+      totalResolved: 260,
+      totalCorrect: 208,
+      overallAccuracy: 80,
+    },
+    range: { label: 'Últimos 30 dias', comparePrevious: false },
+    formatDate: String,
+    escapeHtml: String,
+    selectedQuestionSubjects: ['s1', 's6'],
+  });
+  assert.match(qHtml, /amostra pequena/);
+  assert.match(qHtml, /Mostrar todas as 6 disciplinas/);
+  assert.match(qHtml, /data-performance-question-subjects-reset/);
+  assert.match(qHtml, /data-performance-question-subject="s1" aria-pressed="true"/);
+
+  const { renderPedagogicalMatrixSection } = await import(
+    '../../src/ui/performance/performance-matrix-renderer.js'
+  );
+  const matrixHtml = renderPedagogicalMatrixSection(
+    {
+      items: [{ name: 'Informática', mastery: 45, retention: 50, studyMinutes: 60 }],
+      thresholdMastery: 70,
+      thresholdRetention: 60,
+      quadrantCounts: { consolidated: 0, forgetting_risk: 0, building: 0, critical: 1 },
+    },
+    { escapeHtml: String }
+  );
+  assert.match(matrixHtml, /Retomar fundamentos/);
+  assert.match(matrixHtml, /data-matrix-method="true"/);
+
+  const { buildPerformanceSubjects } = await import(
+    '../../src/application/performance/build-performance-subjects.js'
+  );
+  const { renderPerformanceSubjects } = await import(
+    '../../src/ui/performance/performance-subjects-renderer.js'
+  );
+  const subjModel = buildPerformanceSubjects({
+    subjects: [{ id: 's1', name: 'Português', topics: [{ id: 't1', name: 'Crase' }] }],
+    range: { start: '2026-11-01', end: '2026-11-15', label: 'Últimos 15 dias', comparePrevious: false },
+    today: '2026-11-15',
+    questions: [{ subjectId: 's1', topicId: 't1', date: '2026-11-10', resolved: 20, correct: 10 }],
+    metricsByTopic: { t1: { mastery: 50, retention: 40, evidence: 20 } },
+  });
+  assert.equal(subjModel.topics[0].recommendedAction, 'Retomar fundamentos');
+  const subjHtml = renderPerformanceSubjects(subjModel, {
+    range: { label: 'Últimos 15 dias', comparePrevious: false },
+    formatDate: String,
+    escapeHtml: String,
+    escapeAttr: String,
+  });
+  assert.match(subjHtml, /Retomar fundamentos/);
+
+  const { renderSimulationTrendChart } = await import('../../src/ui/renderers/simulations-renderer.js');
+  const simHtml = renderSimulationTrendChart({
+    items: [
+      { nome: 'Bateria', date: '2026-11-01', correct: 8, total: 10 },
+      { nome: 'Prova', date: '2026-11-08', correct: 75, total: 100 },
+      { nome: 'Prova 2', date: '2026-11-15', correct: 80, total: 100 },
+    ],
+    scoreFor: i => Math.round((i.correct / i.total) * 1000) / 10,
+    formatDate: String,
+    escapeHtml: String,
+  });
+  assert.match(simHtml, /8\/10 questões \(bateria curta\)/);
+  assert.match(simHtml, /75\/100 questões</);
+});

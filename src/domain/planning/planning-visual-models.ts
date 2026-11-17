@@ -24,6 +24,12 @@ export interface SubjectStudyDistributionVisualModel {
   totalPlannedMinutes: number;
   totalStudiedMinutes: number;
   maxMinutes: number;
+  surplusCount: number;
+  deficitCount: number;
+  unplannedCount: number;
+  onTrackCount: number;
+  neglectedSubjects: string[];
+  maskedNegligence: boolean;
 }
 
 /**
@@ -92,11 +98,35 @@ export function buildSubjectStudyDistributionVisual({
       x.name.localeCompare(y.name, 'pt-BR')
   );
 
+  let surplusCount = 0;
+  let deficitCount = 0;
+  let unplannedCount = 0;
+  let onTrackCount = 0;
+  const neglectedSubjects: string[] = [];
+
+  for (const row of rows) {
+    if (row.status === 'surplus') surplusCount++;
+    else if (row.status === 'deficit') {
+      deficitCount++;
+      neglectedSubjects.push(row.name);
+    } else if (row.status === 'unplanned') unplannedCount++;
+    else onTrackCount++;
+  }
+
+  const maskedNegligence =
+    deficitCount > 0 && (totalStudied >= totalPlanned || surplusCount > 0 || unplannedCount > 0);
+
   return {
     rows,
     totalPlannedMinutes: totalPlanned,
     totalStudiedMinutes: totalStudied,
     maxMinutes: Math.max(60, maxMinutes),
+    surplusCount,
+    deficitCount,
+    unplannedCount,
+    onTrackCount,
+    neglectedSubjects,
+    maskedNegligence,
   };
 }
 
@@ -210,6 +240,7 @@ export interface WeeklyAllocationBarVisualModel {
   mix: WeeklyAllocationMix;
   totalWeeklyMinutes: number;
   flexMinutes: number;
+  warnings: string[];
 }
 
 /**
@@ -287,12 +318,20 @@ export function buildWeeklyAllocationBarVisual({
   };
 
   const flexMinutes = Math.max(0, weeklyCapacityMinutes - totalPlanMins);
+  const warnings: string[] = [];
+  if (totalPlanMins > 0 && totalQuestions === 0) {
+    warnings.push('O plano semanal não reserva tempo para questões práticas.');
+  }
+  if (totalPlanMins > 0 && totalReviews === 0) {
+    warnings.push('O plano semanal não reserva tempo para revisões.');
+  }
 
   return {
     subjects: subjectSlices,
     mix,
     totalWeeklyMinutes: totalPlanMins,
     flexMinutes,
+    warnings,
   };
 }
 
@@ -306,6 +345,7 @@ export type PreparationPhase =
 export interface PhaseRoadmapVisualModel {
   phase: PreparationPhase;
   phaseLabel: string;
+  phaseGuidance: string;
   daysRemaining: number | null;
   examDate: string | null;
   startDate: string;
@@ -321,6 +361,18 @@ export interface PhaseRoadmapVisualModel {
     isPassed: boolean;
   }>;
 }
+
+const PHASE_GUIDANCE: Record<PreparationPhase, string> = {
+  construction:
+    'Foco recomendado: construir base teórica nas disciplinas de maior peso e iniciar revisões.',
+  consolidation:
+    'Foco recomendado: equilibrar teoria pendente com baterias de questões e revisões em dia.',
+  final_stretch:
+    'Foco recomendado: priorizar questões da banca e revisão de erros nos tópicos de alto impacto.',
+  final_review:
+    'Foco recomendado: revisão leve de pontos críticos e controle de ritmo até a prova.',
+  undated: '',
+};
 
 /**
  * Constrói o modelo de dados para a Régua da Jornada e Fases até a Prova.
@@ -338,6 +390,7 @@ export function buildPhaseRoadmapVisual({
     return {
       phase: 'undated',
       phaseLabel: 'Sem data de prova definida',
+      phaseGuidance: PHASE_GUIDANCE.undated,
       daysRemaining: null,
       examDate: null,
       startDate: planStartDate || today,
@@ -413,6 +466,7 @@ export function buildPhaseRoadmapVisual({
   return {
     phase,
     phaseLabel,
+    phaseGuidance: PHASE_GUIDANCE[phase],
     daysRemaining,
     examDate,
     startDate: start,

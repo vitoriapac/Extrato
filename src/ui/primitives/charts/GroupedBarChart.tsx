@@ -45,19 +45,23 @@ export function GroupedBarChart({
     let statusIcon = 'check';
     let statusText = 'No ritmo';
     let statusBadgeClass = 'text-content-secondary bg-surface-sunken';
+    let statusTitle = `No ritmo: diferença de até ${formatMinutes(15)} em relação ao planejado`;
 
     if (row.status === 'surplus') {
       statusIcon = 'trending-up';
       statusText = `+${formatMinutes(row.diffMinutes)}`;
       statusBadgeClass = 'text-success-emphasis bg-success-subtle';
+      statusTitle = `Superávit (+${formatMinutes(row.diffMinutes)}): mais de ${formatMinutes(15)} acima do planejado na matéria`;
     } else if (row.status === 'deficit') {
       statusIcon = 'alert-triangle';
       statusText = `-${formatMinutes(Math.abs(row.diffMinutes))}`;
       statusBadgeClass = 'text-warning-emphasis bg-warning-subtle';
+      statusTitle = `Déficit (-${formatMinutes(Math.abs(row.diffMinutes))}): mais de ${formatMinutes(15)} abaixo do planejado na matéria`;
     } else if (row.status === 'unplanned') {
       statusIcon = 'plus';
       statusText = 'Extra';
       statusBadgeClass = 'text-accent-emphasis bg-accent-subtle';
+      statusTitle = `Extra (${formatMinutes(row.studiedMinutes)}): estudo avulso em matéria sem tarefa planejada na semana`;
     }
 
     return (
@@ -87,7 +91,7 @@ export function GroupedBarChart({
             </span>
             <span
               class={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}
-              title={`Diferença: ${row.diffMinutes > 0 ? '+' : ''}${formatMinutes(row.diffMinutes)}`}
+              title={statusTitle}
             >
               <Icon name={statusIcon} size={11} />
               {statusText}

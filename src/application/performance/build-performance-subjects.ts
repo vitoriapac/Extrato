@@ -70,6 +70,14 @@ export function buildPerformanceSubjects({
         sample = total(now),
         earlier = total(before),
         metric = metricsByTopic[item.id] || {};
+      let recommendedAction = 'Revisões de manutenção';
+      if (sample < 10) {
+        recommendedAction = 'Resolver questões para formar amostra';
+      } else if (recent! < goal.target) {
+        recommendedAction = recent! < 60 ? 'Retomar fundamentos' : 'Prática direcionada';
+      } else if (metric.retention != null && metric.retention < 60) {
+        recommendedAction = 'Consolidar com revisões';
+      }
       return {
         id: item.id,
         name: item.name,
@@ -88,6 +96,7 @@ export function buildPerformanceSubjects({
             : recent! >= goal.target
               ? 'Na meta'
               : 'Abaixo da meta',
+        recommendedAction,
       };
     })
     .sort((a: any, b: any) => b.questions - a.questions || a.name.localeCompare(b.name, 'pt-BR'));

@@ -190,6 +190,7 @@ test('a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico
 }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.clock.install({ time: new Date('2026-11-15T12:00:00-03:00') });
   await openDemo(page);
   const ledger = async key => {
     await openPlanningSubtab(page, key);
@@ -243,6 +244,7 @@ test('a nota do bloco de disciplinas usa o formato único de duração e o vocab
 }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.clock.install({ time: new Date('2026-11-15T12:00:00-03:00') });
   await openDemo(page);
   await openPlanningSubtab(page, 'semana');
   await page.locator('#studyDistribution').evaluate(node => (node.open = true));
@@ -475,6 +477,7 @@ for (const width of [320, 375]) {
   }) => {
     test.setTimeout(150_000);
     await page.setViewportSize({ width, height: 812 });
+    await page.clock.install({ time: new Date('2026-11-15T12:00:00-03:00') });
     await openDemo(page);
     await openPlanningSubtab(page, 'semana');
     await page.evaluate(() => scrollTo(0, 0));

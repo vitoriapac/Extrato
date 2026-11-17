@@ -17,6 +17,7 @@ export function renderPerformanceSection(
     targetScore,
     compareMode,
     subjectView,
+    selectedQuestionSubjects = [],
     weeklyCapacityMinutes = null,
   }: any = {}
 ) {
@@ -42,7 +43,15 @@ export function renderPerformanceSection(
         recoveryPlan: pageModel.recoveryPlan,
       });
     case 'questions':
-      return renderPerformanceQuestions({ ...pageModel, range, formatDate, escapeHtml, targetScore });
+      return renderPerformanceQuestions({
+        ...pageModel,
+        range,
+        formatDate,
+        escapeHtml,
+        escapeAttr,
+        targetScore,
+        selectedQuestionSubjects,
+      });
     case 'simulations':
       return renderPerformanceSimulations(pageModel.model, {
         range,

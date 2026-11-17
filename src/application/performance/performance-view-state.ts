@@ -29,6 +29,7 @@ export function createPerformanceViewState() {
     adherenceWeeks: 8,
     compareMode: 'accuracy',
     subjectView: 'table',
+    selectedQuestionSubjects: [] as string[],
   };
 }
 
@@ -92,5 +93,19 @@ export function updatePerformanceViewState(
     next.subjectView = patch.subjectView;
   if (patch.adherenceWeeks !== undefined && [4, 8, 12].includes(Number(patch.adherenceWeeks)))
     next.adherenceWeeks = Number(patch.adherenceWeeks);
+  if (Array.isArray(patch.selectedQuestionSubjects)) {
+    next.selectedQuestionSubjects = Array.from(
+      new Set<string>(patch.selectedQuestionSubjects.map((id: unknown) => String(id)).filter(Boolean))
+    ).slice(0, 3);
+  }
+  if (typeof patch.toggleQuestionSubject === 'string' && patch.toggleQuestionSubject) {
+    const current = Array.isArray(next.selectedQuestionSubjects)
+      ? next.selectedQuestionSubjects
+      : [];
+    const id = patch.toggleQuestionSubject;
+    next.selectedQuestionSubjects = current.includes(id)
+      ? current.filter(item => item !== id)
+      : [...current, id].slice(-3);
+  }
   return next;
 }

@@ -375,6 +375,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
       compareMode: performanceViewState.compareMode,
       subjectView: performanceViewState.subjectView,
+      selectedQuestionSubjects: performanceViewState.selectedQuestionSubjects,
       // O que o plano semanal comporta (horas por dia × 60); sem horas cadastradas não há linha de capacidade.
       weeklyCapacityMinutes:
         Object.values(state.metas?.horasPorDia || {}).reduce<number>(

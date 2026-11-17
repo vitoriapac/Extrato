@@ -71,3 +71,76 @@ test('card mostra múltiplo e informa quando vínculos não estão disponíveis'
   assert.match(html, /03\/11 a 09\/11/);
   assert.doesNotMatch(html, /Infinity|NaN/);
 });
+
+import { assessWeekRecoverability, buildWeekReconciliationFromExecution } from '../../src/ui/tabs/goals/week-reconciliation.js';
+
+test('assessWeekRecoverability diferencia em dia, recuperável e exige replanejamento', () => {
+  assert.equal(
+    assessWeekRecoverability({
+      capacityMin: 720,
+      plannedMin: 18 * 60,
+      studiedMin: 14 * 60,
+      linkedMin: 14 * 60,
+      remainingCapacityMin: 6 * 60,
+    }).recoverability,
+    'recoverable'
+  );
+  assert.equal(
+    assessWeekRecoverability({
+      capacityMin: 720,
+      plannedMin: 18 * 60,
+      studiedMin: 12 * 60,
+      linkedMin: 12 * 60,
+      remainingCapacityMin: 4 * 60,
+    }).recoverability,
+    'needs_replan'
+  );
+  assert.equal(
+    assessWeekRecoverability({
+      capacityMin: 720,
+      plannedMin: 300,
+      studiedMin: 300,
+      linkedMin: 300,
+      remainingCapacityMin: 120,
+    }).recoverability,
+    'on_track'
+  );
+  assert.equal(
+    assessWeekRecoverability({
+      capacityMin: 0,
+      plannedMin: 300,
+      studiedMin: 0,
+      linkedMin: 0,
+      remainingCapacityMin: 0,
+    }).recoverability,
+    null
+  );
+});
+
+test('buildWeekReconciliationFromExecution calcula capacidade restante com hoje + dias futuros', () => {
+  const model = {
+    capacityMinutes: 600,
+    capacityInformed: true,
+    plannedMinutes: 420,
+    studiedMinutes: 180,
+    days: [
+      { date: '2026-11-09', capacityMinutes: 120, studiedMinutes: 120, future: false },
+      { date: '2026-11-10', capacityMinutes: 120, studiedMinutes: 60, future: false }, // hoje: 60 min restantes
+      { date: '2026-11-11', capacityMinutes: 180, studiedMinutes: 0, future: true },
+      { date: '2026-11-12', capacityMinutes: 180, studiedMinutes: 0, future: true },
+    ],
+    strategic: {
+      reconciliation: {
+        studiedMinutes: 180,
+        linkedMinutes: 180,
+        additionalMinutes: 0,
+        incompatibleMinutes: 0,
+        otherPeriodMinutes: 0,
+      },
+    },
+  };
+  const rec = buildWeekReconciliationFromExecution(model, iso => iso.split('-').reverse().join('/'));
+  assert.equal(rec.remainingCapacityMin, 420); // 60 hoje + 180 + 180 futuros
+  assert.equal(rec.pendingPlannedMin, 240);
+  assert.equal(rec.recoverability, 'recoverable');
+});

@@ -2,6 +2,7 @@ import { h } from 'preact';
 import { mountPreact } from './preact-mount.js';
 import { PlanningSubtabsNav, PLANNING_SUBTAB_DEFS } from './components/PlanningSubtabsNav.js';
 import { scrollBehavior } from './accessibility.js';
+import { getDefaultUsageTelemetryService } from '../application/telemetry/usage-telemetry-service.js';
 
 // Planejamento agrupa as seções em blocos recolhíveis; o atalho aberto fica na URL como "#planejamento/<sub-aba>".
 export const PLANNING_SUBTABS = ['semana', 'prova', 'fechamento', 'historico'] as const;
@@ -79,6 +80,7 @@ export function initPlanningSubtabs(doc: Document = document) {
 
   const choose = (key: string, focus = false) => {
     if (!isPlanningSubtab(key)) return;
+    getDefaultUsageTelemetryService().track('tab_open', `planejamento:${key}`);
     selectPlanningSubtab(key, { doc, focus, updateHash: true });
     // Below the sticky bar, a new sub-tab starts at its top instead of mid-page.
     const panel = doc.getElementById(`metasSub-${key}`);

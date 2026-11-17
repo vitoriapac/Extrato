@@ -1,4 +1,5 @@
 import { formatInteger } from '../../core/format-number.js';
+import { pluralize } from '../../core/utils.js';
 import { renderWindowBadge } from './window-badge.js';
 import { renderMetricCard } from '../components/presentation.js';
 import { formatDateBR } from '../../core/format-date.js';
@@ -24,7 +25,9 @@ export function renderPerformanceQuestions({
   range,
   formatDate,
   escapeHtml,
+  escapeAttr = escapeHtml,
   targetScore = null,
+  selectedQuestionSubjects = [],
 }: any = {}) {
   if (!analysis.questionCount)
     return '<div class="empty-state empty-state--compact" role="status"><strong>Sem questões neste período</strong><p>Registre questões pessoais vinculadas a tópicos do concurso ativo para acompanhar precisão, volume e erros.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar questões</button></div>';
@@ -78,10 +81,19 @@ export function renderPerformanceQuestions({
   const msp = multiSubjectPerformance;
   let multiLineSection = '';
   if (msp && msp.series.length > 0 && msp.periods.length > 0) {
-    // Doze linhas viram emaranhado: o gráfico traça as cinco de menor precisão e a lista ao lado traz todas.
-    const chartLimit = 5;
-    const chartSeries =
-      msp.series.length > chartLimit
+    // Muitas curvas geram ruído visual: o gráfico traça até 3 séries simultaneamente (selecionadas ou 3 de menor precisão).
+    const chartLimit = 3;
+    const seriesById = new Map((msp.series || []).map((s: any) => [s.subjectId, s]));
+    const activeSelectedIds = (
+      Array.isArray(selectedQuestionSubjects) ? selectedQuestionSubjects : []
+    )
+      .filter((id: string) => seriesById.has(id))
+      .slice(0, chartLimit);
+    const hasCustomSelection = activeSelectedIds.length > 0;
+    const selectedSet = new Set(activeSelectedIds);
+    const chartSeries = hasCustomSelection
+      ? activeSelectedIds.map((id: string) => seriesById.get(id))
+      : msp.series.length > chartLimit
         ? [...msp.series]
             .sort((a: any, b: any) => (a.overallAccuracy ?? 101) - (b.overallAccuracy ?? 101))
             .slice(0, chartLimit)
@@ -90,19 +102,25 @@ export function renderPerformanceQuestions({
       series: chartSeries,
       periodLabels: msp.periodLabels,
     });
-    const subRows = msp.series
-      .map(
-        (s: any) =>
-          `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><div class="flex items-center gap-2 min-w-0"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></div><div class="shrink-0 text-content-secondary font-data">${s.totalCorrect}/${s.totalResolved} <strong class="text-content-primary">(${s.overallAccuracy == null ? '—' : formatPercent(s.overallAccuracy)})</strong></div></li>`
-      )
-      .join('');
+    const renderSubRow = (s: any) => {
+      const isSelected = selectedSet.has(s.subjectId);
+      const smallSample = s.totalResolved > 0 && s.totalResolved < 30;
+      return `<li class="flex items-center justify-between gap-2 py-1 text-xs border-b border-border-subtle/50 last:border-b-0"><button type="button" class="btn ghost small flex items-center gap-2 min-w-0 text-left" data-performance-question-subject="${escapeAttr(s.subjectId)}" aria-pressed="${isSelected ? 'true' : 'false'}"><span class="subject-color-swatch subject-color-${s.colorSlot} shrink-0" aria-hidden="true"></span><span class="truncate font-medium">${escapeHtml(s.subjectName)}</span></button><div class="shrink-0 text-content-secondary font-data">${formatInteger(s.totalCorrect)}/${formatInteger(s.totalResolved)} <strong class="text-content-primary">(${s.overallAccuracy == null ? 'Sem dados' : formatPercent(s.overallAccuracy)})</strong>${smallSample ? ' <small class="text-content-secondary">· amostra pequena</small>' : ''}</div></li>`;
+    };
+    const visibleListLimit = 5;
+    const primaryRows = msp.series.slice(0, visibleListLimit).map(renderSubRow).join('');
+    const extraRows = msp.series.slice(visibleListLimit).map(renderSubRow).join('');
+    const subtitleNote = hasCustomSelection
+      ? `Mostrando ${pluralize(activeSelectedIds.length, 'disciplina selecionada', 'disciplinas selecionadas')} no gráfico (até ${chartLimit}).`
+      : `Evolução da taxa de acerto nas questões por período, nas cores de cada matéria.${msp.series.length > chartLimit ? ` O gráfico traça as ${chartLimit} de menor precisão; selecione até ${chartLimit} na lista.` : ''}`;
 
     multiLineSection = `<section class="performance-block" aria-label="Evolução da precisão por disciplina">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
           <h3 class="m-0">Precisão por disciplina</h3>
-          <p class="analytics-note m-0">Evolução da taxa de acerto nas questões por período, nas cores de cada matéria.${msp.series.length > chartLimit ? ` O gráfico traça as ${chartLimit} de menor precisão; a lista traz as ${msp.series.length}.` : ''}</p>
+          <p class="analytics-note m-0">${subtitleNote}</p>
         </div>
+        ${hasCustomSelection ? '<button type="button" class="btn ghost small" data-performance-question-subjects-reset>Mostrar 3 menores precisões</button>' : ''}
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-3">
         <div class="lg:col-span-2 overflow-x-auto">
@@ -110,17 +128,18 @@ export function renderPerformanceQuestions({
         </div>
         <div class="bg-surface-subtle/50 p-4 rounded-default border-t border-border-subtle">
           <div class="mb-3">
-            <span class="text-3xl font-semibold font-display text-content-primary">${msp.overallAccuracy == null ? '—' : formatPercent(msp.overallAccuracy)}</span>
-            <p class="text-xs text-content-secondary m-0">${formatInteger(msp.totalResolved)} questões · ${msp.totalCorrect} acertos</p>
+            <span class="text-3xl font-semibold font-display text-content-primary">${msp.overallAccuracy == null ? 'Sem dados' : formatPercent(msp.overallAccuracy)}</span>
+            <p class="text-xs text-content-secondary m-0">${pluralize(msp.totalResolved, 'questão', 'questões')} · ${pluralize(msp.totalCorrect, 'acerto', 'acertos')}</p>
             <span class="text-xs font-medium text-content-secondary mt-1 inline-block">Precisão geral no período</span>
           </div>
           <ul class="m-0 p-0 list-none space-y-1">
-            ${subRows}
+            ${primaryRows}
           </ul>
+          ${extraRows ? `<details class="performance-more mt-2" data-fold-key="questions-all-subjects"><summary>Mostrar todas as ${formatInteger(msp.series.length)} disciplinas</summary><ul class="m-0 p-0 list-none space-y-1 mt-1">${extraRows}</ul></details>` : ''}
         </div>
       </div>
     </section>`;
   }
 
-  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${analysis.errors} erros no período.`] }), kpis)}${multiLineSection}<section class="performance-block" aria-label="Evolução da precisão">${renderQuestionEvolution(evolution, { formatDate, targetPercent: targetScore == null || targetScore === '' ? null : Number(targetScore) })}</section>${errors}${renderPerformanceDetails('Volume e tópicos', volume + topics)}`;
+  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${pluralize(analysis.errors, 'erro', 'erros')} no período.`] }), kpis)}${multiLineSection}<section class="performance-block" aria-label="Evolução da precisão">${renderQuestionEvolution(evolution, { formatDate, targetPercent: targetScore == null || targetScore === '' ? null : Number(targetScore) })}</section>${errors}${renderPerformanceDetails('Volume e tópicos', volume + topics)}`;
 }

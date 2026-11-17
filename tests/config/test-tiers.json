@@ -1252,6 +1252,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/local-usage-telemetry.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; métricas locais agregadas e exportação voluntária sem dados pessoais."
+    },
+    {
       "file": "tests/unit/master-renderer.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s)."

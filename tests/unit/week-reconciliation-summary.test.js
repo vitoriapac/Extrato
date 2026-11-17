@@ -392,3 +392,34 @@ test('capacidade não informada aparece como "Não informada", sem excesso nem s
   assert.match(out, /Capacidade da semana[\s\S]*?Informe as horas por dia[\s\S]*?Não informada/);
   assert.doesNotMatch(out, /17 h 30 min|week-reconciliation__excess|falta /);
 });
+
+test('WeekReconciliationSummary exibe avisos de atraso recuperável e replanejamento', () => {
+  const recoverable = render(
+    h(WeekReconciliationSummary, {
+      data: buildWeekReconciliation({
+        capacityMin: 1200,
+        plannedMin: 1080,
+        studiedMin: 840,
+        remainingCapacityMin: 360,
+        periodLabel: '09/11 a 15/11',
+      }),
+    })
+  );
+  assert.match(recoverable, /data-week-recoverability="recoverable"/);
+  assert.match(recoverable, /atraso recuperável/);
+
+  const needsReplan = render(
+    h(WeekReconciliationSummary, {
+      data: buildWeekReconciliation({
+        capacityMin: 1200,
+        plannedMin: 1080,
+        studiedMin: 600,
+        remainingCapacityMin: 180,
+        periodLabel: '09/11 a 15/11',
+      }),
+    })
+  );
+  assert.match(needsReplan, /data-week-recoverability="needs_replan"/);
+  assert.match(needsReplan, /exige replanejamento/);
+  assert.match(needsReplan, /data-delegated-click="calculateReplanPreview\(\)"/);
+});

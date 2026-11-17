@@ -22,7 +22,7 @@ export function PhaseRoadmapTimeline({
   label = 'Linha do tempo e fases de preparação para a prova',
   className = '',
 }: PhaseRoadmapTimelineProps): JSX.Element {
-  const { phase, phaseLabel, daysRemaining, examDate, progressPercentage, phasesList } = visual;
+  const { phase, phaseLabel, phaseGuidance, daysRemaining, examDate, progressPercentage, phasesList } = visual;
 
   if (phase === 'undated' || !examDate) {
     return (
@@ -62,6 +62,11 @@ export function PhaseRoadmapTimeline({
               </span>
             </div>
             <h4 class="text-sm font-semibold text-content-primary">{phaseLabel}</h4>
+            {phaseGuidance && (
+              <p class="text-xs text-content-secondary break-words m-0 mt-1" data-phase-guidance="true">
+                {phaseGuidance}
+              </p>
+            )}
           </div>
         </div>
 

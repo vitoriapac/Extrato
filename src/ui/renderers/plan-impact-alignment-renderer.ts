@@ -77,19 +77,25 @@ export function renderPlanImpactAlignment(
     `;
   }).join('');
 
+  const adjustActionHtml =
+    visual.underallocatedCount > 0 || visual.overallocatedCount > 0
+      ? `<div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle"><p class="analytics-note m-0">Há desequilíbrio relevante entre tempo planejado e peso no edital.</p><button type="button" class="btn ghost small" data-delegated-click="calculateStudyPlanPreview()">Ajustar ciclo</button></div>`
+      : '';
+
   return `
     <div class="plan-impact-alignment-modern space-y-3">
       <details class="limits-disclosure text-xs">
         <summary aria-label="Limites do alinhamento do plano">Sobre o alinhamento com o edital</summary>
         <p class="analytics-note mt-1">
           Comparação relativa entre as disciplinas planejadas nesta semana e o peso/incidência estimado nos tópicos da prova.
-          Serve como guia visual para não negligenciar matérias de alto peso nem sobrecarregar matérias secundárias.
+          O peso do edital é combinado com desempenho, dificuldade e fase até a prova — não é fórmula automática de carga horária.
         </p>
       </details>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         ${rowsHtml}
       </div>
+      ${adjustActionHtml}
     </div>
   `;
 }

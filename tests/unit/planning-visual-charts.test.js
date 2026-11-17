@@ -268,3 +268,53 @@ test('renderGroupedBarChart — o texto de cada linha segue a ordem da legenda: 
   assert.match(text, /Planejado 45 min.*realizado 2 h 12 min/);
   assert.doesNotMatch(text, /2 h 12m \/ 45m/);
 });
+
+test('distribuição identifica negligência mascarada, status distintos, ação Ajustar ciclo, alerta de mix e orientação de fase', async () => {
+  const { renderStudyDistribution } = await import('../../src/ui/renderers/study-distribution-renderer.js');
+  const { renderPlanImpactAlignment } = await import('../../src/ui/renderers/plan-impact-alignment-renderer.js');
+
+  const distHtml = renderStudyDistribution(
+    {
+      state: 'ready',
+      plannedMinutes: 180,
+      studiedMinutes: 240,
+      rows: [
+        { subjectId: 's1', name: 'Português', plannedMinutes: 60, studiedMinutes: 240, plannedShare: 33, studiedShare: 100 },
+        { subjectId: 's2', name: 'Direito Penal', plannedMinutes: 120, studiedMinutes: 0, plannedShare: 67, studiedShare: 0 },
+      ],
+    },
+    { subjects: [{ id: 's1', name: 'Português' }, { id: 's2', name: 'Direito Penal' }] }
+  );
+  assert.match(distHtml, /data-masked-negligence="true"/);
+  assert.match(distHtml, /Direito Penal/);
+  assert.match(distHtml, /data-status-rules="true"/);
+
+  const alignHtml = renderPlanImpactAlignment(
+    {
+      state: 'ready',
+      rows: [
+        { subjectId: 's1', name: 'Português', plannedShare: 70, impactShare: 40, impactCount: 5, topicCount: 5 },
+        { subjectId: 's2', name: 'Penal', plannedShare: 30, impactShare: 60, impactCount: 5, topicCount: 5 },
+      ],
+    },
+    {}
+  );
+  assert.match(alignHtml, /Ajustar ciclo/);
+  assert.match(alignHtml, /não é fórmula automática de carga horária/);
+
+  const allocVisual = buildWeeklyAllocationBarVisual({
+    planItems: [{ subjectId: 's1', minutes: 120, activityMix: { theory: 120, questions: 0, reviews: 0 } }],
+    subjects: [{ id: 's1', name: 'Português' }],
+    weeklyCapacityMinutes: 180,
+  });
+  assert.equal(allocVisual.warnings.length, 2);
+  const allocHtml = renderAllocationBar({ visual: allocVisual });
+  assert.match(allocHtml, /data-mix-warning="true"/);
+  assert.match(allocHtml, /questões práticas/);
+  assert.match(allocHtml, /revisões/);
+
+  const roadmapVisual = buildPhaseRoadmapVisual({ examDate: '2026-12-01', today: '2026-11-04' });
+  assert.ok(roadmapVisual.phaseGuidance.length > 0);
+  const roadmapHtml = renderPhaseRoadmapTimeline({ visual: roadmapVisual });
+  assert.match(roadmapHtml, /data-phase-guidance="true"/);
+});

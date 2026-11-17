@@ -2,6 +2,7 @@ import { routeOfSection } from '../performance/performance-route.js';
 import { updatePerformanceViewState } from '../../application/performance/performance-view-state.js';
 import { scrollBehavior } from '../accessibility.js';
 import { formatLocalDate } from '../../core/date-utils.js';
+import { getDefaultUsageTelemetryService } from '../../application/telemetry/usage-telemetry-service.js';
 
 /** Alt + 1–5 troca de subaba; Alt + 6–9 muda o período (7 dias, 30 dias, 90 dias, todo o histórico). */
 const SHORTCUT_SECTIONS = ['overview', 'subjects', 'diagnosis', 'questions', 'consistency'];
@@ -26,6 +27,8 @@ export function createPerformanceController({
 }: any) {
   const update = (patch: Record<string, any>) =>
     setViewState(updatePerformanceViewState(getViewState(), patch));
+  const telemetry = getDefaultUsageTelemetryService();
+  const currentFeature = () => `desempenho:${getViewState()?.section || 'overview'}`;
   return {
     register() {
       document.addEventListener('keydown', (event: any) => {
@@ -36,6 +39,10 @@ export function createPerformanceController({
         if (target && (/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable)) return;
         event.preventDefault();
         update(patch);
+        telemetry.track(
+          patch.section ? 'tab_open' : 'chart_filter_interaction',
+          currentFeature()
+        );
         render();
       });
       document.addEventListener('click', (event: any) => {
@@ -45,14 +52,17 @@ export function createPerformanceController({
         if (jump.dataset.performanceSubjectId)
           update({ subjectId: jump.dataset.performanceSubjectId });
         if (jump.dataset.performanceTopicId) update({ topicId: jump.dataset.performanceTopicId });
+        telemetry.track('tab_open', `desempenho:${jump.dataset.performanceJump}`);
         activateTab('desempenho');
       });
       document.getElementById('performancePage')?.addEventListener('click', (event: any) => {
         if (event.target.closest('[data-projection-scenario-open]')) {
+          telemetry.track('detail_access', currentFeature());
           document.getElementById('projectionScenarioDialog')?.showModal();
           return;
         }
         if (event.target.closest('[data-recovery-preview-open]')) {
+          telemetry.track('detail_access', currentFeature());
           document.getElementById('recoveryPreviewDialog')?.showModal();
           return;
         }
@@ -77,18 +87,42 @@ export function createPerformanceController({
         const group = !inComponentNav && event.target.closest('[data-performance-group]');
         if (group) {
           update({ section: group.dataset.performanceGroupTarget });
+          telemetry.track('tab_open', currentFeature());
           render();
           return;
         }
         const subjectView = event.target.closest('[data-performance-subject-view]');
         if (subjectView) {
           update({ subjectView: subjectView.dataset.performanceSubjectView });
+          telemetry.track('chart_filter_interaction', currentFeature());
           render();
           return;
         }
         const compareMode = event.target.closest('[data-performance-compare-mode]');
         if (compareMode) {
           update({ compareMode: compareMode.dataset.performanceCompareMode });
+          telemetry.track('chart_filter_interaction', currentFeature());
+          render();
+          return;
+        }
+        const questionSubject = event.target.closest(
+          '[data-performance-question-subject]'
+        ) as HTMLElement | null;
+        if (questionSubject) {
+          const id = questionSubject.dataset.performanceQuestionSubject || '';
+          update({ toggleQuestionSubject: id });
+          telemetry.track('chart_filter_interaction', currentFeature());
+          render();
+          (
+            document.querySelector(
+              `[data-performance-question-subject="${id}"]`
+            ) as HTMLElement | null
+          )?.focus?.();
+          return;
+        }
+        if (event.target.closest('[data-performance-question-subjects-reset]')) {
+          update({ selectedQuestionSubjects: [] });
+          telemetry.track('chart_filter_interaction', currentFeature());
           render();
           return;
         }
@@ -107,6 +141,7 @@ export function createPerformanceController({
               ? { subjectId: section.dataset.performanceSubjectId }
               : {}),
           });
+          telemetry.track('tab_open', currentFeature());
           render();
           return;
         }
@@ -133,6 +168,7 @@ export function createPerformanceController({
         const topic = event.target.closest('[data-performance-topic]');
         if (topic) {
           update({ topicId: topic.dataset.performanceTopic });
+          telemetry.track('detail_access', currentFeature());
           render();
           return;
         }
@@ -201,6 +237,7 @@ export function createPerformanceController({
         }
         // "Ajustar plano": abre Metas com a prévia de ajuste à vista; nada é aplicado sem confirmação lá.
         if (event.target.closest('[data-performance-adjust-plan]')) {
+          telemetry.track('plan_adjust_after_analysis', currentFeature());
           document.getElementById('performanceTopicDialog')?.close();
           activateTab('metas');
           requestAnimationFrame(() => {
@@ -214,6 +251,9 @@ export function createPerformanceController({
         }
         const open = event.target.closest('[data-performance-open]');
         if (open) {
+          if (open.closest?.('.performance-reading__todo')) {
+            telemetry.track('recommendation_click', currentFeature());
+          }
           document.getElementById('performanceTopicDialog')?.close();
           activateTab(open.dataset.performanceOpen);
         }
@@ -331,6 +371,7 @@ export function createPerformanceController({
           update({ subjectSort: field.value });
         else if (field.matches('[data-adherence-weeks]')) update({ adherenceWeeks: field.value });
         else return;
+        telemetry.track('chart_filter_interaction', currentFeature());
         render();
         if (field.matches('[data-adherence-weeks]'))
           document.querySelector('[data-adherence-weeks]')?.focus();

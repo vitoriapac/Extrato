@@ -162,6 +162,30 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
           Só {fmt(data.plannedMin)} dos {fmt(data.capacityMin)} de capacidade têm tarefa marcada.
         </p>
       )}
+      {data.recoverability === 'recoverable' &&
+        data.pendingPlannedMin > 0 &&
+        data.remainingCapacityMin !== null && (
+          <p class="week-reconciliation__note" data-week-recoverability="recoverable">
+            Faltam {fmt(data.pendingPlannedMin)} das tarefas marcadas e restam{' '}
+            {fmt(data.remainingCapacityMin)} de capacidade até o fim da semana: atraso recuperável.
+          </p>
+        )}
+      {data.recoverability === 'needs_replan' &&
+        data.pendingPlannedMin > 0 &&
+        data.remainingCapacityMin !== null && (
+          <p class="week-reconciliation__note" data-week-recoverability="needs_replan">
+            Faltam {fmt(data.pendingPlannedMin)} das tarefas marcadas para{' '}
+            {fmt(data.remainingCapacityMin)} de capacidade restante na semana: exige
+            replanejamento.{' '}
+            <button
+              type="button"
+              class="btn tertiary"
+              data-delegated-click="calculateReplanPreview()"
+            >
+              Redistribuir saldo pendente
+            </button>
+          </p>
+        )}
     </section>
   );
 }

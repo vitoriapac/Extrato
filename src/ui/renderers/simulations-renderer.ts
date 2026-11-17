@@ -1,4 +1,4 @@
-import { formatDecimal, formatPercent } from '../../core/format-number.js';
+import { formatDecimal, formatInteger, formatPercent } from '../../core/format-number.js';
 import { chartSize } from '../primitives/charts/chart-size.js';
 import { renderChartFrame } from '../chart-components.js';
 import { renderIconSvg } from '../primitives/icon.js';
@@ -143,10 +143,15 @@ export function renderSimulationTrendChart({
       ? ''
       : `<line class="simulation-goal-line" x1="${padLeft}" x2="${width - padRight}" y1="${yFor(goal)}" y2="${yFor(goal)}"/>`;
   const history = items
-    .map(
-      (item, index) =>
-        `<li><span>${escapeHtml(item.nome || 'Simulado')} · ${formatDate(item.date)}</span><strong>${formatPercent(scores[index])}</strong></li>`
-    )
+    .map((item, index) => {
+      const total = Math.max(0, Number(item.total) || 0);
+      const correct = Math.max(0, Number(item.correct) || 0);
+      const sampleTag =
+        total > 0
+          ? ` · ${formatInteger(correct)}/${formatInteger(total)} ${total === 1 ? 'questão' : 'questões'}${total < 30 ? ' (bateria curta)' : ''}`
+          : '';
+      return `<li><span>${escapeHtml(item.nome || 'Simulado')} · ${formatDate(item.date)}${sampleTag}</span><strong>${formatPercent(scores[index])}</strong></li>`;
+    })
     .join('');
   return renderChartFrame({
     title: 'Evolução dos simulados',

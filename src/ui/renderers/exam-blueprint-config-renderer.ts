@@ -1,5 +1,6 @@
 import { buildPhaseRoadmapVisual } from '../../domain/planning/planning-visual-models.js';
 import { renderPhaseRoadmapTimeline } from '../primitives/charts/charts.js';
+import { formatLocalDate } from '../../core/date-utils.js';
 
 export function renderExamBlueprintConfigView({
   container,
@@ -14,7 +15,7 @@ export function renderExamBlueprintConfigView({
 
   const roadmapVisual = buildPhaseRoadmapVisual({
     examDate: blueprint?.examDate || null,
-    today: today || new Date().toISOString().slice(0, 10),
+    today: today || formatLocalDate(new Date()) || '',
   });
   // Sem data da prova, o convite com o campo de data já diz o que fazer: a régua vazia só repetiria o pedido.
   const roadmapHtml = !blueprint?.examDate

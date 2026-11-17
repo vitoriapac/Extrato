@@ -4888,7 +4888,7 @@
         "node:assert/strict",
         "../../src/ui/renderers/consolidated-diagnosis-renderer.js"
       ],
-      "staticTestDeclarations": 22,
+      "staticTestDeclarations": 23,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -7113,6 +7113,37 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/local-usage-telemetry.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/telemetry/local-usage-telemetry.js",
+        "../../src/application/telemetry/usage-telemetry-service.js"
+      ],
+      "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/master-renderer.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -8251,7 +8282,7 @@
         "../../src/domain/planning/planning-visual-models.js",
         "../../src/ui/primitives/charts/charts.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -12845,7 +12876,7 @@
         "../../src/ui/tabs/goals/WeekReconciliationSummary.js",
         "../../src/ui/tabs/goals/week-reconciliation.js"
       ],
-      "staticTestDeclarations": 22,
+      "staticTestDeclarations": 23,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -12874,9 +12905,10 @@
         "node:test",
         "node:assert/strict",
         "../../src/ui/tabs/goals/week-reconciliation.js",
-        "../../src/ui/renderers/plan-execution-renderer.js"
+        "../../src/ui/renderers/plan-execution-renderer.js",
+        "../../src/ui/tabs/goals/week-reconciliation.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

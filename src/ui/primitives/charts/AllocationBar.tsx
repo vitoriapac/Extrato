@@ -66,6 +66,15 @@ export function AllocationBar({
               ] as StackedBarPart[]
             ).filter(part => Number(part.value) > 0)}
           />
+          {Array.isArray(visual.warnings) && visual.warnings.length > 0 && (
+            <div class="space-y-1 pt-2 mt-2 border-t border-border-subtle" role="note" data-mix-warning="true">
+              {visual.warnings.map((warning, idx) => (
+                <p key={idx} class="text-xs text-warning-emphasis m-0">
+                  {warning}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

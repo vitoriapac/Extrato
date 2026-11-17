@@ -6,7 +6,7 @@ const fmt = formatPlanMinutes;
 
 export function renderStudyDistribution(
   model: Record<string, any>,
-  { escapeHtml: _escapeHtml, subjects = [] }: { escapeHtml?: (s: string) => string; subjects?: any[] } = {}
+  { escapeHtml = (s: string) => String(s ?? ''), subjects = [] }: { escapeHtml?: (s: string) => string; subjects?: any[] } = {}
 ): string {
   if (model.state !== 'ready' || !model.rows || model.rows.length === 0) {
     return '<div class="ui-state--empty">Registre planos ou sessões para comparar a distribuição do tempo entre disciplinas.</div>';
@@ -28,6 +28,10 @@ export function renderStudyDistribution(
   });
 
   const noteHtml = `<p class="analytics-note mb-3">Até hoje nesta semana: ${fmt(model.plannedMinutes)} com tarefa marcada e ${fmt(model.studiedMinutes)} estudados.</p>`;
+  const maskedHtml = visual.maskedNegligence
+    ? `<p class="analytics-note mt-2" data-masked-negligence="true">Atenção à distribuição: o superávit ou estudo extra em outras matérias não compensa o déficit em <strong>${escapeHtml(visual.neglectedSubjects.slice(0, 3).join(', '))}</strong>.</p>`
+    : '';
+  const statusRulesHtml = `<p class="analytics-note mt-1" data-status-rules="true">Status por matéria: <strong>No ritmo</strong> (diferença de até ${fmt(15)}), <strong>Superávit</strong> (acima do planejado na matéria), <strong>Déficit</strong> (abaixo do planejado) e <strong>Extra</strong> (estudo avulso sem meta na semana).</p>`;
 
-  return `<div class="study-distribution-wrap">${noteHtml}${chartHtml}</div>`;
+  return `<div class="study-distribution-wrap">${noteHtml}${chartHtml}${maskedHtml}${statusRulesHtml}</div>`;
 }
