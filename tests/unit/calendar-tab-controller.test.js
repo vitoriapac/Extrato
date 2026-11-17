@@ -224,3 +224,68 @@ test('ação rápida distingue concluir tarefa de revisar tópico', () => {
   assert.match(element.innerHTML, /completeUnifiedReview\('task','Calendário'\)[\s\S]*?Concluir tarefa/);
   assert.match(element.innerHTML, /completeUnifiedReview\('review','Agenda de Revisões'\)[\s\S]*?Revisar/);
 });
+
+test('setCalendarMobileView suporta week e rescheduleCalendarItem move tarefas e pede confirmação em eventos', () => {
+  const attrs = {};
+  const doc = {
+    getElementById(id) {
+      if (id === 'panel-agenda') {
+        return {
+          setAttribute(k, v) {
+            attrs[k] = v;
+          },
+        };
+      }
+      return null;
+    },
+    querySelectorAll: () => [],
+  };
+  const state = {
+    calendar: [
+      {
+        id: 't1',
+        date: '2026-11-17',
+        kind: /** @type {import('../../src/core/types.ts').CalendarActivityKind} */ ('task'),
+        title: 'Redação',
+        status: 'Não iniciado',
+      },
+      {
+        id: 'e1',
+        date: '2026-11-18',
+        kind: /** @type {import('../../src/core/types.ts').CalendarActivityKind} */ ('event'),
+        title: 'Dia da Prova',
+        status: 'Não iniciado',
+      },
+    ],
+    reviewAgenda: [],
+    studySessions: [],
+    simulados: [],
+  };
+  const confirms = [];
+  const controller = createCalendarTabController({
+    state,
+    document: doc,
+    clock: { today: () => '2026-11-17' },
+    formatDatePt: d => d,
+    showConfirm: (msg, onConfirm) => confirms.push({ msg, onConfirm }),
+  });
+
+  controller.setCalendarMobileView('week');
+  assert.equal(controller.calendarUiState.view, 'week');
+  assert.equal(attrs['data-calendar-view'], 'week');
+
+  controller.rescheduleCalendarItem('t1', '2026-11-20');
+  assert.equal(state.calendar[0].date, '2026-11-20');
+
+  controller.rescheduleCalendarItem('e1', '2026-11-25');
+  assert.equal(state.calendar[1].date, '2026-11-18'); // aguarda confirmação
+  assert.equal(confirms.length, 1);
+  confirms[0].onConfirm();
+  assert.equal(state.calendar[1].date, '2026-11-25');
+
+  // Concluir tarefa na Agenda não gera sessões nem simulados fictícios
+  controller.completeUnifiedReview('t1', 'Calendário');
+  assert.equal(state.calendar[0].status, 'Concluído');
+  assert.equal(state.studySessions.length, 0);
+  assert.equal(state.simulados.length, 0);
+});

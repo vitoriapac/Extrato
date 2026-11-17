@@ -5,8 +5,21 @@ import { CalendarTable, type CalendarItem } from './CalendarTable.js';
 import { CalendarViewSwitch, type CalendarMobileView } from './CalendarViewSwitch.js';
 import {
   buildUnifiedReviews,
+  buildUnifiedCalendarItems,
   unifiedReviewLabel as defaultUnifiedItemLabel,
 } from '../../../application/calendar/build-unified-reviews.js';
+import {
+  computeDailyCalendarLoad,
+  getAvailableMinutesForDate,
+  isCalendarItemOverdue,
+  sortCalendarItemsForDay,
+  type UnifiedCalendarItem,
+} from '../../../domain/calendar/calendar-projection.js';
+import { buildCalendarIcs } from '../../../domain/calendar/calendar-ics.js';
+import { addLocalDays, formatLocalDate } from '../../../core/date-utils.js';
+import { CalendarActivityModal, type CalendarActivityDraft } from './CalendarActivityModal.js';
+import { CalendarDayDrawer } from './CalendarDayDrawer.js';
+import { CalendarWeekView } from './CalendarWeekView.js';
 import {
   renderCalendarRead,
   renderCalendarEdit,
@@ -17,7 +30,12 @@ import {
 import { buildCalendarItemViewModel } from '../../view-models/calendar-view-model.js';
 import { createCalendarState } from '../../calendar/calendar-state.js';
 import { createCalendarController } from '../../calendar/calendar-controller.js';
-import { STATUS_CLASS, STATUS_OPTIONS, REVIEW_OPTIONS } from '../../../state/schema.js';
+import {
+  STATUS_CLASS,
+  STATUS_OPTIONS,
+  REVIEW_OPTIONS,
+  CALENDAR_ACTIVITY_LABELS,
+} from '../../../state/schema.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
 import { runUndoable } from '../../undoable.js';
 import { renderIconSvg } from '../../primitives/icon.js';
@@ -26,13 +44,19 @@ export interface CalendarTabControllerContext {
   state: {
     calendar: CalendarItem[];
     reviewAgenda?: any[];
+    simulados?: any[];
     subjects?: any[];
+    metas?: {
+      horasDiarias?: number;
+      horasPorDia?: Record<string, number>;
+    };
   };
   filters?: {
     subjectId: string;
     status: string;
     month: string;
     type: string;
+    activityKind?: string;
   };
   calendarService?: any;
   clock?: { today: () => string };
@@ -65,6 +89,8 @@ export interface CalendarTabControllerContext {
   showConfirm?: (msg: string, onConfirm: () => void, onCancel?: () => void, opts?: any) => void;
   persistAndRender?: () => void;
   onCompleteAgendaReview?: (id: string) => void;
+  onStartTimer?: (item: UnifiedCalendarItem) => void;
+  onRegisterSimulationResult?: (item: UnifiedCalendarItem) => void;
   isMobileHistoryLayout?: () => boolean;
   escapeHtml?: (str?: string | null) => string;
   escapeAttr?: (str?: string | null) => string;
@@ -163,6 +189,38 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       subjectName: entitySubjectName,
       topicName: getTopicName,
     });
+  }
+
+  function getUnifiedCalendarItems(opts: { includeRecurring?: boolean } = {}): UnifiedCalendarItem[] {
+    const today = todayISO();
+    const monthDate =
+      calendarUiState.month instanceof Date ? calendarUiState.month : new Date();
+    const monthStart = formatLocalDate(
+      new Date(monthDate.getFullYear(), monthDate.getMonth(), 1, 12, 0, 0, 0)
+    );
+    const monthEnd = formatLocalDate(
+      new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 12, 0, 0, 0)
+    );
+    const rangeStart = opts.includeRecurring === false ? '' : addLocalDays(monthStart || today, -7) || '';
+    const rangeEnd = opts.includeRecurring === false ? '' : addLocalDays(monthEnd || today, 14) || '';
+    return buildUnifiedCalendarItems({
+      calendar: ctx.state.calendar || [],
+      reviewAgenda: ctx.state.reviewAgenda || [],
+      simulados: ctx.state.simulados || [],
+      today,
+      rangeStart,
+      rangeEnd,
+      subjectIdOf: entitySubjectId,
+      subjectName: entitySubjectName,
+      topicName: getTopicName,
+    });
+  }
+
+  function getActivityKindFilter(): string {
+    if (ctx.filters?.activityKind) return ctx.filters.activityKind;
+    const doc = getDoc();
+    const sel = doc?.getElementById('agendaFilterActivityKind') as HTMLSelectElement | null;
+    return sel?.value || calendarUiState.filters?.activityKind || '';
   }
 
   function getFilters() {
@@ -267,6 +325,26 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     });
   }
 
+  function canMountPreact(el: Element | null | undefined): el is Element {
+    return Boolean(
+      el && typeof globalThis.document !== 'undefined' && el.ownerDocument === globalThis.document
+    );
+  }
+
+  function getFilteredUnifiedItems(): UnifiedCalendarItem[] {
+    const doc = getDoc();
+    const filterSubject =
+      (doc?.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '';
+    const filterStatus = (doc?.getElementById('calFilterStatus') as HTMLSelectElement)?.value || '';
+    const filterKind = getActivityKindFilter();
+    return getUnifiedCalendarItems().filter(
+      item =>
+        (!filterSubject || item.subjectId === filterSubject) &&
+        (!filterStatus || item.status === filterStatus) &&
+        (!filterKind || item.kind === filterKind)
+    );
+  }
+
   function renderMonthCalendar() {
     const doc = getDoc();
     if (!doc) return;
@@ -275,12 +353,15 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     const filterSubject =
       (doc.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '';
     const filterStatus = (doc.getElementById('calFilterStatus') as HTMLSelectElement)?.value || '';
+    const filterActivityKind = getActivityKindFilter();
 
     const result = renderCalendarMonthView({
       month: calendarUiState.month,
-      events: getRevisoesUnificadas(),
+      events: getUnifiedCalendarItems(),
       filterSubject,
       filterStatus,
+      filterActivityKind,
+      selectedDate: (calendarUiState as any).selectedDate || null,
       today: todayISO(),
       daysUntil: diasParaRevisao,
       escapeHtml,
@@ -290,6 +371,111 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     const titleEl = doc.getElementById('calendarMonthTitle');
     if (titleEl) titleEl.textContent = result.title;
     container.innerHTML = result.html;
+    renderWeekCalendar();
+    renderDayDrawer();
+  }
+
+  function renderWeekCalendar() {
+    const doc = getDoc();
+    const mount = doc?.getElementById('calendarWeekMount');
+    if (!canMountPreact(mount)) return;
+    const today = todayISO();
+    const anchor = (calendarUiState as any).weekAnchorDate || today;
+    mountPreact(
+      h(CalendarWeekView, {
+        anchorDate: anchor,
+        today,
+        selectedDate: (calendarUiState as any).selectedDate || null,
+        items: getFilteredUnifiedItems(),
+        onPrevWeek: () => {
+          (calendarUiState as any).weekAnchorDate = addLocalDays(anchor, -7) || anchor;
+          renderWeekCalendar();
+        },
+        onNextWeek: () => {
+          (calendarUiState as any).weekAnchorDate = addLocalDays(anchor, 7) || anchor;
+          renderWeekCalendar();
+        },
+        onTodayWeek: () => {
+          (calendarUiState as any).weekAnchorDate = today;
+          (calendarUiState as any).selectedDate = today;
+          renderWeekCalendar();
+          renderDayDrawer();
+        },
+        onSelectDate: (date: string) => {
+          (calendarUiState as any).selectedDate = date;
+          renderMonthCalendar();
+        },
+        onAddForDate: (date: string) => openActivityModalForDate(date),
+        onEditItem: (id: string) => openActivityModalForEdit(id),
+        onRescheduleItem: (id: string, newDate: string) => rescheduleCalendarItem(id, newDate),
+      }),
+      mount
+    );
+  }
+
+  function renderDayDrawer() {
+    const doc = getDoc();
+    const mount = doc?.getElementById('calendarDayDrawerMount');
+    if (!canMountPreact(mount)) return;
+    const selectedDate = (calendarUiState as any).selectedDate || null;
+    const allItems = getFilteredUnifiedItems();
+    const dayItems = selectedDate
+      ? sortCalendarItemsForDay(allItems.filter(item => item.date === selectedDate))
+      : [];
+    const load = selectedDate
+      ? computeDailyCalendarLoad(allItems, selectedDate)
+      : { date: '', totalMinutes: 0, itemCount: 0, actionableCount: 0, conflicts: [] };
+    const availableMinutes = selectedDate
+      ? getAvailableMinutesForDate(ctx.state.metas, selectedDate)
+      : 0;
+    mountPreact(
+      h(CalendarDayDrawer, {
+        date: selectedDate,
+        formattedDate: selectedDate ? formatDatePt(selectedDate) : '',
+        items: dayItems,
+        load,
+        availableMinutes,
+        onAddForDate: (date: string) => openActivityModalForDate(date),
+        onEditItem: (id: string) => openActivityModalForEdit(id),
+        onCompleteItem: (item: UnifiedCalendarItem) => completeUnifiedReview(item.id, item.origem),
+        onRescheduleItem: (id: string, newDate: string) => rescheduleCalendarItem(id, newDate),
+        onStartTimer: ctx.onStartTimer,
+        onRegisterSimulationResult: ctx.onRegisterSimulationResult,
+        onClose: () => {
+          (calendarUiState as any).selectedDate = null;
+          renderMonthCalendar();
+        },
+      }),
+      mount
+    );
+  }
+
+  function renderActivityModal() {
+    const doc = getDoc();
+    const mount = doc?.getElementById('calendarActivityModalMount');
+    if (!canMountPreact(mount)) return;
+    const ui = calendarUiState as any;
+    mountPreact(
+      h(CalendarActivityModal, {
+        open: Boolean(ui.modalOpen),
+        isNew: Boolean(ui.isNew),
+        initialDraft: ui.modalDraft || null,
+        subjects: activeSubjects(),
+        onSave: saveActivityModal,
+        onDelete: (id: string) => {
+          ui.modalOpen = false;
+          ui.modalDraft = null;
+          renderActivityModal();
+          deleteCalRow(id);
+        },
+        onClose: () => {
+          ui.modalOpen = false;
+          ui.modalDraft = null;
+          renderActivityModal();
+        },
+      }),
+      mount
+    );
   }
 
   function renderCalendarFilters() {
@@ -326,9 +512,11 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
   function setCalendarMobileView(view: string) {
     const doc = getDoc();
-    const normalized: CalendarMobileView = view === 'agenda' ? 'agenda' : 'month';
+    const normalized: CalendarMobileView =
+      view === 'agenda' ? 'agenda' : view === 'week' ? 'week' : 'month';
     calendarUiState.view = normalized;
     doc?.getElementById('panel-agenda')?.setAttribute('data-calendar-view', normalized);
+    if (normalized === 'week') renderWeekCalendar();
     const mount = doc?.getElementById('calendarViewSwitchMount') as Element | null;
     if (
       mount &&
@@ -355,6 +543,135 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     });
   }
 
+  function openActivityModalForDate(date?: string) {
+    const ui = calendarUiState as any;
+    const targetDate = date || ui.selectedDate || todayISO();
+    ui.isNew = true;
+    ui.modalDraft = {
+      id: null,
+      title: '',
+      kind: 'task',
+      date: targetDate,
+      status: 'Não iniciado',
+      startTime: '',
+      endTime: '',
+      estimatedMinutes: '',
+      recurrence: 'none',
+      subjectId: '',
+      location: '',
+      externalUrl: '',
+      description: '',
+    } satisfies CalendarActivityDraft;
+    ui.modalOpen = true;
+    renderActivityModal();
+  }
+
+  function openActivityModalForEdit(id: string) {
+    const item = (ctx.state.calendar || []).find(c => c.id === id);
+    if (!item) return;
+    const ui = calendarUiState as any;
+    ui.isNew = false;
+    ui.modalDraft = {
+      id: item.id,
+      title: item.title || (item.reviewType && item.reviewType !== '—' ? item.reviewType : '') || '',
+      kind: item.kind || (item.reviewType && item.reviewType !== '—' ? 'manual_review' : 'task'),
+      date: item.date || todayISO(),
+      status: item.status || 'Não iniciado',
+      startTime: item.startTime || '',
+      endTime: item.endTime || '',
+      estimatedMinutes: item.estimatedMinutes ? String(item.estimatedMinutes) : '',
+      recurrence: item.recurrence || 'none',
+      subjectId: item.subjectId || '',
+      location: item.location || '',
+      externalUrl: item.externalUrl || '',
+      description: item.description || '',
+    } satisfies CalendarActivityDraft;
+    ui.modalOpen = true;
+    renderActivityModal();
+  }
+
+  function saveActivityModal(draft: CalendarActivityDraft) {
+    const ui = calendarUiState as any;
+    const mins = Number(draft.estimatedMinutes);
+    const payload: Record<string, any> = {
+      title: draft.title.trim(),
+      kind: draft.kind,
+      date: draft.date,
+      status: draft.status || 'Não iniciado',
+      startTime: draft.startTime || null,
+      endTime: draft.endTime || null,
+      estimatedMinutes: Number.isFinite(mins) && mins > 0 ? Math.round(mins) : null,
+      recurrence: draft.recurrence || 'none',
+      subjectId: draft.subjectId || null,
+      location: draft.location.trim() || null,
+      externalUrl: draft.externalUrl.trim() || null,
+      description: draft.description.trim() || null,
+      reviewType: draft.kind === 'manual_review' ? draft.title.trim() || 'Revisão livre' : '—',
+    };
+
+    if (ui.isNew || !draft.id) {
+      if (ctx.calendarService) {
+        ctx.calendarService.create(payload);
+      } else if (calendarController) {
+        calendarController.create(payload);
+      }
+      showToast('Atividade adicionada à Agenda.');
+    } else {
+      if (ctx.calendarService) {
+        ctx.calendarService.update(draft.id, payload);
+      } else {
+        const existing = (ctx.state.calendar || []).find(c => c.id === draft.id);
+        if (existing) Object.assign(existing, payload);
+      }
+      showToast('Atividade atualizada.');
+    }
+
+    ui.modalOpen = false;
+    ui.modalDraft = null;
+    ui.selectedDate = draft.date;
+    renderActivityModal();
+    persistAndRender();
+  }
+
+  function rescheduleCalendarItem(id: string, newDate: string) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) return;
+    const item = (ctx.state.calendar || []).find(c => c.id === id);
+    if (!item || item.date === newDate) return;
+
+    const applyMove = () => {
+      const previousDate = item.date;
+      const moveFn = () => {
+        if (ctx.calendarService) {
+          ctx.calendarService.update(id, { ...item, date: newDate });
+        } else {
+          item.date = newDate;
+        }
+        (calendarUiState as any).selectedDate = newDate;
+        persistAndRender();
+      };
+      runUndoable('Compromisso reagendado.', () => {
+        moveFn();
+        return () => {
+          if (ctx.calendarService) {
+            ctx.calendarService.update(id, { ...item, date: previousDate });
+          } else {
+            item.date = previousDate;
+          }
+          persistAndRender();
+        };
+      });
+    };
+
+    if (item.kind === 'event' && ctx.showConfirm) {
+      ctx.showConfirm(
+        `Mover o evento "${item.title || 'Evento'}" para ${formatDatePt(newDate)}?`,
+        applyMove
+      );
+      return;
+    }
+    applyMove();
+  }
+
   // CRUD e manipulação de estado do Calendário
   function addCalRow() {
     if (calendarController) {
@@ -371,6 +688,11 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   }
 
   function editCalendarItem(id: string) {
+    const doc = getDoc();
+    if (canMountPreact(doc?.getElementById('calendarActivityModalMount'))) {
+      openActivityModalForEdit(id);
+      return;
+    }
     calendarController?.beginEdit(id);
     renderCalendar();
   }
@@ -449,7 +771,14 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   }
 
   function quickReviewButton(item: Record<string, any>, elId: string) {
-    if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') return '';
+    if (
+      !String(elId || '').startsWith('hoje') ||
+      item.status === 'Concluído' ||
+      item.isEvent ||
+      item.origem === 'Simulado'
+    ) {
+      return '';
+    }
     return `<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}${item.origem === 'Calendário' ? 'Concluir tarefa' : 'Revisar'}</button>`;
   }
 
@@ -460,26 +789,33 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!ul) return;
     if (elId === 'calTarefasHoje') {
       const title = ul.parentElement?.querySelector('h3');
-      if (title) title.textContent = 'Tarefas e revisões de hoje';
+      if (title) title.textContent = 'Compromissos e tarefas de hoje';
     }
     const today = todayISO();
-    const items = getRevisoesUnificadas()
-      .filter(r => r.date === today && r.status !== 'Concluído')
-      .sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
+    const items = sortCalendarItemsForDay(
+      getUnifiedCalendarItems().filter(
+        r => r.date === today && r.status !== 'Concluído' && r.status !== 'Cancelado'
+      )
+    );
 
     if (!items.length) {
       const emptyLabel =
         elId === 'hojeTarefasHoje'
-          ? 'Nenhum evento avulso no calendário para hoje (siga o Plano de hoje acima).'
-          : 'Nenhuma tarefa ou revisão para hoje.';
+          ? 'Nenhum compromisso ou tarefa na Agenda para hoje (siga o Plano de hoje acima).'
+          : 'Nenhuma tarefa, compromisso ou revisão para hoje.';
       ul.innerHTML = `<li class="upcoming-empty">${emptyLabel}</li>`;
       return;
     }
     ul.innerHTML = items
-      .map(
-        x =>
-          `<li><span class="dias-pill dias-hoje mr-2">hoje</span><span style="flex:1">${escapeHtml(x.subject || '—')} · ${escapeHtml(defaultUnifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`
-      )
+      .map(x => {
+        const kindLabel =
+          x.kind === 'review'
+            ? 'Revisão'
+            : CALENDAR_ACTIVITY_LABELS[x.kind] || 'Tarefa';
+        const timeBadge = x.startTime ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>` : '';
+        const subjectPart = x.subject && x.subject !== x.title ? ` · ${escapeHtml(x.subject)}` : '';
+        return `<li><span class="dias-pill dias-hoje mr-2">${escapeHtml(kindLabel)}</span>${timeBadge}<span style="flex:1"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`;
+      })
       .join('');
   }
 
@@ -499,7 +835,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!ul) return;
     const today = todayISO();
     const items = getRevisoesUnificadas()
-      .filter(r => r.date && r.date < today && r.status !== 'Concluído')
+      .filter(r => isCalendarItemOverdue(r, today))
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
     // A lista completa mora na Agenda; Hoje e Calendário mostram só a contagem com o caminho até ela.
@@ -534,7 +870,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       visible
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);
-          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
+          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.title || x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${x.origem === 'Calendário' ? `<button type="button" class="btn ghost small" data-calendar-move-today="${escapeAttr(x.id)}">Mover para hoje</button>` : ''}${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
         })
         .join('') +
       `<li class="overdue-list-footer">${renderCollectionFooter({ variant: 'block', total: entries.length, visible: visible.length, step: DEFAULT_LIST_VISIBLE_ITEMS, label: 'datas', showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > DEFAULT_LIST_VISIBLE_ITEMS ? `resetOverdueGroupLimit('${elId}')` : '' })}</li>`;
@@ -551,6 +887,33 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       updateCal(id, 'status', 'Concluído');
     }
     showToast(origin === 'Agenda de Revisões' ? 'Revisão concluída e indicadores atualizados.' : 'Tarefa concluída e indicadores atualizados.');
+  }
+
+  function exportCalendarIcs() {
+    const doc = getDoc();
+    const items = getUnifiedCalendarItems({ includeRecurring: false }).filter(
+      item => item.origem === 'Calendário'
+    );
+    const ics = buildCalendarIcs(items);
+    if (
+      typeof Blob === 'undefined' ||
+      typeof URL === 'undefined' ||
+      typeof URL.createObjectURL !== 'function' ||
+      !doc?.createElement
+    ) {
+      return ics;
+    }
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = doc.createElement('a');
+    link.href = url;
+    link.download = 'extrato-agenda.ics';
+    doc.body?.appendChild?.(link);
+    link.click?.();
+    link.remove?.();
+    URL.revokeObjectURL?.(url);
+    showToast('Arquivo .ics da Agenda exportado.');
+    return ics;
   }
 
   function bindEvents(doc?: any) {
@@ -621,7 +984,75 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       });
     }
 
-    d.getElementById('addCalRowBtn')?.addEventListener('click', addCalRow);
+    d.getElementById('agendaFilterActivityKind')?.addEventListener('change', (event: any) => {
+      if (!calendarUiState.filters) calendarUiState.filters = {};
+      calendarUiState.filters.activityKind = event.target?.value || '';
+      renderMonthCalendar();
+    });
+
+    const monthContainer = d.getElementById('monthCalendar');
+    if (monthContainer) {
+      monthContainer.addEventListener('click', (event: any) => {
+        const dayEl = event.target?.closest?.('[data-calendar-date]');
+        if (!dayEl) return;
+        const date = dayEl.getAttribute('data-calendar-date');
+        if (date) {
+          (calendarUiState as any).selectedDate = date;
+          renderMonthCalendar();
+        }
+      });
+      monthContainer.addEventListener('keydown', (event: any) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const dayEl = event.target?.closest?.('[data-calendar-date]');
+        if (!dayEl) return;
+        event.preventDefault();
+        const date = dayEl.getAttribute('data-calendar-date');
+        if (date) {
+          (calendarUiState as any).selectedDate = date;
+          renderMonthCalendar();
+        }
+      });
+      monthContainer.addEventListener('dragstart', (event: any) => {
+        const dragEl = event.target?.closest?.('[data-calendar-drag-id]');
+        const id = dragEl?.getAttribute('data-calendar-drag-id');
+        if (id && event.dataTransfer) {
+          event.dataTransfer.setData('text/plain', id);
+          event.dataTransfer.effectAllowed = 'move';
+        }
+      });
+      monthContainer.addEventListener('dragover', (event: any) => {
+        const dropEl = event.target?.closest?.('[data-calendar-drop-date]');
+        if (dropEl) event.preventDefault();
+      });
+      monthContainer.addEventListener('drop', (event: any) => {
+        const dropEl = event.target?.closest?.('[data-calendar-drop-date]');
+        if (!dropEl) return;
+        event.preventDefault();
+        const targetDate = dropEl.getAttribute('data-calendar-drop-date');
+        const draggedId = event.dataTransfer?.getData('text/plain');
+        if (draggedId && targetDate) {
+          rescheduleCalendarItem(draggedId, targetDate);
+        }
+      });
+    }
+
+    d.getElementById('calAtrasadas')?.addEventListener('click', (event: any) => {
+      const moveBtn = event.target?.closest?.('[data-calendar-move-today]');
+      const id = moveBtn?.getAttribute('data-calendar-move-today');
+      if (id) {
+        rescheduleCalendarItem(id, todayISO());
+      }
+    });
+
+    d.getElementById('exportCalendarIcsBtn')?.addEventListener('click', exportCalendarIcs);
+
+    d.getElementById('addCalRowBtn')?.addEventListener('click', () => {
+      if (canMountPreact(d.getElementById('calendarActivityModalMount'))) {
+        openActivityModalForDate((calendarUiState as any).selectedDate || todayISO());
+      } else {
+        addCalRow();
+      }
+    });
   }
 
   return {
@@ -629,6 +1060,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     calendarController,
     getFilteredAndSortedRows,
     getRevisoesUnificadas,
+    getUnifiedCalendarItems,
     calendarViewModel,
     renderCalendarReadRow,
     renderCalendarEditRow,
@@ -636,8 +1068,16 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     renderCalendar,
     renderCalIndicadores,
     renderMonthCalendar,
+    renderWeekCalendar,
+    renderDayDrawer,
+    renderActivityModal,
     renderCalendarFilters,
     setCalendarMobileView,
+    openActivityModalForDate,
+    openActivityModalForEdit,
+    saveActivityModal,
+    rescheduleCalendarItem,
+    exportCalendarIcs,
     addCalRow,
     editCalendarItem,
     cancelCalendarEdit,

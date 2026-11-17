@@ -1427,7 +1427,7 @@
   }
 
   .calendar-view-switch {
-    display: none;
+    display: inline-flex;
     margin-bottom: var(--space-3);
   }
 

@@ -1,14 +1,7 @@
 import type { JSX } from 'preact';
+import type { CalendarItem as CoreCalendarItem } from '../../../core/types.js';
 
-export interface CalendarItem {
-  id: string;
-  date?: string;
-  week?: string;
-  subjectId?: string | null;
-  topicId?: string | null;
-  status: string;
-  reviewType?: string | null;
-}
+export type CalendarItem = CoreCalendarItem;
 
 export interface CalendarTableProps {
   rows: CalendarItem[];

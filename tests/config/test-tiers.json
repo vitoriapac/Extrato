@@ -361,6 +361,11 @@
       ]
     },
     {
+      "file": "tests/e2e/agenda-evolution.spec.js",
+      "tier": "FULL",
+      "rationale": "Jornada E2E dirigida da nova Agenda (criação no modal, visão Semana, integração e conclusão em Hoje)."
+    },
+    {
       "file": "tests/e2e/smoke.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full.",
@@ -680,6 +685,11 @@
       "file": "tests/unit/calendar-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/calendar-projection.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regras puras de projeção da Agenda, carga diária, eventos e buckets sem DOM."
     },
     {
       "file": "tests/unit/calendar-load.test.js",

@@ -220,6 +220,30 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     showConfirm,
     persistAndRender,
     onCompleteAgendaReview: (id: string) => reviewsTabController.completeAgendaReview(id),
+    onStartTimer: (item: any) => {
+      if (item.subjectId) {
+        populateTimerContextControls?.(item.subjectId, item.topicId || null);
+      }
+      startTimer?.();
+      openStudyTimerFocus?.();
+    },
+    onRegisterSimulationResult: (item: any) => {
+      const sim = services.simulationService?.create({
+        date: item.date || appClock.today(),
+        nome: item.title || 'Simulado',
+        correct: 0,
+        total: 0,
+        breakdown: [],
+      });
+      if (sim?.id) {
+        services.calendarService?.update(item.id, {
+          linkedSimulationId: sim.id,
+        });
+        simulationsTabController?.simulationEditController?.beginEdit?.(sim.id);
+      }
+      persistAndRender?.();
+      document.getElementById('tab-questoes')?.click();
+    },
     isMobileHistoryLayout,
     renderCollectionFooter,
     escapeHtml,

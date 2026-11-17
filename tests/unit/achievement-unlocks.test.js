@@ -23,7 +23,7 @@ const session = (date, hours, extra = {}) => ({
   ...extra,
 });
 
-test('esquema atual é 31', () => assert.equal(CURRENT_SCHEMA_VERSION, 31));
+test('esquema atual é >= 31', () => assert.ok(CURRENT_SCHEMA_VERSION >= 31));
 
 test('migração v30 → v31 infere a data das cumulativas pelo registro que atingiu o critério', () => {
   const migrated = migrateState({
@@ -39,7 +39,7 @@ test('migração v30 → v31 infere a data das cumulativas pelo registro que ati
     ],
   });
   const unlocks = migrated.achievementUnlocks;
-  assert.equal(migrated.schemaVersion, 31);
+  assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
   assert.equal(migrated.achievementsBaselined, false);
   assert.deepEqual(unlocks.firstSession, { unlockedAt: '2026-10-01', source: 'migrated' });
   // 5h em 01/10 + 6h em 03/10 = 11h: cruza 10 h no dia 03.

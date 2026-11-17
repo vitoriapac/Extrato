@@ -41,6 +41,8 @@ export function renderCalendarMonth({
   events = [],
   filterSubject = '',
   filterStatus = '',
+  filterActivityKind = '',
+  selectedDate = null,
   today,
   daysUntil,
   escapeHtml,
@@ -52,7 +54,8 @@ export function renderCalendarMonth({
   const visibleEvents = events.filter(
     (event: any) =>
       (!filterSubject || event.subjectId === filterSubject) &&
-      (!filterStatus || event.status === filterStatus)
+      (!filterStatus || event.status === filterStatus) &&
+      (!filterActivityKind || event.kind === filterActivityKind)
   );
   const firstDay = new Date(year, monthIndex, 1),
     cursor = new Date(firstDay);
@@ -61,11 +64,12 @@ export function renderCalendarMonth({
   // Day intensity: pending reviews per day, in three steps relative to the busiest day of the month.
   const pending = new Map<string, number>();
   for (const event of visibleEvents)
-    if (event.status !== 'Concluído' && event.date) pending.set(event.date, (pending.get(event.date) || 0) + 1);
+    if (event.status !== 'Concluído' && event.status !== 'Cancelado' && event.date)
+      pending.set(event.date, (pending.get(event.date) || 0) + 1);
   const busiest = Math.max(0, ...pending.values());
   const loadLevel = (count: number) => (count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0);
   let html =
-    `<p id="calendarScrollHelp" class="text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use a visualização Lista. Pelo teclado, use as setas na grade.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
+    `<p id="calendarScrollHelp" class="text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use a visualização Semana ou Lista. Clique em um dia para ver ou adicionar atividades.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
       .map(day => `<div class="month-header">${day}</div>`)
       .join('');
@@ -73,13 +77,20 @@ export function renderCalendarMonth({
     const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
     const dayEvents = visibleEvents.filter((event: any) => event.date === iso),
       isToday = iso === today,
+      isSelected = iso === selectedDate,
       outside = cursor.getMonth() !== monthIndex;
     const load = pending.get(iso) || 0;
-    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} load-${loadLevel(load)}"${load ? ` title="${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'revisão pendente' : 'revisões pendentes'})</span>` : ''}</div>`;
+    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} load-${loadLevel(load)}" data-calendar-date="${iso}" data-calendar-drop-date="${iso}" role="button" tabindex="0" aria-label="Dia ${cursor.getDate()}, ${load} ${load === 1 ? 'pendência' : 'pendências'}"${load ? ` title="${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'})</span>` : ''}</div>`;
     dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
       const stage = calendarEventStage(event, daysUntil);
-      const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${event.subject || '—'} · ${event.label} (${event.origem})`;
-      html += `<div class="cal-event event-${stage}" title="${escapeAttr(tooltip)}"><span class="sr-only">${CALENDAR_EVENT_STAGES[stage]}: </span>${escapeHtml(event.subject || event.label)}</div>`;
+      const timePrefix = event.startTime ? `${event.startTime} · ` : '';
+      const displayLabel = event.title || event.subject || event.label;
+      const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${timePrefix}${displayLabel} (${event.origem})`;
+      const dragAttrs = event.isDraggable
+        ? ` draggable="true" data-calendar-drag-id="${escapeAttr(event.id)}"`
+        : '';
+      const eventCls = event.isEvent ? ' event-marco' : '';
+      html += `<div class="cal-event event-${stage}${eventCls}"${dragAttrs} title="${escapeAttr(tooltip)}"><span class="sr-only">${CALENDAR_EVENT_STAGES[stage]}: </span>${escapeHtml(timePrefix + displayLabel)}</div>`;
     });
     if (dayEvents.length > maxEventsPerDay)
       html += `<div class="cal-event-more">+${dayEvents.length - maxEventsPerDay} mais</div>`;

@@ -362,16 +362,49 @@ export function createShellUiController(options: ShellUiControllerOptions) {
     });
   }
 
+  function initPreferencesMenu(): () => void {
+    const menu = document.getElementById('preferencesMenu');
+    const trigger = document.getElementById('preferencesMenuBtn');
+    if (!menu || !trigger) return () => {};
+    const close = () => {
+      menu.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+    const onTriggerClick = (event: Event) => {
+      event.stopPropagation();
+      const willOpen = !menu.classList.contains('is-open');
+      menu.classList.toggle('is-open', willOpen);
+      trigger.setAttribute('aria-expanded', String(willOpen));
+    };
+    const onDocClick = (event: Event) => {
+      if (!menu.classList.contains('is-open')) return;
+      if (!menu.contains(event.target as Node)) close();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') close();
+    };
+    trigger.addEventListener('click', onTriggerClick);
+    document.addEventListener('click', onDocClick);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      trigger.removeEventListener('click', onTriggerClick);
+      document.removeEventListener('click', onDocClick);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }
+
   function registerShellEvents(): () => void {
     const cleanupModal = initModalObserver();
     initGoHomeNavigation();
     const cleanupBackToTop = initBackToTop();
     initExecutionModeSwitchers();
     initGuidedTourAndFirstSteps();
+    const cleanupPrefsMenu = initPreferencesMenu();
 
     return () => {
       cleanupModal();
       cleanupBackToTop();
+      cleanupPrefsMenu();
     };
   }
 

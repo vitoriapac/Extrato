@@ -247,6 +247,32 @@ export function wireAppDependencies(options: WireAppDependenciesOptions) {
     clock,
     idGenerator,
     prefix: 'calendar',
+    normalize: (item: Record<string, any>) => {
+      const validKinds = new Set(['task', 'mock_exam', 'essay', 'event', 'manual_review']);
+      const validRecurrences = new Set(['none', 'weekly', 'biweekly', 'monthly']);
+      const kind = validKinds.has(item.kind)
+        ? item.kind
+        : item.reviewType && item.reviewType !== '—'
+          ? 'manual_review'
+          : 'task';
+      const trimTime = (val: unknown) => {
+        const s = String(val || '').trim();
+        return /^\d{2}:\d{2}$/.test(s) ? s : null;
+      };
+      const mins = Number(item.estimatedMinutes);
+      return {
+        ...item,
+        kind,
+        recurrence: validRecurrences.has(item.recurrence) ? item.recurrence : 'none',
+        title: typeof item.title === 'string' ? item.title.trim() || null : null,
+        description: typeof item.description === 'string' ? item.description.trim() || null : null,
+        startTime: trimTime(item.startTime),
+        endTime: trimTime(item.endTime),
+        estimatedMinutes: Number.isFinite(mins) && mins > 0 ? Math.round(mins) : null,
+        location: typeof item.location === 'string' ? item.location.trim() || null : null,
+        externalUrl: typeof item.externalUrl === 'string' ? item.externalUrl.trim() || null : null,
+      };
+    },
   });
 
   const questionService = createRecordService({

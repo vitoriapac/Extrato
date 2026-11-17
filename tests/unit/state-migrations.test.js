@@ -57,3 +57,20 @@ test('migração v29 → v30 registra que backup antigo nunca exportou arquivo (
   // A v1 backup walks every migration and still ends with the field.
   assert.equal(migrateState({ subjects: [] }).lastExportAt, null);
 });
+
+test('migração v31 → v32 normaliza kind nos itens legados de calendar sem alterar datas', () => {
+  const migrated = migrateState({
+    schemaVersion: 31,
+    subjects: [],
+    calendar: [
+      { id: 'c1', date: '2026-11-17', status: 'Não iniciado', reviewType: '—' },
+      { id: 'c2', date: '2026-11-18', status: 'Revisão', reviewType: 'Revisão rápida' },
+      { id: 'c3', date: '2026-11-19', status: 'Não iniciado', kind: 'essay', title: 'Redação' },
+    ],
+  });
+  assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
+  assert.equal(migrated.calendar[0].kind, 'task');
+  assert.equal(migrated.calendar[1].kind, 'manual_review');
+  assert.equal(migrated.calendar[2].kind, 'essay');
+  assert.equal(migrated.calendar[2].title, 'Redação');
+});

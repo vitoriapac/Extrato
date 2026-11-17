@@ -285,6 +285,7 @@ export function TodayJournalSidebarCard(props: TodayJournalSidebarCardProps): JS
                   <Button
                     variant="ghost"
                     size="small"
+                    className="text-red hover:text-red"
                     aria-label="Excluir anotação do diário lateral"
                     onClick={() => props.onDeleteEntry(entry.id)}
                   >

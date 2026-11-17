@@ -1,10 +1,15 @@
-import type { TopicDifficulty, TopicStatus } from '../core/types.ts';
+import type {
+  CalendarActivityKind,
+  CalendarRecurrenceRule,
+  TopicDifficulty,
+  TopicStatus,
+} from '../core/types.ts';
 
 export const STORAGE_KEY = 'bb-premium-study-data';
 export const BACKUP_KEY = STORAGE_KEY + '-automatic-backup';
 export const BACKUP_INDEX_KEY = BACKUP_KEY + '-index';
 export const AUTOMATIC_BACKUP_SLOTS = 5;
-export const CURRENT_SCHEMA_VERSION = 31;
+export const CURRENT_SCHEMA_VERSION = 32;
 export const MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
 export const DB_NAME = 'extrato-estudos-db';
 export const DB_VERSION = 1;
@@ -51,3 +56,26 @@ export const DIFFICULTY_CLASS: Record<TopicDifficulty, string> = {
   Médio: 'diff-medio',
   Difícil: 'diff-dificil',
 };
+
+export const CALENDAR_ACTIVITY_KINDS: CalendarActivityKind[] = [
+  'task',
+  'mock_exam',
+  'essay',
+  'event',
+  'manual_review',
+];
+
+export const CALENDAR_ACTIVITY_LABELS: Record<CalendarActivityKind, string> = {
+  task: 'Tarefa',
+  mock_exam: 'Simulado',
+  essay: 'Redação',
+  event: 'Evento',
+  manual_review: 'Revisão',
+};
+
+export const CALENDAR_RECURRENCE_OPTIONS: Array<{ value: CalendarRecurrenceRule; label: string }> = [
+  { value: 'none', label: 'Sem recorrência' },
+  { value: 'weekly', label: 'Toda semana' },
+  { value: 'biweekly', label: 'A cada 15 dias' },
+  { value: 'monthly', label: 'Todo mês' },
+];

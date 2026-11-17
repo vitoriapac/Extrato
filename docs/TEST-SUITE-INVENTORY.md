@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-356 arquivos Node e 80 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+357 arquivos Node e 81 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -28,6 +28,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/action-first-mobile.spec.js | browser | Aplicação | functional | 52.2 | journey, demo, viewport | none |
 | tests/e2e/adherence-target.spec.js | browser | Aderência | critical | 2.5 | journey, viewport | none |
 | tests/e2e/adherence.spec.js | browser | Aderência | critical | 128.4 | journey, visual-comparison, demo, viewport | windows-only |
+| tests/e2e/agenda-evolution.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/backup-schema24-cycle.spec.js | browser | Backup | critical | 5.1 | journey | none |
 | tests/e2e/chart-sizes.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/comfort.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
@@ -141,6 +142,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/beginner-gate.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-load.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/calendar-projection.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/calendar-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/capacity-informed.test.js | node | Capacidade | critical | — | contract | none |
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |

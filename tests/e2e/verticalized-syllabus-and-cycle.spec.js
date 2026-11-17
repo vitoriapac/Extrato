@@ -223,12 +223,15 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
   await journalSidebar.getByRole('button', { name: 'Salvar no Diário' }).click();
   await expect(journalSidebar).toContainText('Nota salva na aba Hoje');
 
-  // Sequência flexível e montagem/confirmação de Ciclo 2.0
+  // Sequência flexível e atalho direto para a Central do Ciclo em Planejamento
   await page.locator('#executionSequenceBtn').click();
   const cyclePanel = page.locator('[data-study-cycle-panel="true"]');
   await expect(cyclePanel).toBeVisible();
-  await cyclePanel.getByRole('button', { name: /Montar ciclo|Configurar ciclo/ }).click();
-  await bar.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();
+  await cyclePanel.getByRole('button', { name: 'Ajustar na Central do Ciclo' }).first().click();
+  const cycleCenter = page.locator('#metasCycleCenterMount [data-study-cycle-center="true"]');
+  await expect(cycleCenter).toBeVisible();
+  await cycleCenter.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();
+  await activateTab(page, 'hoje');
   await expect(cyclePanel).toContainText('Próximo bloco:');
 });
 

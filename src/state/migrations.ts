@@ -448,6 +448,22 @@ export function createStateMigrator({
     data.schemaVersion = 31;
     return data;
   }
+  // v32: agenda unificada de preparação — normaliza kind nos itens legados de state.calendar sem perder dados.
+  function migrateV31toV32(data: Record<string, any>) {
+    if (Array.isArray(data.calendar)) {
+      data.calendar = data.calendar.map((item: any) => {
+        if (!item || typeof item !== 'object') return item;
+        if (item.kind) return item;
+        const hasReviewType = Boolean(item.reviewType && item.reviewType !== '—');
+        return {
+          ...item,
+          kind: hasReviewType ? 'manual_review' : 'task',
+        };
+      });
+    }
+    data.schemaVersion = 32;
+    return data;
+  }
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -482,6 +498,7 @@ export function createStateMigrator({
         28: migrateV28toV29,
         29: migrateV29toV30,
         30: migrateV30toV31,
+        31: migrateV31toV32,
       },
     });
   }

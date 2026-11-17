@@ -1,6 +1,6 @@
 import { SegmentedControl } from '../../primitives/tabs.js';
 
-export type CalendarMobileView = 'month' | 'agenda';
+export type CalendarMobileView = 'month' | 'week' | 'agenda';
 
 export interface CalendarViewSwitchProps {
   value: CalendarMobileView;
@@ -21,6 +21,12 @@ export function CalendarViewSwitch({ value, onChange }: CalendarViewSwitchProps)
           label: 'Mês',
           className: 'calendar-view-btn',
           buttonProps: { 'data-calendar-view': 'month' },
+        },
+        {
+          value: 'week',
+          label: 'Semana',
+          className: 'calendar-view-btn',
+          buttonProps: { 'data-calendar-view': 'week' },
         },
         {
           value: 'agenda',

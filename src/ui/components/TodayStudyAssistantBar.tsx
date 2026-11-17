@@ -16,15 +16,12 @@ import {
 import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
-import { StudyCycleBlockList } from './StudyCycleBlockList.js';
 import { StudyCycleDonut } from './StudyCycleDonut.js';
 
 export type AssistantPanelKind =
   | 'none'
   | 'quick'
   | 'copilot'
-  | 'journal'
-  | 'cycle_config'
   | 'weekly_closing';
 
 export interface CycleDraftState {
@@ -200,20 +197,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           <div class="flex flex-wrap items-center gap-2">
             {props.onOpenPlanningCycle && (
               <Button variant="ghost" size="small" onClick={props.onOpenPlanningCycle}>
-                <span>Central em Planejamento</span>
+                <Icon name="settings" size={14} class="icon-inline shrink-0" />
+                <span>Ajustar na Central do Ciclo</span>
                 <Icon name="chevron-right" size={13} class="icon-inline" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="small"
-              onClick={() =>
-                props.onTogglePanel(activePanel === 'cycle_config' ? 'none' : 'cycle_config')
-              }
-            >
-              <Icon name="settings" size={14} class="icon-inline shrink-0" />
-              <span>{cycle ? 'Configurar ciclo' : 'Montar ciclo'}</span>
-            </Button>
           </div>
         </div>
 
@@ -281,7 +269,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
               )
             )}
 
-            {activePanel !== 'cycle_config' && activeCycleShares.length > 0 && (
+            {activeCycleShares.length > 0 && (
               <StudyCycleDonut
                 shares={activeCycleShares}
                 subjects={activeSubjects}
@@ -328,7 +316,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             <p class="text-xs text-content-secondary m-0">
               Estude em fila rotativa por blocos de 15 a 120 minutos sem gerar atrasos automáticos em dias sem estudo.
             </p>
-            {activePanel !== 'cycle_config' && activeCycleShares.length > 0 && (
+            {activeCycleShares.length > 0 && (
               <StudyCycleDonut
                 shares={activeCycleShares}
                 subjects={activeSubjects}
@@ -345,13 +333,15 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
                   <Icon name="play" size={13} class="icon-inline" />
                   <span>Ativar ciclo recomendado</span>
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => props.onTogglePanel('cycle_config')}
-                >
-                  <span>Ajustar blocos</span>
-                </Button>
+                {props.onOpenPlanningCycle && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={props.onOpenPlanningCycle}
+                  >
+                    <span>Ajustar na Central do Ciclo</span>
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -414,100 +404,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           </span>
         </Button>
       </div>
-
-      {/* Configurador do Ciclo 2.0 com prévia obrigatória */}
-      {activePanel === 'cycle_config' && (
-        <section
-          class="pt-4 border-t border-border-subtle space-y-4 min-w-0"
-          aria-label="Configurar ciclo de estudos"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <strong class="module-heading__title text-content-primary">Configuração e prévia do ciclo</strong>
-            <Button variant="ghost" size="small" aria-label="Fechar configuração do ciclo" onClick={() => props.onTogglePanel('none')}>
-              <Icon name="x" size={14} />
-            </Button>
-          </div>
-          <div class="flex flex-wrap gap-4 text-xs">
-            <label class="flex flex-col gap-1">
-              <span class="text-content-secondary">Modo</span>
-              <select
-                class="select-control"
-                aria-label="Modo de distribuição do ciclo"
-                value={cycleDraft.mode}
-                onChange={e =>
-                  props.onChangeCycleDraftConfig(
-                    e.currentTarget.value as StudyCycleMode,
-                    cycleDraft.blockDurationMinutes
-                  )
-                }
-              >
-                <option value="adaptive">Adaptativo (pesos e prioridades)</option>
-                <option value="balanced">Equilibrado (igual por disciplina)</option>
-                <option value="manual">Manual</option>
-              </select>
-            </label>
-            <label class="flex flex-col gap-1">
-              <span class="text-content-secondary">Duração do bloco (15–120 min)</span>
-              <input
-                type="number"
-                class="select-control font-data"
-                min={15}
-                max={120}
-                step={5}
-                aria-label="Duração padrão do bloco em minutos"
-                value={cycleDraft.blockDurationMinutes}
-                onInput={e =>
-                  props.onChangeCycleDraftConfig(
-                    cycleDraft.mode,
-                    Math.max(15, Math.min(120, Number(e.currentTarget.value) || 60))
-                  )
-                }
-              />
-            </label>
-          </div>
-
-          {cycleDraft.preview && (
-            <div class="space-y-2 text-xs">
-              <p class="m-0 text-content-secondary">
-                Prévia: <strong class="font-data text-content-primary">{cycleDraft.preview.blocksCount} blocos</strong> ·{' '}
-                <span class="font-data">{formatPlanMinutes(cycleDraft.preview.totalDurationMinutes)}</span> por volta completa. Alterações criam nova versão sem reescrever voltas passadas.
-              </p>
-              {cycleDraft.preview.subjectShares.length > 0 && (
-                <StudyCycleDonut
-                  shares={cycleDraft.preview.subjectShares}
-                  subjects={activeSubjects}
-                  size={136}
-                  strokeWidth={16}
-                  centerLabel="por volta"
-                  maxVisibleLegend={5}
-                />
-              )}
-              <StudyCycleBlockList
-                blocks={cycleDraft.preview.cycle.blocks}
-                isManualMode={cycleDraft.mode === 'manual'}
-                onMoveBlock={props.onMoveCycleDraftBlock}
-                onEnableManualMode={() =>
-                  props.onChangeCycleDraftConfig('manual', cycleDraft.blockDurationMinutes)
-                }
-              />
-              {cycleDraft.preview.errors.length > 0 && (
-                <p class="text-red m-0">{cycleDraft.preview.errors[0]}</p>
-              )}
-              <div class="flex flex-wrap gap-2">
-                <Button
-                  variant="primary"
-                  size="small"
-                  disabled={!cycleDraft.preview.valid}
-                  onClick={props.onConfirmCycleDraft}
-                >
-                  <Icon name="check" size={13} class="icon-inline" />
-                  <span>Confirmar nova versão do ciclo</span>
-                </Button>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
 
       {/* Funcionalidade B: Modo Estudo Rápido */}
       {activePanel === 'quick' && (
@@ -630,6 +526,10 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             </Button>
           </div>
 
+          <p class="m-0 text-xs text-content-secondary">
+            Orientação atual: <strong class="text-content-primary">{copilot.title}</strong>
+          </p>
+
           <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas rápidas">
             {visibleCopilotQuestions.map(item => {
               const selected = copilotQuestion === item.key;
@@ -686,11 +586,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         </section>
       )}
 
-      {/* Funcionalidade C: Diário de Aprendizagem */}
+      {/* Funcionalidade D: Fechamento Semanal Inteligente */}
       {activePanel === 'weekly_closing' && weeklyClosing && (
         <section
           id="todayWeeklyClosingPanel"
-          class="pt-3 border-t border-border-subtle space-y-2.5 text-xs min-w-0"
+          class="pt-4 border-t border-border-subtle space-y-4 text-xs min-w-0"
           aria-label="Ritual de Fechamento Semanal"
         >
           <div class="flex items-center justify-between gap-2">
@@ -714,12 +614,12 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           </div>
 
           {weeklyClosing.comparisonWarning && (
-            <p class="m-0 text-content-secondary border-l-3 border-l-accent pl-3 py-0.5">
+            <p class="m-0 text-content-secondary border-l-3 border-l-accent pl-4 py-1">
               {weeklyClosing.comparisonWarning}
             </p>
           )}
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2.5 border-t border-border-subtle">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-border-subtle">
             <div class="space-y-1">
               <strong class="text-content-primary">O que funcionou</strong>
               {(weeklyClosing.whatWorked || []).map((line: string, i: number) => (

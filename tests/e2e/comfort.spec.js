@@ -58,6 +58,8 @@ test('Visão geral mostra a constância de 4 semanas e a densidade compacta fica
   await expect(strip.locator('.consistency-strip__day')).toHaveCount(28);
   await expectNoPageOverflow(page);
 
+  const prefsBtn = page.locator('#preferencesMenuBtn');
+  if (await prefsBtn.isVisible()) await prefsBtn.click();
   const density = page.locator('#densityToggleBtn');
   await expect(density).toHaveAttribute('aria-pressed', 'false');
   await density.click();

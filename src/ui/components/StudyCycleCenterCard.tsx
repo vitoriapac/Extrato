@@ -91,7 +91,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
 
         <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Modo de execução em Hoje">
           <Button
-            variant={executionMode === 'sequence' ? 'secondary' : 'ghost'}
+            variant={executionMode === 'sequence' ? 'tonal' : 'secondary'}
             size="small"
             aria-pressed={executionMode === 'sequence'}
             onClick={() => props.onSetExecutionMode('sequence')}
@@ -99,7 +99,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
             <span>Ciclo de estudos</span>
           </Button>
           <Button
-            variant={executionMode === 'agenda' ? 'secondary' : 'ghost'}
+            variant={executionMode === 'agenda' ? 'tonal' : 'secondary'}
             size="small"
             aria-pressed={executionMode === 'agenda'}
             onClick={() => props.onSetExecutionMode('agenda')}

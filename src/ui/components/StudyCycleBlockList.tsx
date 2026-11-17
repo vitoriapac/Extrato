@@ -125,7 +125,7 @@ export function StudyCycleBlockList({
 
       <div class="flex flex-wrap items-center gap-4">
         {typeof maxVisible === 'number' &&
-          (blocks.length > maxVisible || !isManualMode) &&
+          blocks.length > maxVisible &&
           onToggleShowAll && (
             <Button
               variant="tertiary"

@@ -21,9 +21,9 @@ test('calendário do mês: intensidade pelas revisões pendentes, com texto no n
   });
   const day = n => html.match(new RegExp(`<div class="month-day[^"]*"[^>]*><div class="day-number">${n}(<span[^<]*</span>)?</div>`))[0];
   assert.match(day(5), /load-3/);
-  assert.match(day(5), /3 revisões pendentes/);
+  assert.match(day(5), /3 atividades pendentes/);
   assert.match(day(6), /load-1/);
-  assert.match(day(6), /\(1 revisão pendente\)/);
+  assert.match(day(6), /\(1 atividade pendente\)/);
   // Completed reviews are not load.
   assert.match(day(7), /load-0/);
   assert.doesNotMatch(day(7), /pendente/);

@@ -1048,8 +1048,19 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           })
         : null;
 
-    if ((assistantPanel === 'cycle_config' || (executionMode === 'sequence' && !cycle)) && !cycleDraftState.preview) {
+    if (executionMode === 'sequence' && !cycle && !cycleDraftState.preview) {
       refreshCycleDraftPreview();
+    }
+
+    const timerStartBtn = doc.getElementById('timerStartBtn') as HTMLElement | null;
+    if (timerStartBtn) {
+      const hasPrimaryCycleAction =
+        executionMode === 'sequence' && Boolean(currentBlock || cycleDraftState.preview?.valid);
+      timerStartBtn.classList.toggle('tonal', hasPrimaryCycleAction);
+    }
+    const timerFold = doc.getElementById('timerManualSelectorsFold') as HTMLDetailsElement | null;
+    if (timerFold && executionMode === 'sequence' && Boolean(cycle)) {
+      timerFold.open = false;
     }
 
     const startCurrentCycleBlock = (): void => {
@@ -1088,7 +1099,6 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         weeklyClosing,
         onTogglePanel: panel => {
           assistantPanel = panel;
-          if (panel === 'cycle_config') refreshCycleDraftPreview();
           renderStudyAssistantBar();
         },
         onStartCycleBlock: startCurrentCycleBlock,
@@ -1265,10 +1275,14 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   }
 
   function openAssistantPanel(
-    panel: AssistantPanelKind,
+    panel: AssistantPanelKind | 'journal' | 'cycle_config',
     opts: { sessionId?: string; quickMinutes?: number } = {}
   ) {
-    assistantPanel = panel;
+    if (panel === 'cycle_config') {
+      handleOpenPlanningCycle();
+      return;
+    }
+    assistantPanel = panel === 'journal' ? 'none' : panel;
     if (typeof opts.quickMinutes === 'number' && Number.isFinite(opts.quickMinutes)) {
       quickMinutes = Math.max(10, Math.min(180, Math.round(opts.quickMinutes)));
     }
@@ -1293,7 +1307,6 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         };
       }
     }
-    if (panel === 'cycle_config') refreshCycleDraftPreview();
     _activateTab('hoje');
     const subPanel = doc?.getElementById('todaySub-hoje');
     if (subPanel?.hidden) {

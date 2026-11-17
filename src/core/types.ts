@@ -235,13 +235,36 @@ export interface ActiveTimerState {
   cycleBlockId?: string | null;
 }
 
+export type CalendarActivityKind =
+  | 'task'
+  | 'mock_exam'
+  | 'essay'
+  | 'event'
+  | 'manual_review';
+
+export type CalendarRecurrenceRule = 'none' | 'weekly' | 'biweekly' | 'monthly';
+
 export interface CalendarItem {
   id: string;
   date: string;
   status: string;
+  kind?: CalendarActivityKind;
+  title?: string | null;
+  description?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  estimatedMinutes?: number | null;
+  recurrence?: CalendarRecurrenceRule | null;
   subjectId?: string | null;
   topicId?: string | null;
   reviewType?: string | null;
+  location?: string | null;
+  externalUrl?: string | null;
+  linkedSimulationId?: string | null;
+  examId?: string | null;
+  week?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface ReviewAgendaItem {

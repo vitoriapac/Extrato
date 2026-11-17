@@ -1,11 +1,20 @@
 import { addLocalDays } from '../../core/date-utils.js';
 
-type Item = { date?: string | null; status?: string | null; origem?: string | null };
+type Item = {
+  date?: string | null;
+  status?: string | null;
+  origem?: string | null;
+  kind?: string | null;
+  isEvent?: boolean;
+};
 export type AgendaBucket = { total: number; reviews: number; tasks: number };
 
 // Regras de data da Agenda (as mesmas de getGroupedReviews): pendente e com data válida.
-const isPending = (item: Item) => item.status !== 'Concluído' && Boolean(item.date);
-export const isOverdueItem = (item: Item, today: string) => isPending(item) && item.date! < today;
+const isPending = (item: Item) =>
+  item.status !== 'Concluído' && item.status !== 'Cancelado' && Boolean(item.date);
+const isEvent = (item: Item) => Boolean(item.isEvent) || item.kind === 'event';
+export const isOverdueItem = (item: Item, today: string) =>
+  isPending(item) && !isEvent(item) && item.date! < today;
 export const isTodayItem = (item: Item, today: string) => isPending(item) && item.date === today;
 const isNext7 = (item: Item, today: string) =>
   isPending(item) && item.date! > today && item.date! <= (addLocalDays(today, 7) || today);
