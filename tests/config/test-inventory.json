@@ -2049,7 +2049,7 @@
         "../../src/demo/demo-generator.js",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6228,9 +6228,13 @@
         "../../src/application/copilot/study-copilot-service.js",
         "../../src/application/sessions/build-session-result-view-model.js",
         "../../src/ui/renderers/session-result-renderer.js",
-        "../../src/ui/components/TodayStudyAssistantBar.js"
+        "../../src/ui/components/TodayStudyAssistantBar.js",
+        "../../src/ui/components/OverviewCopilotCard.js",
+        "../../src/ui/components/StudyCycleCenterCard.js",
+        "../../src/ui/components/TodayJournalSidebarCard.js",
+        "../../src/ui/controllers/search-controller.js"
       ],
-      "staticTestDeclarations": 9,
+      "staticTestDeclarations": 10,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

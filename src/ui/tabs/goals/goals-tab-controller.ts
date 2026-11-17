@@ -1,6 +1,18 @@
 import { h } from 'preact';
-import { decorateAdvancedReveals } from '../../essential-mode.js';
+import { decorateAdvancedReveals, revealAdvanced } from '../../essential-mode.js';
 import { isCapacityInformed } from '../../../application/goals/capacity-informed.js';
+import { StudyCycleCenterCard } from '../../components/StudyCycleCenterCard.js';
+import type { CycleDraftState } from '../../components/TodayStudyAssistantBar.js';
+import {
+  applyStudyCycleVersion,
+  buildStudyCyclePreview,
+  computeDefaultCycleWeights,
+  computeStudyCycleLapSummary,
+  reorderStudyCycleBlocks,
+  setStudyCycleStatus,
+  type StudyCycleMode,
+  type StudyCycleQueue,
+} from '../../../domain/planning/study-cycle-engine.js';
 import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
 import { WeeklyAvailabilityGrid } from './WeeklyAvailabilityGrid.js';
@@ -71,6 +83,13 @@ export interface GoalsTabControllerContext {
   recentPerformance?: () => any;
   addMetaDisciplina?: (subjectId: string, rawMeta: string) => void;
   computeRitmo?: () => any;
+  scheduleSave?: () => void;
+  persistAndRender?: () => void;
+  showToast?: (msg: string) => void;
+  nowISO?: () => string;
+  activateTab?: (tab: string) => void;
+  intelligenceCandidates?: () => any[];
+  renderPlanoHoje?: () => void;
 }
 
 export function createGoalsTabController(ctx: GoalsTabControllerContext) {
@@ -414,10 +433,172 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     renderSelectedPeriodComparison();
   }
 
+  let lastCycleDraftSignature = '';
+  const cycleDraftState: CycleDraftState = {
+    mode: 'adaptive',
+    blockDurationMinutes: 60,
+    preview: null,
+  };
+
+  function syncCycleDraftFromState(force = false): void {
+    const state = resolveState() || {};
+    const activeSubs = (state.subjects || []).filter((s: any) => s && !s.archived);
+    if (!lastCycleDraftSignature && state.studyCycle) {
+      cycleDraftState.mode = state.studyCycle.mode || 'adaptive';
+      const firstDuration = Number(state.studyCycle.blocks?.[0]?.durationMinutes);
+      if (Number.isFinite(firstDuration) && firstDuration >= 15 && firstDuration <= 120) {
+        cycleDraftState.blockDurationMinutes = Math.round(firstDuration);
+      }
+    }
+    const sig = `${cycleDraftState.mode}|${cycleDraftState.blockDurationMinutes}|${activeSubs.map((s: any) => s.id).join(',')}`;
+    if (!force && cycleDraftState.preview && lastCycleDraftSignature === sig) return;
+    lastCycleDraftSignature = sig;
+    const candidates = ctx.intelligenceCandidates ? ctx.intelligenceCandidates() : [];
+    const customBlocks =
+      cycleDraftState.mode === 'manual' && state.studyCycle?.blocks?.length
+        ? state.studyCycle.blocks
+        : activeSubs.map((s: any, idx: number) => ({
+            id: `block-${s.id}-${idx + 1}`,
+            subjectId: s.id,
+            subjectName: s.name,
+            durationMinutes: cycleDraftState.blockDurationMinutes,
+            order: idx + 1,
+          }));
+    cycleDraftState.preview = buildStudyCyclePreview({
+      id: state.studyCycle?.id || 'default-cycle',
+      name: state.studyCycle?.name || 'Ciclo de Estudos Principal',
+      examId: state.examBlueprint?.activeExamTags?.[0] || null,
+      mode: cycleDraftState.mode,
+      subjects: activeSubs,
+      subjectWeights: computeDefaultCycleWeights(state?.examBlueprint?.subjects, candidates),
+      blockDurationMinutes: cycleDraftState.blockDurationMinutes,
+      customBlocks,
+      activeSubjectIds: activeSubs.map((s: any) => s.id),
+      nowISO: ctx.nowISO ? ctx.nowISO() : new Date().toISOString(),
+    });
+  }
+
+  function renderStudyCycleCenterSection(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    if (!doc || typeof globalThis.document === 'undefined') return;
+    const subSemana = doc.getElementById('metasSub-semana') as HTMLElement | null;
+    if (!subSemana || subSemana.ownerDocument !== globalThis.document) return;
+
+    const replanSection =
+      (doc.getElementById('weeklyReplan')?.closest?.('section') as HTMLElement | null) || null;
+    let mount = doc.getElementById('metasCycleCenterMount') as HTMLElement | null;
+    if (!mount) {
+      const created = doc.createElement('div') as HTMLElement;
+      created.id = 'metasCycleCenterMount';
+      created.dataset.advanced = 'Central do Ciclo de Estudos';
+      if (replanSection && replanSection.parentNode === subSemana) {
+        subSemana.insertBefore(created, replanSection.nextSibling);
+      } else {
+        subSemana.appendChild(created);
+      }
+      mount = created;
+    }
+    if (!mount || mount.ownerDocument !== globalThis.document) return;
+
+    const state = resolveState() || {};
+    const activeSubs = (state.subjects || []).filter((s: any) => s && !s.archived);
+    if (activeSubs.length === 0) {
+      mount.hidden = true;
+      const before = mount.previousElementSibling as HTMLElement | null;
+      if (before?.classList?.contains('advanced-reveal')) before.hidden = true;
+      return;
+    }
+
+    mount.hidden = false;
+    decorateAdvancedReveals(subSemana);
+    const before = mount.previousElementSibling as HTMLElement | null;
+    if (before?.classList?.contains('advanced-reveal')) {
+      before.hidden = mount.classList.contains('is-advanced-open');
+    }
+
+    syncCycleDraftFromState();
+    const cycle = (state.studyCycle || null) as StudyCycleQueue | null;
+    const executionMode = state.executionMode === 'sequence' ? 'sequence' : 'agenda';
+
+    mountPreact(
+      h(StudyCycleCenterCard, {
+        executionMode,
+        cycle,
+        cycleLap: computeStudyCycleLapSummary(cycle),
+        cycleDraft: cycleDraftState,
+        onSetExecutionMode: mode => {
+          state.executionMode = mode === 'sequence' ? 'sequence' : 'agenda';
+          ctx.scheduleSave?.();
+          renderStudyCycleCenterSection();
+          ctx.renderPlanoHoje?.();
+        },
+        onToggleCyclePause: () => {
+          if (!state.studyCycle) return;
+          const now = ctx.nowISO ? ctx.nowISO() : new Date().toISOString();
+          state.studyCycle = setStudyCycleStatus(
+            state.studyCycle,
+            state.studyCycle.status === 'paused' ? 'active' : 'paused',
+            now
+          );
+          ctx.scheduleSave?.();
+          renderStudyCycleCenterSection();
+          ctx.renderPlanoHoje?.();
+        },
+        onChangeCycleDraftConfig: (mode: StudyCycleMode, duration: number) => {
+          cycleDraftState.mode = mode;
+          cycleDraftState.blockDurationMinutes = duration;
+          syncCycleDraftFromState(true);
+          renderStudyCycleCenterSection();
+        },
+        onMoveCycleDraftBlock: (fromIdx: number, toIdx: number) => {
+          if (!cycleDraftState.preview?.cycle) return;
+          const now = ctx.nowISO ? ctx.nowISO() : new Date().toISOString();
+          cycleDraftState.preview = {
+            ...cycleDraftState.preview,
+            cycle: reorderStudyCycleBlocks(cycleDraftState.preview.cycle, fromIdx, toIdx, now),
+          };
+          renderStudyCycleCenterSection();
+        },
+        onConfirmCycleDraft: () => {
+          if (!cycleDraftState.preview?.valid) return;
+          const now = ctx.nowISO ? ctx.nowISO() : new Date().toISOString();
+          state.studyCycle = applyStudyCycleVersion(
+            state.studyCycle,
+            cycleDraftState.preview.cycle,
+            now
+          );
+          state.executionMode = 'sequence';
+          ctx.scheduleSave?.();
+          ctx.showToast?.('Nova versão do ciclo confirmada sem reescrever o histórico.');
+          renderStudyCycleCenterSection();
+          ctx.renderPlanoHoje?.();
+        },
+        onGoToTodayCycle: () => {
+          ctx.activateTab?.('hoje');
+          (doc.getElementById('todayTab-hoje') as HTMLElement | null)?.click?.();
+        },
+      }),
+      mount
+    );
+  }
+
+  function openPlanningCycle(): void {
+    ctx.activateTab?.('metas');
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    (doc?.getElementById('metasTab-semana') as HTMLElement | null)?.click?.();
+    renderStudyCycleCenterSection();
+    const mount = doc?.getElementById('metasCycleCenterMount') as HTMLElement | null;
+    if (mount && !mount.hidden) {
+      revealAdvanced(mount);
+      mount.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   function renderPlanExecutionSection(): void {
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     const container = doc?.getElementById('planExecutionResults');
     if (container) mountPlanExecution(container);
+    renderStudyCycleCenterSection();
   }
 
   function renderWeeklyHoursGoalsSection(): void {
@@ -562,6 +743,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     renderSelectedPeriodComparison,
     renderMetasSection,
     renderPlanExecutionSection,
+    openPlanningCycle,
     renderWeeklyHoursGoalsSection,
     renderMetasPorDisciplinaSection,
     renderRitmo,

@@ -145,6 +145,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     renderApprovalDashboard: () => analyticsUi?.approvalTabController?.renderApprovalDashboard(),
     analysisContextBanner: (dest: string) =>
       analyticsUi.analysisNavigationController.analysisContextBanner(dest),
+    activateTab,
   });
 
   analyticsUi = wireAnalyticsAndShellUi({
@@ -181,6 +182,13 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       executionUi.studyRecommendationController.executeStudyRecommendation(id, source),
     getDailyPriority: (action: any) =>
       executionUi.todayTabController.dailyExecutionController.build(action)?.priority,
+    openAssistantPanel: (
+      panel: 'none' | 'quick' | 'copilot' | 'journal' | 'cycle_config' | 'weekly_closing',
+      opts?: { sessionId?: string; quickMinutes?: number }
+    ) => executionUi?.todayTabController?.openAssistantPanel?.(panel, opts),
+    openPlanningCycle: () => planningUi?.goalsTabController?.openPlanningCycle?.(),
+    openWeeklyClose: () => planningUi?.weeklyCloseModalController?.openWeeklyClose?.(),
+    startGuidedTimerSession: (opts: any) => executionUi?.studyTimerRuntime?.startGuidedTimerSession?.(opts),
   });
 
   executionUi = wireExecutionAndOnboardingUi({

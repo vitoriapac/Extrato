@@ -758,3 +758,26 @@ export function explainCycleVsPriority(
     suggestedAction: 'open_priority_preview' as const,
   };
 }
+
+/**
+ * Calcula pesos padrão por disciplina para prévia e geração do ciclo (1–5),
+ * combinando pesos do edital e candidatos prioritários de estudo.
+ */
+export function computeDefaultCycleWeights(
+  blueprintSubjects?: ReadonlyArray<Record<string, any>> | null,
+  candidates?: ReadonlyArray<Record<string, any>> | null
+): Record<string, number> {
+  const weights: Record<string, number> = {};
+  for (const row of blueprintSubjects || []) {
+    if (!row?.subjectId) continue;
+    const w = Number(row.questionWeight || 1) * (row.priority === 'high' ? 1.5 : 1);
+    weights[String(row.subjectId)] = Math.max(1, Math.min(5, Math.round(w * 1.5)));
+  }
+  for (const c of candidates || []) {
+    if (c?.subjectId && (Number(c.score) || 0) >= 75) {
+      const sid = String(c.subjectId);
+      weights[sid] = Math.min(5, Math.max(weights[sid] || 1, 3));
+    }
+  }
+  return weights;
+}

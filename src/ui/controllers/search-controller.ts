@@ -175,6 +175,30 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     action: 'report',
     icon: 'file-type-pdf',
   },
+  {
+    label: 'Estudo rápido: Tenho X minutos',
+    keywords: 'estudo rapido minutos tempo livre 15 30 45 60 bloco curto',
+    action: 'quick-study',
+    icon: 'clock',
+  },
+  {
+    label: 'Abrir Copiloto de Estudos Guiado',
+    keywords: 'copiloto orientacao guiada o que estudar agora duvida decisao',
+    action: 'copilot',
+    icon: 'compass',
+  },
+  {
+    label: 'Abrir Diário de Aprendizagem',
+    keywords: 'diario aprendizagem anotacoes duvidas pegadinhas revisao caderno',
+    action: 'learning-journal',
+    icon: 'book',
+  },
+  {
+    label: 'Configurar Ciclo de Estudos 2.0',
+    keywords: 'ciclo estudos sequencia flexivel blocos rotacao configurar central',
+    action: 'study-cycle-center',
+    icon: 'repeat',
+  },
 ];
 
 export const normalizeSearchText = (value: string | null | undefined): string =>
@@ -221,6 +245,10 @@ export interface SearchControllerOptions {
   openExamImport?: () => void;
   getRecommendations?: () => any[];
   onExecuteRecommendation?: (id: string) => void;
+  onOpenQuickStudy?: () => void;
+  onOpenCopilot?: () => void;
+  onOpenJournal?: () => void;
+  onOpenStudyCycleCenter?: () => void;
   jumpToTopic: (subjectId: string, topicId: string) => void;
   escapeHtml?: (str: string) => string;
   escapeAttr?: (str: string) => string;
@@ -240,7 +268,7 @@ export function createSearchController(options: SearchControllerOptions) {
             normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)
           )
         : SEARCH_COMMANDS
-    ).slice(0, 20);
+    ).slice(0, 32);
     const topics = normalized ? performGlobalSearch(q, getState().subjects || []) : [];
     return {
       normalized,
@@ -321,6 +349,45 @@ export function createSearchController(options: SearchControllerOptions) {
         showToast(
           'Ainda não há uma recomendação elegível. Você pode iniciar uma sessão livre ou revisar o planejamento.'
         );
+      }
+    } else if (action === 'quick-study') {
+      if (options.onOpenQuickStudy) {
+        options.onOpenQuickStudy();
+      } else {
+        activateTab('hoje');
+        (
+          document.querySelector('[data-today-assistant-bar="true"] [aria-controls="todayQuickStudyPanel"]') as HTMLElement | null
+        )?.click();
+      }
+    } else if (action === 'copilot') {
+      if (options.onOpenCopilot) {
+        options.onOpenCopilot();
+      } else {
+        activateTab('hoje');
+        (
+          document.querySelector('[data-today-assistant-bar="true"] [aria-controls="todayCopilotPanel"]') as HTMLElement | null
+        )?.click();
+      }
+    } else if (action === 'learning-journal') {
+      if (options.onOpenJournal) {
+        options.onOpenJournal();
+      } else {
+        activateTab('hoje');
+        (
+          document.querySelector('#todayJournalSidebarMount, [data-today-journal-sidebar="true"]') as HTMLElement | null
+        )?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
+      }
+    } else if (action === 'study-cycle-center') {
+      if (options.onOpenStudyCycleCenter) {
+        options.onOpenStudyCycleCenter();
+      } else {
+        activateTab('metas');
+        (document.getElementById('metasTab-semana') as HTMLElement | null)?.click?.();
+        const cycleMount = document.getElementById('metasCycleCenterMount') as HTMLElement | null;
+        if (cycleMount) {
+          revealAdvanced(cycleMount);
+          cycleMount.scrollIntoView?.({ block: 'start', behavior: scrollBehavior() });
+        }
       }
     } else if (command.tab) {
       activateTab(command.tab);

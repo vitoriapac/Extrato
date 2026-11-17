@@ -32,9 +32,12 @@ import {
   type CycleDraftState,
   type JournalFormState,
 } from '../../components/TodayStudyAssistantBar.js';
+import { TodayJournalSidebarCard } from '../../components/TodayJournalSidebarCard.js';
+import { revealAdvanced } from '../../essential-mode.js';
 import {
   applyStudyCycleVersion,
   buildStudyCyclePreview,
+  computeDefaultCycleWeights,
   computeStudyCycleLapSummary,
   explainCycleVsPriority,
   getCurrentCycleBlock,
@@ -185,6 +188,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     preview: null,
   };
   const journalFilters = { subjectId: '', tag: '', query: '' };
+  let journalSidebarFormOpen = false;
   let journalForm: JournalFormState = {
     sessionId: null,
     subjectId: '',
@@ -754,22 +758,6 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderPlanoHoje();
   }
 
-  function computeSubjectWeightsForCycle(state: any, candidates: any[]): Record<string, number> {
-    const weights: Record<string, number> = {};
-    const bpSubjects = state?.examBlueprint?.subjects || [];
-    for (const row of bpSubjects) {
-      if (!row?.subjectId) continue;
-      const w = Number(row.questionWeight || 1) * (row.priority === 'high' ? 1.5 : 1);
-      weights[row.subjectId] = Math.max(1, Math.min(5, Math.round(w * 1.5)));
-    }
-    for (const c of candidates) {
-      if (c?.subjectId && (Number(c.score) || 0) >= 75) {
-        weights[c.subjectId] = Math.min(5, Math.max(weights[c.subjectId] || 1, 3));
-      }
-    }
-    return weights;
-  }
-
   function refreshCycleDraftPreview() {
     const state = getState();
     const activeSubs = (state.subjects || []).filter((s: any) => s && !s.archived);
@@ -790,7 +778,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       examId: state.examBlueprint?.activeExamTags?.[0] || null,
       mode: cycleDraftState.mode,
       subjects: activeSubs,
-      subjectWeights: computeSubjectWeightsForCycle(state, candidates),
+      subjectWeights: computeDefaultCycleWeights(state?.examBlueprint?.subjects, candidates),
       blockDurationMinutes: cycleDraftState.blockDurationMinutes,
       customBlocks,
       activeSubjectIds: activeSubs.map((s: any) => s.id),
@@ -813,6 +801,163 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         topicName: r.label ? String(r.label).split('·')[0].trim() : 'Revisão',
         daysOverdue: Math.max(1, Math.abs(diasParaRevisao(r.date) || 1)),
       }));
+  }
+
+  function handleJournalFilterChange(
+    patch: Partial<{ subjectId: string; tag: string; query: string }>
+  ): void {
+    Object.assign(journalFilters, patch);
+    renderStudyAssistantBar();
+    renderTodayJournalSidebar();
+  }
+
+  function handleJournalFormChange(patch: Partial<JournalFormState>): void {
+    Object.assign(journalForm, patch);
+    renderStudyAssistantBar();
+    renderTodayJournalSidebar();
+  }
+
+  function handleSaveJournalEntry(): void {
+    const state = getState();
+    const subjects = state?.subjects || [];
+    if (!journalForm.note.trim() && !journalForm.tags.length && !journalForm.nextStep.trim()) {
+      _showToast('Escreva uma observação ou selecione uma etiqueta antes de salvar.');
+      return;
+    }
+    const sub = subjects.find((s: any) => s.id === journalForm.subjectId);
+    const top = sub?.topics?.find((t: any) => t.id === journalForm.topicId);
+    const res = upsertLearningJournalEntry(
+      state.learningJournal || [],
+      {
+        examId: state.examBlueprint?.activeExamTags?.[0] || null,
+        sessionId: journalForm.sessionId,
+        subjectId: journalForm.subjectId || null,
+        subjectNameSnapshot: sub?.name || '',
+        topicId: journalForm.topicId || null,
+        topicNameSnapshot: top?.name || '',
+        localDate: todayISO(),
+        difficultyRating: journalForm.difficultyRating || null,
+        energyRating: journalForm.energyRating || null,
+        tags: journalForm.tags,
+        note: journalForm.note,
+        nextStep: journalForm.nextStep,
+      },
+      { nowISO, todayISO, idGenerator: uid }
+    );
+    state.learningJournal = res.entries;
+    journalForm = {
+      sessionId: null,
+      subjectId: '',
+      topicId: '',
+      difficultyRating: '',
+      energyRating: '',
+      tags: [],
+      note: '',
+      nextStep: '',
+    };
+    journalSidebarFormOpen = false;
+    scheduleSave();
+    _showToast(res.updated ? 'Anotação da sessão atualizada no diário.' : 'Anotação salva no Diário.');
+    renderStudyAssistantBar();
+    renderTodayJournalSidebar();
+  }
+
+  function handleDeleteJournalEntry(entryId: string): void {
+    const state = getState();
+    state.learningJournal = deleteLearningJournalEntry(state.learningJournal || [], entryId);
+    scheduleSave();
+    _showToast('Anotação removida do Diário.');
+    renderStudyAssistantBar();
+    renderTodayJournalSidebar();
+  }
+
+  function handleCreateReviewFromJournal(entry: any): void {
+    const proposal = buildJournalReviewProposal(entry, {
+      todayISO,
+      addDays: (iso, d) => ctx.addDays?.(iso, d) || addLocalDays(iso, d) || iso,
+    });
+    if (!proposal || !ctx.createManualReview) return;
+    const create = () => {
+      ctx.createManualReview?.({
+        topicId: proposal.topicId,
+        subjectId: proposal.subjectId,
+        date: proposal.scheduledDate,
+        tipo: proposal.tipo,
+      });
+      ctx.persistAndRender?.();
+      _showToast(`Revisão agendada para ${formatDatePt(proposal.scheduledDate)}.`);
+    };
+    if (ctx.showConfirm) {
+      ctx.showConfirm(
+        `Criar tarefa de revisão (${proposal.tipo}) para "${proposal.topicName}" em ${formatDatePt(proposal.scheduledDate)}?`,
+        create,
+        undefined,
+        { confirmLabel: 'Confirmar revisão' }
+      );
+    } else {
+      create();
+    }
+  }
+
+  function handleOpenPlanningCycle(): void {
+    _activateTab('metas');
+    (doc?.getElementById('metasTab-semana') as HTMLElement | null)?.click?.();
+    const cycleMount = doc?.getElementById('metasCycleCenterMount') as HTMLElement | null;
+    if (cycleMount) {
+      revealAdvanced(cycleMount);
+      cycleMount.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function renderTodayJournalSidebar(): void {
+    if (!doc || typeof globalThis.document === 'undefined') return;
+    const rhythmSlot = doc.getElementById('todayWeeklyRhythmSlot');
+    const sideCol =
+      (rhythmSlot?.parentNode as HTMLElement | null) ||
+      (doc.querySelector('#todaySub-hoje .today-layout-grid__side') as HTMLElement | null);
+    if (!sideCol || sideCol.ownerDocument !== globalThis.document) return;
+
+    let mount = doc.getElementById('todayJournalSidebarMount') as Element | null;
+    if (!mount) {
+      const created = doc.createElement('div') as HTMLElement;
+      created.id = 'todayJournalSidebarMount';
+      if (rhythmSlot && rhythmSlot.parentNode === sideCol) {
+        sideCol.insertBefore(created, rhythmSlot.nextSibling);
+      } else {
+        sideCol.appendChild(created);
+      }
+      mount = created;
+    }
+    if (!mount || mount.ownerDocument !== globalThis.document) return;
+
+    const state = getState();
+    const allEntries = state?.learningJournal || [];
+    const filtered = filterLearningJournalEntries(allEntries, {
+      subjectId: journalFilters.subjectId || null,
+      tag: journalFilters.tag || null,
+      query: journalFilters.query || null,
+    });
+
+    mountPreact(
+      h(TodayJournalSidebarCard, {
+        subjects: state?.subjects || [],
+        entries: filtered,
+        totalEntriesCount: allEntries.length,
+        filters: { ...journalFilters },
+        form: { ...journalForm },
+        formOpen: journalSidebarFormOpen,
+        onToggleForm: open => {
+          journalSidebarFormOpen = open;
+          renderTodayJournalSidebar();
+        },
+        onChangeFilter: handleJournalFilterChange,
+        onChangeForm: handleJournalFormChange,
+        onSaveEntry: handleSaveJournalEntry,
+        onDeleteEntry: handleDeleteJournalEntry,
+        onCreateReviewFromEntry: handleCreateReviewFromJournal,
+      }),
+      mount
+    );
   }
 
   function renderStudyAssistantBar(): void {
@@ -995,6 +1140,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
           quickFocus = focus;
           renderStudyAssistantBar();
         },
+        onOpenQuickPreset: minutes => {
+          quickMinutes = minutes;
+          assistantPanel = 'quick';
+          renderStudyAssistantBar();
+        },
+        onOpenPlanningCycle: handleOpenPlanningCycle,
         onStartQuickStudy: () => {
           if (!ctx.startGuidedTimerSession) return;
           ctx.startGuidedTimerSession({
@@ -1061,87 +1212,11 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
             });
           }
         },
-        onChangeJournalFilter: patch => {
-          Object.assign(journalFilters, patch);
-          renderStudyAssistantBar();
-        },
-        onChangeJournalForm: patch => {
-          Object.assign(journalForm, patch);
-          renderStudyAssistantBar();
-        },
-        onSaveJournalEntry: () => {
-          if (!journalForm.note.trim() && !journalForm.tags.length && !journalForm.nextStep.trim()) {
-            _showToast('Escreva uma observação ou selecione uma etiqueta antes de salvar.');
-            return;
-          }
-          const sub = subjects.find((s: any) => s.id === journalForm.subjectId);
-          const top = sub?.topics?.find((t: any) => t.id === journalForm.topicId);
-          const res = upsertLearningJournalEntry(
-            state.learningJournal || [],
-            {
-              examId: state.examBlueprint?.activeExamTags?.[0] || null,
-              sessionId: journalForm.sessionId,
-              subjectId: journalForm.subjectId || null,
-              subjectNameSnapshot: sub?.name || '',
-              topicId: journalForm.topicId || null,
-              topicNameSnapshot: top?.name || '',
-              localDate: todayISO(),
-              difficultyRating: journalForm.difficultyRating || null,
-              energyRating: journalForm.energyRating || null,
-              tags: journalForm.tags,
-              note: journalForm.note,
-              nextStep: journalForm.nextStep,
-            },
-            { nowISO, todayISO, idGenerator: uid }
-          );
-          state.learningJournal = res.entries;
-          journalForm = {
-            sessionId: null,
-            subjectId: '',
-            topicId: '',
-            difficultyRating: '',
-            energyRating: '',
-            tags: [],
-            note: '',
-            nextStep: '',
-          };
-          scheduleSave();
-          _showToast(res.updated ? 'Anotação da sessão atualizada no diário.' : 'Anotação salva no Diário.');
-          renderStudyAssistantBar();
-        },
-        onDeleteJournalEntry: entryId => {
-          state.learningJournal = deleteLearningJournalEntry(state.learningJournal || [], entryId);
-          scheduleSave();
-          _showToast('Anotação removida do Diário.');
-          renderStudyAssistantBar();
-        },
-        onCreateReviewFromJournal: entry => {
-          const proposal = buildJournalReviewProposal(entry, {
-            todayISO,
-            addDays: (iso, d) => ctx.addDays?.(iso, d) || addLocalDays(iso, d) || iso,
-          });
-          if (!proposal || !ctx.createManualReview) return;
-          const create = () => {
-            ctx.createManualReview?.({
-              topicId: proposal.topicId,
-              subjectId: proposal.subjectId,
-              date: proposal.scheduledDate,
-              tipo: proposal.tipo,
-            });
-            ctx.persistAndRender?.();
-            _showToast(`Revisão agendada para ${formatDatePt(proposal.scheduledDate)}.`);
-          };
-          if (ctx.showConfirm) {
-            ctx.showConfirm(
-              `Criar tarefa de revisão (${proposal.tipo}) para "${proposal.topicName}" em ${formatDatePt(proposal.scheduledDate)}?`,
-              create,
-              undefined,
-              { confirmLabel: 'Confirmar revisão' }
-            );
-          } else {
-            create();
-          }
-        },
+        onChangeJournalFilter: handleJournalFilterChange,
+        onChangeJournalForm: handleJournalFormChange,
+        onSaveJournalEntry: handleSaveJournalEntry,
+        onDeleteJournalEntry: handleDeleteJournalEntry,
+        onCreateReviewFromJournal: handleCreateReviewFromJournal,
         onConfirmWeeklyClosingSnapshot: () => {
           if (!weeklyClosing) return;
           state.weeklyCloseSnapshots = state.weeklyCloseSnapshots || [];
@@ -1167,29 +1242,47 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     );
   }
 
-  function openAssistantPanel(panel: AssistantPanelKind, opts: { sessionId?: string } = {}) {
+  function openAssistantPanel(
+    panel: AssistantPanelKind,
+    opts: { sessionId?: string; quickMinutes?: number } = {}
+  ) {
     assistantPanel = panel;
-    if (panel === 'journal' && opts.sessionId) {
-      const state = getState();
-      const session = (state.studySessions || []).find((s: any) => s.id === opts.sessionId);
-      const existing = (state.learningJournal || []).find(
-        (e: any) => e.sessionId === opts.sessionId
-      );
-      journalForm = {
-        sessionId: opts.sessionId,
-        subjectId: existing?.subjectId || session?.subjectId || '',
-        topicId: existing?.topicId || session?.topicId || '',
-        difficultyRating: existing?.difficultyRating || '',
-        energyRating: existing?.energyRating || '',
-        tags: existing?.tags ? [...existing.tags] : [],
-        note: existing?.note || '',
-        nextStep: existing?.nextStep || '',
-      };
+    if (typeof opts.quickMinutes === 'number' && Number.isFinite(opts.quickMinutes)) {
+      quickMinutes = Math.max(10, Math.min(180, Math.round(opts.quickMinutes)));
+    }
+    if (panel === 'journal') {
+      journalSidebarFormOpen = true;
+      if (opts.sessionId) {
+        const state = getState();
+        const session = (state.studySessions || []).find((s: any) => s.id === opts.sessionId);
+        const existing = (state.learningJournal || []).find(
+          (e: any) => e.sessionId === opts.sessionId
+        );
+        journalForm = {
+          sessionId: opts.sessionId,
+          subjectId: existing?.subjectId || session?.subjectId || '',
+          topicId: existing?.topicId || session?.topicId || '',
+          difficultyRating: existing?.difficultyRating || '',
+          energyRating: existing?.energyRating || '',
+          tags: existing?.tags ? [...existing.tags] : [],
+          note: existing?.note || '',
+          nextStep: existing?.nextStep || '',
+        };
+      }
     }
     if (panel === 'cycle_config') refreshCycleDraftPreview();
     _activateTab('hoje');
+    const subPanel = doc?.getElementById('todaySub-hoje');
+    if (subPanel?.hidden) {
+      (doc?.getElementById('todayTab-hoje') as HTMLElement | null)?.click?.();
+    }
     renderStudyAssistantBar();
-    doc?.getElementById('todayStudyAssistantMount')?.scrollIntoView?.({
+    renderTodayJournalSidebar();
+    const targetMount =
+      panel === 'journal'
+        ? doc?.getElementById('todayJournalSidebarMount') || doc?.getElementById('todayStudyAssistantMount')
+        : doc?.getElementById('todayStudyAssistantMount');
+    targetMount?.scrollIntoView?.({
       behavior: 'smooth',
       block: 'center',
     });
@@ -1252,6 +1345,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderFirstStepsMissionCard();
     renderRealWeekBanner();
     renderStudyAssistantBar();
+    renderTodayJournalSidebar();
 
     if (!plan && priorities.length === 0) {
       container.innerHTML =

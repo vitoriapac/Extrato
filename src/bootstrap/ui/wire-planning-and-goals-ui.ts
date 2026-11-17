@@ -112,6 +112,13 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     recentPerformance: approvalReadinessService.recentPerformance,
     addMetaDisciplina: goalsBlueprintService.addMetaDisciplina,
     computeRitmo: studyCandidateService.computeRitmo,
+    scheduleSave,
+    persistAndRender,
+    showToast,
+    nowISO,
+    activateTab: deps.activateTab,
+    intelligenceCandidates: studyCandidateService.intelligenceCandidates,
+    renderPlanoHoje,
   });
   goalsTabController.bindEvents();
   bindLazyMore(document);
@@ -208,6 +215,7 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     planningRepository: services.planningRepository,
     examEvidenceContext: studyMetricsSelectors.examEvidenceContext,
     intelligenceCandidates: studyCandidateService.intelligenceCandidates,
+    getRevisoesUnificadas: studyMetricsSelectors.getRevisoesUnificadas,
     entitySubjectId,
     getSubjectName,
     getTopicName,

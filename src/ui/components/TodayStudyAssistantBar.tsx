@@ -94,7 +94,9 @@ export interface TodayStudyAssistantBarProps {
   onMoveCycleDraftBlock: (fromIndex: number, toIndex: number) => void;
   onConfirmCycleDraft: () => void;
   onChangeQuickConfig: (minutes: number, focus: QuickStudyFocusMode) => void;
+  onOpenQuickPreset?: (minutes: number) => void;
   onStartQuickStudy: () => void;
+  onOpenPlanningCycle?: () => void;
   onSelectCopilotQuestion: (key: CopilotQuestionKey) => void;
   onExecuteCopilotAnswer: (answer: CopilotAnswer) => void;
   onChangeJournalFilter: (patch: Partial<{ subjectId: string; tag: string; query: string }>) => void;
@@ -173,6 +175,35 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           <span>Tenho X minutos</span>
         </Button>
 
+        <div
+          class="inline-flex flex-wrap items-center gap-1"
+          role="group"
+          aria-label="Atalhos diretos de Estudo Rápido"
+        >
+          {QUICK_MINUTES_PRESETS.map(mins => {
+            const selected = activePanel === 'quick' && quickMinutes === mins;
+            return (
+              <Button
+                key={`quick-chip-${mins}`}
+                variant={selected ? 'primary' : 'ghost'}
+                size="small"
+                aria-pressed={selected}
+                aria-label={`Estudo rápido de ${mins} minutos`}
+                onClick={() => {
+                  if (props.onOpenQuickPreset) {
+                    props.onOpenQuickPreset(mins);
+                  } else {
+                    props.onChangeQuickConfig(mins, quickFocus);
+                    props.onTogglePanel('quick');
+                  }
+                }}
+              >
+                <span>{mins} min</span>
+              </Button>
+            );
+          })}
+        </div>
+
         <Button
           variant={activePanel === 'copilot' ? 'primary' : 'secondary'}
           size="small"
@@ -232,16 +263,24 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
                 </span>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="small"
-              onClick={() =>
-                props.onTogglePanel(activePanel === 'cycle_config' ? 'none' : 'cycle_config')
-              }
-            >
-              <Icon name="settings" size={14} class="icon-inline shrink-0" />
-              <span>{cycle ? 'Configurar ciclo' : 'Montar ciclo'}</span>
-            </Button>
+            <div class="flex flex-wrap items-center gap-1.5">
+              {props.onOpenPlanningCycle && (
+                <Button variant="ghost" size="small" onClick={props.onOpenPlanningCycle}>
+                  <span>Central em Planejamento</span>
+                  <Icon name="chevron-right" size={13} class="icon-inline" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={() =>
+                  props.onTogglePanel(activePanel === 'cycle_config' ? 'none' : 'cycle_config')
+                }
+              >
+                <Icon name="settings" size={14} class="icon-inline shrink-0" />
+                <span>{cycle ? 'Configurar ciclo' : 'Montar ciclo'}</span>
+              </Button>
+            </div>
           </div>
 
           {currentBlock ? (

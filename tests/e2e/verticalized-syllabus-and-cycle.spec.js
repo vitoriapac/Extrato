@@ -231,3 +231,50 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
   await bar.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();
   await expect(cyclePanel).toContainText('Próximo bloco:');
 });
+
+test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Planejamento', async ({
+  page,
+}) => {
+  await prepare(page);
+
+  // 1. Visão Geral: Copiloto de Estudos Guiado + atalho Estudo rápido: 30 min
+  await activateTab(page, 'dashboard');
+  const copilotCard = page.locator('#overviewCopilotMount [data-overview-copilot="true"]');
+  await expect(copilotCard).toBeVisible();
+  await expect(copilotCard).toContainText('Copiloto de Estudos Guiado');
+  await copilotCard.getByRole('button', { name: 'Estudo rápido de 30 minutos' }).click();
+
+  // 2. Hoje: redirecionamento abre Estudo Rápido em 30 min e chip de 15 min alterna em 1 clique
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  const quickPanel = page.locator('#todayQuickStudyPanel');
+  await expect(quickPanel).toBeVisible();
+  await expect(quickPanel).toContainText('Proposta (30 min)');
+  await page.getByRole('button', { name: 'Estudo rápido de 15 minutos' }).click();
+  await expect(quickPanel).toContainText('Proposta (15 min)');
+
+  // 3. Hoje lateral: card permanente do Diário de Aprendizagem aceita registro inline
+  const journalSidebar = page.locator('#todayJournalSidebarMount [data-today-journal-sidebar="true"]');
+  await expect(journalSidebar).toBeVisible();
+  await journalSidebar.getByRole('button', { name: 'Registrar aprendizado ou dúvida' }).click();
+  await journalSidebar
+    .getByLabel('O que aprendeu, dúvida ou pegadinha')
+    .fill('Dúvida rápida salva direto na barra lateral de Hoje');
+  await journalSidebar.getByRole('button', { name: 'Salvar no Diário' }).click();
+  await expect(journalSidebar).toContainText('Dúvida rápida salva direto na barra lateral de Hoje');
+
+  // 4. Planejamento > Plano da semana: Central do Ciclo de Estudos 2.0
+  await activateTab(page, 'metas');
+  await page.locator('#metasTab-semana').click();
+  const cycleCenter = page.locator('#metasCycleCenterMount [data-study-cycle-center="true"]');
+  await expect(cycleCenter).toBeVisible();
+  await cycleCenter.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();
+  await expect(cycleCenter).toContainText('Ativo · Volta');
+
+  // 5. Planejamento > Fechamento semanal: Ritual de fechamento inteligente visível sem dobras extras
+  await page.locator('#metasTab-fechamento').click();
+  const ritualSection = page.locator('#weeklyCloseDashboard [data-weekly-ritual-summary="true"]');
+  await expect(ritualSection).toBeVisible();
+  await expect(ritualSection).toContainText('Ritual de fechamento inteligente');
+  await expect(ritualSection).toContainText('O que funcionou');
+  await expect(ritualSection).toContainText('Uma melhoria para testar');
+});

@@ -20,6 +20,7 @@ import { buildPriorityHistory } from '../../application/analytics/build-priority
 import { buildWeeklyCloseActionProposal } from '../../application/analytics/weekly-close-actions.js';
 import { createWeeklyCloseController } from '../../application/analytics/weekly-close-controller.js';
 import { createSustainabilityController } from '../../ui/controllers/sustainability-controller.js';
+import { buildWeeklyClosingRitualViewModel } from '../../application/weekly-closing/weekly-closing-ritual.js';
 import {
   renderWeeklyClose,
   renderWeeklyCloseKpis,
@@ -89,6 +90,7 @@ export interface WeeklyCloseModalControllerDeps {
   computeApprovalMetrics?: () => any;
   currentAchievementProjection?: () => { model: any };
   examScopedSimulations?: () => any[];
+  getRevisoesUnificadas?: () => any[];
   computeWeeklyHistory?: (weeks?: number) => any[];
   allTopics?: () => any[];
   metaHoursForDate?: (dateStr: string) => number;
@@ -528,7 +530,51 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
               : renderWeeklyCloseNext({ ...model.weeklyClose, priorities: [] }, options)) +
             renderWeeklyCloseActions(withTopicNames(model.weeklyClose))
           : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
-        '</section>';
+        '</section>' +
+        (() => {
+          const ritual = buildWeeklyClosingRitualViewModel({
+            today: todayISO(),
+            sessions: state.studySessions || [],
+            questions: state.questoes || [],
+            dailyPlans: state.dailyPlans || [],
+            reviews: deps.getRevisoesUnificadas ? deps.getRevisoesUnificadas() : state.agendaRevisoes || [],
+            simulations: state.simulados || [],
+            subjects: state.subjects || [],
+            weeklyCloseSnapshots: state.weeklyCloseSnapshots || [],
+            learningJournal: state.learningJournal || [],
+            recommendations: state.recommendationFeedback || [],
+            activeExamTags: state.examBlueprint?.activeExamTags || [],
+            studyCycle: state.studyCycle || null,
+          });
+          const workedHtml = (ritual.whatWorked || [])
+            .map((line: string) => `<p class="m-0 text-content-secondary text-xs">${escapeHtml(line)}</p>`)
+            .join('');
+          const attentionHtml = (ritual.needsAttention || [])
+            .map((line: string) => `<p class="m-0 text-content-secondary text-xs">${escapeHtml(line)}</p>`)
+            .join('');
+          const improvementDetail =
+            ritual.improvementToTest?.detail ||
+            'Registre mais sessões para sugerir um foco concreto para testar na próxima semana.';
+          const reflectionHtml =
+            ritual.journalReflections?.entriesCount > 0
+              ? `<p class="m-0 text-content-secondary text-xs">Diário na semana: ${ritual.journalReflections.entriesCount} ${ritual.journalReflections.entriesCount === 1 ? 'anotação' : 'anotações'}. ${escapeHtml(ritual.journalReflections.caveat || '')}</p>`
+              : '';
+          return (
+            '<section class="weekly-close-act" data-weekly-ritual-summary="true" aria-labelledby="weeklyRitualTitle">' +
+            '<h4 class="weekly-close-act__title" id="weeklyRitualTitle">Ritual de fechamento inteligente</h4>' +
+            `<p class="m-0 text-xs text-content-secondary"><strong>${escapeHtml(ritual.window.windowLabel)}</strong> · ${escapeHtml(ritual.window.periodLabel)} · ${escapeHtml(ritual.confidence.label)} · ${escapeHtml(formatPlanMinutes(ritual.metrics.studiedMinutes))} em ${ritual.metrics.sessionsCount} sessões · ${ritual.metrics.resolved} questões</p>` +
+            (ritual.comparisonWarning
+              ? `<p class="m-0 text-xs text-content-secondary">${escapeHtml(ritual.comparisonWarning)}</p>`
+              : '') +
+            '<div class="grid grid-cols-1 md:grid-cols-3 gap-2">' +
+            `<div class="p-3 rounded bg-surface-subtle border border-border-subtle space-y-1"><strong class="text-xs text-content-primary block">O que funcionou</strong>${workedHtml}</div>` +
+            `<div class="p-3 rounded bg-surface-subtle border border-border-subtle space-y-1"><strong class="text-xs text-content-primary block">O que precisa de atenção</strong>${attentionHtml}</div>` +
+            `<div class="p-3 rounded bg-surface-subtle border border-border-subtle space-y-1"><strong class="text-xs text-content-primary block">Uma melhoria para testar</strong><p class="m-0 text-content-secondary text-xs">${escapeHtml(improvementDetail)}</p></div>` +
+            '</div>' +
+            reflectionHtml +
+            '</section>'
+          );
+        })();
     }
     const series = doc.getElementById('weeklyHistorySeries');
     if (series) {

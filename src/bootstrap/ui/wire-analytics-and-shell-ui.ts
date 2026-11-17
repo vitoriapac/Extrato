@@ -229,6 +229,10 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     openExamImport,
     getRecommendations: getCurrentStudyRecommendations,
     onExecuteRecommendation: executeStudyRecommendation,
+    onOpenQuickStudy: () => deps.openAssistantPanel?.('quick', { quickMinutes: 30 }),
+    onOpenCopilot: () => deps.openAssistantPanel?.('copilot'),
+    onOpenJournal: () => deps.openAssistantPanel?.('journal'),
+    onOpenStudyCycleCenter: () => deps.openPlanningCycle?.(),
     jumpToTopic: (sId, tId) => shellUiController.jumpToTopic(sId, tId),
     escapeHtml,
     escapeAttr,
@@ -304,6 +308,16 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     recordProgressSnapshot: pct => performanceTabController.recordProgressSnapshot(pct),
     selectSessionHistoryDate,
     planStartDate: studyMetricsSelectors.planStartDate,
+    nowISO,
+    isDemoMode,
+    getCurrentStudyRecommendations,
+    getLatestStudyPlan,
+    weeklyStrategyCapacity: studyMetricsSelectors.weeklyStrategyCapacity,
+    openAssistantPanel: deps.openAssistantPanel,
+    openWeeklyClose: deps.openWeeklyClose,
+    openPlanningPreview: calculateStudyPlanPreview,
+    startGuidedTimerSession: deps.startGuidedTimerSession,
+    showToast,
   });
 
   performanceTabController = createPerformanceTabController({

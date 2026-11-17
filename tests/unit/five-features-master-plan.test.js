@@ -43,6 +43,10 @@ import {
 import { buildSessionResultViewModel } from '../../src/application/sessions/build-session-result-view-model.js';
 import { renderSessionResult } from '../../src/ui/renderers/session-result-renderer.js';
 import { TodayStudyAssistantBar } from '../../src/ui/components/TodayStudyAssistantBar.js';
+import { OverviewCopilotCard } from '../../src/ui/components/OverviewCopilotCard.js';
+import { StudyCycleCenterCard } from '../../src/ui/components/StudyCycleCenterCard.js';
+import { TodayJournalSidebarCard } from '../../src/ui/components/TodayJournalSidebarCard.js';
+import { SEARCH_COMMANDS } from '../../src/ui/controllers/search-controller.js';
 
 const SUBJECTS = [
   {
@@ -610,4 +614,115 @@ test('UI: renderSessionResult oferece prompt opcional só com sessionId e TodayS
   assert.match(html, /Tenho X minutos/);
   assert.match(html, /Orientação guiada/);
   assert.doesNotMatch(html, /\p{Extended_Pictographic}/u);
+});
+
+test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSidebarCard e SEARCH_COMMANDS seguem contratos e ficam sem emojis', () => {
+  const copilot = buildStudyCopilotViewModel({
+    today: '2026-11-16',
+    nowISO: '2026-11-16T16:00:00.000Z',
+    recommendations: SAMPLE_CANDIDATES,
+    candidates: SAMPLE_CANDIDATES,
+    subjects: SUBJECTS,
+  });
+
+  const copilotHtml = render(
+    h(OverviewCopilotCard, {
+      copilot,
+      selectedQuestion: 'what_now',
+      onSelectQuestion: () => {},
+      onExecuteAnswer: () => {},
+      onQuickStudy30: () => {},
+    })
+  );
+  assert.match(copilotHtml, /Copiloto de Estudos Guiado/);
+  assert.match(copilotHtml, /Estudo rápido: 30 min/);
+  assert.match(copilotHtml, /Tenho 30 minutos/);
+  assert.doesNotMatch(copilotHtml, /\p{Extended_Pictographic}/u);
+
+  const cyclePreview = buildStudyCyclePreview({
+    subjects: SUBJECTS,
+    blockDurationMinutes: 60,
+    nowISO: '2026-11-16T10:00:00.000Z',
+  });
+  const cycleCenterHtml = render(
+    h(StudyCycleCenterCard, {
+      executionMode: 'sequence',
+      cycle: cyclePreview.cycle,
+      cycleLap: {
+        round: 1,
+        totalBlocks: cyclePreview.blocksCount,
+        completedBlocks: 0,
+        skippedBlocks: 0,
+        partialBlocks: 0,
+        resolvedBlocks: 0,
+        executedCoveragePct: 0,
+        actualMinutesInRound: 0,
+      },
+      cycleDraft: {
+        mode: 'adaptive',
+        blockDurationMinutes: 60,
+        preview: cyclePreview,
+      },
+      onSetExecutionMode: () => {},
+      onToggleCyclePause: () => {},
+      onChangeCycleDraftConfig: () => {},
+      onMoveCycleDraftBlock: () => {},
+      onConfirmCycleDraft: () => {},
+      onGoToTodayCycle: () => {},
+    })
+  );
+  assert.match(cycleCenterHtml, /Central do Ciclo de Estudos 2\.0/);
+  assert.match(cycleCenterHtml, /Confirmar nova versão do ciclo/);
+  assert.match(cycleCenterHtml, /1 h/);
+  assert.doesNotMatch(cycleCenterHtml, /subject-distribution-row|plan-impact-row|plan-execution-table/);
+  assert.doesNotMatch(cycleCenterHtml, /\p{Extended_Pictographic}/u);
+
+  const journalEntry = upsertLearningJournalEntry(
+    [],
+    {
+      subjectId: 's1',
+      subjectNameSnapshot: 'Português',
+      topicId: 't1',
+      topicNameSnapshot: 'Crase',
+      localDate: '2026-11-16',
+      tags: ['duvida'],
+      note: 'Revisar casos proibidos de crase.',
+    },
+    { nowISO: () => '2026-11-16T12:00:00.000Z', todayISO: () => '2026-11-16', idGenerator: () => 'j_1' }
+  ).entries;
+
+  const sidebarHtml = render(
+    h(TodayJournalSidebarCard, {
+      subjects: SUBJECTS,
+      entries: journalEntry,
+      totalEntriesCount: journalEntry.length,
+      filters: { subjectId: '', tag: '', query: '' },
+      form: {
+        sessionId: null,
+        subjectId: '',
+        topicId: '',
+        difficultyRating: '',
+        energyRating: '',
+        tags: [],
+        note: '',
+        nextStep: '',
+      },
+      formOpen: false,
+      onToggleForm: () => {},
+      onChangeFilter: () => {},
+      onChangeForm: () => {},
+      onSaveEntry: () => {},
+      onDeleteEntry: () => {},
+      onCreateReviewFromEntry: () => {},
+    })
+  );
+  assert.match(sidebarHtml, /Diário de Aprendizagem/);
+  assert.match(sidebarHtml, /Registrar aprendizado ou dúvida/);
+  assert.match(sidebarHtml, /Transformar em revisão/);
+  assert.doesNotMatch(sidebarHtml, /\p{Extended_Pictographic}/u);
+
+  for (const action of ['quick-study', 'copilot', 'learning-journal', 'study-cycle-center']) {
+    assert.ok(SEARCH_COMMANDS.some(c => c.action === action), `Comando global ausente: ${action}`);
+  }
+  assert.ok(SEARCH_COMMANDS.some(c => c.action === 'achievements' && c.label === 'Ver conquistas'));
 });
