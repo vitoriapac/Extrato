@@ -71,7 +71,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   let verticalizedSyllabusActive = false;
   let subjectExamFilter = 'all';
   const openNotesIds = new Set<string>();
-  const subjectTopicLimits = new Map<string, number>();
+  const subjectTopicPages = new Map<string, number>();
   const subjectTopicFilters = new Map<string, { status: string; difficulty: string }>();
 
   const uid =
@@ -123,25 +123,10 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       openNotesIds.add(topicId);
     }
     renderSubjects();
-    ctx.document.getElementById(`topic-row-${topicId}`)?.querySelector<HTMLButtonElement>('.notes-toggle-btn')?.focus({ preventScroll: true });
-  }
-
-  function changeSubjectTopicLimit(subjectId: string, delta: number): void {
-    subjectTopicLimits.set(
-      subjectId,
-      (subjectTopicLimits.get(subjectId) || 10) + Number(delta || 0)
-    );
-    renderSubjects();
-  }
-
-  function showAllSubjectTopics(subjectId: string): void {
-    subjectTopicLimits.set(subjectId, Number.MAX_SAFE_INTEGER);
-    renderSubjects();
-  }
-
-  function resetSubjectTopicLimit(subjectId: string): void {
-    subjectTopicLimits.set(subjectId, 10);
-    renderSubjects();
+    ctx.document
+      .getElementById(`topic-row-${topicId}`)
+      ?.querySelector<HTMLButtonElement>('.notes-toggle-btn')
+      ?.focus({ preventScroll: true });
   }
 
   function setSubjectTopicFilter(subjectId: string, field: string, value: any): void {
@@ -150,7 +135,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       current[field] = value;
     }
     subjectTopicFilters.set(subjectId, current);
-    subjectTopicLimits.set(subjectId, 10);
+    subjectTopicPages.set(subjectId, 1);
     renderSubjects();
   }
 
@@ -321,7 +306,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       subjectSearchController: ctx.subjectSearchController,
       subjectExamFilter,
       subjectTopicFilters,
-      subjectTopicLimits,
+      subjectTopicPages,
       openNotesIds,
       isCommonTopic: ctx.isCommonTopic,
       EXAM_TAGS: ctx.EXAM_TAGS,
@@ -572,6 +557,8 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
 
   function addTopic(subjectId: string): void {
     ctx.subjectService.addTopic(subjectId);
+    // O tópico novo entra no fim: abre a última página da disciplina (limitada ao renderizar).
+    subjectTopicPages.set(subjectId, Number.MAX_SAFE_INTEGER);
     ctx.persistAndRender();
     // Leva o usuário direto a nomear o tópico recém-criado.
     const body = ctx.document.getElementById(`subject-body-${subjectId}`);
@@ -723,32 +710,34 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       setVerticalizedSyllabusActive(!isVerticalizedSyllabusActive());
       renderSubjects();
     });
-    ctx.document.getElementById('subjectsContainer')?.addEventListener('keydown', (event: KeyboardEvent) => {
-      const target = (event.target as HTMLElement | null)?.closest?.(
-        '.exam-scope-filter.ui-segmented .ui-segmented__item'
-      ) as HTMLElement | null;
-      if (!target || event.altKey || event.ctrlKey || event.metaKey) return;
-      const group = target.closest('.exam-scope-filter.ui-segmented');
-      if (!group) return;
-      const items = [...group.querySelectorAll<HTMLElement>('.ui-segmented__item')];
-      const nextIndex = getRovingTabIndex(
-        items.indexOf(target),
-        event.key,
-        items.length,
-        'horizontal',
-        idx => Boolean((items[idx] as HTMLButtonElement | undefined)?.disabled)
-      );
-      if (nextIndex === null) return;
-      event.preventDefault();
-      const nextValue = items[nextIndex]?.dataset?.examFilter;
-      if (!nextValue) return;
-      setSubjectExamFilter(nextValue);
-      (
-        ctx.document.querySelector(
-          `.exam-scope-filter [data-exam-filter="${nextValue}"]`
-        ) as HTMLElement | null
-      )?.focus();
-    });
+    ctx.document
+      .getElementById('subjectsContainer')
+      ?.addEventListener('keydown', (event: KeyboardEvent) => {
+        const target = (event.target as HTMLElement | null)?.closest?.(
+          '.exam-scope-filter.ui-segmented .ui-segmented__item'
+        ) as HTMLElement | null;
+        if (!target || event.altKey || event.ctrlKey || event.metaKey) return;
+        const group = target.closest('.exam-scope-filter.ui-segmented');
+        if (!group) return;
+        const items = [...group.querySelectorAll<HTMLElement>('.ui-segmented__item')];
+        const nextIndex = getRovingTabIndex(
+          items.indexOf(target),
+          event.key,
+          items.length,
+          'horizontal',
+          idx => Boolean((items[idx] as HTMLButtonElement | undefined)?.disabled)
+        );
+        if (nextIndex === null) return;
+        event.preventDefault();
+        const nextValue = items[nextIndex]?.dataset?.examFilter;
+        if (!nextValue) return;
+        setSubjectExamFilter(nextValue);
+        (
+          ctx.document.querySelector(
+            `.exam-scope-filter [data-exam-filter="${nextValue}"]`
+          ) as HTMLElement | null
+        )?.focus();
+      });
   }
 
   return {
@@ -761,9 +750,6 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     setSubjectExamFilter,
     clearSubjectFilters,
     toggleNotes,
-    changeSubjectTopicLimit,
-    showAllSubjectTopics,
-    resetSubjectTopicLimit,
     setSubjectTopicFilter,
     examBadges,
     updateTopicTags,
@@ -793,7 +779,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     refreshAllTopicReviewStats,
     addHistoryEvent,
     openNotesIds,
-    subjectTopicLimits,
+    subjectTopicPages,
     subjectTopicFilters,
   };
 }

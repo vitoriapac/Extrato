@@ -1,5 +1,6 @@
 import { SubjectBlock } from './SubjectBlock.js';
 import { SegmentedControl } from '../../primitives/tabs.js';
+import { createProgressiveList } from '../../progressive-list.js';
 
 export interface SubjectsTabProps {
   subjects: any[];
@@ -10,7 +11,7 @@ export interface SubjectsTabProps {
   accuracyTrends?: Map<string, Array<number | null>>;
   subjectColorFn?: (subject: any) => number;
   subjectTopicFilters: Map<string, { status: string; difficulty: string }>;
-  subjectTopicLimits: Map<string, number>;
+  subjectTopicPages: Map<string, number>;
   openNotesIds: Set<string>;
   statusOptions: readonly string[];
   statusClasses: Record<string, string>;
@@ -34,7 +35,7 @@ export function SubjectsTab({
   accuracyTrends,
   subjectColorFn,
   subjectTopicFilters,
-  subjectTopicLimits,
+  subjectTopicPages,
   openNotesIds,
   statusOptions,
   statusClasses,
@@ -137,8 +138,16 @@ export function SubjectsTab({
               (!topicFilter.status || topic.status === topicFilter.status) &&
               (!topicFilter.difficulty || topic.difficulty === topicFilter.difficulty)
           );
-          const topicLimit = subjectTopicLimits.get(subject.id) || 10;
-          const visibleTopics = allVisibleTopics.slice(0, topicLimit);
+          const topicList = createProgressiveList({
+            items: allVisibleTopics,
+            mode: 'pages',
+            page: subjectTopicPages.get(subject.id) ?? 1,
+          });
+          // Grava a página já limitada: apagar o último tópico da última página cai na anterior.
+          if (topicList.page > 1 || subjectTopicPages.has(subject.id))
+            subjectTopicPages.set(subject.id, topicList.page);
+          const visibleTopics = topicList.visibleItems;
+          const listKey = `subjectTopics:${subject.id}`;
           const archivedTopics = (subject.topics || []).filter((t: any) => t.archived);
 
           const footerHtml = renderFooterFn
@@ -146,11 +155,12 @@ export function SubjectsTab({
                 variant: 'block',
                 total: allVisibleTopics.length,
                 visible: visibleTopics.length,
-                step: 10,
+                mode: 'pages',
+                page: topicList.page,
+                pageSize: topicList.pageSize,
+                prevAction: `goToListPage('${listKey}',${topicList.page - 1})`,
+                nextAction: `goToListPage('${listKey}',${topicList.page + 1})`,
                 label: `tópicos filtrados · ${subjectTopics.length} no total`,
-                showMoreAction: `changeSubjectTopicLimit('${subject.id}',10)`,
-                showAllAction: `showAllSubjectTopics('${subject.id}')`,
-                showLessAction: topicLimit > 10 ? `resetSubjectTopicLimit('${subject.id}')` : '',
               })
             : '';
 

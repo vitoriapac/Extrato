@@ -92,6 +92,7 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
       renderQuestoes: () => 'q',
       renderAgenda: () => 'a',
       renderCalendar: () => 'cal',
+      renderSubjects: () => 'sub',
     }),
   });
   assert.equal(resolver("goToListPage('simulations',3)", null, {}), true);
@@ -104,8 +105,12 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
   assert.deepEqual(calls[3], { key: 'agendaCompleted', page: 4, rendered: 'a' });
   assert.equal(resolver("goToListPage('calendar',2)", null, {}), true);
   assert.deepEqual(calls[4], { key: 'calendar', page: 2, rendered: 'cal' });
+  assert.equal(resolver("goToListPage('subjectTopics:subject-ab_12',2)", null, {}), true);
+  assert.deepEqual(calls[5], { key: 'subjectTopics:subject-ab_12', page: 2, rendered: 'sub' });
+  assert.equal(resolver("goToListPage('subjectTopics:x'+alert(1),2)", null, {}), false);
+  assert.equal(resolver("goToListPage('subjectTopics:',2)", null, {}), false);
   assert.equal(resolver("goToListPage('outra',2)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',-1)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',2);alert(1)", null, {}), false);
-  assert.equal(calls.length, 5);
+  assert.equal(calls.length, 6);
 });

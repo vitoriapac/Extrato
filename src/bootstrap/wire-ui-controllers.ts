@@ -62,11 +62,15 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
   const isMobileHistoryLayout = () => window.matchMedia('(max-width:850px)').matches;
 
   function goToListPage(key: string, page: number, renderFn: () => void) {
-    // A página do Calendário mora no estado do próprio calendário; as demais, em listViewState.
+    // A página do Calendário mora no estado do calendário, a dos tópicos no da disciplina
+    // (chave `subjectTopics:<id>`); as demais, em listViewState.
+    const topics = practiceUi.subjectsTabController.subjectTopicPages;
+    const subjectId = key.startsWith('subjectTopics:') ? key.slice('subjectTopics:'.length) : '';
     const store: Record<string, any> =
       key === 'calendar' ? practiceUi.calendarTabController.calendarUiState : listViewState;
-    const previous = store[`${key}Page`] || 1;
-    store[`${key}Page`] = page;
+    const previous = (subjectId ? topics.get(subjectId) : store[`${key}Page`]) || 1;
+    if (subjectId) topics.set(subjectId, page);
+    else store[`${key}Page`] = page;
     renderFn();
     // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta)
     // e traz o início da lista de volta à tela.
@@ -99,6 +103,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     listViewState.simulationsPage = 1;
     listViewState.agendaUpcomingPage = 1;
     listViewState.agendaCompletedPage = 1;
+    practiceUi?.subjectsTabController?.subjectTopicPages.clear();
     analyticsUi?.dashboardTabController?.resetUpcomingListDefault();
     if (practiceUi?.calendarTabController) {
       practiceUi.calendarTabController.calendarUiState.calendarPage = 1;
@@ -278,6 +283,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
         renderSimulados: () => practiceUi.simulationsTabController.renderSimulados(),
         renderAgenda: () => practiceUi.reviewsTabController.renderAgenda(),
         renderCalendar: () => practiceUi.calendarTabController.renderCalendar(),
+        renderSubjects: () => practiceUi.subjectsTabController.renderSubjects(),
         renderStudySessionsHistory: () =>
           executionUi.sessionHistoryController.renderStudySessionsHistory(),
       }),

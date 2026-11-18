@@ -326,21 +326,14 @@ test('SubjectsTabController - subject dependency check and deletion protection',
   );
 });
 
-test('SubjectsTabController - limits, filters and syllabus toggle', () => {
+test('SubjectsTabController - pages, filters and syllabus toggle', () => {
   const { doc, win, elements } = createMockDom();
   const { context } = createBaseContext(doc, win);
   const controller = createSubjectsTabController(/** @type {any} */ (context));
 
-  controller.changeSubjectTopicLimit('sub-1', 5);
-  assert.equal(controller.subjectTopicLimits.get('sub-1'), 15);
-
-  controller.showAllSubjectTopics('sub-1');
-  assert.equal(controller.subjectTopicLimits.get('sub-1'), Number.MAX_SAFE_INTEGER);
-
-  controller.resetSubjectTopicLimit('sub-1');
-  assert.equal(controller.subjectTopicLimits.get('sub-1'), 10);
-
+  controller.subjectTopicPages.set('sub-1', 3);
   controller.setSubjectTopicFilter('sub-1', 'status', 'Concluído');
+  assert.equal(controller.subjectTopicPages.get('sub-1'), 1);
   assert.deepEqual(controller.subjectTopicFilters.get('sub-1'), {
     status: 'Concluído',
     difficulty: '',
@@ -384,7 +377,14 @@ test('limpar busca e concurso restaura todas as disciplinas', () => {
   const { doc, win } = createMockDom();
   const { context } = createBaseContext(doc, win);
   let query = 'inexistente';
-  context.subjectSearchController = { get query() { return query; }, clear() { query = ''; } };
+  context.subjectSearchController = {
+    get query() {
+      return query;
+    },
+    clear() {
+      query = '';
+    },
+  };
   const controller = createSubjectsTabController(/** @type {any} */ (context));
   controller.setSubjectExamFilter('bb');
   controller.clearSubjectFilters();

@@ -26,7 +26,7 @@ test('SubjectsTab Preact Component — exibe estado vazio quando sem disciplinas
       archivedSubjects: [],
       subjectProgressFn: () => 0,
       subjectTopicFilters: new Map(),
-      subjectTopicLimits: new Map(),
+      subjectTopicPages: new Map(),
       openNotesIds: new Set(),
       statusOptions: mockStatusOptions,
       statusClasses: mockStatusClasses,
@@ -76,7 +76,7 @@ test('SubjectsTab Preact Component — renderiza disciplinas ativas e arquivadas
       archivedSubjects: [archivedSubject],
       subjectProgressFn: () => 100,
       subjectTopicFilters: new Map(),
-      subjectTopicLimits: new Map(),
+      subjectTopicPages: new Map(),
       openNotesIds: new Set(),
       statusOptions: mockStatusOptions,
       statusClasses: mockStatusClasses,
@@ -168,7 +168,7 @@ const compactProps = subjects => ({
   subjectProgressFn: () => 40,
   accuracyTrends: new Map([['c-1', [60, null, 72]]]),
   subjectTopicFilters: new Map(),
-  subjectTopicLimits: new Map(),
+  subjectTopicPages: new Map(),
   openNotesIds: new Set(),
   statusOptions: mockStatusOptions,
   statusClasses: mockStatusClasses,
@@ -183,11 +183,21 @@ const compactSubject = (id, name, collapsed) => ({
   name,
   collapsed,
   archived: false,
-  topics: [{ id: `${id}-t`, name: `Tópico de ${name}`, status: 'Em andamento', difficulty: 'Médio', archived: false }],
+  topics: [
+    {
+      id: `${id}-t`,
+      name: `Tópico de ${name}`,
+      status: 'Em andamento',
+      difficulty: 'Médio',
+      archived: false,
+    },
+  ],
 });
 
 test('Disciplinas — linha fechada mostra nome, progresso, acerto recente e a ação, sem tabela de tópicos', () => {
-  const html = render(h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)])));
+  const html = render(
+    h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)]))
+  );
   assert.ok(html.includes('Língua Portuguesa'));
   assert.ok(html.includes('40% de progresso · 1 tópico'));
   assert.ok(html.includes('role="progressbar"'));
@@ -200,7 +210,13 @@ test('Disciplinas — linha fechada mostra nome, progresso, acerto recente e a a
 
 test('Disciplinas — só a escolha lembrada (collapsed:false) abre a tabela; as demais ficam fechadas', () => {
   const html = render(
-    h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true), compactSubject('c-2', 'Matemática', false)]))
+    h(
+      SubjectsTab,
+      compactProps([
+        compactSubject('c-1', 'Língua Portuguesa', true),
+        compactSubject('c-2', 'Matemática', false),
+      ])
+    )
   );
   assert.equal(html.match(/<table/g)?.length, 1);
   assert.ok(html.includes('Tópico de Matemática'));
@@ -209,6 +225,45 @@ test('Disciplinas — só a escolha lembrada (collapsed:false) abre a tabela; as
 });
 
 test('Disciplinas — a cor é um traço decorativo antes do nome, nunca a única indicação', () => {
-  const html = render(h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)])));
-  assert.match(html, /class="subject-color-swatch[^"]*"[^>]*aria-hidden="true"[^>]*><\/span><span class="subject-name"/);
+  const html = render(
+    h(SubjectsTab, compactProps([compactSubject('c-1', 'Língua Portuguesa', true)]))
+  );
+  assert.match(
+    html,
+    /class="subject-color-swatch[^"]*"[^>]*aria-hidden="true"[^>]*><\/span><span class="subject-name"/
+  );
+});
+
+test('Disciplinas — tópicos em páginas de 10, uma paginação por disciplina', () => {
+  const withTopics = (id, n) => ({
+    id,
+    name: `Disc ${id}`,
+    collapsed: false,
+    archived: false,
+    topics: Array.from({ length: n }, (_, i) => ({
+      id: `${id}-t${i}`,
+      name: `Tópico ${id}-${i}`,
+      status: 'Em andamento',
+      difficulty: 'Médio',
+      archived: false,
+    })),
+  });
+  const props = compactProps([withTopics('a', 23), withTopics('b', 8)]);
+  props.subjectTopicPages = new Map([['a', 3]]);
+  props.renderFooterFn = opts =>
+    `[${opts.mode} ${opts.page}/${opts.total} ${opts.prevAction} ${opts.nextAction}]`;
+  const html = render(h(SubjectsTab, props));
+  assert.match(html, /Tópico a-20/);
+  assert.match(html, /Tópico a-22/);
+  assert.doesNotMatch(html, /Tópico a-19/);
+  assert.match(html, /Tópico b-7/);
+  assert.match(
+    html,
+    /\[pages 3\/23 goToListPage\('subjectTopics:a',2\) goToListPage\('subjectTopics:a',4\)\]/
+  );
+  assert.equal(props.subjectTopicPages.get('a'), 3);
+
+  props.subjectTopicPages.set('a', 99);
+  render(h(SubjectsTab, props));
+  assert.equal(props.subjectTopicPages.get('a'), 3);
 });

@@ -126,13 +126,13 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** Em Disciplinas, cada disciplina lista seus tópicos com `changeSubjectTopicLimit` (passo 10). Passa a ter uma paginação por disciplina.
 
 **Critérios de aceite:**
-- [ ] Cada disciplina com mais de 10 tópicos mostra rodapé próprio; mudar de página numa não afeta as outras.
-- [ ] Adicionar, apagar ou concluir tópico mantém a página (com clamp quando a página some).
-- [ ] `changeSubjectTopicLimit` removido do registro de ações.
+- [x] Cada disciplina com mais de 10 tópicos mostra rodapé próprio; mudar de página numa não afeta as outras.
+- [x] Adicionar, apagar ou concluir tópico mantém a página (com clamp quando a página some).
+- [x] `changeSubjectTopicLimit` removido do registro de ações.
 
 **Verificação:**
-- [ ] Teste unitário: estado por `subjectId`, clamp ao apagar o último tópico da última página
-- [ ] Manual: disciplina com 30+ tópicos
+- [x] Teste unitário: estado por `subjectId`, clamp ao apagar o último tópico da última página
+- [x] Manual: disciplina com 30+ tópicos
 
 **Dependências:** T2
 **Arquivos:** `src/ui/tabs/subjects/SubjectsTab.tsx`, `subjects-controller.ts`, `subjects-tab-controller.ts`, `src/ui/navigation/delegated-actions-registry.ts`

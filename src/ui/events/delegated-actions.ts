@@ -56,10 +56,15 @@ export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
     }
     // Listas paginadas: chave e renderizador em lista fechada, página inteira ≥ 1.
     const pageMatch = normalized.match(
-      /^goToListPage\('(questions|simulations|sessionDays|agendaUpcoming|agendaCompleted|calendar)',(\d{1,6})\)$/
+      /^goToListPage\('(questions|simulations|sessionDays|agendaUpcoming|agendaCompleted|calendar|subjectTopics:[\w-]{1,80})',(\d{1,6})\)$/
     );
     if (pageMatch) {
-      const renderer = options.getRenderers()[PAGED_LIST_RENDERERS[pageMatch[1]]];
+      const renderer =
+        options.getRenderers()[
+          pageMatch[1].startsWith('subjectTopics:')
+            ? 'renderSubjects'
+            : PAGED_LIST_RENDERERS[pageMatch[1]]
+        ];
       const page = Math.max(1, Number(pageMatch[2]));
       if (typeof renderer === 'function') options.goToListPage(pageMatch[1], page, renderer);
       return true;

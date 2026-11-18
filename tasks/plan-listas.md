@@ -77,7 +77,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 - [x] T4: Histórico de sessões paginado por dia
 - [x] T5: Agenda: revisões próximas e concluídas paginadas
 - [x] T6: Calendário em lista paginado
-- [ ] T7: Tópicos por disciplina paginados
+- [x] T7: Tópicos por disciplina paginados
 - [ ] T8: Históricos de decisões e de aderência paginados (montador automático)
 
 ### Checkpoint 2: Paginação

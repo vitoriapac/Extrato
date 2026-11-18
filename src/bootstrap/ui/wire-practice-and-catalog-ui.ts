@@ -98,7 +98,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
   const subjectSearchController = createSubjectSearchController({
     document,
     onChange: () => {
-      subjectsTabController.subjectTopicLimits.clear();
+      subjectsTabController.subjectTopicPages.clear();
       subjectsTabController.renderSubjects();
     },
   });

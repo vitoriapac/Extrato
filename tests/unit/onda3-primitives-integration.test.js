@@ -239,7 +239,7 @@ test('SegmentedControl em Hoje, Agenda e Disciplinas — renderiza role="group",
       subjectExamFilter: 'bb',
       subjectProgressFn: () => 50,
       subjectTopicFilters: new Map(),
-      subjectTopicLimits: new Map(),
+      subjectTopicPages: new Map(),
       openNotesIds: new Set(),
       statusOptions: ['Não iniciado', 'Em andamento', 'Concluído'],
       statusClasses: {

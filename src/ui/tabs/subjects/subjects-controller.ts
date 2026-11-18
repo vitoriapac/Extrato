@@ -9,7 +9,7 @@ export interface SubjectsControllerContext {
   subjectSearchController: any;
   subjectExamFilter: string;
   subjectTopicFilters?: Map<string, { status: string; difficulty: string }>;
-  subjectTopicLimits?: Map<string, number>;
+  subjectTopicPages?: Map<string, number>;
   openNotesIds?: Set<string>;
   isCommonTopic: (topic: any, tags: string[]) => boolean;
   EXAM_TAGS: Record<string, string>;
@@ -30,7 +30,7 @@ export interface SubjectsControllerContext {
 export function createSubjectsController(ctx: SubjectsControllerContext) {
   const subjectTopicFilters =
     ctx.subjectTopicFilters || new Map<string, { status: string; difficulty: string }>();
-  const subjectTopicLimits = ctx.subjectTopicLimits || new Map<string, number>();
+  const subjectTopicPages = ctx.subjectTopicPages || new Map<string, number>();
   const openNotesIds = ctx.openNotesIds || new Set<string>();
 
   function topicMatchesExam(topic: any): boolean {
@@ -93,7 +93,7 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
           ctx.today || new Date().toISOString().slice(0, 10)
         ),
         subjectTopicFilters,
-        subjectTopicLimits,
+        subjectTopicPages,
         openNotesIds,
         statusOptions: ctx.STATUS_OPTIONS,
         statusClasses: ctx.STATUS_CLASS,
@@ -112,7 +112,7 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
 
   return {
     subjectTopicFilters,
-    subjectTopicLimits,
+    subjectTopicPages,
     openNotesIds,
     renderHtml,
     topicMatchesExam,
