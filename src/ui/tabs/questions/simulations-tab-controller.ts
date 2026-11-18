@@ -16,12 +16,8 @@ export interface SimulationsTabControllerContext {
   window?: Window;
   state: any;
   listViewState: {
-    questionsVisible: number;
+    questionsPage: number;
     simulationsPage: number;
-    [key: string]: any;
-  };
-  LIST_VIEW_STEPS: {
-    questions: number;
     [key: string]: any;
   };
   simulationService: any;
@@ -35,15 +31,6 @@ export interface SimulationsTabControllerContext {
   activeSubjects: () => any[];
   subjectsForSelection?: (selectedId?: string | null) => any[];
   topicsForSelection?: (subjectId?: string | null, selectedTopicId?: string | null) => any[];
-  renderListViewFooter?: (
-    total: number,
-    visible: number,
-    step: number,
-    moreAction: string,
-    lessAction: string,
-    colSpan: number,
-    label: string
-  ) => string;
   isMobileLayout?: () => boolean;
   uid?: (prefix: string) => string;
   todayISO?: () => string;
@@ -221,8 +208,6 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       questionViewModel: () => ({}) as any,
       questionCategorizedErrors: () => 0,
       simulationViewModel,
-      renderListViewFooter: ctx.renderListViewFooter,
-      LIST_VIEW_STEPS: ctx.LIST_VIEW_STEPS,
       getSubjectOptionsHtml: subjectId =>
         (ctx.subjectsForSelection ? ctx.subjectsForSelection(subjectId) : [])
           .map(

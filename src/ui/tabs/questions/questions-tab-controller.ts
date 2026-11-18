@@ -7,6 +7,7 @@ import { createQuestionsController } from './questions-controller.js';
 import { PlateauDetectorCard } from './PlateauDetectorCard.js';
 import { buildPlateauDetectorViewModel } from '../../../application/analytics/build-plateau-detector-view-model.js';
 import { runUndoable } from '../../undoable.js';
+import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
 
 export function calcAcertoPct(correct: number, resolved: number): number {
   const r = Number(resolved) || 0;
@@ -24,12 +25,8 @@ export interface QuestionsTabControllerContext {
   window?: Window;
   state: any;
   listViewState: {
-    questionsVisible: number;
+    questionsPage: number;
     simulationsPage: number;
-    [key: string]: any;
-  };
-  LIST_VIEW_STEPS: {
-    questions: number;
     [key: string]: any;
   };
   questionService: any;
@@ -48,15 +45,6 @@ export interface QuestionsTabControllerContext {
   activeSubjects: () => any[];
   subjectsForSelection?: (selectedId?: string | null) => any[];
   topicsForSelection?: (subjectId?: string | null, selectedTopicId?: string | null) => any[];
-  renderListViewFooter?: (
-    total: number,
-    visible: number,
-    step: number,
-    moreAction: string,
-    lessAction: string,
-    colSpan: number,
-    label: string
-  ) => string;
   isMobileLayout?: () => boolean;
   uid?: (prefix: string) => string;
   todayISO?: () => string;
@@ -206,7 +194,10 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     const draft = questionEditController.state.draft;
     if (!draft) return;
     const next = Math.max(0, (Number(draft[field]) || 0) + delta);
-    questionEditController.update(field, field === 'correct' ? Math.min(next, draft.resolved) : next);
+    questionEditController.update(
+      field,
+      field === 'correct' ? Math.min(next, draft.resolved) : next
+    );
     clampDraftCorrect();
     renderQuestoes();
     (ctx.document.getElementById(`questionDraft-${field}`) as HTMLInputElement | null)?.focus();
@@ -237,8 +228,6 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
       isMobileLayout: ctx.isMobileLayout,
       questionViewModel,
       questionCategorizedErrors,
-      renderListViewFooter: ctx.renderListViewFooter,
-      LIST_VIEW_STEPS: ctx.LIST_VIEW_STEPS,
       getSubjectOptionsHtml: subjectId =>
         (ctx.subjectsForSelection ? ctx.subjectsForSelection(subjectId) : [])
           .map(
@@ -280,12 +269,13 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
   }
 
   function addQuestaoRow(initial: any = {}) {
-    ctx.listViewState.questionsVisible = ctx.LIST_VIEW_STEPS.questions;
     // The subject of the latest record comes first: most sessions log the same subject in a row.
     const active = ctx.activeSubjects();
     const lastSubjectId = [...(ctx.state.questoes || [])]
       .filter((q: any) => q.subjectId && active.some((s: any) => s.id === q.subjectId))
-      .sort((x: any, y: any) => String(y.createdAt || y.date).localeCompare(String(x.createdAt || x.date)))[0]?.subjectId;
+      .sort((x: any, y: any) =>
+        String(y.createdAt || y.date).localeCompare(String(x.createdAt || x.date))
+      )[0]?.subjectId;
     const subjectId = initial.subjectId || lastSubjectId || active[0]?.id || null;
     // Com um único tópico possível, já o seleciona para reduzir o atrito do primeiro registro.
     let topicId = initial.topicId || null;
@@ -305,6 +295,11 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
       createdAt: nowISO(),
     };
     questionCrudController.create(question);
+    // A linha nova entra em edição na página em que a ordenação por data a colocar.
+    const index = [...(ctx.state.questoes || [])]
+      .sort((a: any, b: any) => (b.date || '').localeCompare(a.date || ''))
+      .findIndex((item: any) => item.id === question.id);
+    ctx.listViewState.questionsPage = Math.floor(Math.max(0, index) / DEFAULT_PAGE_SIZE) + 1;
     questionEditController.begin(question.id, { isNew: true });
     return question;
   }

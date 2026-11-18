@@ -41,15 +41,15 @@ test('createSpecialActionResolver — intercepta e despacha casos especiais', ()
     renderQuestionAnalytics: () => {
       renderAnalyticsCalled = true;
     },
-    getListViewSteps: () => ({ questions: 10 }),
-    getListViewState: () => ({ questionsVisible: 20 }),
+    getListViewSteps: () => ({ sessionDays: 10 }),
+    getListViewState: () => ({ sessionDaysVisible: 20 }),
     goToListPage: () => {},
     changeListLimit: (key, delta, renderer) => {
       changedList = { key, delta, renderer };
       renderer();
     },
     getRenderers: () => ({
-      renderQuestoes: () => 'rendered',
+      renderStudySessionsHistory: () => 'rendered',
     }),
   });
 
@@ -63,12 +63,12 @@ test('createSpecialActionResolver — intercepta e despacha casos especiais', ()
 
   // Caso 2: changeListLimit
   const handled2 = resolver(
-    "changeListLimit('questions',LIST_VIEW_STEPS.questions,renderQuestoes)",
+    "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
     null,
     {}
   );
   assert.equal(handled2, true);
-  assert.equal(changedList?.key, 'questions');
+  assert.equal(changedList?.key, 'sessionDays');
   assert.equal(changedList?.delta, 10);
 
   // Caso 3: não reconhecido
@@ -97,14 +97,16 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
     getListViewState: () => ({}),
     changeListLimit() {},
     goToListPage: (key, page, renderer) => calls.push({ key, page, rendered: renderer() }),
-    getRenderers: () => ({ renderSimulados: () => 'ok' }),
+    getRenderers: () => ({ renderSimulados: () => 'ok', renderQuestoes: () => 'q' }),
   });
   assert.equal(resolver("goToListPage('simulations',3)", null, {}), true);
   assert.deepEqual(calls, [{ key: 'simulations', page: 3, rendered: 'ok' }]);
   assert.equal(resolver("goToListPage('simulations',0)", null, {}), true);
   assert.equal(calls[1].page, 1);
+  assert.equal(resolver("goToListPage('questions',2)", null, {}), true);
+  assert.deepEqual(calls[2], { key: 'questions', page: 2, rendered: 'q' });
   assert.equal(resolver("goToListPage('outra',2)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',-1)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',2);alert(1)", null, {}), false);
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
 });

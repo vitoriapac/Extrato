@@ -42,9 +42,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     services,
     analytics,
     listViewState,
-    LIST_VIEW_STEPS,
     isMobileHistoryLayout,
-    renderListViewFooter,
     activeTabName,
     activateTab,
     persistAndRender,
@@ -297,7 +295,6 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
       return getState();
     },
     listViewState,
-    LIST_VIEW_STEPS,
     questionService: services.questionService,
     errorCategories: ERROR_CATEGORIES,
     errorNotebookController,
@@ -324,7 +321,6 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     subjectsForSelection,
     topicsForSelection: (sId?: string | null, tId?: string | null) =>
       topicsForSelection(sId || '', tId || null),
-    renderListViewFooter,
     isMobileLayout: isMobileHistoryLayout,
     uid,
     todayISO,
@@ -341,7 +337,6 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
       return getState();
     },
     listViewState,
-    LIST_VIEW_STEPS,
     simulationService: services.simulationService,
     questionEditController: questionsTabController.questionEditController,
     openQuestionErrorIds: questionsTabController.openQuestionErrorIds,
@@ -354,7 +349,6 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     subjectsForSelection,
     topicsForSelection: (sId?: string | null, tId?: string | null) =>
       topicsForSelection(sId || '', tId || null),
-    renderListViewFooter,
     isMobileLayout: isMobileHistoryLayout,
     uid,
     todayISO,

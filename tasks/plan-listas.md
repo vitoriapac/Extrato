@@ -73,7 +73,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 - [ ] Unit/lint/build limpos; Simulados paginando no navegador (desktop e mobile); revisão humana do visual da paginação
 
 ### Fase 2: Paginação nas listas longas
-- [ ] T3: Questões paginadas
+- [x] T3: Questões paginadas
 - [ ] T4: Histórico de sessões paginado por dia
 - [ ] T5: Agenda: revisões próximas e concluídas paginadas
 - [ ] T6: Calendário em lista paginado

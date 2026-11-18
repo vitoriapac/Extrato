@@ -85,12 +85,8 @@ function createBaseContext(doc) {
   };
 
   const listViewState = {
-    questionsVisible: 10,
+    questionsPage: 1,
     simulationsPage: 1,
-  };
-
-  const LIST_VIEW_STEPS = {
-    questions: 10,
   };
 
   const errorCategories = {
@@ -104,7 +100,6 @@ function createBaseContext(doc) {
     document: doc,
     state,
     listViewState,
-    LIST_VIEW_STEPS,
     questionService,
     errorCategories,
     persistAndRender: () => {

@@ -59,13 +59,13 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** Replica o piloto em Questões (mesmo controller e a mesma estrutura de tabela).
 
 **Critérios de aceite:**
-- [ ] 10 por página, mesmo rodapé e mesmo comportamento de T2.
-- [ ] Filtros e busca da lista de questões levam à página 1.
-- [ ] `changeListLimit('questions', ...)` removido; sem referência órfã em `LIST_VIEW_STEPS`.
+- [x] 10 por página, mesmo rodapé e mesmo comportamento de T2.
+- [x] Filtros e busca da lista de questões levam à página 1.
+- [x] `changeListLimit('questions', ...)` removido; sem referência órfã em `LIST_VIEW_STEPS`.
 
 **Verificação:**
-- [ ] `npm run test:unit` com teste de filtro → página 1
-- [ ] Manual: 25+ questões na demo, filtrar e paginar
+- [x] `npm run test:unit` com teste de filtro → página 1
+- [x] Manual: 25+ questões na demo, filtrar e paginar
 
 **Dependências:** T2
 **Arquivos:** `src/ui/tabs/questions/questions-controller.ts`, `QuestionLogTable.tsx`, `questions-tab-controller.ts`, `tests/unit/delegated-actions.test.js`

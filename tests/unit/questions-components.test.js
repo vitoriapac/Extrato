@@ -123,7 +123,7 @@ test('createQuestionsController — coordena a renderização de questões e sim
 
   const controller = createQuestionsController({
     state,
-    listViewState: { questionsVisible: 10, simulationsPage: 1 },
+    listViewState: { questionsPage: 1, simulationsPage: 1 },
     questionEditController: { state: { editingId: null, draft: null } },
     simulationEditController: { state: { editingId: null, draft: null } },
     errorCategories: {},
@@ -182,7 +182,7 @@ test('createQuestionsController — Simulados em páginas de 10 com limite e gra
     correct: 5,
     total: 10,
   }));
-  const listViewState = { questionsVisible: 10, simulationsPage: 1 };
+  const listViewState = { questionsPage: 1, simulationsPage: 1 };
   const controller = createQuestionsController({
     state: { questoes: [], simulados },
     listViewState,
@@ -214,4 +214,47 @@ test('createQuestionsController — Simulados em páginas de 10 com limite e gra
   html = controller.renderSimulationsHtml();
   assert.equal(listViewState.simulationsPage, 1);
   assert.doesNotMatch(html, /list-pagination/);
+});
+
+test('createQuestionsController — Questões em páginas de 10 com rodapé e página limitada', () => {
+  const questoes = Array.from({ length: 23 }, (_, i) => ({
+    id: `q${i}`,
+    date: `2026-03-${String(i + 1).padStart(2, '0')}`,
+    resolved: 10,
+    correct: 9,
+    errorBreakdown: {},
+  }));
+  const listViewState = { questionsPage: 1, simulationsPage: 1 };
+  const controller = createQuestionsController({
+    state: { questoes, simulados: [] },
+    listViewState,
+    questionEditController: { state: { editingId: null, draft: null } },
+    simulationEditController: { state: { editingId: null, draft: null } },
+    errorCategories: {},
+    questionViewModel: q => ({
+      date: q.date,
+      subject: 'Geral',
+      topic: 'Tópico',
+      resolved: q.resolved,
+      correct: q.correct,
+      accuracy: 90,
+      errors: 1,
+    }),
+    questionCategorizedErrors: () => 0,
+  });
+  const rows = html => (html.match(/history-read-row/g) || []).length;
+
+  let html = controller.renderQuestionsHtml();
+  assert.equal(rows(html), 10);
+  assert.match(html, /Exibindo 1–10 de 23 registros/);
+  assert.match(html, /data-delegated-click="goToListPage\('questions',2\)"/);
+
+  listViewState.questionsPage = 3;
+  html = controller.renderQuestionsHtml();
+  assert.equal(rows(html), 3);
+  assert.match(html, /Exibindo 21–23 de 23 registros/);
+
+  listViewState.questionsPage = 50;
+  controller.renderQuestionsHtml();
+  assert.equal(listViewState.questionsPage, 3);
 });

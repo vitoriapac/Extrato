@@ -17,7 +17,7 @@ export interface QuestionsControllerOptions {
     subjects?: any[];
   };
   listViewState: {
-    questionsVisible: number;
+    questionsPage: number;
     simulationsPage: number;
   };
   questionEditController: {
@@ -39,20 +39,8 @@ export interface QuestionsControllerOptions {
   questionViewModel: (q: QuestionItem) => QuestionViewModel;
   questionCategorizedErrors: (q: QuestionItem) => number;
   simulationViewModel?: (sim: SimulationItem) => SimulationViewModel;
-  renderListViewFooter?: (
-    total: number,
-    visible: number,
-    step: number,
-    moreAction: string,
-    lessAction: string,
-    colSpan: number,
-    label: string
-  ) => string;
   getSubjectOptionsHtml?: (selectedId?: string | null) => string;
   getTopicOptionsHtml?: (subjectId?: string | null, selectedTopicId?: string | null) => string;
-  LIST_VIEW_STEPS?: {
-    questions: number;
-  };
 }
 
 export function createQuestionsController(opts: QuestionsControllerOptions) {
@@ -71,9 +59,37 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
     );
   }
 
+  // Página da lista (10 por vez) e rodapé. Grava a página já limitada: apagar o último
+  // item da última página cai na anterior.
+  function pageOf<T>(items: T[], key: 'questions' | 'simulations', colspan: number, label: string) {
+    const stateKey = `${key}Page` as const;
+    const list = createProgressiveList({
+      items,
+      mode: 'pages',
+      page: opts.listViewState[stateKey],
+    });
+    opts.listViewState[stateKey] = list.page;
+    const footerHtml = renderCollectionFooter({
+      mode: 'pages',
+      total: list.totalItems,
+      visible: list.visibleItems.length,
+      page: list.page,
+      pageSize: list.pageSize,
+      prevAction: `goToListPage('${key}',${list.page - 1})`,
+      nextAction: `goToListPage('${key}',${list.page + 1})`,
+      colspan,
+      label,
+    });
+    return { visibleItems: list.visibleItems as T[], footerHtml };
+  }
+
   function renderQuestionsHtml(): string {
-    const questions = getSortedQuestions();
-    const visibleLimit = opts.listViewState.questionsVisible;
+    const { visibleItems: questions, footerHtml } = pageOf(
+      getSortedQuestions(),
+      'questions',
+      8,
+      'registros'
+    );
     const editingId = opts.questionEditController.state.editingId;
     const draft = opts.questionEditController.state.draft;
     const isMobile = opts.isMobileLayout ? opts.isMobileLayout() : false;
@@ -90,24 +106,9 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
       }
     }
 
-    let footerHtml = '';
-    if (opts.renderListViewFooter && questions.length > 0) {
-      const step = opts.LIST_VIEW_STEPS?.questions || 10;
-      footerHtml = opts.renderListViewFooter(
-        questions.length,
-        visibleLimit,
-        step,
-        "changeListLimit('questions',LIST_VIEW_STEPS.questions,renderQuestoes)",
-        "changeListLimit('questions',-listViewState.questionsVisible,renderQuestoes)",
-        8,
-        'registros'
-      );
-    }
-
     return render(
       h(QuestionLogTable, {
         questions,
-        visibleLimit,
         editingId,
         draft,
         openErrorIds,
@@ -125,13 +126,12 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
   }
 
   function renderSimulationsHtml(): string {
-    const list = createProgressiveList({
-      items: getSortedSimulations(),
-      mode: 'pages',
-      page: opts.listViewState.simulationsPage,
-    });
-    // Grava a página já limitada: apagar o último item da última página cai na anterior.
-    opts.listViewState.simulationsPage = list.page;
+    const { visibleItems: simulations, footerHtml } = pageOf(
+      getSortedSimulations(),
+      'simulations',
+      7,
+      'simulados'
+    );
     const editingId = opts.simulationEditController.state.editingId;
     const draft = opts.simulationEditController.state.draft;
     const isMobile = opts.isMobileLayout ? opts.isMobileLayout() : false;
@@ -151,21 +151,9 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
 
     const getViewModel = opts.simulationViewModel || defaultSimViewModel;
 
-    const footerHtml = renderCollectionFooter({
-      mode: 'pages',
-      total: list.totalItems,
-      visible: list.visibleItems.length,
-      page: list.page,
-      pageSize: list.pageSize,
-      prevAction: `goToListPage('simulations',${list.page - 1})`,
-      nextAction: `goToListPage('simulations',${list.page + 1})`,
-      colspan: 7,
-      label: 'simulados',
-    });
-
     return render(
       h(SimulationLogTable, {
-        simulations: list.visibleItems,
+        simulations,
         editingId,
         draft,
         openBreakdownIds,

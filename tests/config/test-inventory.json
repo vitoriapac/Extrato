@@ -9089,7 +9089,7 @@
         "../../src/application/analytics/build-plateau-detector-view-model.js",
         "../../src/ui/tabs/questions/questions-controller.js"
       ],
-      "staticTestDeclarations": 6,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

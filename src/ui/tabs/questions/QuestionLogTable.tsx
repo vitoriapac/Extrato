@@ -25,7 +25,6 @@ export interface QuestionViewModel {
 
 export interface QuestionLogTableProps {
   questions: QuestionItem[];
-  visibleLimit: number;
   editingId?: string | null;
   draft?: any;
   openErrorIds: Set<string>;
@@ -41,7 +40,6 @@ export interface QuestionLogTableProps {
 
 export function QuestionLogTable({
   questions,
-  visibleLimit,
   editingId,
   draft,
   openErrorIds,
@@ -73,11 +71,9 @@ export function QuestionLogTable({
     );
   }
 
-  const visibleQuestions = questions.slice(0, visibleLimit);
-
   return (
     <>
-      {visibleQuestions.map(q => {
+      {questions.map(q => {
         const isEditing = editingId === q.id;
 
         if (isEditing && draft) {

@@ -1,5 +1,4 @@
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../ui/progressive-list.js';
-import { renderCollectionFooter } from '../ui/list-components.js';
 import { trapModalTab } from '../ui/accessibility.js';
 import { parseLocalDate } from '../core/date-utils.js';
 import { createTabRouter } from '../ui/navigation/tab-router.js';
@@ -54,34 +53,15 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
   const { document, window, todayISO, showToast, render, analytics } = deps;
 
   const listViewState = {
-    questionsVisible: DEFAULT_LIST_VISIBLE_ITEMS,
+    questionsPage: 1,
     simulationsPage: 1,
     sessionDaysVisible: DEFAULT_LIST_VISIBLE_ITEMS,
   };
   const LIST_VIEW_STEPS = {
-    questions: DEFAULT_LIST_VISIBLE_ITEMS,
     sessionDays: DEFAULT_LIST_VISIBLE_ITEMS,
   };
 
   const isMobileHistoryLayout = () => window.matchMedia('(max-width:850px)').matches;
-  const renderListViewFooter = (
-    total: number,
-    visible: number,
-    step: number,
-    showMoreAction: string,
-    showLessAction: string,
-    colspan: number,
-    label: string
-  ) =>
-    renderCollectionFooter({
-      total,
-      visible,
-      step,
-      showMoreAction,
-      showLessAction: visible > step ? showLessAction : '',
-      colspan,
-      label,
-    });
 
   function changeListLimit(key: string, delta: number, renderFn: () => void) {
     (listViewState as Record<string, any>)[`${key}Visible`] =
@@ -119,6 +99,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     Object.keys(LIST_VIEW_STEPS).forEach(key => {
       (listViewState as Record<string, any>)[`${key}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
     });
+    listViewState.questionsPage = 1;
     listViewState.simulationsPage = 1;
     if (practiceUi?.reviewsTabController) {
       practiceUi.reviewsTabController.agendaUiState.upcomingVisible =
@@ -148,9 +129,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
   practiceUi = wirePracticeAndCatalogUi({
     ...deps,
     listViewState,
-    LIST_VIEW_STEPS,
     isMobileHistoryLayout,
-    renderListViewFooter,
     activeTabName,
     activateTab,
     startTimer: () => executionUi.studyTimerRuntime.startTimer(),
