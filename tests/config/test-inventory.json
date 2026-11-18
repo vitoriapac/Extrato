@@ -6917,7 +6917,7 @@
         "../../src/ui/renderers/studytrack32-renderer.ts",
         "../../src/ui/renderers/weekly-adherence-renderer.ts"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

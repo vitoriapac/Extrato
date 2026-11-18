@@ -68,11 +68,18 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     const subjectId = key.startsWith('subjectTopics:') ? key.slice('subjectTopics:'.length) : '';
     const store: Record<string, any> =
       key === 'calendar' ? practiceUi.calendarTabController.calendarUiState : listViewState;
-    const previous = (subjectId ? topics.get(subjectId) : store[`${key}Page`]) || 1;
+    const history = planningUi.weeklyCloseModalController;
+    const previous =
+      (subjectId
+        ? topics.get(subjectId)
+        : key === 'priorityHistory'
+          ? history.getPriorityHistoryPage()
+          : store[`${key}Page`]) || 1;
     const clicked = document.activeElement as HTMLElement | null;
     const clickedDir = clicked?.dataset?.pageDir || '';
     const clickedNumber = Boolean(clicked?.closest?.('.list-pagination') && !clickedDir);
     if (subjectId) topics.set(subjectId, page);
+    else if (key === 'priorityHistory') history.setPriorityHistoryPage(page);
     else store[`${key}Page`] = page;
     renderFn();
     // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta)
@@ -281,6 +288,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
         renderAgenda: () => practiceUi.reviewsTabController.renderAgenda(),
         renderCalendar: () => practiceUi.calendarTabController.renderCalendar(),
         renderSubjects: () => practiceUi.subjectsTabController.renderSubjects(),
+        renderPriorityHistory: () =>
+          planningUi.weeklyCloseModalController.renderStudyTrack32Insights(),
         renderStudySessionsHistory: () =>
           executionUi.sessionHistoryController.renderStudySessionsHistory(),
       }),

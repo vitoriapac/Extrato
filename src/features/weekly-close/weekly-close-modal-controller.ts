@@ -46,7 +46,10 @@ import { renderPhaseComparison } from '../../ui/renderers/phase-comparison-rende
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../ui/accessibility.js';
 import { renderWeeklyHistorySeries } from '../../ui/renderers/weekly-history-series-renderer.js';
-import { renderWeeklyCloseTrend, renderWeeklySignals } from '../../ui/renderers/weekly-close-trend-renderer.js';
+import {
+  renderWeeklyCloseTrend,
+  renderWeeklySignals,
+} from '../../ui/renderers/weekly-close-trend-renderer.js';
 import { renderWeeklyCloseRecord } from '../../ui/renderers/weekly-close-record-renderer.js';
 import { openSectionFor } from '../../ui/remembered-sections.js';
 import { buildPlanExecution } from '../../application/goals/build-plan-execution.js';
@@ -123,9 +126,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   let strategicTimelineFilter = 'all';
   let strategicTimelineGroup = 'none';
   let priorityHistorySubject = '';
-  let priorityHistoryPage = 0;
+  let priorityHistoryPage = 1;
   const expandedPriorityTopics = new Set<string>();
-  const expandedPriorityObservations = new Set<string>();
 
   function recordedExamPhase() {
     const state = deps.getState();
@@ -537,7 +539,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
             sessions: state.studySessions || [],
             questions: state.questoes || [],
             dailyPlans: state.dailyPlans || [],
-            reviews: deps.getRevisoesUnificadas ? deps.getRevisoesUnificadas() : state.agendaRevisoes || [],
+            reviews: deps.getRevisoesUnificadas
+              ? deps.getRevisoesUnificadas()
+              : state.agendaRevisoes || [],
             simulations: state.simulados || [],
             subjects: state.subjects || [],
             weeklyCloseSnapshots: state.weeklyCloseSnapshots || [],
@@ -547,10 +551,16 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
             studyCycle: state.studyCycle || null,
           });
           const workedHtml = (ritual.whatWorked || [])
-            .map((line: string) => `<p class="m-0 text-content-secondary text-xs">${escapeHtml(line)}</p>`)
+            .map(
+              (line: string) =>
+                `<p class="m-0 text-content-secondary text-xs">${escapeHtml(line)}</p>`
+            )
             .join('');
           const attentionHtml = (ritual.needsAttention || [])
-            .map((line: string) => `<p class="m-0 text-content-secondary text-xs">${escapeHtml(line)}</p>`)
+            .map(
+              (line: string) =>
+                `<p class="m-0 text-content-secondary text-xs">${escapeHtml(line)}</p>`
+            )
             .join('');
           const improvementDetail =
             ritual.improvementToTest?.detail ||
@@ -614,7 +624,11 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         (fullAnalysis.querySelector?.('.weekly-close-analysis') as HTMLDetailsElement | null)?.open
       );
       const fullBody =
-        renderWeeklyClose(model.weeklyClose, { ...options, includeNext: false, includeKpis: false }) +
+        renderWeeklyClose(model.weeklyClose, {
+          ...options,
+          includeNext: false,
+          includeKpis: false,
+        }) +
         renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
           adherence: model.weeklyClose.adherence,
           trajectory: trajectoryClose,
@@ -691,7 +705,6 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         }),
         {
           expandedTopics: expandedPriorityTopics,
-          expandedObservations: expandedPriorityObservations,
           page: priorityHistoryPage,
         }
       );
@@ -703,11 +716,13 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     // Sem retratos nem decisões, o modo Essencial mostra uma frase em vez do botão "Mostrar" sozinho.
     const emptyNote = doc.getElementById('weeklyHistoryEmpty');
     const historySection = doc.getElementById('metasHistorySection');
-    const historyEmpty = !(state.weeklyCloseSnapshots || []).length && !model.decisionHistory.items.length;
+    const historyEmpty =
+      !(state.weeklyCloseSnapshots || []).length && !model.decisionHistory.items.length;
     emptyNote?.classList?.toggle('is-empty', historyEmpty);
     const reveal = historySection?.previousElementSibling as HTMLElement | null;
     if (reveal?.classList?.contains('advanced-reveal'))
-      reveal.hidden = historyEmpty || Boolean(historySection?.classList?.contains('is-advanced-open'));
+      reveal.hidden =
+        historyEmpty || Boolean(historySection?.classList?.contains('is-advanced-open'));
     if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
   }
 
@@ -735,9 +750,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
 
   function setPriorityHistorySubject(value: string) {
     priorityHistorySubject = value;
-    priorityHistoryPage = 0;
+    priorityHistoryPage = 1;
     expandedPriorityTopics.clear();
-    expandedPriorityObservations.clear();
     renderStudyTrack32Insights();
   }
 
@@ -752,21 +766,11 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     renderStudyTrack32Insights();
   }
 
-  function togglePriorityTopicObservations(topicKey: string) {
-    const key = String(topicKey || '');
-    if (!key) return;
-    if (expandedPriorityObservations.has(key)) {
-      expandedPriorityObservations.delete(key);
-    } else {
-      expandedPriorityObservations.add(key);
-    }
-    renderStudyTrack32Insights();
-  }
-
-  function showMorePriorityHistoryTopics() {
-    priorityHistoryPage += 1;
-    renderStudyTrack32Insights();
-  }
+  // A página dos tópicos mora aqui; a ação genérica goToListPage('priorityHistory', n) a lê e grava.
+  const getPriorityHistoryPage = () => priorityHistoryPage;
+  const setPriorityHistoryPage = (page: number) => {
+    priorityHistoryPage = page;
+  };
 
   function getCurrentStudyTrackModel() {
     return currentStudyTrackModel;
@@ -788,8 +792,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     setStrategicTimelineGroup,
     setPriorityHistorySubject,
     togglePriorityTopic,
-    togglePriorityTopicObservations,
-    showMorePriorityHistoryTopics,
+    getPriorityHistoryPage,
+    setPriorityHistoryPage,
     getCurrentStudyTrackModel,
     weeklyCloseController,
     sustainabilityController,

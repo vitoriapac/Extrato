@@ -63,10 +63,6 @@ export function buildDelegatedActionHandlers(
     setPriorityHistorySubject: (...args: any[]) =>
       c.weeklyClose?.setPriorityHistorySubject?.(...args),
     togglePriorityTopic: (...args: any[]) => c.weeklyClose?.togglePriorityTopic?.(...args),
-    togglePriorityTopicObservations: (...args: any[]) =>
-      c.weeklyClose?.togglePriorityTopicObservations?.(...args),
-    showMorePriorityHistoryTopics: (...args: any[]) =>
-      c.weeklyClose?.showMorePriorityHistoryTopics?.(...args),
     saveWeeklyCloseSnapshot: (...args: any[]) => c.weeklyClose?.saveWeeklyCloseSnapshot?.(...args),
     openWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.openWeeklyCloseRecord?.(...args),
     closeWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.closeWeeklyCloseRecord?.(...args),

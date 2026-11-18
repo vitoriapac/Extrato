@@ -109,6 +109,8 @@ const LISTS: any[] = [
   ['.performance-subject-comparison tbody', ':scope > tr'],
   ['.stability-map-cell > ul', ':scope > li'],
   ['.performance-topic-list', ':scope > li'],
+  ['.priority-history-observations', ':scope > li'],
+  ['.strategic-timeline-detail > ul', ':scope > li'],
   ['.daily-execution-following > ul', ':scope > li'],
   ['.exam-intelligence-list', ':scope > li'],
   ['.exam-configuration-audit > ul', ':scope > li'],

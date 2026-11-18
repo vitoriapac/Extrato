@@ -1,6 +1,8 @@
 import { formatDateBR } from '../../core/format-date.js';
 import { renderEmptyState } from '../components/analytical-presentation.js';
 import { renderEvidenceQuality } from './evidence-quality-renderer.js';
+import { createProgressiveList, DEFAULT_PAGE_SIZE } from '../progressive-list.js';
+import { renderCollectionFooter } from '../list-components.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
@@ -43,16 +45,8 @@ export function renderStrategicTimeline(model: Record<string, any>) {
       ? `<details class="strategic-timeline-detail"><summary>Ver detalhes da decisão</summary><dl>${detail.rows.map((row: any) => `<div><dt>${escape(row.label)}</dt><dd>${escape(row.value)}</dd></div>`).join('')}</dl>${
           detail.reasons.length
             ? `<h4 class="text-sm">Motivos registrados</h4><ul>${detail.reasons
-                .slice(0, 5)
                 .map((reason: any) => `<li>${escape(reason)}</li>`)
-                .join('')}</ul>${
-                detail.reasons.length > 5
-                  ? `<details><summary>Mostrar mais</summary><ul>${detail.reasons
-                      .slice(5)
-                      .map((reason: any) => `<li>${escape(reason)}</li>`)
-                      .join('')}</ul></details>`
-                  : ''
-              }`
+                .join('')}</ul>`
             : ''
         }${detail.revertReason ? `<p>Motivo da reversão: ${escape(detail.revertReason)}</p>` : ''}<p class="analytics-note">${escape(detail.note)}</p><small>Decisão ${escape(detail.originalDecisionId)}${detail.planId ? ` · Plano ${escape(detail.planId)}` : ''}</small></details>`
       : '';
@@ -65,20 +59,22 @@ export function renderPriorityHistory(
   model: Record<string, any>,
   opts: {
     expandedTopics?: Set<string>;
-    expandedObservations?: Set<string>;
+    // Página dos tópicos, a partir de 1; o controller guarda para sobreviver ao re-render.
     page?: number;
     pageSize?: number;
   } = {}
 ) {
   const metric = (name: string, value: unknown, suffix = '') =>
     `${name}: ${value == null ? 'sem dados' : escape(value) + suffix}`;
-  const pageSize = opts.pageSize || 12;
-  const page = opts.page || 0;
   const expandedTopics = opts.expandedTopics || new Set<string>();
-  const expandedObservations = opts.expandedObservations || new Set<string>();
   const rows = model.rows || [];
-  const visibleRows = rows.slice(0, (page + 1) * pageSize);
-  const remainingTopics = Math.max(0, rows.length - visibleRows.length);
+  const list = createProgressiveList({
+    items: rows,
+    mode: 'pages',
+    pageSize: opts.pageSize || DEFAULT_PAGE_SIZE,
+    page: opts.page || 1,
+  });
+  const visibleRows = list.visibleItems;
 
   return `<label class="strategic-history-filter">Disciplina<select class="select-control" data-delegated-change="setPriorityHistorySubject(this.value)"><option value="">Todas</option>${model.subjects.map((item: any) => `<option value="${escape(item.id)}" ${model.subjectId === item.id ? 'selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label><details class="limits-disclosure"><summary>Como ler: limites</summary><p class="analytics-note">Registros congelados e diagnóstico atual, com uma observação por dia. Não reconstruímos indicadores passados com os dados atuais. Registros legados sem concurso congelado usam o vínculo atual do tópico.</p></details>${
     visibleRows.length
@@ -86,10 +82,7 @@ export function renderPriorityHistory(
           .map((row: any) => {
             const topicKey = String(row.topicId || `${row.subjectName}::${row.topicName}`);
             const isOpen = expandedTopics.has(topicKey);
-            const showAllObs = expandedObservations.has(topicKey);
             const historyList = row.history || [];
-            const visibleObs = showAllObs ? historyList : historyList.slice(0, 5);
-            const remainingObs = Math.max(0, historyList.length - visibleObs.length);
             return `<article class="priority-history-topic" data-priority-topic="${escape(topicKey)}"><button type="button" class="priority-history-topic__toggle" aria-expanded="${isOpen ? 'true' : 'false'}" data-delegated-click="togglePriorityTopic('${escape(topicKey)}')"><strong>${escape(row.subjectName)} — ${escape(row.topicName)}</strong><span>${escape(row.state)} · ${historyList.length} ${historyList.length === 1 ? 'registro' : 'registros'}</span><span class="priority-history-path">${historyList
               .slice(-5)
               .map(
@@ -98,24 +91,23 @@ export function renderPriorityHistory(
               )
               .join(' → ')}</span></button>${
               isOpen
-                ? `<ol class="priority-history-observations">${visibleObs
+                ? `<ol class="priority-history-observations">${historyList
                     .map(
                       (point: any) =>
                         `<li><time datetime="${escape(point.date)}">${escape(formatDateBR(point.date))}${point.current ? ' · atual' : ''}</time><strong>${escape(point.classification)} · ${escape(point.profile.score ?? '—')}/100</strong><p>${metric('Precisão', point.profile.accuracy, '%')} · ${metric('Meta de acerto', point.profile.accuracyTarget, '%')} · ${metric('Domínio', point.profile.mastery)} · ${metric('Retenção', point.profile.retention)} · ${metric('Impacto', point.profile.examImpact)} · ${metric('Incidência', point.profile.incidence, '%')}</p>${renderEvidenceQuality({ confidence: point.profile.confidence, reasons: ['Qualidade registrada na decisão; volumes ausentes não são reconstruídos.'] })}<small>${metric('Evidência', point.profile.confidence == null ? null : Math.round(point.profile.confidence * 100), '%')} · ${escape(point.source)}</small><p>${escape(point.change.label)}${point.change.reasons.length ? ' · ' + point.change.reasons.map(escape).join(' · ') : ''}</p>${point.profile.reasons?.length ? `<small>${point.profile.reasons.slice(0, 3).map(escape).join(' · ')}</small>` : ''}</li>`
                     )
-                    .join('')}</ol>${
-                    historyList.length > 5
-                      ? `<button type="button" class="btn ghost small progressive-list-toggle" data-delegated-click="togglePriorityTopicObservations('${escape(topicKey)}')">${showAllObs ? 'Mostrar menos' : `Mostrar mais · +${remainingObs} ↓`}</button>`
-                      : ''
-                  }`
+                    .join('')}</ol>`
                 : ''
             }</article>`;
           })
-          .join('')}${
-          remainingTopics > 0
-            ? `<button type="button" class="btn ghost small progressive-list-toggle" data-delegated-click="showMorePriorityHistoryTopics()">Mostrar mais tópicos · +${remainingTopics} ↓</button>`
-            : ''
-        }</div>`
+          .join('')}${renderCollectionFooter({
+          variant: 'block',
+          total: rows.length,
+          page: list.page,
+          pageSize: list.pageSize,
+          pageAction: (n: number) => `goToListPage('priorityHistory',${n})`,
+          label: 'tópicos',
+        })}</div>`
       : renderEmptyState({
           title: 'Nenhuma prioridade registrada nesta disciplina',
           message:

@@ -41,6 +41,7 @@ const PAGED_LIST_RENDERERS: Record<string, string> = {
   agendaUpcoming: 'renderAgenda',
   agendaCompleted: 'renderAgenda',
   calendar: 'renderCalendar',
+  priorityHistory: 'renderPriorityHistory',
 };
 
 export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
@@ -56,7 +57,7 @@ export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
     }
     // Listas paginadas: chave e renderizador em lista fechada, página inteira ≥ 1.
     const pageMatch = normalized.match(
-      /^goToListPage\('(questions|simulations|sessionDays|agendaUpcoming|agendaCompleted|calendar|subjectTopics:[\w-]{1,80})',(\d{1,6})\)$/
+      /^goToListPage\('(questions|simulations|sessionDays|agendaUpcoming|agendaCompleted|calendar|priorityHistory|subjectTopics:[\w-]{1,80})',(\d{1,6})\)$/
     );
     if (pageMatch) {
       const renderer =

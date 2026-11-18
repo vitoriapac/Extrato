@@ -202,12 +202,12 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** `showMorePriorityHistoryTopics` e `togglePriorityTopicObservations` passam pelo mesmo componente.
 
 **Critérios de aceite:**
-- [ ] Os dois botões usam o componente padrão; as ações delegadas próprias saem do registro.
-- [ ] Abrir/fechar observações por tópico continua funcionando.
+- [x] Os dois botões usam o componente padrão; as ações delegadas próprias saem do registro.
+- [x] Abrir/fechar observações por tópico continua funcionando.
 
 **Verificação:**
-- [ ] Testes do `weekly-close-modal-controller` e `strategic-history-renderer` verdes
-- [ ] Manual: modal de Fechamento semanal com 6+ tópicos
+- [x] Testes do `weekly-close-modal-controller` e `strategic-history-renderer` verdes
+- [x] Manual: modal de Fechamento semanal com 6+ tópicos
 
 **Dependências:** T10
 **Arquivos:** `src/ui/renderers/strategic-history-renderer.ts`, `src/features/weekly-close/weekly-close-modal-controller.ts`, `src/ui/navigation/delegated-actions-registry.ts`

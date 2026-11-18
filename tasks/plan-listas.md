@@ -86,7 +86,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 ### Fase 3: Unificar "Mostrar mais"
 - [x] T9: Rodapés legados restantes passam pelo componente único
 - [x] T10: `lazyMore` (Matriz) e `<details>` manuais substituídos
-- [ ] T11: Botões próprios do histórico estratégico
+- [x] T11: Botões próprios do histórico estratégico
 
 ### Checkpoint 3: Um mecanismo só
 - [ ] Nenhum `data-progressive-legacy`, `lazyMore` ou "Mostrar mais" fora do componente; E2E de listas verde
