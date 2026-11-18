@@ -143,7 +143,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       '.exam-matrix-more-filters'
     )?.open;
 
-    // Os quadrantes são a parte mais longa: no celular nascem fechados, e a escolha do aluno sobrevive ao redesenho.
+    // Os quadrantes são a parte mais longa: nascem fechados em qualquer largura, e a escolha do aluno sobrevive ao redesenho.
     const quadrantsWasOpen = container.querySelector<HTMLDetailsElement>(
       'details.exam-matrix-quadrants-fold'
     )?.open;
@@ -167,7 +167,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     );
     if (quadrantsFold)
       quadrantsFold.open =
-        quadrantsWasOpen ?? !ctx.window.matchMedia?.('(max-width:600px)')?.matches;
+        quadrantsWasOpen ?? false;
     const opportunity = ctx.document.getElementById('examOpportunity');
     // Uma prioridade só: a "Maior oportunidade na banca" não tem mais bloco próprio; a lista dos quadrantes já a mostra.
     if (opportunity) opportunity.innerHTML = '';

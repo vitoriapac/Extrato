@@ -513,7 +513,7 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 
 ### Checkpoint 9
 - [ ] E2E, tipos e goldens revisados; busca no bundle pelos nomes e formatos antigos
-- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+- [x] `/impeccable critique`: 28/40 (H4 3, H6 2, H8 2); meta não atingida, segue na Fase 16
 
 ## Fase 12: Dobras fechadas (enxugar, fundir, mover)
 
@@ -680,4 +680,16 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 **Fica de fora:** o formato único de percentual, o foco após as ações e a manchete da Prontidão (seguem abertos).
 
 ### Checkpoint 15
+- [x] `/impeccable critique`: 28/40 (H4 3, H6 2, H8 2); meta não atingida, segue na Fase 16
+
+## Fase 16: Provas e Diagnóstico mais curtos
+
+### Tarefa 65: Quadrantes de incidência fechados
+- [x] A dobra "Quadrantes de incidência × domínio" nasce fechada em qualquer largura (Inteligência da prova cai de ~3,8 mil para ~2 mil px); a escolha do aluno sobrevive ao redesenho
+
+### Tarefa 66: Linhas do Diagnóstico (pendente)
+- [ ] Rever o que cada linha repete (Evidência, Também observado) e o bloco Lacuna × impacto, que repete a fila
+- Nota: a crítica viu as linhas expandidas; fechadas, cada linha já tem um botão primário e "Mais ações"
+
+### Checkpoint 16
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
