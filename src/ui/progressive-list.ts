@@ -1,13 +1,25 @@
 export const DEFAULT_LIST_VISIBLE_ITEMS = 5;
+// Regra das listas: o que pode passar de ~20 itens usa paginação ('pages'); o resto, "Mostrar mais" ('more').
+// A decisão é por tipo de lista, nunca pela contagem do momento.
+export const PAGINATION_THRESHOLD = 20;
+export const DEFAULT_PAGE_SIZE = 10;
 
 export function createProgressiveList({
   items = [],
   initialLimit = DEFAULT_LIST_VISIBLE_ITEMS,
   sort,
+  mode = 'more',
+  pageSize = DEFAULT_PAGE_SIZE,
+  page: initialPage = 1,
 }: any = {}) {
   const ordered = sort ? [...items].sort(sort) : [...items];
+  const paged = mode === 'pages';
   const limit = Math.max(1, Math.floor(initialLimit) || DEFAULT_LIST_VISIBLE_ITEMS);
+  const size = Math.max(1, Math.floor(pageSize) || DEFAULT_PAGE_SIZE);
+  const pageCount = Math.max(1, Math.ceil(ordered.length / size));
+  const clamp = (n: number) => Math.min(pageCount, Math.max(1, Math.floor(n) || 1));
   let expanded = false;
+  let page = clamp(initialPage);
   return {
     get items() {
       return ordered;
@@ -16,15 +28,31 @@ export function createProgressiveList({
       return ordered.length;
     },
     get visibleItems() {
+      if (paged) return ordered.slice((page - 1) * size, page * size);
       return expanded ? ordered : ordered.slice(0, limit);
     },
     get hiddenItems() {
+      if (paged) return ordered.length - this.visibleItems.length;
       return expanded ? 0 : Math.max(0, ordered.length - limit);
     },
     get expanded() {
       return expanded;
     },
+    get page() {
+      return page;
+    },
+    pageCount,
+    pageSize: size,
     initialLimit: limit,
+    goTo(n: number) {
+      page = clamp(n);
+    },
+    next() {
+      page = clamp(page + 1);
+    },
+    prev() {
+      page = clamp(page - 1);
+    },
     expand() {
       expanded = ordered.length > limit;
     },
@@ -33,6 +61,7 @@ export function createProgressiveList({
     },
     reset() {
       expanded = false;
+      page = 1;
     },
     toggle() {
       expanded ? this.collapse() : this.expand();

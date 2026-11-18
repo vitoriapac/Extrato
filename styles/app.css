@@ -2066,6 +2066,13 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .progressive-list-toggle:hover{background:var(--surface-interactive)}
 .progressive-list-toggle:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.progressive-list-toggle{scroll-behavior:auto;transition:none}}
+.list-pagination{gap:12px}
+.list-page-status{font-family:var(--font-data);font-size:var(--text-micro);color:var(--ink)}
+.list-page-btn{min-height:44px;min-width:44px;padding:8px 14px;border:1px solid var(--border-subtle);border-radius:6px;background:transparent;color:var(--ink);font:inherit;font-size:var(--text-micro);cursor:pointer}
+.list-page-btn:hover{background:var(--surface-interactive)}
+.list-page-btn:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:3px}
+.list-page-btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;background:transparent}
+@media(max-width:850px){.list-pagination .list-view-count{flex-basis:100%;text-align:center;margin:0}}
 
 /* Shared chart presentation: renderer-owned geometry, semantic metadata. */
 .chart-frame{min-width:0;margin-block:var(--space-5);color:var(--text-primary)}

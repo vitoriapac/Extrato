@@ -8,6 +8,11 @@ export function renderCollectionFooter({
   colspan = 1,
   label = 'itens',
   variant = 'table',
+  mode = 'more',
+  page = 1,
+  pageSize = 10,
+  prevAction = '',
+  nextAction = '',
 }: {
   total: number;
   visible: number;
@@ -18,7 +23,32 @@ export function renderCollectionFooter({
   colspan?: number;
   label?: string;
   variant?: string;
+  mode?: 'more' | 'pages';
+  page?: number;
+  pageSize?: number;
+  prevAction?: string;
+  nextAction?: string;
 }) {
+  const wrap = (controls: string) =>
+    variant === 'block'
+      ? `<div class="list-summary-footer">${controls}</div>`
+      : `<tr class="list-view-footer"><td colspan="${colspan}">${controls}</td></tr>`;
+  if (mode === 'pages') {
+    const pageCount = Math.ceil(total / pageSize);
+    if (pageCount <= 1) return '';
+    const current = Math.min(pageCount, Math.max(1, page));
+    const from = (current - 1) * pageSize + 1;
+    const to = Math.min(total, current * pageSize);
+    // Sem data-delegated-click quando desabilitado: o clique não dispara nada nas pontas.
+    const button = (text: string, action: string, off: boolean) =>
+      `<button class="list-page-btn" type="button"${off ? ' aria-disabled="true"' : ` data-delegated-click="${action}"`}>${text}</button>`;
+    return wrap(`<nav class="list-view-controls list-pagination" aria-label="Paginação de ${label}">
+    <span class="list-view-count" aria-live="polite">Exibindo ${from}–${to} de ${total} ${label}</span>
+    ${button('‹ Anterior', prevAction, current <= 1)}
+    <span class="list-page-status">Página ${current} de ${pageCount}</span>
+    ${button('Próxima ›', nextAction, current >= pageCount)}
+  </nav>`);
+  }
   if (total <= visible && visible <= 0) return '';
   const shown = Math.min(total, visible);
   if (total <= shown && shown <= 0) return '';
@@ -28,9 +58,7 @@ export function renderCollectionFooter({
     ${shown < total && (showAllAction || showMoreAction) ? `<button class="progressive-list-toggle" type="button" aria-expanded="false" data-progressive-legacy data-delegated-click="${showAllAction || showMoreAction}">Mostrar mais · +${total - shown} ↓</button>` : ''}
     ${shown >= total && showLessAction ? `<button class="progressive-list-toggle" type="button" aria-expanded="true" data-progressive-legacy data-delegated-click="${showLessAction}">Mostrar menos ↑</button>` : ''}
   </div>`;
-  return variant === 'block'
-    ? `<div class="list-summary-footer">${controls}</div>`
-    : `<tr class="list-view-footer"><td colspan="${colspan}">${controls}</td></tr>`;
+  return wrap(controls);
 }
 
 export function renderGroupHeader({
