@@ -72,12 +72,9 @@ export function buildIntelligentAlerts({
         severity: 'high',
         createdAt: today,
         reason:
-          overdueReviews +
-          ' revisão' +
-          (overdueReviews === 1 ? '' : 'ões') +
-          ' atrasada' +
-          (overdueReviews === 1 ? '' : 's') +
-          '.',
+          overdueReviews === 1
+            ? '1 revisão atrasada.'
+            : overdueReviews + ' revisões atrasadas.',
         recommendedAction: 'Conclua primeiro as revisões vencidas.',
       })
     );

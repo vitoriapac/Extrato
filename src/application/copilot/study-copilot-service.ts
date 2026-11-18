@@ -259,7 +259,7 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     evidenceSummary: preferCycleNow && currentCycleBlock
       ? `Volta ${(studyCycle?.completedCyclesCount || 0) + 1} · ${formatPlanMinutes(cycleBlockMinutes)} na fila do ciclo.`
       : canonicalAction
-        ? `Prioridade ${Math.round(Number(canonicalAction.priority) || 0)}/100 · ${nextBest.evidence}`
+        ? `Prioridade ${Math.round(Number(canonicalAction.priority) || 0)}/100 · ${/^(alta|média|baixa)$/i.test(nextBest.evidence) ? `evidência ${nextBest.evidence.toLowerCase()}` : nextBest.evidence}`
         : null,
     limitations: [...limitations],
     actionLabel: hasPlannedNext
