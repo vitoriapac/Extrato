@@ -34,7 +34,7 @@ export interface DelegatedSpecialOptions {
   getRenderers: () => Record<string, () => void>;
 }
 
-const PAGED_LIST_RENDERERS: Record<string, string> = {
+export const PAGED_LIST_RENDERERS: Record<string, string> = {
   questions: 'renderQuestoes',
   simulations: 'renderSimulados',
   sessionDays: 'renderStudySessionsHistory',

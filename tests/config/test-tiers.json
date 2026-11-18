@@ -1242,11 +1242,6 @@
       "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
-      "file": "tests/unit/lazy-more.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node rápido e determinístico no Fast Gate."
-    },
-    {
       "file": "tests/unit/ledger-line.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -2295,6 +2290,21 @@
       "file": "tests/unit/xss-escape.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/history-lists-render.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/list-modes.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node rápido e determinístico: regra das listas (acima de 20 itens pagina) e guarda contra Mostrar mais escrito à mão."
+    },
+    {
+      "file": "tests/e2e/performance-diagnosis-lean.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     }
   ]
 }

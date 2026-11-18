@@ -92,7 +92,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 - [ ] Nenhum `data-progressive-legacy`, `lazyMore` ou "Mostrar mais" fora do componente; E2E de listas verde
 
 ### Fase 4: Regra aplicada
-- [ ] T12: Tabela `LIST_MODE`, teste de conformidade, limpeza e documentação
+- [x] T12: Tabela `LIST_MODE`, teste de conformidade, limpeza e documentação
 
 ### Checkpoint 4: Completo
 - [ ] `npm run test:full`, lint, build; `graphify update .`; revisão final humana

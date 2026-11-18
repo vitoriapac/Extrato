@@ -403,7 +403,6 @@
   .session-day-chevron{font-size:13px;transition:transform .18s ease;}
   .session-day-toggle[aria-expanded="true"] .session-day-chevron{transform:rotate(90deg);}
   .list-view-footer td{padding:12px!important;background:var(--white)!important;text-align:center;border-bottom:0!important;}
-  .list-view-controls{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
   .list-view-count{font-family:var(--font-data);font-size:var(--text-micro);color:var(--ink-soft);margin-right:4px;}
   .history-read-row td{vertical-align:middle;}
   .row-primary{font-weight:600;color:var(--heading);}
@@ -1133,7 +1132,6 @@ body:has(#overviewNextAction [data-welcome-hero]) #guidedOnboarding[data-fresh="
 .overdue-chevron{font:20px var(--font-body);transition:transform .15s}
 .overdue-group-title[aria-expanded="true"] .overdue-chevron{transform:rotate(90deg)}
 .overdue-group ul[hidden]{display:none}
-.overdue-list-footer{display:block!important;border:0!important;padding:0!important}
 .item-origin{display:block;margin-top:4px}
 #upcomingFooter{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 #upcomingFooter .list-summary-footer{flex:1;margin:0}
@@ -2077,9 +2075,9 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .list-page-btn[aria-disabled="true"]:hover{background:transparent;border-color:var(--action-outline);color:var(--heading)}
 .list-page-gap{min-width:20px;text-align:center;color:var(--ink-soft)}
 @media(max-width:850px){.list-page-btn[data-hide-sm]{display:none}.list-page-btn{min-width:40px;padding:8px 10px}}
-/* A matriz tem tabela e cartões; cada layout tem o seu "Mostrar mais", e o dos cartões só aparece com eles. */
-.exam-matrix-cards + .progressive-list-toggle{display:none}
-@media(max-width:600px){.exam-matrix-cards + .progressive-list-toggle{display:block}}
+/* A matriz tem tabela e cartões; cada layout tem o seu rodapé de páginas, e o dos cartões só aparece com eles. */
+.exam-matrix-cards + [data-progressive-pages]{display:none}
+@media(max-width:600px){.exam-matrix-cards + [data-progressive-pages]{display:block}}
 
 /* Shared chart presentation: renderer-owned geometry, semantic metadata. */
 .chart-frame{min-width:0;margin-block:var(--space-5);color:var(--text-primary)}
@@ -3741,7 +3739,6 @@ button.performance-window{position:relative}button.performance-window::after{con
 /* T19b: Histórico vazio explica o que vai aparecer, só no Essencial */
 #weeklyHistoryEmpty{display:none}
 [data-essential="on"] #weeklyHistoryEmpty.is-empty{display:block}
-.lazy-more-item{list-style:none}
 
 /* T23: no celular o Planejamento chega mais cedo à primeira ação */
 @media(max-width:640px){

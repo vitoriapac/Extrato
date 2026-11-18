@@ -1,10 +1,9 @@
 import { renderCollectionFooter } from './list-components.js';
+import { DEFAULT_PAGE_SIZE, DOM_LISTS } from './list-modes.js';
 
+// A regra (listas acima de ~20 itens paginam) e a lista de listas moram em list-modes.ts.
+export { DEFAULT_PAGE_SIZE, PAGINATION_THRESHOLD } from './list-modes.js';
 export const DEFAULT_LIST_VISIBLE_ITEMS = 5;
-// Regra das listas: o que pode passar de ~20 itens usa paginação ('pages'); o resto, "Mostrar mais" ('more').
-// A decisão é por tipo de lista, nunca pela contagem do momento.
-export const PAGINATION_THRESHOLD = 20;
-export const DEFAULT_PAGE_SIZE = 10;
 
 export function createProgressiveList({
   items = [],
@@ -71,71 +70,6 @@ export function createProgressiveList({
   };
 }
 
-// Explicit opt-in: charts, matrices, navigation and achievements are excluded.
-// Entrada: [seletor da lista, seletor dos itens, itens à vista, modo, rótulo]. O modo padrão é
-// "Mostrar mais"; 'pages' pagina (listas que podem passar de ~20 itens, com tamanho de página no 3º campo).
-const LISTS: any[] = [
-  ['.sustainability-exclusions', ':scope > li'],
-  ['.recurring-priority-list', ':scope > li'],
-  // Cada retrato é uma dobra: 5 por página mantém a aba Histórico abaixo de 20 dobras à vista.
-  ['.weekly-adherence-history > ol', ':scope > li', 5, 'pages', 'fechamentos'],
-  ['.adherence-week-list', ':scope > li'],
-  ['.execution-breakdown-list', ':scope > li'],
-  ['.diagnosis-groups', ':scope > details, :scope > .diagnosis-group-line', 8],
-  ['.diagnosis-consolidated-list', ':scope > article', 3],
-  ['.adherence-subjects tbody', ':scope > tr'],
-  ['.preparation-signal-list', ':scope > details'],
-  ['.subject-accuracy-list', ':scope > li'],
-  ['.projection-calibration-list', ':scope > details'],
-  ['.strategic-timeline', ':scope > li'],
-  ['.recommendation-followup-list', ':scope > details'],
-  ['#gapMapDashboard', ':scope > .data-row'],
-  ['#decisionHistoryDashboard', ':scope > .data-row', DEFAULT_PAGE_SIZE, 'pages', 'decisões'],
-  // Hoje leads with the plan: two alerts, the rest behind "Mostrar mais".
-  ['#alertasInteligentesList', ':scope > .alerta-item', 2],
-  // Um tópico por linha e centenas deles num exame: Retenção pagina.
-  ['#retentionRecords', ':scope > .retention-row', DEFAULT_PAGE_SIZE, 'pages', 'tópicos'],
-  // Centenas de tópicos num exame: Desempenho por tópico e Próximos também paginam.
-  [
-    '#questionPerformanceRecords',
-    ':scope > .performance-row',
-    DEFAULT_PAGE_SIZE,
-    'pages',
-    'tópicos',
-  ],
-  ['#upcomingList', ':scope > li', DEFAULT_PAGE_SIZE, 'pages', 'itens'],
-  // Uma data por item, e atrasos acumulados podem passar de 20: pagina.
-  ['#calAtrasadas', ':scope > .overdue-group', DEFAULT_PAGE_SIZE, 'pages', 'datas'],
-  // Antes escritas à mão (<details> e lazyMore): agora todas pelo montador.
-  ['.mastery-matrix', ':scope > details'],
-  ['.exam-matrix-table tbody', ':scope > tr', 8],
-  ['.exam-matrix-cards', ':scope > article', 8],
-  ['.incidence-quadrant > ul', ':scope > li'],
-  ['.incidence-subject__list', ':scope > li', 8],
-  ['.diagnostic-supporting > ul', ':scope > li'],
-  ['.performance-subject-comparison .performance-subject-previews', ':scope > li'],
-  ['.performance-subject-comparison tbody', ':scope > tr'],
-  ['.stability-map-cell > ul', ':scope > li'],
-  ['.performance-topic-list', ':scope > li'],
-  ['.priority-history-observations', ':scope > li'],
-  ['.strategic-timeline-detail > ul', ':scope > li'],
-  ['.daily-execution-following > ul', ':scope > li'],
-  ['.exam-intelligence-list', ':scope > li'],
-  ['.exam-configuration-audit > ul', ':scope > li'],
-  ['.diagnosis-summary > section', ':scope > article'],
-  ['.simulation-trend-list', ':scope > li'],
-  ['.performance-topic-analysis', ':scope > li'],
-  ['.weekly-decision-results', ':scope > li'],
-  ['.phase-strategy-changes', ':scope > li'],
-  ['.adaptive-history > ol', ':scope > li'],
-  ['.weekly-focus-history > ol', ':scope > li'],
-  ['.study-plan-details', ':scope > .study-plan-topic'],
-  ['.performance-changes:not(.performance-topic-list)', ':scope > li'],
-  ['.diagnostic-secondary-reasons', ':scope > li'],
-  ['.readiness-change-factors', ':scope > li'],
-  ['.performance-topic-events', ':scope > li'],
-];
-
 export function mountProgressiveLists({ document, window }: { document: any; window: any }) {
   const states = new Map();
   const renderedFooters = new WeakMap();
@@ -146,91 +80,93 @@ export function mountProgressiveLists({ document, window }: { document: any; win
     states.forEach((state, id) => {
       if (!state.root.isConnected) states.delete(id);
     });
-    LISTS.forEach(([selector, itemSelector, initialLimit, mode, label]) =>
-      document.querySelectorAll(selector).forEach((root: any) => {
-        const items = [...root.querySelectorAll(itemSelector)];
-        if (!root.id) root.id = `progressive-list-${++sequence}`;
-        let state = states.get(root.id);
-        if (
-          !state ||
-          state.root !== root ||
-          state.items.length !== items.length ||
-          state.items.some((item: any, index: any) => item !== items[index])
-        ) {
-          const same = state?.root === root;
-          const expanded = state?.model.expanded && same;
-          state = {
-            root,
-            items,
-            model: createProgressiveList({
+    DOM_LISTS.forEach(
+      ({ selector, items: itemSelector, limit: initialLimit, mode: listMode, label }) =>
+        document.querySelectorAll(selector).forEach((root: any) => {
+          const mode = listMode === 'pages' ? 'pages' : undefined;
+          const items = [...root.querySelectorAll(itemSelector)];
+          if (!root.id) root.id = `progressive-list-${++sequence}`;
+          let state = states.get(root.id);
+          if (
+            !state ||
+            state.root !== root ||
+            state.items.length !== items.length ||
+            state.items.some((item: any, index: any) => item !== items[index])
+          ) {
+            const same = state?.root === root;
+            const expanded = state?.model.expanded && same;
+            state = {
+              root,
               items,
-              initialLimit,
-              mode,
-              pageSize: initialLimit,
-              page: same ? state.model.page : 1,
-            }),
-          };
-          if (expanded) state.model.expand();
-          states.set(root.id, state);
-        }
-        const paged = mode === 'pages';
-        const first = (state.model.page - 1) * state.model.pageSize;
-        items.forEach((item, index) => {
-          item.classList.add('progressive-list-item');
-          const hidden = paged
-            ? index < first || index >= first + state.model.pageSize
-            : !state.model.expanded && index >= state.model.initialLimit;
-          if (item.hidden !== hidden) item.hidden = hidden;
-        });
-        const anchor = root.tagName === 'TBODY' ? root.closest('table') : root;
-        if (paged) {
-          let footer = anchor.nextElementSibling;
-          if (!footer?.matches('[data-progressive-pages]')) footer = null;
-          const html = renderCollectionFooter({
-            variant: 'block',
-            total: items.length,
-            page: state.model.page,
-            pageSize: state.model.pageSize,
-            actionAttr: 'data-page-to',
-            label,
+              model: createProgressiveList({
+                items,
+                initialLimit,
+                mode,
+                pageSize: initialLimit,
+                page: same ? state.model.page : 1,
+              }),
+            };
+            if (expanded) state.model.expand();
+            states.set(root.id, state);
+          }
+          const paged = mode === 'pages';
+          const first = (state.model.page - 1) * state.model.pageSize;
+          items.forEach((item, index) => {
+            item.classList.add('progressive-list-item');
+            const hidden = paged
+              ? index < first || index >= first + state.model.pageSize
+              : !state.model.expanded && index >= state.model.initialLimit;
+            if (item.hidden !== hidden) item.hidden = hidden;
           });
-          if (!html) {
-            footer?.remove();
+          const anchor = root.tagName === 'TBODY' ? root.closest('table') : root;
+          if (paged) {
+            let footer = anchor.nextElementSibling;
+            if (!footer?.matches('[data-progressive-pages]')) footer = null;
+            const html = renderCollectionFooter({
+              variant: 'block',
+              total: items.length,
+              page: state.model.page,
+              pageSize: state.model.pageSize,
+              actionAttr: 'data-page-to',
+              label,
+            });
+            if (!html) {
+              footer?.remove();
+              return;
+            }
+            if (!footer) {
+              footer = document.createElement('div');
+              footer.dataset.progressivePages = root.id;
+              anchor.after(footer);
+            }
+            // Compara com o último HTML gerado, não com innerHTML (o navegador normaliza atributos
+            // como data-hide-sm e a diferença reescreveria o rodapé a cada mutação, em laço).
+            if (renderedFooters.get(footer) !== html) {
+              footer.innerHTML = html;
+              renderedFooters.set(footer, html);
+            }
             return;
           }
-          if (!footer) {
-            footer = document.createElement('div');
-            footer.dataset.progressivePages = root.id;
-            anchor.after(footer);
+          let button = anchor.nextElementSibling;
+          if (!button?.matches('[data-progressive-toggle]')) button = null;
+          if (items.length <= state.model.initialLimit) {
+            button?.remove();
+            return;
           }
-          // Compara com o último HTML gerado, não com innerHTML (o navegador normaliza atributos
-          // como data-hide-sm e a diferença reescreveria o rodapé a cada mutação, em laço).
-          if (renderedFooters.get(footer) !== html) {
-            footer.innerHTML = html;
-            renderedFooters.set(footer, html);
+          if (!button) {
+            button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'progressive-list-toggle';
+            button.dataset.progressiveToggle = root.id;
+            anchor.after(button);
           }
-          return;
-        }
-        let button = anchor.nextElementSibling;
-        if (!button?.matches('[data-progressive-toggle]')) button = null;
-        if (items.length <= state.model.initialLimit) {
-          button?.remove();
-          return;
-        }
-        if (!button) {
-          button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'progressive-list-toggle';
-          button.dataset.progressiveToggle = root.id;
-          anchor.after(button);
-        }
-        button.setAttribute('aria-controls', root.id);
-        button.setAttribute('aria-expanded', String(state.model.expanded));
-        const text = state.model.expanded
-          ? 'Mostrar menos ↑'
-          : `Mostrar mais · +${state.model.hiddenItems} ↓`;
-        if (button.textContent !== text) button.textContent = text;
-      })
+          button.setAttribute('aria-controls', root.id);
+          button.setAttribute('aria-expanded', String(state.model.expanded));
+          const text = state.model.expanded
+            ? 'Mostrar menos ↑'
+            : `Mostrar mais · +${state.model.hiddenItems} ↓`;
+          if (button.textContent !== text) button.textContent = text;
+        })
     );
   };
   const schedule = () => {

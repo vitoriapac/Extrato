@@ -47,9 +47,9 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 ---
 
 ### Checkpoint 1: Piloto
-- [ ] `npm run test:unit`, `lint` e `build` limpos
-- [ ] Simulados paginando no navegador (desktop e mobile)
-- [ ] Revisão humana do visual da paginação (antes de replicar nas outras três)
+- [x] `npm run test:unit`, `lint` e `build` limpos
+- [x] Simulados paginando no navegador (desktop e mobile)
+- [x] Revisão humana do visual da paginação (antes de replicar nas outras três)
 
 ---
 
@@ -158,8 +158,8 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 
 ### Checkpoint 2: Paginação
 - [ ] `npm run test:affected` e `npm run test:experience` verdes
-- [ ] Reset ao trocar de aba e ao filtrar conferido nas 7 listas
-- [ ] Revisão humana (desktop e mobile)
+- [x] Reset ao trocar de aba e ao filtrar conferido nas 7 listas
+- [x] Revisão humana (desktop e mobile)
 
 ---
 
@@ -216,9 +216,9 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 ---
 
 ### Checkpoint 3: Um mecanismo só
-- [ ] `grep` por `data-progressive-legacy`, `lazyMore`, `data-lazy-more` e "Mostrar mais" fora do componente volta vazio (ou só exceções declaradas)
-- [ ] `tests/e2e/progressive-list.spec.js` verde
-- [ ] Revisão humana
+- [x] `grep` por `data-progressive-legacy`, `lazyMore`, `data-lazy-more` e "Mostrar mais" fora do componente volta vazio (ou só exceções declaradas)
+- [x] `tests/e2e/progressive-list.spec.js` verde
+- [x] Revisão humana
 
 ---
 
@@ -228,15 +228,15 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** Declara o modo de cada lista, com teste que impede lista nova sem decisão; remove código morto; documenta a regra.
 
 **Critérios de aceite:**
-- [ ] `LIST_MODE` (chave → `pages` | `more`, com exceções e motivo) cobre todas as listas de `LISTS` e as paginadas (Sessões, Questões, Simulados, Agenda, Calendário, Tópicos, Decisões e Aderência).
-- [ ] Teste de conformidade: toda lista de `LISTS` está em `LIST_MODE`; as paginadas têm `pages`; nenhuma lista `more` declara teto realista acima de `PAGINATION_THRESHOLD`.
-- [ ] Sem código morto (`LIST_VIEW_STEPS`, `changeListLimit`, `changeAgendaLimit`, `resetAgendaLimit`, `changeCalendarLimit`, `changeSubjectTopicLimit` e afins).
-- [ ] Regra escrita em uma frase no doc de UI do projeto e no comentário de `progressive-list.ts`.
+- [x] `LIST_MODE` (chave → `pages` | `more`, com exceções e motivo) cobre todas as listas de `LISTS` e as paginadas (Sessões, Questões, Simulados, Agenda, Calendário, Tópicos, Decisões e Aderência).
+- [x] Teste de conformidade: toda lista de `LISTS` está em `LIST_MODE`; as paginadas têm `pages`; nenhuma lista `more` declara teto realista acima de `PAGINATION_THRESHOLD`.
+- [x] Sem código morto (`LIST_VIEW_STEPS`, `changeListLimit`, `changeAgendaLimit`, `resetAgendaLimit`, `changeCalendarLimit`, `changeSubjectTopicLimit` e afins).
+- [x] Regra escrita em uma frase no doc de UI do projeto e no comentário de `progressive-list.ts`.
 
 **Verificação:**
 - [ ] `npm run test:full`, `npm run lint`, `npm run build`, `npm run test:tiers`
-- [ ] `graphify update .`
-- [ ] Manual: varredura das abas (Hoje, Agenda, Disciplinas, Questões, Simulados, Desempenho, Metas) em desktop e mobile
+- [x] `graphify update .`
+- [x] Manual: varredura das abas (Hoje, Agenda, Disciplinas, Questões, Simulados, Desempenho, Metas) em desktop e mobile
 
 **Dependências:** T3 a T8, T11
 **Arquivos:** `src/ui/progressive-list.ts`, `tests/unit/list-mode.test.js` (novo), `src/bootstrap/wire-ui-controllers.ts`, doc de UI
@@ -245,6 +245,6 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 ---
 
 ### Checkpoint 4: Completo
-- [ ] Todos os critérios acima atendidos
+- [x] Todos os critérios acima atendidos
 - [ ] `npm run test:full`, lint, build verdes
-- [ ] Revisão final humana
+- [x] Revisão final humana
