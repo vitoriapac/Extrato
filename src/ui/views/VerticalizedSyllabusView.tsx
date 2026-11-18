@@ -68,7 +68,7 @@ export function VerticalizedSyllabusView({
   return (
     <div class="verticalized-syllabus space-y-6">
       {/* Header e Filtros */}
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-card p-4 rounded-default border border-border-default shadow-xs">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-card p-4 rounded-default border border-border-default">
         <div>
           <h3 class="text-base font-semibold text-primary flex items-center gap-2">
             <Icon name="clipboard-text" size={18} class="text-primary shrink-0" />
@@ -178,78 +178,82 @@ export function VerticalizedSyllabusView({
                       )}
                     </div>
 
-                    {/* Checklists das 4 Etapas */}
+                    {/* Checklists das 4 Etapas: inline no desktop, recolhido em mobile */}
                     <div class="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 text-xs">
-                      {/* Teoria */}
-                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
-                        <input
-                          type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                          checked={Boolean(checklist.theoryDone)}
-                          onChange={e =>
-                            onToggleStage?.(
-                              topic.id,
-                              'theoryDone',
-                              (e.target as HTMLInputElement).checked
-                            )
-                          }
-                        />
-                        <span>Teoria</span>
-                      </label>
+                      <details class="md:hidden w-full">
+                        <summary class="cursor-pointer select-none font-medium text-secondary py-1.5">
+                          Etapas (
+                          {[
+                            checklist.theoryDone,
+                            checklist.summaryDone,
+                            checklist.lawOrNotesDone,
+                            checklist.questionsDone,
+                          ].filter(Boolean).length}
+                          /4)
+                        </summary>
+                        <div class="flex flex-wrap gap-3 pt-2 pb-1">
+                          {(
+                            [
+                              ['theoryDone', 'Teoria'],
+                              ['summaryDone', 'Resumo'],
+                              ['lawOrNotesDone', 'Lei Seca'],
+                              ['questionsDone', 'Questões'],
+                            ] as const
+                          ).map(([key, label]) => (
+                            <label
+                              key={key}
+                              class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none min-h-[36px]"
+                            >
+                              <input
+                                type="checkbox"
+                                class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                                checked={Boolean(checklist[key])}
+                                onChange={e =>
+                                  onToggleStage?.(
+                                    topic.id,
+                                    key,
+                                    (e.target as HTMLInputElement).checked
+                                  )
+                                }
+                              />
+                              <span>{label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </details>
 
-                      {/* Resumo */}
-                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
-                        <input
-                          type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                          checked={Boolean(checklist.summaryDone)}
-                          onChange={e =>
-                            onToggleStage?.(
-                              topic.id,
-                              'summaryDone',
-                              (e.target as HTMLInputElement).checked
-                            )
-                          }
-                        />
-                        <span>Resumo</span>
-                      </label>
-
-                      {/* Lei / Notas */}
-                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
-                        <input
-                          type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                          checked={Boolean(checklist.lawOrNotesDone)}
-                          onChange={e =>
-                            onToggleStage?.(
-                              topic.id,
-                              'lawOrNotesDone',
-                              (e.target as HTMLInputElement).checked
-                            )
-                          }
-                        />
-                        <span>Lei Seca</span>
-                      </label>
-
-                      {/* Questões */}
-                      <label class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none">
-                        <input
-                          type="checkbox"
-                          class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                          checked={Boolean(checklist.questionsDone)}
-                          onChange={e =>
-                            onToggleStage?.(
-                              topic.id,
-                              'questionsDone',
-                              (e.target as HTMLInputElement).checked
-                            )
-                          }
-                        />
-                        <span>Questões</span>
-                      </label>
+                      <div class="hidden md:flex items-center gap-4">
+                        {(
+                          [
+                            ['theoryDone', 'Teoria'],
+                            ['summaryDone', 'Resumo'],
+                            ['lawOrNotesDone', 'Lei Seca'],
+                            ['questionsDone', 'Questões'],
+                          ] as const
+                        ).map(([key, label]) => (
+                          <label
+                            key={key}
+                            class="inline-flex items-center gap-2 cursor-pointer text-secondary select-none"
+                          >
+                            <input
+                              type="checkbox"
+                              class="rounded text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                              checked={Boolean(checklist[key])}
+                              onChange={e =>
+                                onToggleStage?.(
+                                  topic.id,
+                                  key,
+                                  (e.target as HTMLInputElement).checked
+                                )
+                              }
+                            />
+                            <span>{label}</span>
+                          </label>
+                        ))}
+                      </div>
 
                       {/* Status / Ações */}
-                      <div class="flex items-center gap-2 pl-2 border-l border-border-subtle">
+                      <div class="flex flex-wrap items-center gap-2 md:pl-2 md:border-l border-border-subtle">
                         {topic.status === 'Concluído' ? (
                           <Badge variant="success">Dominado</Badge>
                         ) : (
@@ -258,7 +262,7 @@ export function VerticalizedSyllabusView({
 
                         {/* Grupo de Questões TEC / QC */}
                         <div
-                          class="inline-flex items-center rounded border border-border-default bg-surface-card overflow-hidden shadow-2xs"
+                          class="inline-flex items-center rounded-default border border-border-default bg-surface-card overflow-hidden"
                           role="group"
                           aria-label={`Praticar questões de ${topic.name}`}
                         >
@@ -295,7 +299,7 @@ export function VerticalizedSyllabusView({
                         {onOpenTopicIntelligence && (
                           <button
                             type="button"
-                            class="px-2.5 py-1 rounded text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-secondary hover:text-primary inline-flex items-center gap-1 cursor-pointer"
+                            class="min-h-[36px] px-2.5 py-1.5 rounded-default text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-secondary hover:text-primary inline-flex items-center gap-1 cursor-pointer"
                             onClick={() => onOpenTopicIntelligence(subject.id, topic.id)}
                             aria-label={`Abrir Ficha Inteligente de ${topic.name}`}
                           >
@@ -306,7 +310,7 @@ export function VerticalizedSyllabusView({
 
                         <button
                           type="button"
-                          class="px-3 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary inline-flex items-center gap-1 cursor-pointer"
+                          class="min-h-[36px] px-3 py-1.5 rounded-default text-xs font-semibold bg-action-tonal-bg hover:bg-action-tonal-hover border border-border-subtle transition-colors text-action-tonal-text inline-flex items-center gap-1 cursor-pointer"
                           onClick={() => onStartStudy?.(subject.id, topic.id)}
                           aria-label={`Iniciar estudo de ${topic.name}`}
                         >
@@ -337,11 +341,12 @@ export function VerticalizedSyllabusView({
           </p>
 
           <div>
-            <label class="block font-medium text-primary text-xs mb-1">
+            <label for="rawSyllabusTextarea" class="block font-medium text-primary text-xs mb-1">
               Texto bruto do edital:
             </label>
             <textarea
-              class="w-full h-44 p-3 rounded border border-border-default bg-surface-card text-primary font-mono text-xs focus:ring-primary focus:border-primary"
+              id="rawSyllabusTextarea"
+              class="w-full h-44 p-3 rounded-default border border-border-default bg-surface-card text-primary font-mono text-xs focus:ring-primary focus:border-primary"
               placeholder={`DIREITO CONSTITUCIONAL: 1. Princípios fundamentais. 2. Direitos e deveres individuais. 2.1 Direitos sociais. 3. Organização do Estado.\n\nDIREITO ADMINISTRATIVO: 1. Introdução. 1.1 Regime jurídico. 2. Atos administrativos.`}
               value={rawText}
               onInput={e => setRawText((e.target as HTMLTextAreaElement).value)}

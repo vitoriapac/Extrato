@@ -44,11 +44,11 @@ test('TodayExecutionSummary Preact Component — renderiza métricas e anel de p
     })
   );
 
-  assert.match(html, /2h/);
+  assert.match(html, /2 h/);
   assert.match(html, /Disponível/);
-  assert.match(html, /1h 30m/);
+  assert.match(html, /1 h 30 min/);
   assert.match(html, /Planejado/);
-  assert.match(html, /45m/);
+  assert.match(html, /45 min/);
   assert.match(html, /Estudado/);
   assert.match(html, /50% do plano executado/);
   assert.match(html, /<strong>45m de 1h 30m<\/strong>/);
@@ -77,7 +77,7 @@ test('resumo separa tempo estudado do tempo creditado ao plano', () => {
     dateFormatted: 'Hoje', progressPercent: 25, availableMinutes: 120, plannedMinutes: 60,
     executedMinutes: 45, planCompletedMinutes: 15, planRemainingMinutes: 45,
   }));
-  assert.match(html, /15m de 1h/);
+  assert.match(html, /15 min de 1h/);
   assert.match(html, /Disponível/);
   assert.match(html, /Planejado/);
   assert.match(html, /Estudado/);
@@ -128,9 +128,9 @@ test('createTodayTabController — coordena a renderização do resumo diário',
     progress: 50,
   });
 
-  assert.match(summaryHtml, />2h</);
-  assert.match(summaryHtml, />1h 30m</);
-  assert.match(summaryHtml, /45m/);
+  assert.match(summaryHtml, />2 h</);
+  assert.match(summaryHtml, />1 h 30 min</);
+  assert.match(summaryHtml, /45 min/);
   assert.match(summaryHtml, /50%/);
 });
 
@@ -270,8 +270,8 @@ test('resumo mostra excedente com texto quando o plano passa da disponibilidade'
     dateFormatted: 'Hoje', progressPercent: 0, availableMinutes: 60, plannedMinutes: 80, executedMinutes: 0,
   }));
   assert.match(html, /Excedente/);
-  assert.match(html, /−20m/);
-  assert.match(html, /O plano passa 20m da sua disponibilidade./);
+  assert.match(html, /−20 min/);
+  assert.match(html, /O plano passa 20 min da sua disponibilidade\./);
   assert.match(html, /Ajustar o dia/);
 });
 

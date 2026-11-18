@@ -50,15 +50,12 @@ export function EditalPriorityPanel({
 
   return (
     <section
-      class="rounded-xl border border-border-subtle bg-surface-elevated p-4 space-y-4"
+      class="rounded-default border border-border-subtle bg-surface-elevated p-4 space-y-4"
       aria-label="Inteligência do Edital"
     >
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <span class="text-xs font-semibold uppercase tracking-wide text-muted">
-            Inteligência do Edital
-          </span>
-          <h3 class="text-lg font-semibold text-heading mt-0.5">Onde concentrar seus estudos?</h3>
+          <h3 class="text-lg font-semibold text-heading m-0">Onde concentrar seus estudos</h3>
           {contextLabel && <p class="text-xs text-secondary mt-0.5">{contextLabel}</p>}
         </div>
 
@@ -66,6 +63,7 @@ export function EditalPriorityPanel({
           <Button
             variant={filter === 'all' ? 'primary' : 'ghost'}
             size="small"
+            aria-pressed={filter === 'all'}
             onClick={() => setFilter('all')}
           >
             Todos
@@ -73,6 +71,7 @@ export function EditalPriorityPanel({
           <Button
             variant={filter === 'priority' ? 'primary' : 'ghost'}
             size="small"
+            aria-pressed={filter === 'priority'}
             onClick={() => setFilter('priority')}
           >
             Prioritários
@@ -81,16 +80,16 @@ export function EditalPriorityPanel({
       </div>
 
       {visibleRows.length === 0 ? (
-        <div class="rounded-lg border border-border-subtle bg-surface-subtle p-4 text-sm text-secondary flex items-center gap-2">
+        <div class="rounded-default border border-border-subtle bg-surface-subtle p-4 text-sm text-secondary flex items-center gap-2">
           <Icon name="alert-circle" size={16} class="shrink-0 text-muted" />
           <span>Nenhum tópico disponível para este filtro no contexto atual.</span>
         </div>
       ) : (
-        <div class="space-y-2.5">
+        <div class="divide-y divide-border-subtle border-t border-border-subtle">
           {visibleRows.map(row => (
             <article
               key={`${row.subjectId}-${row.topicId}`}
-              class="rounded-lg border border-border-subtle bg-surface-subtle p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+              class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
             >
               <div class="space-y-1">
                 <div class="flex flex-wrap items-center gap-2">

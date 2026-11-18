@@ -97,34 +97,34 @@ export function TopicIntelligenceView({
         </div>
 
         {snapshot.insufficientData && snapshot.neutralMessage && (
-          <div class="rounded-lg border border-border-subtle bg-surface-subtle p-3 text-sm text-secondary flex items-start gap-2">
+          <div class="rounded-default border border-border-subtle bg-surface-subtle p-3 text-sm text-secondary flex items-start gap-2">
             <Icon name="alert-circle" size={16} class="shrink-0 mt-0.5 text-muted" />
             <span>{snapshot.neutralMessage}</span>
           </div>
         )}
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="rounded-lg border border-border-subtle bg-surface-elevated p-3">
+          <div class="rounded-default border border-border-subtle bg-surface-elevated p-3">
             <div class="text-xs text-muted">Acerto recente</div>
-            <div class="text-xl font-semibold text-heading mt-1">{viewModel.accuracyText}</div>
-            <div class="text-xs text-secondary mt-0.5">{viewModel.accuracyDetail}</div>
+            <div class="text-xl font-semibold font-data text-heading mt-1">{viewModel.accuracyText}</div>
+            <div class="text-xs font-data text-secondary mt-0.5">{viewModel.accuracyDetail}</div>
           </div>
-          <div class="rounded-lg border border-border-subtle bg-surface-elevated p-3">
+          <div class="rounded-default border border-border-subtle bg-surface-elevated p-3">
             <div class="text-xs text-muted">Última atividade</div>
-            <div class="text-xl font-semibold text-heading mt-1">{viewModel.lastActivityText}</div>
-            <div class="text-xs text-secondary mt-0.5">{viewModel.lastActivityDetail}</div>
+            <div class="text-xl font-semibold font-data text-heading mt-1">{viewModel.lastActivityText}</div>
+            <div class="text-xs font-data text-secondary mt-0.5">{viewModel.lastActivityDetail}</div>
           </div>
-          <div class="rounded-lg border border-border-subtle bg-surface-elevated p-3">
+          <div class="rounded-default border border-border-subtle bg-surface-elevated p-3">
             <div class="text-xs text-muted">Cobertura do conteúdo</div>
-            <div class="text-xl font-semibold text-heading mt-1">{viewModel.coverageText}</div>
-            <div class="text-xs text-secondary mt-0.5">
+            <div class="text-xl font-semibold font-data text-heading mt-1">{viewModel.coverageText}</div>
+            <div class="text-xs font-data text-secondary mt-0.5">
               {snapshot.progress.reviewsCount} revisões · {snapshot.progress.questionsCount} questões
             </div>
           </div>
         </div>
 
         {snapshot.bookmarkLabel && (
-          <div class="rounded-lg border border-border-subtle bg-surface-subtle p-3 flex items-center gap-2 text-sm text-heading">
+          <div class="rounded-default border border-border-subtle bg-surface-subtle p-3 flex items-center gap-2 text-sm text-heading">
             <Icon name="bookmark" size={16} class="shrink-0 text-brand-primary" />
             <span>Ponto de parada: {snapshot.bookmarkLabel}</span>
           </div>

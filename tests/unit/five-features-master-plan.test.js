@@ -637,7 +637,7 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
     })
   );
   assert.match(copilotHtml, /Leitura do Extrato/);
-  assert.match(copilotHtml, /Estudo rápido: 30 min/);
+  assert.doesNotMatch(copilotHtml, /Estudo rápido: 30 min/);
   assert.match(copilotHtml, /Tenho 30 minutos/);
   assert.match(copilotHtml, /Mais perguntas \(3\)/);
   assert.doesNotMatch(copilotHtml, /\p{Extended_Pictographic}/u);

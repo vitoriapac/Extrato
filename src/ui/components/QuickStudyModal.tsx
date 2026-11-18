@@ -67,9 +67,10 @@ export function QuickStudyModal({
                 key={mins}
                 variant={durationMinutes === mins ? 'primary' : 'secondary'}
                 size="small"
+                aria-pressed={durationMinutes === mins}
                 onClick={() => setDurationMinutes(mins)}
               >
-                {mins} min
+                <span class="font-data">{mins} min</span>
               </Button>
             ))}
           </div>
@@ -77,7 +78,7 @@ export function QuickStudyModal({
 
         <div class="space-y-1.5">
           <span class="text-xs font-medium text-muted">Foco</span>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2" role="group" aria-label="Foco da sessão">
             {(
               [
                 ['priority', 'Prioridade'],
@@ -90,6 +91,7 @@ export function QuickStudyModal({
                 key={mode}
                 variant={focusMode === mode ? 'tonal' : 'ghost'}
                 size="small"
+                aria-pressed={focusMode === mode}
                 onClick={() => setFocusMode(mode)}
               >
                 {label}
@@ -98,12 +100,14 @@ export function QuickStudyModal({
           </div>
         </div>
 
-        <div class="rounded-lg border border-border-subtle bg-surface-subtle p-3 space-y-2">
+        <div class="rounded-default border border-border-subtle bg-surface-subtle p-3 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <span class="text-sm font-semibold text-heading">
-              {proposal.subjectName} — {proposal.topicName}
+              {proposal.subjectName} · {proposal.topicName}
             </span>
-            <Badge variant="info">{proposal.plannedMinutes} min</Badge>
+            <Badge variant="info">
+              <span class="font-data">{proposal.plannedMinutes} min</span>
+            </Badge>
           </div>
           <p class="text-xs text-secondary">{proposal.reasoning}</p>
           {proposal.strategy && (
@@ -111,7 +115,7 @@ export function QuickStudyModal({
               {proposal.strategy.steps.map((step, idx) => (
                 <li key={idx} class="flex justify-between">
                   <span>{step.label}</span>
-                  <span class="font-medium text-heading">{step.minutes} min</span>
+                  <span class="font-medium font-data text-heading">{step.minutes} min</span>
                 </li>
               ))}
             </ul>

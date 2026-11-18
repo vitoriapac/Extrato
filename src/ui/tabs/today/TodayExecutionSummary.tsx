@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { formatPlanMinutes } from '../../../core/format-duration.js';
 import { RingGauge, StackedBar, type StackedBarPart } from '../../primitives/charts/charts.js';
 import { Icon } from '../../primitives/icon.js';
 import { LedgerLine } from '../../primitives/ledger-line.js';
@@ -15,15 +16,6 @@ export interface TodayExecutionSummaryProps {
   planCompletedMinutes?: number;
   planRemainingMinutes?: number;
   needsPlanReview?: boolean;
-}
-
-function formatMinutes(minutes: number): string {
-  if (minutes <= 0) return '0m';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
 }
 
 export function TodayExecutionSummary({
@@ -94,7 +86,7 @@ export function TodayExecutionSummary({
             <LedgerLine
               key={row.key}
               label={row.label}
-              value={row.key === 'overrun' ? `−${formatMinutes(row.minutes)}` : formatMinutes(row.minutes)}
+              value={row.key === 'overrun' ? `−${formatPlanMinutes(row.minutes)}` : formatPlanMinutes(row.minutes)}
               tone={row.key === 'overrun' ? 'negative' : 'neutral'}
               total={row.key === 'overrun' || row.key === 'free'}
             />
@@ -105,7 +97,7 @@ export function TodayExecutionSummary({
       {progressPercent !== null && reconciliation.status !== 'within' && (
         <p class="today-progress-status">
           {reconciliation.status === 'over'
-            ? `O plano passa ${formatMinutes(reconciliation.overrunMinutes)} da sua disponibilidade. `
+            ? `O plano passa ${formatPlanMinutes(reconciliation.overrunMinutes)} da sua disponibilidade. `
             : 'Sem disponibilidade declarada para hoje. '}
           <a href="#planejamento/semana">Ajustar o dia</a>
         </p>
@@ -129,7 +121,7 @@ export function TodayExecutionSummary({
           ) : (
             <p class="today-progress-status">
               <strong>
-                {planCompletedMinutes == null ? executedMinutesFormatted : formatMinutes(planCompletedMinutes)} de {plannedMinutesFormatted}
+                {planCompletedMinutes == null ? executedMinutesFormatted : formatPlanMinutes(planCompletedMinutes)} de {plannedMinutesFormatted}
               </strong>{' '}
               · {progressPercent}% do plano executado
             </p>

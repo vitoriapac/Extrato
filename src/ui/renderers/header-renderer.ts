@@ -64,6 +64,17 @@ export function renderHeroHeader(model: Record<string, any>, { document }: any) 
   document.getElementById('statRevisoes').textContent = stats.upcomingReviews;
   document.getElementById('statStreak').textContent =
     `${model.streak.days} ${model.streak.days === 1 ? 'dia' : 'dias'}`;
+
+  const statement = document.querySelector?.('.statement');
+  const isFirstRun =
+    Number(stats?.subjects || 0) === 0 && readiness?.value == null && !model?.exam?.date;
+  if (statement) {
+    statement.toggleAttribute?.('data-first-run', isFirstRun);
+    const body = statement.querySelector?.('.statement-body');
+    if (body) body.hidden = isFirstRun;
+    const countdown = document.getElementById('examCountdownBlock');
+    if (countdown) countdown.hidden = isFirstRun;
+  }
 }
 export function renderCompactHeader(model: Record<string, any>, { document, formatDate }: any) {
   document.getElementById('compactReadiness').textContent =

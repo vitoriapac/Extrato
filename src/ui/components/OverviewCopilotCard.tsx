@@ -15,7 +15,7 @@ export interface OverviewCopilotCardProps {
   selectedQuestion: CopilotQuestionKey;
   onSelectQuestion: (key: CopilotQuestionKey) => void;
   onExecuteAnswer: (answer: CopilotAnswer) => void;
-  onQuickStudy30: () => void;
+  onQuickStudy30?: () => void;
 }
 
 const PRIMARY_COPILOT_KEYS = new Set<CopilotQuestionKey>([
@@ -57,20 +57,10 @@ export function OverviewCopilotCard(props: OverviewCopilotCardProps): JSX.Elemen
             {copilot.confidence.label}
           </Badge>
         </div>
-
-        <Button
-          variant="secondary"
-          size="small"
-          aria-label="Estudo rápido de 30 minutos"
-          onClick={props.onQuickStudy30}
-        >
-          <Icon name="clock" size={14} class="icon-inline shrink-0" />
-          <span>Estudo rápido: 30 min</span>
-        </Button>
       </div>
 
       <p class="m-0 text-xs text-content-secondary">
-        Orientação atual: <strong class="text-content-primary">{copilot.title}</strong>
+        Leitura diagnóstica · <strong class="text-content-primary">{copilot.title}</strong>
       </p>
 
       <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas da Leitura do Extrato na Visão Geral">
