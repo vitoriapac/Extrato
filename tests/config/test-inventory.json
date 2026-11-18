@@ -10538,7 +10538,7 @@
         "../../src/ui/undoable.js",
         "../../src/ui/tabs/today/session-history-controller.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

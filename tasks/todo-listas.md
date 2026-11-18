@@ -75,15 +75,15 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** A unidade hoje é o dia (grupos com cabeçalho expansível). Pagina por **7 dias** por página, mantendo expansão do primeiro dia e edição em linha.
 
 **Critérios de aceite:**
-- [ ] 7 dias por página; o rodapé diz "Exibindo X–Y de N dias" (ou sessões, mantendo o rótulo atual "sessões" se for o que a pessoa vê; decidir na tarefa e deixar igual em desktop e mobile).
-- [ ] A linha em edição fica na sua página; salvar/cancelar não troca de página.
-- [ ] Os filtros de histórico (`clearSessionHistoryFilters` e busca) levam à página 1; "Limpar filtros" também.
-- [ ] A expansão inicial do primeiro dia vale para o primeiro dia da página 1 apenas.
+- [x] 7 dias por página; o rodapé diz "Exibindo X–Y de N dias" (ou sessões, mantendo o rótulo atual "sessões" se for o que a pessoa vê; decidir na tarefa e deixar igual em desktop e mobile).
+- [x] A linha em edição fica na sua página; salvar/cancelar não troca de página.
+- [x] Os filtros de histórico (`clearSessionHistoryFilters` e busca) levam à página 1; "Limpar filtros" também.
+- [x] A expansão inicial do primeiro dia vale para o primeiro dia da página 1 apenas.
 
 **Verificação:**
-- [ ] Teste unitário: edição na última linha de uma página; filtro que zera; total encolhendo
-- [ ] `tests/e2e/recent-flows.spec.js` ajustado se citar "Mostrar mais" do histórico
-- [ ] Manual: demo com 30+ dias de sessão
+- [x] Teste unitário: edição na última linha de uma página; filtro que zera; total encolhendo
+- [x] `tests/e2e/recent-flows.spec.js` ajustado se citar "Mostrar mais" do histórico
+- [x] Manual: demo com 30+ dias de sessão
 
 **Dependências:** T2
 **Arquivos:** `src/ui/tabs/today/session-history-controller.ts`, `src/bootstrap/wire-execution-and-onboarding-ui.ts`, `src/ui/renderers/*` do dia (se tocar), `tests/unit/*session-history*`

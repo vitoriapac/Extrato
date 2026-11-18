@@ -55,19 +55,10 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
   const listViewState = {
     questionsPage: 1,
     simulationsPage: 1,
-    sessionDaysVisible: DEFAULT_LIST_VISIBLE_ITEMS,
-  };
-  const LIST_VIEW_STEPS = {
-    sessionDays: DEFAULT_LIST_VISIBLE_ITEMS,
+    sessionDaysPage: 1,
   };
 
   const isMobileHistoryLayout = () => window.matchMedia('(max-width:850px)').matches;
-
-  function changeListLimit(key: string, delta: number, renderFn: () => void) {
-    (listViewState as Record<string, any>)[`${key}Visible`] =
-      delta > 0 ? Number.MAX_SAFE_INTEGER : DEFAULT_LIST_VISIBLE_ITEMS;
-    renderFn();
-  }
 
   function goToListPage(key: string, page: number, renderFn: () => void) {
     const previous = (listViewState as Record<string, any>)[`${key}Page`] || 1;
@@ -96,9 +87,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
   let analyticsUi: ReturnType<typeof wireAnalyticsAndShellUi>;
 
   function resetRecordListLimits() {
-    Object.keys(LIST_VIEW_STEPS).forEach(key => {
-      (listViewState as Record<string, any>)[`${key}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
-    });
+    listViewState.sessionDaysPage = 1;
     listViewState.questionsPage = 1;
     listViewState.simulationsPage = 1;
     if (practiceUi?.reviewsTabController) {
@@ -197,7 +186,6 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     getAchievementNote: () => analyticsUi?.achievementsController?.sessionNote() ?? null,
     getAchievements: () => analyticsUi?.achievementsController?.evaluateAchievements() ?? [],
     listViewState,
-    LIST_VIEW_STEPS,
     isMobileHistoryLayout,
     activeTabName,
     activateTab,
@@ -279,9 +267,6 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       onSetPerformanceSubject: value => practiceUi.questionAnalyticsController.setSubjectId(value),
       renderQuestionAnalytics: () =>
         practiceUi.questionAnalyticsController.renderQuestionAnalytics(),
-      getListViewSteps: () => LIST_VIEW_STEPS,
-      getListViewState: () => listViewState,
-      changeListLimit,
       goToListPage,
       getRenderers: () => ({
         renderQuestoes: () => practiceUi.questionsTabController.renderQuestoes(),

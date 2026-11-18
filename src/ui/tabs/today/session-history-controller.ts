@@ -21,6 +21,7 @@ import { formatDuration } from '../../../core/format-duration.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 import { runUndoable } from '../../undoable.js';
+import { createProgressiveList } from '../../progressive-list.js';
 
 export const SESSION_TYPES: Record<string, string> = Object.freeze({
   study: 'Estudo teórico',
@@ -29,15 +30,15 @@ export const SESSION_TYPES: Record<string, string> = Object.freeze({
   simulation: 'Simulado',
 });
 
-export const DEFAULT_SESSION_DAYS_VISIBLE = 5;
+// Dias de estudo por página do histórico (a unidade é o dia, com todas as suas sessões).
+export const SESSION_DAYS_PER_PAGE = 7;
 
 export interface SessionHistoryControllerOptions {
   state: {
     studySessions: any[];
     subjects: any[];
   };
-  listViewState?: { sessionDaysVisible: number; [key: string]: any };
-  LIST_VIEW_STEPS?: { sessionDays: number; [key: string]: any };
+  listViewState?: { sessionDaysPage: number; [key: string]: any };
   sessionService?: any;
   clock?: { today: () => string };
   todayISO?: () => string;
@@ -120,13 +121,11 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   let expandedSessionDays = new Set<string>();
   let expandedSessionDetails = new Set<string>();
   let sessionHistoryExpansionInitialized = false;
-  let sessionDaysVisible = DEFAULT_SESSION_DAYS_VISIBLE;
-  const getStep = () => opts.LIST_VIEW_STEPS?.sessionDays || DEFAULT_SESSION_DAYS_VISIBLE;
-  const getVisibleLimit = () =>
-    opts.listViewState ? opts.listViewState.sessionDaysVisible : sessionDaysVisible;
-  const setVisibleLimit = (val: number) => {
-    sessionDaysVisible = val;
-    if (opts.listViewState) opts.listViewState.sessionDaysVisible = val;
+  let sessionDaysPage = 1;
+  const getPage = () => opts.listViewState?.sessionDaysPage ?? sessionDaysPage;
+  const setPage = (page: number) => {
+    sessionDaysPage = page;
+    if (opts.listViewState) opts.listViewState.sessionDaysPage = page;
   };
 
   const historyEditState = {
@@ -212,7 +211,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   function updateSessionHistoryFilter(field: string, value: any) {
     (sessionHistoryFilters as Record<string, any>)[field] = value;
     if (field === 'period') sessionHistoryFilters.date = '';
-    setVisibleLimit(getStep());
+    setPage(1);
     expandedSessionDays.clear();
     sessionHistoryExpansionInitialized = false;
     renderStudySessionsHistory();
@@ -225,7 +224,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     sessionHistoryFilters.subjectId = '';
     sessionHistoryFilters.type = '';
     sessionHistoryFilters.date = '';
-    setVisibleLimit(getStep());
+    setPage(1);
     expandedSessionDays.clear();
     sessionHistoryExpansionInitialized = false;
     renderStudySessionsHistory();
@@ -236,7 +235,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   function selectSessionHistoryDate(date: string) {
     sessionHistoryFilters.date = date;
     sessionHistoryFilters.period = 'all';
-    setVisibleLimit(getStep());
+    setPage(1);
     expandedSessionDays = new Set([date]);
     sessionHistoryExpansionInitialized = true;
     renderStudySessionsHistory();
@@ -245,7 +244,9 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     const doc = getDoc();
     (doc as any)?.querySelector('.tab-btn[data-tab="desempenho"]')?.click();
     if (doc) openPerformanceSection(doc, 'consistency');
-    doc?.getElementById('studySessionsCard')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    doc
+      ?.getElementById('studySessionsCard')
+      ?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
     opts.onFilterChange?.();
   }
 
@@ -259,11 +260,6 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   function toggleSessionDetails(id: string) {
     if (expandedSessionDetails.has(id)) expandedSessionDetails.delete(id);
     else expandedSessionDetails = new Set([id]);
-    renderStudySessionsHistory();
-  }
-
-  function changeSessionDaysLimit(delta: number) {
-    setVisibleLimit(delta > 0 ? Number.MAX_SAFE_INTEGER : getStep());
     renderStudySessionsHistory();
   }
 
@@ -378,9 +374,15 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     if (tableWrap) tableWrap.hidden = false;
     if (emptyState) emptyState.hidden = true;
 
-    const currentLimit = getVisibleLimit();
-    const currentStep = getStep();
-    const visibleGroups = groupStudySessionsByDate(rows.slice(0, currentLimit));
+    const list = createProgressiveList({
+      items: groupStudySessionsByDate(rows),
+      mode: 'pages',
+      pageSize: SESSION_DAYS_PER_PAGE,
+      page: getPage(),
+    });
+    // Grava a página já limitada: apagar o último dia da última página cai na anterior.
+    setPage(list.page);
+    const visibleGroups = list.visibleItems;
     if (!sessionHistoryExpansionInitialized && visibleGroups.length) {
       expandedSessionDays.add(visibleGroups[0][0]);
       sessionHistoryExpansionInitialized = true;
@@ -412,17 +414,15 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
 
     html.push(
       renderCollectionFooter({
-        total: rows.length,
-        visible: currentLimit,
-        step: currentStep,
-        showMoreAction:
-          "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
-        showLessAction:
-          currentLimit > currentStep
-            ? "changeListLimit('sessionDays',-listViewState.sessionDaysVisible,renderStudySessionsHistory)"
-            : '',
+        mode: 'pages',
+        total: list.totalItems,
+        visible: list.visibleItems.length,
+        page: list.page,
+        pageSize: list.pageSize,
+        prevAction: `goToListPage('sessionDays',${list.page - 1})`,
+        nextAction: `goToListPage('sessionDays',${list.page + 1})`,
         colspan: 10,
-        label: 'sessões',
+        label: 'dias',
       })
     );
     body.innerHTML = html.join('');
@@ -499,10 +499,6 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     sessionHistoryFilters,
     historyEditState,
     historyEditDraft,
-    getSessionDaysVisible: () => sessionDaysVisible,
-    setSessionDaysVisible: (v: number) => {
-      sessionDaysVisible = v;
-    },
     totalStudySeconds,
     segundosEstudadosHoje,
     studyTimeByTopic,
@@ -517,7 +513,6 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     selectSessionHistoryDate,
     toggleSessionDay,
     toggleSessionDetails,
-    changeSessionDaysLimit,
     renderSessionHistoryFilterControls,
     renderStudySessionReadRow,
     renderStudySessionEditRow,

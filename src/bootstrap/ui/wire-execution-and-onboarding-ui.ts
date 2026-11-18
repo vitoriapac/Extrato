@@ -254,7 +254,9 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
       activateTab('metas');
       setTimeout(() => {
         document.getElementById('metasTab-semana')?.click();
-        document.getElementById('weeklyReplan')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document
+          .getElementById('weeklyReplan')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     },
   });
@@ -356,7 +358,6 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
       return getState();
     },
     listViewState: deps.listViewState,
-    LIST_VIEW_STEPS: deps.LIST_VIEW_STEPS,
     sessionService: services.sessionService,
     todayISO,
     addDays,

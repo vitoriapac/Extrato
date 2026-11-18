@@ -30,9 +30,6 @@ export function createDelegatedArgumentResolver(options?: DelegatedArgumentOptio
 export interface DelegatedSpecialOptions {
   onSetPerformanceSubject: (value: string) => void;
   renderQuestionAnalytics: () => void;
-  getListViewSteps: () => Record<string, number>;
-  getListViewState: () => Record<string, number>;
-  changeListLimit: (listKey: string, delta: number, renderer: () => void) => void;
   goToListPage: (listKey: string, page: number, renderer: () => void) => void;
   getRenderers: () => Record<string, () => void>;
 }
@@ -40,6 +37,7 @@ export interface DelegatedSpecialOptions {
 const PAGED_LIST_RENDERERS: Record<string, string> = {
   questions: 'renderQuestoes',
   simulations: 'renderSimulados',
+  sessionDays: 'renderStudySessionsHistory',
 };
 
 export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
@@ -54,25 +52,13 @@ export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
       return true;
     }
     // Listas paginadas: chave e renderizador em lista fechada, página inteira ≥ 1.
-    const pageMatch = normalized.match(/^goToListPage\('(questions|simulations)',(\d{1,6})\)$/);
+    const pageMatch = normalized.match(
+      /^goToListPage\('(questions|simulations|sessionDays)',(\d{1,6})\)$/
+    );
     if (pageMatch) {
       const renderer = options.getRenderers()[PAGED_LIST_RENDERERS[pageMatch[1]]];
       const page = Math.max(1, Number(pageMatch[2]));
       if (typeof renderer === 'function') options.goToListPage(pageMatch[1], page, renderer);
-      return true;
-    }
-    const listMatch = normalized.match(
-      /^changeListLimit\('(sessionDays)',(-?)(?:LIST_VIEW_STEPS\.\1|listViewState\.\1Visible),(renderStudySessionsHistory)\)$/
-    );
-    if (listMatch) {
-      const steps = options.getListViewSteps();
-      const state = options.getListViewState();
-      const delta = listMatch[2] ? -state[`${listMatch[1]}Visible`] : steps[listMatch[1]];
-      const renderers = options.getRenderers();
-      const targetRenderer = renderers[listMatch[3]];
-      if (typeof targetRenderer === 'function') {
-        options.changeListLimit(listMatch[1], delta, targetRenderer);
-      }
       return true;
     }
     return false;

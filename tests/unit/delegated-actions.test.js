@@ -41,11 +41,8 @@ test('createSpecialActionResolver — intercepta e despacha casos especiais', ()
     renderQuestionAnalytics: () => {
       renderAnalyticsCalled = true;
     },
-    getListViewSteps: () => ({ sessionDays: 10 }),
-    getListViewState: () => ({ sessionDaysVisible: 20 }),
-    goToListPage: () => {},
-    changeListLimit: (key, delta, renderer) => {
-      changedList = { key, delta, renderer };
+    goToListPage: (key, page, renderer) => {
+      changedList = { key, page, renderer };
       renderer();
     },
     getRenderers: () => ({
@@ -61,15 +58,11 @@ test('createSpecialActionResolver — intercepta e despacha casos especiais', ()
   assert.equal(perfSubject, 'sub-123');
   assert.equal(renderAnalyticsCalled, true);
 
-  // Caso 2: changeListLimit
-  const handled2 = resolver(
-    "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
-    null,
-    {}
-  );
+  // Caso 2: goToListPage
+  const handled2 = resolver("goToListPage('sessionDays',2)", null, {});
   assert.equal(handled2, true);
   assert.equal(changedList?.key, 'sessionDays');
-  assert.equal(changedList?.delta, 10);
+  assert.equal(changedList?.page, 2);
 
   // Caso 3: não reconhecido
   const handled3 = resolver('outroComando()', null, {});
@@ -93,9 +86,6 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
   const resolver = createSpecialActionResolver({
     onSetPerformanceSubject() {},
     renderQuestionAnalytics() {},
-    getListViewSteps: () => ({}),
-    getListViewState: () => ({}),
-    changeListLimit() {},
     goToListPage: (key, page, renderer) => calls.push({ key, page, rendered: renderer() }),
     getRenderers: () => ({ renderSimulados: () => 'ok', renderQuestoes: () => 'q' }),
   });

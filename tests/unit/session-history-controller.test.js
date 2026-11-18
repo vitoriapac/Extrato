@@ -195,5 +195,47 @@ test('createSessionHistoryController — expansão de dias e filtros dinâmicos'
   // Expansão de dia e detalhes
   controller.toggleSessionDay('2026-03-10');
   controller.toggleSessionDetails('s1');
-  controller.changeSessionDaysLimit(10);
+});
+
+test('createSessionHistoryController — histórico em páginas de 7 dias com página limitada', () => {
+  const studySessions = Array.from({ length: 20 }, (_, i) => ({
+    id: `s${i}`,
+    date: `2026-03-${String(30 - i).padStart(2, '0')}`,
+    durationSeconds: 1800,
+    type: 'study',
+  }));
+  const els = {
+    studySessionsBody: { innerHTML: '' },
+    studySessionsCount: { textContent: '' },
+    studySessionsFilterSummary: { textContent: '', hidden: false },
+    studySessionsTableWrap: { hidden: true },
+    studySessionsEmpty: { hidden: false },
+  };
+  const listViewState = { sessionDaysPage: 1 };
+  const controller = createSessionHistoryController({
+    state: { studySessions, subjects: [] },
+    todayISO: () => '2026-03-30',
+    listViewState,
+    document: { getElementById: id => els[id] || null },
+  });
+  const days = html => (html.match(/class="[^"]*session-day-row/g) || []).length;
+
+  controller.renderStudySessionsHistory();
+  assert.match(els.studySessionsBody.innerHTML, /Exibindo 1–7 de 20 dias/);
+  assert.match(els.studySessionsBody.innerHTML, /Página 1 de 3/);
+  assert.equal(days(els.studySessionsBody.innerHTML), 7);
+
+  listViewState.sessionDaysPage = 3;
+  controller.renderStudySessionsHistory();
+  assert.match(els.studySessionsBody.innerHTML, /Exibindo 15–20 de 20 dias/);
+  assert.equal(days(els.studySessionsBody.innerHTML), 6);
+  assert.match(els.studySessionsBody.innerHTML, /goToListPage\('sessionDays',2\)/);
+
+  listViewState.sessionDaysPage = 40;
+  controller.renderStudySessionsHistory();
+  assert.equal(listViewState.sessionDaysPage, 3);
+
+  listViewState.sessionDaysPage = 2;
+  controller.updateSessionHistoryFilter('type', 'study');
+  assert.equal(listViewState.sessionDaysPage, 1);
 });

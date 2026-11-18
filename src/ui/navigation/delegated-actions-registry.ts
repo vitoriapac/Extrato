@@ -18,9 +18,6 @@ export interface DelegatedActionsRegistryDeps {
   specialConfig?: {
     onSetPerformanceSubject?: (value: string) => void;
     renderQuestionAnalytics?: () => void;
-    getListViewSteps?: () => Record<string, number>;
-    getListViewState?: () => Record<string, number>;
-    changeListLimit?: (listKey: string, delta: number, renderer: () => void) => void;
     goToListPage?: (listKey: string, page: number, renderer: () => void) => void;
     getRenderers?: () => Record<string, () => void>;
   };
@@ -385,9 +382,6 @@ export function registerDelegatedActions(deps: DelegatedActionsRegistryDeps) {
     ? createSpecialActionResolver({
         onSetPerformanceSubject: deps.specialConfig.onSetPerformanceSubject || (() => {}),
         renderQuestionAnalytics: deps.specialConfig.renderQuestionAnalytics || (() => {}),
-        getListViewSteps: deps.specialConfig.getListViewSteps || (() => ({})),
-        getListViewState: deps.specialConfig.getListViewState || (() => ({})),
-        changeListLimit: deps.specialConfig.changeListLimit || (() => {}),
         goToListPage: deps.specialConfig.goToListPage || (() => {}),
         getRenderers: deps.specialConfig.getRenderers || (() => ({})),
       })
