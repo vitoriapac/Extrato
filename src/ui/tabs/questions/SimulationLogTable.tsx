@@ -31,7 +31,6 @@ export interface SimulationViewModel {
 
 export interface SimulationLogTableProps {
   simulations: SimulationItem[];
-  visibleLimit: number;
   editingId?: string | null;
   draft?: any;
   openBreakdownIds: Set<string>;
@@ -44,7 +43,6 @@ export interface SimulationLogTableProps {
 
 export function SimulationLogTable({
   simulations,
-  visibleLimit,
   editingId,
   draft,
   openBreakdownIds,
@@ -73,11 +71,9 @@ export function SimulationLogTable({
     );
   }
 
-  const visibleSims = simulations.slice(0, visibleLimit);
-
   return (
     <>
-      {visibleSims.map(sim => {
+      {simulations.map(sim => {
         const isEditing = editingId === sim.id;
 
         if (isEditing && draft) {

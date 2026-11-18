@@ -92,7 +92,6 @@ test('SimulationLogTable Preact Component — renderiza simulados e breakdown ex
   const html = render(
     h(SimulationLogTable, {
       simulations: dummySims,
-      visibleLimit: 10,
       openBreakdownIds: new Set(['sim1']),
       getViewModel: s => ({
         date: s.date,
@@ -109,7 +108,10 @@ test('SimulationLogTable Preact Component — renderiza simulados e breakdown ex
   assert.match(html, />70%</);
   assert.match(html, /Desempenho por disciplina/);
   assert.match(html, /Português/);
-  assert.match(html, /<details class="simulation-breakdown-edit"><summary>Editar disciplinas<\/summary>/);
+  assert.match(
+    html,
+    /<details class="simulation-breakdown-edit"><summary>Editar disciplinas<\/summary>/
+  );
   assert.match(html, /As alterações são salvas automaticamente/);
 });
 
@@ -121,7 +123,7 @@ test('createQuestionsController — coordena a renderização de questões e sim
 
   const controller = createQuestionsController({
     state,
-    listViewState: { questionsVisible: 10, simulationsVisible: 10 },
+    listViewState: { questionsVisible: 10, simulationsPage: 1 },
     questionEditController: { state: { editingId: null, draft: null } },
     simulationEditController: { state: { editingId: null, draft: null } },
     errorCategories: {},
@@ -170,4 +172,46 @@ test('PlateauDetectorCard Preact Component — renderiza tópicos com estagnaç�
   assert.match(html, /66\.7%|66,7%/);
   assert.match(html, /60 q/);
   assert.match(html, /Caderno de Erros/);
+});
+
+test('createQuestionsController — Simulados em páginas de 10 com limite e gravação da página', () => {
+  const simulados = Array.from({ length: 25 }, (_, i) => ({
+    id: `s${i}`,
+    date: `2026-03-${String(i + 1).padStart(2, '0')}`,
+    nome: `Simulado ${i}`,
+    correct: 5,
+    total: 10,
+  }));
+  const listViewState = { questionsVisible: 10, simulationsPage: 1 };
+  const controller = createQuestionsController({
+    state: { questoes: [], simulados },
+    listViewState,
+    questionEditController: { state: { editingId: null, draft: null } },
+    simulationEditController: { state: { editingId: null, draft: null } },
+    errorCategories: {},
+    questionViewModel: () => /** @type {any} */ ({}),
+    questionCategorizedErrors: () => 0,
+  });
+  const rows = html => (html.match(/history-read-row/g) || []).length;
+
+  let html = controller.renderSimulationsHtml();
+  assert.equal(rows(html), 10);
+  assert.match(html, /Exibindo 1–10 de 25 simulados/);
+  assert.match(html, /Página 1 de 3/);
+  assert.match(html, /Simulado 24/);
+
+  listViewState.simulationsPage = 3;
+  html = controller.renderSimulationsHtml();
+  assert.equal(rows(html), 5);
+  assert.match(html, /data-delegated-click="goToListPage\('simulations',2\)"/);
+
+  listViewState.simulationsPage = 99;
+  html = controller.renderSimulationsHtml();
+  assert.equal(listViewState.simulationsPage, 3);
+  assert.equal(rows(html), 5);
+
+  simulados.length = 8;
+  html = controller.renderSimulationsHtml();
+  assert.equal(listViewState.simulationsPage, 1);
+  assert.doesNotMatch(html, /list-pagination/);
 });

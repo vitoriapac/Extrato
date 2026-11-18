@@ -7,6 +7,7 @@ import { SimulatedRemediationModal } from '../../components/SimulatedRemediation
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { createErrorFlashcard } from '../../../domain/notebook/error-notebook-engine.js';
 import { runUndoable } from '../../undoable.js';
+import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
 import { buildSimulationTrendVisual } from '../../../domain/practice/practice-visual-models.js';
 import { renderSimulationTrendChart } from '../../primitives/charts/charts.js';
 
@@ -16,12 +17,11 @@ export interface SimulationsTabControllerContext {
   state: any;
   listViewState: {
     questionsVisible: number;
-    simulationsVisible: number;
+    simulationsPage: number;
     [key: string]: any;
   };
   LIST_VIEW_STEPS: {
     questions: number;
-    simulations: number;
     [key: string]: any;
   };
   simulationService: any;
@@ -247,7 +247,6 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   }
 
   function addSimuladoRow() {
-    ctx.listViewState.simulationsVisible = ctx.LIST_VIEW_STEPS.simulations;
     const sim = ctx.simulationService.create({
       date: todayISO(),
       nome: '',
@@ -255,6 +254,11 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       total: 0,
       breakdown: [],
     });
+    // A linha nova entra em edição na página em que a ordenação por data a colocar.
+    const index = [...(ctx.state.simulados || [])]
+      .sort((a: any, b: any) => (b.date || '').localeCompare(a.date || ''))
+      .findIndex((s: any) => s.id === sim.id);
+    ctx.listViewState.simulationsPage = Math.floor(Math.max(0, index) / DEFAULT_PAGE_SIZE) + 1;
     simulationEditController.begin(sim.id, { isNew: true });
     return sim;
   }

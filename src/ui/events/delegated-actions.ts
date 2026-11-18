@@ -33,8 +33,11 @@ export interface DelegatedSpecialOptions {
   getListViewSteps: () => Record<string, number>;
   getListViewState: () => Record<string, number>;
   changeListLimit: (listKey: string, delta: number, renderer: () => void) => void;
+  goToListPage: (listKey: string, page: number, renderer: () => void) => void;
   getRenderers: () => Record<string, () => void>;
 }
+
+const PAGED_LIST_RENDERERS: Record<string, string> = { simulations: 'renderSimulados' };
 
 export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
   return function resolveDelegatedSpecial(
@@ -47,8 +50,16 @@ export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
       options.renderQuestionAnalytics();
       return true;
     }
+    // Listas paginadas: chave e renderizador em lista fechada, página inteira ≥ 1.
+    const pageMatch = normalized.match(/^goToListPage\('(simulations)',(\d{1,6})\)$/);
+    if (pageMatch) {
+      const renderer = options.getRenderers()[PAGED_LIST_RENDERERS[pageMatch[1]]];
+      const page = Math.max(1, Number(pageMatch[2]));
+      if (typeof renderer === 'function') options.goToListPage(pageMatch[1], page, renderer);
+      return true;
+    }
     const listMatch = normalized.match(
-      /^changeListLimit\('(questions|simulations|sessionDays)',(-?)(?:LIST_VIEW_STEPS\.\1|listViewState\.\1Visible),(renderQuestoes|renderSimulados|renderStudySessionsHistory)\)$/
+      /^changeListLimit\('(questions|sessionDays)',(-?)(?:LIST_VIEW_STEPS\.\1|listViewState\.\1Visible),(renderQuestoes|renderStudySessionsHistory)\)$/
     );
     if (listMatch) {
       const steps = options.getListViewSteps();

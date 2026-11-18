@@ -178,37 +178,3 @@ export function renderSimulationTrendChart({
     records: items.length ? '<ol class="simulation-trend-list">' + history + '</ol>' : '',
   });
 }
-
-export function renderSimulationRows({
-  items = [],
-  visible = 5,
-  editingId = null,
-  renderReadRow,
-  renderEditRow,
-  renderFooter,
-}: {
-  items?: Row[];
-  visible?: number;
-  editingId?: string | null;
-  renderReadRow: (item: Row) => string;
-  renderEditRow: (item: Row) => string;
-  renderFooter: (...args: any[]) => string;
-}) {
-  if (!items.length)
-    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum simulado registrado ainda.</p><button class="btn ghost small" data-delegated-click="addSimuladoRow()">${renderIconSvg('plus', { size: 14, className: 'icon-inline' })}Registrar simulado</button></div></td></tr>`;
-  const visibleItems = items.slice(0, visible);
-  return (
-    visibleItems
-      .map(item => (editingId === item.id ? renderEditRow(item) : renderReadRow(item)))
-      .join('') +
-    renderFooter(
-      items.length,
-      visible,
-      5,
-      "changeListLimit('simulations',LIST_VIEW_STEPS.simulations,renderSimulados)",
-      "changeListLimit('simulations',-listViewState.simulationsVisible,renderSimulados)",
-      7,
-      'simulados'
-    )
-  );
-}

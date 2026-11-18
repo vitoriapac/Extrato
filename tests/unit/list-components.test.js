@@ -97,7 +97,7 @@ test('rodapé em páginas mostra intervalo, página e navegação', () => {
 
 test('rodapé em páginas desabilita as pontas sem ação', () => {
   const base = {
-    mode: 'pages',
+    mode: /** @type {const} */ ('pages'),
     total: 25,
     pageSize: 10,
     prevAction: 'p()',

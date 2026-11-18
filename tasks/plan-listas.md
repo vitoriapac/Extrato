@@ -67,7 +67,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 
 ### Fase 1: Fundação e piloto
 - [x] T1: Regra (limiar 20), modelo de páginas e rodapé `pages`
-- [ ] T2: Simulados paginados (piloto de ponta a ponta)
+- [x] T2: Simulados paginados (piloto de ponta a ponta)
 
 ### Checkpoint 1: Piloto
 - [ ] Unit/lint/build limpos; Simulados paginando no navegador (desktop e mobile); revisão humana do visual da paginação

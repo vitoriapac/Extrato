@@ -7,6 +7,8 @@ import {
   type SimulationViewModel,
 } from './SimulationLogTable.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
+import { createProgressiveList } from '../../progressive-list.js';
+import { renderCollectionFooter } from '../../list-components.js';
 
 export interface QuestionsControllerOptions {
   state: {
@@ -16,7 +18,7 @@ export interface QuestionsControllerOptions {
   };
   listViewState: {
     questionsVisible: number;
-    simulationsVisible: number;
+    simulationsPage: number;
   };
   questionEditController: {
     state: {
@@ -50,7 +52,6 @@ export interface QuestionsControllerOptions {
   getTopicOptionsHtml?: (subjectId?: string | null, selectedTopicId?: string | null) => string;
   LIST_VIEW_STEPS?: {
     questions: number;
-    simulations: number;
   };
 }
 
@@ -124,8 +125,13 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
   }
 
   function renderSimulationsHtml(): string {
-    const simulations = getSortedSimulations();
-    const visibleLimit = opts.listViewState.simulationsVisible;
+    const list = createProgressiveList({
+      items: getSortedSimulations(),
+      mode: 'pages',
+      page: opts.listViewState.simulationsPage,
+    });
+    // Grava a página já limitada: apagar o último item da última página cai na anterior.
+    opts.listViewState.simulationsPage = list.page;
     const editingId = opts.simulationEditController.state.editingId;
     const draft = opts.simulationEditController.state.draft;
     const isMobile = opts.isMobileLayout ? opts.isMobileLayout() : false;
@@ -145,24 +151,21 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
 
     const getViewModel = opts.simulationViewModel || defaultSimViewModel;
 
-    let footerHtml = '';
-    if (opts.renderListViewFooter && simulations.length > 0) {
-      const step = opts.LIST_VIEW_STEPS?.simulations || 5;
-      footerHtml = opts.renderListViewFooter(
-        simulations.length,
-        visibleLimit,
-        step,
-        "changeListLimit('simulations',LIST_VIEW_STEPS.simulations,renderSimulados)",
-        "changeListLimit('simulations',-listViewState.simulationsVisible,renderSimulados)",
-        7,
-        'simulados'
-      );
-    }
+    const footerHtml = renderCollectionFooter({
+      mode: 'pages',
+      total: list.totalItems,
+      visible: list.visibleItems.length,
+      page: list.page,
+      pageSize: list.pageSize,
+      prevAction: `goToListPage('simulations',${list.page - 1})`,
+      nextAction: `goToListPage('simulations',${list.page + 1})`,
+      colspan: 7,
+      label: 'simulados',
+    });
 
     return render(
       h(SimulationLogTable, {
-        simulations,
-        visibleLimit,
+        simulations: list.visibleItems,
         editingId,
         draft,
         openBreakdownIds,

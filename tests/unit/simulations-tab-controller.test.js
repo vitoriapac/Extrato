@@ -80,12 +80,11 @@ function createBaseContext(doc) {
 
   const listViewState = {
     questionsVisible: 10,
-    simulationsVisible: 10,
+    simulationsPage: 1,
   };
 
   const LIST_VIEW_STEPS = {
     questions: 10,
-    simulations: 10,
   };
 
   const context = {

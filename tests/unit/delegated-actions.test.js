@@ -43,6 +43,7 @@ test('createSpecialActionResolver — intercepta e despacha casos especiais', ()
     },
     getListViewSteps: () => ({ questions: 10 }),
     getListViewState: () => ({ questionsVisible: 20 }),
+    goToListPage: () => {},
     changeListLimit: (key, delta, renderer) => {
       changedList = { key, delta, renderer };
       renderer();
@@ -85,4 +86,25 @@ test('composeDelegatedActionHandlers — combina múltiplos grupos de ações co
   assert.equal(typeof combined.action3, 'function');
   assert.equal(combined.notAFunction, undefined);
   assert.equal(Object.getPrototypeOf(combined), null);
+});
+
+test('createSpecialActionResolver — goToListPage só aceita lista conhecida e página inteira', () => {
+  const calls = [];
+  const resolver = createSpecialActionResolver({
+    onSetPerformanceSubject() {},
+    renderQuestionAnalytics() {},
+    getListViewSteps: () => ({}),
+    getListViewState: () => ({}),
+    changeListLimit() {},
+    goToListPage: (key, page, renderer) => calls.push({ key, page, rendered: renderer() }),
+    getRenderers: () => ({ renderSimulados: () => 'ok' }),
+  });
+  assert.equal(resolver("goToListPage('simulations',3)", null, {}), true);
+  assert.deepEqual(calls, [{ key: 'simulations', page: 3, rendered: 'ok' }]);
+  assert.equal(resolver("goToListPage('simulations',0)", null, {}), true);
+  assert.equal(calls[1].page, 1);
+  assert.equal(resolver("goToListPage('outra',2)", null, {}), false);
+  assert.equal(resolver("goToListPage('simulations',-1)", null, {}), false);
+  assert.equal(resolver("goToListPage('simulations',2);alert(1)", null, {}), false);
+  assert.equal(calls.length, 2);
 });

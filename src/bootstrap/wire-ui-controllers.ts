@@ -55,12 +55,11 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
 
   const listViewState = {
     questionsVisible: DEFAULT_LIST_VISIBLE_ITEMS,
-    simulationsVisible: DEFAULT_LIST_VISIBLE_ITEMS,
+    simulationsPage: 1,
     sessionDaysVisible: DEFAULT_LIST_VISIBLE_ITEMS,
   };
   const LIST_VIEW_STEPS = {
     questions: DEFAULT_LIST_VISIBLE_ITEMS,
-    simulations: DEFAULT_LIST_VISIBLE_ITEMS,
     sessionDays: DEFAULT_LIST_VISIBLE_ITEMS,
   };
 
@@ -90,6 +89,27 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     renderFn();
   }
 
+  function goToListPage(key: string, page: number, renderFn: () => void) {
+    const previous = (listViewState as Record<string, any>)[`${key}Page`] || 1;
+    (listViewState as Record<string, any>)[`${key}Page`] = page;
+    renderFn();
+    // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta)
+    // e traz o início da lista de volta à tela.
+    const buttons = [...document.querySelectorAll<HTMLElement>('.list-pagination .list-page-btn')];
+    const wanted = buttons.find(
+      b =>
+        b.dataset.delegatedClick === `goToListPage('${key}',${page + (page > previous ? 1 : -1)})`
+    );
+    const target = wanted || buttons.find(b => b.getAttribute('aria-disabled') !== 'true');
+    target?.focus({ preventScroll: true });
+    const table = target?.closest('table');
+    if (table && table.getBoundingClientRect().top < 0)
+      table.scrollIntoView({
+        block: 'start',
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      });
+  }
+
   let practiceUi: ReturnType<typeof wirePracticeAndCatalogUi>;
   let planningUi: ReturnType<typeof wirePlanningAndGoalsUi>;
   let executionUi: ReturnType<typeof wireExecutionAndOnboardingUi>;
@@ -99,6 +119,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     Object.keys(LIST_VIEW_STEPS).forEach(key => {
       (listViewState as Record<string, any>)[`${key}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
     });
+    listViewState.simulationsPage = 1;
     if (practiceUi?.reviewsTabController) {
       practiceUi.reviewsTabController.agendaUiState.upcomingVisible =
         practiceUi.reviewsTabController.agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
@@ -188,7 +209,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     ) => executionUi?.todayTabController?.openAssistantPanel?.(panel, opts),
     openPlanningCycle: () => planningUi?.goalsTabController?.openPlanningCycle?.(),
     openWeeklyClose: () => planningUi?.weeklyCloseModalController?.openWeeklyClose?.(),
-    startGuidedTimerSession: (opts: any) => executionUi?.studyTimerRuntime?.startGuidedTimerSession?.(opts),
+    startGuidedTimerSession: (opts: any) =>
+      executionUi?.studyTimerRuntime?.startGuidedTimerSession?.(opts),
   });
 
   executionUi = wireExecutionAndOnboardingUi({
@@ -281,6 +303,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       getListViewSteps: () => LIST_VIEW_STEPS,
       getListViewState: () => listViewState,
       changeListLimit,
+      goToListPage,
       getRenderers: () => ({
         renderQuestoes: () => practiceUi.questionsTabController.renderQuestoes(),
         renderSimulados: () => practiceUi.simulationsTabController.renderSimulados(),

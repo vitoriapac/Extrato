@@ -25,12 +25,11 @@ export interface QuestionsTabControllerContext {
   state: any;
   listViewState: {
     questionsVisible: number;
-    simulationsVisible: number;
+    simulationsPage: number;
     [key: string]: any;
   };
   LIST_VIEW_STEPS: {
     questions: number;
-    simulations: number;
     [key: string]: any;
   };
   questionService: any;

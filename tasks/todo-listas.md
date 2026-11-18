@@ -29,16 +29,16 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** Caminho completo em uma lista só: estado de página, ação delegada `goToListPage`, tabela, rodapé, reset. Serve para validar o desenho antes de replicar. Simulados é a menor das quatro.
 
 **Critérios de aceite:**
-- [ ] A tabela de Simulados mostra 10 por página; Anterior/Próxima trocam a página e o foco volta ao início da lista.
-- [ ] Ação `goToListPage('simulations', n)` registrada e validada (nome e chave em lista fechada; página inteira ≥ 1) no resolvedor de ações delegadas; sai a regex antiga de `simulations`.
-- [ ] Voltar para a aba, mudar de aba ou salvar um novo simulado reinicia na página 1 / mantém coerente; apagar o último item da última página cai na página anterior.
-- [ ] Mobile (≤850px): só Anterior, "Página X de Y" e Próxima, sem estourar a largura.
+- [x] A tabela de Simulados mostra 10 por página; Anterior/Próxima trocam a página e o foco volta ao início da lista.
+- [x] Ação `goToListPage('simulations', n)` registrada e validada (nome e chave em lista fechada; página inteira ≥ 1) no resolvedor de ações delegadas; sai a regex antiga de `simulations`.
+- [x] Voltar para a aba, mudar de aba ou salvar um novo simulado reinicia na página 1 / mantém coerente; apagar o último item da última página cai na página anterior.
+- [x] Mobile (≤850px): só Anterior, "Página X de Y" e Próxima, sem estourar a largura.
 
 **Verificação:**
-- [ ] `tests/unit/delegated-actions.test.js` atualizado (aceita `goToListPage`, rejeita chave desconhecida)
-- [ ] Teste unitário do controller: página, reset, clamp
-- [ ] Manual: preview em desktop e mobile com demo de 25+ simulados; screenshot do rodapé
-- [ ] `npm run test:affected`
+- [x] `tests/unit/delegated-actions.test.js` atualizado (aceita `goToListPage`, rejeita chave desconhecida)
+- [x] Teste unitário do controller: página, reset, clamp
+- [x] Manual: preview em desktop e mobile com demo de 25+ simulados; screenshot do rodapé
+- [x] `npm run test:affected`
 
 **Dependências:** T1
 **Arquivos:** `src/ui/tabs/questions/questions-controller.ts`, `src/ui/tabs/questions/SimulationLogTable.tsx`, `src/ui/events/delegated-actions.ts`, `src/bootstrap/wire-ui-controllers.ts`, `src/ui/navigation/delegated-actions-registry.ts`
