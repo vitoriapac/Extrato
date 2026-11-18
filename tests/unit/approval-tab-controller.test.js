@@ -72,7 +72,6 @@ test('createApprovalTabController — renderApprovalDashboard monta visão geral
     activeTopics: () => [],
     activeSubjects: () => [{ id: 's1', name: 'Direito' }],
     allTopics: () => [],
-    renderCollectionFooter: () => '',
     renderReadinessOverview: model => `<div class="readiness">Score: ${model.score}</div>`,
     renderReadinessHistory: () => '<div class="history">Histórico</div>',
     renderTopicRetentionDashboardView: () => '<div class="retention">Retenção</div>',
@@ -102,7 +101,6 @@ test('createApprovalTabController — renderApprovalDashboard monta visão geral
       insightsRendered = true;
     },
     getRetentionView: () => ({ subjectId: '', confidence: 'all', order: 'desc' }),
-    isRetentionShowAll: () => false,
   });
 
   controller.renderApprovalDashboard();

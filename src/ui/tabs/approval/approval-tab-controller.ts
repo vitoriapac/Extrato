@@ -29,7 +29,6 @@ import { buildRecommendationFollowup as defaultBuildRecommendationFollowup } fro
 import { renderRecommendationFollowup as defaultRenderRecommendationFollowup } from '../../renderers/recommendation-followup-renderer.js';
 import { summarizeRecommendationHistory as defaultSummarizeRecommendationHistory } from '../../../application/recommendations/recommendation-history.js';
 import { renderRecommendationHistory as defaultRenderRecommendationHistory } from '../../renderers/recommendation-history-renderer.js';
-import { renderCollectionFooter as defaultRenderCollectionFooter } from '../../list-components.js';
 
 export interface ApprovalTabControllerOptions {
   document: Document | any;
@@ -54,7 +53,6 @@ export interface ApprovalTabControllerOptions {
   activeTopics: () => any[];
   activeSubjects: () => any[];
   allTopics: () => any[];
-  renderCollectionFooter?: (opts: any) => string;
   renderReadinessOverview?: (model: any, opts: any) => string;
   renderReadinessHistory?: (snapshots: any[], opts: any) => string;
   renderTopicRetentionDashboardView?: (opts: any) => string;
@@ -77,11 +75,9 @@ export interface ApprovalTabControllerOptions {
   topicMasteryIndex: (subjectId: string, topicId: string) => any;
   onRenderStudyTrack32Insights?: () => void;
   getRetentionView?: () => any;
-  isRetentionShowAll?: () => boolean;
 }
 
 export function createApprovalTabController(opts: ApprovalTabControllerOptions) {
-  let internalRetentionShowAll = false;
   const internalRetentionView: Record<string, any> = {
     subjectId: '',
     order: 'asc',
@@ -110,7 +106,6 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     activeTopics,
     activeSubjects,
     allTopics,
-    renderCollectionFooter = defaultRenderCollectionFooter,
     renderReadinessOverview = defaultRenderReadinessOverview,
     renderReadinessHistory = defaultRenderReadinessHistory,
     renderTopicRetentionDashboardView = defaultRenderTopicRetentionDashboardView,
@@ -134,7 +129,6 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     onRenderStudyTrack32Insights,
   } = opts;
   const getRetentionView = opts.getRetentionView || (() => internalRetentionView);
-  const isRetentionShowAll = opts.isRetentionShowAll || (() => internalRetentionShowAll);
 
   function renderApprovalDashboard(): void {
     const el = document.getElementById('approvalDashboard');
@@ -250,7 +244,6 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     const el = document.getElementById('topicRetentionDashboard');
     if (!el) return;
     const retentionView = getRetentionView();
-    const retentionShowAll = isRetentionShowAll();
     const baseRows = activeTopics().map(t => {
       const r = topicRetentionScore(t.subjectId, t.id);
       return { ...t, r, h: topicReviewHealthScore(t, topicMasteryIndex(t.subjectId, t.id), r) };
@@ -281,8 +274,6 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
       rows,
       subjects: activeSubjects(),
       filters: retentionView,
-      showAll: retentionShowAll,
-      renderFooter: renderCollectionFooter,
       escapeHtml,
       escapeAttr,
     });
@@ -336,24 +327,9 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     }
   }
 
-  function showAllRetention(): void {
-    internalRetentionShowAll = true;
-    renderTopicRetentionDashboard();
-  }
-
-  function resetRetentionLimit(): void {
-    internalRetentionShowAll = false;
-    renderTopicRetentionDashboard();
-  }
-
-  function resetRetentionLimitDefault(): void {
-    internalRetentionShowAll = false;
-  }
-
   function setRetentionFilter(field: string, value: any): void {
     const view = getRetentionView();
     if (field in view) view[field] = value;
-    internalRetentionShowAll = false;
     renderTopicRetentionDashboard();
   }
 
@@ -362,9 +338,6 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     renderTopicRetentionDashboard,
     renderRecommendationCalibration,
     renderRecommendationHistorySummary,
-    showAllRetention,
-    resetRetentionLimit,
-    resetRetentionLimitDefault,
     setRetentionFilter,
   };
 }

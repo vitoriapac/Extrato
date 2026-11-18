@@ -169,15 +169,16 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** Retenção, Desempenho de questões, Próximos (Visão geral) e Datas atrasadas ainda usam `renderCollectionFooter` com `data-progressive-legacy`. Troca por um único caminho (mesmo modelo, mesmo botão), sem mudar texto nem limite.
 
 **Critérios de aceite:**
-- [ ] Nenhum `data-progressive-legacy` no código; `mountProgressiveLists` deixa de ter ramo "legacy".
-- [ ] "Mostrar mais · +N ↓" / "Mostrar menos ↑" iguais ao de hoje nessas telas.
-- [ ] `resetRecordListLimits` reduz-se a `resetListViews()` (uma chamada).
+- [x] Nenhum `data-progressive-legacy` no código; `mountProgressiveLists` deixa de ter ramo "legacy".
+- [x] "Mostrar mais · +N ↓" / "Mostrar menos ↑" iguais ao de hoje nessas telas.
+- [x] `resetRecordListLimits` reduz-se a `resetListViews()` (uma chamada).
 
 **Verificação:**
-- [ ] `tests/unit/{approval-tab-controller,question-analytics-controller}.test.js` e `tests/e2e/progressive-list.spec.js` verdes
-- [ ] Manual: as 4 telas com mais de 5 itens
+- [x] `tests/unit/{approval-tab-controller,question-analytics-controller}.test.js` e `tests/e2e/progressive-list.spec.js` verdes
+- [x] Manual: as 4 telas com mais de 5 itens
 
 **Dependências:** Checkpoint 2 (as telas paginadas já saíram do rodapé legado)
+**Nota:** a Retenção por tópico saiu de "Mostrar mais" e foi para páginas (`'pages'`, 10 por página) a pedido, por ter centenas de linhas. `LIST_MODE` (T12) a registra como paginada.
 **Arquivos:** `src/ui/list-components.ts`, `src/ui/progressive-list.ts`, `src/bootstrap/wire-ui-controllers.ts`, `approval-tab-controller.ts`, `question-analytics-controller.ts`, `dashboard-tab-controller.ts`, `calendar-tab-controller.ts` (Atrasadas)
 **Escopo:** L → dividir em T9a (Retenção, Desempenho de questões) e T9b (Próximos, Atrasadas, reset único) ao executar
 

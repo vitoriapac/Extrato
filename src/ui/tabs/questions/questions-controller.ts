@@ -70,9 +70,7 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
     });
     opts.listViewState[stateKey] = list.page;
     const footerHtml = renderCollectionFooter({
-      mode: 'pages',
       total: list.totalItems,
-      visible: list.visibleItems.length,
       page: list.page,
       pageSize: list.pageSize,
       pageAction: (n: number) => `goToListPage('${key}',${n})`,

@@ -1,11 +1,8 @@
 import { presentEvidence, EVIDENCE_STATES } from '../evidence-state.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
 export function renderTopicRetentionDashboard({
   rows,
   subjects,
   filters,
-  showAll,
-  renderFooter,
   escapeHtml,
   escapeAttr,
 }: any) {
@@ -14,8 +11,7 @@ export function renderTopicRetentionDashboard({
     return (
       toolbar + '<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>'
     );
-  const visible = showAll ? rows : rows.slice(0, DEFAULT_LIST_VISIBLE_ITEMS),
-    scoreCounts = new Map();
+  const scoreCounts = new Map();
   rows
     .filter((row: any) => row.r.available && row.r.value != null)
     .forEach((row: any) => {
@@ -27,7 +23,8 @@ export function renderTopicRetentionDashboard({
     repeated && repeated[1] >= 4
       ? `<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}/100. Compare a evidência antes de interpretar o resultado como definitivo.</div>`
       : '';
-  const items = visible
+  // Todas as linhas: "Mostrar mais" é do montador de listas (#retentionRecords).
+  const items = rows
     .map((row: any) => {
       const evidence = presentEvidence({
           state: row.r.available ? EVIDENCE_STATES.ESTIMATED : EVIDENCE_STATES.NO_DATA,
@@ -42,15 +39,5 @@ export function renderTopicRetentionDashboard({
       return `<div class="retention-row" title="${escapeAttr(row.r.detail || row.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(row.name)}</strong><span>${escapeHtml(row.subjectName)} · retenção ${evidence.text} · saúde ${row.h.value === null ? '—' : row.h.value + '/100'}</span></div><div class="retention-track"><div class="retention-fill ${classification}" style="width:${score ?? 0}%" aria-hidden="true"></div></div><div class="retention-value">${score == null ? evidence.label : evidence.text}</div>${score == null ? '<p>' + escapeHtml(evidence.message) + '</p>' : ''}</div>`;
     })
     .join('');
-  const footer = renderFooter({
-    variant: 'block',
-    total: rows.length,
-    visible: visible.length,
-    step: DEFAULT_LIST_VISIBLE_ITEMS,
-    label: 'tópicos',
-    showMoreAction: 'showAllRetention()',
-    showAllAction: 'showAllRetention()',
-    showLessAction: showAll ? 'resetRetentionLimit()' : '',
-  });
-  return toolbar + repeatedSummary + `<div id="retentionRecords">${items}</div>` + footer;
+  return toolbar + repeatedSummary + `<div id="retentionRecords">${items}</div>`;
 }

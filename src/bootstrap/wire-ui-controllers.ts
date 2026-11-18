@@ -113,12 +113,9 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     listViewState.agendaUpcomingPage = 1;
     listViewState.agendaCompletedPage = 1;
     practiceUi?.subjectsTabController?.subjectTopicPages.clear();
-    analyticsUi?.dashboardTabController?.resetUpcomingListDefault();
     if (practiceUi?.calendarTabController) {
       practiceUi.calendarTabController.calendarUiState.calendarPage = 1;
     }
-    practiceUi?.questionAnalyticsController?.resetLimitDefault();
-    analyticsUi?.approvalTabController?.resetRetentionLimitDefault();
   }
 
   const tabRouter = createTabRouter({
@@ -264,19 +261,10 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     },
     customHandlers: {
       advanceGuidedStrategy: () => executionUi.studyTimerRuntime.advanceGuidedStrategy(),
-      changeUpcomingLimit: (delta: number) =>
-        analyticsUi.dashboardTabController.changeUpcomingLimit(delta),
-      showAllUpcoming: () => analyticsUi.dashboardTabController.showAllUpcoming(),
-      resetUpcomingLimit: () => analyticsUi.dashboardTabController.resetUpcomingLimit(),
       setPerformanceViewMode: (mode: string) =>
         practiceUi.questionAnalyticsController.setViewMode(mode),
       setErrorAnalysisFilter: (field: string, value: any) =>
         practiceUi.questionAnalyticsController.setErrorAnalysisFilter(field, value),
-      changePerformanceLimit: () => practiceUi.questionAnalyticsController.changePerformanceLimit(),
-      showAllPerformance: () => practiceUi.questionAnalyticsController.showAllPerformance(),
-      resetPerformanceLimit: () => practiceUi.questionAnalyticsController.resetPerformanceLimit(),
-      showAllRetention: () => analyticsUi.approvalTabController.showAllRetention(),
-      resetRetentionLimit: () => analyticsUi.approvalTabController.resetRetentionLimit(),
       setRetentionFilter: (field: string, value: any) =>
         analyticsUi.approvalTabController.setRetentionFilter(field, value),
       updateExamSubject: analytics.goalsBlueprintService.updateExamSubject,

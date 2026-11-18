@@ -10,8 +10,6 @@ import {
 } from '../../renderers/question-analytics-renderer.js';
 import { buildErrorAnalysisViewModel as defaultBuildErrorAnalysisViewModel } from '../../../application/analytics/build-error-analysis-view-model.js';
 import { renderErrorAnalysis as defaultRenderErrorAnalysis } from '../../renderers/error-analysis-renderer.js';
-import { renderCollectionFooter as defaultRenderCollectionFooter } from '../../list-components.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
 import { selectWeakTopics, renderWeakTopics } from './question-weak-topics.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
 
@@ -21,7 +19,6 @@ export interface QuestionAnalyticsControllerOptions {
   setPerformanceSubjectId?: (id: string | null) => void;
   getPerformanceViewMode?: () => string;
   setPerformanceViewMode?: (mode: string) => void;
-  getPerformanceVisible?: () => number;
   getErrorAnalysisView?: () => { days: number; topicId: string };
   validQuestionRecords: () => Array<any>;
   entitySubjectId: (item: any) => string | null;
@@ -38,7 +35,6 @@ export interface QuestionAnalyticsControllerOptions {
   renderQuestionErrorToolbar?: (opts: any) => string;
   buildErrorAnalysisViewModel?: (opts: any) => any;
   renderErrorAnalysis?: (model: any, opts: any) => string;
-  renderCollectionFooter?: (opts: any) => string;
   formatDatePt: (iso: string) => string;
   escapeHtml: (text: string) => string;
   escapeAttr: (text: string) => string;
@@ -49,7 +45,6 @@ export interface QuestionAnalyticsControllerOptions {
 export function createQuestionAnalyticsController(opts: QuestionAnalyticsControllerOptions) {
   let internalSubjectId: string | null = null;
   let internalViewMode = 'with-data';
-  let internalVisible = DEFAULT_LIST_VISIBLE_ITEMS;
   const internalErrorAnalysisView = { days: 30, topicId: '' };
 
   const getPerformanceSubjectId = opts.getPerformanceSubjectId || (() => internalSubjectId);
@@ -64,7 +59,6 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
     ((mode: string) => {
       internalViewMode = mode;
     });
-  const getPerformanceVisible = opts.getPerformanceVisible || (() => internalVisible);
   const getErrorAnalysisView = opts.getErrorAnalysisView || (() => internalErrorAnalysisView);
 
   const calculateWeightedTrend = opts.calculateWeightedTrend || defaultCalculateWeightedTrend;
@@ -79,7 +73,6 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
   const buildErrorAnalysisViewModel =
     opts.buildErrorAnalysisViewModel || defaultBuildErrorAnalysisViewModel;
   const renderErrorAnalysis = opts.renderErrorAnalysis || defaultRenderErrorAnalysis;
-  const renderCollectionFooter = opts.renderCollectionFooter || defaultRenderCollectionFooter;
 
   function renderQuestionAnalytics(): void {
     const select = opts.document.getElementById('performanceSubjectSelect');
@@ -181,8 +174,6 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
                 : topic.resolved >= 30
           );
 
-    const performanceVisible = getPerformanceVisible();
-
     const activeSubject = subjects.find(subject => subject.id === currentSubjectId);
     const currentSubjectColorSlot = activeSubject ? subjectColorOf(activeSubject, subjects) : 1;
 
@@ -190,10 +181,7 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
       bars.innerHTML = renderTopicQuestionPerformance({
         mode: viewMode,
         topics: filteredPerformance,
-        visible: performanceVisible,
         masteryForTopic: (id: string) => opts.topicMasteryIndex(currentSubjectId!, id),
-        renderFooter: renderCollectionFooter,
-        visibleLimit: performanceVisible,
         colorSlot: currentSubjectColorSlot,
         escapeHtml: opts.escapeHtml,
       });
@@ -271,7 +259,6 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
       ? mode
       : 'with-data';
     setPerformanceViewModeInternal(valid);
-    internalVisible = DEFAULT_LIST_VISIBLE_ITEMS;
     renderQuestionAnalytics();
   }
 
@@ -282,28 +269,10 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
     renderQuestionAnalytics();
   }
 
-  function showAllPerformance(): void {
-    internalVisible = Number.MAX_SAFE_INTEGER;
-    renderQuestionAnalytics();
-  }
-
-  function resetPerformanceLimit(): void {
-    internalVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-    renderQuestionAnalytics();
-  }
-
-  function resetLimitDefault(): void {
-    internalVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-  }
-
   return {
     renderQuestionAnalytics,
     setSubjectId,
     setViewMode,
     setErrorAnalysisFilter,
-    changePerformanceLimit: showAllPerformance,
-    showAllPerformance,
-    resetPerformanceLimit,
-    resetLimitDefault,
   };
 }

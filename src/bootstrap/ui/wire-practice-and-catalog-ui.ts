@@ -244,7 +244,6 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
       document.getElementById('tab-questoes')?.click();
     },
     isMobileHistoryLayout,
-    renderCollectionFooter,
     escapeHtml,
     escapeAttr,
     pluralize,

@@ -41,8 +41,6 @@ import {
   heatmapMetricLevel as defaultHeatmapMetricLevel,
 } from '../../../domain/analytics/heatmap.js';
 import { resolveExamPhase } from '../../../domain/planning/adaptive-planning.js';
-import { renderCollectionFooter } from '../../list-components.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
 import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
@@ -876,27 +874,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     return streakView;
   }
 
-  let upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-
-  function changeUpcomingLimit(_delta: number): void {
-    upcomingVisible = Number.MAX_SAFE_INTEGER;
-    renderDashboard();
-  }
-
-  function showAllUpcoming(): void {
-    upcomingVisible = Number.MAX_SAFE_INTEGER;
-    renderDashboard();
-  }
-
-  function resetUpcomingLimit(): void {
-    upcomingVisible = 5;
-    renderDashboard();
-  }
-
-  function resetUpcomingListDefault(): void {
-    upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-  }
-
   function renderHeader(): void {
     if (!doc) return;
     const state = deps.getState ? deps.getState() : {};
@@ -1024,32 +1001,20 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       }));
 
     const allUpcoming = [...calItems, ...agendaItems].sort((a, b) => a.date.localeCompare(b.date));
-    const upcoming = allUpcoming.slice(0, upcomingVisible);
 
     const ul = doc.getElementById('upcomingList');
     const title = doc.getElementById('upcomingTitle');
     const footer = doc.getElementById('upcomingFooter');
     if (title) title.textContent = `Tarefas e revisões a partir de hoje · ${allUpcoming.length}`;
     if (ul) {
-      mountUpcomingList(ul, upcoming);
+      // Todos os itens: "Mostrar mais" é do montador de listas (#upcomingList).
+      mountUpcomingList(ul, allUpcoming);
     }
     if (footer) {
-      if (upcoming.length === 0) {
-        footer.innerHTML = '';
-      } else {
-        footer.innerHTML =
-          renderCollectionFooter({
-            variant: 'block',
-            total: allUpcoming.length,
-            visible: upcoming.length,
-            step: 5,
-            label: 'itens',
-            showMoreAction: 'changeUpcomingLimit(5)',
-            showAllAction: 'showAllUpcoming()',
-            showLessAction: upcomingVisible > 5 ? 'resetUpcomingLimit()' : '',
-          }) +
-          `<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
-      }
+      footer.innerHTML =
+        allUpcoming.length === 0
+          ? ''
+          : `<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
     }
 
     renderCockpitDecisionGrids();
@@ -1087,10 +1052,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     viewSelectedHeatmapSessions,
     toggleStreakActiveDays,
     getStreakView,
-    changeUpcomingLimit,
-    showAllUpcoming,
-    resetUpcomingLimit,
-    resetUpcomingListDefault,
     renderHeader,
     renderDashboard,
   };

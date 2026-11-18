@@ -36,7 +36,6 @@ test('createQuestionAnalyticsController — renderQuestionAnalytics monta select
     setPerformanceViewMode: mode => {
       performanceViewMode = mode;
     },
-    getPerformanceVisible: () => 10,
     getErrorAnalysisView: () => ({ days: 30, topicId: '' }),
     validQuestionRecords: () => [
       { id: 'q1', subjectId: 's1', topicId: 't1', resolved: 20, correct: 16, date: '2026-10-25' },
@@ -59,7 +58,6 @@ test('createQuestionAnalyticsController — renderQuestionAnalytics monta select
     renderQuestionErrorToolbar: () => '<div class="toolbar">Toolbar</div>',
     buildErrorAnalysisViewModel: () => ({ current: {} }),
     renderErrorAnalysis: () => '<div class="error-profile">Perfil de Erros</div>',
-    renderCollectionFooter: () => '',
     formatDatePt: d => d,
     escapeHtml: s => s,
     escapeAttr: s => s,

@@ -36,7 +36,7 @@ import {
   REVIEW_OPTIONS,
   CALENDAR_ACTIVITY_LABELS,
 } from '../../../state/schema.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS, createProgressiveList } from '../../progressive-list.js';
+import { createProgressiveList } from '../../progressive-list.js';
 import { runUndoable } from '../../undoable.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 
@@ -84,7 +84,6 @@ export interface CalendarTabControllerContext {
   calendarController?: any;
   renderCalendarReadRow?: (item: CalendarItem) => string;
   renderCalendarEditRow?: (item: CalendarItem) => string;
-  renderCollectionFooter?: (opts: any) => string;
   showToast?: (msg: string) => void;
   showConfirm?: (msg: string, onConfirm: () => void, onCancel?: () => void, opts?: any) => void;
   persistAndRender?: () => void;
@@ -148,7 +147,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   const isMobileHistoryLayout = ctx.isMobileHistoryLayout || (() => false);
   const showToast = ctx.showToast || (() => {});
   const persistAndRender = ctx.persistAndRender || (() => {});
-  const renderCollectionFooter = ctx.renderCollectionFooter || (() => '');
 
   // Estado interno da UI do Calendário
   const calendarUiState = ctx.calendarUiState || createCalendarState();
@@ -169,10 +167,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       : null);
 
   // Atrasadas agrupadas
-  const overdueGroupLimits: Record<string, number> = {
-    calAtrasadas: DEFAULT_LIST_VISIBLE_ITEMS,
-    hojeAtrasadas: DEFAULT_LIST_VISIBLE_ITEMS,
-  };
   const overdueExpandedDates: Record<string, Set<string>> = {
     calAtrasadas: new Set<string>(),
     hojeAtrasadas: new Set<string>(),
@@ -794,22 +788,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   }
 
   // Gestão de Atrasadas e Tarefas de Hoje (Unificadas)
-  function changeOverdueGroupLimit(elId: string, delta: number) {
-    overdueGroupLimits[elId] =
-      (overdueGroupLimits[elId] || DEFAULT_LIST_VISIBLE_ITEMS) + Number(delta || 0);
-    renderCalAtrasadas(elId);
-  }
-
-  function showAllOverdueGroups(elId: string) {
-    overdueGroupLimits[elId] = Number.MAX_SAFE_INTEGER;
-    renderCalAtrasadas(elId);
-  }
-
-  function resetOverdueGroupLimit(elId: string) {
-    overdueGroupLimits[elId] = DEFAULT_LIST_VISIBLE_ITEMS;
-    renderCalAtrasadas(elId);
-  }
-
   function toggleOverdueDate(elId: string, date: string) {
     const dates = overdueExpandedDates[elId] || (overdueExpandedDates[elId] = new Set());
     if (dates.has(date)) dates.delete(date);
@@ -908,8 +886,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       groups.get(item.date)!.push(item);
     });
     const entries = [...groups.entries()];
-    const limit = overdueGroupLimits[elId] || DEFAULT_LIST_VISIBLE_ITEMS;
-    const visible = entries.slice(0, limit);
 
     if (!overdueExpansionInitialized.has(elId)) {
       (overdueExpandedDates[elId] || (overdueExpandedDates[elId] = new Set())).add(entries[0][0]);
@@ -918,13 +894,13 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
     ul.innerHTML =
       `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}${pluralize(entries.length, 'data', 'datas')} · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
-      visible
+      // Todas as datas: "Mostrar mais" é do montador de listas (#calAtrasadas).
+      entries
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);
           return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.title || x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${x.origem === 'Calendário' ? `<button type="button" class="btn ghost small" data-calendar-move-today="${escapeAttr(x.id)}">Mover para hoje</button>` : ''}${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
         })
-        .join('') +
-      `<li class="overdue-list-footer">${renderCollectionFooter({ variant: 'block', total: entries.length, visible: visible.length, step: DEFAULT_LIST_VISIBLE_ITEMS, label: 'datas', showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > DEFAULT_LIST_VISIBLE_ITEMS ? `resetOverdueGroupLimit('${elId}')` : '' })}</li>`;
+        .join('');
   }
 
   function completeUnifiedReview(id: string, origin: string) {
@@ -1226,9 +1202,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     completeCalendarItem,
     deleteCalRow,
     updateCal,
-    changeOverdueGroupLimit,
-    showAllOverdueGroups,
-    resetOverdueGroupLimit,
     toggleOverdueDate,
     renderCalTarefasHoje,
     renderCalAtrasadas,

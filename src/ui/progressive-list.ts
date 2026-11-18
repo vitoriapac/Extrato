@@ -93,6 +93,11 @@ const LISTS: any[] = [
   ['#decisionHistoryDashboard', ':scope > .data-row', DEFAULT_PAGE_SIZE, 'pages', 'decisões'],
   // Hoje leads with the plan: two alerts, the rest behind "Mostrar mais".
   ['#alertasInteligentesList', ':scope > .alerta-item', 2],
+  // Um tópico por linha e centenas deles num exame: Retenção pagina.
+  ['#retentionRecords', ':scope > .retention-row', DEFAULT_PAGE_SIZE, 'pages', 'tópicos'],
+  ['#questionPerformanceRecords', ':scope > .performance-row'],
+  ['#upcomingList', ':scope > li'],
+  ['#calAtrasadas', ':scope > .overdue-group'],
   ['.exam-intelligence-list', ':scope > li'],
   ['.exam-configuration-audit > ul', ':scope > li'],
   ['.diagnosis-summary > section', ':scope > article'],
@@ -111,21 +116,13 @@ const LISTS: any[] = [
 
 export function mountProgressiveLists({ document, window }: { document: any; window: any }) {
   const states = new Map();
+  const renderedFooters = new WeakMap();
   let sequence = 0,
-    scheduled = false,
-    pendingFocus: { id: string | null; collapse: boolean } | null = null;
+    scheduled = false;
   const sync = () => {
     scheduled = false;
     states.forEach((state, id) => {
       if (!state.root.isConnected) states.delete(id);
-    });
-    document.querySelectorAll('[data-progressive-legacy]').forEach((button: any) => {
-      const root =
-        button.closest('tbody') || button.closest('.list-summary-footer')?.previousElementSibling;
-      if (root) {
-        if (!root.id) root.id = `progressive-list-${++sequence}`;
-        button.setAttribute('aria-controls', root.id);
-      }
     });
     LISTS.forEach(([selector, itemSelector, initialLimit, mode, label]) =>
       document.querySelectorAll(selector).forEach((root: any) => {
@@ -168,10 +165,8 @@ export function mountProgressiveLists({ document, window }: { document: any; win
           let footer = anchor.nextElementSibling;
           if (!footer?.matches('[data-progressive-pages]')) footer = null;
           const html = renderCollectionFooter({
-            mode: 'pages',
             variant: 'block',
             total: items.length,
-            visible: state.model.visibleItems.length,
             page: state.model.page,
             pageSize: state.model.pageSize,
             actionAttr: 'data-page-to',
@@ -186,7 +181,12 @@ export function mountProgressiveLists({ document, window }: { document: any; win
             footer.dataset.progressivePages = root.id;
             anchor.after(footer);
           }
-          if (footer.innerHTML !== html) footer.innerHTML = html;
+          // Compara com o último HTML gerado, não com innerHTML (o navegador normaliza atributos
+          // como data-hide-sm e a diferença reescreveria o rodapé a cada mutação, em laço).
+          if (renderedFooters.get(footer) !== html) {
+            footer.innerHTML = html;
+            renderedFooters.set(footer, html);
+          }
           return;
         }
         let button = anchor.nextElementSibling;
@@ -210,24 +210,6 @@ export function mountProgressiveLists({ document, window }: { document: any; win
         if (button.textContent !== text) button.textContent = text;
       })
     );
-    if (pendingFocus) {
-      const { id, collapse } = pendingFocus;
-      pendingFocus = null;
-      const button = [...document.querySelectorAll('[data-progressive-legacy]')].find(
-        item => item.getAttribute('aria-controls') === id
-      );
-      if (button) {
-        button.focus({ preventScroll: true });
-        const rect = button.getBoundingClientRect();
-        if (collapse && (rect.top < 0 || rect.bottom > window.innerHeight))
-          button.scrollIntoView({
-            block: 'nearest',
-            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-              ? 'auto'
-              : 'smooth',
-          });
-      }
-    }
   };
   const schedule = () => {
     if (!scheduled) {
@@ -240,15 +222,6 @@ export function mountProgressiveLists({ document, window }: { document: any; win
     schedule();
   };
   const click = (event: any) => {
-    const legacy = event.target.closest('[data-progressive-legacy]');
-    if (legacy) {
-      pendingFocus = {
-        id: legacy.getAttribute('aria-controls'),
-        collapse: legacy.getAttribute('aria-expanded') === 'true',
-      };
-      schedule();
-      return;
-    }
     const pageButton = event.target.closest('[data-page-to]');
     const pages = pageButton?.closest('[data-progressive-pages]');
     const pageState = pages && states.get(pages.dataset.progressivePages);

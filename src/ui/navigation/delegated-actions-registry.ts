@@ -107,14 +107,11 @@ export function buildDelegatedActionHandlers(
     // Calendar
     addCalRow: (...args: any[]) => c.calendar?.addCalRow?.(...args),
     cancelCalendarEdit: (...args: any[]) => c.calendar?.cancelCalendarEdit?.(...args),
-    changeOverdueGroupLimit: (...args: any[]) => c.calendar?.changeOverdueGroupLimit?.(...args),
     completeCalendarItem: (...args: any[]) => c.calendar?.completeCalendarItem?.(...args),
     completeUnifiedReview: (...args: any[]) => c.calendar?.completeUnifiedReview?.(...args),
     deleteCalRow: (...args: any[]) => c.calendar?.deleteCalRow?.(...args),
     editCalendarItem: (...args: any[]) => c.calendar?.editCalendarItem?.(...args),
-    resetOverdueGroupLimit: (...args: any[]) => c.calendar?.resetOverdueGroupLimit?.(...args),
     saveCalendarEdit: (...args: any[]) => c.calendar?.saveCalendarEdit?.(...args),
-    showAllOverdueGroups: (...args: any[]) => c.calendar?.showAllOverdueGroups?.(...args),
     // No controller ever implemented this; the panels are plain show/hide (filter-panel.ts).
     toggleFilterPanel: (name: string) => toggleFilterPanel(deps.document, name),
     toggleOverdueDate: (...args: any[]) => c.calendar?.toggleOverdueDate?.(...args),
@@ -240,9 +237,6 @@ export function buildDelegatedActionHandlers(
     viewSelectedHeatmapSessions: (...args: any[]) =>
       c.dashboard?.viewSelectedHeatmapSessions?.(...args),
     toggleStreakActiveDays: (...args: any[]) => c.dashboard?.toggleStreakActiveDays?.(...args),
-    changeUpcomingLimit: (...args: any[]) => c.dashboard?.changeUpcomingLimit?.(...args),
-    resetUpcomingLimit: (...args: any[]) => c.dashboard?.resetUpcomingLimit?.(...args),
-    showAllUpcoming: (...args: any[]) => c.dashboard?.showAllUpcoming?.(...args),
     openNextSessionAction: () => {
       deps.activateTab('dashboard');
       deps.document
@@ -273,20 +267,6 @@ export function buildDelegatedActionHandlers(
         custom['setRetentionFilter'](f, v);
       }
     },
-    resetRetentionLimit: () => {
-      if (c.approval?.resetRetentionLimit) {
-        c.approval.resetRetentionLimit();
-      } else if (custom?.['resetRetentionLimit']) {
-        custom['resetRetentionLimit']();
-      }
-    },
-    showAllRetention: () => {
-      if (c.approval?.showAllRetention) {
-        c.approval.showAllRetention();
-      } else if (custom?.['showAllRetention']) {
-        custom['showAllRetention']();
-      }
-    },
 
     // Performance
     setRadarSubject: (...args: any[]) => c.performance?.setRadarSubject?.(...args),
@@ -295,27 +275,6 @@ export function buildDelegatedActionHandlers(
         c.performance.setPerformanceViewMode(v);
       } else if (custom?.['setPerformanceViewMode']) {
         custom['setPerformanceViewMode'](v);
-      }
-    },
-    changePerformanceLimit: (d: number) => {
-      if (c.performance?.changePerformanceLimit) {
-        c.performance.changePerformanceLimit(d);
-      } else if (custom?.['changePerformanceLimit']) {
-        custom['changePerformanceLimit'](d);
-      }
-    },
-    resetPerformanceLimit: () => {
-      if (c.performance?.resetPerformanceLimit) {
-        c.performance.resetPerformanceLimit();
-      } else if (custom?.['resetPerformanceLimit']) {
-        custom['resetPerformanceLimit']();
-      }
-    },
-    showAllPerformance: () => {
-      if (c.performance?.showAllPerformance) {
-        c.performance.showAllPerformance();
-      } else if (custom?.['showAllPerformance']) {
-        custom['showAllPerformance']();
       }
     },
 

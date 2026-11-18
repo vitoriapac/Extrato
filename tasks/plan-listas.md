@@ -84,7 +84,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 - [ ] `npm run test:affected` e `test:experience` verdes; reset ao trocar de aba e ao filtrar conferido nas 7 listas; revisão humana
 
 ### Fase 3: Unificar "Mostrar mais"
-- [ ] T9: Rodapés legados restantes passam pelo componente único
+- [x] T9: Rodapés legados restantes passam pelo componente único
 - [ ] T10: `lazyMore` (Matriz) e `<details>` manuais substituídos
 - [ ] T11: Botões próprios do histórico estratégico
 
@@ -116,6 +116,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 1. Calendário em lista e Tópicos por disciplina passam para paginação.
 2. Histórico de decisões e Aderência nos fechamentos salvos passam para paginação.
 3. Tamanho de página: 10 itens, 7 dias no histórico de sessões.
+4. Retenção por tópico também pagina (10 por página), pedido depois da T9: a demo tem 305 tópicos.
 
 ## Perguntas em aberto
 

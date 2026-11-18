@@ -154,8 +154,6 @@ export function SubjectsTab({
             ? renderFooterFn({
                 variant: 'block',
                 total: allVisibleTopics.length,
-                visible: visibleTopics.length,
-                mode: 'pages',
                 page: topicList.page,
                 pageSize: topicList.pageSize,
                 pageAction: (n: number) => `goToListPage('${listKey}',${n})`,

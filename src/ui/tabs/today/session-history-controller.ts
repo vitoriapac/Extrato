@@ -414,9 +414,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
 
     html.push(
       renderCollectionFooter({
-        mode: 'pages',
         total: list.totalItems,
-        visible: list.visibleItems.length,
         page: list.page,
         pageSize: list.pageSize,
         pageAction: (n: number) => `goToListPage('sessionDays',${n})`,

@@ -2,55 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderCollectionFooter, renderGroupHeader } from '../../src/ui/list-components.js';
 
-test('rodapé informa quantidade e oferece expansão quando há mais itens', () => {
-  const html = renderCollectionFooter({
-    total: 18,
-    visible: 5,
-    showMoreAction: 'more()',
-    showLessAction: '',
-    colspan: 8,
-    label: 'revisões',
-  });
-  assert.match(html, /Exibindo 5 de 18 revisões/);
-  assert.match(html, /data-delegated-click="more\(\)"/);
-  assert.doesNotMatch(html, /Mostrar menos/);
-});
-
-test('rodapé oferece recolhimento após expandir', () => {
-  const html = renderCollectionFooter({
-    total: 18,
-    visible: 18,
-    showMoreAction: 'more()',
-    showLessAction: 'less()',
-    colspan: 8,
-    label: 'revisões',
-  });
-  assert.doesNotMatch(html, /Mostrar mais/);
-  assert.match(html, /Mostrar menos/);
-});
-
-test('rodapé de bloco oferece expansão total e passo restante', () => {
-  const html = renderCollectionFooter({
-    total: 23,
-    visible: 8,
-    step: 8,
-    showMoreAction: 'more()',
-    showAllAction: 'all()',
-    showLessAction: 'less()',
-    label: 'tópicos',
-    variant: 'block',
-  });
-  assert.match(html, /list-summary-footer/);
-  assert.match(html, /Mostrar mais · \+15/);
-  assert.doesNotMatch(html, /Ver todos/);
-  assert.match(html, /Exibindo 8 de 23 tópicos/);
-});
-
 test('rodapé de bloco é omitido quando a coleção cabe no limite inicial', () => {
   const html = renderCollectionFooter({
     total: 4,
-    visible: 4,
-    step: 5,
     label: 'revisões',
     variant: 'block',
   });
@@ -73,9 +27,7 @@ test('cabeçalho recolhível expõe estado acessível e contagem', () => {
 
 const footer = (page, total = 63, extra = {}) =>
   renderCollectionFooter({
-    mode: 'pages',
     total,
-    visible: 10,
     page,
     pageSize: 10,
     pageAction: n => `go(${n})`,
@@ -134,6 +86,6 @@ test('no celular só a primeira, a atual e a última ficam quando há mais de 5 
 });
 
 test('rodapé em páginas some com uma página só ou sem itens', () => {
-  assert.equal(renderCollectionFooter({ mode: 'pages', total: 10, visible: 10, pageSize: 10 }), '');
-  assert.equal(renderCollectionFooter({ mode: 'pages', total: 0, visible: 0, pageSize: 10 }), '');
+  assert.equal(renderCollectionFooter({ total: 10, pageSize: 10 }), '');
+  assert.equal(renderCollectionFooter({ total: 0, pageSize: 10 }), '');
 });

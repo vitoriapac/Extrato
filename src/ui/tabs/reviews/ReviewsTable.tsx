@@ -65,9 +65,7 @@ export function ReviewsTable({
     list: ReturnType<typeof createProgressiveList>,
     label: string
   ) => ({
-    mode: 'pages',
     total: list.totalItems,
-    visible: list.visibleItems.length,
     page: list.page,
     pageSize: list.pageSize,
     pageAction: (n: number) => `goToListPage('${key}',${n})`,

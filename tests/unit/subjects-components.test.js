@@ -251,7 +251,7 @@ test('Disciplinas — tópicos em páginas de 10, uma paginação por disciplina
   const props = compactProps([withTopics('a', 23), withTopics('b', 8)]);
   props.subjectTopicPages = new Map([['a', 3]]);
   props.renderFooterFn = opts =>
-    `[${opts.mode} ${opts.page}/${opts.total} ${opts.pageAction(2)} ${opts.pageAction(4)}]`;
+    `[${opts.page}/${opts.total} ${opts.pageAction(2)} ${opts.pageAction(4)}]`;
   const html = render(h(SubjectsTab, props));
   assert.match(html, /Tópico a-20/);
   assert.match(html, /Tópico a-22/);
@@ -259,7 +259,7 @@ test('Disciplinas — tópicos em páginas de 10, uma paginação por disciplina
   assert.match(html, /Tópico b-7/);
   assert.match(
     html,
-    /\[pages 3\/23 goToListPage\('subjectTopics:a',2\) goToListPage\('subjectTopics:a',4\)\]/
+    /\[3\/23 goToListPage\('subjectTopics:a',2\) goToListPage\('subjectTopics:a',4\)\]/
   );
   assert.equal(props.subjectTopicPages.get('a'), 3);
 

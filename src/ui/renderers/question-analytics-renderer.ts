@@ -1,5 +1,4 @@
 import { formatDecimal, formatPercent } from '../../core/format-number.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
 import { buildSubjectWeeklyTrendVisual } from '../../domain/practice/practice-visual-models.js';
 import { renderWeeklyTrendChart } from '../primitives/charts/charts.js';
 
@@ -22,10 +21,7 @@ export function renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, t
 export function renderTopicQuestionPerformance({
   mode,
   topics,
-  visible,
   masteryForTopic,
-  renderFooter,
-  visibleLimit,
   colorSlot,
   escapeHtml,
 }: any) {
@@ -35,8 +31,8 @@ export function renderTopicQuestionPerformance({
       tabs +
       `<div class="empty-state empty-state--compact"><strong>${mode === 'with-data' ? 'Nenhum tópico possui amostra suficiente' : 'Nenhum tópico nesta categoria'}</strong><p>${mode === 'with-data' ? 'São necessárias pelo menos 30 questões por tópico para esta visualização.' : 'Altere o filtro para visualizar os demais tópicos.'}</p></div>`
     );
+  // Todos os tópicos: "Mostrar mais" é do montador de listas (#questionPerformanceRecords).
   const rows = topics
-    .slice(0, visible)
     .map((topic: any) => {
       const mastery = masteryForTopic(topic.id),
         width = topic.accuracy === null ? 0 : topic.accuracy;
@@ -44,20 +40,7 @@ export function renderTopicQuestionPerformance({
       return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${mastery.value == null ? 'aguardando dados' : mastery.value + '/100'}</div></div><div class="performance-track"><div class="${fillClass} rounded-full" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? '—' : formatDecimal(topic.accuracy) + '%'}</div></div>`;
     })
     .join('');
-  return (
-    tabs +
-    `<div id="questionPerformanceRecords">${rows}</div>` +
-    renderFooter({
-      variant: 'block',
-      total: topics.length,
-      visible: Math.min(visible, topics.length),
-      step: DEFAULT_LIST_VISIBLE_ITEMS,
-      label: 'tópicos',
-      showMoreAction: 'changePerformanceLimit(8)',
-      showAllAction: 'showAllPerformance()',
-      showLessAction: visibleLimit > DEFAULT_LIST_VISIBLE_ITEMS ? 'resetPerformanceLimit()' : '',
-    })
-  );
+  return tabs + `<div id="questionPerformanceRecords">${rows}</div>`;
 }
 
 export function renderWeeklyQuestionTrend({ weeks = [], trend = {}, colorSlot = 1, formatDate }: any) {

@@ -122,3 +122,26 @@ test('listas em páginas (decisões): 10 por página, foco e página mantidos ao
   await expect(rows).toHaveCount(10);
   expect(errors).toEqual([]);
 });
+
+test('lista em páginas com muitas páginas não entra em laço de atualização', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const root = document.getElementById('decisionHistoryDashboard');
+    document.body.append(root);
+    root.innerHTML = Array.from(
+      { length: 120 },
+      (_, index) => `<article class="data-row">Decisão ${index + 1}</article>`
+    ).join('');
+  });
+  const nav = page.locator('[data-progressive-pages="decisionHistoryDashboard"]');
+  await expect(nav).toContainText('Exibindo 1–10 de 120 decisões');
+  await expect(nav.getByRole('button', { name: 'Página 12' })).toBeVisible();
+  // A página continua respondendo: troca de página e a atualização assíncrona terminam.
+  await nav.getByRole('button', { name: 'Página 12' }).click();
+  await expect(nav).toContainText('Exibindo 111–120 de 120 decisões');
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 300)));
+  expect(errors).toEqual([]);
+});

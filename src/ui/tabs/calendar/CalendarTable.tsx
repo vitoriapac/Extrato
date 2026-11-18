@@ -75,9 +75,7 @@ export function CalendarTable({
     <tr
       dangerouslySetInnerHTML={{
         __html: renderFooter({
-          mode: 'pages',
           total: list.totalItems,
-          visible: visibleRows.length,
           page: list.page,
           pageSize: list.pageSize,
           pageAction: (n: number) => `goToListPage('calendar',${n})`,

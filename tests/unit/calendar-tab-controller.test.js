@@ -53,7 +53,7 @@ test('createCalendarTabController — unifica revisões e filtra por status/disc
   assert.equal(rows[1].id, 'c2');
 });
 
-test('createCalendarTabController — gerencia atrasadas agrupadas e paginação', () => {
+test('createCalendarTabController — gerencia atrasadas agrupadas', () => {
   const state = {
     calendar: [
       { id: 'c1', date: '2026-03-05', subjectId: 's1', status: 'Não iniciado' },
@@ -95,18 +95,25 @@ test('createCalendarTabController — gerencia atrasadas agrupadas e paginação
   controller.toggleOverdueDate('calAtrasadas', '2026-03-05');
   assert.ok(elements.calAtrasadas.innerHTML.length > 0);
 
-  // Expansão e reset de limite
-  controller.showAllOverdueGroups('calAtrasadas');
-  controller.resetOverdueGroupLimit('calAtrasadas');
+  // Todas as datas vão para o DOM; "Mostrar mais" é do montador de listas.
+  assert.doesNotMatch(elements.calAtrasadas.innerHTML, /Mostrar mais|overdue-list-footer/);
 });
 
 test('lista de hoje mostra somente itens pendentes e preserva concluídos no estado', () => {
   const element = { innerHTML: '' };
-  const state = { calendar: [
-    { id: 'pending', date: '2026-03-10', status: 'Não iniciado', subjectId: 's1' },
-    { id: 'done', date: '2026-03-10', status: 'Concluído', subjectId: 's2' },
-  ], reviewAgenda: [] };
-  const controller = createCalendarTabController({ state, clock: { today: () => '2026-03-10' }, document: { getElementById: () => element }, entitySubjectName: item => item.subjectId });
+  const state = {
+    calendar: [
+      { id: 'pending', date: '2026-03-10', status: 'Não iniciado', subjectId: 's1' },
+      { id: 'done', date: '2026-03-10', status: 'Concluído', subjectId: 's2' },
+    ],
+    reviewAgenda: [],
+  };
+  const controller = createCalendarTabController({
+    state,
+    clock: { today: () => '2026-03-10' },
+    document: { getElementById: () => element },
+    entitySubjectName: item => item.subjectId,
+  });
   controller.renderCalTarefasHoje();
   assert.match(element.innerHTML, /s1/);
   assert.doesNotMatch(element.innerHTML, /s2/);
@@ -205,10 +212,20 @@ test('createCalendarTabController — CRUD e conclusões integradas', () => {
 
 test('fila mista identifica tarefas e revisões sem chamar tudo de revisão', () => {
   const elements = {};
-  const doc = { getElementById(id) { return elements[id] ||= { id, innerHTML: '' }; } };
+  const doc = {
+    getElementById(id) {
+      return (elements[id] ||= { id, innerHTML: '' });
+    },
+  };
   const controller = createCalendarTabController({
-    state: { calendar: [{ id: 'c', date: '2026-03-09', status: 'Não iniciado' }], reviewAgenda: [{ id: 'r', date: '2026-03-09', status: 'Pendente' }] },
-    document: doc, clock: { today: () => '2026-03-10' }, diasParaRevisao: () => -1, formatDatePt: d => d,
+    state: {
+      calendar: [{ id: 'c', date: '2026-03-09', status: 'Não iniciado' }],
+      reviewAgenda: [{ id: 'r', date: '2026-03-09', status: 'Pendente' }],
+    },
+    document: doc,
+    clock: { today: () => '2026-03-10' },
+    diasParaRevisao: () => -1,
+    formatDatePt: d => d,
   });
   controller.renderCalAtrasadas('calAtrasadas');
   assert.match(elements.calAtrasadas.innerHTML, /2 pendências atrasadas/);
@@ -218,11 +235,24 @@ test('fila mista identifica tarefas e revisões sem chamar tudo de revisão', ()
 
 test('ação rápida distingue concluir tarefa de revisar tópico', () => {
   const element = { innerHTML: '' };
-  const state = { calendar: [{ id: 'task', date: '2026-03-10', status: 'Não iniciado' }], reviewAgenda: [{ id: 'review', date: '2026-03-10', status: 'Pendente' }] };
-  const controller = createCalendarTabController({ state, clock: { today: () => '2026-03-10' }, document: { getElementById: () => element } });
+  const state = {
+    calendar: [{ id: 'task', date: '2026-03-10', status: 'Não iniciado' }],
+    reviewAgenda: [{ id: 'review', date: '2026-03-10', status: 'Pendente' }],
+  };
+  const controller = createCalendarTabController({
+    state,
+    clock: { today: () => '2026-03-10' },
+    document: { getElementById: () => element },
+  });
   controller.renderCalTarefasHoje('hojeTarefasHoje');
-  assert.match(element.innerHTML, /completeUnifiedReview\('task','Calendário'\)[\s\S]*?Concluir tarefa/);
-  assert.match(element.innerHTML, /completeUnifiedReview\('review','Agenda de Revisões'\)[\s\S]*?Revisar/);
+  assert.match(
+    element.innerHTML,
+    /completeUnifiedReview\('task','Calendário'\)[\s\S]*?Concluir tarefa/
+  );
+  assert.match(
+    element.innerHTML,
+    /completeUnifiedReview\('review','Agenda de Revisões'\)[\s\S]*?Revisar/
+  );
 });
 
 test('setCalendarMobileView suporta week e rescheduleCalendarItem move tarefas e pede confirmação em eventos', () => {
