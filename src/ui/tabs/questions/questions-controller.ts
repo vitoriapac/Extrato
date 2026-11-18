@@ -75,8 +75,7 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
       visible: list.visibleItems.length,
       page: list.page,
       pageSize: list.pageSize,
-      prevAction: `goToListPage('${key}',${list.page - 1})`,
-      nextAction: `goToListPage('${key}',${list.page + 1})`,
+      pageAction: (n: number) => `goToListPage('${key}',${n})`,
       colspan,
       label,
     });

@@ -71,46 +71,66 @@ test('cabeçalho recolhível expõe estado acessível e contagem', () => {
   assert.match(html, />27</);
 });
 
-test('rodapé em páginas mostra intervalo, página e navegação', () => {
-  const html = renderCollectionFooter({
+const footer = (page, total = 63, extra = {}) =>
+  renderCollectionFooter({
     mode: 'pages',
-    total: 63,
+    total,
     visible: 10,
-    page: 2,
+    page,
     pageSize: 10,
-    prevAction: 'prev()',
-    nextAction: 'next()',
+    pageAction: n => `go(${n})`,
     label: 'sessões',
     colspan: 4,
+    ...extra,
   });
-  assert.match(
-    html,
-    /<nav class="list-view-controls list-pagination" aria-label="Paginação de sessões">/
+// Rótulos dos botões na ordem: setas nas pontas, números no meio.
+const labels = html =>
+  [...html.matchAll(/<button[^>]*>([^<]*)<\/button>|list-page-gap[^>]*>(…)</g)].map(
+    m => m[1] || m[2]
   );
+
+test('rodapé em páginas mostra contagem, setas, números e a página atual', () => {
+  const html = footer(2);
+  assert.match(html, /<nav class="list-pagination" aria-label="Paginação de sessões">/);
   assert.match(html, /Exibindo 11–20 de 63 sessões/);
   assert.match(html, /Página 2 de 7/);
-  assert.match(html, /data-delegated-click="prev\(\)"/);
-  assert.match(html, /data-delegated-click="next\(\)"/);
-  assert.doesNotMatch(html, /aria-disabled/);
+  assert.match(html, /aria-label="Página 2" aria-current="page"/);
+  assert.match(
+    html,
+    /aria-label="Página anterior" data-page-dir="prev" data-delegated-click="go\(1\)"/
+  );
+  assert.match(
+    html,
+    /aria-label="Próxima página" data-page-dir="next" data-delegated-click="go\(3\)"/
+  );
+  assert.match(html, /data-delegated-click="go\(5\)"/);
+  assert.deepEqual(labels(html), ['‹', '1', '2', '3', '4', '5', '6', '7', '›']);
   assert.match(html, /<tr class="list-view-footer"><td colspan="4">/);
 });
 
-test('rodapé em páginas desabilita as pontas sem ação', () => {
-  const base = {
-    mode: /** @type {const} */ ('pages'),
-    total: 25,
-    pageSize: 10,
-    prevAction: 'p()',
-    nextAction: 'n()',
-    visible: 10,
-  };
-  const first = renderCollectionFooter({ ...base, page: 1 });
-  assert.match(first, /aria-disabled="true">‹ Anterior/);
-  assert.doesNotMatch(first, /data-delegated-click="p\(\)"/);
-  const last = renderCollectionFooter({ ...base, page: 3, variant: 'block' });
-  assert.match(last, /Exibindo 21–25 de 25 itens/);
-  assert.match(last, /aria-disabled="true">Próxima ›/);
+test('rodapé em páginas desabilita as setas das pontas sem ação', () => {
+  const first = footer(1, 25);
+  assert.match(first, /data-page-dir="prev" aria-disabled="true">‹/);
+  assert.doesNotMatch(first, /go\(0\)/);
+  const last = footer(3, 25, { variant: 'block' });
+  assert.match(last, /Exibindo 21–25 de 25 sessões/);
+  assert.match(last, /data-page-dir="next" aria-disabled="true">›/);
+  assert.doesNotMatch(last, /go\(4\)/);
   assert.match(last, /list-summary-footer/);
+});
+
+test('rodapé em páginas usa reticências acima de 7 páginas', () => {
+  assert.deepEqual(labels(footer(1, 80)), ['‹', '1', '2', '…', '8', '›']);
+  assert.deepEqual(labels(footer(3, 80)), ['‹', '1', '2', '3', '4', '…', '8', '›']);
+  assert.deepEqual(labels(footer(4, 80)), ['‹', '1', '2', '3', '4', '5', '…', '8', '›']);
+  assert.deepEqual(labels(footer(8, 80)), ['‹', '1', '…', '7', '8', '›']);
+  assert.deepEqual(labels(footer(5, 200)), ['‹', '1', '…', '4', '5', '6', '…', '20', '›']);
+});
+
+test('no celular só a primeira, a atual e a última ficam quando há mais de 5 páginas', () => {
+  const html = footer(3, 80);
+  assert.equal((html.match(/data-hide-sm/g) || []).length, 2);
+  assert.doesNotMatch(footer(3, 40), /data-hide-sm/);
 });
 
 test('rodapé em páginas some com uma página só ou sem itens', () => {

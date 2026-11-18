@@ -69,20 +69,29 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     const store: Record<string, any> =
       key === 'calendar' ? practiceUi.calendarTabController.calendarUiState : listViewState;
     const previous = (subjectId ? topics.get(subjectId) : store[`${key}Page`]) || 1;
+    const clicked = document.activeElement as HTMLElement | null;
+    const clickedDir = clicked?.dataset?.pageDir || '';
+    const clickedNumber = Boolean(clicked?.closest?.('.list-pagination') && !clickedDir);
     if (subjectId) topics.set(subjectId, page);
     else store[`${key}Page`] = page;
     renderFn();
     // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta)
     // e traz o início da lista de volta à tela.
-    // Só os botões ativos desta lista: botão desabilitado não tem ação, e outras listas podem estar ocultas.
+    // O botão clicado foi recriado: se era uma seta, o foco volta à mesma seta (ou à página atual,
+    // na ponta); se era um número, vai para a página atual. Só entram os botões desta lista.
     const prefix = `goToListPage('${key}',`;
     const buttons = [
       ...document.querySelectorAll<HTMLElement>('.list-pagination .list-page-btn'),
     ].filter(b => b.dataset.delegatedClick?.startsWith(prefix));
-    const wanted = buttons.find(
-      b => b.dataset.delegatedClick === `${prefix}${page + (page > previous ? 1 : -1)})`
-    );
-    const target = wanted || buttons[0];
+    const dir =
+      clickedDir ||
+      (Math.abs(page - previous) === 1 && !clickedNumber
+        ? page > previous
+          ? 'next'
+          : 'prev'
+        : '');
+    const current = buttons.find(b => b.getAttribute('aria-current') === 'page');
+    const target = (dir && buttons.find(b => b.dataset.pageDir === dir)) || current;
     target?.focus({ preventScroll: true });
     const table = target?.closest('table');
     if (table && table.getBoundingClientRect().top < 0)

@@ -174,8 +174,6 @@ export function mountProgressiveLists({ document, window }: { document: any; win
             visible: state.model.visibleItems.length,
             page: state.model.page,
             pageSize: state.model.pageSize,
-            prevAction: String(state.model.page - 1),
-            nextAction: String(state.model.page + 1),
             actionAttr: 'data-page-to',
             label,
           });
@@ -255,17 +253,14 @@ export function mountProgressiveLists({ document, window }: { document: any; win
     const pages = pageButton?.closest('[data-progressive-pages]');
     const pageState = pages && states.get(pages.dataset.progressivePages);
     if (pageState) {
-      const previous = pageState.model.page;
       pageState.model.goTo(Number(pageButton.dataset.pageTo));
       sync();
-      // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta).
-      const buttons = [...pages.querySelectorAll('[data-page-to]')];
+      // O botão clicado foi recriado: seta volta à mesma seta (ou à página atual, na ponta); número vai à atual.
+      const buttons = [...pages.querySelectorAll('[data-page-to]')] as HTMLElement[];
+      const dir = pageButton.dataset.pageDir;
       const target =
-        buttons.find(
-          b =>
-            Number(b.dataset.pageTo) ===
-            pageState.model.page + (pageState.model.page > previous ? 1 : -1)
-        ) || buttons[0];
+        (dir && buttons.find(b => b.dataset.pageDir === dir)) ||
+        buttons.find(b => b.getAttribute('aria-current') === 'page');
       target?.focus({ preventScroll: true });
       const list = document.getElementById(pages.dataset.progressivePages);
       if (list && list.getBoundingClientRect().top < 0)

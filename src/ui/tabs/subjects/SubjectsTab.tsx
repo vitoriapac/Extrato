@@ -158,8 +158,7 @@ export function SubjectsTab({
                 mode: 'pages',
                 page: topicList.page,
                 pageSize: topicList.pageSize,
-                prevAction: `goToListPage('${listKey}',${topicList.page - 1})`,
-                nextAction: `goToListPage('${listKey}',${topicList.page + 1})`,
+                pageAction: (n: number) => `goToListPage('${listKey}',${n})`,
                 label: `tópicos filtrados · ${subjectTopics.length} no total`,
               })
             : '';

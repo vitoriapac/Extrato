@@ -87,15 +87,22 @@ test('listas em páginas (decisões): 10 por página, foco e página mantidos ao
   const nav = page.locator('[data-progressive-pages="decisionHistoryDashboard"]');
   await expect(rows).toHaveCount(10);
   await expect(nav).toContainText('Exibindo 1–10 de 23 decisões');
-  await expect(nav.getByText('Anterior')).toHaveAttribute('aria-disabled', 'true');
-  await nav.getByText('Próxima').click();
+  await expect(nav.getByRole('button', { name: 'Página anterior' })).toHaveAttribute(
+    'aria-disabled',
+    'true'
+  );
+  await nav.getByRole('button', { name: 'Próxima página' }).click();
   await expect(nav).toContainText('Página 2 de 3');
   await expect(rows.first()).toHaveText('Decisão 11');
-  await expect(nav.getByText('Próxima')).toBeFocused();
-  await nav.getByText('Próxima').click();
+  await expect(nav.getByRole('button', { name: 'Próxima página' })).toBeFocused();
+  await nav.getByRole('button', { name: 'Próxima página' }).click();
   await expect(rows).toHaveCount(3);
-  await expect(nav.getByText('Próxima')).toHaveAttribute('aria-disabled', 'true');
-  await expect(nav.getByText('Anterior')).toBeFocused();
+  await expect(nav.getByRole('button', { name: 'Próxima página' })).toHaveAttribute(
+    'aria-disabled',
+    'true'
+  );
+  // Na última página a seta Próxima fica desabilitada: o foco vai para a página atual.
+  await expect(nav.getByRole('button', { name: 'Página 3' })).toBeFocused();
   // Atualizar o conteúdo da lista mantém a página aberta.
   await page.evaluate(() => {
     const root = document.getElementById('decisionHistoryDashboard');

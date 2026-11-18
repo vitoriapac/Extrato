@@ -147,10 +147,10 @@ test('ReviewsTable — Próximas e Concluídas em páginas de 10, cada grupo com
   assert.match(html, />c11</);
   assert.doesNotMatch(html, />c9</);
   assert.deepEqual(
-    footers.map(f => [f.mode, f.page, f.total, f.prevAction, f.nextAction]),
+    footers.map(f => [f.mode, f.page, f.total, f.pageAction(2), f.pageAction(4)]),
     [
       ['pages', 3, 25, "goToListPage('agendaUpcoming',2)", "goToListPage('agendaUpcoming',4)"],
-      ['pages', 2, 12, "goToListPage('agendaCompleted',1)", "goToListPage('agendaCompleted',3)"],
+      ['pages', 2, 12, "goToListPage('agendaCompleted',2)", "goToListPage('agendaCompleted',4)"],
     ]
   );
 });

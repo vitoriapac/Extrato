@@ -419,8 +419,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
         visible: list.visibleItems.length,
         page: list.page,
         pageSize: list.pageSize,
-        prevAction: `goToListPage('sessionDays',${list.page - 1})`,
-        nextAction: `goToListPage('sessionDays',${list.page + 1})`,
+        pageAction: (n: number) => `goToListPage('sessionDays',${n})`,
         colspan: 10,
         label: 'dias',
       })

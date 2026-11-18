@@ -251,7 +251,7 @@ test('Disciplinas — tópicos em páginas de 10, uma paginação por disciplina
   const props = compactProps([withTopics('a', 23), withTopics('b', 8)]);
   props.subjectTopicPages = new Map([['a', 3]]);
   props.renderFooterFn = opts =>
-    `[${opts.mode} ${opts.page}/${opts.total} ${opts.prevAction} ${opts.nextAction}]`;
+    `[${opts.mode} ${opts.page}/${opts.total} ${opts.pageAction(2)} ${opts.pageAction(4)}]`;
   const html = render(h(SubjectsTab, props));
   assert.match(html, /Tópico a-20/);
   assert.match(html, /Tópico a-22/);
