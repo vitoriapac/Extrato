@@ -1,4 +1,3 @@
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
 const clone = <T>(value: T): T => (value == null ? value : JSON.parse(JSON.stringify(value)));
 const localToday = () => {
   const date = new Date(),
@@ -65,12 +64,12 @@ export function createCalendarController({
     },
     setFilter(name: string, value: string) {
       if (name in state.filters) state.filters[name] = value;
-      state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
+      state.calendarPage = 1;
       refresh();
     },
     clearFilters() {
       Object.keys(state.filters).forEach(key => (state.filters[key] = ''));
-      state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
+      state.calendarPage = 1;
       refresh();
     },
     setView(view: string) {
@@ -86,17 +85,9 @@ export function createCalendarController({
       state.selectedId = null;
       refresh();
     },
-    showMore() {
-      state.visible = Number.MAX_SAFE_INTEGER;
-      refresh();
-    },
-    showLess() {
-      state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
-      refresh();
-    },
     setMonth(month: string | Date) {
       state.month = month instanceof Date ? new Date(month) : new Date(month);
-      state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
+      state.calendarPage = 1;
       refresh();
     },
     goToPreviousMonth() {

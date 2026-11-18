@@ -1,5 +1,7 @@
-import { buildAgendaBuckets, describeBucket } from '../../application/reviews/build-agenda-buckets.js';
-import { renderIconSvg } from '../primitives/icon.js';
+import {
+  buildAgendaBuckets,
+  describeBucket,
+} from '../../application/reviews/build-agenda-buckets.js';
 export function renderCalendarRead({
   item,
   view,
@@ -27,10 +29,24 @@ export function renderCalendarEdit({
 
 export function renderCalendarIndicators({ items = [], today }: any) {
   const b = buildAgendaBuckets(items, today);
-  const cell = (cls: string, bucket: typeof b.overdue, label: string, period: string, empty?: string, singular?: string) =>
+  const cell = (
+    cls: string,
+    bucket: typeof b.overdue,
+    label: string,
+    period: string,
+    empty?: string,
+    singular?: string
+  ) =>
     `<div class="kpi-cell ${cls}"><div class="n">${bucket.total}</div><div class="l">${label}</div><small>${describeBucket(bucket, period, empty, singular)}</small></div>`;
   return (
-    cell(b.overdue.total ? 'warn' : '', b.overdue, 'Vencidas', 'atrasadas', 'Nada atrasado', 'atrasada') +
+    cell(
+      b.overdue.total ? 'warn' : '',
+      b.overdue,
+      'Vencidas',
+      'atrasadas',
+      'Nada atrasado',
+      'atrasada'
+    ) +
     cell(b.today.total ? 'ok' : '', b.today, 'Hoje na agenda', 'hoje', 'Nada na agenda hoje') +
     cell('', b.next7, 'Próx. 7 dias', 'nos próximos 7 dias')
   );
@@ -67,7 +83,8 @@ export function renderCalendarMonth({
     if (event.status !== 'Concluído' && event.status !== 'Cancelado' && event.date)
       pending.set(event.date, (pending.get(event.date) || 0) + 1);
   const busiest = Math.max(0, ...pending.values());
-  const loadLevel = (count: number) => (count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0);
+  const loadLevel = (count: number) =>
+    count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0;
   let html =
     `<p id="calendarScrollHelp" class="text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use as setas do teclado.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -105,7 +122,9 @@ export function renderCalendarMonth({
       ([stage, label]) =>
         `<li><span class="cal-event event-${stage} inline-block w-3 h-3 p-0" aria-hidden="true"></span>${label}</li>`
     )
-    .join('')}<li><span class="cal-load-swatch" aria-hidden="true"><i class="load-1"></i><i class="load-2"></i><i class="load-3"></i></span>Fundo do dia: mais escuro, mais revisões pendentes</li></ul>`;
+    .join(
+      ''
+    )}<li><span class="cal-load-swatch" aria-hidden="true"><i class="load-1"></i><i class="load-2"></i><i class="load-3"></i></span>Fundo do dia: mais escuro, mais revisões pendentes</li></ul>`;
   return {
     title: title.charAt(0).toUpperCase() + title.slice(1),
     html: html + '</div></div>' + legend,
@@ -143,30 +162,4 @@ export function renderCalendarFilterOptions({
       .map((type: any) => `<option value="${escapeAttr(type)}">${escapeHtml(type)}</option>`)
       .join('')}`,
   };
-}
-
-export function renderCalendarRows({
-  rows = [],
-  visible = 10,
-  editingId = null,
-  renderReadRow,
-  renderEditRow,
-  renderFooter,
-}: any) {
-  if (!rows.length)
-    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum item encontrado com esses filtros.</p><button class="btn ghost" data-delegated-click="addCalRow()">${renderIconSvg('plus', { size: 14, className: 'icon-inline' })}Adicionar item</button></div></td></tr>`;
-  return (
-    rows
-      .slice(0, visible)
-      .map((item: any) => (editingId === item.id ? renderEditRow(item) : renderReadRow(item)))
-      .join('') +
-    renderFooter({
-      total: rows.length,
-      visible,
-      showMoreAction: 'changeCalendarLimit(10)',
-      showLessAction: visible > 5 ? 'resetCalendarLimit()' : '',
-      colspan: 7,
-      label: 'itens',
-    })
-  );
 }

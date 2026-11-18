@@ -55,23 +55,34 @@ test('controlador do calendário cancela edição sem persistir o rascunho', () 
   controller.cancelEdit();
   assert.equal(repository.items[0].title, 'Original');
 });
-test('controlador cobre visualização, paginação, seleção, filtros e mês', () => {
+test('controlador cobre visualização, seleção, filtros e mês', () => {
   const repository = service(),
     state = createCalendarState({ month: new Date(2026, 8, 1) }),
     controller = createCalendarController({ service: repository, state });
   controller.setView('agenda');
-  controller.showMore();
   controller.select('c1');
   controller.setFilter('status', 'Concluído');
   controller.clearFilters();
   controller.goToNextMonth();
   assert.equal(state.view, 'agenda');
-  assert.equal(state.visible, 5);
   assert.equal(state.selectedId, 'c1');
   assert.equal(state.filters.status, '');
   assert.equal(state.month.getMonth(), 9);
   controller.clearSelection();
-  controller.showLess();
   assert.equal(state.selectedId, null);
-  assert.equal(state.visible, 5);
+});
+
+test('filtros e mês voltam a lista do calendário para a página 1', () => {
+  const state = createCalendarState({ month: new Date(2026, 8, 1) });
+  const controller = createCalendarController({ service: service(), state });
+  assert.equal(state.calendarPage, 1);
+  state.calendarPage = 3;
+  controller.setFilter('status', 'Concluído');
+  assert.equal(state.calendarPage, 1);
+  state.calendarPage = 2;
+  controller.clearFilters();
+  assert.equal(state.calendarPage, 1);
+  state.calendarPage = 2;
+  controller.setMonth(new Date(2026, 9, 1));
+  assert.equal(state.calendarPage, 1);
 });

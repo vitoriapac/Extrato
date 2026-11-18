@@ -1,4 +1,3 @@
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../ui/progressive-list.js';
 import { trapModalTab } from '../ui/accessibility.js';
 import { parseLocalDate } from '../core/date-utils.js';
 import { createTabRouter } from '../ui/navigation/tab-router.js';
@@ -63,8 +62,11 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
   const isMobileHistoryLayout = () => window.matchMedia('(max-width:850px)').matches;
 
   function goToListPage(key: string, page: number, renderFn: () => void) {
-    const previous = (listViewState as Record<string, any>)[`${key}Page`] || 1;
-    (listViewState as Record<string, any>)[`${key}Page`] = page;
+    // A página do Calendário mora no estado do próprio calendário; as demais, em listViewState.
+    const store: Record<string, any> =
+      key === 'calendar' ? practiceUi.calendarTabController.calendarUiState : listViewState;
+    const previous = store[`${key}Page`] || 1;
+    store[`${key}Page`] = page;
     renderFn();
     // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta)
     // e traz o início da lista de volta à tela.
@@ -99,7 +101,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     listViewState.agendaCompletedPage = 1;
     analyticsUi?.dashboardTabController?.resetUpcomingListDefault();
     if (practiceUi?.calendarTabController) {
-      practiceUi.calendarTabController.calendarUiState.visible = DEFAULT_LIST_VISIBLE_ITEMS;
+      practiceUi.calendarTabController.calendarUiState.calendarPage = 1;
     }
     practiceUi?.questionAnalyticsController?.resetLimitDefault();
     analyticsUi?.approvalTabController?.resetRetentionLimitDefault();
@@ -275,6 +277,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
         renderQuestoes: () => practiceUi.questionsTabController.renderQuestoes(),
         renderSimulados: () => practiceUi.simulationsTabController.renderSimulados(),
         renderAgenda: () => practiceUi.reviewsTabController.renderAgenda(),
+        renderCalendar: () => practiceUi.calendarTabController.renderCalendar(),
         renderStudySessionsHistory: () =>
           executionUi.sessionHistoryController.renderStudySessionsHistory(),
       }),

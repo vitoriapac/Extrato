@@ -107,13 +107,11 @@ export function buildDelegatedActionHandlers(
     // Calendar
     addCalRow: (...args: any[]) => c.calendar?.addCalRow?.(...args),
     cancelCalendarEdit: (...args: any[]) => c.calendar?.cancelCalendarEdit?.(...args),
-    changeCalendarLimit: (...args: any[]) => c.calendar?.changeCalendarLimit?.(...args),
     changeOverdueGroupLimit: (...args: any[]) => c.calendar?.changeOverdueGroupLimit?.(...args),
     completeCalendarItem: (...args: any[]) => c.calendar?.completeCalendarItem?.(...args),
     completeUnifiedReview: (...args: any[]) => c.calendar?.completeUnifiedReview?.(...args),
     deleteCalRow: (...args: any[]) => c.calendar?.deleteCalRow?.(...args),
     editCalendarItem: (...args: any[]) => c.calendar?.editCalendarItem?.(...args),
-    resetCalendarLimit: (...args: any[]) => c.calendar?.resetCalendarLimit?.(...args),
     resetOverdueGroupLimit: (...args: any[]) => c.calendar?.resetOverdueGroupLimit?.(...args),
     saveCalendarEdit: (...args: any[]) => c.calendar?.saveCalendarEdit?.(...args),
     showAllOverdueGroups: (...args: any[]) => c.calendar?.showAllOverdueGroups?.(...args),

@@ -1,6 +1,8 @@
 import type { JSX } from 'preact';
 import type { CalendarItem as CoreCalendarItem } from '../../../core/types.js';
 import { Button } from '../../primitives/button.js';
+import { createProgressiveList } from '../../progressive-list.js';
+import { renderCollectionFooter } from '../../list-components.js';
 import { Icon } from '../../primitives/icon.js';
 
 export type CalendarItem = CoreCalendarItem;
@@ -19,41 +21,30 @@ export interface CalendarTableRowModel {
 
 export interface CalendarTableProps {
   rows: CalendarItem[];
-  visibleLimit: number;
+  page?: number;
   editingId?: string | null;
   mobile?: boolean;
   getRowModel?: (item: CalendarItem) => CalendarTableRowModel;
   onCompleteItem?: (id: string) => void;
   onEditItem?: (id: string) => void;
   onAddItem?: () => void;
-  onShowMore?: () => void;
-  onShowLess?: () => void;
   renderReadRow: (item: CalendarItem) => string;
   renderEditRow: (item: CalendarItem) => string;
-  renderFooter?: (opts: {
-    total: number;
-    visible: number;
-    showMoreAction: string;
-    showLessAction: string;
-    colspan: number;
-    label: string;
-  }) => string;
+  renderFooter?: (opts: any) => string;
 }
 
 export function CalendarTable({
   rows,
-  visibleLimit,
+  page = 1,
   editingId,
   mobile = false,
   getRowModel,
   onCompleteItem,
   onEditItem,
   onAddItem,
-  onShowMore,
-  onShowLess,
   renderReadRow,
   renderEditRow,
-  renderFooter,
+  renderFooter = renderCollectionFooter,
 }: CalendarTableProps): JSX.Element {
   if (rows.length === 0) {
     return (
@@ -78,7 +69,25 @@ export function CalendarTable({
     );
   }
 
-  const visibleRows = rows.slice(0, visibleLimit);
+  const list = createProgressiveList({ items: rows, mode: 'pages', page });
+  const visibleRows = list.visibleItems;
+  const footer = (
+    <tr
+      dangerouslySetInnerHTML={{
+        __html: renderFooter({
+          mode: 'pages',
+          total: list.totalItems,
+          visible: visibleRows.length,
+          page: list.page,
+          pageSize: list.pageSize,
+          prevAction: `goToListPage('calendar',${list.page - 1})`,
+          nextAction: `goToListPage('calendar',${list.page + 1})`,
+          colspan: 7,
+          label: 'itens',
+        }),
+      }}
+    />
+  );
 
   if (getRowModel) {
     return (
@@ -90,7 +99,9 @@ export function CalendarTable({
                 key={item.id}
                 class="row-editing"
                 data-id={item.id}
-                dangerouslySetInnerHTML={{ __html: renderEditRow(item).replace(/^<tr[^>]*>|<\/tr>$/g, '') }}
+                dangerouslySetInnerHTML={{
+                  __html: renderEditRow(item).replace(/^<tr[^>]*>|<\/tr>$/g, ''),
+                }}
               />
             );
           }
@@ -183,29 +194,7 @@ export function CalendarTable({
           );
         })}
 
-        {rows.length > visibleLimit || visibleLimit > 5 ? (
-          <tr>
-            <td colSpan={7}>
-              <div class="flex flex-wrap items-center justify-between gap-2 py-1 text-xs text-content-secondary">
-                <span class="font-mono tabular-nums">
-                  Exibindo {visibleRows.length} de {rows.length} itens
-                </span>
-                <div class="flex items-center gap-2">
-                  {rows.length > visibleRows.length && onShowMore && (
-                    <Button type="button" variant="ghost" size="small" onClick={onShowMore}>
-                      Ver mais
-                    </Button>
-                  )}
-                  {visibleLimit > 5 && onShowLess && (
-                    <Button type="button" variant="ghost" size="small" onClick={onShowLess}>
-                      Mostrar menos
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </td>
-          </tr>
-        ) : null}
+        {footer}
       </>
     );
   }
@@ -217,20 +206,7 @@ export function CalendarTable({
         return <tbody key={item.id} dangerouslySetInnerHTML={{ __html: html }} />;
       })}
 
-      {renderFooter && rows.length > 0 && (
-        <tr
-          dangerouslySetInnerHTML={{
-            __html: renderFooter({
-              total: rows.length,
-              visible: visibleLimit,
-              showMoreAction: "changeCalendarLimit('calendar',5)",
-              showLessAction: visibleLimit > 5 ? "resetCalendarLimit('calendar')" : '',
-              colspan: 7,
-              label: 'itens',
-            }),
-          }}
-        />
-      )}
+      {footer}
     </>
   );
 }

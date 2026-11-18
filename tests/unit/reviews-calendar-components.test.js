@@ -95,7 +95,6 @@ test('CalendarTable Preact Component — exibe estado vazio e renderiza linhas d
   const emptyHtml = render(
     h(CalendarTable, {
       rows: [],
-      visibleLimit: 5,
       renderReadRow: () => '',
       renderEditRow: () => '',
     })
@@ -111,7 +110,7 @@ test('CalendarTable Preact Component — exibe estado vazio e renderiza linhas d
     filters: { subjectId: '', status: '', month: '', type: '' },
     entitySubjectId: item => item.subjectId,
     monthKey: d => (d ? d.slice(0, 7) : ''),
-    calendarUiState: { visible: 5, editingId: null },
+    calendarUiState: { calendarPage: 1, editingId: null },
     renderCalendarReadRow: item => `<tr><td>Cal ${item.id} - ${item.week}</td></tr>`,
     renderCalendarEditRow: () => '',
     renderCollectionFooter: () => '',
@@ -154,4 +153,29 @@ test('ReviewsTable — Próximas e Concluídas em páginas de 10, cada grupo com
       ['pages', 2, 12, "goToListPage('agendaCompleted',1)", "goToListPage('agendaCompleted',3)"],
     ]
   );
+});
+
+test('CalendarTable — lista em páginas de 10 com rodapé e página limitada', () => {
+  const rows = Array.from({ length: 23 }, (_, i) => ({
+    id: `c${i}`,
+    date: '2026-03-10',
+    status: 'Não iniciado',
+  }));
+  const base = {
+    rows,
+    renderReadRow: item => `<tr><td>${item.id}</td></tr>`,
+    renderEditRow: () => '',
+  };
+  let html = render(h(CalendarTable, base));
+  assert.match(html, />c9</);
+  assert.doesNotMatch(html, />c10</);
+  assert.match(html, /Exibindo 1–10 de 23 itens/);
+  assert.match(html, /goToListPage\('calendar',2\)/);
+  html = render(h(CalendarTable, { ...base, page: 3 }));
+  assert.match(html, />c22</);
+  assert.match(html, /Exibindo 21–23 de 23 itens/);
+  html = render(h(CalendarTable, { ...base, page: 99 }));
+  assert.match(html, /Página 3 de 3/);
+  html = render(h(CalendarTable, { ...base, rows: rows.slice(0, 8) }));
+  assert.doesNotMatch(html, /list-pagination/);
 });

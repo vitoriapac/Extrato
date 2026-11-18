@@ -36,7 +36,7 @@ import {
   REVIEW_OPTIONS,
   CALENDAR_ACTIVITY_LABELS,
 } from '../../../state/schema.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { DEFAULT_LIST_VISIBLE_ITEMS, createProgressiveList } from '../../progressive-list.js';
 import { runUndoable } from '../../undoable.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 
@@ -73,7 +73,7 @@ export interface CalendarTabControllerContext {
   monthLabel?: (key: any) => string;
   monthKey?: (date?: any) => string;
   calendarUiState?: {
-    visible: number;
+    calendarPage: number;
     editingId: string | null;
     month?: any;
     view?: string;
@@ -191,18 +191,21 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     });
   }
 
-  function getUnifiedCalendarItems(opts: { includeRecurring?: boolean } = {}): UnifiedCalendarItem[] {
+  function getUnifiedCalendarItems(
+    opts: { includeRecurring?: boolean } = {}
+  ): UnifiedCalendarItem[] {
     const today = todayISO();
-    const monthDate =
-      calendarUiState.month instanceof Date ? calendarUiState.month : new Date();
+    const monthDate = calendarUiState.month instanceof Date ? calendarUiState.month : new Date();
     const monthStart = formatLocalDate(
       new Date(monthDate.getFullYear(), monthDate.getMonth(), 1, 12, 0, 0, 0)
     );
     const monthEnd = formatLocalDate(
       new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 12, 0, 0, 0)
     );
-    const rangeStart = opts.includeRecurring === false ? '' : addLocalDays(monthStart || today, -7) || '';
-    const rangeEnd = opts.includeRecurring === false ? '' : addLocalDays(monthEnd || today, 14) || '';
+    const rangeStart =
+      opts.includeRecurring === false ? '' : addLocalDays(monthStart || today, -7) || '';
+    const rangeEnd =
+      opts.includeRecurring === false ? '' : addLocalDays(monthEnd || today, 14) || '';
     return buildUnifiedCalendarItems({
       calendar: ctx.state.calendar || [],
       reviewAgenda: ctx.state.reviewAgenda || [],
@@ -314,17 +317,27 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     };
   }
 
+  // Grava a página já limitada: apagar o último item da última página cai na anterior.
+  function clampCalendarPage(rows: CalendarItem[]) {
+    const page = createProgressiveList({
+      items: rows,
+      mode: 'pages',
+      page: calendarUiState.calendarPage,
+    }).page;
+    calendarUiState.calendarPage = page;
+    return page;
+  }
+
   function renderHtml(): string {
     const rows = getFilteredAndSortedRows();
 
     return render(
       h(CalendarTable, {
         rows,
-        visibleLimit: calendarUiState.visible ?? DEFAULT_LIST_VISIBLE_ITEMS,
+        page: clampCalendarPage(rows),
         editingId: calendarUiState.editingId ?? null,
         renderReadRow: renderCalendarReadRow,
         renderEditRow: renderCalendarEditRow,
-        renderFooter: ctx.renderCollectionFooter || renderCollectionFooter,
       })
     );
   }
@@ -339,15 +352,14 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       mountPreact(
         h(CalendarTable, {
           rows,
-          visibleLimit: calendarUiState.visible ?? DEFAULT_LIST_VISIBLE_ITEMS,
+          page: clampCalendarPage(rows),
           editingId: calendarUiState.editingId ?? null,
           mobile: isMobileHistoryLayout(),
           getRowModel: getCalendarRowModel,
           onCompleteItem: completeCalendarItem,
           onEditItem: editCalendarItem,
-          onAddItem: () => openActivityModalForDate((calendarUiState as any).selectedDate || todayISO()),
-          onShowMore: () => changeCalendarLimit(5),
-          onShowLess: resetCalendarLimit,
+          onAddItem: () =>
+            openActivityModalForDate((calendarUiState as any).selectedDate || todayISO()),
           renderReadRow: renderCalendarReadRow,
           renderEditRow: renderCalendarEditRow,
         }),
@@ -617,7 +629,8 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     ui.isNew = false;
     ui.modalDraft = {
       id: item.id,
-      title: item.title || (item.reviewType && item.reviewType !== '—' ? item.reviewType : '') || '',
+      title:
+        item.title || (item.reviewType && item.reviewType !== '—' ? item.reviewType : '') || '',
       kind: item.kind || (item.reviewType && item.reviewType !== '—' ? 'manual_review' : 'task'),
       date: item.date || todayISO(),
       status: item.status || 'Não iniciado',
@@ -780,16 +793,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     }
   }
 
-  function changeCalendarLimit(_delta: number) {
-    calendarController?.showMore();
-    renderCalendar();
-  }
-
-  function resetCalendarLimit() {
-    calendarController?.showLess();
-    renderCalendar();
-  }
-
   // Gestão de Atrasadas e Tarefas de Hoje (Unificadas)
   function changeOverdueGroupLimit(elId: string, delta: number) {
     overdueGroupLimits[elId] =
@@ -853,10 +856,10 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     ul.innerHTML = items
       .map(x => {
         const kindLabel =
-          x.kind === 'review'
-            ? 'Revisão'
-            : CALENDAR_ACTIVITY_LABELS[x.kind] || 'Tarefa';
-        const timeBadge = x.startTime ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>` : '';
+          x.kind === 'review' ? 'Revisão' : CALENDAR_ACTIVITY_LABELS[x.kind] || 'Tarefa';
+        const timeBadge = x.startTime
+          ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>`
+          : '';
         const subjectPart = x.subject && x.subject !== x.title ? ` · ${escapeHtml(x.subject)}` : '';
         return `<li><span class="dias-pill dias-hoje mr-2">${escapeHtml(kindLabel)}</span>${timeBadge}<span style="flex:1"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`;
       })
@@ -869,7 +872,11 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       calendar = items.length - agenda;
     return agenda && calendar
       ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} + ${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · `
-      : agenda ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} · ` : calendar ? `${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · ` : '';
+      : agenda
+        ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} · `
+        : calendar
+          ? `${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · `
+          : '';
   }
 
   function renderCalAtrasadas(elId = 'calAtrasadas') {
@@ -930,7 +937,11 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       if (!item || item.status === 'Concluído') return;
       updateCal(id, 'status', 'Concluído');
     }
-    showToast(origin === 'Agenda de Revisões' ? 'Revisão concluída e indicadores atualizados.' : 'Tarefa concluída e indicadores atualizados.');
+    showToast(
+      origin === 'Agenda de Revisões'
+        ? 'Revisão concluída e indicadores atualizados.'
+        : 'Tarefa concluída e indicadores atualizados.'
+    );
   }
 
   function exportCalendarIcs() {
@@ -1082,7 +1093,12 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       renderMonthCalendar();
     });
 
-    for (const id of ['agendaFilterSubject', 'agendaFilterStatus', 'agendaFilterMes', 'agendaFilterTipo']) {
+    for (const id of [
+      'agendaFilterSubject',
+      'agendaFilterStatus',
+      'agendaFilterMes',
+      'agendaFilterTipo',
+    ]) {
       d.getElementById(id)?.addEventListener('change', updateAgendaFiltersUi);
     }
 
@@ -1210,8 +1226,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     completeCalendarItem,
     deleteCalRow,
     updateCal,
-    changeCalendarLimit,
-    resetCalendarLimit,
     changeOverdueGroupLimit,
     showAllOverdueGroups,
     resetOverdueGroupLimit,

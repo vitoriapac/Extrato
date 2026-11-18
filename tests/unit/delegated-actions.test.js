@@ -91,6 +91,7 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
       renderSimulados: () => 'ok',
       renderQuestoes: () => 'q',
       renderAgenda: () => 'a',
+      renderCalendar: () => 'cal',
     }),
   });
   assert.equal(resolver("goToListPage('simulations',3)", null, {}), true);
@@ -101,8 +102,10 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
   assert.deepEqual(calls[2], { key: 'questions', page: 2, rendered: 'q' });
   assert.equal(resolver("goToListPage('agendaCompleted',4)", null, {}), true);
   assert.deepEqual(calls[3], { key: 'agendaCompleted', page: 4, rendered: 'a' });
+  assert.equal(resolver("goToListPage('calendar',2)", null, {}), true);
+  assert.deepEqual(calls[4], { key: 'calendar', page: 2, rendered: 'cal' });
   assert.equal(resolver("goToListPage('outra',2)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',-1)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',2);alert(1)", null, {}), false);
-  assert.equal(calls.length, 4);
+  assert.equal(calls.length, 5);
 });

@@ -111,12 +111,12 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** A tabela do Calendário ("Ver mais", `changeCalendarLimit`) passa a páginas de 10. A visão de Mês não muda.
 
 **Critérios de aceite:**
-- [ ] A lista do Calendário mostra 10 por página com o rodapé padrão; trocar de visão (Mês/lista) ou de filtro volta à página 1.
-- [ ] `changeCalendarLimit` e `calendarUiState.visible` saem; `onShowMore` do `CalendarTable` vira navegação de página.
+- [x] A lista do Calendário mostra 10 por página com o rodapé padrão; trocar de visão (Mês/lista) ou de filtro volta à página 1.
+- [x] `changeCalendarLimit` e `calendarUiState.visible` saem; `onShowMore` do `CalendarTable` vira navegação de página.
 
 **Verificação:**
-- [ ] `tests/unit/reviews-calendar-components.test.js` e testes do `calendar-tab-controller` atualizados
-- [ ] Manual: calendário com 25+ itens na demo
+- [x] `tests/unit/reviews-calendar-components.test.js` e testes do `calendar-tab-controller` atualizados
+- [x] Manual: calendário com 25+ itens na demo
 
 **Dependências:** T2
 **Arquivos:** `src/ui/tabs/calendar/CalendarTable.tsx`, `calendar-tab-controller.ts`, `src/ui/calendar/calendar-controller.ts`, `src/ui/renderers/calendar-renderer.ts`, `src/ui/navigation/delegated-actions-registry.ts`

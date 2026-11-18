@@ -1,4 +1,3 @@
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
 export function createCalendarState(initial: any = {}) {
   return {
     month: initial.month instanceof Date ? new Date(initial.month) : new Date(),
@@ -11,7 +10,7 @@ export function createCalendarState(initial: any = {}) {
     },
     view: initial.view || 'month',
     viewChosen: Boolean(initial.view),
-    visible: Number(initial.visible) || DEFAULT_LIST_VISIBLE_ITEMS,
+    calendarPage: Number(initial.calendarPage) || 1,
     editingId: null as string | null,
     draft: null as Record<string, any> | null,
     isNew: false,
@@ -25,7 +24,10 @@ export function createCalendarState(initial: any = {}) {
 }
 
 // Abaixo de 760px a Lista é o padrão inicial; uma visão já escolhida pela usuária sempre vence.
-export function initialCalendarView(state: { view?: string; viewChosen?: boolean }, narrow: boolean) {
+export function initialCalendarView(
+  state: { view?: string; viewChosen?: boolean },
+  narrow: boolean
+) {
   if (state.viewChosen) {
     if (state.view === 'agenda') return 'agenda';
     if (state.view === 'week') return 'week';
