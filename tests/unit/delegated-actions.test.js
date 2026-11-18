@@ -87,7 +87,11 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
     onSetPerformanceSubject() {},
     renderQuestionAnalytics() {},
     goToListPage: (key, page, renderer) => calls.push({ key, page, rendered: renderer() }),
-    getRenderers: () => ({ renderSimulados: () => 'ok', renderQuestoes: () => 'q' }),
+    getRenderers: () => ({
+      renderSimulados: () => 'ok',
+      renderQuestoes: () => 'q',
+      renderAgenda: () => 'a',
+    }),
   });
   assert.equal(resolver("goToListPage('simulations',3)", null, {}), true);
   assert.deepEqual(calls, [{ key: 'simulations', page: 3, rendered: 'ok' }]);
@@ -95,8 +99,10 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
   assert.equal(calls[1].page, 1);
   assert.equal(resolver("goToListPage('questions',2)", null, {}), true);
   assert.deepEqual(calls[2], { key: 'questions', page: 2, rendered: 'q' });
+  assert.equal(resolver("goToListPage('agendaCompleted',4)", null, {}), true);
+  assert.deepEqual(calls[3], { key: 'agendaCompleted', page: 4, rendered: 'a' });
   assert.equal(resolver("goToListPage('outra',2)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',-1)", null, {}), false);
   assert.equal(resolver("goToListPage('simulations',2);alert(1)", null, {}), false);
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 4);
 });

@@ -12,8 +12,6 @@ test('ReviewsTable Preact Component — exibe estado vazio quando sem revisões'
     h(ReviewsTable, {
       groups: { overdue: [], today: [], upcoming: [], completed: [] },
       totalCount: 0,
-      upcomingVisibleLimit: 5,
-      completedVisibleLimit: 5,
       renderReadRow: () => '',
       renderEditRow: () => '',
       renderGroupHeader: () => '',
@@ -52,8 +50,6 @@ test('createReviewsTabController — agrupa revisões em Atrasadas, Hoje, Próxi
     agendaUiState: {
       editingId: null,
       completedExpanded: true,
-      upcomingVisible: 5,
-      completedVisible: 5,
     },
     renderAgendaReadRow: item => `<tr><td>Item ${item.id}</td></tr>`,
     renderAgendaEditRow: () => '',
@@ -75,12 +71,21 @@ test('createReviewsTabController — agrupa revisões em Atrasadas, Hoje, Próxi
 });
 
 test('sem revisão para hoje mostra orientação e mantém concluídas recolhidas', () => {
-  const html = render(h(ReviewsTable, {
-    groups: { today: [], overdue: [], upcoming: [{ id: 'future', status: 'Pendente' }], completed: [{ id: 'done', status: 'Concluído' }] },
-    totalCount: 2, completedExpanded: false, upcomingVisibleLimit: 5, completedVisibleLimit: 5,
-    renderReadRow: item => `<tr><td>${item.id}</td></tr>`, renderEditRow: () => '',
-    renderGroupHeader: ({ title }) => `<th>${title}</th>`,
-  }));
+  const html = render(
+    h(ReviewsTable, {
+      groups: {
+        today: [],
+        overdue: [],
+        upcoming: [{ id: 'future', status: 'Pendente' }],
+        completed: [{ id: 'done', status: 'Concluído' }],
+      },
+      totalCount: 2,
+      completedExpanded: false,
+      renderReadRow: item => `<tr><td>${item.id}</td></tr>`,
+      renderEditRow: () => '',
+      renderGroupHeader: ({ title }) => `<th>${title}</th>`,
+    })
+  );
   assert.match(html, /Nenhuma revisão pendente para hoje/);
   assert.match(html, /future/);
   assert.doesNotMatch(html, />done</);
@@ -114,4 +119,39 @@ test('CalendarTable Preact Component — exibe estado vazio e renderiza linhas d
 
   const html = controller.renderHtml();
   assert.match(html, /Cal c1 - Semana 1/);
+});
+
+test('ReviewsTable — Próximas e Concluídas em páginas de 10, cada grupo com a sua', () => {
+  const items = (prefix, n) =>
+    Array.from({ length: n }, (_, i) => ({ id: `${prefix}${i}`, status: 'Pendente' }));
+  const footers = [];
+  const html = render(
+    h(ReviewsTable, {
+      groups: { today: [], overdue: [], upcoming: items('u', 25), completed: items('c', 12) },
+      totalCount: 37,
+      completedExpanded: true,
+      upcomingPage: 3,
+      completedPage: 2,
+      renderReadRow: item => `<tr><td>${item.id}</td></tr>`,
+      renderEditRow: () => '',
+      renderGroupHeader: ({ title }) => `<th>${title}</th>`,
+      renderFooter: opts => {
+        footers.push(opts);
+        return '';
+      },
+    })
+  );
+  assert.match(html, />u20</);
+  assert.match(html, />u24</);
+  assert.doesNotMatch(html, />u19</);
+  assert.match(html, />c10</);
+  assert.match(html, />c11</);
+  assert.doesNotMatch(html, />c9</);
+  assert.deepEqual(
+    footers.map(f => [f.mode, f.page, f.total, f.prevAction, f.nextAction]),
+    [
+      ['pages', 3, 25, "goToListPage('agendaUpcoming',2)", "goToListPage('agendaUpcoming',4)"],
+      ['pages', 2, 12, "goToListPage('agendaCompleted',1)", "goToListPage('agendaCompleted',3)"],
+    ]
+  );
 });

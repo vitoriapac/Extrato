@@ -10201,7 +10201,7 @@
         "../../src/ui/tabs/calendar/CalendarTable.js",
         "../../src/ui/tabs/calendar/calendar-tab-controller.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

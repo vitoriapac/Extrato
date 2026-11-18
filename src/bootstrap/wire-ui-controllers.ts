@@ -56,6 +56,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     questionsPage: 1,
     simulationsPage: 1,
     sessionDaysPage: 1,
+    agendaUpcomingPage: 1,
+    agendaCompletedPage: 1,
   };
 
   const isMobileHistoryLayout = () => window.matchMedia('(max-width:850px)').matches;
@@ -66,12 +68,15 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     renderFn();
     // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta)
     // e traz o início da lista de volta à tela.
-    const buttons = [...document.querySelectorAll<HTMLElement>('.list-pagination .list-page-btn')];
+    // Só os botões ativos desta lista: botão desabilitado não tem ação, e outras listas podem estar ocultas.
+    const prefix = `goToListPage('${key}',`;
+    const buttons = [
+      ...document.querySelectorAll<HTMLElement>('.list-pagination .list-page-btn'),
+    ].filter(b => b.dataset.delegatedClick?.startsWith(prefix));
     const wanted = buttons.find(
-      b =>
-        b.dataset.delegatedClick === `goToListPage('${key}',${page + (page > previous ? 1 : -1)})`
+      b => b.dataset.delegatedClick === `${prefix}${page + (page > previous ? 1 : -1)})`
     );
-    const target = wanted || buttons.find(b => b.getAttribute('aria-disabled') !== 'true');
+    const target = wanted || buttons[0];
     target?.focus({ preventScroll: true });
     const table = target?.closest('table');
     if (table && table.getBoundingClientRect().top < 0)
@@ -90,10 +95,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     listViewState.sessionDaysPage = 1;
     listViewState.questionsPage = 1;
     listViewState.simulationsPage = 1;
-    if (practiceUi?.reviewsTabController) {
-      practiceUi.reviewsTabController.agendaUiState.upcomingVisible =
-        practiceUi.reviewsTabController.agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-    }
+    listViewState.agendaUpcomingPage = 1;
+    listViewState.agendaCompletedPage = 1;
     analyticsUi?.dashboardTabController?.resetUpcomingListDefault();
     if (practiceUi?.calendarTabController) {
       practiceUi.calendarTabController.calendarUiState.visible = DEFAULT_LIST_VISIBLE_ITEMS;
@@ -271,6 +274,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       getRenderers: () => ({
         renderQuestoes: () => practiceUi.questionsTabController.renderQuestoes(),
         renderSimulados: () => practiceUi.simulationsTabController.renderSimulados(),
+        renderAgenda: () => practiceUi.reviewsTabController.renderAgenda(),
         renderStudySessionsHistory: () =>
           executionUi.sessionHistoryController.renderStudySessionsHistory(),
       }),

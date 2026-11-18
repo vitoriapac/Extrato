@@ -21,7 +21,7 @@ import {
   renderReviewLoad,
 } from '../../renderers/reviews-renderer.js';
 import { createReviewsController } from '../../controllers/reviews-controller.js';
-import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { createProgressiveList } from '../../progressive-list.js';
 import {
   STATUS_CLASS,
   STATUS_OPTIONS,
@@ -87,9 +87,8 @@ export interface ReviewsTabControllerContext {
     editingIsNew?: boolean;
     draft?: Record<string, any> | null;
     completedExpanded: boolean;
-    upcomingVisible: number;
-    completedVisible: number;
   };
+  listViewState?: { agendaUpcomingPage: number; agendaCompletedPage: number; [key: string]: any };
   renderAgendaReadRow?: (item: ReviewItem) => string;
   renderAgendaEditRow?: (item: ReviewItem) => string;
   renderGroupHeader?: (opts: any) => string;
@@ -171,9 +170,12 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     return 'Médio';
   }
 
+  const listViewState = ctx.listViewState || { agendaUpcomingPage: 1, agendaCompletedPage: 1 };
+  const resetAgendaPages = () => {
+    listViewState.agendaUpcomingPage = 1;
+    listViewState.agendaCompletedPage = 1;
+  };
   const agendaUiState = ctx.agendaUiState || {
-    upcomingVisible: DEFAULT_LIST_VISIBLE_ITEMS,
-    completedVisible: DEFAULT_LIST_VISIBLE_ITEMS,
     completedExpanded: false,
     editingId: null,
     editingIsNew: false,
@@ -219,8 +221,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         onChange: (nextSubjectId: string) => {
           selectedAgendaSubjectId = nextSubjectId;
           renderAgendaSubjectFilter();
-          agendaUiState.upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-          agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
+          resetAgendaPages();
           renderAgenda();
           const input = doc?.getElementById('agendaFilterSubject') as HTMLInputElement | null;
           input?.dispatchEvent?.(
@@ -362,6 +363,11 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   function renderHtml(): string {
     const rows = getFilteredAndSortedReviews();
     const groups = getGroupedReviews(rows);
+    // Grava a página já limitada: concluir ou apagar o último item da última página cai na anterior.
+    const clamp = (items: ReviewItem[], page: number) =>
+      createProgressiveList({ items, mode: 'pages', page }).page;
+    listViewState.agendaUpcomingPage = clamp(groups.upcoming, listViewState.agendaUpcomingPage);
+    listViewState.agendaCompletedPage = clamp(groups.completed, listViewState.agendaCompletedPage);
 
     return render(
       h(ReviewsTable, {
@@ -369,8 +375,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         totalCount: rows.length,
         editingId: agendaUiState.editingId,
         completedExpanded: agendaUiState.completedExpanded,
-        upcomingVisibleLimit: agendaUiState.upcomingVisible,
-        completedVisibleLimit: agendaUiState.completedVisible,
+        upcomingPage: listViewState.agendaUpcomingPage,
+        completedPage: listViewState.agendaCompletedPage,
         renderReadRow: renderAgendaReadRow,
         renderEditRow: renderAgendaEditRow,
         renderGroupHeader: ctx.renderGroupHeader || renderGroupHeader,
@@ -519,19 +525,6 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
 
   function toggleCompletedReviews() {
     agendaUiState.completedExpanded = !agendaUiState.completedExpanded;
-    renderAgenda();
-  }
-
-  function changeAgendaLimit(group: string, delta: number) {
-    const key = `${group}Visible` as 'upcomingVisible' | 'completedVisible';
-    const minimum = DEFAULT_LIST_VISIBLE_ITEMS;
-    agendaUiState[key] = Number(delta) > 0 ? Number.MAX_SAFE_INTEGER : minimum;
-    renderAgenda();
-  }
-
-  function resetAgendaLimit(group: string) {
-    const key = `${group}Visible` as 'upcomingVisible' | 'completedVisible';
-    agendaUiState[key] = DEFAULT_LIST_VISIBLE_ITEMS;
     renderAgenda();
   }
 
@@ -830,8 +823,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         rate: rateCompletedReview,
         cancelRating: closeReviewRating,
         filtersChanged: () => {
-          agendaUiState.upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-          agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
+          resetAgendaPages();
           renderAgenda();
         },
         createManual: addAgendaRow,
@@ -861,8 +853,6 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     renderAgenda,
     renderAgendaFilters,
     toggleCompletedReviews,
-    changeAgendaLimit,
-    resetAgendaLimit,
     addAgendaRow,
     editAgenda,
     cancelAgendaEdit,

@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
+import { createProgressiveList } from '../../progressive-list.js';
 
 export interface ReviewItem {
   id: string;
@@ -23,8 +24,8 @@ export interface ReviewsTableProps {
   totalCount: number;
   editingId?: string | null;
   completedExpanded?: boolean;
-  upcomingVisibleLimit: number;
-  completedVisibleLimit: number;
+  upcomingPage?: number;
+  completedPage?: number;
   renderReadRow: (item: ReviewItem) => string;
   renderEditRow: (item: ReviewItem) => string;
   renderGroupHeader: (opts: {
@@ -34,14 +35,7 @@ export interface ReviewsTableProps {
     expanded?: boolean;
     toggleAction?: string;
   }) => string;
-  renderFooter?: (opts: {
-    total: number;
-    visible: number;
-    showMoreAction: string;
-    showLessAction: string;
-    colspan: number;
-    label: string;
-  }) => string;
+  renderFooter?: (opts: any) => string;
 }
 
 export function ReviewsTable({
@@ -49,21 +43,49 @@ export function ReviewsTable({
   totalCount,
   editingId,
   completedExpanded = false,
-  upcomingVisibleLimit,
-  completedVisibleLimit,
+  upcomingPage = 1,
+  completedPage = 1,
   renderReadRow,
   renderEditRow,
   renderGroupHeader,
   renderFooter,
 }: ReviewsTableProps): JSX.Element {
+  const upcoming = createProgressiveList({
+    items: groups.upcoming,
+    mode: 'pages',
+    page: upcomingPage,
+  });
+  const completed = createProgressiveList({
+    items: groups.completed,
+    mode: 'pages',
+    page: completedPage,
+  });
+  const pagesFooter = (
+    key: string,
+    list: ReturnType<typeof createProgressiveList>,
+    label: string
+  ) => ({
+    mode: 'pages',
+    total: list.totalItems,
+    visible: list.visibleItems.length,
+    page: list.page,
+    pageSize: list.pageSize,
+    prevAction: `goToListPage('${key}',${list.page - 1})`,
+    nextAction: `goToListPage('${key}',${list.page + 1})`,
+    colspan: 8,
+    label,
+  });
   if (totalCount === 0) {
     return (
       <tr>
         <td colSpan={8}>
           <div class="empty-state" style={{ border: 'none' }}>
-            <p class="font-medium text-content-primary m-0">Nenhuma revisão encontrada com esses filtros.</p>
+            <p class="font-medium text-content-primary m-0">
+              Nenhuma revisão encontrada com esses filtros.
+            </p>
             <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-3">
-              As revisões são agendadas automaticamente pelo sistema (curva de retenção espaçada: 24h, 7 dias, 30 dias) conforme você conclui tópicos na aba Hoje ou Disciplinas.
+              As revisões são agendadas automaticamente pelo sistema (curva de retenção espaçada:
+              24h, 7 dias, 30 dias) conforme você conclui tópicos na aba Hoje ou Disciplinas.
             </p>
             <div class="empty-state-actions">
               <button
@@ -74,7 +96,11 @@ export function ReviewsTable({
                 <Icon name="refresh" size={14} class="icon-inline" />
                 Gerar a partir dos concluídos
               </button>
-              <button type="button" class="btn ghost small inline-flex items-center gap-2" data-delegated-click="addAgendaRow()">
+              <button
+                type="button"
+                class="btn ghost small inline-flex items-center gap-2"
+                data-delegated-click="addAgendaRow()"
+              >
                 <Icon name="plus" size={14} class="icon-inline" />
                 <span>Adicionar manualmente</span>
               </button>
@@ -107,7 +133,11 @@ export function ReviewsTable({
         </>
       )}
       {groups.today.length === 0 && (
-        <tr><td colSpan={8} class="text-content-secondary">Nenhuma revisão pendente para hoje.</td></tr>
+        <tr>
+          <td colSpan={8} class="text-content-secondary">
+            Nenhuma revisão pendente para hoje.
+          </td>
+        </tr>
       )}
 
       {groups.overdue.length > 0 && (
@@ -136,18 +166,11 @@ export function ReviewsTable({
               }),
             }}
           />
-          {groups.upcoming.slice(0, upcomingVisibleLimit).map(renderRow)}
+          {upcoming.visibleItems.map(renderRow)}
           {renderFooter && (
             <tr
               dangerouslySetInnerHTML={{
-                __html: renderFooter({
-                  total: groups.upcoming.length,
-                  visible: upcomingVisibleLimit,
-                  showMoreAction: "changeAgendaLimit('upcoming',5)",
-                  showLessAction: upcomingVisibleLimit > 5 ? "resetAgendaLimit('upcoming')" : '',
-                  colspan: 8,
-                  label: 'revisões',
-                }),
+                __html: renderFooter(pagesFooter('agendaUpcoming', upcoming, 'revisões')),
               }}
             />
           )}
@@ -169,19 +192,13 @@ export function ReviewsTable({
           />
           {completedExpanded && (
             <>
-              {groups.completed.slice(0, completedVisibleLimit).map(renderRow)}
-              {renderFooter && groups.completed.length > 5 && (
+              {completed.visibleItems.map(renderRow)}
+              {renderFooter && (
                 <tr
                   dangerouslySetInnerHTML={{
-                    __html: renderFooter({
-                      total: groups.completed.length,
-                      visible: completedVisibleLimit,
-                      showMoreAction: "changeAgendaLimit('completed',5)",
-                      showLessAction:
-                        completedVisibleLimit > 5 ? "resetAgendaLimit('completed')" : '',
-                      colspan: 8,
-                      label: 'revisões concluídas',
-                    }),
+                    __html: renderFooter(
+                      pagesFooter('agendaCompleted', completed, 'revisões concluídas')
+                    ),
                   }}
                 />
               )}

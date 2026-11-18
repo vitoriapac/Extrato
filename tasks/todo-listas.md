@@ -93,13 +93,13 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** Troca `changeAgendaLimit('upcoming'|'completed', 5)` por páginas de 10 nos dois grupos. Atrasadas ficam como estão (lista curta e prioritária).
 
 **Critérios de aceite:**
-- [ ] "Próximas revisões" e "Histórico de revisões concluídas" têm cada um sua página; o estado de uma não afeta a outra.
-- [ ] Recolher e reabrir o grupo concluído mantém a página; mudar de aba reinicia.
-- [ ] `agendaUiState.upcomingVisible/completedVisible` substituídos por página; `resetAgendaLimit` removido.
+- [x] "Próximas revisões" e "Histórico de revisões concluídas" têm cada um sua página; o estado de uma não afeta a outra.
+- [x] Recolher e reabrir o grupo concluído mantém a página; mudar de aba reinicia.
+- [x] `agendaUiState.upcomingVisible/completedVisible` substituídos por página; `resetAgendaLimit` removido.
 
 **Verificação:**
-- [ ] `tests/unit/reviews-calendar-components.test.js` e testes do `reviews-tab-controller` atualizados
-- [ ] Manual: 25+ revisões concluídas na demo
+- [x] `tests/unit/reviews-calendar-components.test.js` e testes do `reviews-tab-controller` atualizados
+- [x] Manual: 25+ revisões concluídas na demo
 
 **Dependências:** T2
 **Arquivos:** `src/ui/tabs/reviews/ReviewsTable.tsx`, `reviews-tab-controller.ts`, `src/ui/navigation/delegated-actions-registry.ts`, `src/bootstrap/wire-ui-controllers.ts`, `tests/unit/reviews-calendar-components.test.js`
