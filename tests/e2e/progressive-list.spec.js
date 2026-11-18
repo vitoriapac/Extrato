@@ -67,3 +67,51 @@ test('listas progressivas: teclado, filtros, atualização e mobile nos dois tem
     }
   expect(errors).toEqual([]);
 });
+
+test('listas em páginas (decisões): 10 por página, foco e página mantidos ao atualizar', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const root = document.getElementById('decisionHistoryDashboard');
+    document.body.append(root);
+    root.innerHTML = Array.from(
+      { length: 23 },
+      (_, index) => `<article class="data-row">Decisão ${index + 1}</article>`
+    ).join('');
+  });
+  const rows = page.locator('#decisionHistoryDashboard > .data-row:visible');
+  const nav = page.locator('[data-progressive-pages="decisionHistoryDashboard"]');
+  await expect(rows).toHaveCount(10);
+  await expect(nav).toContainText('Exibindo 1–10 de 23 decisões');
+  await expect(nav.getByText('Anterior')).toHaveAttribute('aria-disabled', 'true');
+  await nav.getByText('Próxima').click();
+  await expect(nav).toContainText('Página 2 de 3');
+  await expect(rows.first()).toHaveText('Decisão 11');
+  await expect(nav.getByText('Próxima')).toBeFocused();
+  await nav.getByText('Próxima').click();
+  await expect(rows).toHaveCount(3);
+  await expect(nav.getByText('Próxima')).toHaveAttribute('aria-disabled', 'true');
+  await expect(nav.getByText('Anterior')).toBeFocused();
+  // Atualizar o conteúdo da lista mantém a página aberta.
+  await page.evaluate(() => {
+    const root = document.getElementById('decisionHistoryDashboard');
+    root.innerHTML = Array.from(
+      { length: 25 },
+      (_, index) => `<article class="data-row">Decisão ${index + 1}</article>`
+    ).join('');
+  });
+  await expect(nav).toContainText('Página 3 de 3');
+  await expect(rows.first()).toHaveText('Decisão 21');
+  // Com até 10 itens o rodapé some.
+  await page.evaluate(() => {
+    const root = document.getElementById('decisionHistoryDashboard');
+    [...root.children].slice(10).forEach(item => item.remove());
+  });
+  await expect(nav).toHaveCount(0);
+  await expect(rows).toHaveCount(10);
+  expect(errors).toEqual([]);
+});

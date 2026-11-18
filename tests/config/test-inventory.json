@@ -1261,7 +1261,7 @@
       "imports": [
         "@playwright/test"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 1,
       "observedCaseSeconds": 5.6,

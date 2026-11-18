@@ -11,14 +11,20 @@ import {
 test('desempenho do simulado separa consulta e edição', async ({ page }) => {
   await openDemo(page);
   await page.locator('[data-tab="questoes"]').evaluate(button => button.click());
-  await page.locator('#simuladosBody').getByRole('button', { name: 'Ver desempenho' }).first().click();
+  await page
+    .locator('#simuladosBody')
+    .getByRole('button', { name: 'Ver desempenho' })
+    .first()
+    .click();
   const editor = page.locator('#simuladosBody .simulation-breakdown-edit').first();
   await expect(editor).not.toHaveAttribute('open');
   await expect(editor.locator('input').first()).toBeHidden();
   await editor.locator('summary').click();
   await expect(editor).toHaveAttribute('open');
   await editor.getByRole('button', { name: /Adicionar disciplina/ }).click();
-  await expect(page.locator('#simuladosBody .simulation-breakdown-edit').first()).toHaveAttribute('open');
+  await expect(page.locator('#simuladosBody .simulation-breakdown-edit').first()).toHaveAttribute(
+    'open'
+  );
 });
 
 test('prévia e selo da demonstração funcionam no mobile sem alterar a base antes de carregar', async ({
@@ -286,9 +292,12 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar', asy
   const sessionDays = page.locator('#studySessionsBody .session-day-row');
   const initialDays = await sessionDays.count();
   expect(initialDays).toBeGreaterThan(0);
-  expect(initialDays).toBeLessThanOrEqual(5);
-  await page.locator('#studySessionsBody').getByRole('button', { name: 'Mostrar mais' }).click();
-  expect(await sessionDays.count()).toBeGreaterThan(initialDays);
+  expect(initialDays).toBeLessThanOrEqual(7);
+  const sessionsNav = page.locator('#studySessionsBody .list-pagination');
+  await expect(sessionsNav).toContainText('Página 1 de');
+  await sessionsNav.getByRole('button', { name: /Próxima/ }).click();
+  await expect(sessionsNav).toContainText('Página 2 de');
+  expect(await sessionDays.count()).toBeGreaterThan(0);
   await page.locator('#studySessionsTypeFilter').selectOption('questions');
   await expect(page.locator('#studySessionsFilterSummary')).toContainText(
     /sessões? no filtro atual/
@@ -296,14 +305,18 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar', asy
   await assertUnique(page.locator('#studySessionsBody tr[data-id]'));
   await page.locator('[data-tab="questoes"]').evaluate(button => button.click());
   const questions = page.locator('#questoesBody tr[data-id]');
-  await expect(questions).toHaveCount(5);
-  await page.locator('#questoesBody').getByRole('button', { name: 'Mostrar mais' }).click();
-  expect(await questions.count()).toBeGreaterThan(10);
+  await expect(questions).toHaveCount(10);
+  await page
+    .locator('#questoesBody')
+    .getByRole('button', { name: /Próxima/ })
+    .click();
+  await expect(page.locator('#questoesBody .list-pagination')).toContainText('Página 2 de');
+  expect(await questions.count()).toBeGreaterThan(0);
   await assertUnique(questions);
   const simulations = page.locator('#simuladosBody tr[data-id]');
-  await expect(simulations).toHaveCount(5);
-  await page.locator('#simuladosBody').getByRole('button', { name: 'Mostrar mais' }).click();
+  // Até 10 simulados cabem numa página; acima disso o rodapé de páginas aparece.
   expect(await simulations.count()).toBeGreaterThan(5);
+  expect(await simulations.count()).toBeLessThanOrEqual(10);
   await assertUnique(simulations);
   await page.locator('[data-tab="agenda"]').evaluate(button => button.click());
   await page.locator('#panel-agenda .mobile-filter-toggle').click();
@@ -362,7 +375,9 @@ test('busca local de tópicos preserva consulta e filtros ao voltar de Hoje', as
   await expectNoPageOverflow(page);
 });
 
-test('Agenda e disciplinas mantêm contagens identificáveis e questões mostram evidência', async ({ page }) => {
+test('Agenda e disciplinas mantêm contagens identificáveis e questões mostram evidência', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 900 });
   await openDemo(page);
   await activateTab(page, 'agenda');

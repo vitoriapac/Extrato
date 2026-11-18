@@ -1,5 +1,4 @@
 import { formatDecimal } from '../../core/format-number.js';
-import { lazyMore } from '../lazy-more.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { renderSubjectAccuracy } from './subject-accuracy-renderer.js';
@@ -119,21 +118,20 @@ export function renderGapMap(model: Record<string, any>, { escapeHtml }: any) {
 }
 export function renderDecisionHistory(model: Record<string, any>, { escapeHtml }: any) {
   const card = (item: any) =>
-            `<article class="data-row"><strong>${safe(escapeHtml, item.subjectName)} — ${safe(escapeHtml, item.topicName)}</strong><span>${safe(escapeHtml, item.strategyLabel)}</span>${
-              item.reasons.length
-                ? `<small>${item.reasons
-                    .slice(0, 2)
-                    .map((reason: any) => safe(escapeHtml, reason))
-                    .join(' · ')}</small>`
-                : item.examImpact != null || item.masteryBefore != null
-                  ? `<small>Prova: impacto ${item.examImpact ?? '—'}/100 · Você: domínio ${item.masteryBefore ?? '—'}/100</small>`
-                  : ''
-            }<small>${safe(escapeHtml, item.outcomeLabel)}</small>${renderRecommendationExplanation(item.explanationSnapshot, { headingLevel: 4 })}</article>`;
+    `<article class="data-row"><strong>${safe(escapeHtml, item.subjectName)} — ${safe(escapeHtml, item.topicName)}</strong><span>${safe(escapeHtml, item.strategyLabel)}</span>${
+      item.reasons.length
+        ? `<small>${item.reasons
+            .slice(0, 2)
+            .map((reason: any) => safe(escapeHtml, reason))
+            .join(' · ')}</small>`
+        : item.examImpact != null || item.masteryBefore != null
+          ? `<small>Prova: impacto ${item.examImpact ?? '—'}/100 · Você: domínio ${item.masteryBefore ?? '—'}/100</small>`
+          : ''
+    }<small>${safe(escapeHtml, item.outcomeLabel)}</small>${renderRecommendationExplanation(item.explanationSnapshot, { headingLevel: 4 })}</article>`;
   if (!model.items.length)
     return '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
-  // Só as 5 decisões mais recentes entram no DOM; o resto vem em "Mostrar mais".
-  const rest = model.items.slice(5);
-  return model.items.slice(0, 5).map(card).join('') + lazyMore(rest.map(card).join(''), rest.length);
+  // Todas as decisões, da mais recente à mais antiga; a paginação é feita pelo montador de listas.
+  return model.items.map(card).join('');
 }
 export function renderPostSimulationReplan(model: Record<string, any>, { escapeHtml }: any) {
   const need =

@@ -13,6 +13,7 @@ export function renderCollectionFooter({
   pageSize = 10,
   prevAction = '',
   nextAction = '',
+  actionAttr = 'data-delegated-click',
 }: {
   total: number;
   visible: number;
@@ -28,6 +29,8 @@ export function renderCollectionFooter({
   pageSize?: number;
   prevAction?: string;
   nextAction?: string;
+  // Atributo que carrega a ação dos botões de página (listas montadas no DOM usam o seu próprio).
+  actionAttr?: string;
 }) {
   const wrap = (controls: string) =>
     variant === 'block'
@@ -41,7 +44,7 @@ export function renderCollectionFooter({
     const to = Math.min(total, current * pageSize);
     // Sem data-delegated-click quando desabilitado: o clique não dispara nada nas pontas.
     const button = (text: string, action: string, off: boolean) =>
-      `<button class="list-page-btn" type="button"${off ? ' aria-disabled="true"' : ` data-delegated-click="${action}"`}>${text}</button>`;
+      `<button class="list-page-btn" type="button"${off ? ' aria-disabled="true"' : ` ${actionAttr}="${action}"`}>${text}</button>`;
     return wrap(`<nav class="list-view-controls list-pagination" aria-label="Paginação de ${label}">
     <span class="list-view-count" aria-live="polite">Exibindo ${from}–${to} de ${total} ${label}</span>
     ${button('‹ Anterior', prevAction, current <= 1)}

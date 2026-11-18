@@ -1,3 +1,5 @@
+import { renderCollectionFooter } from './list-components.js';
+
 export const DEFAULT_LIST_VISIBLE_ITEMS = 5;
 // Regra das listas: o que pode passar de ~20 itens usa paginação ('pages'); o resto, "Mostrar mais" ('more').
 // A decisão é por tipo de lista, nunca pela contagem do momento.
@@ -70,10 +72,13 @@ export function createProgressiveList({
 }
 
 // Explicit opt-in: charts, matrices, navigation and achievements are excluded.
-const LISTS = [
+// Entrada: [seletor da lista, seletor dos itens, itens à vista, modo, rótulo]. O modo padrão é
+// "Mostrar mais"; 'pages' pagina (listas que podem passar de ~20 itens, com tamanho de página no 3º campo).
+const LISTS: any[] = [
   ['.sustainability-exclusions', ':scope > li'],
   ['.recurring-priority-list', ':scope > li'],
-  ['.weekly-adherence-history > ol', ':scope > li'],
+  // Cada retrato é uma dobra: 5 por página mantém a aba Histórico abaixo de 20 dobras à vista.
+  ['.weekly-adherence-history > ol', ':scope > li', 5, 'pages', 'fechamentos'],
   ['.adherence-week-list', ':scope > li'],
   ['.execution-breakdown-list', ':scope > li'],
   ['.diagnosis-groups', ':scope > details, :scope > .diagnosis-group-line', 8],
@@ -85,7 +90,7 @@ const LISTS = [
   ['.strategic-timeline', ':scope > li'],
   ['.recommendation-followup-list', ':scope > details'],
   ['#gapMapDashboard', ':scope > .data-row'],
-  ['#decisionHistoryDashboard', ':scope > .data-row'],
+  ['#decisionHistoryDashboard', ':scope > .data-row', DEFAULT_PAGE_SIZE, 'pages', 'decisões'],
   // Hoje leads with the plan: two alerts, the rest behind "Mostrar mais".
   ['#alertasInteligentesList', ':scope > .alerta-item', 2],
   ['.exam-intelligence-list', ':scope > li'],
@@ -122,7 +127,7 @@ export function mountProgressiveLists({ document, window }: { document: any; win
         button.setAttribute('aria-controls', root.id);
       }
     });
-    LISTS.forEach(([selector, itemSelector, initialLimit]) =>
+    LISTS.forEach(([selector, itemSelector, initialLimit, mode, label]) =>
       document.querySelectorAll(selector).forEach((root: any) => {
         const items = [...root.querySelectorAll(itemSelector)];
         if (!root.id) root.id = `progressive-list-${++sequence}`;
@@ -133,17 +138,59 @@ export function mountProgressiveLists({ document, window }: { document: any; win
           state.items.length !== items.length ||
           state.items.some((item: any, index: any) => item !== items[index])
         ) {
-          const expanded = state?.model.expanded && state.root === root;
-          state = { root, items, model: createProgressiveList({ items, initialLimit }) };
+          const same = state?.root === root;
+          const expanded = state?.model.expanded && same;
+          state = {
+            root,
+            items,
+            model: createProgressiveList({
+              items,
+              initialLimit,
+              mode,
+              pageSize: initialLimit,
+              page: same ? state.model.page : 1,
+            }),
+          };
           if (expanded) state.model.expand();
           states.set(root.id, state);
         }
+        const paged = mode === 'pages';
+        const first = (state.model.page - 1) * state.model.pageSize;
         items.forEach((item, index) => {
           item.classList.add('progressive-list-item');
-          const hidden = !state.model.expanded && index >= state.model.initialLimit;
+          const hidden = paged
+            ? index < first || index >= first + state.model.pageSize
+            : !state.model.expanded && index >= state.model.initialLimit;
           if (item.hidden !== hidden) item.hidden = hidden;
         });
         const anchor = root.tagName === 'TBODY' ? root.closest('table') : root;
+        if (paged) {
+          let footer = anchor.nextElementSibling;
+          if (!footer?.matches('[data-progressive-pages]')) footer = null;
+          const html = renderCollectionFooter({
+            mode: 'pages',
+            variant: 'block',
+            total: items.length,
+            visible: state.model.visibleItems.length,
+            page: state.model.page,
+            pageSize: state.model.pageSize,
+            prevAction: String(state.model.page - 1),
+            nextAction: String(state.model.page + 1),
+            actionAttr: 'data-page-to',
+            label,
+          });
+          if (!html) {
+            footer?.remove();
+            return;
+          }
+          if (!footer) {
+            footer = document.createElement('div');
+            footer.dataset.progressivePages = root.id;
+            anchor.after(footer);
+          }
+          if (footer.innerHTML !== html) footer.innerHTML = html;
+          return;
+        }
         let button = anchor.nextElementSibling;
         if (!button?.matches('[data-progressive-toggle]')) button = null;
         if (items.length <= state.model.initialLimit) {
@@ -202,6 +249,32 @@ export function mountProgressiveLists({ document, window }: { document: any; win
         collapse: legacy.getAttribute('aria-expanded') === 'true',
       };
       schedule();
+      return;
+    }
+    const pageButton = event.target.closest('[data-page-to]');
+    const pages = pageButton?.closest('[data-progressive-pages]');
+    const pageState = pages && states.get(pages.dataset.progressivePages);
+    if (pageState) {
+      const previous = pageState.model.page;
+      pageState.model.goTo(Number(pageButton.dataset.pageTo));
+      sync();
+      // O botão clicado foi recriado: devolve o foco ao mesmo sentido (ou ao outro, na ponta).
+      const buttons = [...pages.querySelectorAll('[data-page-to]')];
+      const target =
+        buttons.find(
+          b =>
+            Number(b.dataset.pageTo) ===
+            pageState.model.page + (pageState.model.page > previous ? 1 : -1)
+        ) || buttons[0];
+      target?.focus({ preventScroll: true });
+      const list = document.getElementById(pages.dataset.progressivePages);
+      if (list && list.getBoundingClientRect().top < 0)
+        list.scrollIntoView({
+          block: 'start',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? 'auto'
+            : 'smooth',
+        });
       return;
     }
     const action = event.target.closest('[data-delegated-click]')?.dataset.delegatedClick || '';

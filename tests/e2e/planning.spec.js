@@ -96,7 +96,9 @@ test('a meta geral de domínio não vira meta da disciplina: a herança continua
   await expect(mastery).toHaveAttribute('placeholder', '80');
   await expect(mastery).toHaveValue('');
   await page.locator('#examBlueprintConfig .exam-general-config > summary').click();
-  const target = page.locator('#examBlueprintConfig .exam-blueprint-main').getByLabel('Meta de acerto (%)');
+  const target = page
+    .locator('#examBlueprintConfig .exam-blueprint-main')
+    .getByLabel('Meta de acerto (%)');
   await target.fill('85');
   await target.press('Tab');
   await expect(mastery).toHaveAttribute('placeholder', '85');
@@ -208,7 +210,8 @@ test('a mesma semana mostra os mesmos valores em Semana, Fechamento e Histórico
   };
   const semana = await ledger('semana');
   // O Fechamento resume a mesma semana em uma frase, com a mesma conciliação.
-  const frase = async selector => (await page.locator(selector).first().innerText()).replace(/s+/g, ' ').trim();
+  const frase = async selector =>
+    (await page.locator(selector).first().innerText()).replace(/s+/g, ' ').trim();
   await openPlanningSubtab(page, 'semana');
   const fraseSemana = await frase('#metasSub-semana .week-reconciliation__sentence');
   await openPlanningSubtab(page, 'fechamento');
@@ -418,7 +421,9 @@ test('Fechamento: uma análise com tendência de 4 semanas e sinais, no máximo 
   await expect(close.locator('.plan-execution-table')).toBeVisible();
   // A análise longa continua disponível no Histórico.
   await openPlanningSubtab(page, 'historico');
-  await expect(page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary')).toBeVisible();
+  await expect(
+    page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary')
+  ).toBeVisible();
 });
 
 test('Histórico tem uma série semanal (agendado e estudado, metas em marcas) e a Semana não repete', async ({
@@ -429,7 +434,9 @@ test('Histórico tem uma série semanal (agendado e estudado, metas em marcas) e
   await openDemo(page);
   await openPlanningSubtab(page, 'historico');
   const series = page.locator('#weeklyHistorySeries');
-  await expect(series.getByRole('img', { name: /^Agendado e estudado por semana: / })).toBeAttached();
+  await expect(
+    series.getByRole('img', { name: /^Agendado e estudado por semana: / })
+  ).toBeAttached();
   await expect(series.locator('.weekly-history-series__marks li').first()).toBeAttached();
   await series.getByText('Ver dados', { exact: true }).click();
   await expect(series.locator('.plan-execution-table')).toBeVisible();
@@ -438,25 +445,32 @@ test('Histórico tem uma série semanal (agendado e estudado, metas em marcas) e
   await expect(page.locator('#historicoMetasContainer')).toHaveCount(0);
 });
 
-test('Histórico da demo tem menos de 20 dobras e "Mostrar mais" revela o resto', async ({ page }) => {
+test('Histórico da demo tem menos de 20 dobras à vista e pagina decisões e fechamentos', async ({
+  page,
+}) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await openDemo(page);
   await openPlanningSubtab(page, 'historico');
-  const count = () => page.locator('#metasSub-historico details').count();
+  const count = () => page.locator('#metasSub-historico details:visible').count();
   expect(await count()).toBeLessThan(20);
   const decisions = page.locator('#decisionHistoryDashboard article');
-  await expect(decisions).toHaveCount(5);
-  await page.locator('#decisionHistoryDashboard').getByRole('button', { name: /^Mostrar mais/ }).click();
   expect(await decisions.count()).toBeGreaterThan(5);
+  expect(
+    await page.locator('#decisionHistoryDashboard article:visible').count()
+  ).toBeLessThanOrEqual(10);
   // O corpo de um retrato só existe depois de abrir.
-  const retrato = page.locator('#weeklyCloseHistoryDashboard .weekly-adherence-history details').first();
+  const retrato = page
+    .locator('#weeklyCloseHistoryDashboard .weekly-adherence-history details')
+    .first();
   await expect(retrato.locator('.weekly-adherence')).toHaveCount(0);
   await retrato.locator('summary').first().click();
   await expect(retrato.locator('.weekly-adherence').first()).toBeAttached();
 });
 
-test('Histórico vazio no Essencial explica o que vai aparecer, sem botão solitário', async ({ page }) => {
+test('Histórico vazio no Essencial explica o que vai aparecer, sem botão solitário', async ({
+  page,
+}) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/?test=1');
@@ -468,7 +482,9 @@ test('Histórico vazio no Essencial explica o que vai aparecer, sem botão solit
   await activateTab(page, 'metas');
   await openPlanningSubtab(page, 'historico');
   await expect(page.locator('#weeklyHistoryEmpty')).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Mostrar Retratos e histórico de decisões/ })).toBeHidden();
+  await expect(
+    page.getByRole('button', { name: /^Mostrar Retratos e histórico de decisões/ })
+  ).toBeHidden();
 });
 
 for (const width of [320, 375]) {
@@ -484,14 +500,21 @@ for (const width of [320, 375]) {
     const action = page.getByRole('button', { name: 'Ajustar disponibilidade' }).first();
     const box = await action.boundingBox();
     expect(box.y + box.height).toBeLessThanOrEqual(812);
-    expect(await page.locator('.metas-nav').evaluate(n => getComputedStyle(n).position)).toBe('static');
+    expect(await page.locator('.metas-nav').evaluate(n => getComputedStyle(n).position)).toBe(
+      'static'
+    );
 
     await openPlanningSubtab(page, 'prova');
-    const clipped = await page.locator('.chart-phase-roadmap').first().evaluate(root =>
-      [...root.querySelectorAll('*')].filter(
-        item => item.scrollWidth > item.clientWidth + 1 || item.scrollHeight > item.clientHeight + 1
-      ).length
-    );
+    const clipped = await page
+      .locator('.chart-phase-roadmap')
+      .first()
+      .evaluate(
+        root =>
+          [...root.querySelectorAll('*')].filter(
+            item =>
+              item.scrollWidth > item.clientWidth + 1 || item.scrollHeight > item.clientHeight + 1
+          ).length
+      );
     expect(clipped).toBe(0);
 
     // A tabela de acerto do Fechamento tem região rolável com nome e foco.
@@ -521,7 +544,10 @@ test('celular: Prova e metas mostra o essencial por disciplina e "Mais campos" a
   await toggle.click();
   const open = page.locator('#subjectTargetEditor tbody tr').first();
   await expect(open.locator('[data-field="priority"]')).toBeVisible();
-  await expect(open.getByRole('button', { name: /^Menos campos de / })).toHaveAttribute('aria-expanded', 'true');
+  await expect(open.getByRole('button', { name: /^Menos campos de / })).toHaveAttribute(
+    'aria-expanded',
+    'true'
+  );
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
   expect(height).toBeLessThan(10000);
 });

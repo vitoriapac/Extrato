@@ -142,13 +142,13 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** `#decisionHistoryDashboard` e `.weekly-adherence-history > ol` já estão no registro `LISTS`, e o Histórico de decisões e a Aderência semanal usam `lazyMore`. Passam a `mode: 'pages'` (10 por página) no montador automático, que ganha suporte a páginas para listas de HTML estático. Remove esses dois usos de `lazyMore`.
 
 **Critérios de aceite:**
-- [ ] `LISTS` aceita `mode: 'pages'` por entrada; esconde itens fora da página e desenha o rodapé padrão.
-- [ ] As duas listas deixam de usar `lazyMore`; o Histórico de decisões lista todas, da mais recente para a mais antiga, em páginas de 10.
-- [ ] Re-render com a página 2 aberta mantém a página 2 (estado por id da lista); filtro/busca volta à página 1.
+- [x] `LISTS` aceita `mode: 'pages'` por entrada; esconde itens fora da página e desenha o rodapé padrão.
+- [x] As duas listas deixam de usar `lazyMore`; o Histórico de decisões lista todas, da mais recente para a mais antiga, em páginas de 10.
+- [x] Re-render com a página 2 aberta mantém a página 2 (estado por id da lista); filtro/busca volta à página 1.
 
 **Verificação:**
-- [ ] `tests/unit/progressive-list.test.js` (modo `pages` no montador) e `tests/e2e/progressive-list.spec.js`
-- [ ] Manual: modal de Fechamento semanal e Aderência nos fechamentos, com 25+ itens
+- [x] `tests/unit/progressive-list.test.js` (modo `pages` no montador) e `tests/e2e/progressive-list.spec.js`
+- [x] Manual: modal de Fechamento semanal e Aderência nos fechamentos, com 25+ itens
 
 **Dependências:** T1
 **Arquivos:** `src/ui/progressive-list.ts`, `src/ui/renderers/studytrack32-renderer.ts`, `src/ui/renderers/weekly-adherence-renderer.ts`, `tests/unit/progressive-list.test.js`, `tests/e2e/progressive-list.spec.js`

@@ -78,7 +78,7 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 - [x] T5: Agenda: revisões próximas e concluídas paginadas
 - [x] T6: Calendário em lista paginado
 - [x] T7: Tópicos por disciplina paginados
-- [ ] T8: Históricos de decisões e de aderência paginados (montador automático)
+- [x] T8: Históricos de decisões e de aderência paginados (montador automático)
 
 ### Checkpoint 2: Paginação
 - [ ] `npm run test:affected` e `test:experience` verdes; reset ao trocar de aba e ao filtrar conferido nas 7 listas; revisão humana
