@@ -309,7 +309,7 @@ test('a linha-chave dos universos bate entre Diagnóstico, cabeçalho e Resultad
   expect(withSignal).toBeLessThanOrEqual(inScope);
   expect(remaining).toBeLessThanOrEqual(inScope);
   // O contador dos filtros nomeia o universo e o cabeçalho conta os mesmos "por concluir".
-  await expect(page.locator('.diagnosis-filters__count')).toContainText('itens com sinal de diagnóstico');
+  await expect(page.locator('.diagnosis-filters__count')).toContainText(/itens com (sinal de diagnóstico|registro)/);
   const header = await page.locator('#diagnosisHeaderMeta').innerText();
   expect(numbers(header.split('·').find(part => part.includes('restantes')) || '')[0]).toBe(remaining);
   await openPerformanceSection(page, 'exam');

@@ -157,7 +157,15 @@ Origem: crítica de 16/11 (27/40). Os três heurísticos travados (H4, H6, H8) v
 - [x] Tarefa 58: Um rótulo por contagem de "sem evidência" (233, 217 e 16 deixam de ter o mesmo nome)
 - [x] Tarefa 59: Uma prioridade só (a Próxima ação marcada na fila; cada bloco secundário diz por qual critério ordena)
 
-### Checkpoint 13: Crítica
+### Checkpoint 13: Crítica (rodada 14: 28/40; H4 e H8 em 2; fica aberto)
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
+### Fase 14: Enxugar o Diagnóstico (H8)
+Origem: crítica 14 (28/40): o Diagnóstico mede ~5,1 mil px fechado e 21,9 mil px aberto; cada card traz 3 botões; Lacuna × impacto tem 10 linhas e não respeita a fila; o contador diz "297 de 297" e mostra 61 cards.
+- [x] Tarefa 60: Lista enxuta (8 disciplinas à vista, o resto em "Mostrar mais"; Lacuna × impacto com 5 tópicos; contador "N de M com registro (K ocultos)")
+- [x] Tarefa 61: Um primário por card (as outras duas ações dentro de "Mais ações")
+
+### Checkpoint 14: Crítica
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
 
 ## Grafo de dependências

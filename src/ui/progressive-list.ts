@@ -47,6 +47,7 @@ const LISTS = [
   ['.weekly-adherence-history > ol', ':scope > li'],
   ['.adherence-week-list', ':scope > li'],
   ['.execution-breakdown-list', ':scope > li'],
+  ['.diagnosis-groups', ':scope > details, :scope > .diagnosis-group-line', 8],
   ['.diagnosis-consolidated-list', ':scope > article', 3],
   ['.adherence-subjects tbody', ':scope > tr'],
   ['.preparation-signal-list', ':scope > details'],

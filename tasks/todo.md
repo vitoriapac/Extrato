@@ -636,3 +636,27 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Checkpoint 13
 - [ ] E2E, tipos e goldens revisados
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
+## Fase 14: Enxugar o Diagnóstico
+
+**Origem:** crítica 14 (18/11/2026, 28/40). Medido na demo: #diagnosisCenter 3,8 mil px; Lacuna × impacto 909 px; primeiro grupo aberto 951 px; cada card 268 px com 3 botões.
+
+### Tarefa 60: Lista enxuta
+**Aceite:**
+- [x] As disciplinas do Diagnóstico mostram 8 à vista e o resto sob "Mostrar mais · +N" (lista progressiva)
+- [x] Lacuna × impacto mostra 5 tópicos (era 10) e diz que são os primeiros da fila que têm lacuna e impacto medidos
+- [x] O contador diz "N de M itens com registro (K sem registro, ocultos)" quando os sem registro estão fora da lista, e volta ao texto antigo com filtro ligado
+**Verificação:** unit do contador e do corte; E2E que mede a altura do Diagnóstico fechado
+**Tamanho:** S
+
+### Tarefa 61: Um primário por card
+**Aceite:**
+- [x] Cada card mostra só o botão primário ("Iniciar revisão" etc.); "Ver evolução" e "Planejar ação" ficam numa dobra "Mais ações" do card
+- [x] As ações continuam alcançáveis por teclado e com os mesmos atributos
+**Verificação:** E2E de teclado nas duas ações; `visual-consolidation` ajustado
+**Dependências:** Tarefa 60
+**Tamanho:** S
+
+### Checkpoint 14
+- [ ] E2E, tipos e goldens revisados; altura do Diagnóstico medida antes (5,1 mil px fechado) e depois
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3

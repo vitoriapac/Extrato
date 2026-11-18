@@ -205,7 +205,9 @@ test.describe('validação dos fluxos recentes', () => {
     await openDemo(page);
     await activateTab(page, 'desempenho');
     await openPerformanceSection(page, 'diagnosis');
-    // Os três primeiros tópicos da fila ficam abertos; as demais disciplinas abrem sob demanda.
+    // Os três primeiros tópicos da fila ficam à vista; o resto do grupo abre em "Mostrar mais".
+    const more = page.locator('.diagnosis-consolidated-list + [data-progressive-toggle]').first();
+    if (await more.count()) await more.click();
     const action = page
       .locator(
         '#diagnosisCenter .diagnostic-row[data-activity-type="study"] button[data-study-action-source="diagnosis"]:visible'

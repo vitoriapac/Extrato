@@ -324,6 +324,8 @@ test('diagnóstico separa interpretação do sinal, score e cobertura', async ({
   await expect(diagnosis.locator('.diagnostic-quality').first()).toContainText('Evidência');
   const firstRow = diagnosis.locator('.diagnostic-row').first();
   await expect(firstRow.locator('.diagnostic-primary-reason')).toBeVisible();
+  // As ações secundárias ficam em "Mais ações"; o primário é o único botão à vista.
+  await firstRow.locator('.diagnostic-row-more > summary').click();
   const action = firstRow.getByRole('button', { name: 'Ver evolução' });
   await expect(action).toBeVisible();
   await action.click();

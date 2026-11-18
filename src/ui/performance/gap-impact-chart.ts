@@ -2,7 +2,7 @@ import { formatDecimal } from '../../core/format-number.js';
 import { renderBulletBar } from '../primitives/charts/charts.js';
 
 type Row = Record<string, any>;
-const TOP = 10;
+const TOP = 5;
 const MIN_TOPICS = 3;
 const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 const metric = (item: Row, key: 'mastery' | 'impact') => {
@@ -40,5 +40,5 @@ export function renderGapImpactChart(
       return `<section class="gap-impact__group"><h4>${escapeHtml(subject)}</h4><ul>${lines}</ul></section>`;
     })
     .join('');
-  return `<section class="performance-block gap-impact" aria-label="Lacuna e impacto dos primeiros tópicos"><h3>Lacuna × impacto · primeiros ${topics.length} tópicos</h3><p class="analytics-note gap-impact__legend"><span aria-hidden="true"><b class="gap-impact__key is-gap"></b> lacuna (100 − domínio) · <b class="gap-impact__key is-impact"></b> impacto na prova</span> · escalas de 0 a 100, na ordem da fila abaixo.</p>${body}</section>`;
+  return `<section class="performance-block gap-impact" aria-label="Lacuna e impacto dos primeiros tópicos"><h3>Lacuna × impacto · primeiros ${topics.length} tópicos</h3><p class="analytics-note gap-impact__legend"><span aria-hidden="true"><b class="gap-impact__key is-gap"></b> lacuna (100 − domínio) · <b class="gap-impact__key is-impact"></b> impacto na prova</span> · escalas de 0 a 100, entre os primeiros da fila abaixo, os que têm lacuna e impacto medidos.</p>${body}</section>`;
 }

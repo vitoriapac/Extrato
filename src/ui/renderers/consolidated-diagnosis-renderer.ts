@@ -26,7 +26,7 @@ export function renderConsolidatedDiagnosis(
     return `<article class="diagnostic-row consolidated-diagnosis-row" tabindex="-1" data-diagnosis-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-diagnosis-topic-id="${escapeAttr(item.topicId)}"` : ''} data-consolidated-state="${escapeAttr(item.state)}" data-consolidated-signal="${escapeAttr(item.primarySignal)}" data-consolidated-evidence-quality="${escapeAttr(item.evidenceQuality)}" ${action ? `data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}"` : ''}>
       <div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${index + 1} · ${item.granularity === 'subject' ? 'DISCIPLINA' : 'TÓPICO'}</span><strong>${escapeHtml(item.name || 'Conteúdo sem nome')}</strong>${item.granularity === 'topic' && item.subjectName ? `<small>${escapeHtml(item.subjectName)}</small>` : ''}</div><span class="status-badge status-badge--${badgeVariant}"${provisional ? ' title="Evidência baixa: a prioridade pode mudar com mais registros."' : ''}>${badgeVariant === 'danger' ? renderBadgeIcon(badgeVariant) : ''}${escapeHtml(badgeLabel)}</span></div>
       ${renderDiagnosticSummary(item, primary, { escapeHtml })}
-      <div class="diagnostic-row-action"><span>PRÓXIMO PASSO</span><div class="diagnostic-row-buttons">${action ? `<button class="btn small" type="button" data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${escapeAttr(action.source)}')">${escapeHtml(action.label)}</button>` : ''}<button class="btn tertiary small" type="button" data-analysis-nav="desempenho" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Ver evolução</button><button class="btn tertiary small" type="button" data-analysis-nav="metas" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Planejar ação</button></div></div>
+      <div class="diagnostic-row-action"><span>PRÓXIMO PASSO</span><div class="diagnostic-row-buttons">${action ? `<button class="btn small" type="button" data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${escapeAttr(action.source)}')">${escapeHtml(action.label)}</button>` : ''}<details class="diagnostic-row-more"><summary>Mais ações</summary><div class="diagnostic-row-buttons"><button class="btn tertiary small" type="button" data-analysis-nav="desempenho" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Ver evolução</button><button class="btn tertiary small" type="button" data-analysis-nav="metas" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Planejar ação</button></div></details></div></div>
     </article>`;
   };
   // Posição na fila (pontuação) não muda com o filtro: o número do cartão é o lugar na fila.
@@ -47,6 +47,12 @@ export function renderConsolidatedDiagnosis(
     (!needle || fold(item.name).includes(needle) || fold(item.subjectName).includes(needle));
   const visible = ranked.filter(matches);
   const filtering = severity !== 'all' || evidence !== 'all' || Boolean(needle);
+  // Sem filtro, os tópicos sem registro ficam fora dos grupos: o contador diz quantos aparecem e quantos estão ocultos.
+  const hiddenNoData = filtering ? 0 : visible.filter(({ item }) => item.primarySignal === 'collect-evidence').length;
+  const countText =
+    hiddenNoData > 0
+      ? `${visible.length - hiddenNoData} de ${rows.length} itens com registro (${hiddenNoData} sem registro, ocultos)`
+      : `${visible.length} de ${rows.length} itens com sinal de diagnóstico`;
   const options = (key: 'severity' | 'evidenceQuality', label: (item: Record<string, any>) => string) => {
     const seen = new Map<string, string>();
     rows.forEach(item => seen.has(item[key]) || seen.set(item[key], label(item)));
@@ -56,7 +62,7 @@ export function renderConsolidatedDiagnosis(
     `<label class="diagnosis-filter">${title}<select class="select-control" data-diagnosis-filter="${name}"><option value="${name === 'sort' ? 'queue' : 'all'}">${all}</option>${entries.map(([value, text]) => `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')}</select></label>`;
   // No topo só a busca, a contagem e o controle "Filtros" (≤ 4 opções à vista); os três filtros ficam na dobra.
   const activeFilters = [severity !== 'all', evidence !== 'all', sort !== 'queue', Boolean(search)].filter(Boolean).length;
-  const controls = `<div class="diagnosis-toolbar"><label class="diagnosis-search">Buscar tópico<input type="search" class="select-control" data-diagnosis-search value="${escapeAttr(search)}" placeholder="Nome do tópico ou da disciplina" autocomplete="off"></label><details class="diagnosis-filters-fold" data-fold-key="diagnosis-filters"${activeFilters ? ' open' : ''}><summary>Filtros${activeFilters ? ` (${activeFilters} ${activeFilters === 1 ? 'ativo' : 'ativos'})` : ''}</summary><div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}</div></details>${activeFilters ? '<button type="button" class="btn ghost small" data-diagnosis-reset>Restaurar padrão</button>' : ''}<span class="diagnosis-filters__count" role="status">${visible.length} de ${rows.length} itens com sinal de diagnóstico</span></div><p class="analytics-note diagnosis-legend"><strong>Lacuna:</strong> domínio abaixo do esperado em tópico de impacto alto na prova. <strong>Prioridade provisória:</strong> prioridade alta com evidência baixa; pode mudar com mais registros. <strong>Evidência:</strong> conta as questões e sessões de cada tópico, não da disciplina inteira.</p>`;
+  const controls = `<div class="diagnosis-toolbar"><label class="diagnosis-search">Buscar tópico<input type="search" class="select-control" data-diagnosis-search value="${escapeAttr(search)}" placeholder="Nome do tópico ou da disciplina" autocomplete="off"></label><details class="diagnosis-filters-fold" data-fold-key="diagnosis-filters"${activeFilters ? ' open' : ''}><summary>Filtros${activeFilters ? ` (${activeFilters} ${activeFilters === 1 ? 'ativo' : 'ativos'})` : ''}</summary><div class="diagnosis-filters">${select('severity', 'Prioridade', severity, options('severity', item => item.severityLabel))}${select('evidence', 'Evidência', evidence, [['high', 'Alta'], ['moderate', 'Média'], ['low', 'Baixa']] as [string, string][])}${select('sort', 'Ordenar disciplinas', sort, [['allocation', 'Tempo × peso no edital'], ['vulnerable', 'Mais vulneráveis']], 'Fila geral')}</div></details>${activeFilters ? '<button type="button" class="btn ghost small" data-diagnosis-reset>Restaurar padrão</button>' : ''}<span class="diagnosis-filters__count" role="status">${countText}</span></div><p class="analytics-note diagnosis-legend"><strong>Lacuna:</strong> domínio abaixo do esperado em tópico de impacto alto na prova. <strong>Prioridade provisória:</strong> prioridade alta com evidência baixa; pode mudar com mais registros. <strong>Evidência:</strong> conta as questões e sessões de cada tópico, não da disciplina inteira.</p>`;
   const groups = new Map<string, { name: string; items: { item: Record<string, any>; rank: number }[] }>();
   visible.forEach(entry => {
     const { item } = entry;
@@ -84,7 +90,7 @@ export function renderConsolidatedDiagnosis(
       : sort === 'vulnerable'
         ? ` · ${criticals(group)} ${criticals(group) === 1 ? 'crítico' : 'críticos'}`
         : '';
-  const body = ordered
+  const groupsHtml = ordered
     .map(([id, group], index) => {
       const open = index === 0;
       // Conteúdo sem registro nenhum ainda não é fraqueza: fica à parte, depois do que já foi estudado.
@@ -101,6 +107,8 @@ export function renderConsolidatedDiagnosis(
       return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'tópico' : 'tópicos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
     })
     .join('');
+  // Oito disciplinas à vista; as demais entram na lista progressiva ("Mostrar mais · +N").
+  const body = groupsHtml ? `<div class="diagnosis-groups">${groupsHtml}</div>` : '';
   const unseenAll = ordered.flatMap(([, group]) =>
     group.items.filter(({ item }: any) => item.primarySignal === 'collect-evidence')
   );
