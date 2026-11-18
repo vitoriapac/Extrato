@@ -258,7 +258,7 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
     .first()
     .click();
   await page
-    .locator('[data-analysis-nav="hoje"][data-subject-id="cycle-s0"]:not([data-topic-id])')
+    .locator('[data-performance-investigate="diagnosis"][data-subject-id="cycle-s0"]')
     .click();
   await expect(page.locator('#panel-desempenho')).toBeVisible();
   await expect(page.locator('#diagnosisCenter .next-best-action')).toBeVisible();

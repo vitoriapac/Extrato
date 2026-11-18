@@ -37,6 +37,7 @@ import {
   CALENDAR_ACTIVITY_LABELS,
 } from '../../../state/schema.js';
 import { createProgressiveList } from '../../progressive-list.js';
+import { filterPanelLabel } from '../../filter-panel.js';
 import { runUndoable } from '../../undoable.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 
@@ -960,7 +961,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     const activeCount = values.filter(Boolean).length;
     const toggleBtn = doc.getElementById('agendaFiltersToggleBtn');
     if (toggleBtn) {
-      toggleBtn.textContent = activeCount > 0 ? `Filtros (${activeCount})` : 'Filtros';
+      toggleBtn.textContent = filterPanelLabel(activeCount);
     }
     const clearBtn = doc.getElementById('clearAgendaFiltersBtn') as HTMLElement | null;
     if (clearBtn) {

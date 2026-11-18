@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { activateTab, expectNoPageOverflow, openPerformanceSection } from './helpers.js';
+import {
+  activateTab,
+  expectNoPageOverflow,
+  openPerformanceFold,
+  openPerformanceSection,
+} from './helpers.js';
 
 test('importa JSON com prévia, decisão explícita e reimportação idempotente', async ({ page }) => {
   await page.goto('/?test=1');
@@ -31,6 +36,8 @@ test('importa JSON com prévia, decisão explícita e reimportação idempotente
   });
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'exam');
+  // A importação mora na dobra "Adicionar evidências", fechada por padrão.
+  await openPerformanceFold(page, 'Adicionar evidências');
   const upload = () =>
     page.locator('#examJsonFile').setInputFiles({
       name: 'prova.json',
