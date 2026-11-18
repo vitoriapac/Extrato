@@ -5,7 +5,8 @@
  * - billing.paid: Liquida o pedido atomicamente via RPC settle_billing_order
  * - billing.overdue / invoice.payment_failed: Marca 'past_due' (inicia tolerância de 3 dias)
  * - subscription.canceled: Marca 'canceled'
- * - billing.refunded / charge.disputed: Marca 'REFUNDED' e revoga o tier Pro
+ * - billing.refunded: Marca REFUNDED e revoga o Pro, salvo se houver outro pedido pago
+ * - charge.dispute.created: só registra aviso (não revoga)
  */
 
 import { createClient } from '../_shared/supabase.ts';
@@ -117,11 +118,32 @@ Deno.serve(async (req: Request) => {
     return Response.json({ received: true, status: 'past_due' });
   }
 
+  if (event.type === 'disputed') {
+    console.warn('webhook: disputa aberta, nenhuma ação automática', event.billingId);
+    return Response.json({ received: true, status: 'disputed' });
+  }
+
   if (event.type === 'refunded' && order?.user_id) {
     await supabaseAdmin
       .from('billing_orders')
       .update({ status: 'REFUNDED' })
       .eq('id', order.id);
+
+    // Outro pedido pago ainda cobre o período: reembolsar o antigo não tira o Pro atual.
+    const { data: otherPaid, error: otherError } = await supabaseAdmin
+      .from('billing_orders')
+      .select('id')
+      .eq('user_id', order.user_id)
+      .eq('status', 'PAID')
+      .neq('id', order.id)
+      .limit(1);
+    if (otherError) {
+      console.error('webhook: falha ao consultar outros pedidos', otherError.message);
+      return Response.json({ error: 'Falha interna.' }, { status: 500 });
+    }
+    if (otherPaid && otherPaid.length > 0) {
+      return Response.json({ received: true, status: 'refunded_kept_pro' });
+    }
 
     await supabaseAdmin
       .from('profiles')

@@ -27,6 +27,10 @@ export type WebhookLifecycleEvent =
   | {
       type: 'refunded';
       billingId: string;
+    }
+  | {
+      type: 'disputed';
+      billingId: string;
     };
 
 /** Comparação em tempo constante: compara digests SHA-256 (tamanho fixo, sem vazar o comprimento). */
@@ -103,9 +107,17 @@ export function parseBillingWebhookEvent(payload: unknown): WebhookLifecycleEven
     };
   }
 
-  if (p.event === 'billing.refunded' || p.event === 'charge.dispute.created') {
+  if (p.event === 'billing.refunded') {
     return {
       type: 'refunded',
+      billingId,
+    };
+  }
+
+  // Disputa aberta ainda não é perda: só avisa. O estorno chega como billing.refunded.
+  if (p.event === 'charge.dispute.created') {
+    return {
+      type: 'disputed',
       billingId,
     };
   }

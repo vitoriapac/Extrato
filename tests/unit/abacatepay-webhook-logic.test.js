@@ -99,4 +99,10 @@ test('parseBillingWebhookEvent: eventos do ciclo de vida de cartão e PIX', () =
     type: 'refunded',
     billingId: 'bill_ref_4',
   });
+
+  // Disputa aberta não revoga: só o estorno confirmado (billing.refunded) revoga.
+  assert.deepEqual(
+    parseBillingWebhookEvent({ event: 'charge.dispute.created', data: { id: 'bill_dis_5' } }),
+    { type: 'disputed', billingId: 'bill_dis_5' }
+  );
 });
