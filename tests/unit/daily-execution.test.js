@@ -205,7 +205,10 @@ test('renderer não atribui motivos estratégicos a outra atividade do plano', (
   });
   assert.doesNotMatch(html, /Prioridade principal prevista no plano/);
   assert.doesNotMatch(html, /Lacuna prioritária/);
-  assert.match(html, /Sugestão fora do plano: Outra · Revisão\. Seu plano de hoje continua valendo\./);
+  assert.match(
+    html,
+    /Sugestão fora do plano: Outra · Revisão\. Seu plano de hoje continua valendo\./
+  );
 });
 test('renderer apresenta dia concluído e orientação sem plano', () => {
   const input = fixture();
@@ -223,7 +226,10 @@ test('ação planejada diferencia cronômetro da tarefa atual e de outra ativida
   assert.match(planned(model, { timer: { active: true, planItemId: 'i' } }), /data-daily-resume/);
   const blocked = planned(model, { timer: { active: true, planItemId: 'other' } });
   assert.match(blocked, /disabled>Finalize a sessão atual/);
-  assert.match(blocked, /<p>Retome ou finalize a sessão em andamento antes de iniciar outra\.<\/p>/);
+  assert.match(
+    blocked,
+    /<p>Retome ou finalize a sessão em andamento antes de iniciar outra\.<\/p>/
+  );
   assert.doesNotMatch(blocked, /data-daily-start/);
 });
 test('ação planejada escapa texto e atributos recebidos do plano', () => {
@@ -244,7 +250,10 @@ test('renderer orienta plano sem conteúdo elegível e preserva detalhes limitad
     ...model.items[0],
     id: 'following-' + index,
   }));
-  assert.match(render(model), /Mostrar mais/);
+  // Todas as atividades seguintes vão para o DOM; "Mostrar mais" é do montador de listas.
+  const following = render(model).split('daily-execution-following')[1] || '';
+  assert.equal((following.match(/<li/g) || []).length >= 6, true);
+  assert.doesNotMatch(render(model), /Mostrar mais/);
   assert.equal(render({ state: 'invalid_date' }), '');
 });
 

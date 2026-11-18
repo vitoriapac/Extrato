@@ -19,7 +19,6 @@ const level = (count: number) =>
   count <= 0 ? 'none' : count === 1 ? 'one' : count === 2 ? 'two' : 'many';
 const cellText = (count: number) =>
   count ? `${count} ${count === 1 ? 'questão' : 'questões'}` : '0 questões';
-const VISIBLE_ROWS = 8;
 const options = (items: any[], value: (item: any) => unknown, label: (item: any) => unknown) =>
   items
     .map((item: any) => `<option value="${escape(value(item))}">${escape(label(item))}</option>`)
@@ -148,19 +147,13 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
           `<article class="exam-matrix-card"><button type="button" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Incidência ${row.presencePercent ?? '—'}% · domínio ${row.mastery == null ? '—' : Math.round(row.mastery)} · impacto ${row.impact == null ? '—' : Math.round(row.impact)} · ${row.gap == null ? 'sem evidência' : row.gap >= 30 ? 'lacuna' : row.gap >= 10 ? 'acompanhar' : 'manutenção'}</p></article>`
       )
       .join('');
-  // Oito linhas à vista; o restante da lista fica sob "Mostrar mais · +N" (cabeçalho repetido para a tabela continuar legível).
-  const firstRows = model.rows.slice(0, VISIBLE_ROWS);
-  const restRows = model.rows.slice(VISIBLE_ROWS);
-  const more = (body: string) =>
-    restRows.length
-      ? `<details class="performance-more"><summary>Mostrar mais · +${restRows.length}</summary><template data-lazy>${body}</template></details>`
-      : '';
+  // Oito linhas à vista; "Mostrar mais" é do montador de listas, na tabela e nos cartões (um por layout).
   const prioritiesTable = (rows: any[], caption: string) =>
     `<div class="exam-matrix-table-wrap"><table class="exam-matrix-table"><caption>${caption}</caption><thead><tr><th scope="col">Tópico</th><th scope="col">Incidência</th><th scope="col">Domínio</th><th scope="col">Impacto</th><th scope="col">Situação</th></tr></thead><tbody>${priorityRowsOf(rows)}</tbody></table></div>`;
-  const priorities = `${prioritiesTable(firstRows, 'Prioridades por tópico')}<div class="exam-matrix-cards">${priorityCardsOf(firstRows)}</div>${more(`${prioritiesTable(restRows, 'Demais prioridades por tópico')}<div class="exam-matrix-cards">${priorityCardsOf(restRows)}</div>`)}`;
+  const priorities = `${prioritiesTable(model.rows, 'Prioridades por tópico')}<div class="exam-matrix-cards">${priorityCardsOf(model.rows)}</div>`;
   const historyTable = (rows: any[], caption: string) =>
     `<div class="exam-matrix-table-wrap"><table class="exam-matrix-table"><caption>${caption}</caption><thead><tr><th scope="col">Tópico</th>${columns}<th scope="col">Incidência</th></tr></thead><tbody>${desktopOf(rows)}</tbody></table></div>`;
-  const history = `${historyTable(firstRows, 'Matriz histórica por tópico e prova')}<div class="exam-matrix-cards">${mobileOf(firstRows)}</div>${more(`${historyTable(restRows, 'Demais tópicos da matriz histórica')}<div class="exam-matrix-cards">${mobileOf(restRows)}</div>`)}`;
+  const history = `${historyTable(model.rows, 'Matriz histórica por tópico e prova')}<div class="exam-matrix-cards">${mobileOf(model.rows)}</div>`;
   const html = `${controls}${summary}${model.state === 'empty' ? '' : renderIncidenceBySubject(model.rows, model.analyzedQuestionCount)}${model.rows.length ? (model.filters.mode === 'quadrants' ? `<details class="exam-matrix-quadrants-fold" open><summary>Quadrantes de incidência × domínio</summary>${renderIncidenceQuadrants(model.rows)}</details>` : model.filters.mode === 'priorities' ? priorities : history) : '<p class="analytics-note">Nenhum tópico corresponde à busca e aos filtros.</p>'}${detail}`;
   return html;
 }

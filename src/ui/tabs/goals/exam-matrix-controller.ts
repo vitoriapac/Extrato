@@ -1,5 +1,4 @@
 import { h } from 'preact';
-import { lazyMore } from '../../lazy-more.js';
 import { mountPreact } from '../../preact-mount.js';
 import { ExamClassificationModal } from '../../modals/ExamClassificationModal.js';
 import { syncDialogOpen } from '../../primitives/dialog.js';
@@ -165,9 +164,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     const quadrantsFold = container.querySelector<HTMLDetailsElement>(
       'details.exam-matrix-quadrants-fold'
     );
-    if (quadrantsFold)
-      quadrantsFold.open =
-        quadrantsWasOpen ?? false;
+    if (quadrantsFold) quadrantsFold.open = quadrantsWasOpen ?? false;
     const opportunity = ctx.document.getElementById('examOpportunity');
     // Uma prioridade só: a "Maior oportunidade na banca" não tem mais bloco próprio; a lista dos quadrantes já a mostra.
     if (opportunity) opportunity.innerHTML = '';
@@ -265,12 +262,9 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       activeExamTags: state.examBlueprint?.activeExamTags || [],
     });
     const pct = (value: unknown) => (value == null ? 'sem dados' : `${value}%`);
-    // Só as 5 disciplinas com maior lacuna entram na tela; o resto vem em "Mostrar mais".
-    const limitCards = (cards: string[]) =>
-      cards.slice(0, 5).join('') + lazyMore(cards.slice(5).join(''), cards.length - 5);
-
+    // Todas as disciplinas, da maior lacuna à menor; "Mostrar mais" é do montador de listas.
     el.innerHTML = rows.length
-      ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Lacuna</span></div>${limitCards(rows
+      ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Lacuna</span></div>${rows
           .sort((a: any, b: any) => (b.gap ?? -999) - (a.gap ?? -999))
           .map(
             (row: any) =>
@@ -296,7 +290,8 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
                   return `<div class="mastery-topic"><span>${ctx.escapeHtml(t.name)}${meta ? `<small>${ctx.escapeHtml(meta)} · estimativa por tópico</small>` : ''}</span><span data-label="Cobertura">${t.coverage}%</span><span data-label="Domínio">${t.mastery ?? '—'}%</span><span data-label="Retenção">${t.retention ?? '—'}%</span><span data-label="Estado"><span class="status-badge ${stateInfo.tone}">${ctx.escapeHtml(stateInfo.label)}</span></span></div>`;
                 })
                 .join('')}</details>`
-          ))}</div>`
+          )
+          .join('')}</div>`
       : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
   }
 
@@ -422,7 +417,9 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
         renderHistoricalExamMatrix();
         if (prevId) {
           ctx.document
-            .querySelector<HTMLElement>(`#examHistoricalMatrix [data-exam-matrix-topic="${prevId}"]`)
+            .querySelector<HTMLElement>(
+              `#examHistoricalMatrix [data-exam-matrix-topic="${prevId}"]`
+            )
             ?.focus();
         }
         return;

@@ -14,12 +14,7 @@ const typeLabel = (type: string) => TYPE_LABELS[type] || 'Estudo';
 // The pending plan item is the overview's single primary action; a different recommendation becomes one suggestion line.
 export function renderPlannedAction(
   priority: Record<string, any>,
-  {
-    suggestion = null,
-    formatMinutes,
-    timer = null,
-    resumeLabel = '',
-  }: any = {}
+  { suggestion = null, formatMinutes, timer = null, resumeLabel = '' }: any = {}
 ) {
   const next = priority?.nextItem;
   if (!next) return '';
@@ -35,12 +30,20 @@ export function renderPlannedAction(
   ].slice(0, 3);
   const aligned =
     suggestion && suggestion.subjectId === next.subjectId && suggestion.topicId === next.topicId;
-  return render(h(PlannedActionCard, {
-    next, own, blocked: Boolean(timer?.active && !own),
-    minutes: formatMinutes(Math.ceil(next.remainingSeconds / 60)),
-    typeLabel: typeLabel(next.type), reasons, suggestion,
-    aligned: Boolean(aligned), matchesAction, resumeLabel,
-  }));
+  return render(
+    h(PlannedActionCard, {
+      next,
+      own,
+      blocked: Boolean(timer?.active && !own),
+      minutes: formatMinutes(Math.ceil(next.remainingSeconds / 60)),
+      typeLabel: typeLabel(next.type),
+      reasons,
+      suggestion,
+      aligned: Boolean(aligned),
+      matchesAction,
+      resumeLabel,
+    })
+  );
 }
 
 export function renderDailyExecution(
@@ -82,6 +85,6 @@ export function renderDailyExecution(
         : ''
     }
     ${model.needsPlanReview ? '<p class="context-note context-note--info">Há atividades que não estão vinculadas ao plano semanal atual. Elas foram preservadas; revise a distribuição em Planejamento.</p>' : ''}
-    ${priority.following.length ? `<details class="daily-execution-following"><summary>Depois · ${priority.following.length} ${priority.following.length === 1 ? 'atividade' : 'atividades'}</summary><ul>${rows(priority.following.slice(0, 5))}</ul>${priority.following.length > 5 ? `<details><summary>Mostrar mais</summary><ul>${rows(priority.following.slice(5))}</ul></details>` : ''}</details>` : ''}
+    ${priority.following.length ? `<details class="daily-execution-following"><summary>Depois · ${priority.following.length} ${priority.following.length === 1 ? 'atividade' : 'atividades'}</summary><ul>${rows(priority.following)}</ul></details>` : ''}
     ${progress.pendingActivities ? `<footer class="daily-execution-footer"><span>${progress.pendingActivities} atividade${progress.pendingActivities === 1 ? '' : 's'} pendente${progress.pendingActivities === 1 ? '' : 's'}. <button type="button" class="btn ghost small" data-delegated-click="navigateKpi('hoje')">Revisar pendências</button></span></footer>` : ''}</section>`;
 }

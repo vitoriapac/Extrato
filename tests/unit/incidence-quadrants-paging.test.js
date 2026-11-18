@@ -12,12 +12,12 @@ const row = (index, extra) => ({
 });
 const strong = { mastery: 40, presencePercent: 80, confidence: 'high' };
 
-test('cada grupo mostra 5 tópicos e guarda o resto em "Mostrar mais"', () => {
+test('cada grupo entrega todos os tópicos (até 15) e o botão é do montador', () => {
   const rows = Array.from({ length: 12 }, (_, index) => row(index, strong));
   const html = renderIncidenceQuadrants(rows);
-  assert.match(html, /Mostrar mais · \+7/);
+  assert.doesNotMatch(html, /Mostrar mais/);
   assert.equal((html.match(/data-exam-matrix-topic/g) || []).length, 12);
-  assert.equal((html.match(/<ul>/g) || []).length, 2);
+  assert.equal((html.match(/<ul>/g) || []).length, 1);
 });
 
 test('sem evidência vira contagem e caminho para o Diagnóstico, sem lista', () => {
@@ -38,8 +38,10 @@ test('grupos pequenos continuam sem disclosure', () => {
 });
 
 test('grupos longos mostram 5 + 10 e mandam o resto para o Diagnóstico', () => {
-  const html = renderIncidenceQuadrants(Array.from({ length: 40 }, (_, index) => row(index, strong)));
-  assert.match(html, /Mostrar mais · \+10/);
+  const html = renderIncidenceQuadrants(
+    Array.from({ length: 40 }, (_, index) => row(index, strong))
+  );
+  assert.doesNotMatch(html, /Mostrar mais/);
   assert.match(html, /Mais 25 tópicos neste grupo/);
   assert.equal((html.match(/data-exam-matrix-topic/g) || []).length, 15);
 });

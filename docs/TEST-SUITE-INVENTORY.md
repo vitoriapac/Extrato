@@ -247,13 +247,13 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/help-retention-simulator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-topic-metadata.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/historical-adherence-integrity.test.js | node | Aderência | critical | — | contract | none |
+| tests/unit/history-lists-render.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/id-injection.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/import-exam-json.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/incidence-quadrants-paging.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/intelligence-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/intelligent-alerts.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/keyboard-shortcuts.test.js | node | Aplicação | functional | — | contract | none |
-| tests/unit/lazy-more.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ledger-line.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/legal-compliance.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/list-components.test.js | node | Aplicação | functional | — | contract | none |

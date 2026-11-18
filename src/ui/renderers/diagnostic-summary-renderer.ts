@@ -62,14 +62,18 @@ export function renderDiagnosticSummary(
   const hasDetail = primaryMeasurements.length > 0 || supporting.length > 0 || Boolean(method);
   return `<p class="diagnostic-primary-reason"><strong>${escapeHtml(diagnosticSignalLabel(item.primarySignal))}</strong>${reason ? ` · ${escapeHtml(reason)}` : ''}</p>
     <p class="diagnostic-quality">Evidência: ${escapeHtml(item.evidence?.label || 'Não avaliada')}</p>
-    ${!hasDetail ? '' : renderDisclosure({
-      title: 'Ver evidências',
-      className: 'diagnostic-detail',
-      bodyClassName: 'diagnostic-detail__body',
-      contentHTML: `
+    ${
+      !hasDetail
+        ? ''
+        : renderDisclosure({
+            title: 'Ver evidências',
+            className: 'diagnostic-detail',
+            bodyClassName: 'diagnostic-detail__body',
+            contentHTML: `
       ${primaryMeasurements.length ? renderMeasurements(primaryMeasurements, escapeHtml) : '<p class="analytics-note">Ainda não há medidas detalhadas para o sinal principal.</p>'}
-      ${supporting.length ? `<div class="diagnostic-supporting"><strong>Também observado</strong>${renderSupporting(supporting.slice(0, 5))}${supporting.length > 5 ? `<details class="diagnostic-detail__more"><summary>Mostrar mais sinais · +${supporting.length - 5}</summary><template data-lazy>${renderSupporting(supporting.slice(5))}</template></details>` : ''}</div>` : ''}
+      ${supporting.length ? `<div class="diagnostic-supporting"><strong>Também observado</strong>${renderSupporting(supporting)}</div>` : ''}
       ${method}
     `,
-    })}`;
+          })
+    }`;
 }

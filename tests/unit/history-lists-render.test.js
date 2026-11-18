@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { lazyMore } from '../../src/ui/lazy-more.ts';
 import { renderDecisionHistory } from '../../src/ui/renderers/studytrack32-renderer.ts';
 import { renderAdherenceCloseHistory } from '../../src/ui/renderers/weekly-adherence-renderer.ts';
 
@@ -15,10 +14,6 @@ const item = n => ({
 });
 
 const count = (html, pattern) => (html.match(pattern) || []).length;
-
-test('lazyMore sem conteúdo não gera botão', () => {
-  assert.equal(lazyMore('', 0), '');
-});
 
 test('histórico de decisões renderiza todas as decisões, sem template de "Mostrar mais"', () => {
   const html = renderDecisionHistory(

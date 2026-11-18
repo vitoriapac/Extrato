@@ -16,23 +16,10 @@ export function renderStabilityMap(
     `<div class="stability-map-cell stability-map-cell--${key}"><h4>${label}</h4><p>${description}</p>${model.groups[key].length ? '' : '<p class="analytics-note">Nenhuma disciplina neste grupo no período.</p>'}<ul>${model.groups[
       key
     ]
-      .slice(0, 5)
       .map(
         (row: any) =>
           `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatPercent(row.accuracy)} · ${formatPoints(row.evolution)}</small></li>`
       )
-      .join('')}</ul>${
-      model.groups[key].length > 5
-        ? `<details><summary>Mostrar mais · +${model.groups[key].length - 5}</summary><ul>${model.groups[
-            key
-          ]
-            .slice(5)
-            .map(
-              (row: any) =>
-                `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatPercent(row.accuracy)} · ${formatPoints(row.evolution)}</small></li>`
-            )
-            .join('')}</ul></details>`
-        : ''
-    }</div>`;
+      .join('')}</ul></div>`;
   return `<section class="performance-block stability-map" id="bloco-estabilidade" aria-label="Mapa de estabilidade"><h3>Mapa de estabilidade</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.total), `${model.measured} de ${model.total} disciplinas com precisão e evolução comparáveis`)}${model.measured ? renderBeforeAfterChart(model, { escapeHtml, escapeAttr, targets }) : ''}${model.measured ? `<div class="stability-map-grid">${cells.map(cell).join('')}</div>` : ''}<p class="performance-method-note">${model.measured} de ${model.total} disciplinas com precisão e evolução comparáveis (a comparação entre disciplinas conta também as que têm só precisão). ${model.groups.insufficient.length ? 'As demais precisam de 10 questões em cada período.' : ''}</p></section>`;
 }

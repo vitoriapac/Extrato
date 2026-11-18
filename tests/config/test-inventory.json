@@ -6903,6 +6903,37 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/history-lists-render.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "critical",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/renderers/studytrack32-renderer.ts",
+        "../../src/ui/renderers/weekly-adherence-renderer.ts"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/id-injection.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -7077,38 +7108,6 @@
         "../../src/ui/events/keyboard-shortcuts.js"
       ],
       "staticTestDeclarations": 6,
-      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
-      "measuredCases": 0,
-      "observedCaseSeconds": null,
-      "durationBasis": "not_measured_per_file",
-      "snapshotPlatform": "none",
-      "currentGates": [
-        "npm test",
-        "check",
-        "test:fast UTC/SP",
-        "test:regression UTC/SP",
-        "test:full UTC/SP"
-      ],
-      "stability": "not_assessed",
-      "removalDecision": "retain_pending_contract_review"
-    },
-    {
-      "file": "tests/unit/lazy-more.test.js",
-      "layer": "node",
-      "area": "Aplicação",
-      "areaBasis": "filename_hint",
-      "criticality": "functional",
-      "roles": [
-        "contract"
-      ],
-      "imports": [
-        "node:test",
-        "node:assert/strict",
-        "../../src/ui/lazy-more.ts",
-        "../../src/ui/renderers/studytrack32-renderer.ts",
-        "../../src/ui/renderers/weekly-adherence-renderer.ts"
-      ],
-      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

@@ -186,13 +186,13 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 **Descrição:** A Matriz do concurso é o último uso de `lazyMore`. Diagnóstico, Quadrantes de incidência, Matriz (tabela), Comparação de disciplinas, Mapa de estabilidade e Execução diária têm `<summary>Mostrar mais · +N</summary>` escrito à mão. Migram para o registro quando for lista de itens; tabela com cabeçalho repetido pode ficar como exceção declarada.
 
 **Critérios de aceite:**
-- [ ] `lazy-more.ts`, `bindLazyMore` e `tests/unit/lazy-more.test.js` removidos.
-- [ ] Nenhum "Mostrar mais" escrito à mão fora do componente, exceto os declarados como exceção em `LIST_MODE` com o motivo.
-- [ ] Textos específicos ("Mostrar mais sinais", "barras") passam ao texto padrão com `+N`.
+- [x] `lazy-more.ts`, `bindLazyMore` e `tests/unit/lazy-more.test.js` removidos.
+- [x] Nenhum "Mostrar mais" escrito à mão fora do componente, exceto os declarados como exceção em `LIST_MODE` com o motivo.
+- [x] Textos específicos ("Mostrar mais sinais", "barras") passam ao texto padrão com `+N`.
 
 **Verificação:**
-- [ ] `tests/e2e/performance-diagnosis-lean.spec.js` ajustado e verde
-- [ ] Manual: Metas (matriz com 8+ disciplinas), Desempenho > Diagnóstico e Comparação
+- [x] `tests/e2e/performance-diagnosis-lean.spec.js` ajustado e verde
+- [x] Manual: Metas (matriz com 8+ disciplinas), Desempenho > Diagnóstico e Comparação
 
 **Dependências:** T8, T9
 **Arquivos:** `src/ui/lazy-more.ts`, `exam-matrix-controller.ts` e os 6 renderers
