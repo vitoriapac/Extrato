@@ -687,8 +687,8 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Tarefa 65: Quadrantes de incidência fechados
 - [x] A dobra "Quadrantes de incidência × domínio" nasce fechada em qualquer largura (Inteligência da prova cai de ~3,8 mil para ~2 mil px); a escolha do aluno sobrevive ao redesenho
 
-### Tarefa 66: Linhas do Diagnóstico (pendente)
-- [ ] Rever o que cada linha repete (Evidência, Também observado) e o bloco Lacuna × impacto, que repete a fila
+### Tarefa 66: Linhas do Diagnóstico
+- [x] O bloco Lacuna × impacto, que repete a fila, vira dobra fechada (−524 px); a linha Evidência fica, pois cada cartão precisa dela
 - Nota: a crítica viu as linhas expandidas; fechadas, cada linha já tem um botão primário e "Mais ações"
 
 ### Checkpoint 16
