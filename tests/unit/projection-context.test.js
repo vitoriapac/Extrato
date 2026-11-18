@@ -79,8 +79,9 @@ test('projeção contextualiza ação existente sem trocar recomendação ou alt
   assert.match(result.projectionReason, /evidência adicional/);
   assert.deepEqual(recommendations, before);
   assert.equal(projection.status, 'attention');
+  // Uma prioridade só: o passo conta os tópicos de risco, não nomeia um que concorra com a Próxima ação.
   assert.equal(
-    projection.recovery.steps.some(step => step.includes('Juros')),
+    projection.recovery.steps.some(step => /pesa(m)? na projeção/.test(step) && !step.includes('Juros')),
     true
   );
 });

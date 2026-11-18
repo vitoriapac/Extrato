@@ -1,4 +1,4 @@
-import { isStrategicGap, STRATEGY_THRESHOLDS } from '../../domain/strategy/config.js';
+import { isStrategicGap } from '../../domain/strategy/config.js';
 import { displayReadinessValue } from '../analytics/build-header-view-model.js';
 import { formatReadableMinutes as formatStudyMinutes } from './build-weekly-performance-brief.js';
 import { formatDateBR } from '../../core/format-date.js';
@@ -56,14 +56,6 @@ export interface PreparationReading {
   evidence: string[];
 }
 
-/** De onde vem o impacto na prova: nunca apresentado como fato sem origem. */
-const impactOrigin = (item: Row): string => {
-  const profile = item.examIntelligence || {};
-  if (profile.usedHistory) return 'ajustado pelo histórico da banca';
-  if (profile.impactSourceType === 'manual') return 'configurado por você';
-  if (profile.impactSourceType === 'official') return 'oficial';
-  return 'estimado';
-};
 const finite = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null;
 const round = (value: number) => Math.round(value);
@@ -178,16 +170,11 @@ export function buildPreparationReading({
     )
     // Com a fila do Diagnóstico informada, um tópico fora dela não é citado: a Leitura nunca mostra o que a lista não tem.
     .filter(item => isStrategicGap(item) && (!position.size || position.has(item.topicId)));
-  // Tópico fraco dentro de disciplina forte: diz as duas coisas para o leitor não ver contradição.
-  const strongSubjectNote = (gap: Row): string => {
-    const stat = subjectAccuracy[gap.subjectId];
-    return stat && stat.accuracy != null && stat.resolved >= 30 && stat.accuracy >= STRATEGY_THRESHOLDS.adequateMastery
-      ? ` Tópico fraco dentro de ${gap.subjectName}, que tem ${round(stat.accuracy)}% de precisão em questões (todo o histórico).`
-      : '';
-  };
-  for (const gap of gaps.slice(0, 3 - pulling.length))
+  // Uma prioridade só: a Leitura não nomeia tópicos (quem nomeia é a Próxima ação, acima, e a fila do Diagnóstico).
+  // Aqui só conta quantos tópicos fracos de alto impacto puxam a Prontidão e aponta para a fila.
+  if (gaps.length && pulling.length < 3)
     pulling.push({
-      text: `${gap.subjectName} — ${gap.topicName}: domínio ${round(Number(gap.mastery))} (desempenho no tópico, de 0 a 100); impacto alto na prova (${impactOrigin(gap)}).${strongSubjectNote(gap)}`,
+      text: `${gaps.length} ${gaps.length === 1 ? 'tópico fraco de alto impacto na prova puxa' : 'tópicos fracos de alto impacto na prova puxam'} a Prontidão para baixo; a fila do Diagnóstico os ordena por gravidade.`,
       link: { kind: 'section', target: 'diagnosis', label: 'Ver no Diagnóstico' },
     });
   const overdue = Number(weeklyBrief?.overdueReviews) || 0;

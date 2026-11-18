@@ -7,7 +7,7 @@ import { buildExamConfigurationAudit } from '../../../application/exam-intellige
 import { renderExamConfigurationAudit } from '../../renderers/exam-configuration-audit-renderer.js';
 import { countRemainingTopics, renderTopicUniverse } from '../../performance/topic-universe.js';
 import { buildExamMatrix } from '../../../application/exam-intelligence/build-exam-matrix.js';
-import { renderExamMatrix, renderExamOpportunity } from '../../renderers/exam-matrix-renderer.js';
+import { renderExamMatrix } from '../../renderers/exam-matrix-renderer.js';
 import { renderExamBlueprintConfigView } from '../../renderers/exam-blueprint-config-renderer.js';
 import { buildExamDataQuality } from '../../../application/exam-intelligence/build-exam-data-quality.js';
 import { renderExamDataQuality } from '../../renderers/exam-data-quality-renderer.js';
@@ -169,7 +169,8 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       quadrantsFold.open =
         quadrantsWasOpen ?? !ctx.window.matchMedia?.('(max-width:600px)')?.matches;
     const opportunity = ctx.document.getElementById('examOpportunity');
-    if (opportunity) opportunity.innerHTML = renderExamOpportunity(model);
+    // Uma prioridade só: a "Maior oportunidade na banca" não tem mais bloco próprio; a lista dos quadrantes já a mostra.
+    if (opportunity) opportunity.innerHTML = '';
 
     const advanced = container.querySelector<HTMLDetailsElement>('.exam-matrix-more-filters');
     if (advanced)

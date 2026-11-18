@@ -169,33 +169,17 @@ const gap = (id, over = {}) => ({
   ...over,
 });
 
-test('"o que mais pesa" segue a fila do Diagnóstico (pontuação de prioridade) e leva a ele', () => {
+test('"o que mais pesa" conta os tópicos fracos de alto impacto e leva à fila do Diagnóstico, sem nomeá-los', () => {
   const reading = buildPreparationReading({
-    candidates: [
-      gap('a', { score: 50 }),
-      gap('b', { score: 80 }),
-      gap('c', { mastery: 90 }),
-    ],
+    candidates: [gap('a', { score: 50 }), gap('b', { score: 80 }), gap('c', { mastery: 90 })],
   });
   const texts = reading.pulling.map(item => item.text);
-  assert.match(texts[0], /Tópico b/);
-  assert.match(texts[1], /Tópico a/);
-  assert.equal(texts.length, 2);
-  assert.deepEqual(
-    reading.pulling.map(item => item.link.target),
-    ['diagnosis', 'diagnosis']
-  );
-});
-
-test('"o que mais pesa" diz quando o tópico fraco está numa disciplina forte', () => {
-  const read = subjectAccuracy =>
-    buildPreparationReading({ candidates: [gap('a')], subjectAccuracy }).pulling[0].text;
-  assert.match(
-    read({ s1: { accuracy: 85, resolved: 120 } }),
-    /Tópico fraco dentro de Informática, que tem 85% de precisão em questões \(todo o histórico\)\./
-  );
-  assert.doesNotMatch(read({ s1: { accuracy: 55, resolved: 120 } }), /dentro de Informática/);
-  assert.doesNotMatch(read({ s1: { accuracy: 85, resolved: 10 } }), /dentro de Informática/);
+  assert.equal(texts.length, 1);
+  assert.match(texts[0], /2 tópicos fracos de alto impacto na prova puxam a Prontidão/);
+  assert.doesNotMatch(texts[0], /Tópico [abc]/);
+  assert.deepEqual(reading.pulling.map(item => item.link.target), ['diagnosis']);
+  const single = buildPreparationReading({ candidates: [gap('a')] }).pulling[0].text;
+  assert.match(single, /1 tópico fraco de alto impacto na prova puxa a Prontidão/);
 });
 
 test('"o que mais pesa" não cria um segundo critério de pior disciplina', () => {
@@ -205,7 +189,7 @@ test('"o que mais pesa" não cria um segundo critério de pior disciplina', () =
   assert.ok(!reading.pulling.some(item => /Direito/.test(item.text)));
 });
 
-test('uma fila só: Leitura e riscos da projeção seguem a mesma pontuação de prioridade', async () => {
+test('uma prioridade só: a Leitura não nomeia tópicos que concorrem com a Próxima ação', async () => {
   const { buildProjectionTopicRisks } = await import('../../src/application/projection/build-projection-topic-risks.js');
   const item = (id, score) => ({
     topicId: id,
@@ -216,37 +200,21 @@ test('uma fila só: Leitura e riscos da projeção seguem a mesma pontuação de
     evidenceStrength: 0.8,
     score,
   });
-  const candidates = [item('baixo', 10), item('alto', 90), item('meio', 50)];
+  const candidates = [item('zz1', 10), item('zz2', 90), item('zz3', 50)];
   const risks = buildProjectionTopicRisks(candidates).map(risk => risk.topicId);
   const reading = buildPreparationReading({ candidates: candidates.map(c => ({ ...c, subjectName: 'D' })) })
     .pulling.map(p => p.text);
-  assert.deepEqual(risks, ['alto', 'meio', 'baixo']);
-  assert.match(reading[0], /alto/);
-  assert.match(reading[1], /meio/);
+  assert.deepEqual(risks, ['zz2', 'zz3', 'zz1']);
+  assert.doesNotMatch(reading.join(' '), /zz[123]/);
+  assert.match(reading[0], /3 tópicos fracos/);
 });
 
-test('empate de pontuação: "o que mais pesa" desempata pela ordem dos cards do Diagnóstico', () => {
-  const candidates = [gap('a', { score: 77 }), gap('b', { score: 77 }), gap('c', { score: 77 })];
-  const order = buildPreparationReading({ candidates, diagnosisOrder: ['c', 'a', 'b'] }).pulling.map(
-    p => p.text
-  );
-  assert.match(order[0], /Tópico c/);
-  assert.match(order[1], /Tópico a/);
-  assert.match(order[2], /Tópico b/);
-  // Sem a ordem, mantém a ordem recebida (compatível com o comportamento anterior).
-  const plain = buildPreparationReading({ candidates }).pulling.map(p => p.text);
-  assert.match(plain[0], /Tópico a/);
-});
-
-test('a Leitura só cita tópicos que estão na fila do Diagnóstico', () => {
+test('a contagem só inclui tópicos que estão na fila do Diagnóstico', () => {
   const candidates = [gap('a', { score: 90 }), gap('b', { score: 80 }), gap('c', { score: 70 })];
-  const topics = reading => reading.pulling.map(item => item.text.match(/— ([^:]+):/)?.[1]);
-  const all = buildPreparationReading({ candidates });
-  assert.equal(topics(all).length, 3);
-  // "b" não tem sinal no Diagnóstico: fica de fora, e a ordem é a da fila.
-  const queued = buildPreparationReading({ candidates, diagnosisOrder: ['c', 'a'] });
-  assert.equal(topics(queued).length, 2);
-  assert.ok(queued.pulling.every(item => !item.text.includes(gap('b').topicName)));
+  const count = reading => Number(reading.pulling[0].text.match(/^(\d+) /)?.[1]);
+  assert.equal(count(buildPreparationReading({ candidates })), 3);
+  // "b" não tem sinal no Diagnóstico: fica de fora da contagem.
+  assert.equal(count(buildPreparationReading({ candidates, diagnosisOrder: ['c', 'a'] })), 2);
 });
 
 test('T56: a tendência da Prontidão usa os dois últimos fechamentos, não o delta do período', () => {

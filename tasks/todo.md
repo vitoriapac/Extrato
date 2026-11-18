@@ -660,3 +660,24 @@ Origem: críticas de 14/11 (rodadas 8 e 9, 28/40), observações menores e red f
 ### Checkpoint 14
 - [ ] E2E, tipos e goldens revisados; altura do Diagnóstico medida antes (5,1 mil px fechado) e depois
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
+## Fase 15: Prioridade única
+
+**Origem:** crítica 15 (18/11/2026, 27/40). Seis vozes: Próxima ação, fila do Diagnóstico, "O que mais pesa", "Maior oportunidade na banca", ponto de atenção da projeção e Inteligência da prova.
+
+### Tarefa 62: "O que mais pesa" sem nomear tópico
+- [x] A Leitura conta os tópicos fracos de alto impacto ("N tópicos … puxam a Prontidão") e leva à fila do Diagnóstico; não cita nome de tópico
+- [x] A contagem respeita a fila do Diagnóstico (tópico fora dela não entra)
+
+### Tarefa 63: Projeção e Inteligência sem voz própria
+- [x] O passo "O que seria necessário?" conta os tópicos de risco, sem nomear um
+- [x] O bloco "Maior oportunidade na banca" e a seção "Prova × Você" (que ficava vazia) saem de Inteligência da prova
+
+### Tarefa 64: Próxima ação × fila numa linha
+- [x] O Diagnóstico diz "A Próxima ação (X) vem do plano de hoje; a fila abaixo começa por Y…" quando os dois diferem
+
+**Verificação:** unit da Leitura e da projeção; E2E `performance-numbers` (T62 a T64)
+**Fica de fora:** o formato único de percentual, o foco após as ações e a manchete da Prontidão (seguem abertos).
+
+### Checkpoint 15
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3

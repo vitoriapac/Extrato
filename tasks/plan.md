@@ -165,7 +165,16 @@ Origem: crítica 14 (28/40): o Diagnóstico mede ~5,1 mil px fechado e 21,9 mil 
 - [x] Tarefa 60: Lista enxuta (8 disciplinas à vista, o resto em "Mostrar mais"; Lacuna × impacto com 5 tópicos; contador "N de M com registro (K ocultos)")
 - [x] Tarefa 61: Um primário por card (as outras duas ações dentro de "Mais ações")
 
-### Checkpoint 14: Crítica
+### Checkpoint 14: Crítica (rodada 15: 27/40; fica aberto)
+- [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
+
+### Fase 15: Prioridade única (crítica 15)
+Origem: crítica 15 (27/40): seis blocos apontavam seis tópicos como "o mais importante".
+- [x] Tarefa 62: "O que mais pesa" conta os tópicos fracos de alto impacto e leva ao Diagnóstico, sem nomear um tópico
+- [x] Tarefa 63: Projeção sem tópico nomeado e fim do bloco "Maior oportunidade na banca" (e da seção "Prova × Você" vazia)
+- [x] Tarefa 64: Uma linha no Diagnóstico põe a Próxima ação e o primeiro da fila lado a lado
+
+### Checkpoint 15: Crítica
 - [ ] `/impeccable critique` ≥ 32/40, com H4 ≥ 3 e H8 ≥ 3
 
 ## Grafo de dependências

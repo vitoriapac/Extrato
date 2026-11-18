@@ -164,26 +164,3 @@ export function renderExamMatrix(model: Record<string, any>, { selectedTopicId =
   const html = `${controls}${summary}${model.state === 'empty' ? '' : renderIncidenceBySubject(model.rows, model.analyzedQuestionCount)}${model.rows.length ? (model.filters.mode === 'quadrants' ? `<details class="exam-matrix-quadrants-fold" open><summary>Quadrantes de incidência × domínio</summary>${renderIncidenceQuadrants(model.rows)}</details>` : model.filters.mode === 'priorities' ? priorities : history) : '<p class="analytics-note">Nenhum tópico corresponde à busca e aos filtros.</p>'}${detail}`;
   return html;
 }
-
-import { computeIncidenceThreshold } from './incidence-quadrants-renderer.js';
-
-export function renderExamOpportunity(model: Record<string, any>) {
-  const threshold = computeIncidenceThreshold(model.rows);
-  const candidates = model.rows.filter(
-    (row: any) =>
-      row.presencePercent >= threshold &&
-      row.mastery != null &&
-      row.mastery < 70 &&
-      ['moderate', 'high'].includes(row.confidence)
-  );
-  candidates.sort(
-    (a: any, b: any) =>
-      (b.gap ?? -1) - (a.gap ?? -1) ||
-      (b.priority ?? -1) - (a.priority ?? -1) ||
-      a.name.localeCompare(b.name, 'pt-BR')
-  );
-  const row = candidates[0];
-  if (!row)
-    return `<div class="empty-state empty-state--compact"><strong>Sem oportunidade destacada neste recorte</strong><p class="m-0">Nenhum tópico reúne os 3 critérios ao mesmo tempo (ajuste os filtros para explorar outros recortes):</p><ul class="m-0 mt-1 pl-4 text-xs"><li>Incidência de ${threshold}% ou mais nas provas analisadas</li><li>Domínio abaixo de 70/100</li><li>Evidência média ou alta nos seus registros</li></ul></div>`;
-  return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade na banca (ordenada por incidência e domínio; não é a ação de hoje)</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · base histórica ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-performance-investigate="diagnosis" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
-}

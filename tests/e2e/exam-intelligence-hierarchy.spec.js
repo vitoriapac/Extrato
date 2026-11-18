@@ -28,7 +28,6 @@ test('saúde, incidência e divergências precedem importação', async ({ page 
     'Saúde da evidência',
     'matrix',
     'Configuração e evidência histórica',
-    'Prova e situação pessoal',
     'import',
   ]);
   await expect(page.locator('#examDataQuality')).toContainText('Evidência limitada');

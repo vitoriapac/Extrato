@@ -232,6 +232,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       escapeHtml: opts.escapeHtml,
       escapeAttr: opts.escapeAttr,
       filters: diagnosisFilters,
+      nextActionName: nextAction?.topicName || null,
       allocation: Object.fromEntries(
         buildAllocationBalanceViewModel({
           subjects: state.subjects || [],

@@ -270,29 +270,14 @@ test('A projeção até a prova mora em Simulados; a Visão geral mostra a faixa
   await expect(page.locator('.achievement-projection')).toBeVisible();
 });
 
-test('"O que mais pesa" segue a mesma ordem dos cards do Diagnóstico', async ({ page }) => {
+test('"O que mais pesa" conta os tópicos da fila do Diagnóstico sem nomeá-los', async ({ page }) => {
   test.setTimeout(120_000);
   await openDemo(page);
   await activateTab(page, 'desempenho');
-  const pulled = await page.locator('.performance-reading__list li span').allInnerTexts();
-  const topics = pulled.map(text => /—\s*([^:]+):/.exec(text)?.[1]?.trim()).filter(Boolean);
-  expect(topics.length).toBeGreaterThan(0);
-  await openPerformanceSection(page, 'diagnosis');
-  // O Diagnóstico agrupa por disciplina, mas cada cartão leva o seu lugar na fila: é ele que a Leitura segue.
-  const ranked = await page.evaluate(() => {
-    const root = document.querySelector('#diagnosisCenter');
-    for (let i = 0; i < 3; i++)
-      root.querySelectorAll('template[data-lazy]').forEach(template => template.replaceWith(template.content));
-    return [...root.querySelectorAll('.consolidated-diagnosis-row')].map(row => ({
-      rank: Number(/^(\d+)/.exec(row.querySelector('.diagnostic-kicker').textContent)[1]),
-      name: row.querySelector('.diagnostic-row-identity strong').textContent,
-    }));
-  });
-  // O tópico que a Próxima ação já mostra sai da lista (aparece acima dela): conta como o primeiro da fila.
-  const nextAction = await page.locator('#diagnosisCenter .next-best-action').innerText();
-  const positions = topics.map(topic => ranked.find(card => card.name === topic)?.rank ?? (nextAction.includes(topic) ? 0 : -1));
-  expect(positions.every(position => position >= 0)).toBe(true);
-  expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  const pulled = (await page.locator('.performance-reading__list li span').allInnerTexts()).join(' ');
+  const count = Number(/(\d+) tópicos? fracos? de alto impacto/.exec(pulled)?.[1]);
+  expect(count).toBeGreaterThan(0);
+  await expect(page.locator('.performance-reading__list [data-performance-investigate="diagnosis"]').first()).toBeVisible();
 });
 
 test('a linha-chave dos universos bate entre Diagnóstico, cabeçalho e Resultados das provas', async ({ page }) => {
