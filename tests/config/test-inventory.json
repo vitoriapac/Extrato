@@ -1261,7 +1261,7 @@
       "imports": [
         "@playwright/test"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 1,
       "observedCaseSeconds": 5.6,
@@ -10200,7 +10200,7 @@
         "../../src/ui/tabs/calendar/CalendarTable.js",
         "../../src/ui/tabs/calendar/calendar-tab-controller.js"
       ],
-      "staticTestDeclarations": 6,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

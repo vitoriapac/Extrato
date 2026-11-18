@@ -178,3 +178,36 @@ test('CalendarTable — lista em páginas de 10 com rodapé e página limitada',
   html = render(h(CalendarTable, { ...base, rows: rows.slice(0, 8) }));
   assert.doesNotMatch(html, /list-pagination/);
 });
+
+test('ReviewsTable — Hoje e Atrasadas também em páginas de 10, cada grupo com a sua', () => {
+  const items = (prefix, n) =>
+    Array.from({ length: n }, (_, i) => ({ id: `${prefix}${i}`, status: 'Pendente' }));
+  const footers = [];
+  const html = render(
+    h(ReviewsTable, {
+      groups: { today: items('t', 14), overdue: items('o', 23), upcoming: [], completed: [] },
+      totalCount: 37,
+      todayPage: 2,
+      overduePage: 3,
+      renderReadRow: item => `<tr><td>${item.id}</td></tr>`,
+      renderEditRow: () => '',
+      renderGroupHeader: ({ title }) => `<th>${title}</th>`,
+      renderFooter: opts => {
+        footers.push(opts);
+        return '';
+      },
+    })
+  );
+  assert.match(html, />t10</);
+  assert.doesNotMatch(html, />t9</);
+  assert.match(html, />o22</);
+  assert.match(html, />o20</);
+  assert.doesNotMatch(html, />o19</);
+  assert.deepEqual(
+    footers.map(f => [f.page, f.total, f.pageAction(1)]),
+    [
+      [2, 14, "goToListPage('agendaToday',1)"],
+      [3, 23, "goToListPage('agendaOverdue',1)"],
+    ]
+  );
+});

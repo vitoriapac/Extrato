@@ -145,3 +145,30 @@ test('lista em páginas com muitas páginas não entra em laço de atualização
   await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 300)));
   expect(errors).toEqual([]);
 });
+
+test('datas atrasadas da Agenda: uma data por item, 10 por página', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const root = document.getElementById('calAtrasadas');
+    document.body.append(root);
+    root.innerHTML =
+      '<li class="overdue-summary">25 pendências atrasadas</li>' +
+      Array.from(
+        { length: 25 },
+        (_, index) => `<li class="overdue-group"><strong>Data ${index + 1}</strong></li>`
+      ).join('');
+  });
+  const groups = page.locator('#calAtrasadas > .overdue-group:visible');
+  const nav = page.locator('[data-progressive-pages="calAtrasadas"]');
+  await expect(groups).toHaveCount(10);
+  await expect(nav).toContainText('Exibindo 1–10 de 25 datas');
+  await expect(page.locator('#calAtrasadas > .overdue-summary')).toBeVisible();
+  await nav.getByRole('button', { name: 'Próxima página' }).click();
+  await expect(groups.first()).toHaveText('Data 11');
+  await nav.getByRole('button', { name: 'Página 3' }).click();
+  await expect(groups).toHaveCount(5);
+  expect(errors).toEqual([]);
+});

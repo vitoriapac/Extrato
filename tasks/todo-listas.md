@@ -178,7 +178,7 @@ Plano e decisões: [plan-listas.md](plan-listas.md). Convenção: uma tarefa = u
 - [x] Manual: as 4 telas com mais de 5 itens
 
 **Dependências:** Checkpoint 2 (as telas paginadas já saíram do rodapé legado)
-**Nota:** a Retenção por tópico saiu de "Mostrar mais" e foi para páginas (`'pages'`, 10 por página) a pedido, por ter centenas de linhas. `LIST_MODE` (T12) a registra como paginada.
+**Nota:** a Retenção por tópico saiu de "Mostrar mais" e foi para páginas (`'pages'`, 10 por página) a pedido, por ter centenas de linhas. `LIST_MODE` (T12) a registra como paginada. Depois do Checkpoint 3, Próximos e Desempenho por tópico também foram para páginas, e o botão "Mostrar mais" passou ao estilo dos botões da paginação. Datas atrasadas e os grupos Hoje e Atrasadas das revisões também paginam (Agenda inteira em páginas).
 **Arquivos:** `src/ui/list-components.ts`, `src/ui/progressive-list.ts`, `src/bootstrap/wire-ui-controllers.ts`, `approval-tab-controller.ts`, `question-analytics-controller.ts`, `dashboard-tab-controller.ts`, `calendar-tab-controller.ts` (Atrasadas)
 **Escopo:** L → dividir em T9a (Retenção, Desempenho de questões) e T9b (Próximos, Atrasadas, reset único) ao executar
 

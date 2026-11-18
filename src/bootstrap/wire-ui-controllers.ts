@@ -55,6 +55,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     questionsPage: 1,
     simulationsPage: 1,
     sessionDaysPage: 1,
+    agendaTodayPage: 1,
+    agendaOverduePage: 1,
     agendaUpcomingPage: 1,
     agendaCompletedPage: 1,
   };
@@ -117,6 +119,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     listViewState.sessionDaysPage = 1;
     listViewState.questionsPage = 1;
     listViewState.simulationsPage = 1;
+    listViewState.agendaTodayPage = 1;
+    listViewState.agendaOverduePage = 1;
     listViewState.agendaUpcomingPage = 1;
     listViewState.agendaCompletedPage = 1;
     practiceUi?.subjectsTabController?.subjectTopicPages.clear();

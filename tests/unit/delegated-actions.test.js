@@ -103,6 +103,13 @@ test('createSpecialActionResolver — goToListPage só aceita lista conhecida e 
   assert.deepEqual(calls[2], { key: 'questions', page: 2, rendered: 'q' });
   assert.equal(resolver("goToListPage('agendaCompleted',4)", null, {}), true);
   assert.deepEqual(calls[3], { key: 'agendaCompleted', page: 4, rendered: 'a' });
+  assert.equal(resolver("goToListPage('agendaOverdue',2)", null, {}), true);
+  assert.equal(resolver("goToListPage('agendaToday',2)", null, {}), true);
+  assert.deepEqual(
+    calls.slice(-2).map(c => c.key),
+    ['agendaOverdue', 'agendaToday']
+  );
+  calls.length = 4;
   assert.equal(resolver("goToListPage('calendar',2)", null, {}), true);
   assert.deepEqual(calls[4], { key: 'calendar', page: 2, rendered: 'cal' });
   assert.equal(resolver("goToListPage('subjectTopics:subject-ab_12',2)", null, {}), true);

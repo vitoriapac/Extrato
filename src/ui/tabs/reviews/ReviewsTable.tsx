@@ -24,6 +24,8 @@ export interface ReviewsTableProps {
   totalCount: number;
   editingId?: string | null;
   completedExpanded?: boolean;
+  todayPage?: number;
+  overduePage?: number;
   upcomingPage?: number;
   completedPage?: number;
   renderReadRow: (item: ReviewItem) => string;
@@ -43,6 +45,8 @@ export function ReviewsTable({
   totalCount,
   editingId,
   completedExpanded = false,
+  todayPage = 1,
+  overduePage = 1,
   upcomingPage = 1,
   completedPage = 1,
   renderReadRow,
@@ -50,6 +54,12 @@ export function ReviewsTable({
   renderGroupHeader,
   renderFooter,
 }: ReviewsTableProps): JSX.Element {
+  const today = createProgressiveList({ items: groups.today, mode: 'pages', page: todayPage });
+  const overdue = createProgressiveList({
+    items: groups.overdue,
+    mode: 'pages',
+    page: overduePage,
+  });
   const upcoming = createProgressiveList({
     items: groups.upcoming,
     mode: 'pages',
@@ -126,7 +136,14 @@ export function ReviewsTable({
               }),
             }}
           />
-          {groups.today.map(renderRow)}
+          {today.visibleItems.map(renderRow)}
+          {renderFooter && (
+            <tr
+              dangerouslySetInnerHTML={{
+                __html: renderFooter(pagesFooter('agendaToday', today, 'revisões de hoje')),
+              }}
+            />
+          )}
         </>
       )}
       {groups.today.length === 0 && (
@@ -148,7 +165,14 @@ export function ReviewsTable({
               }),
             }}
           />
-          {groups.overdue.map(renderRow)}
+          {overdue.visibleItems.map(renderRow)}
+          {renderFooter && (
+            <tr
+              dangerouslySetInnerHTML={{
+                __html: renderFooter(pagesFooter('agendaOverdue', overdue, 'revisões atrasadas')),
+              }}
+            />
+          )}
         </>
       )}
 

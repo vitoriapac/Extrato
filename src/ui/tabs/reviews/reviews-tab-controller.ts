@@ -88,7 +88,13 @@ export interface ReviewsTabControllerContext {
     draft?: Record<string, any> | null;
     completedExpanded: boolean;
   };
-  listViewState?: { agendaUpcomingPage: number; agendaCompletedPage: number; [key: string]: any };
+  listViewState?: {
+    agendaTodayPage: number;
+    agendaOverduePage: number;
+    agendaUpcomingPage: number;
+    agendaCompletedPage: number;
+    [key: string]: any;
+  };
   renderAgendaReadRow?: (item: ReviewItem) => string;
   renderAgendaEditRow?: (item: ReviewItem) => string;
   renderGroupHeader?: (opts: any) => string;
@@ -170,8 +176,15 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     return 'Médio';
   }
 
-  const listViewState = ctx.listViewState || { agendaUpcomingPage: 1, agendaCompletedPage: 1 };
+  const listViewState = ctx.listViewState || {
+    agendaTodayPage: 1,
+    agendaOverduePage: 1,
+    agendaUpcomingPage: 1,
+    agendaCompletedPage: 1,
+  };
   const resetAgendaPages = () => {
+    listViewState.agendaTodayPage = 1;
+    listViewState.agendaOverduePage = 1;
     listViewState.agendaUpcomingPage = 1;
     listViewState.agendaCompletedPage = 1;
   };
@@ -366,6 +379,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     // Grava a página já limitada: concluir ou apagar o último item da última página cai na anterior.
     const clamp = (items: ReviewItem[], page: number) =>
       createProgressiveList({ items, mode: 'pages', page }).page;
+    listViewState.agendaTodayPage = clamp(groups.today, listViewState.agendaTodayPage);
+    listViewState.agendaOverduePage = clamp(groups.overdue, listViewState.agendaOverduePage);
     listViewState.agendaUpcomingPage = clamp(groups.upcoming, listViewState.agendaUpcomingPage);
     listViewState.agendaCompletedPage = clamp(groups.completed, listViewState.agendaCompletedPage);
 
@@ -375,6 +390,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         totalCount: rows.length,
         editingId: agendaUiState.editingId,
         completedExpanded: agendaUiState.completedExpanded,
+        todayPage: listViewState.agendaTodayPage,
+        overduePage: listViewState.agendaOverduePage,
         upcomingPage: listViewState.agendaUpcomingPage,
         completedPage: listViewState.agendaCompletedPage,
         renderReadRow: renderAgendaReadRow,

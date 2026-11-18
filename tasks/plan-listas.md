@@ -117,6 +117,8 @@ T8 depende de T1 e do modo `pages` no montador automático; usa os mesmos compon
 2. Histórico de decisões e Aderência nos fechamentos salvos passam para paginação.
 3. Tamanho de página: 10 itens, 7 dias no histórico de sessões.
 4. Retenção por tópico também pagina (10 por página), pedido depois da T9: a demo tem 305 tópicos.
+5. Após o Checkpoint 3: Próximos (Agenda) e Desempenho por tópico também paginam (10 por página), e o botão "Mostrar mais" ganhou o estilo dos botões da paginação.
+6. Todas as listas da Agenda paginam: além de Próximos, Datas atrasadas (uma data por item) e os grupos Hoje e Atrasadas da tabela de revisões (10 por página, cada grupo com a sua).
 
 ## Perguntas em aberto
 

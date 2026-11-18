@@ -95,9 +95,17 @@ const LISTS: any[] = [
   ['#alertasInteligentesList', ':scope > .alerta-item', 2],
   // Um tópico por linha e centenas deles num exame: Retenção pagina.
   ['#retentionRecords', ':scope > .retention-row', DEFAULT_PAGE_SIZE, 'pages', 'tópicos'],
-  ['#questionPerformanceRecords', ':scope > .performance-row'],
-  ['#upcomingList', ':scope > li'],
-  ['#calAtrasadas', ':scope > .overdue-group'],
+  // Centenas de tópicos num exame: Desempenho por tópico e Próximos também paginam.
+  [
+    '#questionPerformanceRecords',
+    ':scope > .performance-row',
+    DEFAULT_PAGE_SIZE,
+    'pages',
+    'tópicos',
+  ],
+  ['#upcomingList', ':scope > li', DEFAULT_PAGE_SIZE, 'pages', 'itens'],
+  // Uma data por item, e atrasos acumulados podem passar de 20: pagina.
+  ['#calAtrasadas', ':scope > .overdue-group', DEFAULT_PAGE_SIZE, 'pages', 'datas'],
   // Antes escritas à mão (<details> e lazyMore): agora todas pelo montador.
   ['.mastery-matrix', ':scope > details'],
   ['.exam-matrix-table tbody', ':scope > tr', 8],

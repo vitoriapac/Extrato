@@ -2062,8 +2062,8 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 
 /* Progressive record lists: explicit visibility wins over module display rules. */
 [hidden]{display:none!important}
-.progressive-list-toggle{display:block;width:100%;min-height:44px;padding:12px 16px;margin:8px 0;border:0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);background:transparent;color:var(--ink);font:inherit;cursor:pointer;text-align:center;white-space:normal}
-.progressive-list-toggle:hover{background:var(--surface-interactive)}
+.progressive-list-toggle{display:block;min-height:44px;padding:8px 16px;margin:10px auto;border:1px solid var(--action-outline);border-radius:6px;background:transparent;color:var(--heading);font:600 var(--text-small,14px)/1.2 var(--font-data);cursor:pointer;text-align:center;white-space:normal}
+.progressive-list-toggle:hover{background:var(--action-primary-bg);border-color:var(--action-primary-bg);color:var(--action-primary-text)}
 .progressive-list-toggle:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.progressive-list-toggle{scroll-behavior:auto;transition:none}}
 .list-pagination{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0;width:100%}
