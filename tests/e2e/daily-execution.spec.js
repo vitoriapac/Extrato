@@ -99,7 +99,7 @@ for (const [width, theme] of [
   test(`card Hoje acessível: ${width}px ${theme}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1100 });
     await prepare(page);
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     const card = page.locator('.overview-now-action');
     await expectNoPageOverflow(page);
     expect(

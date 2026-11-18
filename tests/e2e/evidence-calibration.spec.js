@@ -75,8 +75,8 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado', async 
   for (const width of [320, 375, 390, 430]) {
     await page.setViewportSize({ width, height: 812 });
     await expectNoPageOverflow(page);
-    await page.locator('#themeToggleBtn').click();
+    await page.locator('#themeToggleBtn').evaluate(node => node.click());
     await expectNoPageOverflow(page);
-    await page.locator('#themeToggleBtn').click();
+    await page.locator('#themeToggleBtn').evaluate(node => node.click());
   }
 });

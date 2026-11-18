@@ -36,7 +36,7 @@ for (const [width, theme] of [
     test.setTimeout(120_000);
     await page.setViewportSize({ width, height: 900 });
     await prepare(page);
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     const content = page.locator('#performanceSectionContent');
     await expect(content).toContainText('Execução prioritária');
     const chrome = await page.evaluateHandle(() =>

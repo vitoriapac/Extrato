@@ -132,7 +132,7 @@ test('celular: subabas em uma linha, heatmap vira lista de 12 semanas e o contra
   expect(rowHeight).toBeGreaterThanOrEqual(44);
   await expect(page.locator('.heatmap-grid-wrap')).toBeHidden();
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     for (const section of ['overview', 'consistency']) {
       await openPerformanceSection(page, section);
       const axe = await new AxeBuilder({ page }).include('#panel-desempenho').withRules(['color-contrast']).analyze();

@@ -148,7 +148,7 @@ for (const [width, theme] of [
     await page.setViewportSize({ width, height: 900 });
     await page.clock.install({ time: new Date('2026-10-03T12:00:00-03:00') });
     await openDemo(page);
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     const realBefore = await page.evaluate(() => localStorage.getItem('bb-premium-study-data'));
     await activateTab(page, 'desempenho');
     await openPerformanceSection(page, 'consistency');

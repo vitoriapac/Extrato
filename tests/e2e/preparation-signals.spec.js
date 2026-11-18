@@ -72,7 +72,7 @@ test('platô e consolidação em risco explicam os dados sem modificar o plano',
   await expect(plateau).toHaveAttribute('open', '');
   await expect(plateau).toContainText('50 questões');
   await expectNoPageOverflow(page);
-  await page.locator('#themeToggleBtn').click();
+  await page.locator('#themeToggleBtn').evaluate(node => node.click());
   await expectNoPageOverflow(page);
   const after = await page.evaluate(() => structuredClone(window.__EXTRATO_TEST__.getState()));
   expect(after.studyPlans).toEqual(before.studyPlans);

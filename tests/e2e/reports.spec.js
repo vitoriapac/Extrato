@@ -99,6 +99,7 @@ test('paleta leva à recomendação prioritária sem iniciar o estudo', async ({
 
 test('paleta abre o Diagnóstico mesmo no modo Essencial', async ({ page }) => {
   await openDemo(page);
+  await page.locator('#preferencesMenuBtn').click();
   await page.locator('#essentialToggleBtn').click();
   await expect(page.locator('html')).toHaveAttribute('data-essential', 'on');
   await page.keyboard.press('Control+k');

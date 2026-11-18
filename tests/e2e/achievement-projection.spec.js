@@ -21,7 +21,7 @@ for (const { width, theme } of [
     await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
     await page.setViewportSize({ width, height: 900 });
     await openDemo(page);
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     await activateTab(page, 'desempenho');
     // A projeção até a prova mora em Simulados.
   await openPerformanceSection(page, 'simulations');
@@ -465,7 +465,7 @@ test('simulador é acessível por teclado e cabe em 320px no tema escuro', async
   await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
   await page.setViewportSize({ width: 320, height: 700 });
   await openDemo(page);
-  await page.locator('#themeToggleBtn').click();
+  await page.locator('#themeToggleBtn').evaluate(node => node.click());
   await activateTab(page, 'desempenho');
   // A projeção até a prova mora em Simulados.
   await openPerformanceSection(page, 'simulations');

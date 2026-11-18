@@ -381,7 +381,9 @@ export function createShellUiController(options: ShellUiControllerOptions) {
       if (!menu.contains(event.target as Node)) close();
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close();
+      if (event.key !== 'Escape' || !menu.classList.contains('is-open')) return;
+      close();
+      trigger.focus();
     };
     trigger.addEventListener('click', onTriggerClick);
     document.addEventListener('click', onDocClick);
@@ -393,6 +395,44 @@ export function createShellUiController(options: ShellUiControllerOptions) {
     };
   }
 
+  /**
+   * Desktop: a busca e as Preferências (Dados, Essencial, Densidade, Tema) ficam na linha das abas.
+   * Celular: a linha volta para baixo do cabeçalho, onde estava. Os elementos são movidos, não recriados.
+   */
+  function initControlsPlacement(): () => void {
+    const row = document.querySelector<HTMLElement>('.global-search-row');
+    const nav = document.querySelector<HTMLElement>('.primary-nav-shell');
+    const home = row?.previousElementSibling;
+    const items = document.getElementById('preferencesMenuItems');
+    const menu = document.getElementById('preferencesMenu');
+    const data = document.getElementById('openDataManagementHeaderBtn');
+    const theme = document.getElementById('themeToggleBtn');
+    if (!row || !nav || !home || !items || !menu || !data || !theme || !window.matchMedia) return () => {};
+    const query = window.matchMedia('(min-width: 768px)');
+    let inNav: boolean | null = null;
+    const place = () => {
+      if (inNav === query.matches) return;
+      inNav = query.matches;
+      if (query.matches) {
+        nav.append(row);
+        items.prepend(data);
+        items.append(theme);
+      } else {
+        home.after(row);
+        row.insertBefore(data, menu);
+        row.append(theme);
+      }
+      row.classList.toggle('global-search-row--in-nav', query.matches);
+    };
+    place();
+    query.addEventListener('change', place);
+    window.addEventListener('resize', place);
+    return () => {
+      query.removeEventListener('change', place);
+      window.removeEventListener('resize', place);
+    };
+  }
+
   function registerShellEvents(): () => void {
     const cleanupModal = initModalObserver();
     initGoHomeNavigation();
@@ -400,8 +440,10 @@ export function createShellUiController(options: ShellUiControllerOptions) {
     initExecutionModeSwitchers();
     initGuidedTourAndFirstSteps();
     const cleanupPrefsMenu = initPreferencesMenu();
+    const cleanupPlacement = initControlsPlacement();
 
     return () => {
+      cleanupPlacement();
       cleanupModal();
       cleanupBackToTop();
       cleanupPrefsMenu();

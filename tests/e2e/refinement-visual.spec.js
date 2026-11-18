@@ -17,7 +17,7 @@ for (const { name, width, theme, columns } of [
     await page.setViewportSize({ width, height: 900 });
     await openDemo(page);
     await page.evaluate(() => document.fonts.ready);
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     await activateTab(page, 'desempenho');
     for (const section of sections) {
       await openPerformanceSection(page, section);

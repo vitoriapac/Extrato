@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=3e0f705baef4">
-<link rel="stylesheet" href="styles/app.css?v=3e0f705baef4">
+<link rel="stylesheet" href="styles/tailwind.css?v=f0c7ab42aa62">
+<link rel="stylesheet" href="styles/app.css?v=f0c7ab42aa62">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -107,9 +107,9 @@
   </div>
 
   <div class="global-search-row">
-    <button class="global-search-trigger" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" aria-keyshortcuts="Control+K" aria-haspopup="dialog" aria-controls="globalCommandPaletteDialog" aria-expanded="false">
+    <button class="global-search-trigger" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" title="Buscar (Ctrl+K)" aria-keyshortcuts="Control+K" aria-haspopup="dialog" aria-controls="globalCommandPaletteDialog" aria-expanded="false">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-search shrink-0" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
-      <span class="global-search-trigger__placeholder">O que você quer fazer?</span>
+      <span class="global-search-trigger__short" aria-hidden="true">Buscar</span><span class="global-search-trigger__placeholder">O que você quer fazer?</span>
       <kbd class="global-search-trigger__kbd" aria-hidden="true">Ctrl+K</kbd>
     </button>
     <button class="theme-toggle-btn" id="openDataManagementHeaderBtn" type="button" aria-haspopup="dialog" aria-label="Dados e backups" title="Dados e backups"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-database" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg><span class="theme-toggle-label">Dados</span></button>
@@ -120,7 +120,7 @@
         <button class="theme-toggle-btn" id="densityToggleBtn" type="button" aria-pressed="false" aria-label="Densidade compacta" title="Densidade confortável (ativa)"><span class="theme-toggle-label">Densidade</span></button>
       </div>
     </div>
-    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span><span class="theme-toggle-label">Tema</span></button>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span><span class="theme-toggle-label">Tema</span><span class="pref-state" id="themeToggleState"></span></button>
   </div>
 
   <!-- DASHBOARD -->
@@ -788,7 +788,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=3e0f705baef4"></script>
+  <script src="src/app.bundle.js?v=f0c7ab42aa62"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

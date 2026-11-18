@@ -15,6 +15,8 @@ export function createPreferencesController({
     if (icon) icon.innerHTML = renderIconSvg(dark ? 'sun' : 'moon', { size: 16 });
     if (button)
       button.setAttribute('aria-label', dark ? 'Mudar para modo claro' : 'Mudar para modo escuro');
+    const state = document.getElementById('themeToggleState');
+    if (state) state.textContent = dark ? 'Escuro' : 'Claro';
     return current();
   };
   const set = (theme: string) => {
@@ -47,7 +49,7 @@ export function createDensityController({
     const compact = current() === 'compact',
       button = document.getElementById('densityToggleBtn');
     if (button) {
-      button.innerHTML = `${renderIconSvg(compact ? 'baseline-density-small' : 'baseline-density-medium', { size: 16 })}<span class="theme-toggle-label">Densidade</span>`;
+      button.innerHTML = `${renderIconSvg(compact ? 'baseline-density-small' : 'baseline-density-medium', { size: 16 })}<span class="theme-toggle-label">Densidade</span><span class="pref-state">${compact ? 'Compacta' : 'Confortável'}</span>`;
       button.setAttribute('aria-pressed', String(compact));
       button.setAttribute('aria-label', 'Densidade compacta');
       button.setAttribute('title', compact ? 'Densidade compacta (ativa)' : 'Densidade confortável (ativa)');
@@ -104,7 +106,7 @@ export function createEssentialController({
     else document.documentElement.removeAttribute('data-essential');
     const button = document.getElementById('essentialToggleBtn');
     if (button) {
-      button.innerHTML = `${renderIconSvg('sparkles', { size: 16 })}<span class="theme-toggle-label">Essencial</span>`;
+      button.innerHTML = `${renderIconSvg('sparkles', { size: 16 })}<span class="theme-toggle-label">Essencial</span><span class="pref-state">${on ? 'Ligado' : 'Desligado'}</span>`;
       button.setAttribute('aria-pressed', String(on));
       button.setAttribute('aria-label', 'Modo essencial');
       button.setAttribute('title', on ? 'Modo essencial (ativo)' : 'Modo completo (ativo)');

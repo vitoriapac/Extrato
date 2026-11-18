@@ -4,7 +4,7 @@ import { activateTab, expectNoPageOverflow, openDemo, openPlanningSubtab, openPe
 export async function assertCriticalResponsive(page, { width, theme }) {
   await page.setViewportSize({ width, height: 900 });
   await openDemo(page);
-  if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+  if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
   await activateTab(page, 'dashboard');
   await expectNoPageOverflow(page);

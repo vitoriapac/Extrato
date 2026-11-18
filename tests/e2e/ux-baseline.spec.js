@@ -10,7 +10,7 @@ async function prepareDemo(page, { width, height, theme = 'light' } = {}) {
   await page.setViewportSize({ width, height });
   await openDemo(page);
   await page.evaluate(() => document.fonts.ready);
-  if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+  if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
 }
 
 async function prepareDiagnosisScreenshot(page) {

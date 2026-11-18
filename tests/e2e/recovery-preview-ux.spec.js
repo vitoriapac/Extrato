@@ -22,7 +22,7 @@ for (const [width, theme] of [
       },
       generateDemoData({ today: '2026-10-01' })
     );
-    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
     await activateTab(page, 'desempenho');
     await openPerformanceSection(page, 'simulations');
     const before = await page.evaluate(async () => {

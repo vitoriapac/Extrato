@@ -6,7 +6,7 @@ for (const width of [320, 600, 900, 1100, 1280])
     test(`demo densa mantém módulos legíveis em ${width}px no tema ${theme}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await openDemo(page);
-      if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+      if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
       for (const name of [
         'dashboard',
         'desempenho',

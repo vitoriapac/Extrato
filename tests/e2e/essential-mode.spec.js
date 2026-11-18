@@ -19,6 +19,7 @@ test('quem começa sem dados entra no modo Essencial: análises a um clique e di
   await expect(hint).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.balance-label + .term-hint-text')).toContainText('Não é chance de aprovação');
 
+  await page.locator('#preferencesMenuBtn').click();
   await page.locator('#essentialToggleBtn').click();
   await expect(page.locator('html')).not.toHaveAttribute('data-essential', 'on');
   await expect(hint).toBeHidden();

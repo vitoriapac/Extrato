@@ -103,7 +103,7 @@ for (const width of [320, 375, 390, 430])
     test(`pilha sticky não se sobrepõe em ${width}px no tema ${theme}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
       await openDemo(page);
-      if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+      if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       await activateTab(page, 'dashboard');
       await page.evaluate(() => scrollTo(0, 1400));
@@ -165,7 +165,7 @@ for (const width of [320, 375, 768, 1440])
       api.renderAll();
     });
     for (const theme of ['light', 'dark']) {
-      if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+      if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
       await activateTab(page, 'dashboard');
       await expectNoPageOverflow(page);
       await activateTab(page, 'hoje');

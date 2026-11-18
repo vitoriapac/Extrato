@@ -3571,6 +3571,11 @@ button.compact-brand.brand-home{gap:8px}
 .preferences-menu{position:relative;display:flex;align-items:center}
 .preferences-menu__trigger{display:none}
 .preferences-menu__items{display:flex;align-items:center;gap:8px}
+.global-search-trigger__short{display:none}
+.pref-state{margin-left:auto;padding:2px 8px;border-radius:999px;background:var(--paper);border:1px solid var(--paper-line);color:var(--ink-soft);font-size:var(--text-micro);font-weight:var(--font-weight-medium);white-space:nowrap}
+.global-search-row>.theme-toggle-btn .pref-state{display:none}
+.preferences-menu__items .theme-toggle-btn[aria-pressed="true"]{background:var(--info-bg);border-color:var(--accent)}
+.preferences-menu__items .theme-toggle-btn[aria-pressed="true"] .pref-state{background:var(--accent);border-color:var(--accent);color:var(--on-brand)}
 @media(max-width:767px){
   .global-search-row{flex-wrap:wrap;gap:8px}
   .global-search-row .global-search-trigger{flex:1 1 100%}
@@ -3585,6 +3590,25 @@ button.compact-brand.brand-home{gap:8px}
     border-radius:var(--radius-card);box-shadow:0 8px 24px var(--shadow-color);z-index:60;
   }
   .preferences-menu.is-open .preferences-menu__items .theme-toggle-btn{justify-content:flex-start;width:100%}
+}
+
+/* Desktop: busca e Preferências ficam na linha das abas (o JS move a linha; ver initControlsPlacement). */
+@media(min-width:768px){
+  .global-search-row--in-nav{position:relative;flex:0 0 auto;align-self:center;margin:0;padding:0 var(--space-2);gap:8px}
+  .global-search-row--in-nav .global-search-trigger{flex:0 0 auto;min-height:36px;padding:0 10px;gap:8px}
+  .global-search-row--in-nav .global-search-trigger__placeholder,.global-search-row--in-nav .global-search-trigger__kbd{display:none}
+  .global-search-row--in-nav .global-search-trigger__short{display:inline;font-size:var(--text-small);font-weight:var(--font-weight-medium);color:var(--ink)}
+  .global-search-row--in-nav .preferences-menu__trigger{display:inline-flex;min-height:36px}
+  .global-search-row--in-nav .preferences-menu__items{display:none}
+  .global-search-row--in-nav .preferences-menu.is-open .preferences-menu__items{
+    display:flex;flex-direction:column;align-items:stretch;gap:4px;
+    position:absolute;top:calc(100% + 8px);right:0;min-width:272px;padding:8px;
+    background:var(--surface-card);border:1px solid var(--border-default);
+    border-radius:var(--radius-card);box-shadow:0 8px 24px var(--shadow-color);z-index:60;
+  }
+  .global-search-row--in-nav .preferences-menu__items .theme-toggle-btn{justify-content:flex-start;gap:10px;width:100%;min-height:40px;padding:0 10px;border-color:transparent;background:transparent}
+  .global-search-row--in-nav .preferences-menu__items .theme-toggle-btn:hover{background:var(--tab-hover-bg)}
+  .global-search-row--in-nav .preferences-menu__items #openDataManagementHeaderBtn{margin-bottom:4px;padding-bottom:0;border-bottom:1px solid var(--paper-line);border-radius:var(--radius-control) var(--radius-control) 0 0;min-height:44px}
 }
 
 /* Desempenho: texto lido a partir de 13–14px (12px fica para rótulos de eixo) e números em colunas alinhadas. */

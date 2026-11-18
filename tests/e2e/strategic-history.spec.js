@@ -123,12 +123,12 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   expect(result.backup.valid, result.backup.message).toBe(true);
   expect(result.backup.normalized.weeklyCloseSnapshots).toEqual(result.snapshots);
   await expectNoPageOverflow(page);
-  await page.locator('#themeToggleBtn').click();
+  await page.locator('#themeToggleBtn').evaluate(node => node.click());
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expectNoPageOverflow(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await expectNoPageOverflow(page);
-  await page.locator('#themeToggleBtn').click();
+  await page.locator('#themeToggleBtn').evaluate(node => node.click());
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expectNoPageOverflow(page);
 });

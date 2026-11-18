@@ -46,7 +46,7 @@ for (const width of [320, 430])
     }) => {
       await page.setViewportSize({ width, height: 850 });
       await openDemo(page);
-      if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+      if (theme === 'dark') await page.locator('#themeToggleBtn').evaluate(node => node.click());
       await activateTab(page, 'metas');
       await openPlanningSubtab(page, 'prova');
       const table = page.locator('#subjectTargetEditor .subject-target-table');

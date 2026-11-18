@@ -85,3 +85,22 @@ test('transições curtas somem com prefers-reduced-motion e os fades de estado 
     .evaluate(node => getComputedStyle(node).animationDuration);
   expect(panelFade.split(',').some(value => parseFloat(value) > 0)).toBe(true);
 });
+
+test('no desktop a busca e as Preferências ficam na linha das abas e o menu mostra o modo ativo', async ({ page }) => {
+  await page.goto('/');
+  const nav = page.locator('.primary-nav-shell');
+  await expect(nav.locator('#globalSearchOpenBtn')).toBeVisible();
+  await expect(nav.locator('#preferencesMenuBtn')).toBeVisible();
+  await expect(page.locator('#densityToggleBtn')).toBeHidden();
+  await page.locator('#preferencesMenuBtn').click();
+  for (const id of ['openDataManagementHeaderBtn', 'essentialToggleBtn', 'densityToggleBtn', 'themeToggleBtn']) {
+    await expect(page.locator(`#${id}`)).toBeVisible();
+  }
+  await expect(page.locator('#densityToggleBtn .pref-state')).toHaveText('Confortável');
+  await page.locator('#densityToggleBtn').click();
+  await expect(page.locator('#densityToggleBtn .pref-state')).toHaveText('Compacta');
+  await expect(page.locator('#themeToggleState')).toHaveText(/^(Claro|Escuro)$/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#densityToggleBtn')).toBeHidden();
+  await expect(page.locator('#preferencesMenuBtn')).toBeFocused();
+});
