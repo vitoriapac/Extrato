@@ -40,4 +40,42 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- Renovação: settle_billing_order soma sobre um Pro ativo e não herda vencimento de plano revogado.
+-- now() é fixo dentro da transação, então as datas esperadas são exatas.
+INSERT INTO auth.users (id, email) VALUES
+  ('00000000-0000-0000-0000-0000000000c3', 'renova@t.test'),
+  ('00000000-0000-0000-0000-0000000000d4', 'reembolsado@t.test'),
+  ('00000000-0000-0000-0000-0000000000e5', 'vencido@t.test');
+UPDATE public.profiles
+   SET plan_tier = 'pro', subscription_status = 'active', subscription_period_end = now() + interval '10 days'
+ WHERE id = '00000000-0000-0000-0000-0000000000c3';
+UPDATE public.profiles
+   SET plan_tier = 'free', subscription_status = 'canceled', subscription_period_end = now() + interval '366 days'
+ WHERE id = '00000000-0000-0000-0000-0000000000d4';
+UPDATE public.profiles
+   SET plan_tier = 'pro', subscription_status = 'active', subscription_period_end = now() - interval '5 days'
+ WHERE id = '00000000-0000-0000-0000-0000000000e5';
+INSERT INTO public.billing_orders (id, user_id, provider_billing_id, plan_id, amount_cents) VALUES
+  ('00000000-0000-0000-0000-00000000f0c3', '00000000-0000-0000-0000-0000000000c3', 'bill_renova', 'pro_monthly', 1990),
+  ('00000000-0000-0000-0000-00000000f0d4', '00000000-0000-0000-0000-0000000000d4', 'bill_reembolsado', 'pro_monthly', 1990),
+  ('00000000-0000-0000-0000-00000000f0e5', '00000000-0000-0000-0000-0000000000e5', 'bill_vencido', 'pro_monthly', 1990);
+
+DO $$
+BEGIN
+  ASSERT public.settle_billing_order('00000000-0000-0000-0000-00000000f0c3') = TRUE, 'primeira liquidação deve valer';
+  ASSERT (SELECT subscription_period_end FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000000c3')
+         = now() + interval '41 days', 'renovação com 10 dias restantes soma 31 (total 41)';
+  ASSERT public.settle_billing_order('00000000-0000-0000-0000-00000000f0c3') = FALSE, 'liquidar de novo não faz nada';
+  ASSERT (SELECT subscription_period_end FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000000c3')
+         = now() + interval '41 days', 'liquidação repetida não estende o plano';
+
+  PERFORM public.settle_billing_order('00000000-0000-0000-0000-00000000f0d4');
+  ASSERT (SELECT subscription_period_end FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000000d4')
+         = now() + interval '31 days', 'plano revogado não herda o vencimento antigo';
+
+  PERFORM public.settle_billing_order('00000000-0000-0000-0000-00000000f0e5');
+  ASSERT (SELECT subscription_period_end FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000000e5')
+         = now() + interval '31 days', 'Pro vencido recomeça a partir de agora';
+END $$;
+
 ROLLBACK;

@@ -20,7 +20,13 @@ BEGIN
   UPDATE public.profiles
      SET plan_tier = 'pro',
          subscription_status = 'active',
-         subscription_period_end = GREATEST(now(), COALESCE(subscription_period_end, now()))
+         -- Só soma sobre um Pro ativo. Depois de reembolso o vencimento antigo continua gravado
+         -- e não pode render dias na compra seguinte.
+         subscription_period_end = (CASE
+             WHEN plan_tier IN ('pro', 'mentor') AND subscription_status = 'active'
+               THEN GREATEST(now(), COALESCE(subscription_period_end, now()))
+             ELSE now()
+           END)
            + (CASE v_order.plan_id WHEN 'pro_monthly' THEN 31 ELSE 366 END) * INTERVAL '1 day',
          updated_at = now()
    WHERE id = v_order.user_id;
