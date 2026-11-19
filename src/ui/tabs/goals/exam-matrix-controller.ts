@@ -199,7 +199,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     if (overview) {
       overview.hidden = !qualityModel.examCount;
       overview.innerHTML = qualityModel.examCount
-        ? `<strong>${qualityModel.mappedTopics}${qualityModel.eligibleTopics ? ` de ${qualityModel.eligibleTopics}` : ''} tópicos do edital mapeados ao histórico da banca</strong><span>Provas, questões, cobertura e base histórica estão em "Qualidade do histórico".</span>${renderTopicUniverse({ inScope: scopedTopics.length, remaining: countRemainingTopics(scopedTopics), mapped: qualityModel.mappedTopics })}`
+        ? `<strong>${qualityModel.mappedTopics}${qualityModel.eligibleTopics ? ` de ${qualityModel.eligibleTopics}` : ''} tópicos do edital mapeados ao histórico da banca</strong>${renderTopicUniverse({ inScope: scopedTopics.length, remaining: countRemainingTopics(scopedTopics), mapped: qualityModel.mappedTopics })}`
         : '';
     }
 

@@ -141,5 +141,5 @@ export function renderPerformanceQuestions({
     </section>`;
   }
 
-  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary, details: [trend == null ? 'Evolução sem base comparável.' : `Variação de ${delta(trend)} frente ao período anterior.`, `${pluralize(analysis.errors, 'erro', 'erros')} no período.`] }), kpis)}${multiLineSection}<section class="performance-block" aria-label="Evolução da precisão">${renderQuestionEvolution(evolution, { formatDate, targetPercent: targetScore == null || targetScore === '' ? null : Number(targetScore) })}</section>${errors}${renderPerformanceDetails('Volume e tópicos', volume + topics)}`;
+  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Resultado das questões', summary }), kpis)}${multiLineSection}<section class="performance-block" aria-label="Evolução da precisão">${renderQuestionEvolution(evolution, { formatDate, targetPercent: targetScore == null || targetScore === '' ? null : Number(targetScore) })}</section>${errors}${renderPerformanceDetails('Volume e tópicos', volume + topics)}`;
 }

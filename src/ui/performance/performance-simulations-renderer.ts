@@ -45,7 +45,7 @@ export function renderPerformanceSimulations(
   const kpis = `<section class="performance-kpis ui-metric-group" aria-label="Indicadores de simulados">
     ${renderMetricCard({ label: 'Último simulado', windowBadge: win, value: percent(model.latest), detail: `${pluralize(model.count, 'simulado', 'simulados')} · ${escapeHtml(range?.label || 'período escolhido')}` })}
     ${renderMetricCard({ label: 'Média', windowBadge: win, value: percent(model.mean), detail: range.comparePrevious && model.previousMean != null && model.mean != null ? signed(Math.round((model.mean - model.previousMean) * 10) / 10) + ' frente ao período anterior' : 'Cada simulado tem o mesmo peso' })}
-    ${renderMetricCard({ label: 'Melhor resultado', windowBadge: win, value: percent(model.best), detail: 'No período selecionado' })}
+    ${model.best === model.latest ? '' : renderMetricCard({ label: 'Melhor resultado', windowBadge: win, value: percent(model.best), detail: 'No período selecionado' })}
     ${renderMetricCard({ label: 'Tendência recente', windowBadge: win, value: signed(model.trend), detail: 'Último × penúltimo simulado' })}
   </section>`;
   const chart = renderSimulationTrendChart({
@@ -61,11 +61,6 @@ export function renderPerformanceSimulations(
   const story = renderPerformanceStory({
     title: 'Resultado dos simulados',
     summary: `Último resultado: ${percent(model.latest)} em ${pluralize(model.count, 'simulado', 'simulados')}, ${range?.label || 'no período escolhido'}.`,
-    details: [
-      model.trend == null
-        ? 'Tendência recente sem base comparável.'
-        : `Variação recente: ${signed(model.trend)}`,
-    ],
   });
   const method =
     '<p class="performance-method-note">Resultados de provas com composição ou dificuldade diferentes não são diretamente equivalentes. A comparação por disciplina mostra somente áreas detalhadas em ambas as provas.</p>';

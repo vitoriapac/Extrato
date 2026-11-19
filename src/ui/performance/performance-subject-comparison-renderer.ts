@@ -42,7 +42,7 @@ export function renderPerformanceSubjectComparison(
   const head =
     '<thead><tr><th scope="col">Disciplina</th><th scope="col">Precisão</th><th scope="col">Diferença para a meta</th><th scope="col">Evolução</th><th scope="col">Questões</th><th scope="col">Planejado</th><th scope="col">Realizado</th><th scope="col">Saldo do plano</th><th scope="col">Sugestão</th></tr></thead>';
   const table = (rows: Row[], caption: string) =>
-    `<div class="performance-table-scroll"><table><caption>${caption}</caption>${head}<tbody>${renderRows(rows)}</tbody></table></div>`;
+    `<div class="performance-table-scroll performance-subject-table"><table><caption>${caption}</caption>${head}<tbody>${renderRows(rows)}</tbody></table></div>`;
   const questionCount = model.rows.reduce((sum: any, item: any) => sum + item.questions, 0),
     belowGoal = model.rows.filter(
       (item: any) => item.state !== 'insufficient' && item.gap < 0
@@ -62,6 +62,8 @@ export function renderPerformanceSubjectComparison(
     return `<li><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button><span>${insufficient ? `Amostra ${item.questions}/10` : value(item.accuracy, '%') + ' · meta de precisão ' + item.target + '%'}</span>${bar}<small>${item.balanceMinutes == null ? '' : `Plano: ${balance(item.balanceMinutes)} · `}${item.questions} questões${item.evolution == null ? ' · evolução sem base comparável' : ' · ' + signed(item.evolution) + ' frente ao período anterior'}</small></li>`;
   };
   const previews = model.rows.map(preview).join('');
+  const compact = (item: any) =>
+    `<li><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button><span>${item.state === 'insufficient' ? 'Amostra insuficiente' : `${value(item.accuracy, '%')} · ${signed(item.gap)} da meta`}</span><small>${item.questions} questões${item.balanceMinutes == null ? '' : ` · Plano: ${balance(item.balanceMinutes)}`}${item.suggestion ? ` · ${escapeHtml(item.suggestion)}` : ''}</small></li>`;
   // Os mesmos dados, uma visão por vez: tabela (padrão) ou barras. Cinco linhas à vista; "Mostrar mais" é do montador de listas.
   const asBars = view === 'bars';
   const viewNav = `<div class="performance-modes performance-view-toggle" role="group" aria-label="Formato da comparação">${[
@@ -75,6 +77,7 @@ export function renderPerformanceSubjectComparison(
     .join('')}</div>`;
   const body = asBars
     ? `<ul class="performance-subject-previews">${previews}</ul>`
-    : table(model.rows, 'Disciplinas no concurso ativo');
+    : // Celular: a tabela de 9 colunas esconde a Sugestão atrás de rolagem; os cartões trazem o essencial.
+      `${table(model.rows, 'Disciplinas no concurso ativo')}<ul class="performance-subject-compact">${model.rows.map(compact).join('')}</ul>`;
   return `<section class="performance-block performance-subject-comparison" id="bloco-comparacao"><div class="performance-comparison-heading"><div><h3>Comparação entre disciplinas</h3>${renderEvidenceBadge(coverageEvidence(model.measured, model.rows.length), `${model.measured} de ${model.rows.length} disciplinas com 10 questões ou mais no período`)}</div><label>Ordenar por <select class="select-control ui-select-field__control" data-performance-subject-sort>${options.map(([key, label]) => `<option value="${key}" ${model.sort === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div><p class="performance-comparison-summary"><strong>${model.measured} de ${model.rows.length}</strong> disciplinas com amostra · <strong>${questionCount}</strong> questões · <strong>${belowGoal}</strong> abaixo da meta com dados suficientes.</p>${viewNav}${body}</section>`;
 }

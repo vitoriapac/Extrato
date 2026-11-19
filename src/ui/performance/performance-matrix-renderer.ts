@@ -48,7 +48,7 @@ export function renderPedagogicalMatrixSection(
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div class="min-w-0">
           <h3 class="m-0">Matriz Pedagógica: Domínio × Retenção</h3>
-          <p class="analytics-note m-0">${scattered ? 'Dispersão em 4 quadrantes cruzando aproveitamento e memória, com a escala ajustada aos dados (os valores das pontas dos eixos estão escritos). As esferas recebem a cor oficial e tamanho relativo às horas estudadas.' : 'Todas as disciplinas estão no quadrante de prioridade alta, então a dispersão não separa nada: a lista abaixo vai do menor para o maior domínio.'}</p>
+          <p class="analytics-note m-0">${scattered ? 'Dispersão em 4 quadrantes cruzando aproveitamento e memória, com a escala ajustada aos dados (os valores das pontas dos eixos estão escritos).<span class="matrix-chart-note"> As esferas recebem a cor oficial e tamanho relativo às horas estudadas.</span>' : 'Todas as disciplinas estão no quadrante de prioridade alta, então a dispersão não separa nada: a lista abaixo vai do menor para o maior domínio.'}</p>
         </div>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro font-medium text-content-secondary">
           <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green inline-block"></span>Consolidada: ${counts.consolidated}</span>
