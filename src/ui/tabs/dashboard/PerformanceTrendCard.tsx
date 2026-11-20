@@ -106,11 +106,10 @@ export function PerformanceTrendCard({
             ? ` · média de ${formatDecimal(model.simulationMean)}% em ${model.simulationCount} simulados`
             : ' · nenhum simulado'}
           {` · meta ${formatDecimal(model.targetScore)}%`}
-          {model.status === 'ok' && model.gap != null && model.gap > 0
-            ? ` · na meta (+${formatDecimal(model.gap)} p.p.)`
-            : ''}
-          {model.status === 'attention' && model.gap != null
-            ? ` · abaixo (${formatDecimal(model.gap)} p.p.)`
+          {model.gap != null && model.status !== 'insufficient'
+            ? ` · ${model.simulationLatest != null ? 'último simulado' : 'acerto em questões'} ${
+                model.status === 'ok' ? 'na meta (+' : 'abaixo da meta ('
+              }${formatDecimal(model.gap)} p.p.)`
             : ''}
           {model.status === 'insufficient' ? ' · dados iniciais' : ''}
         </p>

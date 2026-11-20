@@ -48,7 +48,7 @@ export function SimulationTrendChart({
       {/* Cards de KPIs Rápidos */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div class="p-3 rounded-default bg-surface-subtle border border-border-subtle">
-          <span class="text-content-secondary text-xs block font-medium mb-1">Média Recente</span>
+          <span class="text-content-secondary text-xs block font-medium mb-1">Média de todos os simulados</span>
           <div class="text-base font-semibold font-data text-content-primary">
             {averageScore !== null ? formatPercent(averageScore) : '—'}
           </div>

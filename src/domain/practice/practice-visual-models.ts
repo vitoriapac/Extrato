@@ -246,7 +246,7 @@ export function buildSimulationTrendVisual({
   const points: SimulationTrendPointVisual[] = validSims.map((sim, index) => {
     const correct = Math.max(0, Number(sim.correct) || 0);
     const total = Math.max(1, Number(sim.total) || 1);
-    const score = Math.round(Number(sim.score) || (correct / total) * 100);
+    const score = Math.round((Number(sim.score) || (correct / total) * 100) * 10) / 10;
     totalScoreSum += score;
     if (score > bestScore) bestScore = score;
     const onTarget = score >= targetScore;
@@ -264,10 +264,11 @@ export function buildSimulationTrendVisual({
     };
   });
 
-  const averageScore = Math.round(totalScoreSum / points.length);
+  const averageScore = Math.round((totalScoreSum / points.length) * 10) / 10;
   const latestScore = points[points.length - 1].score;
   const previousScore = points.length > 1 ? points[points.length - 2].score : null;
-  const scoreDelta = previousScore !== null ? latestScore - previousScore : null;
+  const scoreDelta =
+    previousScore !== null ? Math.round((latestScore - previousScore) * 10) / 10 : null;
 
   return {
     simulations: points,

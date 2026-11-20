@@ -107,7 +107,7 @@ test('buildSimulationTrendVisual — calcula KPIs, delta e ordenação temporal 
   assert.equal(visual.latestScore, 85);
   assert.equal(visual.scoreDelta, 10); // 85 - 75 = +10
   assert.equal(visual.bestScore, 85);
-  assert.equal(visual.averageScore, 73); // (60 + 75 + 85) / 3 = 73.33 -> 73
+  assert.equal(visual.averageScore, 73.3); // (60 + 75 + 85) / 3, uma casa decimal
   assert.equal(visual.onTargetCount, 1); // Only sim-3 (85 >= 80)
   assert.equal(visual.simulations[2].onTarget, true);
   assert.equal(visual.simulations[0].onTarget, false);
@@ -208,7 +208,7 @@ test('renderSimulationTrendChart — renderiza gráfico de evolução e linha de
   const html = renderSimulationTrendChart({ visual });
   assert.ok(typeof html === 'string');
   assert.ok(html.includes('chart-simulation-trend'));
-  assert.ok(html.includes('Média Recente'));
+  assert.ok(html.includes('Média de todos os simulados'));
   assert.ok(html.includes('80%'));
 });
 
@@ -226,4 +226,13 @@ test('renderSimulationBreakdownBarChart — renderiza barras de disciplinas com 
   assert.ok(html.includes('chart-simulation-breakdown'));
   assert.ok(html.includes('Informática'));
   assert.ok(html.includes('Raio-X do Simulado'));
+});
+
+test('buildSimulationTrendVisual — notas com uma casa decimal (83,8 não vira 84)', () => {
+  const visual = buildSimulationTrendVisual({
+    simulations: [{ id: 's', nome: 'S', date: '2026-08-01', correct: 838, total: 1000 }],
+    targetScore: 80,
+  });
+  assert.equal(visual.latestScore, 83.8);
+  assert.equal(visual.bestScore, 83.8);
 });

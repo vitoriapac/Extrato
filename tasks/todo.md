@@ -38,7 +38,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Teste: 17 disciplinas, 12 com amostra, resultado igual nas duas telas
 **Dependências:** D-D, T1 · **Tamanho:** M
 
-### T3: Simulados com uma contagem e uma média (D6)
+### T3: Simulados com uma contagem e uma média (D6) — FEITA (20/11)
 **Aceite:**
 - [ ] Nenhuma tela mostra 81% e 73,0% e 72,9% para a mesma pergunta sem nomes distintos ("resultado central da projeção", "média do período")
 - [ ] 84,0% × 83,8% resolvido (uma casa decimal em todo lugar)
