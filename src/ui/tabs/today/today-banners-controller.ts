@@ -1,0 +1,309 @@
+import { h } from 'preact';
+import { render } from 'preact-render-to-string';
+import { mountPreact, unmountPreact } from '../../preact-mount.js';
+import { FirstStepsMission } from '../../components/FirstStepsMission.js';
+import {
+  buildFirstStepsMission,
+  type FirstStepsMissionModel,
+} from '../../../application/onboarding/build-first-steps-mission.js';
+import { buildFinalStretchBanner } from '../../../domain/planning/final-stretch-policy.js';
+import { FinalStretchBanner } from '../../components/FinalStretchBanner.js';
+import { RealWeekBanner, type RealWeekBannerProps } from '../../components/RealWeekBanner.js';
+import type { TodayTabControllerContext } from './today-tab-controller.js';
+
+/** Faixas de topo da aba Hoje: primeiros passos, reta final e semana real. */
+export function createTodayBannersController(ctx: TodayTabControllerContext) {
+  const {
+    document: doc = typeof document !== 'undefined' ? document : (null as any),
+    getState = () => ({}),
+    isDemoMode = () => false,
+    todayISO = () => new Date().toISOString().slice(0, 10),
+    activateTab: _activateTab = () => {},
+    whatIfController,
+    getRevisoesUnificadas = () => [],
+    diasParaRevisao = () => null,
+    startOfWeek = (iso: string) => iso,
+  } = ctx;
+
+  let demoFirstStepsDismissed = false;
+
+  function renderFirstStepsMissionHtml(model: FirstStepsMissionModel): string {
+    if (!model.visible && !model.canRestore) return '';
+    return render(
+      h(FirstStepsMission, {
+        model,
+        onDismiss: ctx.onDismissFirstSteps,
+        onRestore: ctx.onRestoreFirstSteps,
+        onStartTour: ctx.onStartTour,
+        onExecuteMission: ctx.onExecuteFirstStepsMission,
+      })
+    );
+  }
+
+  function mountFirstStepsMission(container: Element, model: FirstStepsMissionModel): void {
+    if (!model.visible && !model.canRestore) {
+      container.innerHTML = '';
+      return;
+    }
+    mountPreact(
+      h(FirstStepsMission, {
+        model,
+        onDismiss: ctx.onDismissFirstSteps,
+        onRestore: ctx.onRestoreFirstSteps,
+        onStartTour: ctx.onStartTour,
+        onExecuteMission: ctx.onExecuteFirstStepsMission,
+      }),
+      container
+    );
+  }
+
+  function isFirstStepsDismissed(): boolean {
+    if (isDemoMode()) {
+      return demoFirstStepsDismissed;
+    }
+    try {
+      return (
+        typeof localStorage !== 'undefined' &&
+        Boolean(
+          localStorage.getItem('extrato_first_steps_dismissed') ??
+          localStorage.getItem('studytrack_first_steps_dismissed')
+        )
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function dismissFirstSteps(): void {
+    if (isDemoMode()) {
+      demoFirstStepsDismissed = true;
+    } else {
+      try {
+        if (typeof localStorage !== 'undefined')
+          localStorage.setItem('extrato_first_steps_dismissed', '1');
+      } catch {}
+    }
+  }
+
+  function restoreFirstSteps(): void {
+    if (isDemoMode()) {
+      demoFirstStepsDismissed = false;
+    } else {
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('extrato_first_steps_dismissed');
+          localStorage.removeItem('studytrack_first_steps_dismissed');
+        }
+      } catch {}
+    }
+  }
+
+  function renderFirstStepsMissionCard() {
+    if (!doc) return;
+    let slot = doc.getElementById('firstStepsMissionSlot');
+    if (!slot) {
+      const summary = doc.getElementById('todayExecutionSummary');
+      if (summary) {
+        slot = doc.createElement('div');
+        slot.id = 'firstStepsMissionSlot';
+        summary.parentNode?.insertBefore(slot, summary);
+      }
+    }
+    if (!slot) return;
+
+    const state = getState();
+    const dismissed = isFirstStepsDismissed();
+
+    // Mesma regra do assistente de configuração: o plano diário automático não conta,
+    // então a missão só aparece quando a configuração termina e as duas listas não coexistem.
+    const hasPlan = Array.isArray(state.studyPlans)
+      ? state.studyPlans.length > 0
+      : (state.dailyPlans || []).some((p: any) => Array.isArray(p.items) && p.items.length > 0);
+    const sessionsCount = Array.isArray(state.studySessions) ? state.studySessions.length : 0;
+    const questionsCount = Array.isArray(state.questoes) ? state.questoes.length : 0;
+
+    const missionModel = buildFirstStepsMission({
+      hasPlan,
+      sessionsCount,
+      questionsCount,
+      dismissed,
+    });
+
+    mountFirstStepsMission(slot, missionModel);
+  }
+
+  function renderFinalStretchBanner() {
+    if (!doc) return;
+    const slot = doc.getElementById('finalStretchBannerSlot');
+    if (!slot) return;
+    const state = getState();
+    const days = state.examDate ? diasParaRevisao(state.examDate) : null;
+    const bannerModel = buildFinalStretchBanner(
+      days,
+      state.examBlueprint?.activeExamTags?.[0] || 'sua prova'
+    );
+    if (!bannerModel.active) {
+      unmountPreact(slot);
+      slot.replaceChildren();
+      return;
+    }
+    mountPreact(
+      h(FinalStretchBanner, {
+        banner: bannerModel,
+        onOpenWhatIf: () => whatIfController?.open(),
+      }),
+      slot
+    );
+  }
+
+  function renderRealWeekBannerHtml(props: RealWeekBannerProps): string {
+    return render(h(RealWeekBanner, props));
+  }
+
+  function mountRealWeekBanner(container: Element, props: RealWeekBannerProps): void {
+    mountPreact(h(RealWeekBanner, props), container);
+  }
+
+  let demoRealWeekBannerDismissed = false;
+
+  function isRealWeekBannerDismissed(): boolean {
+    if (isDemoMode()) return demoRealWeekBannerDismissed;
+    try {
+      return (
+        typeof sessionStorage !== 'undefined' &&
+        Boolean(sessionStorage.getItem('extrato_real_week_banner_dismissed'))
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function dismissRealWeekBanner(): void {
+    if (isDemoMode()) {
+      demoRealWeekBannerDismissed = true;
+    } else {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('extrato_real_week_banner_dismissed', '1');
+        }
+      } catch {}
+    }
+    renderRealWeekBanner();
+  }
+
+  function restoreRealWeekBanner(): void {
+    if (isDemoMode()) {
+      demoRealWeekBannerDismissed = false;
+    } else {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem('extrato_real_week_banner_dismissed');
+        }
+      } catch {}
+    }
+    renderRealWeekBanner();
+  }
+
+  function renderRealWeekBanner(): void {
+    if (!doc) return;
+    let slot = doc.getElementById('todayRealWeekBannerSlot');
+    if (!slot) {
+      const summary = doc.getElementById('todayExecutionSummary');
+      if (summary) {
+        slot = doc.createElement('div');
+        slot.id = 'todayRealWeekBannerSlot';
+        summary.parentNode?.insertBefore(slot, summary);
+      }
+    }
+    if (!slot) return;
+
+    if (isRealWeekBannerDismissed()) {
+      unmountPreact(slot);
+      slot.replaceChildren();
+      return;
+    }
+
+    const state = getState();
+    const today = todayISO();
+    const overdueCount = getRevisoesUnificadas().filter(
+      (r: any) => r.date && r.date < today && r.status !== 'Concluído'
+    ).length;
+
+    const startWeek = startOfWeek(today);
+    const pastPlans = (state.dailyPlans || []).filter(
+      (p: any) => p.date >= startWeek && p.date < today
+    );
+    const plannedPastMinutes = pastPlans.reduce(
+      (sum: number, p: any) =>
+        sum +
+        (p.items || [])
+          .filter(
+            (it: any) => !['skipped', 'replaced', 'deferred', 'discarded'].includes(it.status)
+          )
+          .reduce((t: number, it: any) => t + (Number(it.plannedMinutes) || 0), 0),
+      0
+    );
+    const executedPastMinutes = (state.studySessions || [])
+      .filter((s: any) => s.date >= startWeek && s.date < today)
+      .reduce((sum: number, s: any) => sum + (Number(s.durationSeconds) || 0) / 60, 0);
+
+    const deficitMinutes = Math.max(0, Math.round(plannedPastMinutes - executedPastMinutes));
+
+    if (overdueCount === 0 && deficitMinutes === 0) {
+      unmountPreact(slot);
+      slot.replaceChildren();
+      return;
+    }
+
+    const bannerProps: RealWeekBannerProps = {
+      overdueCount,
+      deficitMinutes,
+      onOpenRecoveryMission: () => {
+        if (ctx.onOpenRecoveryMission) {
+          ctx.onOpenRecoveryMission();
+        } else {
+          const btn = doc.querySelector?.(
+            '[data-action="open-recovery-mission"]'
+          ) as HTMLElement | null;
+          btn?.click();
+        }
+      },
+      onRecalibrateWeek: () => {
+        if (ctx.onRecalibrateWeek) {
+          ctx.onRecalibrateWeek();
+        } else {
+          _activateTab('metas');
+          setTimeout(() => {
+            doc.getElementById('metasTab-semana')?.click();
+            doc
+              .getElementById('weeklyReplan')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 80);
+        }
+      },
+      onDismiss: dismissRealWeekBanner,
+    };
+
+    if (typeof document !== 'undefined') {
+      mountRealWeekBanner(slot, bannerProps);
+    } else {
+      slot.innerHTML = renderRealWeekBannerHtml(bannerProps);
+    }
+  }
+
+  return {
+    renderFirstStepsMissionHtml,
+    mountFirstStepsMission,
+    isFirstStepsDismissed,
+    dismissFirstSteps,
+    restoreFirstSteps,
+    renderFirstStepsMissionCard,
+    renderFinalStretchBanner,
+    renderRealWeekBannerHtml,
+    mountRealWeekBanner,
+    renderRealWeekBanner,
+    isRealWeekBannerDismissed,
+    dismissRealWeekBanner,
+    restoreRealWeekBanner,
+  };
+}

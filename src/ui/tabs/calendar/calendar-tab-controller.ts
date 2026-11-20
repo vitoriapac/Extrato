@@ -6,21 +6,16 @@ import { CalendarViewSwitch, type CalendarMobileView } from './CalendarViewSwitc
 import {
   buildUnifiedReviews,
   buildUnifiedCalendarItems,
-  unifiedReviewLabel as defaultUnifiedItemLabel,
 } from '../../../application/calendar/build-unified-reviews.js';
 import {
   buildEssayEvolutionSummary,
   computeDailyCalendarLoad,
-  computeDraftOverloadPreview,
   getAvailableMinutesForDate,
-  isCalendarItemOverdue,
-  selectTodayPendingNonSimulationItems,
   sortCalendarItemsForDay,
   type UnifiedCalendarItem,
 } from '../../../domain/calendar/calendar-projection.js';
 import { buildCalendarIcs } from '../../../domain/calendar/calendar-ics.js';
 import { addLocalDays, formatLocalDate } from '../../../core/date-utils.js';
-import { CalendarActivityModal, type CalendarActivityDraft } from './CalendarActivityModal.js';
 import { CalendarDayDrawer } from './CalendarDayDrawer.js';
 import { CalendarWeekView } from './CalendarWeekView.js';
 import { EssayEvolutionCard } from './EssayEvolutionCard.js';
@@ -34,16 +29,12 @@ import {
 import { buildCalendarItemViewModel } from '../../view-models/calendar-view-model.js';
 import { createCalendarState } from '../../calendar/calendar-state.js';
 import { createCalendarController } from '../../calendar/calendar-controller.js';
-import {
-  STATUS_CLASS,
-  STATUS_OPTIONS,
-  REVIEW_OPTIONS,
-  CALENDAR_ACTIVITY_LABELS,
-} from '../../../state/schema.js';
+import { STATUS_CLASS, STATUS_OPTIONS, REVIEW_OPTIONS } from '../../../state/schema.js';
+import { createCalendarPendingLists } from './calendar-pending-lists.js';
+import { createCalendarActivityModalController } from './calendar-activity-modal-controller.js';
 import { createProgressiveList } from '../../progressive-list.js';
 import { filterPanelLabel } from '../../filter-panel.js';
 import { runUndoable } from '../../undoable.js';
-import { renderIconSvg } from '../../primitives/icon.js';
 
 export interface CalendarTabControllerContext {
   state: {
@@ -171,14 +162,42 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         })
       : null);
 
-  // Atrasadas agrupadas
-  const overdueExpandedDates: Record<string, Set<string>> = {
-    calAtrasadas: new Set<string>(),
-    hojeAtrasadas: new Set<string>(),
-  };
-  const overdueExpansionInitialized = new Set<string>();
-
   const MONTH_MAX_EVENTS_PER_DAY = 3;
+
+  const { toggleOverdueDate, renderCalTarefasHoje, renderCalAtrasadas, completeUnifiedReview } =
+    createCalendarPendingLists({
+      ctx,
+      getDoc,
+      escapeHtml,
+      escapeAttr,
+      pluralize,
+      todayISO,
+      formatDatePt,
+      diasParaRevisao,
+      showToast,
+      getUnifiedCalendarItems,
+      getRevisoesUnificadas,
+      updateCal,
+    });
+
+  const {
+    renderActivityModal,
+    openActivityModalForDate,
+    openActivityModalForEdit,
+    saveActivityModal,
+  } = createCalendarActivityModalController({
+    ctx,
+    getDoc,
+    calendarUiState,
+    calendarController,
+    canMountPreact,
+    activeSubjects,
+    getUnifiedCalendarItems: () => getUnifiedCalendarItems(),
+    deleteCalRow,
+    todayISO,
+    showToast,
+    persistAndRender,
+  });
 
   function getRevisoesUnificadas() {
     return buildUnifiedReviews({
@@ -375,7 +394,9 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     const doc = getDoc();
     const mount = doc?.getElementById('essayEvolutionMount');
     if (!canMountPreact(mount)) return;
-    const summary = buildEssayEvolutionSummary(getUnifiedCalendarItems({ includeRecurring: false }));
+    const summary = buildEssayEvolutionSummary(
+      getUnifiedCalendarItems({ includeRecurring: false })
+    );
     mountPreact(
       h(EssayEvolutionCard, {
         summary,
@@ -522,36 +543,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     );
   }
 
-  function renderActivityModal() {
-    const doc = getDoc();
-    const mount = doc?.getElementById('calendarActivityModalMount');
-    if (!canMountPreact(mount)) return;
-    const ui = calendarUiState as any;
-    mountPreact(
-      h(CalendarActivityModal, {
-        open: Boolean(ui.modalOpen),
-        isNew: Boolean(ui.isNew),
-        initialDraft: ui.modalDraft || null,
-        subjects: activeSubjects(),
-        getDayLoadPreview: (draft: CalendarActivityDraft) =>
-          computeDraftOverloadPreview(getUnifiedCalendarItems(), draft, ctx.state.metas),
-        onSave: saveActivityModal,
-        onDelete: (id: string) => {
-          ui.modalOpen = false;
-          ui.modalDraft = null;
-          renderActivityModal();
-          deleteCalRow(id);
-        },
-        onClose: () => {
-          ui.modalOpen = false;
-          ui.modalDraft = null;
-          renderActivityModal();
-        },
-      }),
-      mount
-    );
-  }
-
   function renderCalendarFilters() {
     const doc = getDoc();
     if (!doc) return;
@@ -615,116 +606,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       button.classList?.toggle('ghost', !active);
       button.setAttribute('aria-pressed', String(active));
     });
-  }
-
-  function openActivityModalForDate(date?: string) {
-    const ui = calendarUiState as any;
-    const targetDate = date || ui.selectedDate || todayISO();
-    ui.isNew = true;
-    ui.modalDraft = {
-      id: null,
-      title: '',
-      kind: 'task',
-      date: targetDate,
-      status: 'Não iniciado',
-      startTime: '',
-      endTime: '',
-      estimatedMinutes: '',
-      recurrence: 'none',
-      subjectId: '',
-      location: '',
-      externalUrl: '',
-      description: '',
-      essayTheme: '',
-      essayScore: '',
-      essayMaxScore: '',
-      essayStatus: 'draft',
-    } satisfies CalendarActivityDraft;
-    ui.modalOpen = true;
-    renderActivityModal();
-  }
-
-  function openActivityModalForEdit(id: string) {
-    const item = (ctx.state.calendar || []).find(c => c.id === id);
-    if (!item) return;
-    const ui = calendarUiState as any;
-    ui.isNew = false;
-    ui.modalDraft = {
-      id: item.id,
-      title:
-        item.title || (item.reviewType && item.reviewType !== '—' ? item.reviewType : '') || '',
-      kind: item.kind || (item.reviewType && item.reviewType !== '—' ? 'manual_review' : 'task'),
-      date: item.date || todayISO(),
-      status: item.status || 'Não iniciado',
-      startTime: item.startTime || '',
-      endTime: item.endTime || '',
-      estimatedMinutes: item.estimatedMinutes ? String(item.estimatedMinutes) : '',
-      recurrence: item.recurrence || 'none',
-      subjectId: item.subjectId || '',
-      location: item.location || '',
-      externalUrl: item.externalUrl || '',
-      description: item.description || '',
-      essayTheme: item.essayTheme || '',
-      essayScore: item.essayScore != null ? String(item.essayScore) : '',
-      essayMaxScore: item.essayMaxScore != null ? String(item.essayMaxScore) : '',
-      essayStatus: item.essayStatus || 'draft',
-    } satisfies CalendarActivityDraft;
-    ui.modalOpen = true;
-    renderActivityModal();
-  }
-
-  function saveActivityModal(draft: CalendarActivityDraft) {
-    const ui = calendarUiState as any;
-    const mins = Number(draft.estimatedMinutes);
-    const essayScoreNum = draft.essayScore !== '' ? Number(draft.essayScore) : NaN;
-    const essayMaxScoreNum = draft.essayMaxScore !== '' ? Number(draft.essayMaxScore) : NaN;
-    const payload: Record<string, any> = {
-      title: draft.title.trim(),
-      kind: draft.kind,
-      date: draft.date,
-      status: draft.status || 'Não iniciado',
-      startTime: draft.startTime || null,
-      endTime: draft.endTime || null,
-      estimatedMinutes: Number.isFinite(mins) && mins > 0 ? Math.round(mins) : null,
-      recurrence: draft.recurrence || 'none',
-      subjectId: draft.subjectId || null,
-      location: draft.location.trim() || null,
-      externalUrl: draft.externalUrl.trim() || null,
-      description: draft.description.trim() || null,
-      reviewType: draft.kind === 'manual_review' ? draft.title.trim() || 'Revisão livre' : '—',
-      ...(draft.kind === 'essay'
-        ? {
-            essayTheme: draft.essayTheme.trim() || null,
-            essayScore: Number.isFinite(essayScoreNum) && essayScoreNum >= 0 ? essayScoreNum : null,
-            essayMaxScore:
-              Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : null,
-            essayStatus: draft.essayStatus || 'draft',
-          }
-        : {}),
-    };
-
-    if (ui.isNew || !draft.id) {
-      if (ctx.calendarService) {
-        ctx.calendarService.create(payload);
-      } else if (calendarController) {
-        calendarController.create(payload);
-      }
-      showToast('Atividade adicionada à Agenda.');
-    } else {
-      if (ctx.calendarService) {
-        ctx.calendarService.update(draft.id, payload);
-      } else {
-        const existing = (ctx.state.calendar || []).find(c => c.id === draft.id);
-        if (existing) Object.assign(existing, payload);
-      }
-      showToast('Atividade atualizada.');
-    }
-
-    ui.modalOpen = false;
-    ui.modalDraft = null;
-    ui.selectedDate = draft.date;
-    renderActivityModal();
-    persistAndRender();
   }
 
   function rescheduleCalendarItem(id: string, newDate: string) {
@@ -828,148 +709,6 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       (c as Record<string, any>)[field] = value;
       persistAndRender();
     }
-  }
-
-  // Gestão de Atrasadas e Tarefas de Hoje (Unificadas)
-  function toggleOverdueDate(elId: string, date: string) {
-    const dates = overdueExpandedDates[elId] || (overdueExpandedDates[elId] = new Set());
-    if (dates.has(date)) dates.delete(date);
-    else dates.add(date);
-    renderCalAtrasadas(elId);
-  }
-
-  function quickReviewButton(item: Record<string, any>, elId: string) {
-    if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') {
-      return '';
-    }
-    if (item.isEvent) {
-      return `<button type="button" class="btn small ghost inline-flex items-center gap-1" data-calendar-view-event="${escapeAttr(item.id)}">Ver detalhes</button>`;
-    }
-    if (item.origem === 'Simulado') {
-      return '';
-    }
-    const startBtn =
-      item.kind === 'essay' && ctx.onStartTimer
-        ? `<button type="button" class="btn small ghost inline-flex items-center gap-1" data-calendar-start-timer="${escapeAttr(item.id)}">Iniciar</button>`
-        : '';
-    return `${startBtn}<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}${item.origem === 'Calendário' ? 'Concluir tarefa' : 'Revisar'}</button>`;
-  }
-
-  function renderCalTarefasHoje(elId = 'calTarefasHoje') {
-    const doc = getDoc();
-    if (!doc) return;
-    const ul = doc.getElementById(elId);
-    if (!ul) return;
-    if (elId === 'calTarefasHoje') {
-      const title = ul.parentElement?.querySelector('h3');
-      if (title) title.textContent = 'Compromissos e tarefas de hoje';
-    }
-    const today = todayISO();
-    const unifiedToday = getUnifiedCalendarItems();
-    const items =
-      elId === 'hojeTarefasHoje'
-        ? selectTodayPendingNonSimulationItems(unifiedToday, today)
-        : sortCalendarItemsForDay(
-            unifiedToday.filter(
-              r => r.date === today && r.status !== 'Concluído' && r.status !== 'Cancelado'
-            )
-          );
-
-    if (!items.length) {
-      const emptyLabel =
-        elId === 'hojeTarefasHoje'
-          ? 'Nenhum compromisso ou tarefa na Agenda para hoje (siga o Plano de hoje acima).'
-          : 'Nenhuma tarefa, compromisso ou revisão para hoje.';
-      ul.innerHTML = `<li class="upcoming-empty">${emptyLabel}</li>`;
-      return;
-    }
-    ul.innerHTML = items
-      .map(x => {
-        const kindLabel =
-          x.kind === 'review' ? 'Revisão' : CALENDAR_ACTIVITY_LABELS[x.kind] || 'Tarefa';
-        const timeBadge = x.startTime
-          ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>`
-          : '';
-        const subjectPart = x.subject && x.subject !== x.title ? ` · ${escapeHtml(x.subject)}` : '';
-        return `<li class="flex flex-wrap items-center gap-1.5"><span class="dias-pill dias-hoje">${escapeHtml(kindLabel)}</span>${timeBadge}<span class="min-w-0 flex-1"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span><span class="inline-flex flex-wrap items-center gap-1.5">${quickReviewButton(x, elId)}</span></li>`;
-      })
-      .join('');
-  }
-
-  // O total soma Agenda e Calendário; a Agenda só mostra a parte dela, então a origem fica à vista.
-  function overdueOrigin(items: any[]): string {
-    const agenda = items.filter((x: any) => x.origem === 'Agenda de Revisões').length,
-      calendar = items.length - agenda;
-    return agenda && calendar
-      ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} + ${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · `
-      : agenda
-        ? `${agenda} ${agenda === 1 ? 'revisão' : 'revisões'} · `
-        : calendar
-          ? `${calendar} ${calendar === 1 ? 'tarefa' : 'tarefas'} · `
-          : '';
-  }
-
-  function renderCalAtrasadas(elId = 'calAtrasadas') {
-    const doc = getDoc();
-    if (!doc) return;
-    const ul = doc.getElementById(elId);
-    if (!ul) return;
-    const today = todayISO();
-    const items = getRevisoesUnificadas()
-      .filter(r => isCalendarItemOverdue(r, today))
-      .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-
-    // A lista completa mora na Agenda; Hoje e Calendário mostram só a contagem com o caminho até ela.
-    if (elId !== 'calAtrasadas') {
-      ul.innerHTML = items.length
-        ? `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}</span><div class="flex items-center gap-2 mt-2">${elId === 'hojeAtrasadas' ? '' : '<button type="button" class="btn small" data-action="open-recovery-mission">Resgatar em 30 min</button>'}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('agenda','overdue')">Ver na Agenda</button></div></li>`
-        : '<li class="upcoming-empty">Nenhuma pendência atrasada.</li>';
-      return;
-    }
-    renderCalAtrasadas('calAtrasadasResumo');
-
-    if (!items.length) {
-      ul.innerHTML = '<li class="upcoming-empty">Nenhuma pendência atrasada.</li>';
-      return;
-    }
-    const groups = new Map<string, any[]>();
-    items.forEach(item => {
-      if (!groups.has(item.date)) groups.set(item.date, []);
-      groups.get(item.date)!.push(item);
-    });
-    const entries = [...groups.entries()];
-
-    if (!overdueExpansionInitialized.has(elId)) {
-      (overdueExpandedDates[elId] || (overdueExpandedDates[elId] = new Set())).add(entries[0][0]);
-      overdueExpansionInitialized.add(elId);
-    }
-
-    ul.innerHTML =
-      `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}${pluralize(entries.length, 'data', 'datas')} · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
-      // Todas as datas: "Mostrar mais" é do montador de listas (#calAtrasadas).
-      entries
-        .map(([date, dateItems]) => {
-          const expanded = overdueExpandedDates[elId]?.has(date);
-          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.title || x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${x.origem === 'Calendário' ? `<button type="button" class="btn ghost small" data-calendar-move-today="${escapeAttr(x.id)}">Mover para hoje</button>` : ''}${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
-        })
-        .join('');
-  }
-
-  function completeUnifiedReview(id: string, origin: string) {
-    if (origin === 'Agenda de Revisões') {
-      if (ctx.onCompleteAgendaReview) {
-        ctx.onCompleteAgendaReview(id);
-      }
-    } else {
-      const item = (ctx.state.calendar || []).find(x => x.id === id);
-      if (!item || item.status === 'Concluído') return;
-      updateCal(id, 'status', 'Concluído');
-    }
-    showToast(
-      origin === 'Agenda de Revisões'
-        ? 'Revisão concluída e indicadores atualizados.'
-        : 'Tarefa concluída e indicadores atualizados.'
-    );
   }
 
   function exportCalendarIcs() {
