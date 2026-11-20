@@ -166,7 +166,7 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
         data.pendingPlannedMin > 0 &&
         data.remainingCapacityMin !== null && (
           <p class="week-reconciliation__note" data-week-recoverability="recoverable">
-            Faltam {fmt(data.pendingPlannedMin)} das tarefas marcadas e restam{' '}
+            Faltam {fmt(data.pendingPlannedMin)} das tarefas marcadas desta semana e restam{' '}
             {fmt(data.remainingCapacityMin)} de capacidade até o fim da semana: atraso recuperável.
           </p>
         )}
@@ -174,7 +174,7 @@ export function WeekReconciliationSummary({ data }: { data: WeekReconciliation }
         data.pendingPlannedMin > 0 &&
         data.remainingCapacityMin !== null && (
           <p class="week-reconciliation__note" data-week-recoverability="needs_replan">
-            Faltam {fmt(data.pendingPlannedMin)} das tarefas marcadas para{' '}
+            Faltam {fmt(data.pendingPlannedMin)} das tarefas marcadas desta semana para{' '}
             {fmt(data.remainingCapacityMin)} de capacidade restante na semana: exige
             replanejamento.{' '}
             <button

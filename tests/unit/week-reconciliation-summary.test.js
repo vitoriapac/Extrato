@@ -303,7 +303,7 @@ test('fechamento com estudo sem vínculo explica o 0% e oferece marcar o restant
   );
   // A explicação vem antes da linha-resumo.
   assert.ok(out.indexOf('estudar fora do plano') < out.indexOf('weekly-close-line'));
-  assert.match(out, /Aderência ao plano<\/span><strong>0%/);
+  assert.match(out, /Aderência ao plano · semana<\/span><strong>0%/);
 });
 
 test('saldo da semana: perfil vazio não mostra a barra', () => {

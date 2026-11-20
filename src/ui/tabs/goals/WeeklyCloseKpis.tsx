@@ -67,7 +67,7 @@ export function WeeklyCloseKpis({
             </p>
           )}
           <p class="weekly-close-adherence">
-            <span>Aderência ao plano</span>
+            <span>Aderência ao plano · semana</span>
             <strong>{credit == null ? '—' : `${formatDecimal(credit)}%`}</strong>
           </p>
         </section>
@@ -90,7 +90,7 @@ export function WeeklyCloseKpis({
         </div>
         <div>
           <strong>{credit == null ? '—' : `${formatDecimal(credit)}%`}</strong>
-          <span>{summary ? 'Aderência ao plano' : 'Volume de carga'}</span>
+          <span>{summary ? 'Aderência ao plano · semana' : 'Volume de carga'}</span>
         </div>
       </section>
       {note}

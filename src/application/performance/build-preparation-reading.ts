@@ -215,7 +215,7 @@ export function buildPreparationReading({
   if (!best?.activePlanId) evidence.push('Sem plano ativo: registre um plano para medir o ritmo.');
   const deficit =
     week && week.plannedMinutes > week.studiedMinutes
-      ? `Faltam ${formatStudyMinutes(week.plannedMinutes - week.studiedMinutes)} para igualar o planejado nos últimos 7 dias.`
+      ? `Faltam ${formatStudyMinutes(week.plannedMinutes - week.studiedMinutes)} para igualar o volume planejado nos últimos 7 dias.`
       : null;
 
   // O que já está firme: só números com evidência (10 questões na disciplina), sem elogio vazio.

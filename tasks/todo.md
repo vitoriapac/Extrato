@@ -52,7 +52,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Teste unitário da base escolhida
 **Dependências:** D-F · **Arquivos (conferido):** `src/ui/renderers/header-renderer.ts` (barra 61%), `src/ui/primitives/charts/PhaseRoadmapTimeline.tsx` ("25% do cronograma decorrido") · **Tamanho:** S
 
-### T5: Aderência e "faltam": dois números com janela (D9, D10)
+### T5: Aderência e "faltam": dois números com janela (D9, D10) — FEITA em parte (20/11): rótulos de janela; a unificação de nomes na Visão geral/Planejamento ficou para a T20
 **Aceite:**
 - [ ] Na Visão geral e no Planejamento só aparecem "volume do plano" e "aderência", cada um com definição de uma linha e a janela
 - [ ] "Faltam X" mostra uma base por tela (capacidade, tarefas, 7 d, 30 d) com selo; "perto do plano" não convive com "faltam 2 h 30 min" sem explicação
