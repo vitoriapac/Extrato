@@ -16,6 +16,8 @@ export interface TodayExecutionSummaryProps {
   planCompletedMinutes?: number;
   planRemainingMinutes?: number;
   needsPlanReview?: boolean;
+  completedActivities?: number;
+  pendingActivities?: number;
 }
 
 export function TodayExecutionSummary({
@@ -29,6 +31,8 @@ export function TodayExecutionSummary({
   planCompletedMinutes,
   planRemainingMinutes,
   needsPlanReview = false,
+  completedActivities,
+  pendingActivities,
 }: TodayExecutionSummaryProps): JSX.Element {
   const goalMet = progressPercent !== null && progressPercent >= 100;
 
@@ -121,7 +125,9 @@ export function TodayExecutionSummary({
           ) : (
             <p class="today-progress-status">
               <strong>
-                {planCompletedMinutes == null ? executedMinutesFormatted : formatPlanMinutes(planCompletedMinutes)} de {plannedMinutesFormatted}
+                {completedActivities != null && pendingActivities != null
+                  ? `${completedActivities} de ${completedActivities + pendingActivities} atividades`
+                  : `${planCompletedMinutes == null ? executedMinutesFormatted : formatPlanMinutes(planCompletedMinutes)} de ${plannedMinutesFormatted}`}
               </strong>{' '}
               · {progressPercent}% do plano executado
             </p>

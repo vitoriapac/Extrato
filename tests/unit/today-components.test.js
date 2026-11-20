@@ -355,3 +355,21 @@ test('TodayTabController — coordena renderRealWeekBanner e permite dispensar p
   assert.match(elements.todayRealWeekBannerSlot.innerHTML, /Replanejamento/);
 });
 
+
+test('TodayExecutionSummary — o plano conta atividades; o tempo fica na meta diária', () => {
+  const html = render(
+    h(TodayExecutionSummary, {
+      plannedMinutesFormatted: '1h 20m',
+      executedMinutesFormatted: '0m',
+      dateFormatted: 'hoje',
+      progressPercent: 33,
+      availableMinutes: 120,
+      plannedMinutes: 80,
+      executedMinutes: 0,
+      completedActivities: 1,
+      pendingActivities: 2,
+    })
+  );
+  assert.match(html, /<strong>1 de 3 atividades<\/strong>/);
+  assert.match(html, /33% do plano executado/);
+});

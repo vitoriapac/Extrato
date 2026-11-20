@@ -178,7 +178,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     progress: number | null;
     planCompletedMinutes?: number;
     planRemainingMinutes?: number;
-    execution?: { needsPlanReview?: boolean } | null;
+    execution?: {
+      needsPlanReview?: boolean;
+      progress?: { completedActivities?: number; pendingActivities?: number } | null;
+    } | null;
   }) {
     const plannedMinutesFormatted = formatPlanMinutes(model.plannedMinutes);
     const executedMinutesFormatted = formatPlanMinutes(model.executedMinutes);
@@ -195,6 +198,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       planCompletedMinutes: model.planCompletedMinutes,
       planRemainingMinutes: model.planRemainingMinutes,
       needsPlanReview: Boolean(model.execution?.needsPlanReview),
+      completedActivities: model.execution?.progress?.completedActivities,
+      pendingActivities: model.execution?.progress?.pendingActivities,
     });
   }
 
