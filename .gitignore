@@ -42,3 +42,4 @@ dist/
 .env.*.local
 !.env.example
 design-shots/
+.agents/skills/revenue-centric-design/assets/*.mp4
