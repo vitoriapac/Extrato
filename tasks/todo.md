@@ -79,7 +79,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Com dados, "Tempo estudado hoje" tem um denominador só (plano ou meta diária), com rótulo
 **Dependências:** nenhuma · **Arquivos (provável):** `src/ui/tabs/today/*`, `src/application/daily-execution/*` · **Tamanho:** M
 
-### T9: Saldo × "Resgatar" × "Replanejamento indisponível" (D15) — FEITA em parte (20/11): botão sem "30 min" fixo; falta conferir fechamento × planejamento
+### T9: Saldo × "Resgatar" × "Replanejamento indisponível" (D15) — FEITA em parte (20/11): botão sem "30 min" fixo; fechamento × planejamento: eram dois replanejamentos diferentes, agora com nomes distintos — FEITA
 **Aceite:**
 - [ ] "Resgatar em 30 min" só aparece quando o saldo justifica; "6 min" não oferece 30
 - [ ] Fechamento semanal e Planejamento concordam sobre haver ou não capacidade para redistribuir

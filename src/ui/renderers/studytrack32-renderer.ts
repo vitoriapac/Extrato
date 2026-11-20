@@ -138,6 +138,6 @@ export function renderPostSimulationReplan(model: Record<string, any>, { escapeH
     (model.adjustments || []).reduce((sum: any, item: any) => sum + item.deltaMinutes, 0) +
     (model.unallocatedMinutes || 0);
   if (model.state !== 'proposal')
-    return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe(escapeHtml, model.reason || model.message)}</p></div></div>`;
+    return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>${model.state === 'balanced' ? 'Sem replanejamento pós-simulado necessário' : 'Replanejamento pós-simulado indisponível'}</strong><p>${safe(escapeHtml, model.reason || model.message)}</p></div></div>`;
   return `<div class="replan-summary"><strong>Proposta para ${safe(escapeHtml, model.simulationDate || 'simulado recente')}</strong><p>${model.adjustments.map((item: any) => `${safe(escapeHtml, item.subjectName)}: +${item.deltaMinutes} min`).join(' · ')}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ''}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
 }

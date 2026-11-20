@@ -84,7 +84,7 @@ export function buildPostSimulationReplan({
     message: adjustments.length
       ? 'Proposta aguardando confirmação explícita.'
       : requested.length
-        ? 'Sem capacidade disponível para redistribuição.'
+        ? 'Sem capacidade livre na semana para somar os minutos extras deste simulado. O saldo pendente das tarefas da semana é outro cálculo, em Planejamento.'
         : 'O simulado não indica redistribuição imediata.',
   };
 }

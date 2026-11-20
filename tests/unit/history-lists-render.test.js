@@ -71,3 +71,16 @@ test('histórico de prioridades: tópicos em páginas de 10 e observações sem 
   // Página fora do intervalo cai na última.
   assert.match(renderPriorityHistory(model, { page: 99 }), /Exibindo 21–25 de 25 tópicos/);
 });
+
+test('replanejamento pós-simulado: o título diz de qual replanejamento se trata em cada estado', async () => {
+  const { renderPostSimulationReplan } = await import('../../src/ui/renderers/studytrack32-renderer.js');
+  const opts = { escapeHtml: String };
+  assert.match(
+    renderPostSimulationReplan({ state: 'insufficient_capacity', message: 'x' }, opts),
+    /Replanejamento pós-simulado indisponível/
+  );
+  assert.match(
+    renderPostSimulationReplan({ state: 'balanced', message: 'x' }, opts),
+    /Sem replanejamento pós-simulado necessário/
+  );
+});
