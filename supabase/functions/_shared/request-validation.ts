@@ -18,7 +18,15 @@ function hasForbiddenKey(value: unknown, depth = 0): boolean {
   return false;
 }
 
-export type PushInput = { stateJson: Record<string, unknown>; schemaVersion: number; clientUpdatedAt: string };
+export type PushInput = {
+  stateJson: Record<string, unknown>;
+  schemaVersion: number;
+  clientUpdatedAt: string;
+  /** Versão do servidor sobre a qual o cliente editou; null = cliente não informou. */
+  baseServerUpdatedAt: string | null;
+};
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/;
 
 /** Valida o corpo do POST /push. Retorna os campos normalizados ou a mensagem de erro. */
 export function parsePushBody(body: unknown, now = new Date()): PushInput | { error: string } {
@@ -41,7 +49,20 @@ export function parsePushBody(body: unknown, now = new Date()): PushInput | { er
     }
     clientUpdatedAt = new Date(raw).toISOString();
   }
-  return { stateJson: state as Record<string, unknown>, schemaVersion: schemaVersion as number, clientUpdatedAt };
+  let baseServerUpdatedAt: string | null = null;
+  if (b!.baseServerUpdatedAt != null) {
+    const raw = b!.baseServerUpdatedAt;
+    if (typeof raw !== 'string' || !ISO_DATE.test(raw) || Number.isNaN(Date.parse(raw))) {
+      return { error: 'Payload inválido.' };
+    }
+    baseServerUpdatedAt = raw; // string original: preserva os microssegundos para a comparação no banco
+  }
+  return {
+    stateJson: state as Record<string, unknown>,
+    schemaVersion: schemaVersion as number,
+    clientUpdatedAt,
+    baseServerUpdatedAt,
+  };
 }
 
 export type Customer = { email?: string; name?: string; taxId?: string; cellphone?: string };

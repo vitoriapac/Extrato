@@ -229,6 +229,7 @@ export function createCloudSaaSProvider({
           schemaVersion: state.schemaVersion,
           stateJson: payloadJson,
           clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+          baseServerUpdatedAt: lastSyncedAt || undefined,
         }),
         signal: controller.signal,
       });
@@ -236,7 +237,10 @@ export function createCloudSaaSProvider({
       clearTimeout(timer);
 
       if (!response.ok) {
-        const errText = `Erro HTTP ${response.status}: ${response.statusText}`;
+        const errText =
+          response.status === 409
+            ? 'Outro aparelho sincronizou antes. Baixe a versão da nuvem antes de enviar.'
+            : `Erro HTTP ${response.status}: ${response.statusText}`;
         markPendingSync(true);
         notifyStatus('error', errText);
         return { success: false, error: errText };

@@ -3,9 +3,10 @@
  *
  * Recebe eventos de ciclo de vida da AbacatePay (PIX e Cartão de Crédito).
  * - billing.paid: Liquida o pedido atomicamente via RPC settle_billing_order
- * - billing.overdue / invoice.payment_failed: Marca 'past_due' (inicia tolerância de 3 dias)
+ * - billing.overdue / invoice.payment_failed: Marca 'past_due' só se o período já pago terminou
+ *   (cobrança de renovação falha não corta um Pro que ainda tem dias pagos)
  * - subscription.canceled: Marca 'canceled'
- * - billing.refunded: Marca REFUNDED e revoga o Pro, salvo se houver outro pedido pago
+ * - billing.refunded: Marca REFUNDED e revoga o Pro se o pedido estava pago, salvo se houver outro pedido pago
  * - charge.dispute.created: só registra aviso (não revoga)
  */
 
@@ -16,6 +17,8 @@ import {
   parseBillingWebhookEvent,
   safeEqual,
 } from '../_shared/webhook-logic.ts';
+
+const internalError = () => Response.json({ error: 'Falha interna.' }, { status: 500 });
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
@@ -66,13 +69,17 @@ Deno.serve(async (req: Request) => {
     }
 
     // Atualiza metadados do pagamento em billing_orders
-    await supabaseAdmin
+    const { error: metaError } = await supabaseAdmin
       .from('billing_orders')
       .update({
         fee_cents: event.feeCents || 0,
         payment_method: event.paymentMethod,
       })
       .eq('id', order!.id);
+    if (metaError) {
+      console.error('webhook: falha ao gravar metadados do pagamento', metaError.message);
+      return internalError();
+    }
 
     const { error: settleError } = await supabaseAdmin.rpc('settle_billing_order', {
       p_order_id: order!.id,
@@ -84,7 +91,7 @@ Deno.serve(async (req: Request) => {
 
     // Se pago com cartão, grava marca e últimos 4 dígitos no perfil
     if (event.paymentMethod === 'card' && order?.user_id) {
-      await supabaseAdmin
+      const { error: cardError } = await supabaseAdmin
         .from('profiles')
         .update({
           payment_method: 'card',
@@ -94,26 +101,38 @@ Deno.serve(async (req: Request) => {
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.user_id);
+      if (cardError) {
+        // O pedido já foi liquidado (idempotente): só os dados do cartão ficaram de fora.
+        console.error('webhook: falha ao gravar cartão no perfil', cardError.message);
+      }
     }
 
     return Response.json({ received: true });
   }
 
   if (event.type === 'past_due' && order?.user_id) {
-    await supabaseAdmin
+    const now = new Date().toISOString();
+    // Só vira past_due quando não há mais período pago: antes disso o Pro segue valendo até o vencimento.
+    const { error: statusError } = await supabaseAdmin
       .from('profiles')
-      .update({
-        subscription_status: 'past_due',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', order.user_id);
+      .update({ subscription_status: 'past_due', updated_at: now })
+      .eq('id', order.user_id)
+      .or(`subscription_period_end.is.null,subscription_period_end.lt.${now}`);
+    if (statusError) {
+      console.error('webhook: falha ao marcar past_due', statusError.message);
+      return internalError();
+    }
 
-    await supabaseAdmin
+    const { error: reasonError } = await supabaseAdmin
       .from('billing_orders')
       .update({
         failure_reason: event.failureReason || 'Cobrança não autorizada',
       })
       .eq('id', order.id);
+    if (reasonError) {
+      console.error('webhook: falha ao gravar motivo da falha', reasonError.message);
+      return internalError();
+    }
 
     return Response.json({ received: true, status: 'past_due' });
   }
@@ -124,10 +143,18 @@ Deno.serve(async (req: Request) => {
   }
 
   if (event.type === 'refunded' && order?.user_id) {
-    await supabaseAdmin
+    const wasPaid = order.status === 'PAID';
+    const { error: refundError } = await supabaseAdmin
       .from('billing_orders')
       .update({ status: 'REFUNDED' })
       .eq('id', order.id);
+    if (refundError) {
+      console.error('webhook: falha ao marcar reembolso', refundError.message);
+      return internalError();
+    }
+
+    // Pedido que nunca foi pago não revoga nada (p.ex. Pro concedido pelo admin).
+    if (!wasPaid) return Response.json({ received: true, status: 'refunded_unpaid' });
 
     // Outro pedido pago ainda cobre o período: reembolsar o antigo não tira o Pro atual.
     const { data: otherPaid, error: otherError } = await supabaseAdmin
@@ -145,7 +172,7 @@ Deno.serve(async (req: Request) => {
       return Response.json({ received: true, status: 'refunded_kept_pro' });
     }
 
-    await supabaseAdmin
+    const { error: revokeError } = await supabaseAdmin
       .from('profiles')
       .update({
         plan_tier: 'free',
@@ -154,12 +181,16 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', order.user_id);
+    if (revokeError) {
+      console.error('webhook: falha ao revogar o Pro', revokeError.message);
+      return internalError();
+    }
 
     return Response.json({ received: true, status: 'refunded' });
   }
 
   if (event.type === 'canceled' && order?.user_id) {
-    await supabaseAdmin
+    const { error: cancelError } = await supabaseAdmin
       .from('profiles')
       .update({
         auto_renew: false,
@@ -167,6 +198,10 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', order.user_id);
+    if (cancelError) {
+      console.error('webhook: falha ao registrar cancelamento', cancelError.message);
+      return internalError();
+    }
 
     return Response.json({ received: true, status: 'canceled' });
   }

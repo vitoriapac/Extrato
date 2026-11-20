@@ -94,4 +94,35 @@ BEGIN
   ASSERT (SELECT role FROM public.profiles WHERE id = free_id) = 'student', 'role do usuário comum permanece student';
 END $$;
 
+-- push_user_state: compare-and-set, snapshot do estado anterior e paywall.
+DO $$
+DECLARE
+  pro_id  uuid := '00000000-0000-0000-0000-0000000000b2';
+  free_id uuid := '00000000-0000-0000-0000-0000000000a1';
+  r jsonb;
+  base timestamptz;
+BEGIN
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', pro_id, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- o Pro já tem uma linha (inserida acima); a base atual passa e grava
+  SELECT server_updated_at INTO base FROM public.user_study_states WHERE user_id = pro_id;
+  r := public.push_user_state(1, '{"v":2}', 'c2', 'dev-a', now(), base);
+  ASSERT r->>'status' = 'ok', 'push com a base atual deve gravar';
+
+  -- base antiga (outro aparelho já avançou): conflito e nada gravado
+  r := public.push_user_state(1, '{"v":3}', 'c3', 'dev-b', now(), base - interval '1 minute');
+  ASSERT r->>'status' = 'conflict', 'base desatualizada deve dar conflito';
+  ASSERT (SELECT state_json->>'v' FROM public.user_study_states WHERE user_id = pro_id) = '2', 'conflito não grava';
+
+  -- sem base (primeira sincronização) grava
+  r := public.push_user_state(1, '{"v":4}', 'c4', 'dev-b', now());
+  ASSERT r->>'status' = 'ok', 'push sem base grava';
+
+  RESET ROLE;
+  -- o estado anterior foi guardado (um snapshot por janela de 7 dias)
+  ASSERT (SELECT count(*) FROM public.user_state_snapshots WHERE user_id = pro_id) = 1, 'um snapshot por semana';
+  ASSERT pg_temp.try_as(free_id, 'SELECT public.push_user_state(1, ''{}'', ''x'', ''d'', now())') = 'denied', 'free não grava por RPC';
+END $$;
+
 ROLLBACK;

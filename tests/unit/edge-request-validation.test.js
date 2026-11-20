@@ -32,6 +32,15 @@ test('push: caso feliz e defaults', () => {
   assert.equal(r3.schemaVersion, 1);
 });
 
+test('push: baseServerUpdatedAt é opcional, preserva microssegundos e rejeita lixo', () => {
+  assert.equal(parsePushBody({ stateJson: {} }, NOW).baseServerUpdatedAt, null);
+  const base = '2026-11-07T10:00:00.123456+00:00';
+  assert.equal(parsePushBody({ stateJson: {}, baseServerUpdatedAt: base }, NOW).baseServerUpdatedAt, base);
+  for (const bad of ['ontem', 123, '2026-11-07']) {
+    assert.ok('error' in parsePushBody({ stateJson: {}, baseServerUpdatedAt: bad }, NOW), String(bad));
+  }
+});
+
 test('push: rejeita forma inválida', () => {
   const bad = [
     null, {}, { stateJson: 'x' }, { stateJson: [] },

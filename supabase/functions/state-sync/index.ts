@@ -126,33 +126,51 @@ Deno.serve(async (req: Request) => {
     if ('error' in parsed) {
       return Response.json({ error: parsed.error }, { status: 400, headers: CORS_HEADERS });
     }
-    const { stateJson, schemaVersion, clientUpdatedAt } = parsed;
+    const { stateJson, schemaVersion, clientUpdatedAt, baseServerUpdatedAt } = parsed;
     const deviceId = (req.headers.get('X-Device-Id') || '').slice(0, 128) || null;
 
     const serialized = JSON.stringify(stateJson);
     if (serialized.length > MAX_STATE_BYTES) return tooBig();
     const checksum = await computeSha256Hex(serialized);
-    const serverUpdatedAt = new Date().toISOString();
 
-    const { error: upsertError } = await supabase.from('user_study_states').upsert({
-      user_id: user.id,
-      schema_version: schemaVersion,
-      state_json: stateJson,
-      checksum_sha256: checksum,
-      device_id: deviceId,
-      client_updated_at: clientUpdatedAt,
-      server_updated_at: serverUpdatedAt,
+    // Compare-and-set + snapshot do estado anterior, atômicos no banco (migration push_user_state_rpc).
+    const { data: pushed, error: pushError } = await supabase.rpc('push_user_state', {
+      p_schema_version: schemaVersion,
+      p_state: stateJson,
+      p_checksum: checksum,
+      p_device_id: deviceId,
+      p_client_updated_at: clientUpdatedAt,
+      p_base_version: baseServerUpdatedAt,
     });
 
-    if (upsertError) {
-      console.error('state-sync: falha no upsert', upsertError.message);
+    if (pushError) {
+      console.error('state-sync: falha no push', pushError.message);
+      const denied = pushError.code === '42501';
       return Response.json(
-        { error: 'Falha ao salvar.' },
-        { status: 500, headers: CORS_HEADERS }
+        {
+          error: denied
+            ? 'Sincronização na nuvem requer assinatura Extrato de Estudos Pro ativa.'
+            : 'Falha ao salvar.',
+        },
+        { status: denied ? 403 : 500, headers: CORS_HEADERS }
       );
     }
 
-    return Response.json({ serverUpdatedAt, checksum }, { headers: CORS_HEADERS });
+    if (pushed?.status === 'conflict') {
+      return Response.json(
+        {
+          error: 'Conflito: o servidor tem uma versão mais nova.',
+          serverUpdatedAt: pushed.serverUpdatedAt,
+          checksum: pushed.checksum,
+        },
+        { status: 409, headers: CORS_HEADERS }
+      );
+    }
+
+    return Response.json(
+      { serverUpdatedAt: pushed.serverUpdatedAt, checksum: pushed.checksum },
+      { headers: CORS_HEADERS }
+    );
   }
 
   return Response.json({ error: 'Rota não encontrada.' }, { status: 404, headers: CORS_HEADERS });
