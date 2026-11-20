@@ -65,7 +65,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Teste: LP 18/17, Tecnologia e IA 13/12, Matemática Financeira 14/12 resolvidos
 **Dependências:** D-E · **Tamanho:** S
 
-### T7: Formato numérico único (D13 restante)
+### T7: Formato numérico único (D13 restante) — FEITA em parte (20/11): milhar em contagens de questões; varredura de percentuais não achou casos novos
 **Aceite:**
 - [ ] `1.750` em toda a UI (nunca `1750`); percentuais com uma casa decimal ou sem decimal por regra única, nunca `72,0%` falso nem `55%` ao lado de `45,3%`
 - [ ] Teste de `format-number` e varredura (grep) por `toFixed(0)` e `Math.round(... * 100)` em telas

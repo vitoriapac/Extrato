@@ -1,3 +1,4 @@
+import { formatDecimal } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
 
@@ -243,7 +244,7 @@ export function QuestionLogTable({
                       </button>
                     </div>
                     <div class="mobile-card-metrics">
-                      <span>{vm.resolved} questões</span>
+                      <span>{formatDecimal(vm.resolved)} questões</span>
                       <span>{vm.correct} acertos</span>
                       <strong>{vm.accuracy}%</strong>
                       {errorToggle}

@@ -37,7 +37,7 @@ export function renderTopicQuestionPerformance({
       const mastery = masteryForTopic(topic.id),
         width = topic.accuracy === null ? 0 : topic.accuracy;
       const fillClass = colorSlot ? `subject-bg-${colorSlot}` : `performance-fill ${topic.classification.key}`;
-      return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${mastery.value == null ? 'aguardando dados' : mastery.value + '/100'}</div></div><div class="performance-track"><div class="${fillClass} rounded-full" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? '—' : formatDecimal(topic.accuracy) + '%'}</div></div>`;
+      return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${formatDecimal(topic.resolved)} questões · ${topic.confidence.label} · domínio ${mastery.value == null ? 'aguardando dados' : mastery.value + '/100'}</div></div><div class="performance-track"><div class="${fillClass} rounded-full" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? '—' : formatDecimal(topic.accuracy) + '%'}</div></div>`;
     })
     .join('');
   return tabs + `<div id="questionPerformanceRecords">${rows}</div>`;

@@ -23,3 +23,8 @@ test('valores não numéricos passam sem alteração', () => {
   assert.equal(formatDecimal('—'), '—');
   assert.equal(formatDecimal(Number.NaN), 'NaN');
 });
+
+test('contagens de questões usam separador de milhar (1.750, nunca 1750)', () => {
+  assert.equal(formatDecimal(1750), '1.750');
+  assert.equal(formatDecimal(463), '463');
+});

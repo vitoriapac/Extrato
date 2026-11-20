@@ -1,4 +1,4 @@
-import { formatPoints } from '../../../core/format-number.js';
+import { formatDecimal, formatPoints } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { weeklyTrendGeometry } from './geometry.js';
@@ -129,7 +129,7 @@ export function WeeklyTrendChart({
               rx={2}
               class={`subject-fill-${colorSlot} opacity-40 hover:opacity-75 transition-opacity chart-bar-interactive`}
             >
-              <title>{`${it.label}: ${it.resolved} questões resolvidas`}</title>
+              <title>{`${it.label}: ${formatDecimal(it.resolved)} questões resolvidas`}</title>
             </rect>
           ))}
 
@@ -169,7 +169,7 @@ export function WeeklyTrendChart({
                   stroke-width="2"
                   class="cursor-pointer chart-point-interactive"
                 >
-                  <title>{`${it.label}: ${it.accuracy}% de acerto (${it.resolved} questões)`}</title>
+                  <title>{`${it.label}: ${it.accuracy}% de acerto (${formatDecimal(it.resolved)} questões)`}</title>
                 </circle>
               ) : (
                 <circle

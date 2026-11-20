@@ -1,3 +1,4 @@
+import { formatDecimal } from '../../../core/format-number.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
 import {
@@ -55,7 +56,7 @@ export function createDashboardHeatmapController(
     ];
     if (summary.targetSeconds > 0) parts.push(`${summary.goalPct}% da meta`);
     if (summary.questions > 0)
-      parts.push(`${summary.questions} questões · ${summary.accuracy}% de acerto`);
+      parts.push(`${formatDecimal(summary.questions)} questões · ${summary.accuracy}% de acerto`);
     if (summary.reviews > 0) parts.push(pluralize(summary.reviews, 'revisão', 'revisões'));
     if (summary.simulations > 0) parts.push(pluralize(summary.simulations, 'simulado'));
     if (summary.subjectNames?.length) parts.push(summary.subjectNames.join(', '));
