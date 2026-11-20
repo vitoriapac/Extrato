@@ -2,6 +2,8 @@ import type { JSX } from 'preact';
 import { BulletBar } from '../../primitives/charts/charts.js';
 
 export interface TodayGoalsCardProps {
+  /** Metas ainda nos valores iniciais e sem registros: não mostra denominadores que a pessoa não definiu. */
+  goalsUnset?: boolean;
   topicosHoje: number;
   metaTopicosHoje: number;
   questoesHoje: number;
@@ -18,6 +20,7 @@ export interface TodayGoalsCardProps {
 }
 
 export function TodayGoalsCard({
+  goalsUnset = false,
   topicosHoje,
   metaTopicosHoje,
   questoesHoje,
@@ -34,6 +37,17 @@ export function TodayGoalsCard({
 }: TodayGoalsCardProps): JSX.Element {
   const tempoMinutos = Math.round(tempoHojeSegundos / 60);
   const metaTempoMinutos = Math.round(metaHorasHoje * 60);
+
+  if (goalsUnset)
+    return (
+      <div class="metas-hoje-grid">
+        <div class="meta-hoje-card" role="status">
+          <div class="meta-hoje-label">Metas de hoje</div>
+          <p>Você ainda não definiu metas. Defina as metas de tópicos, questões e horas para acompanhar o dia.</p>
+          <a class="btn tertiary" href="#metas">Definir metas</a>
+        </div>
+      </div>
+    );
 
   return (
     <div class="metas-hoje-grid">
@@ -91,7 +105,7 @@ export function TodayGoalsCard({
           <div class="meta-hoje-time-main">
             <div class="meta-hoje-time-value">{tempoHojeFormatado}</div>
             <div class="meta-hoje-time-target">
-              de {metaHorasFormatado} · {pctTempo}%
+              de {metaHorasFormatado} (meta diária) · {pctTempo}%
             </div>
             {paginasHoje > 0 && (
               <div class="text-xs text-content-secondary mt-1 font-medium font-data">

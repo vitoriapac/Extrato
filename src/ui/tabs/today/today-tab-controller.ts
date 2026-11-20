@@ -18,6 +18,7 @@ import { capturePlanPriority } from '../../../domain/planning/plan-priority-snap
 import { renderIconSvg } from '../../primitives/icon.js';
 import { pickPlanAchievementMark } from '../../../application/achievements/achievement-progress-note.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
+import { initialGoalSuggestions } from '../../../domain/goals/initial-goal-guidance.js';
 import { buildUnifiedCalendarItems } from '../../../application/calendar/build-unified-reviews.js';
 import { selectPlannedSimulationsForTodayView } from '../../../domain/calendar/calendar-projection.js';
 import { createTodayJournalController } from './today-journal-controller.js';
@@ -273,7 +274,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       });
     }
 
-    const dailyTargetMinutes = Math.round(metaHoursToday() * 60);
+    const dailyTargetMinutes = goalsUnset() ? 0 : Math.round(metaHoursToday() * 60);
     const dailyTargetFormatted = formatHoras(metaHoursToday());
     const totalWeekFormatted = formatPlanMinutes(totalWeekMinutes);
 
@@ -683,6 +684,16 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     `;
   }
 
+  // Sem nenhum registro e com as metas ainda nos valores iniciais, não há meta do usuário para mostrar.
+  function goalsUnset(): boolean {
+    const state = getState();
+    const hasActivity =
+      (state.studySessions || []).length > 0 ||
+      (state.questoes || []).length > 0 ||
+      (state.simulados || []).length > 0;
+    return initialGoalSuggestions(state.metas, hasActivity).includes('questoesSemanal');
+  }
+
   function renderMetasHoje() {
     if (!doc) return;
     const container = doc.getElementById('hojeMetas');
@@ -709,6 +720,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     const todayDayOfWeek = parseLocalDate(today)?.getDay?.() ?? new Date().getDay();
 
     mountTodayGoals(container, {
+      goalsUnset: goalsUnset(),
       topicosHoje,
       metaTopicosHoje,
       questoesHoje,

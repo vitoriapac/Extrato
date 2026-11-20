@@ -73,7 +73,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Nota de escopo:** as Tarefas 57 e 59 do plano arquivado já deram um formatador por grandeza e "uma prioridade só" **dentro da aba Desempenho**. Esta tarefa cobre o que escapou (legenda do gráfico de Questões, já corrigida em `c924e5f`) e as outras abas (Visão geral, Hoje, Questões); começar com um grep antes de reescrever.
 **Dependências:** nenhuma · **Tamanho:** M
 
-### T8: Metas e denominadores do dia; vazio sem padrões embutidos (D14)
+### T8: Metas e denominadores do dia; vazio sem padrões embutidos (D14) — FEITA em parte (20/11): vazio em Hoje feito; denominador único com plano ficou pendente
 **Aceite:**
 - [ ] Sem plano/disponibilidade, Hoje não mostra "meta 2h30" nem "0 / 21 questões"; mostra estado vazio com um CTA
 - [ ] Com dados, "Tempo estudado hoje" tem um denominador só (plano ou meta diária), com rótulo

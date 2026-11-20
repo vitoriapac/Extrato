@@ -180,7 +180,28 @@ test('TodayGoalsCard Preact Component — renderiza metas diárias com BulletBar
   assert.match(html, /4 <span>\/ 4<\/span>/);
   assert.match(html, /Tempo estudado hoje/);
   assert.match(html, /1h 30m/);
-  assert.match(html, /de 3h · 50%/);
+  assert.match(html, /de 3h \(meta diária\) · 50%/);
+
+  const unset = render(
+    h(TodayGoalsCard, {
+      goalsUnset: true,
+      topicosHoje: 0,
+      metaTopicosHoje: 1,
+      questoesHoje: 0,
+      metaQuestoesHoje: 21,
+      revisoesConcluidasHoje: 0,
+      totalRevisoesHoje: 0,
+      tempoHojeSegundos: 0,
+      tempoHojeFormatado: '0min',
+      metaHorasHoje: 2.5,
+      metaHorasFormatado: '2h30',
+      pctTempo: 0,
+      todayDayOfWeek: 2,
+    })
+  );
+  assert.match(unset, /Você ainda não definiu metas/);
+  assert.match(unset, /href="#metas"/);
+  assert.doesNotMatch(unset, /21|2h30/);
   assert.match(html, /updateMetaHoursDay\(2,this\.value\)/);
   assert.match(html, /chart-bullet/);
 });
@@ -231,7 +252,7 @@ test('createTodayTabController — renderTodayGoalsHtml gera marcação acessív
 
   assert.match(goalsHtml, /metas-hoje-grid/);
   assert.match(goalsHtml, /30m/);
-  assert.match(goalsHtml, /de 1h · 50%/);
+  assert.match(goalsHtml, /de 1h \(meta diária\) · 50%/);
   assert.match(goalsHtml, /chart-bullet/);
 });
 
