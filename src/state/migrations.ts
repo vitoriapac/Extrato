@@ -481,6 +481,29 @@ export function createStateMigrator({
     return data;
   }
 
+  // v35: redação como atividade especializada (tema, status de entrega/correção e nota opcional).
+  function migrateV34toV35(data: Record<string, any>) {
+    if (Array.isArray(data.calendar)) {
+      data.calendar = data.calendar.map((item: any) => {
+        if (!item || typeof item !== 'object' || item.kind !== 'essay') return item;
+        return {
+          ...item,
+          essayTheme: typeof item.essayTheme === 'string' ? item.essayTheme : null,
+          essayScore: Number.isFinite(Number(item.essayScore)) && item.essayScore !== null ? Number(item.essayScore) : null,
+          essayMaxScore: Number.isFinite(Number(item.essayMaxScore)) && item.essayMaxScore !== null ? Number(item.essayMaxScore) : null,
+          essayStatus:
+            item.essayStatus === 'draft' || item.essayStatus === 'written' || item.essayStatus === 'graded'
+              ? item.essayStatus
+              : item.status === 'Concluído'
+                ? 'written'
+                : 'draft',
+        };
+      });
+    }
+    data.schemaVersion = 35;
+    return data;
+  }
+
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -518,6 +541,7 @@ export function createStateMigrator({
         31: migrateV31toV32,
         32: migrateV32toV33,
         33: migrateV33toV34,
+        34: migrateV34toV35,
       },
     });
   }

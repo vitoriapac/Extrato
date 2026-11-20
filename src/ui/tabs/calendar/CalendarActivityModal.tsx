@@ -5,11 +5,14 @@ import {
   CALENDAR_ACTIVITY_KINDS,
   CALENDAR_ACTIVITY_LABELS,
   CALENDAR_RECURRENCE_OPTIONS,
+  ESSAY_STATUS_OPTIONS,
   STATUS_OPTIONS,
 } from '../../../state/schema.js';
 import { Dialog } from '../../primitives/dialog.js';
 import { Button } from '../../primitives/button.js';
 import { Icon } from '../../primitives/icon.js';
+import { formatPlanMinutes } from '../../../core/format-duration.js';
+import type { DraftOverloadPreview } from '../../../domain/calendar/calendar-projection.js';
 
 export interface CalendarActivityDraft {
   id?: string | null;
@@ -25,6 +28,10 @@ export interface CalendarActivityDraft {
   location: string;
   externalUrl: string;
   description: string;
+  essayTheme: string;
+  essayScore: string;
+  essayMaxScore: string;
+  essayStatus: 'draft' | 'written' | 'graded';
 }
 
 export interface CalendarActivityModalProps {
@@ -32,6 +39,7 @@ export interface CalendarActivityModalProps {
   isNew: boolean;
   initialDraft: CalendarActivityDraft | null;
   subjects: Array<{ id: string; name: string }>;
+  getDayLoadPreview?: (draft: CalendarActivityDraft) => DraftOverloadPreview;
   onSave: (draft: CalendarActivityDraft) => void;
   onDelete?: (id: string) => void;
   onClose: () => void;
@@ -51,6 +59,10 @@ const EMPTY_DRAFT: CalendarActivityDraft = {
   location: '',
   externalUrl: '',
   description: '',
+  essayTheme: '',
+  essayScore: '',
+  essayMaxScore: '',
+  essayStatus: 'draft',
 };
 
 const LABEL_CLASS =
@@ -63,6 +75,7 @@ export function CalendarActivityModal({
   isNew,
   initialDraft,
   subjects,
+  getDayLoadPreview,
   onSave,
   onDelete,
   onClose,
@@ -145,6 +158,8 @@ export function CalendarActivityModal({
     manual_review: 'Ex: Revisar Controle de Constitucionalidade',
   };
 
+  const overloadPreview = getDayLoadPreview ? getDayLoadPreview(draft) : null;
+
   return (
     <Dialog
       id="calendarActivityModal"
@@ -161,6 +176,20 @@ export function CalendarActivityModal({
             class="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger"
           >
             {error}
+          </div>
+        )}
+        {overloadPreview?.isOverloaded && (
+          <div
+            role="status"
+            class="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-content-primary flex items-start gap-2"
+          >
+            <Icon name="alert-triangle" size={14} class="text-warning shrink-0 mt-0.5" />
+            <span>
+              Você reservou <strong>{formatPlanMinutes(overloadPreview.projectedMinutes)}</strong> para
+              atividades neste dia, mas sua disponibilidade configurada é de{' '}
+              <strong>{formatPlanMinutes(overloadPreview.availableMinutes)}</strong>. Você pode ajustar a
+              duração, escolher outra data ou salvar mesmo assim.
+            </span>
           </div>
         )}
 
@@ -218,6 +247,81 @@ export function CalendarActivityModal({
             </div>
           </div>
         </div>
+
+        {draft.kind === 'essay' && (
+          <div class="rounded-lg border border-border bg-surface-elevated p-3 space-y-3">
+            <div class="text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary">
+              Dados da redação
+            </div>
+            <div>
+              <label for="calEssayTheme" class={LABEL_CLASS}>
+                Tema da redação
+              </label>
+              <input
+                id="calEssayTheme"
+                type="text"
+                placeholder="Ex: Desafios da segurança pública digital no Brasil"
+                value={draft.essayTheme || ''}
+                onInput={e => updateField('essayTheme', (e.currentTarget as HTMLInputElement).value)}
+                class={CONTROL_CLASS}
+              />
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label for="calEssayStatus" class={LABEL_CLASS}>
+                  Etapa
+                </label>
+                <select
+                  id="calEssayStatus"
+                  value={draft.essayStatus || 'draft'}
+                  onChange={e =>
+                    updateField(
+                      'essayStatus',
+                      (e.currentTarget as HTMLSelectElement).value as 'draft' | 'written' | 'graded'
+                    )
+                  }
+                  class={CONTROL_CLASS}
+                >
+                  {ESSAY_STATUS_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label for="calEssayScore" class={LABEL_CLASS}>
+                  Nota obtida
+                </label>
+                <input
+                  id="calEssayScore"
+                  type="number"
+                  min={0}
+                  step="0.5"
+                  placeholder="Ex: 880"
+                  value={draft.essayScore || ''}
+                  onInput={e => updateField('essayScore', (e.currentTarget as HTMLInputElement).value)}
+                  class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                />
+              </div>
+              <div>
+                <label for="calEssayMaxScore" class={LABEL_CLASS}>
+                  Nota máxima
+                </label>
+                <input
+                  id="calEssayMaxScore"
+                  type="number"
+                  min={1}
+                  step="1"
+                  placeholder="Ex: 1000"
+                  value={draft.essayMaxScore || ''}
+                  onInput={e => updateField('essayMaxScore', (e.currentTarget as HTMLInputElement).value)}
+                  class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div class="border-t border-border pt-3">
           <button
@@ -331,7 +435,7 @@ export function CalendarActivityModal({
                 </div>
                 <div>
                   <label for="calActivityUrl" class={LABEL_CLASS}>
-                    Link de referência
+                    {draft.kind === 'essay' ? 'Link da proposta / material' : 'Link de referência'}
                   </label>
                   <input
                     id="calActivityUrl"

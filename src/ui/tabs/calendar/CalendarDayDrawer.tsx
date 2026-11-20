@@ -151,9 +151,18 @@ export function CalendarDayDrawer({
                       {item.title}
                     </strong>
                   </div>
-                  {(item.subject || item.location) && (
+                  {(item.subject || item.location || (item.kind === 'essay' && (item.essayTheme || item.essayScore != null))) && (
                     <div class="text-xs text-content-secondary">
-                      {[item.subject, item.location].filter(Boolean).join(' · ')}
+                      {[
+                        item.subject,
+                        item.location,
+                        item.kind === 'essay' && item.essayTheme ? `Tema: ${item.essayTheme}` : '',
+                        item.kind === 'essay' && item.essayScore != null
+                          ? `Nota: ${item.essayScore}${item.essayMaxScore ? `/${item.essayMaxScore}` : ''}`
+                          : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </div>
                   )}
                 </div>

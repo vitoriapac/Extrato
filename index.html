@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=c74a92e303ac">
-<link rel="stylesheet" href="styles/app.css?v=c74a92e303ac">
+<link rel="stylesheet" href="styles/tailwind.css?v=49f41d9a33a8">
+<link rel="stylesheet" href="styles/app.css?v=49f41d9a33a8">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -374,18 +374,8 @@
         </div>
       </div>
 
-      <!-- COLUNA LATERAL DE RITMO, METAS E AGENDA (4 cols) -->
+      <!-- COLUNA LATERAL DE AGENDA, METAS E RITMO (4 cols) -->
       <div class="today-layout-grid__col today-layout-grid__side lg:col-span-4">
-        <section class="chart-card today-metas-section" aria-labelledby="todayMetasHeading">
-          <header class="module-heading module-heading--compact">
-            <span class="module-heading__eyebrow">Progresso diário</span>
-            <h3 class="module-heading__title" id="todayMetasHeading">Metas de hoje</h3>
-          </header>
-          <div id="hojeMetas"></div>
-        </section>
-
-        <div id="todayWeeklyRhythmSlot"></div>
-
         <div class="chart-card today-agenda-card" aria-labelledby="todayAgendaHeading">
           <header class="module-heading module-heading--compact">
             <span class="module-heading__eyebrow">Compromissos</span>
@@ -397,6 +387,16 @@
             <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
           </div>
         </div>
+
+        <section class="chart-card today-metas-section" aria-labelledby="todayMetasHeading">
+          <header class="module-heading module-heading--compact">
+            <span class="module-heading__eyebrow">Progresso diário</span>
+            <h3 class="module-heading__title" id="todayMetasHeading">Metas de hoje</h3>
+          </header>
+          <div id="hojeMetas"></div>
+        </section>
+
+        <div id="todayWeeklyRhythmSlot"></div>
 
         <div id="errorNotebookDueToday"></div>
       </div>
@@ -788,7 +788,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=c74a92e303ac"></script>
+  <script src="src/app.bundle.js?v=49f41d9a33a8"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

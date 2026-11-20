@@ -2,10 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   computeDailyCalendarLoad,
+  computeDraftOverloadPreview,
   expandRecurringCalendarItems,
   getAvailableMinutesForDate,
   getWeekDates,
   isCalendarItemOverdue,
+  selectPlannedSimulationsForTodayView,
+  selectTodayPendingNonSimulationItems,
   sortCalendarItemsForDay,
 } from '../../src/domain/calendar/calendar-projection.ts';
 import { buildCalendarIcs } from '../../src/domain/calendar/calendar-ics.ts';
@@ -234,4 +237,114 @@ test('buildCalendarIcs gera VCALENDAR válido com eventos com horário e dia int
   assert.match(ics, /DTSTART;VALUE=DATE:20261121/);
   assert.match(ics, /DTEND;VALUE=DATE:20261122/);
   assert.match(ics, /END:VCALENDAR/);
+});
+
+test('selectTodayPendingNonSimulationItems e selectPlannedSimulationsForTodayView evitam duplicação de simulados em Hoje', () => {
+  const items = buildUnifiedCalendarItems({
+    calendar: [
+      {
+        id: 'task-1',
+        date: '2026-11-19',
+        kind: 'task',
+        title: 'Ler PDF',
+        status: 'Não iniciado',
+      },
+      {
+        id: 'sim-cal-today',
+        date: '2026-11-19',
+        kind: 'mock_exam',
+        title: 'Simulado Hoje (Agenda)',
+        status: 'Não iniciado',
+        startTime: '09:00',
+        linkedSimulationId: 'sim-1',
+      },
+      {
+        id: 'sim-cal-done',
+        date: '2026-11-19',
+        kind: 'mock_exam',
+        title: 'Simulado Concluído',
+        status: 'Concluído',
+        linkedSimulationId: 'sim-done',
+      },
+    ],
+    simulados: [
+      { id: 'sim-1', nome: 'Simulado Hoje (Agenda)', date: '2026-11-19', correct: 0, total: 0 },
+      { id: 'sim-done', nome: 'Simulado Concluído', date: '2026-11-19', correct: 0, total: 0 },
+      { id: 'sim-future', nome: 'Simulado Domingo', date: '2026-11-22', correct: 0, total: 0 },
+      { id: 'sim-past', nome: 'Simulado Passado', date: '2026-11-10', correct: 0, total: 0 },
+    ],
+    today: '2026-11-19',
+  });
+
+  const nonSimToday = selectTodayPendingNonSimulationItems(items, '2026-11-19');
+  assert.deepEqual(
+    nonSimToday.map(i => i.id),
+    ['task-1']
+  );
+
+  const plannedSims = selectPlannedSimulationsForTodayView(items, '2026-11-19');
+  assert.deepEqual(
+    plannedSims.map(i => i.id),
+    ['sim-cal-today', 'sim-future']
+  );
+});
+
+test('computeDraftOverloadPreview detecta sobrecarga no cadastro e ignora eventos informativos', () => {
+  const items = buildUnifiedCalendarItems({
+    calendar: [
+      {
+        id: 't1',
+        date: '2026-11-22',
+        kind: 'task',
+        title: 'Revisar Direito',
+        status: 'Não iniciado',
+        estimatedMinutes: 60,
+      },
+    ],
+  });
+  const metas = { horasDiarias: 2 }; // 120 min
+
+  const simPreview = computeDraftOverloadPreview(
+    items,
+    {
+      kind: 'mock_exam',
+      date: '2026-11-22',
+      estimatedMinutes: 240,
+    },
+    metas
+  );
+  assert.equal(simPreview.existingMinutes, 60);
+  assert.equal(simPreview.draftMinutes, 240);
+  assert.equal(simPreview.projectedMinutes, 300);
+  assert.equal(simPreview.availableMinutes, 120);
+  assert.equal(simPreview.isOverloaded, true);
+
+  // Ao editar o próprio item t1 para 90 min, não duplica os 60 min anteriores
+  const editPreview = computeDraftOverloadPreview(
+    items,
+    {
+      id: 't1',
+      kind: 'task',
+      date: '2026-11-22',
+      estimatedMinutes: 90,
+    },
+    metas
+  );
+  assert.equal(editPreview.projectedMinutes, 90);
+  assert.equal(editPreview.isOverloaded, false);
+
+  // Evento informativo não gera sobrecarga
+  const eventPreview = computeDraftOverloadPreview(
+    items,
+    {
+      kind: 'event',
+      date: '2026-11-22',
+      startTime: '08:00',
+      endTime: '12:00',
+    },
+    metas
+  );
+  assert.equal(eventPreview.draftMinutes, 0);
+  assert.equal(eventPreview.projectedMinutes, 60);
+  assert.equal(eventPreview.isOverloaded, false);
 });

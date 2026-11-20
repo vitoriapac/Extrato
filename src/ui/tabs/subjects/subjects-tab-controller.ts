@@ -3,6 +3,8 @@ import { getRovingTabIndex } from '../../primitives/tabs.js';
 import { isSubjectColor } from '../../../domain/subjects/subject-color.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { VerticalizedSyllabusView } from '../../views/VerticalizedSyllabusView.js';
+import { TopicIntelligenceModal } from '../../modals/TopicIntelligenceModal.js';
+import { buildTopicIntelligence } from '../../../application/topic-intelligence/build-topic-intelligence.js';
 import { QuickStatsGrid } from '../dashboard/QuickStatsGrid.js';
 import { buildTopicStatusSummary } from '../../../application/subjects/build-topic-status-summary.js';
 import { createSubjectsController } from './subjects-controller.js';
@@ -181,6 +183,74 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     });
   }
 
+  function openTopicIntelligenceModal(subjectId: string, topicId: string): void {
+    const subject = (ctx.state.subjects || []).find((s: Subject) => s.id === subjectId);
+    const topic = subject?.topics?.find((t: Topic) => t.id === topicId);
+    if (!subject || !topic) return;
+
+    const topicQuestions = (ctx.state.questoes || []).filter((q: any) => q.topicId === topicId);
+    const totalQuestions = topicQuestions.reduce((sum: number, q: any) => sum + (Number(q.total) || 0), 0);
+    const correctCount = topicQuestions.reduce((sum: number, q: any) => sum + (Number(q.correct) || 0), 0);
+    const reviewsCount = (ctx.state.reviewAgenda || []).filter(
+      (r: any) => r.topicId === topicId && r.status === 'Concluído'
+    ).length;
+    const errorCount = (ctx.state.errorNotebook || []).filter((e: any) => e.topicId === topicId).length;
+    const lastSession = [...(ctx.state.studySessions || [])]
+      .filter((s: any) => s.topicId === topicId)
+      .sort((a: any, b: any) => String(b.date || '').localeCompare(String(a.date || '')))[0];
+    const lastSessionSummary = lastSession
+      ? `Última sessão em ${lastSession.date} (${Math.max(1, Math.round((Number(lastSession.duration) || 0) / 60))} min)`
+      : null;
+
+    const snapshot = buildTopicIntelligence({
+      subject,
+      topic,
+      questionStats: { totalQuestions, correctCount },
+      reviewsCount,
+      retentionInfo: lastSession?.date ? { lastActivityLocalDate: lastSession.date } : null,
+      source: 'subjects',
+    });
+
+    let modalMount = ctx.document.getElementById('topicIntelligenceModalMount');
+    if (!modalMount && ctx.document.body) {
+      modalMount = ctx.document.createElement('div');
+      modalMount.id = 'topicIntelligenceModalMount';
+      ctx.document.body.appendChild(modalMount);
+    }
+    if (!modalMount) return;
+
+    const close = () => {
+      mountPreact(
+        h(TopicIntelligenceModal, {
+          open: false,
+          snapshot: null,
+          onClose: close,
+        }),
+        modalMount!
+      );
+    };
+
+    mountPreact(
+      h(TopicIntelligenceModal, {
+        open: true,
+        snapshot,
+        lastSessionSummary,
+        errorCount,
+        onStartTopic: (subId: string, topId: string) => {
+          close();
+          if (ctx.state.activeTimer) {
+            Object.assign(ctx.state.activeTimer, { subjectId: subId, topicId: topId, type: 'study' });
+          }
+          if (ctx.populateTimerContextControls) ctx.populateTimerContextControls();
+          if (ctx.startTimer) ctx.startTimer();
+          if (ctx.openStudyTimerFocus) ctx.openStudyTimerFocus();
+        },
+        onClose: close,
+      }),
+      modalMount
+    );
+  }
+
   function renderVerticalizedSyllabus(): void {
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     if (!mount) return;
@@ -233,6 +303,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
           if (ctx.activeTabName && ctx.activeTabName() !== 'dashboard' && ctx.openStudyTimerFocus) {
             ctx.openStudyTimerFocus();
           }
+        },
+        onOpenTopicIntelligence: (subjectId: string, topicId: string) => {
+          openTopicIntelligenceModal(subjectId, topicId);
         },
         onImportParsedSyllabus: (result: any) => {
           let addedSubjects = 0;

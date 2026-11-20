@@ -283,9 +283,11 @@ O projeto foi modernizado para TypeScript estrito em todo o código-fonte da apl
 
 `src/app.bundle.js` e `src/exam-catalog.bundle.js` são gerados pelo esbuild; não devem ser editados manualmente. O catálogo fica no segundo arquivo e só é carregado quando o assistente inicial ou o importador de edital é aberto.
 
-## Privacidade
+## Privacidade e Arquitetura Local-First
 
-A aplicação não possui servidor de dados próprio. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. Quando a sincronização remota opcional via WebDAV é configurada pelo usuário, o backup é cifrado localmente no navegador com AES-GCM de 256 bits (derivado por PBKDF2-SHA256) antes do envio, e nem a senha WebDAV nem a frase secreta de criptografia são salvas em disco (a frase exige 12 caracteres ou mais para enviar). A versão publicada no GitHub Pages serve somente arquivos estáticos.
+No **Modo Local (Plano Free)**, sessões, questões, simulados, planos e preferências permanecem exclusivamente no IndexedDB e no armazenamento local do navegador, sem envio para servidores externos. Quando a sincronização remota opcional via **WebDAV** é configurada pelo usuário, o backup é cifrado localmente no navegador com AES-GCM de 256 bits (derivado por PBKDF2-SHA256) antes do envio, e nem a senha WebDAV nem a frase secreta de criptografia são salvas em disco (a frase exige 12 caracteres ou mais para enviar).
+
+No **Modo Sincronizado em Nuvem (Planos Pro/Mentor)**, os dados continuam sendo salvos localmente primeiro (*Local-First*) e são sincronizados em nuvem via TLS com isolamento por usuário (Row Level Security) e opção de criptografia ponta a ponta (E2EE AES-GCM). Em caso de perda de conexão, troca de dispositivo ou encerramento da assinatura, o histórico salvo localmente no navegador permanece integralmente preservado e exportável via backup JSON.
 
 ## Escopo de concurso e precisão dos dados
 

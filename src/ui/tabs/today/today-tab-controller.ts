@@ -26,6 +26,8 @@ import { capturePlanPriority } from '../../../domain/planning/plan-priority-snap
 import { renderIconSvg } from '../../primitives/icon.js';
 import { pickPlanAchievementMark } from '../../../application/achievements/achievement-progress-note.js';
 import { addLocalDays, parseLocalDate } from '../../../core/date-utils.js';
+import { buildUnifiedCalendarItems } from '../../../application/calendar/build-unified-reviews.js';
+import { selectPlannedSimulationsForTodayView } from '../../../domain/calendar/calendar-projection.js';
 import {
   TodayStudyAssistantBar,
   type AssistantPanelKind,
@@ -83,6 +85,7 @@ export interface TodayTabControllerContext {
   onRestoreFirstSteps?: () => void;
   onStartTour?: () => void;
   onExecuteFirstStepsMission?: (action: string) => void;
+  onRegisterSimulationResult?: (item: any) => void;
   document?: Document | any;
   getState?: () => any;
   getUiState?: () => any;
@@ -1590,29 +1593,32 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     if (!ul) return;
     const state = getState();
     const today = todayISO();
-    const planejados = (state.simulados || [])
-      .filter(
-        (s: any) =>
-          s.date >= today &&
-          (Number(s.correct) || 0) === 0 &&
-          (Number(s.total) || 0) === 0 &&
-          (!s.breakdown || s.breakdown.length === 0)
-      )
-      .sort((a: any, b: any) => (a.date || '').localeCompare(b.date || ''));
+    const unified = buildUnifiedCalendarItems({
+      calendar: state.calendar || [],
+      reviewAgenda: state.reviewAgenda || [],
+      simulados: state.simulados || [],
+      today,
+    });
+    const planejados = selectPlannedSimulationsForTodayView(unified, today);
 
     if (planejados.length === 0) {
-      ul.innerHTML = `<li class="upcoming-empty">Nenhum simulado planejado. Registre um com data futura na aba Questões &amp; Simulados para ele aparecer aqui.</li>`;
+      ul.innerHTML = `<li class="upcoming-empty">Nenhum simulado planejado. Agende na Agenda ou registre um simulado futuro em Questões &amp; Simulados.</li>`;
     } else {
       ul.innerHTML = planejados
-        .map(
-          (s: any) => `
-      <li>
+        .map(s => {
+          const timeBadge = s.startTime
+            ? `<span class="dias-pill mr-1">${escapeHtml(s.startTime)}</span>`
+            : '';
+          return `
+      <li class="flex flex-wrap items-center gap-1.5">
         <span class="upcoming-date">${formatDatePt(s.date)}</span>
-        <span style="flex:1;">${escapeHtml(s.nome || 'Simulado sem nome')}</span>
+        ${timeBadge}
+        <span class="min-w-0 flex-1">${escapeHtml(s.title || 'Simulado sem nome')}</span>
         <span class="subject-progress-pill">${s.date === today ? 'hoje' : 'planejado'}</span>
+        <button type="button" class="btn small tonal" data-today-sim-register="${escapeAttr(s.id)}">Registrar resultado</button>
       </li>
-    `
-        )
+    `;
+        })
         .join('');
     }
   }
@@ -1632,6 +1638,29 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       }
       if ((event.target as HTMLElement)?.closest?.('[data-daily-resume]')) openStudyTimerFocus();
       if ((event.target as HTMLElement)?.closest?.('[data-open-what-if]')) whatIfController?.open();
+
+      const simRegisterBtn = (event.target as HTMLElement)?.closest?.<HTMLElement>(
+        '[data-today-sim-register]'
+      );
+      if (simRegisterBtn) {
+        const simItemId = simRegisterBtn.dataset.todaySimRegister;
+        const state = getState();
+        const today = todayISO();
+        const unified = buildUnifiedCalendarItems({
+          calendar: state.calendar || [],
+          reviewAgenda: state.reviewAgenda || [],
+          simulados: state.simulados || [],
+          today,
+        });
+        const item = selectPlannedSimulationsForTodayView(unified, today).find(
+          s => s.id === simItemId
+        );
+        if (item && ctx.onRegisterSimulationResult) {
+          ctx.onRegisterSimulationResult(item);
+        } else {
+          _activateTab('questoes');
+        }
+      }
 
       const firstStepsBtn = (event.target as HTMLElement)?.closest?.<HTMLElement>(
         '[data-first-steps-action]'

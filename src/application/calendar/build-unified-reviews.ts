@@ -51,6 +51,10 @@ export function buildUnifiedReviews({
       location: item.location || null,
       externalUrl: item.externalUrl || null,
       linkedSimulationId: item.linkedSimulationId || null,
+      essayTheme: item.essayTheme || null,
+      essayScore: typeof item.essayScore === 'number' ? item.essayScore : null,
+      essayMaxScore: typeof item.essayMaxScore === 'number' ? item.essayMaxScore : null,
+      essayStatus: item.essayStatus || null,
       isEvent: kind === 'event',
       isDraggable: true,
     };

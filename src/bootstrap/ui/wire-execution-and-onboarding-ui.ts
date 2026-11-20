@@ -202,6 +202,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     onDismissFirstSteps: () => todayTabController.dismissFirstSteps(),
     onRestoreFirstSteps: () => todayTabController.restoreFirstSteps(),
     onStartTour: () => guidedTourController?.start(),
+    onRegisterSimulationResult: (item: any) => deps.onRegisterSimulationResult?.(item),
     onExecuteFirstStepsMission: (action: string) => {
       if (action === 'open-onboarding') {
         onboardingModalController.openGuidedOnboarding();

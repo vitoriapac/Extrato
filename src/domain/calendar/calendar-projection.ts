@@ -25,6 +25,10 @@ export interface UnifiedCalendarItem {
   location?: string | null;
   externalUrl?: string | null;
   linkedSimulationId?: string | null;
+  essayTheme?: string | null;
+  essayScore?: number | null;
+  essayMaxScore?: number | null;
+  essayStatus?: 'draft' | 'written' | 'graded' | null;
   isEvent: boolean;
   isDraggable: boolean;
 }
@@ -82,6 +86,51 @@ export function sortCalendarItemsForDay<T extends Pick<UnifiedCalendarItem, 'sta
     const labelA = (a.title || a.subject || '').toLowerCase();
     const labelB = (b.title || b.subject || '').toLowerCase();
     return labelA.localeCompare(labelB, 'pt-BR');
+  });
+}
+
+/**
+ * Seleciona os itens pendentes do dia para a lista de compromissos da aba Hoje,
+ * excluindo simulados (`mock_exam`) porque eles possuem seção dedicada em Hoje
+ * (`#hojeSimuladosPlanejados`), evitando duplicação visual.
+ */
+export function selectTodayPendingNonSimulationItems(
+  items: UnifiedCalendarItem[],
+  today: string
+): UnifiedCalendarItem[] {
+  if (!today) return [];
+  return sortCalendarItemsForDay(
+    items.filter(
+      item =>
+        item.date === today &&
+        item.status !== 'Concluído' &&
+        item.status !== 'Cancelado' &&
+        item.kind !== 'mock_exam'
+    )
+  );
+}
+
+/**
+ * Seleciona simulados planejados (da Agenda ou de `state.simulados`, já
+ * deduplicados por `linkedSimulationId` via `buildUnifiedCalendarItems`)
+ * para exibição unificada a partir de `today`.
+ */
+export function selectPlannedSimulationsForTodayView(
+  items: UnifiedCalendarItem[],
+  today: string
+): UnifiedCalendarItem[] {
+  if (!today) return [];
+  const planned = items.filter(
+    item =>
+      item.kind === 'mock_exam' &&
+      item.status !== 'Concluído' &&
+      item.status !== 'Cancelado' &&
+      Boolean(item.date) &&
+      item.date >= today
+  );
+  return [...planned].sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return sortCalendarItemsForDay([a, b])[0] === a ? -1 : 1;
   });
 }
 
@@ -160,6 +209,70 @@ export function getAvailableMinutesForDate(
   }
   const fallbackHours = Number(metas.horasDiarias);
   return Number.isFinite(fallbackHours) && fallbackHours > 0 ? Math.round(fallbackHours * 60) : 0;
+}
+
+export interface DraftOverloadPreview {
+  existingMinutes: number;
+  draftMinutes: number;
+  projectedMinutes: number;
+  availableMinutes: number;
+  isOverloaded: boolean;
+}
+
+/**
+ * Calcula em memória a carga projetada ao cadastrar ou editar uma atividade
+ * para avisar sobre sobrecarga sem bloquear o salvamento.
+ */
+export function computeDraftOverloadPreview(
+  items: UnifiedCalendarItem[],
+  draft: {
+    id?: string | null;
+    kind: UnifiedCalendarKind;
+    date: string;
+    status?: string;
+    startTime?: string | null;
+    endTime?: string | null;
+    estimatedMinutes?: number | string | null;
+  },
+  metas: Partial<Pick<Metas, 'horasDiarias' | 'horasPorDia'>> | null | undefined
+): DraftOverloadPreview {
+  if (!draft.date || !/^\d{4}-\d{2}-\d{2}$/.test(draft.date)) {
+    return {
+      existingMinutes: 0,
+      draftMinutes: 0,
+      projectedMinutes: 0,
+      availableMinutes: 0,
+      isOverloaded: false,
+    };
+  }
+  const remainingItems = draft.id ? items.filter(item => item.id !== draft.id) : items;
+  const existingLoad = computeDailyCalendarLoad(remainingItems, draft.date);
+  let draftMinutes = 0;
+  if (
+    isActionableCalendarKind(draft.kind) &&
+    draft.status !== 'Concluído' &&
+    draft.status !== 'Cancelado'
+  ) {
+    const explicitMinutes = Number(draft.estimatedMinutes);
+    if (Number.isFinite(explicitMinutes) && explicitMinutes > 0) {
+      draftMinutes = Math.round(explicitMinutes);
+    } else {
+      const start = timeToMinutes(draft.startTime);
+      const end = timeToMinutes(draft.endTime);
+      if (start !== null && end !== null && end > start) {
+        draftMinutes = end - start;
+      }
+    }
+  }
+  const projectedMinutes = existingLoad.totalMinutes + draftMinutes;
+  const availableMinutes = getAvailableMinutesForDate(metas, draft.date);
+  return {
+    existingMinutes: existingLoad.totalMinutes,
+    draftMinutes,
+    projectedMinutes,
+    availableMinutes,
+    isOverloaded: availableMinutes > 0 && projectedMinutes > availableMinutes,
+  };
 }
 
 function nextRecurringDate(date: string, rule: CalendarRecurrenceRule): string | null {

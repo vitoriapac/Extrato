@@ -227,6 +227,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     addQuestaoRow: (initial?: any) => practiceUi.questionsTabController.addQuestaoRow(initial),
     addSimuladoRow: () => practiceUi.simulationsTabController.addSimuladoRow(),
     completeAgendaReview: (id: string) => practiceUi.reviewsTabController.completeAgendaReview(id),
+    onRegisterSimulationResult: (item: any) =>
+      practiceUi.calendarTabController.registerSimulationResult?.(item),
     getLatestStudyPlan: () => planningUi.studyPlanBuilderController.latestStudyPlan(),
     buildCurrentStudyPlanProposal: (opts?: any) =>
       planningUi.studyPlanBuilderController.buildCurrentStudyPlanProposal(opts),

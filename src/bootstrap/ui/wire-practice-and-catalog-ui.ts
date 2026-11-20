@@ -227,18 +227,28 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
       openStudyTimerFocus?.();
     },
     onRegisterSimulationResult: (item: any) => {
-      const sim = services.simulationService?.create({
-        date: item.date || appClock.today(),
-        nome: item.title || 'Simulado',
-        correct: 0,
-        total: 0,
-        breakdown: [],
-      });
-      if (sim?.id) {
-        services.calendarService?.update(item.id, {
-          linkedSimulationId: sim.id,
+      const existingSimId = item.linkedSimulationId || (item.origem === 'Simulado' ? item.id : null);
+      const existingSim = existingSimId
+        ? (getState().simulados || []).find((s: any) => s.id === existingSimId)
+        : null;
+      if (existingSim?.id) {
+        simulationsTabController?.simulationEditController?.beginEdit?.(existingSim.id);
+      } else {
+        const sim = services.simulationService?.create({
+          date: item.date || appClock.today(),
+          nome: item.title || 'Simulado',
+          correct: 0,
+          total: 0,
+          breakdown: [],
         });
-        simulationsTabController?.simulationEditController?.beginEdit?.(sim.id);
+        if (sim?.id) {
+          if (item.origem === 'Calendário') {
+            services.calendarService?.update(item.id, {
+              linkedSimulationId: sim.id,
+            });
+          }
+          simulationsTabController?.simulationEditController?.beginEdit?.(sim.id);
+        }
       }
       persistAndRender?.();
       document.getElementById('tab-questoes')?.click();

@@ -74,3 +74,24 @@ test('migração v31 → v32 normaliza kind nos itens legados de calendar sem al
   assert.equal(migrated.calendar[2].kind, 'essay');
   assert.equal(migrated.calendar[2].title, 'Redação');
 });
+
+test('migração v34 → v35 normaliza campos especializados de redação sem perder dados legados', () => {
+  const migrated = migrateState({
+    schemaVersion: 34,
+    subjects: [],
+    calendar: [
+      { id: 'e1', date: '2026-11-19', kind: 'essay', title: 'Redação 1', status: 'Não iniciado' },
+      { id: 'e2', date: '2026-11-18', kind: 'essay', title: 'Redação 2', status: 'Concluído', essayTheme: 'IA', essayScore: '920', essayMaxScore: 1000 },
+      { id: 't1', date: '2026-11-20', kind: 'task', title: 'Tarefa comum', status: 'Não iniciado' },
+    ],
+  });
+  assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
+  assert.equal(migrated.calendar[0].essayStatus, 'draft');
+  assert.equal(migrated.calendar[0].essayTheme, null);
+  assert.equal(migrated.calendar[0].essayScore, null);
+  assert.equal(migrated.calendar[1].essayStatus, 'written');
+  assert.equal(migrated.calendar[1].essayTheme, 'IA');
+  assert.equal(migrated.calendar[1].essayScore, 920);
+  assert.equal(migrated.calendar[1].essayMaxScore, 1000);
+  assert.equal('essayStatus' in migrated.calendar[2], false);
+});

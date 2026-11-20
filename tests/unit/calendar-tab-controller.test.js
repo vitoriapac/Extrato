@@ -319,3 +319,80 @@ test('setCalendarMobileView suporta week e rescheduleCalendarItem move tarefas e
   assert.equal(state.studySessions.length, 0);
   assert.equal(state.simulados.length, 0);
 });
+
+test('renderCalTarefasHoje separa simulados de hoje entre Hoje (sem duplicar) e Agenda (completo)', () => {
+  const hojeEl = { innerHTML: '' };
+  const calEl = { innerHTML: '' };
+  const state = {
+    calendar: [
+      {
+        id: 't-hoje',
+        date: '2026-11-19',
+        kind: /** @type {import('../../src/core/types.ts').CalendarActivityKind} */ ('task'),
+        title: 'Revisar Direito Constitucional',
+        status: 'Não iniciado',
+      },
+      {
+        id: 'sim-hoje',
+        date: '2026-11-19',
+        kind: /** @type {import('../../src/core/types.ts').CalendarActivityKind} */ ('mock_exam'),
+        title: 'Simulado Geral #4',
+        status: 'Não iniciado',
+      },
+    ],
+    reviewAgenda: [],
+    simulados: [],
+  };
+  const controller = createCalendarTabController({
+    state,
+    clock: { today: () => '2026-11-19' },
+    document: {
+      getElementById: id => (id === 'hojeTarefasHoje' ? hojeEl : id === 'calTarefasHoje' ? calEl : null),
+    },
+  });
+
+  controller.renderCalTarefasHoje('hojeTarefasHoje');
+  assert.match(hojeEl.innerHTML, /Revisar Direito Constitucional/);
+  assert.doesNotMatch(hojeEl.innerHTML, /Simulado Geral #4/);
+
+  controller.renderCalTarefasHoje('calTarefasHoje');
+  assert.match(calEl.innerHTML, /Revisar Direito Constitucional/);
+  assert.match(calEl.innerHTML, /Simulado Geral #4/);
+});
+
+test('renderCalTarefasHoje exibe ações contextuais por tipo (evento e redação)', () => {
+  const hojeEl = { innerHTML: '' };
+  const state = {
+    calendar: [
+      {
+        id: 'ev-1',
+        date: '2026-11-19',
+        kind: /** @type {import('../../src/core/types.ts').CalendarActivityKind} */ ('event'),
+        title: 'Prova Objetiva',
+        status: 'Não iniciado',
+      },
+      {
+        id: 'es-1',
+        date: '2026-11-19',
+        kind: /** @type {import('../../src/core/types.ts').CalendarActivityKind} */ ('essay'),
+        title: 'Redação Tema Atual',
+        status: 'Não iniciado',
+      },
+    ],
+    reviewAgenda: [],
+    simulados: [],
+  };
+  const controller = createCalendarTabController({
+    state,
+    clock: { today: () => '2026-11-19' },
+    onStartTimer: () => {},
+    document: {
+      getElementById: id => (id === 'hojeTarefasHoje' ? hojeEl : null),
+    },
+  });
+
+  controller.renderCalTarefasHoje('hojeTarefasHoje');
+  assert.match(hojeEl.innerHTML, /data-calendar-view-event="ev-1"[^>]*>Ver detalhes/);
+  assert.match(hojeEl.innerHTML, /data-calendar-start-timer="es-1"[^>]*>Iniciar/);
+  assert.match(hojeEl.innerHTML, /Concluir tarefa/);
+});

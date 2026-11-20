@@ -10,8 +10,10 @@ import {
 } from '../../../application/calendar/build-unified-reviews.js';
 import {
   computeDailyCalendarLoad,
+  computeDraftOverloadPreview,
   getAvailableMinutesForDate,
   isCalendarItemOverdue,
+  selectTodayPendingNonSimulationItems,
   sortCalendarItemsForDay,
   type UnifiedCalendarItem,
 } from '../../../domain/calendar/calendar-projection.js';
@@ -512,6 +514,8 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         isNew: Boolean(ui.isNew),
         initialDraft: ui.modalDraft || null,
         subjects: activeSubjects(),
+        getDayLoadPreview: (draft: CalendarActivityDraft) =>
+          computeDraftOverloadPreview(getUnifiedCalendarItems(), draft, ctx.state.metas),
         onSave: saveActivityModal,
         onDelete: (id: string) => {
           ui.modalOpen = false;
@@ -612,6 +616,10 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       location: '',
       externalUrl: '',
       description: '',
+      essayTheme: '',
+      essayScore: '',
+      essayMaxScore: '',
+      essayStatus: 'draft',
     } satisfies CalendarActivityDraft;
     ui.modalOpen = true;
     renderActivityModal();
@@ -637,6 +645,10 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       location: item.location || '',
       externalUrl: item.externalUrl || '',
       description: item.description || '',
+      essayTheme: item.essayTheme || '',
+      essayScore: item.essayScore != null ? String(item.essayScore) : '',
+      essayMaxScore: item.essayMaxScore != null ? String(item.essayMaxScore) : '',
+      essayStatus: item.essayStatus || 'draft',
     } satisfies CalendarActivityDraft;
     ui.modalOpen = true;
     renderActivityModal();
@@ -645,6 +657,8 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   function saveActivityModal(draft: CalendarActivityDraft) {
     const ui = calendarUiState as any;
     const mins = Number(draft.estimatedMinutes);
+    const essayScoreNum = draft.essayScore !== '' ? Number(draft.essayScore) : NaN;
+    const essayMaxScoreNum = draft.essayMaxScore !== '' ? Number(draft.essayMaxScore) : NaN;
     const payload: Record<string, any> = {
       title: draft.title.trim(),
       kind: draft.kind,
@@ -659,6 +673,15 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       externalUrl: draft.externalUrl.trim() || null,
       description: draft.description.trim() || null,
       reviewType: draft.kind === 'manual_review' ? draft.title.trim() || 'Revisão livre' : '—',
+      ...(draft.kind === 'essay'
+        ? {
+            essayTheme: draft.essayTheme.trim() || null,
+            essayScore: Number.isFinite(essayScoreNum) && essayScoreNum >= 0 ? essayScoreNum : null,
+            essayMaxScore:
+              Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : null,
+            essayStatus: draft.essayStatus || 'draft',
+          }
+        : {}),
     };
 
     if (ui.isNew || !draft.id) {
@@ -797,15 +820,20 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   }
 
   function quickReviewButton(item: Record<string, any>, elId: string) {
-    if (
-      !String(elId || '').startsWith('hoje') ||
-      item.status === 'Concluído' ||
-      item.isEvent ||
-      item.origem === 'Simulado'
-    ) {
+    if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') {
       return '';
     }
-    return `<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}${item.origem === 'Calendário' ? 'Concluir tarefa' : 'Revisar'}</button>`;
+    if (item.isEvent) {
+      return `<button type="button" class="btn small ghost inline-flex items-center gap-1" data-calendar-view-event="${escapeAttr(item.id)}">Ver detalhes</button>`;
+    }
+    if (item.origem === 'Simulado') {
+      return '';
+    }
+    const startBtn =
+      item.kind === 'essay' && ctx.onStartTimer
+        ? `<button type="button" class="btn small ghost inline-flex items-center gap-1" data-calendar-start-timer="${escapeAttr(item.id)}">Iniciar</button>`
+        : '';
+    return `${startBtn}<button type="button" class="btn small tonal quick-review-btn inline-flex items-center gap-1" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">${renderIconSvg('check', { size: 13, className: 'icon-inline' })}${item.origem === 'Calendário' ? 'Concluir tarefa' : 'Revisar'}</button>`;
   }
 
   function renderCalTarefasHoje(elId = 'calTarefasHoje') {
@@ -818,11 +846,15 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       if (title) title.textContent = 'Compromissos e tarefas de hoje';
     }
     const today = todayISO();
-    const items = sortCalendarItemsForDay(
-      getUnifiedCalendarItems().filter(
-        r => r.date === today && r.status !== 'Concluído' && r.status !== 'Cancelado'
-      )
-    );
+    const unifiedToday = getUnifiedCalendarItems();
+    const items =
+      elId === 'hojeTarefasHoje'
+        ? selectTodayPendingNonSimulationItems(unifiedToday, today)
+        : sortCalendarItemsForDay(
+            unifiedToday.filter(
+              r => r.date === today && r.status !== 'Concluído' && r.status !== 'Cancelado'
+            )
+          );
 
     if (!items.length) {
       const emptyLabel =
@@ -840,7 +872,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
           ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>`
           : '';
         const subjectPart = x.subject && x.subject !== x.title ? ` · ${escapeHtml(x.subject)}` : '';
-        return `<li><span class="dias-pill dias-hoje mr-2">${escapeHtml(kindLabel)}</span>${timeBadge}<span style="flex:1"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`;
+        return `<li class="flex flex-wrap items-center gap-1.5"><span class="dias-pill dias-hoje">${escapeHtml(kindLabel)}</span>${timeBadge}<span class="min-w-0 flex-1"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span><span class="inline-flex flex-wrap items-center gap-1.5">${quickReviewButton(x, elId)}</span></li>`;
       })
       .join('');
   }
@@ -1161,6 +1193,25 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       }
     });
 
+    d.addEventListener('click', (event: any) => {
+      const viewEventBtn = event.target?.closest?.('[data-calendar-view-event]');
+      const viewEventId = viewEventBtn?.getAttribute('data-calendar-view-event');
+      if (viewEventId) {
+        if (canMountPreact(d.getElementById('calendarActivityModalMount'))) {
+          openActivityModalForEdit(viewEventId);
+        } else {
+          d.getElementById('tab-agenda')?.click?.();
+        }
+        return;
+      }
+      const startTimerBtn = event.target?.closest?.('[data-calendar-start-timer]');
+      const startTimerId = startTimerBtn?.getAttribute('data-calendar-start-timer');
+      if (startTimerId && ctx.onStartTimer) {
+        const item = getUnifiedCalendarItems().find(x => x.id === startTimerId);
+        if (item) ctx.onStartTimer(item);
+      }
+    });
+
     d.getElementById('exportCalendarIcsBtn')?.addEventListener('click', exportCalendarIcs);
 
     d.getElementById('addCalRowBtn')?.addEventListener('click', () => {
@@ -1207,6 +1258,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     renderCalTarefasHoje,
     renderCalAtrasadas,
     completeUnifiedReview,
+    registerSimulationResult: (item: UnifiedCalendarItem) => ctx.onRegisterSimulationResult?.(item),
     bindEvents,
   };
 }

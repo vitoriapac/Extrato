@@ -287,6 +287,10 @@ export interface CalendarItem {
   location?: string | null;
   externalUrl?: string | null;
   linkedSimulationId?: string | null;
+  essayTheme?: string | null;
+  essayScore?: number | null;
+  essayMaxScore?: number | null;
+  essayStatus?: 'draft' | 'written' | 'graded' | null;
   examId?: string | null;
   week?: string | null;
   createdAt?: string | null;

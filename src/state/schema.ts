@@ -9,7 +9,7 @@ export const STORAGE_KEY = 'bb-premium-study-data';
 export const BACKUP_KEY = STORAGE_KEY + '-automatic-backup';
 export const BACKUP_INDEX_KEY = BACKUP_KEY + '-index';
 export const AUTOMATIC_BACKUP_SLOTS = 5;
-export const CURRENT_SCHEMA_VERSION = 34;
+export const CURRENT_SCHEMA_VERSION = 35;
 export const MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
 export const DB_NAME = 'extrato-estudos-db';
 export const DB_VERSION = 1;
@@ -72,6 +72,12 @@ export const CALENDAR_ACTIVITY_LABELS: Record<CalendarActivityKind, string> = {
   event: 'Evento',
   manual_review: 'Revisão',
 };
+
+export const ESSAY_STATUS_OPTIONS: Array<{ value: 'draft' | 'written' | 'graded'; label: string }> = [
+  { value: 'draft', label: 'A fazer' },
+  { value: 'written', label: 'Entregue / Aguardando nota' },
+  { value: 'graded', label: 'Corrigida' },
+];
 
 export const CALENDAR_RECURRENCE_OPTIONS: Array<{ value: CalendarRecurrenceRule; label: string }> = [
   { value: 'none', label: 'Sem recorrência' },
