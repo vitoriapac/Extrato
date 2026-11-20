@@ -1,25 +1,17 @@
-import { unmountPreact } from '../../preact-mount.js';
+import { createRecommendationOutcomeRecorder } from './recommendation-outcome-recorder.js';
+import { createOverviewNextActionRenderer } from './overview-next-action-renderer.js';
 import { recommendStudy } from '../../../application/recommend-study.js';
 import { PRIORITY_ALGORITHM_VERSION } from '../../../domain/analytics/priority-score.js';
 import {
   canReuseRecommendationPresentation,
   createRecommendationPresentation,
-  recordRecommendationDecision,
   rateRecommendationFeedback,
   summarizeRecommendationFeedback,
 } from '../../../application/recommendations/recommendation-feedback.js';
 import {
   reusableRecommendationRecord,
-  ensureRecommendationRecord,
   syncRecommendationHistory,
-  decideRecommendationRecord,
-  attachRecommendationSession,
 } from '../../../application/recommendations/recommendation-history.js';
-import {
-  captureRecommendationBaseline,
-  captureRecommendationSnapshot,
-  measureRecommendationOutcome,
-} from '../../../application/recommendations/outcome-service.js';
 import { buildRecommendationOutcomeViewModel } from '../../../application/recommendations/build-recommendation-outcome-view-model.js';
 import {
   buildStudyAction,
@@ -44,11 +36,8 @@ import {
 import { buildPriorityViewModel } from '../../view-models/priority-view-model.js';
 import { buildRecommendationExplanation } from '../../../application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from '../../renderers/recommendation-explanation-renderer.js';
-import { renderPlannedAction } from '../../renderers/daily-execution-renderer.js';
-import { createDashboardTabController } from '../dashboard/dashboard-tab-controller.js';
 import { buildStudyStrategy } from '../../../domain/recommendations/study-strategy.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
-import { buildPracticeLinks } from '../../../domain/questions/practice-link-generator.js';
 
 export interface StudyRecommendationControllerDeps {
   document: any;
@@ -123,7 +112,6 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     getTopicName,
     getSubjectName,
     getTopicById,
-    getTopicPerformance,
     needsMaintenance,
     activeTopics,
     dailyExecutionController,
@@ -131,7 +119,6 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     activeTimerMatchesRecommendation,
     renderActiveStudyTimerNotice,
     openStudyTimerFocus: _openStudyTimerFocus,
-    topicResumeLabel,
     guidedStudyService,
     todayDailyStudyPlan,
     freezePlanExecution,
@@ -140,7 +127,6 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     activateTab,
     reviewService,
     completeAgendaReview,
-    validQuestionRecords,
     renderFinalStretchBanner,
     renderAlertasInteligentes,
     renderPlanoHoje,
@@ -149,8 +135,6 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     metaHoursForDate,
     startOfWeek,
     addDays,
-    diasParaRevisao,
-    localDateFromTimestamp,
   } = deps;
 
   const dismissedRecommendationIds = new Set<string>();
@@ -167,6 +151,14 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
   function setCurrentRecommendations(recs: any[]) {
     currentStudyRecommendations = recs;
   }
+
+  const { recommendationBaseline, recordRecommendationFeedback, measureRecommendationResults } =
+    createRecommendationOutcomeRecorder(deps);
+
+  const { renderOverviewNextAction } = createOverviewNextActionRenderer({
+    ...deps,
+    getCurrentRecommendations,
+  });
 
   function renderRecommendationImpact(model: Record<string, any>) {
     if (!model.available) return '';
@@ -249,177 +241,6 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     );
   }
 
-  function renderOverviewNextAction(availableMinutes?: number) {
-    const container = document.getElementById('overviewNextAction');
-    if (!container) return;
-    const effectiveMinutes = availableMinutes ?? Math.max(0, Math.round(metaHoursToday() * 60));
-    const state = getState();
-    const outcome = '';
-    const item = currentStudyRecommendations[0];
-    const { priority } = dailyExecutionController.build();
-
-    if (
-      priority?.nextItem &&
-      !(
-        item &&
-        priority.nextItem.subjectId === item.subjectId &&
-        priority.nextItem.topicId === item.topicId
-      )
-    ) {
-      const suggestion = item
-        ? {
-            subjectId: item.subjectId,
-            topicId: item.topicId,
-            subjectName: item.subjectName,
-            topicName: item.topicName,
-            score: item.score,
-            actionId: buildStudyAction(item, { source: 'overview' })?.id,
-          }
-        : null;
-      const ownTimer =
-        hasStartedStudyTimer() && state.activeTimer?.planItemId === priority.nextItem.id;
-      unmountPreact(container);
-      container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(
-        priority,
-        {
-          suggestion,
-          escapeHtml,
-          escapeAttr,
-          formatMinutes: formatPlanMinutes,
-          timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId },
-          resumeLabel: topicResumeLabel(priority.nextItem.topicId),
-        }
-      )}`;
-      return;
-    }
-    unmountPreact(container);
-    container.replaceChildren();
-    const dashboardController = createDashboardTabController();
-    if (!item) {
-      const hasPlan =
-        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
-        (state.dailyPlans || []).some((plan: any) => (plan.items || []).length > 0);
-      const hasHistory =
-        (state.studySessions || []).length > 0 || (state.questoes || []).length > 0;
-      const hasActiveContent = (state.subjects || []).some(
-        (s: any) => !s.archived && (s.topics || []).some((t: any) => !t.archived)
-      );
-      const isFirstRun = !hasPlan && !hasHistory;
-
-      dashboardController.mountNextActionCard(container, {
-        model: null,
-        emptyState: {
-          isFirstRun,
-          message:
-            effectiveMinutes < 15
-              ? 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.'
-              : 'Ainda não há uma atividade elegível com os dados atuais.',
-          timerHref: hasActiveContent ? '#study-timer' : null,
-        },
-        activeTimerNoticeHtml: renderActiveStudyTimerNotice(null),
-      });
-      return;
-    }
-    const action = buildStudyAction(item, { source: 'overview' }),
-      model = buildPriorityViewModel(item, 1),
-      label = recommendationActionLabel(action!),
-      mastery =
-        action!.evidence.mastery == null
-          ? 'Domínio ainda sem evidência'
-          : `Domínio ${Math.round(action!.evidence.mastery)}/100`,
-      minutes =
-        action!.suggestedMinutes == null
-          ? 'Tempo não estimado'
-          : formatPlanMinutes(action!.suggestedMinutes);
-    const inProgress = activeTimerMatchesRecommendation(item),
-      blocked = hasStartedStudyTimer() && !inProgress;
-
-    const buttonAction = inProgress
-      ? { type: 'timer-focus' }
-      : blocked
-        ? {
-            type: 'blocked',
-            reason: 'Retome ou finalize a sessão em andamento antes de iniciar outra.',
-          }
-        : { type: 'recommendation', actionId: action!.id, source: action!.source };
-
-    const buttonText = inProgress
-      ? 'Retomar sessão'
-      : blocked
-        ? 'Finalize a sessão atual'
-        : label;
-
-    const topicObj = getTopicById(item.topicId);
-    const customPracticeUrl =
-      topicObj?.topic?.customPracticeUrl ||
-      topicObj?.topic?.bookmark?.customPracticeUrl ||
-      (topicObj?.topic?.link &&
-      (topicObj.topic.link.includes('tecconcursos') || topicObj.topic.link.includes('qconcursos'))
-        ? topicObj.topic.link
-        : undefined);
-
-    const practiceLinks = buildPracticeLinks({
-      topicName: item.topicName,
-      subjectName: item.subjectName,
-      customUrl: customPracticeUrl,
-    });
-
-    dashboardController.mountNextActionCard(container, {
-      model: {
-        what: {
-          subjectName: item.subjectName,
-          topicName: item.topicName,
-        },
-        why: {
-          primaryReason:
-            action!.evidence.label ||
-            model.evidenceLabel ||
-            'Recomendação baseada em prioridade de edital',
-          additionalReasons: (item.reasons || []).slice(0, 3),
-        },
-        duration: {
-          minutesFormatted: minutes,
-          minutesNumeric: action!.suggestedMinutes ?? undefined,
-        },
-        importance: {
-          priorityScore: action!.priority ?? null,
-          impactLabel:
-            item.examImpact != null ? `impacto ${Math.round(item.examImpact)}/100` : undefined,
-        },
-        evidence: {
-          masteryLabel: mastery,
-          accuracyLabel:
-            item.accuracy != null ? `precisão recente ${Math.round(item.accuracy)}%` : undefined,
-          historicalPresenceLabel:
-            item.examIntelligence?.presencePercent != null
-              ? `${Math.round(item.examIntelligence.presencePercent)}% das provas`
-              : undefined,
-        },
-        nextStep: {
-          activityType: action!.activityType,
-          actionLabel: label,
-          buttonText,
-          buttonAction,
-        },
-        bookmark: getTopicById(item.topicId)?.topic.bookmark,
-        resumeLabel: topicResumeLabel(item.topicId),
-        practiceLinks,
-      },
-      practiceLinks,
-      isInProgress: inProgress,
-      activeTimerNoticeHtml: renderActiveStudyTimerNotice(item),
-      explanationHtml: renderRecommendationExplanation(
-        item.explanation || buildRecommendationExplanation(item),
-        { headingLevel: 4 }
-      ),
-      dataAttributes: {
-        'data-study-action-source': action!.source,
-        'data-study-action-id': escapeAttr(action!.id),
-        'data-activity-type': action!.activityType,
-      },
-    });
-  }
-
   function renderOverviewDecisionArea() {
     const { availableMinutes } = refreshStudyRecommendationItems();
     renderFinalStretchBanner();
@@ -496,9 +317,17 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         )
         .join('');
       const stateIconName =
-        { review: 'refresh', limited: 'alert-triangle', high: 'star', calculated: 'circle', blocked: 'lock' }[model.state] ||
-        'circle';
-      const stateIconHtml = renderIconSvg(stateIconName, { size: 12, className: 'inline-block align-middle' });
+        {
+          review: 'refresh',
+          limited: 'alert-triangle',
+          high: 'star',
+          calculated: 'circle',
+          blocked: 'lock',
+        }[model.state] || 'circle';
+      const stateIconHtml = renderIconSvg(stateIconName, {
+        size: 12,
+        className: 'inline-block align-middle',
+      });
       const planChoice =
           index === 0
             ? renderPlanRecommendationChoice(action!, dailyPriority!, {
@@ -526,118 +355,6 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         : '';
     // Só a sugestão e a pergunta pendente ficam à vista; o contexto da sugestão fica recolhido.
     container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${renderPendingRecommendationOutcome()}<details class="recommendation-context editorial-disclosure"><summary>Resultado anterior, capacidade e histórico</summary>${impact}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}</details>`;
-  }
-
-  function recommendationBaseline(recommendation: Record<string, any>) {
-    const topicId = recommendation.topicId,
-      performance = getTopicPerformance(topicId),
-      found = getTopicById(topicId),
-      last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
-    return captureRecommendationBaseline({
-      mastery: recommendation.mastery,
-      accuracy: performance.accuracy,
-      questionVolume: performance.resolved,
-      retention: recommendation.retention,
-      reviewHealth: recommendation.reviewHealth?.value,
-      risk: recommendation.risk?.value,
-      trend: recommendation.diagnosis?.trend || null,
-      evidence: recommendation.evidence || null,
-      daysSinceContact: last
-        ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp(last)) ?? 0))
-        : null,
-      measuredAt: nowISO(),
-    });
-  }
-
-  function recordRecommendationFeedback(
-    recommendation: Record<string, any>,
-    {
-      accepted,
-      reasonSkipped = null,
-      source = null,
-    }: { accepted: boolean; reasonSkipped?: string | null; source?: string | null } = {
-      accepted: false,
-    }
-  ) {
-    const state = getState();
-    const baseline = recommendationBaseline(recommendation),
-      createdAt = nowISO(),
-      feedback = recordRecommendationDecision(state.recommendationFeedback, recommendation, {
-        accepted,
-        reasonSkipped,
-        baseline,
-        snapshot: captureRecommendationSnapshot(recommendation, { baseline, createdAt }),
-        now: createdAt,
-        idGenerator: uid,
-      });
-    feedback.activeExamTags ??= [...(state.examBlueprint.activeExamTags || [])];
-    if (source) feedback.presentationSource = source;
-    ensureRecommendationRecord(state.recommendationHistory, recommendation, {
-      now: createdAt,
-      idGenerator: uid,
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-    });
-    decideRecommendationRecord(state.recommendationHistory, recommendation.recommendationId, {
-      accepted,
-      source,
-      feedbackId: feedback.id,
-      now: createdAt,
-    });
-    scheduleSave();
-    renderRecommendationHistorySummary();
-    return feedback;
-  }
-
-  function measureRecommendationResults(session: Record<string, any>) {
-    const state = getState();
-    if (session?.recommendationId) {
-      attachRecommendationSession(
-        state.recommendationHistory,
-        session.recommendationId,
-        session.id
-      );
-    }
-    if (!session?.topicId) return;
-    const measuredAt = nowISO();
-    state.recommendationFeedback
-      .filter(
-        (item: any) =>
-          item.accepted &&
-          item.completed &&
-          item.topicId === session.topicId &&
-          item.baseline &&
-          (!item.outcome || ['pending', 'insufficient'].includes(item.outcome.state!))
-      )
-      .forEach((feedback: any) => {
-        const since = Date.parse(feedback.baseline!.measuredAt!) || 0,
-          records = validQuestionRecords().filter(
-            item =>
-              item.topicId === session.topicId &&
-              Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since
-          ),
-          volume = records.reduce((sum, item) => sum + (Number(item.resolved) || 0), 0),
-          correct = records.reduce((sum, item) => sum + (Number(item.correct) || 0), 0),
-          activities = state.studySessions.filter(
-            (item: any) =>
-              item.topicId === session.topicId &&
-              item.id !== session.id &&
-              Date.parse(String(item.createdAt || item.startedAt || 0)) >= since
-          ).length,
-          candidate = intelligenceCandidates().find(
-            (item: any) => item.topicId === session.topicId
-          );
-        measureRecommendationOutcome(feedback, {
-          masteryAfter: candidate?.mastery,
-          accuracyAfter: volume ? Math.round((correct / volume) * 1000) / 10 : null,
-          questionVolumeAfter: volume,
-          retentionAfter: candidate?.retention,
-          reviewHealthAfter: candidate?.reviewHealth?.value,
-          riskAfter: candidate?.risk?.value,
-          measuredAt,
-          daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 86400000),
-          otherActivities: activities,
-        });
-      });
   }
 
   function dismissStudyRecommendation(id: string) {
@@ -701,9 +418,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       availableMinutes: Math.round(metaHoursToday() * 60),
     }).find(
       item =>
-        item.id === id ||
-        item.recommendationId === id ||
-        item.topicId === recommendation.topicId
+        item.id === id || item.recommendationId === id || item.topicId === recommendation.topicId
     );
     if (!fresh) {
       renderStudyRecommendation();
