@@ -336,6 +336,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     currentAchievementProjection,
     achievementProjectionHistory,
     recoveryController,
+    overdueCount: studyCandidateService.revisoesAtrasadas,
     readinessResult: approvalReadinessService.readinessResult,
     computeApprovalMetrics: approvalReadinessService.computeApprovalMetrics,
     // Os mesmos candidatos (e a mesma pontuação) do Diagnóstico: uma fila de estudo só.

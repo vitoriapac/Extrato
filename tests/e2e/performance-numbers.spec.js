@@ -54,7 +54,7 @@ test('T62 a T64: uma prioridade só, com uma linha que explica a Próxima ação
   await expect(pull.getByRole('button', { name: 'Ver no Diagnóstico' }).first()).toBeVisible();
   // Diagnóstico: uma linha com a Próxima ação e o primeiro da fila lado a lado.
   await openPerformanceSection(page, 'diagnosis');
-  await expect(page.locator('.diagnosis-consolidated > .analytics-note').first()).toContainText(/A Próxima ação \(.+\) vem do plano de hoje; a fila abaixo começa por/);
+  await expect(page.locator('.diagnosis-consolidated > .analytics-note').first()).toContainText(/A sugestão acima \(.+\) combina o diagnóstico com o plano de hoje; a fila abaixo começa por/);
   // Simulados: o passo da projeção conta tópicos, sem nomear um.
   await openPerformanceSection(page, 'simulations');
   const needed = page.locator('.achievement-projection__details', { has: page.locator(':scope > summary', { hasText: 'O que seria necessário?' }) });

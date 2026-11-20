@@ -61,6 +61,8 @@ export interface PerformanceTabControllerDeps {
   diagnosisOrder?: () => string[];
   /** A mesma próxima melhor ação de Hoje, para a leitura da preparação. */
   nextBestAction?: () => any;
+  /** Total de pendências atrasadas (revisões + tarefas), o mesmo da Visão geral e da Agenda. */
+  overdueCount?: () => number;
   entitySubjectId?: (item: any) => string | null;
   simuladoEffectiveCounts?: (simulado: any) => any;
   localDateFromTimestamp?: (timestamp: any) => string;
@@ -284,6 +286,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             view.section === 'overview' && deps.nextBestAction
               ? deps.nextBestAction()
               : null,
+          overdueCount:
+            view.section === 'overview' && deps.overdueCount ? deps.overdueCount() : null,
           diagnosisOrder:
             view.section === 'overview' && deps.diagnosisOrder
               ? deps.diagnosisOrder()

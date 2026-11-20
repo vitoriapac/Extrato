@@ -44,9 +44,9 @@ export function RealWeekBanner({
           </div>
           <p class="text-xs text-content-secondary leading-relaxed max-w-2xl m-0">
             {hasOverdue && hasDeficit
-              ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'revisão pendente' : 'revisões pendentes'} e ${formatPlanMinutes(deficitMinutes)} a redistribuir. A consistência se constrói na adaptação, não na culpa: resgate em blocos curtos ou redistribua o saldo sem perder seu histórico.`
+              ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'pendência atrasada' : 'pendências atrasadas'} e ${formatPlanMinutes(deficitMinutes)} a redistribuir. A consistência se constrói na adaptação, não na culpa: resgate em blocos curtos ou redistribua o saldo sem perder seu histórico.`
               : hasOverdue
-                ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'revisão aguardando resgate' : 'revisões aguardando resgate'}. Em vez de acumular ansiedade, recupere os tópicos essenciais em uma missão rápida e guiada de 30 minutos.`
+                ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'pendência aguardando resgate' : 'pendências aguardando resgate'}. Em vez de acumular ansiedade, recupere os tópicos essenciais em uma missão rápida e guiada de 30 minutos.`
                 : `Você tem ${formatPlanMinutes(deficitMinutes)} de tarefas marcadas ainda por fazer nesta semana. Redistribua nos próximos dias, respeitando sua disponibilidade.`}
           </p>
         </div>

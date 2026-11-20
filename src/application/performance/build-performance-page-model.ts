@@ -76,6 +76,7 @@ export function buildPerformancePageModel({
   adherenceContext = null,
   recoveryPlan = null,
   nextBestAction = null,
+  overdueCount = null,
   recommendationFeedback = [],
   allSessions = [],
   readinessSnapshots = [],
@@ -129,6 +130,8 @@ export function buildPerformancePageModel({
       sessions: scope.sessions?.included || [],
       dailyPlans,
       reviews: scope.reviews?.included || [],
+      // O mesmo total de pendências da Visão geral e da Agenda (revisões + tarefas), não só as revisões.
+      overdueReviewsCount: overdueCount,
       simulations,
       subjects,
       subjectIdFor,

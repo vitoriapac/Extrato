@@ -73,9 +73,9 @@ export function buildIntelligentAlerts({
         createdAt: today,
         reason:
           overdueReviews === 1
-            ? '1 revisão atrasada.'
-            : overdueReviews + ' revisões atrasadas.',
-        recommendedAction: 'Conclua primeiro as revisões vencidas.',
+            ? '1 pendência atrasada.'
+            : overdueReviews + ' pendências atrasadas.',
+        recommendedAction: 'Conclua primeiro as revisões e tarefas atrasadas.',
       })
     );
   subjects.forEach((subject: Row) => {

@@ -25,7 +25,7 @@ test('RealWeekBanner — renderiza acolhimento empático quando há revisões em
 
   assert.match(html, /Sua semana não saiu como planejada\? Tudo bem\./);
   assert.match(html, /Replanejamento/);
-  assert.match(html, /Você tem 4 revisões aguardando resgate/);
+  assert.match(html, /Você tem 4 pendências aguardando resgate/);
   assert.match(html, /Resgatar em 30 min/);
   assert.match(html, /icon-lucide-heart-handshake/);
   assert.match(html, /icon-lucide-bolt/);
@@ -60,7 +60,7 @@ test('RealWeekBanner — combina atrasos e déficit com microcopy sem culpa e am
     })
   );
 
-  assert.match(html, /5 revisões pendentes e 2 h a redistribuir/);
+  assert.match(html, /5 pendências atrasadas e 2 h a redistribuir/);
   assert.match(html, /A consistência se constrói na adaptação, não na culpa/);
   assert.match(html, /Resgatar em 30 min/);
   assert.match(html, /Redistribuir saldo pendente/);

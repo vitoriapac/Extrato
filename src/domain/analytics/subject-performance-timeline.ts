@@ -163,8 +163,9 @@ export function buildMultiSubjectPerformanceModel({
       colorSlot: meta.colorSlot,
       totalResolved: subTotalResolved,
       totalCorrect: subTotalCorrect,
+      // Uma casa decimal, como as demais telas: 316/463 deve ler 68,3% aqui também (não 68,0%).
       overallAccuracy:
-        subTotalResolved > 0 ? Math.round((subTotalCorrect / subTotalResolved) * 100) : null,
+        subTotalResolved > 0 ? Math.round((subTotalCorrect / subTotalResolved) * 1000) / 10 : null,
       points,
     });
   }
@@ -178,6 +179,6 @@ export function buildMultiSubjectPerformanceModel({
     series,
     totalResolved,
     totalCorrect,
-    overallAccuracy: totalResolved > 0 ? Math.round((totalCorrect / totalResolved) * 100) : null,
+    overallAccuracy: totalResolved > 0 ? Math.round((totalCorrect / totalResolved) * 1000) / 10 : null,
   };
 }

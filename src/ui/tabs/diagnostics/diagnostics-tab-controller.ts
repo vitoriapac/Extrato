@@ -282,7 +282,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       energyAlertHtml +
       universeHtml +
       diagnosisHtml +
-      `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'vencida')} na Agenda</summary>${secondaryHtml}</details>`;
+      `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'revisão vencida', 'revisões vencidas')} na Agenda</summary>${secondaryHtml}</details>`;
 
     container.innerHTML += `<details class="diagnosis-method-details"><summary>Como ler esta aba</summary>${renderPreparationSignals(preparationSignals)}<p class="analytics-note">A contagem não altera automaticamente o plano. A relevância vem da prioridade e do impacto já calculados.</p></details>`;
 

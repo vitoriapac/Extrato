@@ -28,7 +28,7 @@ const card = (label: string, value: unknown, unit: string, detail: string, windo
 const kpiTrend = (values: Array<number | null>, label: string, unit: string) =>
   values.filter(value => value != null && value > 0).length < 3
     ? ''
-    : `<span class="performance-kpi__trend">${renderSparkline({ values, label, unit, width: 120, height: 28 })}<small>${values.length} semanas completas</small></span>`;
+    : `<span class="performance-kpi__trend">${renderSparkline({ values, label, unit, width: 120, height: 28 })}<small>tendência: ${values.length} semanas completas</small></span>`;
 
 export function renderPerformanceOverview(
   model: Record<string, any>,

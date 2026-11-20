@@ -180,8 +180,8 @@ export function buildPreparationReading({
   const overdue = Number(weeklyBrief?.overdueReviews) || 0;
   if (pulling.length < 3 && overdue > 0)
     pulling.push({
-      text: `${overdue} ${overdue === 1 ? 'revisão vencida' : 'revisões vencidas'}.`,
-      link: { kind: 'tab', target: 'agenda', label: 'Abrir revisões' },
+      text: `${overdue} ${overdue === 1 ? 'pendência atrasada' : 'pendências atrasadas'} (revisões e tarefas).`,
+      link: { kind: 'tab', target: 'agenda', label: 'Abrir Agenda' },
     });
   if (!pulling.length)
     evidence.push('Ainda não há pontos de atenção com evidência suficiente para destacar.');

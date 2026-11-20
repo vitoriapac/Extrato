@@ -113,8 +113,8 @@ export function renderConsolidatedDiagnosis(
   const firstInQueue = visible.find(({ item }) => item.granularity === 'topic' && item.primarySignal !== 'collect-evidence')?.item.name;
   const priorityNote =
     nextActionName && firstInQueue && nextActionName !== firstInQueue
-      ? `A Próxima ação (${escapeHtml(nextActionName)}) vem do plano de hoje; a fila abaixo começa por ${escapeHtml(firstInQueue)}, o de maior gravidade e impacto na prova. `
-      : 'A fila ordena por gravidade e impacto na prova; a Próxima ação, acima, combina isso com o plano de hoje. ';
+      ? `A sugestão acima (${escapeHtml(nextActionName)}) combina o diagnóstico com o plano de hoje; a fila abaixo começa por ${escapeHtml(firstInQueue)}, o de maior gravidade e impacto na prova. `
+      : 'A fila ordena por gravidade e impacto na prova; a sugestão acima combina isso com o plano de hoje. ';
   const unseenAll = ordered.flatMap(([, group]) =>
     group.items.filter(({ item }: any) => item.primarySignal === 'collect-evidence')
   );

@@ -120,14 +120,14 @@ test('buildMultiSubjectPerformanceModel — evolução multilinear por período'
 
   assert.equal(model.totalResolved, 60);
   assert.equal(model.totalCorrect, 49);
-  assert.equal(model.overallAccuracy, 82);
+  assert.equal(model.overallAccuracy, 81.7);
   assert.equal(model.series.length, 2);
 
   const sub1Series = model.series.find(s => s.subjectId === 'sub-1');
   assert.ok(sub1Series);
   assert.equal(sub1Series.totalResolved, 30);
   assert.equal(sub1Series.totalCorrect, 25);
-  assert.equal(sub1Series.overallAccuracy, 83);
+  assert.equal(sub1Series.overallAccuracy, 83.3);
   assert.equal(sub1Series.colorSlot, 5);
 });
 
