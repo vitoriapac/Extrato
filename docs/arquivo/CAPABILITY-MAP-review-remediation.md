@@ -10,4 +10,4 @@ Aprovado em 2026-10-20. Origem: revisão de código do working tree não commita
 
 Ordem: question-import → remote-sync → build-hygiene (os dois primeiros editam `src/app.js`, por isso em sequência).
 
-Specs: `docs/SPEC-question-import.md`, `docs/SPEC-remote-sync.md`, `docs/arquivo/SPEC-build-hygiene.md`.
+Specs: `docs/arquivo/SPEC-question-import.md`, `docs/arquivo/SPEC-remote-sync.md`, `docs/arquivo/SPEC-build-hygiene.md`.

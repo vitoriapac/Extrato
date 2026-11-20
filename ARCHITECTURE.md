@@ -402,7 +402,7 @@ A meta opcional `examBlueprint.subjects[].accuracyTarget` herda a meta global de
 
 ### Prévia integrada da estratégia por fase
 
-A composição de fase e trajetória fica em `src/application/planning/build-phase-planning-preview.ts`. O motor existente continua definindo a divisão de atividades; projeção, meta, data e escopo servem à explicação e à revalidação da confirmação. As proporções existentes estão centralizadas em `src/domain/planning/phase-strategy-policy.ts`. O contrato e a validação estão em [PHASE-PLANNING-INTEGRATION.md](docs/PHASE-PLANNING-INTEGRATION.md).
+A composição de fase e trajetória fica em `src/application/planning/build-phase-planning-preview.ts`. O motor existente continua definindo a divisão de atividades; projeção, meta, data e escopo servem à explicação e à revalidação da confirmação. As proporções existentes estão centralizadas em `src/domain/planning/phase-strategy-policy.ts`. O contrato e a validação estão em [PHASE-PLANNING-INTEGRATION.md](docs/arquivo/PHASE-PLANNING-INTEGRATION.md).
 
 ## Demo da trajetória e fechamento orientado à decisão
 

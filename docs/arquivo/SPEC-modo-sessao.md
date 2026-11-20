@@ -1,6 +1,6 @@
 # Spec: modo-sessao
 
-Primeiro passo de [planilha-morre](ideas/planilha-morre.md). Contém dois módulos pequenos, em ordem de construção: `session-bookmark` (o dado) → `session-pip` (a janela que mostra esse dado). Cada um pode ser entregue e verificado sozinho.
+Primeiro passo de [planilha-morre](../ideas/planilha-morre.md). Contém dois módulos pequenos, em ordem de construção: `session-bookmark` (o dado) → `session-pip` (a janela que mostra esse dado). Cada um pode ser entregue e verificado sozinho.
 
 ## Objetivo
 

@@ -2,7 +2,7 @@
 
 **Objetivo:** tornar a próxima decisão mais clara no aplicativo e demonstrar seu valor na landing, preservando a identidade e os contratos do Extrato.
 
-**Base:** análise de Leruma, Bizzu e Estudei nesta conversa; [PRODUCT.md](../../../PRODUCT.md) e [DESIGN.md](../../../DESIGN.md). A análise das referências usou suas páginas públicas; a interface atual do Extrato ainda precisa de inspeção visual antes de se fixar cada alteração.
+**Base:** análise de Leruma, Bizzu e Estudei nesta conversa; [PRODUCT.md](../../PRODUCT.md) e [DESIGN.md](../../DESIGN.md). A análise das referências usou suas páginas públicas; a interface atual do Extrato ainda precisa de inspeção visual antes de se fixar cada alteração.
 
 **Tecnologia:** Preact, TypeScript, Tailwind v4, tokens existentes e Playwright. Não acrescentar dependências.
 

@@ -8,7 +8,7 @@
 
 **Stack:** TypeScript strict, Preact `.tsx`, CSS em `styles/app.css` e tokens em `styles/tokens.css`, testes `node:test` em `tests/unit`, E2E Playwright.
 
-**Spec:** [auditoria visual](C:/Users/vitor/.claude/uploads/29a4960d-d6e6-4212-b1c7-96e32218b113/b43be659-auditoria-visual-extrato-2026-11-07.md), [DESIGN.md](../../../DESIGN.md) e o mockup [docs/mockups/visao-geral-redesenhada.html](../../mockups/visao-geral-redesenhada.html) (usado **só** como referência de conciliação, guia pontilhada e filas; a Visão geral dele NÃO é implementada).
+**Spec:** [auditoria visual](C:/Users/vitor/.claude/uploads/29a4960d-d6e6-4212-b1c7-96e32218b113/b43be659-auditoria-visual-extrato-2026-11-07.md), [DESIGN.md](../../DESIGN.md) e o mockup [docs/mockups/visao-geral-redesenhada.html](../mockups/visao-geral-redesenhada.html) (usado **só** como referência de conciliação, guia pontilhada e filas; a Visão geral dele NÃO é implementada).
 
 ## Restrições globais
 
