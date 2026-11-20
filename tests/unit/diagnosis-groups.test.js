@@ -1057,3 +1057,7 @@ test('Auditoria 4.2/4.5/4.6: seleção de até 3 disciplinas em Questões, açã
   assert.match(simHtml, /8\/10 questões \(bateria curta\)/);
   assert.match(simHtml, /75\/100 questões</);
 });
+
+test('explica que só entram tópicos do concurso ativo e não arquivados (contagem × Disciplinas)', () => {
+  assert.match(render({}), /data-diagnosis-scope-note>Só entram tópicos do concurso ativo, não arquivados e avaliáveis pelo diagnóstico/);
+});

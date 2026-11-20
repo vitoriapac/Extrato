@@ -59,7 +59,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Teste: 83% × 87,5% × 71% × 86% reproduzidos com rótulo
 **Dependências:** T1 · **Tamanho:** M (sobrepõe a Tarefa 44 arquivada)
 
-### T6: Contagem de tópicos por disciplina (D12)
+### T6: Contagem de tópicos por disciplina (D12) — FEITA em parte (20/11): nota de escopo no Diagnóstico; falta identificar qual regra exclui o 13º tópico de Tecnologia e IA na demo
 **Aceite:**
 - [ ] Diagnóstico e Disciplinas mostram o mesmo total, ou o Diagnóstico explica o que exclui (D-E)
 - [ ] Teste: LP 18/17, Tecnologia e IA 13/12, Matemática Financeira 14/12 resolvidos
