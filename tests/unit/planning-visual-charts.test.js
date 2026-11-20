@@ -163,7 +163,8 @@ test('buildPhaseRoadmapVisual — determina fases de preparação e contagem reg
   assert.equal(roadmap20d.daysRemaining, 20);
   assert.equal(roadmap20d.phase, 'final_stretch');
   assert.equal(roadmap20d.phaseLabel, 'Modo Reta Final (85/15)');
-  assert.ok(roadmap20d.progressPercentage > 0 && roadmap20d.progressPercentage <= 100);
+  assert.equal(roadmap20d.progressPercentage, 63); // 34 de 54 dias do plano
+  assert.equal(roadmap20d.phaseProgressPercentage, 43); // 10 de 23 dias da reta final
 
   const activePhase = roadmap20d.phasesList.find(p => p.isActive);
   assert.equal(activePhase?.key, 'final_stretch');

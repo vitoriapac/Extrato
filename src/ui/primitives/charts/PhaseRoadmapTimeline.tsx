@@ -22,7 +22,7 @@ export function PhaseRoadmapTimeline({
   label = 'Linha do tempo e fases de preparação para a prova',
   className = '',
 }: PhaseRoadmapTimelineProps): JSX.Element {
-  const { phase, phaseLabel, phaseGuidance, daysRemaining, examDate, progressPercentage, phasesList } = visual;
+  const { phase, phaseLabel, phaseGuidance, daysRemaining, examDate, progressPercentage, phaseProgressPercentage, phasesList } = visual;
 
   if (phase === 'undated' || !examDate) {
     return (
@@ -76,7 +76,7 @@ export function PhaseRoadmapTimeline({
             <span class="text-xs font-normal text-content-secondary ml-1">dias</span>
           </div>
           <span class="text-xs text-content-secondary">
-            {progressPercentage}% do cronograma decorrido
+            Fase atual: {phaseProgressPercentage}% percorrida
           </span>
         </div>
       </div>
@@ -90,8 +90,8 @@ export function PhaseRoadmapTimeline({
           />
         </div>
         <div class="flex justify-between text-xs text-content-secondary px-1">
-          <span>Início</span>
-          <span class="font-medium text-content-primary font-mono">{progressPercentage}%</span>
+          <span>Início do plano</span>
+          <span class="font-medium text-content-primary font-mono">Tempo até a prova: {progressPercentage}%</span>
           <span>Dia da Prova</span>
         </div>
       </div>

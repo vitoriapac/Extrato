@@ -46,7 +46,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Verificação:** unit nos formatadores; E2E na demo (Questões, Visão geral, Desempenho)
 **Dependências:** nenhuma (retoma a T7 do plano arquivado, que deixou 5 valores na demo) · **Tamanho:** M
 
-### T4: Progresso até a prova com uma base (D8)
+### T4: Progresso até a prova com uma base (D8) — FEITA (20/11)
 **Aceite:**
 - [ ] Cabeçalho (61%) e Prova e metas (25%) deixam de usar o mesmo vocabulário para bases diferentes, conforme D-F
 - [ ] Teste unitário da base escolhida

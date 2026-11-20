@@ -9,12 +9,14 @@ export function renderExamBlueprintConfigView({
   escapeAttr,
   formatDatePt,
   today,
+  planStartDate = null,
   document = globalThis.document,
 }: any) {
   const generalWasOpen = container.querySelector('.exam-general-config')?.open || false;
 
   const roadmapVisual = buildPhaseRoadmapVisual({
     examDate: blueprint?.examDate || null,
+    planStartDate,
     today: today || formatLocalDate(new Date()) || '',
   });
   // Sem data da prova, o convite com o campo de data já diz o que fazer: a régua vazia só repetiria o pedido.

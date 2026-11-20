@@ -29,6 +29,7 @@ export interface ExamMatrixControllerContext {
   currentAchievementProjection: () => { model: any; [key: string]: any };
   nowISO: () => string;
   todayISO?: () => string;
+  planStartDate?: () => string | null;
   idGenerator: (prefix?: string) => string;
   escapeHtml: (text: string) => string;
   escapeAttr: (text: string) => string;
@@ -310,6 +311,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       EXAM_SOURCES: ctx.EXAM_SOURCES,
       globalAccuracyTarget: state.metas?.metaAprovacao,
       today: ctx.todayISO ? ctx.todayISO() : ctx.nowISO().slice(0, 10),
+      planStartDate: ctx.planStartDate ? ctx.planStartDate() : null,
       document: ctx.document,
     });
     renderExamIntelligenceSection();

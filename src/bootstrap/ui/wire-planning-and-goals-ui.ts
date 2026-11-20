@@ -133,6 +133,7 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     currentAchievementProjection: () => currentAchievementProjection(),
     nowISO,
     todayISO,
+    planStartDate: studyMetricsSelectors.planStartDate,
     idGenerator: uid,
     escapeHtml,
     escapeAttr,

@@ -350,7 +350,8 @@ export interface PhaseRoadmapVisualModel {
   examDate: string | null;
   startDate: string;
   today: string;
-  progressPercentage: number; // 0..100
+  progressPercentage: number; // 0..100, do início do plano até a prova
+  phaseProgressPercentage: number; // 0..100, dentro da fase atual
   phasesList: Array<{
     key: PreparationPhase;
     label: string;
@@ -396,6 +397,7 @@ export function buildPhaseRoadmapVisual({
       startDate: planStartDate || today,
       today,
       progressPercentage: 0,
+      phaseProgressPercentage: 0,
       phasesList: [],
     };
   }
@@ -423,6 +425,11 @@ export function buildPhaseRoadmapVisual({
   const totalDurationDays = Math.max(1, Math.round(((examObj?.getTime() || 0) - (startObj?.getTime() || 0)) / (1000 * 60 * 60 * 24)));
   const elapsedDays = Math.max(0, Math.round(((todayObj?.getTime() || 0) - (startObj?.getTime() || 0)) / (1000 * 60 * 60 * 24)));
   const progressPercentage = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDurationDays) * 100)));
+
+  // Fronteiras das fases em dias restantes: início do plano > 90 > 30 > 7 > 0.
+  const phaseStartRemaining = { construction: Math.max(totalDurationDays, 91), consolidation: 90, final_stretch: 30, final_review: 7 }[phase];
+  const phaseEndRemaining = { construction: 90, consolidation: 30, final_stretch: 7, final_review: 0 }[phase];
+  const phaseProgressPercentage = Math.min(100, Math.max(0, Math.round(((phaseStartRemaining - daysRemaining) / (phaseStartRemaining - phaseEndRemaining)) * 100)));
 
   const phasesList = [
     {
@@ -472,6 +479,7 @@ export function buildPhaseRoadmapVisual({
     startDate: start,
     today,
     progressPercentage,
+    phaseProgressPercentage,
     phasesList,
   };
 }

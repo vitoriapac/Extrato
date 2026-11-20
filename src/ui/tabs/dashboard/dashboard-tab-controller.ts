@@ -648,7 +648,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const remaining = Math.max(0, (deps.diasParaRevisao ? deps.diasParaRevisao(exam) : 0) ?? 0);
     const pct = Math.max(0, Math.min(100, Math.round((elapsed / total) * 100)));
 
-    el.innerHTML = `<span class="exam-progress-label">Hoje</span><div class="exam-progress-track" role="progressbar" aria-label="Progresso até a prova" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="exam-progress-fill" style="width:${pct}%"></div></div><strong>${pct}%</strong><span class="exam-progress-days">${total} dias totais · ${elapsed} passaram · ${remaining} faltam</span>`;
+    el.innerHTML = `<span class="exam-progress-label">Hoje</span><div class="exam-progress-track" role="progressbar" aria-label="Progresso até a prova" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="exam-progress-fill" style="width:${pct}%"></div></div><strong>Tempo até a prova: ${pct}%</strong><span class="exam-progress-days">${total} dias totais · ${elapsed} passaram · ${remaining} faltam</span>`;
   }
 
   function renderExamCountdown(): void {
