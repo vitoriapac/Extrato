@@ -2,3 +2,7 @@
 *.png binary
 *.ico binary
 *.woff2 binary
+
+# Gerados por scripts/build.mjs: colapsam no diff do GitHub.
+src/*.bundle.js linguist-generated=true
+service-worker.js linguist-generated=true
