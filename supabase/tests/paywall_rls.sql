@@ -78,4 +78,20 @@ BEGIN
          = now() + interval '31 days', 'Pro vencido recomeça a partir de agora';
 END $$;
 
+-- RPCs administrativos: usuário comum não pode chamá-los nem informando o UUID de um admin.
+INSERT INTO auth.users (id, email) VALUES ('00000000-0000-0000-0000-0000000000a9', 'admin@t.test');
+UPDATE public.profiles SET role = 'admin' WHERE id = '00000000-0000-0000-0000-0000000000a9';
+
+DO $$
+DECLARE
+  free_id  uuid := '00000000-0000-0000-0000-0000000000a1';
+  admin_id uuid := '00000000-0000-0000-0000-0000000000a9';
+BEGIN
+  ASSERT pg_temp.try_as(free_id, format('SELECT public.admin_change_role(%L, %L, ''admin'', ''x'')', admin_id, free_id)) = 'denied',
+    'usuário comum não promove a si mesmo com o UUID de um admin';
+  ASSERT pg_temp.try_as(free_id, format('SELECT public.admin_extend_subscription(%L, %L, 30, ''x'')', admin_id, free_id)) = 'denied',
+    'usuário comum não concede Pro a si mesmo com o UUID de um admin';
+  ASSERT (SELECT role FROM public.profiles WHERE id = free_id) = 'student', 'role do usuário comum permanece student';
+END $$;
+
 ROLLBACK;
