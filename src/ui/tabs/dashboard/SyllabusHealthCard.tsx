@@ -30,7 +30,7 @@ export function SyllabusHealthCard({
             {attentionCount > 0 && (
               <>
                 {' · '}
-                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>
+                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>{' (mín. 10 questões)'}
               </>
             )}
           </p>
@@ -128,14 +128,18 @@ export function SyllabusHealthCard({
                           ? 'text-content-secondary'
                           : isAttention
                             ? 'text-content-secondary'
-                            : 'text-green'
+                            : subject.status === 'ok'
+                              ? 'text-green'
+                              : 'text-content-secondary'
                       }`}
                     >
                       {!hasAccuracy
                         ? '—'
                         : isAttention
                           ? `${formatDecimal(subject.gap)}%`
-                          : 'OK'}
+                          : subject.status === 'ok'
+                            ? 'OK'
+                            : 'amostra baixa'}
                     </span>
                   </div>
                 </div>

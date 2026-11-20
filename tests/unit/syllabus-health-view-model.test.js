@@ -82,3 +82,21 @@ test('buildSyllabusHealthViewModel: informa a origem do acerto (questões ou sim
   assert.equal(bySubject.b.accuracySource, 'simulations');
   assert.equal(bySubject.c.accuracySource, null);
 });
+
+test('buildSyllabusHealthViewModel: "abaixo da meta" exige 10 questões, como no Desempenho', () => {
+  const state = {
+    subjects: [
+      { id: 'a', name: 'Amostra suficiente', topics: [] },
+      { id: 'b', name: 'Amostra pequena', topics: [] },
+    ],
+    questoes: [
+      { subjectId: 'a', date: '2026-01-01', resolved: 10, correct: 7 },
+      { subjectId: 'b', date: '2026-01-01', resolved: 9, correct: 2 },
+    ],
+    metas: { metaAprovacao: 80 },
+  };
+  const by = Object.fromEntries(buildSyllabusHealthViewModel(state).subjects.map(s => [s.id, s]));
+  assert.equal(by.a.status, 'attention');
+  assert.equal(by.b.status, 'insufficient');
+  assert.equal(by.b.accuracy, 22.2);
+});

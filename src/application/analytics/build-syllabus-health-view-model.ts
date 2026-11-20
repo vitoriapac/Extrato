@@ -50,6 +50,7 @@ export function buildSyllabusHealthViewModel(state: any): SyllabusHealthViewMode
     const inProgressPct = totalTopics > 0 ? Math.round((inProgressCount / totalTopics) * 100) : 0;
 
     const acc = accuracyMap.get(s.id);
+    const sample = acc?.personal?.accuracy != null ? acc.personal : acc?.simulation;
     const accuracy =
       acc && acc.personal?.accuracy != null
         ? acc.personal.accuracy
@@ -61,14 +62,13 @@ export function buildSyllabusHealthViewModel(state: any): SyllabusHealthViewMode
     const target = acc ? acc.target : (state.metas?.metaAprovacao ?? 80);
     const gap = accuracy != null ? Math.round((accuracy - target) * 10) / 10 : null;
 
-    let status: 'ok' | 'attention' | 'insufficient' = 'insufficient';
-    if (accuracy != null) {
-      if (gap != null && gap < -5) {
-        status = 'attention';
-      } else {
-        status = 'ok';
-      }
-    }
+    // Mesmo critério do Desempenho: abaixo da meta só com amostra mínima (build-subject-accuracy).
+    const status: 'ok' | 'attention' | 'insufficient' =
+      sample?.state === 'below_target'
+        ? 'attention'
+        : sample?.state === 'on_target'
+          ? 'ok'
+          : 'insufficient';
 
     return {
       id: s.id,

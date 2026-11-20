@@ -31,7 +31,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Verificação:** unit; E2E na demo comparando a mesma disciplina em 3 telas
 **Dependências:** D-C · **Arquivos (provável):** `src/ui/tabs/dashboard/*`, `src/ui/tabs/subjects/*`, `src/ui/performance/*`, novo helper em `src/core/` · **Tamanho:** M
 
-### T2: Critério único de "abaixo da meta" (D5)
+### T2: Critério único de "abaixo da meta" (D5) — FEITA (20/11)
 **Aceite:**
 - [ ] Uma função de domínio com amostra mínima declarada (D-D); Visão geral ("16 abaixo da meta") e Desempenho ("7 abaixo da meta com dados suficientes") usam a mesma
 - [ ] O texto diz o critério onde o número aparece
