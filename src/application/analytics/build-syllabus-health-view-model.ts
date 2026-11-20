@@ -6,6 +6,8 @@ export interface SyllabusHealthSubject {
   concludedPct: number;
   inProgressPct: number;
   accuracy: number | null;
+  /** De onde vem o acerto: questões pessoais (todo o histórico) ou, sem questões, simulados. */
+  accuracySource: 'questions' | 'simulations' | null;
   target: number;
   gap: number | null;
   status: 'ok' | 'attention' | 'insufficient';
@@ -54,6 +56,8 @@ export function buildSyllabusHealthViewModel(state: any): SyllabusHealthViewMode
         : acc && acc.simulation?.accuracy != null
           ? acc.simulation.accuracy
           : null;
+    const accuracySource =
+      accuracy == null ? null : acc?.personal?.accuracy != null ? 'questions' : 'simulations';
     const target = acc ? acc.target : (state.metas?.metaAprovacao ?? 80);
     const gap = accuracy != null ? Math.round((accuracy - target) * 10) / 10 : null;
 
@@ -72,6 +76,7 @@ export function buildSyllabusHealthViewModel(state: any): SyllabusHealthViewMode
       concludedPct,
       inProgressPct,
       accuracy,
+      accuracySource,
       target,
       gap,
       status,

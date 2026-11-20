@@ -21,12 +21,13 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ## Fase 1: números e janelas
 
-### T1: Helper único de janela e selo no acerto por disciplina (D4)
-**Descrição:** Um helper devolve o rótulo da janela; Visão geral (Saúde do Edital), Disciplinas ("última janela"), Desempenho e Planejamento mostram o acerto com o mesmo selo e a mesma regra de janela escolhida em D-C.
+### T1: Selo de janela no acerto por disciplina (D4) — FEITA em 20/11
+**Descrição:** Cada tela diz a janela real do seu acerto (D-C). Causa raiz achada: o card da Visão geral dizia "últimas 4 semanas", mas calculava sobre todo o histórico (e caía para simulados sem questões); Disciplinas mostra a última semana. Não foi criado helper compartilhado: bastou corrigir os dois rótulos.
 **Aceite:**
-- [ ] Produtos e Serviços Bancários deixa de aparecer como 71,1% e 85,0% sem rótulo; cada valor traz sua janela ou ambos usam a mesma
-- [ ] Banco do Brasil — Específicos mostra o acerto em Disciplinas quando a Visão geral o mostra
-- [ ] Teste unitário com o caso do relatório
+- [x] Produtos e Serviços Bancários deixa de ser 71,1% × 85,0% sem rótulo: Visão geral "todo o histórico", Disciplinas "última semana com questões", Desempenho com o filtro do período
+- [x] Acerto vindo de simulados aparece como "% acerto em simulados" na Visão geral (campo `accuracySource`)
+- [ ] ~~Banco do Brasil — Específicos mostra o acerto em Disciplinas~~ — removido: Disciplinas é "última semana"; sem questões na semana não há valor, e agora isso é coerente com o rótulo
+- [x] Teste unitário da origem do acerto (`syllabus-health-view-model.test.js`)
 **Verificação:** unit; E2E na demo comparando a mesma disciplina em 3 telas
 **Dependências:** D-C · **Arquivos (provável):** `src/ui/tabs/dashboard/*`, `src/ui/tabs/subjects/*`, `src/ui/performance/*`, novo helper em `src/core/` · **Tamanho:** M
 

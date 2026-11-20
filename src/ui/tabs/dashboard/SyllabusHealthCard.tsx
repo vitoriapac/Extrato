@@ -26,7 +26,7 @@ export function SyllabusHealthCard({
             Saúde do Edital por Disciplina
           </h3>
           <p class="text-xs text-content-secondary m-0 mt-1">
-            Progresso de cobertura e taxa de acerto nas últimas 4 semanas
+            Progresso de cobertura e taxa de acerto em todo o histórico
             {attentionCount > 0 && (
               <>
                 {' · '}
@@ -79,6 +79,7 @@ export function SyllabusHealthCard({
                       <>
                         <span class={isAttention ? 'text-content-primary font-semibold' : 'text-content-primary font-medium'}>
                           {formatDecimal(subject.accuracy)}% acerto
+                          {subject.accuracySource === 'simulations' ? ' em simulados' : ''}
                         </span>{' '}
                         <span class="text-content-secondary font-normal">(meta {formatDecimal(subject.target)}%)</span>
                       </>

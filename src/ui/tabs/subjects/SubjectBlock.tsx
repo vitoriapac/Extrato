@@ -127,7 +127,7 @@ export function SubjectBlock({
           </span>
           {recentAccuracy !== undefined && (
             <span class="subject-recent-accuracy">
-              Acerto · última janela com questões <b>{formatPercent(recentAccuracy)}</b>
+              Acerto · última semana com questões <b>{formatPercent(recentAccuracy)}</b>
             </span>
           )}
           <button

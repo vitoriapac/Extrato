@@ -61,3 +61,24 @@ test('buildSyllabusHealthViewModel: calcula progresso empilhado e acerto por dis
   assert.equal(admin.status, 'ok');
   assert.equal(admin.gap, 5);
 });
+
+test('buildSyllabusHealthViewModel: informa a origem do acerto (questões ou simulados) e o histórico inteiro', () => {
+  const state = {
+    subjects: [
+      { id: 'a', name: 'Com questões', topics: [] },
+      { id: 'b', name: 'Só simulado', topics: [] },
+      { id: 'c', name: 'Sem dados', topics: [] },
+    ],
+    // Datas antigas de propósito: o card usa todo o histórico, não só as últimas 4 semanas.
+    questoes: [{ subjectId: 'a', date: '2020-01-01', resolved: 20, correct: 10 }],
+    simulados: [{ breakdown: [{ subjectId: 'b', total: 20, correct: 15 }] }],
+    metas: { metaAprovacao: 80 },
+  };
+  const bySubject = Object.fromEntries(
+    buildSyllabusHealthViewModel(state).subjects.map(s => [s.id, s])
+  );
+  assert.equal(bySubject.a.accuracy, 50);
+  assert.equal(bySubject.a.accuracySource, 'questions');
+  assert.equal(bySubject.b.accuracySource, 'simulations');
+  assert.equal(bySubject.c.accuracySource, null);
+});
