@@ -45,7 +45,7 @@ Usar Node para contratos e valores ausentes, zero, estimativa e amostra insufici
 
 Avaliação manual com leitor de tela deve ser registrada separadamente de axe e nomes acessíveis automatizados.
 
-O [fechamento do ciclo](DECISION-EXPERIENCE-CLOSURE.md) reúne as evidências finais de validação e seus limites.
+O [fechamento do ciclo](arquivo/DECISION-EXPERIENCE-CLOSURE.md) reúne as evidências finais de validação e seus limites.
 
 ## Pacote 2 — apresentação compartilhada
 

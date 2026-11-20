@@ -61,7 +61,7 @@ Extrato de Estudos é uma aplicação web para planejar estudos, registrar sess�
 - **Comparativo com Aprovados por Carreira (`CareerBenchmarkCard.tsx`):** Benchmarks de horas semanais, volume de questões, acerto e mix pedagógico (Teoria, Questões, Revisões) para 5 carreiras na aba Desempenho, 100% privado e executado localmente no navegador.
 - **Tracking de Páginas Lidas & Blocos de Vídeo-aula:** Registro opcional de páginas lidas e blocos assistidos no término da sessão, com avanço automático do marcador (`TopicBookmark.currentUnit`) e exibição nos cards de metas da aba Hoje e Desempenho.
 - **Acolhimento da Semana Real & Microcopy Empática (`RealWeekBanner.tsx`):** Banner acolhedor na aba Hoje quando há imprevistos, recalibração inteligente de horas em 1 clique e eliminação de termos punitivos (*"Atenção prioritária"*, *"Revisões para regularizar"*, *"Sua semana mudou? Reajuste sua capacidade sem culpa"*).
-- **Ficha Inteligente do Tópico, Identidade Canônica e Central de Materiais ([contratos](docs/CICLOS-1-2-3-CONTRATOS.md)):** agregador contextual somente-leitura por tópico (`TopicIntelligenceModal.tsx` e `build-topic-intelligence.ts`) com ponto de parada, última sessão, caderno de erros e atalhos de prática, além de catálogo híbrido de equivalência canônica sem fusão automática (`topicEquivalences`, schema v33), painel comparativo do edital (`EditalPriorityPanel`) e biblioteca de materiais por URL sanitizada (`StudyMaterial`, schema v34).
+- **Ficha Inteligente do Tópico, Identidade Canônica e Central de Materiais ([contratos](docs/arquivo/CICLOS-1-2-3-CONTRATOS.md)):** agregador contextual somente-leitura por tópico (`TopicIntelligenceModal.tsx` e `build-topic-intelligence.ts`) com ponto de parada, última sessão, caderno de erros e atalhos de prática, além de catálogo híbrido de equivalência canônica sem fusão automática (`topicEquivalences`, schema v33), painel comparativo do edital (`EditalPriorityPanel`) e biblioteca de materiais por URL sanitizada (`StudyMaterial`, schema v34).
 
 ## Rotas Diretas e Deep Linking via URL
 
@@ -104,7 +104,7 @@ flowchart TD
     U --> H
 ```
 
-Veja os cenários de referência na [jornada do produto](docs/product-journey.md).
+Veja os cenários de referência na [jornada do produto](docs/arquivo/product-journey.md).
 
 ## Como o planejamento decide o que estudar
 
@@ -195,7 +195,7 @@ Em **Desempenho**, escolha o período e consulte as visões de questões, simula
 
 Em **Hoje → Diagnóstico**, sinais do mesmo tópico ou disciplina aparecem em um diagnóstico principal, com as demais evidências como contexto. A **Próxima melhor ação** usa uma recomendação elegível do motor atual. Quando houver proposta de planejamento, **Pré-visualizar no plano** abre a distribuição para revisão. A prévia não salva o plano: confirme para gravá-lo. A capacidade semanal é respeitada e a recomendação pode iniciar uma sessão vinculada. O fechamento semanal registra execução e resultados posteriores disponíveis, sem atribuir causalidade à recomendação.
 
-Cada diagnóstico mostra a conclusão, o motivo principal e a qualidade da evidência. **Ver evidências** abre medidas e sinais auxiliares; **Ver metodologia** apresenta os limites e o período da leitura. O [inventário de densidade](docs/PRODUCT-CONSOLIDATION-VISUAL-AUDIT.md) registra a hierarquia das demais áreas.
+Cada diagnóstico mostra a conclusão, o motivo principal e a qualidade da evidência. **Ver evidências** abre medidas e sinais auxiliares; **Ver metodologia** apresenta os limites e o período da leitura. O [inventário de densidade](docs/arquivo/PRODUCT-CONSOLIDATION-VISUAL-AUDIT.md) registra a hierarquia das demais áreas.
 
 A Próxima Melhor Ação pode indicar uma intervenção prioritária, uma sugestão opcional, manutenção do plano, evidência insuficiente ou ausência de ação elegível. Ela não cria uma prioridade paralela. Em **Desempenho → Visão geral**, **Por que a Prontidão mudou?** compara somente retratos salvos do período atual e do anterior. Versões, pesos ou fatores diferentes bloqueiam a comparação; os fatores exibem valores observados, sem atribuição artificial de pontos.
 
@@ -319,7 +319,7 @@ O histórico do **Foco Estratégico** mostra uma linha simples para comparar per
 
 ## Estado do roadmap
 
-Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. A fase seguinte reuniu análises na aba Desempenho, consolidou sinais no Diagnóstico e ligou a próxima ação à prévia do planejamento, à execução e ao fechamento. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
+Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. A fase seguinte reuniu análises na aba Desempenho, consolidou sinais no Diagnóstico e ligou a próxima ação à prévia do planejamento, à execução e ao fechamento. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/arquivo/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
 
 A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP.
 
@@ -344,7 +344,7 @@ O histórico de evolução e entregas do Extrato de Estudos foi consolidado em [
    - **Gerenciamento de Dados Modular:** Bloco de backup e zona de perigo desacoplado e migrado para modal flutuante (originalmente `#dataManagementOverlay`, migrado na Onda 4 para `DataManagementModal.tsx`), com acesso discreto pelo rodapé (`#openDataManagementBtn`) e CTA da demonstração preservado.
    - **Design System & Tipografia:** Escala tipográfica formal com piso universal de 12px (`--text-micro: .75rem`), biblioteca de primitivas de ícones SVG nativos leves (`src/ui/primitives/icon.tsx`) e 992 testes unitários 100% verdes em ~31s.
 7. **Modularização Integral do `src/app.ts` em 10 Fases (Concluída):**
-   - **Pure Composition Root:** Redução do `src/app.ts` de **10.921 linhas** (473 funções) para **146 linhas (-98,7%)**, cumprindo integralmente a diretriz de zero regras de negócio no ponto de entrada ([PLANO-MODULARIZACAO-APP.md](docs/PLANO-MODULARIZACAO-APP.md)).
+   - **Pure Composition Root:** Redução do `src/app.ts` de **10.921 linhas** (473 funções) para **146 linhas (-98,7%)**, cumprindo integralmente a diretriz de zero regras de negócio no ponto de entrada ([PLANO-MODULARIZACAO-APP.md](docs/arquivo/PLANO-MODULARIZACAO-APP.md)).
    - **Arquitetura em Camadas Estritas:** Extração completa de motores de domínio (`src/domain/`), serviços e fachadas de aplicação (`src/application/`), controladores de abas/modais (`src/ui/tabs/`, `src/features/`) e composição de bootstrap (`src/bootstrap/`).
    - **Homologação Completa:** 1.154 testes unitários no Node rodando em ~43s (UTC e `America/Sao_Paulo`) e 100% de aprovação na suíte Full + Visual Windows do GitHub Actions.
 8. **Modernização Visual, Cockpit Panorâmico & Experiência de Dados (Concluída):**
@@ -389,7 +389,7 @@ As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adap
 ## Licença
 
 Software proprietário — Todos os direitos reservados. Consulte [LICENSE](LICENSE).
-Veja também a [jornada do produto](docs/product-journey.md), com cenários e medidas de referência para o primeiro uso e semanas irregulares.
+Veja também a [jornada do produto](docs/arquivo/product-journey.md), com cenários e medidas de referência para o primeiro uso e semanas irregulares.
 
 ## Fluxos entregues
 
@@ -403,4 +403,4 @@ Veja também a [jornada do produto](docs/product-journey.md), com cenários e me
 
 Para validar a área alterada, use `npm run test:affected -- --dry-run` antes da execução. O [mapa de impacto e as métricas](docs/TEST-IMPACT-SELECTION.md) explicam o fallback Full e a política está em [AGENTS.md](AGENTS.md).
 
-O [contrato da experiência de decisão](docs/DECISION-EXPERIENCE-CONTRACT.md) explica como as superfícies compartilham evidências e preservam o controle do usuário. O [fechamento do ciclo](docs/DECISION-EXPERIENCE-CLOSURE.md) registra validações e limitações.
+O [contrato da experiência de decisão](docs/DECISION-EXPERIENCE-CONTRACT.md) explica como as superfícies compartilham evidências e preservam o controle do usuário. O [fechamento do ciclo](docs/arquivo/DECISION-EXPERIENCE-CLOSURE.md) registra validações e limitações.

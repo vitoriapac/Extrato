@@ -2,7 +2,7 @@
 
 ## Consolidação da experiência — cinco perfis
 
-O ciclo posterior de [consolidação da experiência](EXPERIENCE-CONSOLIDATION.md) usa `beginner`, `regular`, `irregular`, `high_performance` e `final_stretch`, com data fixa em 3 de outubro de 2026. São massas explícitas do gerador, não os seis perfis históricos do runner de auditoria descrito abaixo.
+O ciclo posterior de [consolidação da experiência](arquivo/EXPERIENCE-CONSOLIDATION.md) usa `beginner`, `regular`, `irregular`, `high_performance` e `final_stretch`, com data fixa em 3 de outubro de 2026. São massas explícitas do gerador, não os seis perfis históricos do runner de auditoria descrito abaixo.
 
 Os contratos dos cinco perfis estão em `decision-coherence-scenarios.test.js`; a jornada compacta em `product-consolidation.spec.js` percorre Visão Geral, Hoje, Desempenho, Metas e fechamento em 390 px. Registra capturas da trajetória por perfil para inspeção e verifica ausência de overflow, estado esperado, acesso ao resultado e detalhes inicialmente fechados. O ciclo transacional continua em `strategic-cycle.spec.js`; a Demo padrão preserva a jornada de ajuda/retorno no Experience.
 

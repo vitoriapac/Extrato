@@ -166,7 +166,7 @@ O desenvolvimento futuro do Extrato de Estudos desdobra-se em duas trilhas compl
 
 ### 3.1. Trilha Local-First: Inteligência, Experiência e Engenharia
 
-Detalhadas formalmente em **[docs/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-PROXIMAS-EVOLUCOES.md)**:
+Detalhadas formalmente em **[docs/arquivo/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/vitor/Documents/Extrato/docs/arquivo/PLANO-PROXIMAS-EVOLUCOES.md)**:
 
 1. **Inteligência Analítica Pura:**
    - *(Concluído)* **Detecção de Platô de Desempenho (`plateau-detector.ts` + `PlateauDetectorCard.tsx`):** diagnóstico de estagnação de precisão em alto volume com prescrição de mudança metodológica, integrado à aba Questões & Simulados.

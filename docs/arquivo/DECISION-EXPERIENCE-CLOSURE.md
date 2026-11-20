@@ -2,7 +2,7 @@
 
 ## Entregas
 
-Os oito pacotes consolidam a narrativa entre Desempenho, Projeção, Diagnóstico, planejamento, execução e fechamento. O [contrato](DECISION-EXPERIENCE-CONTRACT.md) descreve a autoridade de cada superfície e a validação dirigida das entregas anteriores.
+Os oito pacotes consolidam a narrativa entre Desempenho, Projeção, Diagnóstico, planejamento, execução e fechamento. O [contrato](../DECISION-EXPERIENCE-CONTRACT.md) descreve a autoridade de cada superfície e a validação dirigida das entregas anteriores.
 
 - Evidência compartilhada distingue zero medido, ausência, estimativa, amostra insuficiente e contexto não aplicável.
 - Projeção começa pelos resultados observados e permite investigar fatores, amostra e limites.

@@ -4,8 +4,8 @@ Este documento consolida, unifica e preserva o histórico técnico e arquitetura
 
 > [!NOTE]
 > Para o planejamento ativo e os horizontes futuros do projeto, consulte:
-> - **Plano Diretor de Modernização Visual e Cockpit Panorâmico:** [docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
-> - **Plano Ativo (Próximas Evoluções em Inteligência, UX e Engenharia):** [docs/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-PROXIMAS-EVOLUCOES.md)
+> - **Plano Diretor de Modernização Visual e Cockpit Panorâmico:** [docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
+> - **Plano Ativo (Próximas Evoluções em Inteligência, UX e Engenharia):** [docs/arquivo/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/vitor/Documents/Extrato/docs/arquivo/PLANO-PROXIMAS-EVOLUCOES.md)
 > - **Plano Futuro de Infraestrutura e SaaS:** [docs/PLANO-TRANSFORMACAO-SAAS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-TRANSFORMACAO-SAAS.md)
 > - **Painel Geral de Pendências e Status:** [docs/O-QUE-FALTA-IMPLEMENTAR.md](file:///c:/Users/vitor/Documents/Extrato/docs/O-QUE-FALTA-IMPLEMENTAR.md)
 
@@ -364,7 +364,7 @@ Com base na auditoria visual e de experiência executada com Playwright em múlt
 
 ## 8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 10 — 100% Concluído)
 
-Em atendimento estrito à política inegociável de governança de `AGENTS.md` (*Modularização Obrigatória: Zero Novas Funções no `app.ts`*), foi executado e concluído integralmente o [Plano Diretor de Modularização](PLANO-MODULARIZACAO-APP.md), reduzindo o monolito original de **10.921 linhas** (473 funções) para **146 linhas** (**-10.775 linhas líquidas / -98,7% de redução**), consolidando o `src/app.ts` exclusivamente como *Pure Composition Root*:
+Em atendimento estrito à política inegociável de governança de `AGENTS.md` (*Modularização Obrigatória: Zero Novas Funções no `app.ts`*), foi executado e concluído integralmente o [Plano Diretor de Modularização](arquivo/PLANO-MODULARIZACAO-APP.md), reduzindo o monolito original de **10.921 linhas** (473 funções) para **146 linhas** (**-10.775 linhas líquidas / -98,7% de redução**), consolidando o `src/app.ts` exclusivamente como *Pure Composition Root*:
 
 ### 8.1. Fase 1: Extração do Domínio Puro
 - Isolamento de motores determinísticos sob `src/domain/`, sem dependências de DOM, Preact ou storage:
@@ -557,7 +557,7 @@ Este ciclo foi disparado a partir de uma auditoria minuciosa simulando o primeir
 
 ## 11. Plano de Modernização Visual e Cockpit Panorâmico (Novembro 2026)
 
-Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md) cobrindo as 5 fases planejadas:
+Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:///c:/Users/vitor/Documents/Extrato/docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md) cobrindo as 5 fases planejadas:
 
 ### 11.1. Entregas Realizadas
 - **Fase 1 (Fundação Visual & Cores Oficiais):**
@@ -906,9 +906,9 @@ Conclusão integral do [Plano Diretor de Modernização Visual e Cockpit](file:/
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
 - **Plano de Melhorias da Concorrência:** [plano-melhorias-concorrencia.md](file:///C:/Users/vitor/.gemini/antigravity/brain/9c8ae408-da3b-4423-b26d-80ffef2700fd/plano-melhorias-concorrencia.md)
-- **Plano Diretor de Modernização Visual:** [docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
+- **Plano Diretor de Modernização Visual:** [docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md](file:///c:/Users/vitor/Documents/Extrato/docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 - **Cenário da Demonstração:** [docs/DEMO-SCENARIO.md](file:///c:/Users/vitor/Documents/Extrato/docs/DEMO-SCENARIO.md)
-- **Plano Diretor de Modularização:** [docs/PLANO-MODULARIZACAO-APP.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODULARIZACAO-APP.md)
+- **Plano Diretor de Modularização:** [docs/arquivo/PLANO-MODULARIZACAO-APP.md](file:///c:/Users/vitor/Documents/Extrato/docs/arquivo/PLANO-MODULARIZACAO-APP.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)

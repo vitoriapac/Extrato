@@ -461,7 +461,7 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 
 ## Modernização Visual e Cockpit Panorâmico (Novembro 2026)
 
-Plano Diretor: [`docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
+Plano Diretor: [`docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md`](../docs/arquivo/PLANO-MODERNIZACAO-VISUAL-E-COCKPIT.md)
 
 ### Grids Analíticos de Decisão na Visão Geral (Cockpit) & Modelos Visuais nas Demais Abas
 - [x] **Grade Superior do Cockpit: Reorganização em Camadas Temáticas (Alternativa A)**

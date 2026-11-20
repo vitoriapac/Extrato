@@ -8,7 +8,7 @@ O [CI anterior de c28b51d](https://github.com/vitoriapac/Extrato/actions/runs/37
 
 ## Pacote 2 — propriedade operacional
 
-A [matriz](INFORMATION-OWNERSHIP.md) especifica proprietário, resumo permitido, destino e chave de contexto. Preserva as superfícies atuais, sem inventar abas Prova/Fechamento ou transferir fatores globais da Prontidão. Cada redução exige comparar entidade, concurso, período, unidade, denominador e fonte.
+A [matriz](../INFORMATION-OWNERSHIP.md) especifica proprietário, resumo permitido, destino e chave de contexto. Preserva as superfícies atuais, sem inventar abas Prova/Fechamento ou transferir fatores globais da Prontidão. Cada redução exige comparar entidade, concurso, período, unidade, denominador e fonte.
 
 ## Pacote 3 — narrativa de Desempenho
 
@@ -116,7 +116,7 @@ Os commits destes pacotes estão locais; a aprovação do CI anterior não confi
 - 43 testes Node relacionados passaram, incluindo apresentação, ajuda, metas, sustentabilidade e contratos do ciclo estratégico.
 - As quatro comparações de Desempenho/Metas passaram com as referências existentes em 375/1440 px, claro/escuro.
 - A jornada de calibração passou, preservando backup, histórico congelado e acesso por teclado aos detalhes.
-- As cinco jornadas densas de sustentabilidade passaram. As capturas agora usam alinhamento de pixels; as referências de 375 px escuro e 430 px claro foram substituídas individualmente após inspeção de expected/actual/diff. Conteúdo, valores e CTA foram preservados, com tolerância de 0,08. Veja a [política visual](VISUAL-TEST-POLICY.md).
+- As cinco jornadas densas de sustentabilidade passaram. As capturas agora usam alinhamento de pixels; as referências de 375 px escuro e 430 px claro foram substituídas individualmente após inspeção de expected/actual/diff. Conteúdo, valores e CTA foram preservados, com tolerância de 0,08. Veja a [política visual](../VISUAL-TEST-POLICY.md).
 - A jornada contextual verifica ajuda → retorno à origem e ajuda de projeção → trajetória, preservando período, concurso e os dados locais.
 - Experience final passou em **105,63 s**, incluindo contratos nos dois fusos, iniciante, Demo densa, sugestão fora do plano e ciclo estratégico completo.
 - Build conferido com `npm run check:bundle`: os quatro artefatos versionados estão atualizados e reproduzíveis.

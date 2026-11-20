@@ -1,6 +1,6 @@
 # Inventário de densidade — consolidação de produto
 
-Este inventário descreve a hierarquia da interface após a criação de Desempenho e do Diagnóstico consolidado. A revisão combinou estrutura dos renderers com inspeção da Demo no navegador; contagem de cards acima da dobra depende do tamanho da janela e dos dados presentes. O cenário denso descrito em [Hierarquia visual](VISUAL-HIERARCHY.md) amplia a massa para uma auditoria posterior.
+Este inventário descreve a hierarquia da interface após a criação de Desempenho e do Diagnóstico consolidado. A revisão combinou estrutura dos renderers com inspeção da Demo no navegador; contagem de cards acima da dobra depende do tamanho da janela e dos dados presentes. O cenário denso descrito em [Hierarquia visual](../VISUAL-HIERARCHY.md) amplia a massa para uma auditoria posterior.
 
 ## Contrato de leitura
 

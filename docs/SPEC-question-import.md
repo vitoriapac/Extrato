@@ -1,6 +1,6 @@
 # Spec: question-import
 
-Módulo do [mapa de correções](CAPABILITY-MAP-review-remediation.md). Corrige a importação CSV de questões (achados #1, #5, #6, #7, #8, #12 e o modelo CSV de #14).
+Módulo do [mapa de correções](arquivo/CAPABILITY-MAP-review-remediation.md). Corrige a importação CSV de questões (achados #1, #5, #6, #7, #8, #12 e o modelo CSV de #14).
 
 ## Objetivo
 

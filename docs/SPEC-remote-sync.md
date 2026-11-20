@@ -1,6 +1,6 @@
 # Spec: remote-sync
 
-Módulo do [mapa de correções](CAPABILITY-MAP-review-remediation.md). Corrige a sincronização WebDAV com E2EE (achados #3, #4, #10, #11, #13).
+Módulo do [mapa de correções](arquivo/CAPABILITY-MAP-review-remediation.md). Corrige a sincronização WebDAV com E2EE (achados #3, #4, #10, #11, #13).
 
 ## Objetivo
 

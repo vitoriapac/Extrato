@@ -58,7 +58,7 @@ node scripts/audit-test-suite.mjs --check
 .gitignore                    → novas entradas (R1, R2, R3)
 src/graphify-out/             → apagada (R1)
 .claude/launch.json           → versionada (R3)
-docs/SPEC-build-hygiene.md    → esta spec
+docs/arquivo/SPEC-build-hygiene.md    → esta spec
 docs/PLANOS-CONCLUIDOS.md    → plano e histórico do módulo consolidado
 ```
 

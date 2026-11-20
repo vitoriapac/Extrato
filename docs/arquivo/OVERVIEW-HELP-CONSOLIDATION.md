@@ -25,7 +25,7 @@ Os arquivos Node relacionados cobrem renderers, view-model, busca, reconciliador
 
 A ajuda recebe smoke em 320 e 390 px e auditoria representativa em 375 claro e 1440 escuro. A execução tem referências Windows em 320 claro, 375 escuro e 430 claro; estados com nomes longos também passam por 390 e 1440 px. As referências existentes de mapa, matriz e glossário são comparadas sem atualização automática.
 
-A política de validação permanece em [TEST-STRATEGY.md](TEST-STRATEGY.md), e a plataforma de comparação em [VISUAL-TEST-POLICY.md](VISUAL-TEST-POLICY.md). Este fechamento não amplia o manifesto Full. A suíte completa e a auditoria completa da Demo não são necessárias para estas mudanças de apresentação.
+A política de validação permanece em [TEST-STRATEGY.md](../TEST-STRATEGY.md), e a plataforma de comparação em [VISUAL-TEST-POLICY.md](../VISUAL-TEST-POLICY.md). Este fechamento não amplia o manifesto Full. A suíte completa e a auditoria completa da Demo não são necessárias para estas mudanças de apresentação.
 
 ## Fechamento local — 4 de outubro de 2026
 

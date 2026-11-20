@@ -297,7 +297,7 @@ A auditoria de configuração calcula a estimativa histórica com a mesma fórmu
 
 `src/application/exam-intelligence/build-exam-matrix.ts` monta a matriz histórica por tópico e prova, com filtros de concurso, banca, ano, cargo e disciplina, busca e ordenação. Somente provas completas aparecem como colunas e entram no denominador; a célula guarda a quantidade de questões e o peso somado, quando informado. O renderer alterna histórico e prioridades, oferece tabela em telas largas, cards no celular e detalhamento Prova × Você com incidência, confiança e indicadores pessoais. A cor do mapa não substitui a contagem textual.
 
-Os limites compartilhados da inteligência histórica e da adaptação V4 ficam em `src/domain/exam-intelligence/config.ts`. Exam Intelligence V1, Priority Engine V5 e Adaptive Planning V4 têm versões independentes. Novos registros de recomendação e seus snapshots guardam a versão da prioridade e da inteligência da prova que produziram a decisão. A massa de validação e a tabela de decisões estão em `docs/EXAM-INTELLIGENCE-VALIDATION.md`.
+Os limites compartilhados da inteligência histórica e da adaptação V4 ficam em `src/domain/exam-intelligence/config.ts`. Exam Intelligence V1, Priority Engine V5 e Adaptive Planning V4 têm versões independentes. Novos registros de recomendação e seus snapshots guardam a versão da prioridade e da inteligência da prova que produziram a decisão. A massa de validação e a tabela de decisões estão em `docs/arquivo/EXAM-INTELLIGENCE-VALIDATION.md`.
 
 Os significados transversais de alto impacto (70/100), domínio adequado (70/100), evidência suficiente (0,5) e mínimo histórico (4 provas) ficam em `src/domain/strategy/config.ts`. PDF, foco semanal, conquistas, alertas e planejamento usam o limite correspondente sem recalibrar o Priority Engine. Outros números iguais, como confiança da classificação de uma questão, mantêm regras próprias quando medem conceitos diferentes.
 
@@ -406,9 +406,9 @@ A composição de fase e trajetória fica em `src/application/planning/build-pha
 
 ## Demo da trajetória e fechamento orientado à decisão
 
-Os perfis opcionais de `src/demo/demo-preparation-profiles.ts` produzem cenários fictícios determinísticos de recuperação, reta final e evidência limitada. O cenário público padrão e os contratos de persistência permanecem iguais. A validação e a jornada integrada estão em [DEMO-PROJECTION-VALIDATION.md](docs/DEMO-PROJECTION-VALIDATION.md).
+Os perfis opcionais de `src/demo/demo-preparation-profiles.ts` produzem cenários fictícios determinísticos de recuperação, reta final e evidência limitada. O cenário público padrão e os contratos de persistência permanecem iguais. A validação e a jornada integrada estão em [DEMO-PROJECTION-VALIDATION.md](docs/arquivo/DEMO-PROJECTION-VALIDATION.md).
 
-A síntese semanal reutiliza ciclo de decisões, sustentabilidade e comparação histórica compatível. A ajuda contextual abre artigos existentes com categoria e foco corretos; consulte [WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md](docs/WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md).
+A síntese semanal reutiliza ciclo de decisões, sustentabilidade e comparação histórica compatível. A ajuda contextual abre artigos existentes com categoria e foco corretos; consulte [WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md](docs/arquivo/WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md).
 
 ## Experiência de decisão
 
@@ -496,5 +496,5 @@ A evolução contínua da arquitetura do StudyTrack está estruturada nos seguin
 
 - **Histórico de Planos Concluídos:** [PLANOS-CONCLUIDOS.md](docs/PLANOS-CONCLUIDOS.md), consolidando a modernização tecnológica (TypeScript/Preact/Tailwind), primeiro uso guiado (Onboarding 2.0), as 4 fases do plano de evolução (Decisão, Bookmarks, Inteligência Preditiva, Caderno de Erros SM-2), melhorias pós-Fase 4, migração Lucide Icons / primitivos UI e o refinamento estrutural da aba Planejamento.
 - **Mapeamento de Status e Pendências:** [O-QUE-FALTA-IMPLEMENTAR.md](docs/O-QUE-FALTA-IMPLEMENTAR.md), detalhando o status atual da aplicação local e os horizontes de evolução.
-- **Próximas Evoluções (Backlog Ativo):** [PLANO-PROXIMAS-EVOLUCOES.md](docs/PLANO-PROXIMAS-EVOLUCOES.md), orientando platô de rendimento, custo de oportunidade, pós-simulado e fatiamento contínuo do `app.ts`.
+- **Próximas Evoluções (Backlog Ativo):** [PLANO-PROXIMAS-EVOLUCOES.md](docs/arquivo/PLANO-PROXIMAS-EVOLUCOES.md), orientando platô de rendimento, custo de oportunidade, pós-simulado e fatiamento contínuo do `app.ts`.
 - **Preparação SaaS / Cloud:** [PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md), orientando o isolamento da camada de repositório para desacoplamento de storage local e suporte a nuvem híbrida.
