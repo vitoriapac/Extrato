@@ -12,6 +12,7 @@ const DEFAULT_CHIPS = [
   { label: '#aderência', query: 'aderência' },
   { label: '#backup', query: 'backup' },
   { label: '#simulados', query: 'simulados' },
+  { label: '#agenda', query: 'agenda' },
   { label: '#edital', query: 'edital' },
 ];
 

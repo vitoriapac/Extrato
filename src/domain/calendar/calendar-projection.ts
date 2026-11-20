@@ -134,6 +134,86 @@ export function selectPlannedSimulationsForTodayView(
   });
 }
 
+export interface EssayEvolutionEntry {
+  id: string;
+  date: string;
+  title: string;
+  essayTheme: string | null;
+  essayStatus: 'draft' | 'written' | 'graded';
+  essayScore: number | null;
+  essayMaxScore: number | null;
+  normalizedPercent: number | null;
+  taskStatus: string;
+}
+
+export interface EssayEvolutionSummary {
+  totalCount: number;
+  gradedCount: number;
+  averagePercent: number | null;
+  latestScoreLabel: string | null;
+  entries: EssayEvolutionEntry[];
+}
+
+/**
+ * Consolida o histórico e a evolução das redações cadastradas na Agenda,
+ * mantendo o lançamento de nota independente da conclusão da tarefa.
+ */
+export function buildEssayEvolutionSummary(
+  items: UnifiedCalendarItem[]
+): EssayEvolutionSummary {
+  const essays = items
+    .filter(item => item.kind === 'essay' && !item.isRecurringInstance && item.status !== 'Cancelado')
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const entries: EssayEvolutionEntry[] = essays.map(item => {
+    const score = typeof item.essayScore === 'number' && Number.isFinite(item.essayScore) ? item.essayScore : null;
+    const maxScore =
+      typeof item.essayMaxScore === 'number' && Number.isFinite(item.essayMaxScore) && item.essayMaxScore > 0
+        ? item.essayMaxScore
+        : null;
+    const normalizedPercent =
+      score !== null && maxScore !== null ? Math.round((score / maxScore) * 100) : null;
+    const essayStatus: 'draft' | 'written' | 'graded' =
+      item.essayStatus === 'graded' || score !== null
+        ? 'graded'
+        : item.essayStatus === 'written' || item.status === 'Concluído'
+          ? 'written'
+          : 'draft';
+    return {
+      id: item.id,
+      date: item.date,
+      title: item.title || 'Redação',
+      essayTheme: item.essayTheme || null,
+      essayStatus,
+      essayScore: score,
+      essayMaxScore: maxScore,
+      normalizedPercent,
+      taskStatus: item.status || 'Não iniciado',
+    };
+  });
+
+  const graded = entries.filter(e => e.essayScore !== null);
+  const withPercent = graded.filter(e => e.normalizedPercent !== null);
+  const averagePercent =
+    withPercent.length > 0
+      ? Math.round(
+          withPercent.reduce((sum, e) => sum + (e.normalizedPercent || 0), 0) / withPercent.length
+        )
+      : null;
+  const latestGraded = graded[0] || null;
+  const latestScoreLabel = latestGraded
+    ? `${latestGraded.essayScore}${latestGraded.essayMaxScore ? `/${latestGraded.essayMaxScore}` : ''}`
+    : null;
+
+  return {
+    totalCount: entries.length,
+    gradedCount: graded.length,
+    averagePercent,
+    latestScoreLabel,
+    entries,
+  };
+}
+
 export function computeDailyCalendarLoad(
   items: UnifiedCalendarItem[],
   date: string

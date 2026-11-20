@@ -222,7 +222,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3581,7 +3581,7 @@
         "../../src/application/calendar/build-unified-reviews.ts",
         "../../src/application/reviews/build-agenda-buckets.ts"
       ],
-      "staticTestDeclarations": 10,
+      "staticTestDeclarations": 11,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -10849,7 +10849,7 @@
         "../../src/ui/undoable.js",
         "../../src/ui/tabs/questions/simulations-tab-controller.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

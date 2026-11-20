@@ -21,6 +21,7 @@ export interface SimulationsTabControllerContext {
     [key: string]: any;
   };
   simulationService: any;
+  calendarService?: any;
   questionEditController?: any;
   openQuestionErrorIds?: Set<string>;
   errorCategories?: Record<string, { icon: string; label: string }>;
@@ -94,9 +95,35 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.total));
       return draft;
     },
-    onSaved: () => {
+    onSaved: (saved: Record<string, any>) => {
+      const { total } = simuladoEffectiveCounts(saved || {});
+      let completedLinkedAgendaItem = false;
+      if (saved?.id && total > 0) {
+        const linkedItems = (ctx.state?.calendar || []).filter(
+          (item: any) => item.linkedSimulationId === saved.id && item.status !== 'Concluído'
+        );
+        for (const item of linkedItems) {
+          if (ctx.calendarService?.update) {
+            ctx.calendarService.update(item.id, { status: 'Concluído' });
+          } else {
+            item.status = 'Concluído';
+          }
+          completedLinkedAgendaItem = true;
+        }
+      }
       ctx.persistAndRender();
-      ctx.showToast('Simulado atualizado.');
+      ctx.showToast(
+        total > 0
+          ? 'Simulado atualizado e diagnóstico disponível.'
+          : 'Simulado atualizado.'
+      );
+      if (
+        completedLinkedAgendaItem &&
+        saved?.id &&
+        typeof ctx.document?.createElement === 'function'
+      ) {
+        openSimulatedRemediation(saved.id);
+      }
     },
   });
 

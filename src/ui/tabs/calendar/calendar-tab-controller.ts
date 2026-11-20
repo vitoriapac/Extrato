@@ -9,6 +9,7 @@ import {
   unifiedReviewLabel as defaultUnifiedItemLabel,
 } from '../../../application/calendar/build-unified-reviews.js';
 import {
+  buildEssayEvolutionSummary,
   computeDailyCalendarLoad,
   computeDraftOverloadPreview,
   getAvailableMinutesForDate,
@@ -22,6 +23,7 @@ import { addLocalDays, formatLocalDate } from '../../../core/date-utils.js';
 import { CalendarActivityModal, type CalendarActivityDraft } from './CalendarActivityModal.js';
 import { CalendarDayDrawer } from './CalendarDayDrawer.js';
 import { CalendarWeekView } from './CalendarWeekView.js';
+import { EssayEvolutionCard } from './EssayEvolutionCard.js';
 import {
   renderCalendarRead,
   renderCalendarEdit,
@@ -362,9 +364,26 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         }),
         body
       );
+      renderEssayEvolution();
       return;
     }
     body.innerHTML = renderHtml();
+    renderEssayEvolution();
+  }
+
+  function renderEssayEvolution() {
+    const doc = getDoc();
+    const mount = doc?.getElementById('essayEvolutionMount');
+    if (!canMountPreact(mount)) return;
+    const summary = buildEssayEvolutionSummary(getUnifiedCalendarItems({ includeRecurring: false }));
+    mountPreact(
+      h(EssayEvolutionCard, {
+        summary,
+        formatDatePt,
+        onEditEssay: (id: string) => openActivityModalForEdit(id),
+      }),
+      mount
+    );
   }
 
   function renderCalIndicadores() {

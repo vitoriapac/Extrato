@@ -63,10 +63,11 @@ const BASE_HELP_CATEGORIES: any[] = [
       {
         id: 'today-guide',
         title: 'Hoje',
-        summary: 'Ciclo de Estudos, plano do dia, Estudo Rápido e Conquistas em um só lugar.',
+        summary: 'Ciclo de Estudos, plano do dia, compromissos com ações contextuais e Conquistas.',
         paragraphs: [
           'Na aba Hoje você alterna entre o Ciclo de estudos (padrão) e a Agenda do dia. No topo da barra assistente ficam o próximo bloco do ciclo com gráfico de donut por disciplina e atalhos para Estudo Rápido ("Tenho X minutos"), Leitura do Extrato e Diário de Aprendizagem.',
-          'O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões. Estudo sem vínculo aparece como adicional. A subaba Conquistas reúne os marcos desbloqueados e os próximos alvos sem interferir nas prioridades.',
+          'Na coluna lateral, o painel Agenda e revisões destaca os compromissos de hoje sem duplicar simulados planejados, oferecendo ações diretas por tipo: Registrar resultado para simulados, Iniciar ou Concluir tarefa para redações e tarefas, e Ver detalhes para eventos.',
+          'O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões, e concluir um compromisso da Agenda não cria horas fictícias no histórico. A subaba Conquistas reúne marcos desbloqueados sem interferir nas prioridades.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
       },
@@ -112,18 +113,22 @@ const BASE_HELP_CATEGORIES: any[] = [
         bullets: [
           'Tags identificam em quais concursos cada tópico aparece.',
           'O concurso ativo define o escopo padrão das análises.',
+          'Clique em Ficha Inteligente no Edital Verticalizado para ver ponto de parada, última sessão, caderno de erros e próximo passo do tópico.',
           'Registros apenas da disciplina permanecem no histórico, mas não são atribuídos automaticamente a um edital específico.',
         ],
         action: { label: 'Cadastrar conteúdo', target: 'subjects' },
       },
       {
         id: 'calendar-guide',
-        title: 'Agenda: visão Mês',
-        summary: 'Enxergue a carga de estudo por data.',
+        title: 'Agenda: Mês, Semana, Lista, Redações e Simulados',
+        summary: 'Centralize tarefas, simulados, redações especializadas, eventos e revisões com controle de carga.',
+        keywords: ['agenda', 'calendário', 'semana', 'redação', 'simulado', 'sobrecarga', 'ics'],
         paragraphs: [
-          'A Agenda reúne tarefas de estudo e revisões espaçadas. Na visão Mês, veja a carga por data; use os filtros de disciplina, status e mês para investigar períodos antes de redistribuir a semana.',
+          'A Agenda reúne revisões espaçadas e atividades personalizadas (Tarefa, Simulado, Redação, Evento e Revisão livre) nas visões Mês, Semana e Lista, com criação rápida por dia, arrastar e soltar com Desfazer e exportação .ics.',
+          'Ao cadastrar ou editar uma atividade, o sistema calcula a carga do dia e exibe um aviso não bloqueante caso o tempo reservado ultrapasse sua disponibilidade configurada. Eventos oficiais (como data da prova) ficam protegidos e não viram pendência atrasada.',
+          'Redações contam com tema proposto, etapa (A fazer, Entregue ou Corrigida), nota opcional e painel próprio de Histórico e evolução de redações, mantendo o lançamento da nota independente da conclusão da tarefa.',
         ],
-        action: { label: 'Abrir Agenda no Mês', target: 'calendar' },
+        action: { label: 'Abrir Agenda', target: 'calendar' },
       },
       {
         id: 'sessions',
@@ -164,6 +169,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         summary: 'Desempenho e análise de erros têm registro próprio.',
         paragraphs: [
           'Informe quantidade de questões, acertos, tópico e, quando possível, a causa dos erros. Os simulados mostram desempenho por disciplina e podem fundamentar uma proposta de replanejamento.',
+          'Simulados agendados na Agenda ou cadastrados com data futura aparecem em Hoje com o atalho Registrar resultado; ao salvar os acertos, o compromisso na Agenda é concluído automaticamente e o Raio-X & Plano de Remediação é aberto em seguida.',
         ],
         bullets: ['Não sabia · Esqueci', 'Interpretação · Cálculo', 'Desatenção · Chute'],
         note: 'Categorizar erros ajuda a distinguir falta de conhecimento de problemas de execução.',
@@ -421,7 +427,8 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Seus dados e backup',
         summary: 'Os dados ficam neste navegador.',
         paragraphs: [
-          'O Extrato de Estudos funciona com dados locais, sem conta obrigatória. Exporte backups JSON regularmente, sobretudo antes de limpar dados, trocar de navegador ou fazer mudanças importantes. A restauração valida o arquivo antes de substituir a base; o PDF não é restaurável. Depois do primeiro carregamento completo por HTTP, o PWA instalado pode abrir offline.',
+          'O Extrato de Estudos opera de forma Local-First: seus dados ficam salvos neste navegador (IndexedDB/localStorage), sem conta obrigatória. Você pode exportar backups JSON regularmente ou configurar sincronização opcional via WebDAV com criptografia de ponta a ponta (AES-GCM 256 bits).',
+          'A restauração valida o arquivo antes de substituir a base; o PDF é apenas relatório e não é restaurável. Depois do primeiro carregamento completo por HTTP, o PWA instalado pode abrir offline.',
         ],
         action: { label: 'Ir ao backup', target: 'backup' },
       },

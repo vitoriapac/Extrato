@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildEssayEvolutionSummary,
   computeDailyCalendarLoad,
   computeDraftOverloadPreview,
   expandRecurringCalendarItems,
@@ -347,4 +348,49 @@ test('computeDraftOverloadPreview detecta sobrecarga no cadastro e ignora evento
   assert.equal(eventPreview.draftMinutes, 0);
   assert.equal(eventPreview.projectedMinutes, 60);
   assert.equal(eventPreview.isOverloaded, false);
+});
+
+test('buildEssayEvolutionSummary calcula média normalizada e separa conclusão da nota', () => {
+  const items = buildUnifiedCalendarItems({
+    calendar: [
+      {
+        id: 'e1',
+        date: '2026-11-10',
+        kind: 'essay',
+        title: 'Redação 1',
+        status: 'Concluído',
+        essayTheme: 'Educação digital',
+        essayScore: 80,
+        essayMaxScore: 100,
+        essayStatus: 'graded',
+      },
+      {
+        id: 'e2',
+        date: '2026-11-18',
+        kind: 'essay',
+        title: 'Redação 2',
+        status: 'Concluído',
+        essayTheme: 'IA no setor público',
+        essayScore: 920,
+        essayMaxScore: 1000,
+        essayStatus: 'graded',
+      },
+      {
+        id: 'e3',
+        date: '2026-11-22',
+        kind: 'essay',
+        title: 'Redação 3',
+        status: 'Não iniciado',
+        essayStatus: 'draft',
+      },
+    ],
+  });
+
+  const summary = buildEssayEvolutionSummary(items);
+  assert.equal(summary.totalCount, 3);
+  assert.equal(summary.gradedCount, 2);
+  assert.equal(summary.averagePercent, 86); // (80% + 92%) / 2
+  assert.equal(summary.latestScoreLabel, '920/1000');
+  assert.equal(summary.entries[0].id, 'e3');
+  assert.equal(summary.entries[1].normalizedPercent, 92);
 });

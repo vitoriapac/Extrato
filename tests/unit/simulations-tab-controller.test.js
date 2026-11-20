@@ -184,3 +184,27 @@ test('SimulationsTabController - breakdown management and limiting', () => {
   controller.deleteBreakdownRow('sim-1', bId);
   assert.equal(state.simulados[0].breakdown.length, 0);
 });
+
+test('SimulationsTabController - salvar resultado conclui simulado vinculado na Agenda', () => {
+  const { doc } = createMockDom();
+  const { context, state, toasts } = createBaseContext(doc);
+  state.calendar = [
+    {
+      id: 'cal-sim-1',
+      date: '2026-11-20',
+      kind: 'mock_exam',
+      title: 'Simulado 1',
+      status: 'Não iniciado',
+      linkedSimulationId: 'sim-1',
+    },
+  ];
+  const controller = createSimulationsTabController(/** @type {any} */ (context));
+
+  controller.editSimulation('sim-1');
+  controller.updateSimulationDraft('total', 60);
+  controller.updateSimulationDraft('correct', 45);
+  controller.saveSimulationEdit();
+
+  assert.equal(state.calendar[0].status, 'Concluído');
+  assert.ok(toasts.some(t => t.includes('diagnóstico disponível')));
+});

@@ -22,7 +22,7 @@ A combinação de três coisas, juntas:
 
 1. **Decisões explicáveis.** Toda recomendação mostra Prova × Você × Ação, a qualidade da evidência e seus limites. Nada altera dados sem prévia e confirmação; ajustes são reversíveis.
 2. **Inteligência da prova.** Cruza o histórico real de provas da banca (incidência por tópico) com o domínio pessoal para priorizar, e só ajusta o impacto quando há confiança suficiente.
-3. **Local e privado.** Tudo roda no navegador, offline, sem conta nem servidor; backup em JSON.
+3. **Local-first e privado.** Tudo funciona no navegador, offline, com persistência em IndexedDB/localStorage, backup em JSON e sincronização remota opcional via WebDAV com criptografia E2EE. Módulos preparatórios de conta e nuvem SaaS seguem a mesma garantia de não-sequestro dos dados locais.
 
 ## Operating Context
 

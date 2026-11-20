@@ -232,7 +232,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
         ? (getState().simulados || []).find((s: any) => s.id === existingSimId)
         : null;
       if (existingSim?.id) {
-        simulationsTabController?.simulationEditController?.beginEdit?.(existingSim.id);
+        simulationsTabController?.editSimulation?.(existingSim.id);
       } else {
         const sim = services.simulationService?.create({
           date: item.date || appClock.today(),
@@ -247,7 +247,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
               linkedSimulationId: sim.id,
             });
           }
-          simulationsTabController?.simulationEditController?.beginEdit?.(sim.id);
+          simulationsTabController?.editSimulation?.(sim.id);
         }
       }
       persistAndRender?.();
@@ -348,6 +348,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     },
     listViewState,
     simulationService: services.simulationService,
+    calendarService: services.calendarService,
     questionEditController: questionsTabController.questionEditController,
     openQuestionErrorIds: questionsTabController.openQuestionErrorIds,
     errorCategories: ERROR_CATEGORIES,
