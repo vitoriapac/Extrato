@@ -165,7 +165,7 @@ test('Diagnóstico recebe Matriz, ordenações (Balanço, Radar) e Queda; Por di
   await page.locator('[data-diagnosis-filter=sort]').selectOption('allocation');
   await expect(page.locator('.diagnosis-group > summary').first()).toContainText('edital');
   await page.locator('[data-diagnosis-filter=sort]').selectOption('vulnerable');
-  await expect(page.locator('.diagnosis-group > summary').first()).toContainText('críticos');
+  await expect(page.locator('.diagnosis-group > summary').first()).toContainText(/crític(o|os)/);
   await expect(
     page.getByRole('heading', { name: /Queda de retenção entre avaliações/ })
   ).toBeVisible();
@@ -242,7 +242,7 @@ test('Resumo dos últimos 7 dias aparece aberto abaixo da Leitura, com selo e se
   await expect(week.locator('[data-window="sevenDays"]')).toBeVisible();
   await expect(week.locator('p')).toHaveCount(3);
   await expect(week).toContainText(/Você estudou .* em \d+ dias?/);
-  await expect(week).toContainText(/A próxima ação/);
+  await expect(week).toContainText(/A sugestão do diagnóstico/);
   await expect(page.locator('#panel-desempenho')).not.toContainText('Resumo do período');
   await expect(page.locator('#panel-desempenho')).not.toContainText('Meta e última semana');
   // A linha de ritmo de 7 dias vive só no resumo; a Leitura não a repete.

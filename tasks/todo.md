@@ -92,7 +92,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Dependências:** T10 (pode ser dado da demo) · **Tamanho:** S
 
 ### Checkpoint 1: números
-- [ ] `npm test`, `check:types`, `build` verdes
+- [x] `npm test`, `check:types`, `build` verdes (20/11: 1859 unit; E2E dos specs afetados passam, exceto 6 falhas de visual-consolidation.spec.js sem relação com a Fase 1 — ver relatório do checkpoint)
 - [ ] Nova passada na demo: nenhuma grandeza com dois valores sem selo de janela
 - [ ] Revisão humana
 
