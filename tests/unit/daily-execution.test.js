@@ -205,10 +205,8 @@ test('renderer não atribui motivos estratégicos a outra atividade do plano', (
   });
   assert.doesNotMatch(html, /Prioridade principal prevista no plano/);
   assert.doesNotMatch(html, /Lacuna prioritária/);
-  assert.match(
-    html,
-    /Sugestão do diagnóstico, fora do plano: Outra · Revisão\. Seu plano de hoje continua valendo\./
-  );
+  // A Visão geral mostra só o plano; a sugestão fora do plano mora em Hoje.
+  assert.doesNotMatch(html, /Sugestão do diagnóstico/);
 });
 test('renderer apresenta dia concluído e orientação sem plano', () => {
   const input = fixture();
@@ -315,7 +313,7 @@ test('sugestão fora do plano mantém a atividade planejada como escolha operaci
     escapeAttr: String,
     dailyPriority: daily.priority,
   });
-  assert.match(html, /Sugestão do diagnóstico fora do Plano de hoje/);
+  assert.match(html, /SUGESTÃO DO DIAGNÓSTICO · FORA DO PLANO/);
   assert.doesNotMatch(html, /Seguir plano de hoje/); // a escolha fica no cartão de Hoje
   assert.match(html, /Estudar como atividade adicional/);
   assert.doesNotMatch(html, /data-ignore-outside-suggestion/);
@@ -354,7 +352,7 @@ test('matriz operacional preserva atividade do plano, sessão ativa e ausência 
     html = planned(model, {
       suggestion: { subjectId: 'x', topicId: 'y', subjectName: 'Outra', topicName: 'Revisão' },
     });
-  assert.match(html, /Sugestão do diagnóstico, fora do plano/);
+  assert.doesNotMatch(html, /Sugestão do diagnóstico/);
   assert.match(html, /data-daily-start="i"/);
   model.priority.nextItem.status = 'partial';
   assert.match(planned(model), /Continuar estudo/);

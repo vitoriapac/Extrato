@@ -19,8 +19,8 @@ export function PlannedActionCard({ next, own, blocked, minutes, typeLabel, reas
           <button type="button" class="btn" title="Retome ou finalize a sessão em andamento antes de iniciar outra." disabled>Finalize a sessão atual</button> :
           <button type="button" class="btn" data-daily-start={next.id}>{next.status === 'partial' ? 'Continuar estudo' : 'Iniciar estudo'}</button>}
       </div>
-      {matchesAction || aligned ? <p class="overview-action-suggestion">Prioridade principal prevista no plano.</p> : suggestion &&
-        <p class="overview-action-suggestion">Sugestão do diagnóstico, fora do plano: {suggestion.subjectName} · {suggestion.topicName}. Seu plano de hoje continua valendo. <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver por quê</button></p>}
+      {/* Uma só resposta na Visão geral: o plano. A sugestão do diagnóstico fora do plano mora em Hoje (só o id fica em data-recommendation-action-id). */}
+      {(matchesAction || aligned) && <p class="overview-action-suggestion">Prioridade principal prevista no plano.</p>}
       {reasons.length > 1 && <details class="daily-execution-reasons"><summary>Por que estudar isso agora?</summary><ul>{reasons.slice(1).map((reason, index) => <li key={index}>{reason}</li>)}</ul></details>}
     </article>
   );

@@ -39,13 +39,15 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
     const index = title.lastIndexOf(' — ');
     return index < 0 ? title : `${title.slice(0, index)} · ${title.slice(index + 3)}`;
   };
-  await expect
-    .poll(async () =>
-      topic
-        .toLocaleLowerCase()
-        .includes(overviewLabel(await todayAction.locator('h4').innerText()).toLocaleLowerCase())
-    )
-    .toBe(true);
+  if (!planned) {
+    await expect
+      .poll(async () =>
+        topic
+          .toLocaleLowerCase()
+          .includes(overviewLabel(await todayAction.locator('h4').innerText()).toLocaleLowerCase())
+      )
+      .toBe(true);
+  }
   await expect(
     page.locator('#studyRecommendation .recommendation-actions .btn').first()
   ).toBeVisible();
@@ -75,7 +77,7 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
     .evaluate(element => element.getBoundingClientRect().top);
   expect(plan).toBeLessThan(action);
   expect(action).toBeLessThan(alerts);
-  await expect(page.getByRole('heading', { name: 'Sugestão opcional', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sugestão do diagnóstico', exact: true })).toBeVisible();
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(page.locator('#planoHojeContent')).toBeVisible();

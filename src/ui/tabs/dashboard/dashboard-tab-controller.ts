@@ -405,7 +405,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (healthMount) {
       healthMount.hidden = !hasConfigured;
       if (hasConfigured) {
-        const healthModel = buildSyllabusHealthViewModel(state);
+        const healthModel = buildSyllabusHealthViewModel(state, today);
         mountSyllabusHealth(healthMount, {
           model: healthModel,
           onNavigateSubjects: () => navigateKpi('disciplinas'),

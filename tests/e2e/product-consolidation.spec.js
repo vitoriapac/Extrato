@@ -414,8 +414,8 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await expect(first.locator('.diagnostic-detail')).not.toHaveAttribute('open', '');
   await first.locator('.diagnostic-detail > summary').click();
   await expect(first.locator('.diagnostic-detail__body')).toBeVisible();
-  // O aviso comum fica uma vez no topo da lista, não em cada card.
-  await expect(page.locator('#diagnosisCenter .diagnosis-consolidated > .analytics-note:not(.diagnosis-legend):not(.diagnosis-unseen-note):not(.diagnosis-scope-note)')).toContainText(
+  // O aviso comum fica uma vez, na dobra "Como ler a fila", não em cada card.
+  await expect(page.locator('#diagnosisCenter .diagnosis-reading-guide')).toContainText(
     'evidências e volumes não são somados'
   );
   await expectNoPageOverflow(page);

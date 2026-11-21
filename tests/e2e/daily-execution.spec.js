@@ -118,11 +118,8 @@ for (const [width, theme] of [
           maxDiffPixelRatio: 0.03,
         })
       );
-    const suggestion = card.locator('.overview-action-suggestion');
-    await expect(suggestion).toContainText('Sugestão do diagnóstico');
-    await expect(
-      suggestion.getByRole('button', { name: 'Ver por quê', exact: true })
-    ).toBeVisible();
+    // Uma só resposta na Visão geral: o plano. A sugestão do diagnóstico fora do plano mora em Hoje.
+    await expect(card.locator('.overview-action-suggestion')).toHaveCount(0);
     await expect(card.locator('[data-daily-start]')).toHaveCount(1);
     await card.getByRole('button', { name: 'Iniciar estudo', exact: true }).focus();
     await page.keyboard.press('Enter');

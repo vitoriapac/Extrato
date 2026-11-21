@@ -26,11 +26,11 @@ export function SyllabusHealthCard({
             Saúde do Edital por Disciplina
           </h3>
           <p class="text-xs text-content-secondary m-0 mt-1">
-            Progresso de cobertura e taxa de acerto em todo o histórico
+            Progresso de cobertura e taxa de acerto nos últimos 30 dias
             {attentionCount > 0 && (
               <>
                 {' · '}
-                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>{' (mín. 10 questões, todo o histórico)'}
+                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>{' (mín. 10 questões em 30 dias)'}
               </>
             )}
           </p>

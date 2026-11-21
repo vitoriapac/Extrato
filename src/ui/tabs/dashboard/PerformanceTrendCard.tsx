@@ -100,7 +100,7 @@ export function PerformanceTrendCard({
         {/* Uma frase no lugar dos quatro KPIs: os números por disciplina já estão em Saúde do edital. */}
         <p class="text-xs text-content-secondary m-0 mb-3" data-testid="performance-trend-summary">
           {model.questionAccuracy != null
-            ? `${formatDecimal(model.questionAccuracy)}% de acerto em ${formatDecimal(model.totalResolved)} questões`
+            ? `${formatDecimal(model.questionAccuracy)}% de acerto em ${formatDecimal(model.totalResolved)} questões (30 dias)`
             : 'Sem questões registradas'}
           {model.simulationCount > 0
             ? ` · média de ${formatDecimal(model.simulationMean)}% em ${model.simulationCount} simulados`

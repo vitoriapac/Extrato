@@ -1,3 +1,4 @@
+import { addLocalDays } from '../../core/date-utils.js';
 import { buildSubjectAccuracy } from './build-subject-accuracy.js';
 
 export interface SyllabusHealthSubject {
@@ -6,7 +7,7 @@ export interface SyllabusHealthSubject {
   concludedPct: number;
   inProgressPct: number;
   accuracy: number | null;
-  /** De onde vem o acerto: questões pessoais (todo o histórico) ou, sem questões, simulados. */
+  /** De onde vem o acerto: questões pessoais (30 dias) ou, sem questões, simulados. */
   accuracySource: 'questions' | 'simulations' | null;
   target: number;
   gap: number | null;
@@ -17,7 +18,8 @@ export interface SyllabusHealthViewModel {
   subjects: SyllabusHealthSubject[];
 }
 
-export function buildSyllabusHealthViewModel(state: any): SyllabusHealthViewModel {
+/** `today` fixa a janela padrão do app (30 dias, como Desempenho); sem ele usa todo o histórico. */
+export function buildSyllabusHealthViewModel(state: any, today?: string): SyllabusHealthViewModel {
   if (!state || !Array.isArray(state.subjects) || state.subjects.length === 0) {
     return { subjects: [] };
   }
@@ -27,9 +29,14 @@ export function buildSyllabusHealthViewModel(state: any): SyllabusHealthViewMode
     return { subjects: [] };
   }
 
+  const windowStart = today ? addLocalDays(today, -29) : null;
+  const questions = (state.questoes || []).filter(
+    (q: { date?: string }) =>
+      !today || (Boolean(q.date) && q.date! <= today && q.date! >= (windowStart as string))
+  );
   const accuracyData = buildSubjectAccuracy({
     subjects: activeSubjects,
-    questions: state.questoes || [],
+    questions,
     simulations: state.simulados || [],
     blueprint: state.examBlueprint || {},
     globalTarget: state.metas?.metaAprovacao ?? 80,

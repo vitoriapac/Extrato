@@ -45,11 +45,15 @@ export function buildPerformanceTrendViewModel(
     })
     .sort((a: any, b: any) => a.date.localeCompare(b.date));
 
-  const totalResolved = validQuestoes.reduce(
+  // Mesma janela padrão de Desempenho (30 dias): o total e a precisão da Visão geral batem com a aba Desempenho.
+  const windowStart = addLocalDays(today, -29);
+  const windowQuestoes = validQuestoes.filter((q: { date: string }) => q.date >= (windowStart as string));
+
+  const totalResolved = windowQuestoes.reduce(
     (sum: number, q: any) => sum + (Number(q.resolved) || 0),
     0
   );
-  const totalCorrect = validQuestoes.reduce(
+  const totalCorrect = windowQuestoes.reduce(
     (sum: number, q: any) => sum + (Number(q.correct) || 0),
     0
   );
