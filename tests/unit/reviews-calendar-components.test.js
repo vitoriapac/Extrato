@@ -18,7 +18,7 @@ test('ReviewsTable Preact Component — exibe estado vazio quando sem revisões'
     })
   );
 
-  assert.match(html, /Nenhuma revisão encontrada com esses filtros/);
+  assert.match(html, /Nenhuma revisão programada/);
   assert.match(html, /gerarAgendaAutomatica\(\)/);
 });
 

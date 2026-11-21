@@ -43,7 +43,8 @@ test('leitura da preparação: declara cada estado de evidência ausente', () =>
   assert.match(text, /Sem simulados comparáveis/);
   assert.match(text, /Amostra pequena/);
   assert.match(text, /Sem plano ativo/);
-  assert.match(text, /Sem tempo planejado/);
+  assert.doesNotMatch(text, /Sem tempo planejado/, 'sem plano, uma mensagem só (T17)');
+  assert.doesNotMatch(text, /Ainda não há pontos de atenção/);
   assert.equal(reading.whatToDo.action, null);
   assert.equal(reading.whatToDo.reason, 'Registre sessões.');
 });
@@ -228,4 +229,11 @@ test('T56: a tendência da Prontidão usa os dois últimos fechamentos, não o d
   assert.equal(reading.howAmI.readiness.verdict.state, 'down');
   assert.match(reading.howAmI.readiness.detail, /−3 pontos frente ao fechamento anterior/);
   assert.doesNotMatch(reading.howAmI.readiness.detail, /\+10/);
+});
+
+test('leitura da preparação: com plano ativo e sem tempo planejado, a falta de referência é dita uma vez', () => {
+  const reading = buildPreparationReading({ nextBestAction: action({ activePlanId: 'plano-1' }) });
+  const text = reading.evidence.join(' ');
+  assert.match(text, /Sem tempo planejado/);
+  assert.doesNotMatch(text, /Sem plano ativo/);
 });

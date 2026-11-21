@@ -142,7 +142,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T16: Bloco de tempo do dia sem repetição (R4) — FEITA (21/11): barra sem legenda repetida, sem "Tempo flexível" e sem % no cabeçalho do plano; "0%" 2 vezes em Hoje
 **Aceite:** "Tempo flexível", "Livre" e "A realizar" não repetem o mesmo valor; "0%" aparece no máximo 2 vezes em Hoje. **Dependências:** T8 · **Tamanho:** S
 
-### T17: Empty states com uma mensagem e um CTA (R5)
+### T17: Empty states com uma mensagem e um CTA (R5) — FEITA (21/11): Agenda vazia com 2 mensagens (de 7); Desempenho vazio sem as frases repetidas de pontos de atenção e de plano; botão duplicado de revisão removido
 **Aceite:** Agenda vazia ≤ 2 mensagens; Desempenho vazio sem as duas frases quase idênticas de "pontos de atenção"; um CTA por página. **Dependências:** nenhuma · **Tamanho:** M
 
 ### T18: Rodapé, "Copiar link" e Instruções (R7, R8, R9)

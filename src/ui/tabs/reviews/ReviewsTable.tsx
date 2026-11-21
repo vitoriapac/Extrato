@@ -87,12 +87,9 @@ export function ReviewsTable({
       <tr>
         <td colSpan={8}>
           <div class="empty-state" style={{ border: 'none' }}>
-            <p class="font-medium text-content-primary m-0">
-              Nenhuma revisão encontrada com esses filtros.
-            </p>
             <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-3">
-              As revisões são agendadas automaticamente pelo sistema (curva de retenção espaçada:
-              24h, 7 dias, 30 dias) conforme você conclui tópicos na aba Hoje ou Disciplinas.
+              Nenhuma revisão programada. Elas entram aqui conforme você conclui tópicos na aba Hoje
+              ou Disciplinas (24 h, 7 e 30 dias depois).
             </p>
             <div class="empty-state-actions">
               <button
@@ -102,14 +99,6 @@ export function ReviewsTable({
               >
                 <Icon name="refresh" size={14} class="icon-inline" />
                 Gerar a partir dos concluídos
-              </button>
-              <button
-                type="button"
-                class="btn ghost small inline-flex items-center gap-2"
-                data-delegated-click="addAgendaRow()"
-              >
-                <Icon name="plus" size={14} class="icon-inline" />
-                <span>Adicionar manualmente</span>
               </button>
             </div>
           </div>

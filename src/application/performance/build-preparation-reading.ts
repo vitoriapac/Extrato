@@ -145,7 +145,8 @@ export function buildPreparationReading({
     week && week.plannedMinutes > 0 && week.planFulfillmentPct != null
       ? `${formatStudyMinutes(week.studiedMinutes)} estudados de ${formatStudyMinutes(week.plannedMinutes)} planejados nos últimos 7 dias (volume de carga de ${week.planFulfillmentPct}%).`
       : null;
-  if (!rhythmText)
+  // Sem plano ativo, a mensagem "Sem plano ativo" abaixo já explica a falta de referência: uma só (T17).
+  if (!rhythmText && nextBestAction?.activePlanId)
     evidence.push('Sem tempo planejado nos últimos 7 dias: o ritmo não tem referência.');
   const resolved = Number(model.current?.resolved) || 0;
   if (resolved > 0 && resolved < 30)
@@ -183,8 +184,7 @@ export function buildPreparationReading({
       text: `${overdue} ${overdue === 1 ? 'pendência atrasada' : 'pendências atrasadas'} (revisões e tarefas).`,
       link: { kind: 'tab', target: 'agenda', label: 'Abrir Agenda' },
     });
-  if (!pulling.length)
-    evidence.push('Ainda não há pontos de atenção com evidência suficiente para destacar.');
+  // Sem pontos de atenção, a seção "O que mais pesa" já diz isso; não repetir na lista de evidências (T17).
 
   // O que fazer: a ação é a de Hoje; aqui só se mede contra o plano.
   const best = nextBestAction;
