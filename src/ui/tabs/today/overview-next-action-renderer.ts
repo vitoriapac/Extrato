@@ -9,6 +9,7 @@ import { renderRecommendationExplanation } from '../../renderers/recommendation-
 import { renderPlannedAction } from '../../renderers/daily-execution-renderer.js';
 import { createDashboardTabController } from '../dashboard/dashboard-tab-controller.js';
 import { buildPracticeLinks } from '../../../domain/questions/practice-link-generator.js';
+import { orderByDiagnosisQueue } from '../../../application/diagnostics/build-next-best-action.js';
 import type { StudyRecommendationControllerDeps } from './study-recommendation-controller.js';
 
 export type OverviewNextActionDeps = Pick<
@@ -52,10 +53,7 @@ export function createOverviewNextActionRenderer(deps: OverviewNextActionDeps) {
     const state = getState();
     const outcome = '';
     const recs = getCurrentRecommendations();
-    const queue = deps.diagnosisQueue?.();
-    const position = new Map((queue || []).map((id, index) => [id, index] as const));
-    const rank = (rec: { topicId?: string }) => position.get(rec.topicId as string) ?? position.size;
-    const item = queue?.length ? [...recs].sort((a, b) => rank(a) - rank(b))[0] : recs[0];
+    const item = orderByDiagnosisQueue(recs, deps.diagnosisQueue?.())[0];
     const { priority } = dailyExecutionController.build();
 
     if (

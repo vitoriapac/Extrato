@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildNextBestAction,
+  orderByDiagnosisQueue,
   NEXT_BEST_ACTION_STATES,
 } from '../../src/application/diagnostics/build-next-best-action.js';
 import { buildReadinessChangeExplanation } from '../../src/application/readiness/build-readiness-change-explanation.js';
@@ -281,4 +282,14 @@ test('a sugestão é o primeiro da fila do Diagnóstico, não o primeiro do moto
   assert.equal(byDiagnosis.action.topicId, 'b');
   assert.equal(byQueue.action.topicId, 'b');
   assert.equal(noQueue.action.topicId, 'a');
+});
+
+test('orderByDiagnosisQueue põe a fila na frente e mantém a ordem de quem está fora dela', () => {
+  const recs = [{ topicId: 'x' }, { topicId: 'b' }, { topicId: 'y' }, { topicId: 'a' }];
+  assert.deepEqual(
+    orderByDiagnosisQueue(recs, ['a', 'b']).map(r => r.topicId),
+    ['a', 'b', 'x', 'y']
+  );
+  assert.equal(orderByDiagnosisQueue(recs, []), recs);
+  assert.equal(orderByDiagnosisQueue(recs, null), recs);
 });

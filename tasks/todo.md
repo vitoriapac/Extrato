@@ -52,20 +52,20 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Teste unitário da base escolhida
 **Dependências:** D-F · **Arquivos (conferido):** `src/ui/renderers/header-renderer.ts` (barra 61%), `src/ui/primitives/charts/PhaseRoadmapTimeline.tsx` ("25% do cronograma decorrido") · **Tamanho:** S
 
-### T5: Aderência e "faltam": dois números com janela (D9, D10) — FEITA em parte (20/11): rótulos de janela; a unificação de nomes na Visão geral/Planejamento ficou para a T20
+### T5: Aderência e "faltam": dois números com janela (D9, D10) — FEITA em parte (20/11): rótulos de janela e frase de ritmo coerente com o "faltam" ("um pouco abaixo do que o plano previa"); a unificação de nomes ficou para a T20
 **Aceite:**
 - [ ] Na Visão geral e no Planejamento só aparecem "volume do plano" e "aderência", cada um com definição de uma linha e a janela
 - [ ] "Faltam X" mostra uma base por tela (capacidade, tarefas, 7 d, 30 d) com selo; "perto do plano" não convive com "faltam 2 h 30 min" sem explicação
 - [ ] Teste: 83% × 87,5% × 71% × 86% reproduzidos com rótulo
 **Dependências:** T1 · **Tamanho:** M (sobrepõe a Tarefa 44 arquivada)
 
-### T6: Contagem de tópicos por disciplina (D12) — FEITA em parte (20/11): nota de escopo no Diagnóstico; falta identificar qual regra exclui o 13º tópico de Tecnologia e IA na demo
+### T6: Contagem de tópicos por disciplina (D12) — FEITA em parte (20/11): nota de escopo no Diagnóstico; Tecnologia e IA já bate (13); ainda diferem LP 17×18, Mat. Financeira 12×14, Inglês 8×9, Redação 14×16, Matemática 19×20, Conhec. Bancários 23×24 — causa não achada (não são tag nem arquivados)
 **Aceite:**
 - [ ] Diagnóstico e Disciplinas mostram o mesmo total, ou o Diagnóstico explica o que exclui (D-E)
 - [ ] Teste: LP 18/17, Tecnologia e IA 13/12, Matemática Financeira 14/12 resolvidos
 **Dependências:** D-E · **Tamanho:** S
 
-### T7: Formato numérico único (D13 restante) — FEITA em parte (20/11): milhar em contagens de questões; varredura de percentuais não achou casos novos
+### T7: Formato numérico único (D13 restante) — FEITA em parte (20/11): milhar em contagens de questões, copiloto e relatório impresso; varredura de percentuais não achou casos novos
 **Aceite:**
 - [ ] `1.750` em toda a UI (nunca `1750`); percentuais com uma casa decimal ou sem decimal por regra única, nunca `72,0%` falso nem `55%` ao lado de `45,3%`
 - [ ] Teste de `format-number` e varredura (grep) por `toFixed(0)` e `Math.round(... * 100)` em telas
@@ -79,7 +79,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Com dados, "Tempo estudado hoje" tem um denominador só (plano ou meta diária), com rótulo
 **Dependências:** nenhuma · **Arquivos (provável):** `src/ui/tabs/today/*`, `src/application/daily-execution/*` · **Tamanho:** M
 
-### T9: Saldo × "Resgatar" × "Replanejamento indisponível" (D15) — FEITA em parte (20/11): botão sem "30 min" fixo e replanejamentos com nomes distintos; falta saldo mínimo para oferecer o resgate
+### T9: Saldo × "Resgatar" × "Replanejamento indisponível" (D15) — FEITA em parte (20/11): botão sem "30 min" fixo e replanejamentos com nomes distintos; o resgate vale pelas pendências, não pelo saldo; sem saldo mínimo (decisão)
 **Aceite:**
 - [ ] "Resgatar em 30 min" só aparece quando o saldo justifica; "6 min" não oferece 30
 - [ ] Fechamento semanal e Planejamento concordam sobre haver ou não capacidade para redistribuir
@@ -108,7 +108,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Verificação:** reprodução por teste unitário antes de qualquer correção
 **Dependências:** nenhuma · **Tamanho:** M
 
-### T11: Fonte única de "prioridade" (D2) — FEITA em parte (20/11): D-B (gravidade antes da pontuação) e foco sem tópico na meta; sugestão = primeiro da fila com atividade pronta (D-A) em Visão geral, Hoje, Desempenho e Diagnóstico; Fechamento e copiloto ainda não conferidos
+### T11: Fonte única de "prioridade" (D2) — FEITA em parte (20/11): D-B (gravidade antes da pontuação) e foco sem tópico na meta; sugestão = primeiro da fila com atividade pronta (D-A) em Visão geral, Hoje, Desempenho e Diagnóstico; copiloto (assistente e Visão geral) também segue a fila; Fechamento tem lista própria
 **Nota de escopo:** as Tarefas 59, 62–64 arquivadas já reduziram as prioridades **dentro de Desempenho** (Próxima ação ao lado da fila, sem tópico nomeado em "O que mais pesa"). O que sobra é entre abas: Visão geral × Hoje × Desempenho × Fechamento.
 **Aceite:**
 - [ ] Visão geral, Hoje, Desempenho, Diagnóstico e Fechamento semanal consomem o mesmo objeto, conforme D-A

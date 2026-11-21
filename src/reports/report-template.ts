@@ -1,3 +1,4 @@
+import { formatDecimal } from '../core/format-number.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
@@ -135,7 +136,7 @@ ${renderWeeklyAuditReport(report.weeklyAudit)}
     ' min'
   )}</section>
 <section><h2>Simulado mais recente</h2>${report.latestSimulation ? `<p><strong>${escape(report.latestSimulation.name)}</strong> · ${date(report.latestSimulation.date)}</p><ul>${list(report.latestSimulation.breakdown, (item: Record<string, any>) => `<li><strong>${escape(item.subjectName)}</strong><span>${item.correct} acertos / ${item.total} questões · ${value(item.accuracy == null ? null : item.accuracy + '%')}</span></li>`, 'Sem detalhamento por disciplina.')}</ul>` : '<p>Nenhum simulado no período.</p>'}</section>
-<section><h2>Questões resolvidas pelo estudante e erros</h2><p>${report.overview.resolved} questões respondidas no período. Estes registros medem o desempenho pessoal e são separados das ${report.examIntelligence?.questionCount || 0} questões históricas usadas para estudar a incidência da prova.</p><p>${report.errors.length ? report.errors.map((item: any) => `${escape(item.label)}: ${item.count}`).join(' · ') : 'Nenhuma categoria de erro no período.'}</p>${report.errorDiagnosis ? `<p><strong>Diagnóstico:</strong> ${escape(report.errorDiagnosis.message)}<br><strong>Ação:</strong> ${escape(report.errorDiagnosis.action)}</p>` : ''}</section>
+<section><h2>Questões resolvidas pelo estudante e erros</h2><p>${formatDecimal(report.overview.resolved)} questões respondidas no período. Estes registros medem o desempenho pessoal e são separados das ${report.examIntelligence?.questionCount || 0} questões históricas usadas para estudar a incidência da prova.</p><p>${report.errors.length ? report.errors.map((item: any) => `${escape(item.label)}: ${item.count}`).join(' · ') : 'Nenhuma categoria de erro no período.'}</p>${report.errorDiagnosis ? `<p><strong>Diagnóstico:</strong> ${escape(report.errorDiagnosis.message)}<br><strong>Ação:</strong> ${escape(report.errorDiagnosis.action)}</p>` : ''}</section>
 <section><h2>Histórico de decisões</h2><ul>${list(report.decisions, (item: Record<string, any>) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.action)} · ${escape(item.result)}</span></li>`, 'Nenhuma decisão registrada no período.')}</ul></section>
 
 ${renderAdaptiveReport(report)}

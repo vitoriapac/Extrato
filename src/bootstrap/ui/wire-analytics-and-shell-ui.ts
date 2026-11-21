@@ -311,6 +311,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     nowISO,
     isDemoMode: () => (typeof isDemoMode === 'function' ? Boolean(isDemoMode()) : Boolean(isDemoMode)),
     getCurrentStudyRecommendations,
+    diagnosisQueue: () => diagnosisQueue(),
     getLatestStudyPlan,
     getDailyPriority,
     weeklyStrategyCapacity: studyMetricsSelectors.weeklyStrategyCapacity,

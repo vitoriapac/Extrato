@@ -7,6 +7,7 @@ import {
   type CycleDraftState,
 } from '../../components/TodayStudyAssistantBar.js';
 import { revealAdvanced } from '../../essential-mode.js';
+import { orderByDiagnosisQueue } from '../../../application/diagnostics/build-next-best-action.js';
 import {
   applyStudyCycleVersion,
   buildStudyCyclePreview,
@@ -151,7 +152,7 @@ export function createTodayAssistantController({
     const executionMode: ExecutionMode = state?.executionMode === 'agenda' ? 'agenda' : 'sequence';
     const subjects = state?.subjects || [];
     const candidates = ctx.intelligenceCandidates ? ctx.intelligenceCandidates() : [];
-    const recs = getCurrentStudyRecommendations() || [];
+    const recs = orderByDiagnosisQueue(getCurrentStudyRecommendations() || [], ctx.diagnosisQueue?.());
     const cycle = (state?.studyCycle || null) as StudyCycleQueue | null;
     const currentBlock = cycle ? getCurrentCycleBlock(cycle) : null;
     const overdueReviews = collectOverdueReviewsForQuickStudy();

@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { orderByDiagnosisQueue } from '../../../application/diagnostics/build-next-best-action.js';
 import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
 import {
@@ -93,6 +94,8 @@ export interface DashboardTabControllerDeps {
   nowISO?: () => string;
   isDemoMode?: boolean | (() => boolean);
   getCurrentStudyRecommendations?: () => any[];
+  /** Ids de tópico na ordem da fila do Diagnóstico. */
+  diagnosisQueue?: () => string[];
   getLatestStudyPlan?: () => any;
   getDailyPriority?: () => any;
   weeklyStrategyCapacity?: () => number;
@@ -257,7 +260,10 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       if (!hasConfigured) return;
 
       const candidates = deps.intelligenceCandidates ? deps.intelligenceCandidates() : [];
-      const recs = deps.getCurrentStudyRecommendations ? deps.getCurrentStudyRecommendations() : [];
+      const recs = orderByDiagnosisQueue(
+        deps.getCurrentStudyRecommendations ? deps.getCurrentStudyRecommendations() : [],
+        deps.diagnosisQueue?.()
+      );
       const subjects = state?.subjects || [];
       const isDemo =
         typeof deps.isDemoMode === 'function'

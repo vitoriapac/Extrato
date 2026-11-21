@@ -13,6 +13,17 @@ export const NEXT_BEST_ACTION_STATES = Object.freeze({
   NO_ELIGIBLE_ACTION: 'NO_ELIGIBLE_ACTION',
 });
 
+/** Reordena as recomendações pela fila do Diagnóstico (ids de tópico); quem não está na fila vai ao fim, sem trocar a ordem entre si. */
+export function orderByDiagnosisQueue<T extends { topicId?: string }>(
+  recommendations: T[],
+  queue: string[] | null | undefined
+): T[] {
+  if (!queue?.length) return recommendations;
+  const position = new Map(queue.map((id, index) => [id, index] as const));
+  const rank = (item: T) => position.get(item.topicId as string) ?? position.size;
+  return [...recommendations].sort((a, b) => rank(a) - rank(b));
+}
+
 // The recommendation producer owns ordering and eligibility. This adapter only adds context.
 export function buildNextBestAction({
   recommendations = [],
@@ -36,9 +47,7 @@ export function buildNextBestAction({
           .filter(row => row.primarySignal)
           .map(row => row.topicId)
       : null;
-  const position = new Map((queue || []).map((id, index) => [id, index] as const));
-  const rank = (item: { topicId?: string }) => position.get(item.topicId as string) ?? position.size;
-  const ordered = queue ? [...recommendations].sort((a, b) => rank(a) - rank(b)) : recommendations;
+  const ordered: typeof recommendations = orderByDiagnosisQueue(recommendations, queue);
 
   for (const recommendation of ordered) {
     const action = buildStudyAction(recommendation, { source: 'diagnosis' });

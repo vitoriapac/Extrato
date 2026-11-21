@@ -35,7 +35,7 @@ test('semana normal: feito, sinal e ação, com a ação da Leitura e até três
   const summary = buildWeekSummary({ brief: brief(), nextBestAction: action });
   assert.equal(summary.kind, 'normal');
   assert.equal(summary.paragraphs.length, 3);
-  assert.match(summary.paragraphs[0], /Você estudou 12 h 38 min em 6 dias, perto do que o plano previa\./);
+  assert.match(summary.paragraphs[0], /Você estudou 12 h 38 min em 6 dias, um pouco abaixo do que o plano previa\./);
   assert.match(summary.paragraphs[1], /A precisão em questões foi 73,0%\./);
   assert.match(summary.paragraphs[2], /A sugestão do diagnóstico é Juros simples \(Matemática\); o plano de hoje e a Próxima ação ficam em Hoje\./);
   assert.ok(numbers(summary) <= 3);
@@ -89,4 +89,9 @@ test('o bloco mostra o selo "7 dias", as datas e nenhum cartão antigo', () => {
   assert.match(html, /id="bloco-resumo"/);
   assert.doesNotMatch(html, /Resumo do período|Meta e última semana/);
   assert.equal(renderWeekSummary(null), '');
+});
+
+test('na faixa de 100% a 110% a cláusula diz "no que o plano previa"', () => {
+  const on = buildWeekSummary({ brief: brief({}, { planFulfillmentPct: 105 }), nextBestAction: action });
+  assert.match(on.paragraphs[0], /no que o plano previa/);
 });

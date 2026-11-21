@@ -52,7 +52,9 @@ export function buildWeekSummary({
       ? ', mais do que o plano previa'
       : pct! < 80
         ? ', menos do que o plano previa'
-        : ', perto do que o plano previa';
+        : pct! < 100
+          ? ', um pouco abaixo do que o plano previa'
+          : ', no que o plano previa';
   const days = week.activeDays === 1 ? '1 dia' : `${week.activeDays} dias`;
   const done = `Você estudou ${formatReadableMinutes(week.studiedMinutes)} em ${days}${planClause}.`;
 

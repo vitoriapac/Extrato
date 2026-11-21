@@ -19,6 +19,7 @@ import {
 import { sameStudyActionTarget } from '../recommendations/recommendation-action.js';
 import { buildWeeklyClosingRitualViewModel } from './../weekly-closing/weekly-closing-ritual.js';
 import type { OverdueReviewItem } from '../../domain/recovery/recovery-mission-engine.js';
+import { formatDecimal } from '../../core/format-number.js';
 
 export type CopilotQuestionKey =
   | 'what_now'
@@ -306,7 +307,7 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
       : 'Sem base mínima de tópicos elegíveis ou evidências recentes. Confira pré-requisitos e disciplinas ativas.',
     evidenceSummary: canonicalAction
       ? `Você: ${masteryVal != null ? `domínio ${Math.round(masteryVal)}/100` : 'domínio não medido'}${retentionVal != null ? ` · retenção ${Math.round(retentionVal)}/100` : ''} · ${nextBest.evidence} · amostra total: ${totalQuestions} questões.`
-      : `Amostra atual: ${sessions.length} sessões e ${totalQuestions} questões.`,
+      : `Amostra atual: ${sessions.length} sessões e ${formatDecimal(totalQuestions)} questões.`,
     limitations: [...limitations],
     actionLabel: null,
     actionKind: 'none',
@@ -358,7 +359,7 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
         : `${ritual.whatWorked[0] || ''} ${ritual.needsAttention[0] || ''}`.trim(),
     evidenceSummary:
       ritual.metrics.studiedMinutes > 0 || ritual.metrics.resolved > 0
-        ? `${formatPlanMinutes(ritual.metrics.studiedMinutes)} estudados · ${ritual.metrics.resolved} questões${ritual.metrics.accuracy != null ? ` (${ritual.metrics.accuracy}% de acerto)` : ''}.`
+        ? `${formatPlanMinutes(ritual.metrics.studiedMinutes)} estudados · ${formatDecimal(ritual.metrics.resolved)} questões${ritual.metrics.accuracy != null ? ` (${ritual.metrics.accuracy}% de acerto)` : ''}.`
         : 'Nenhum registro nesta janela civil.',
     limitations: ritual.comparisonWarning ? [ritual.comparisonWarning] : [],
     actionLabel: 'Abrir ritual de fechamento',
@@ -475,7 +476,7 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     recommendationId: canonicalAction?.recommendationId || topRec?.recommendationId || null,
     title: whatNow.headline,
     evidence: hasEvidence
-      ? whatNow.evidenceSummary || `${sessions.length} sessões · ${totalQuestions} questões`
+      ? whatNow.evidenceSummary || `${sessions.length} sessões · ${formatDecimal(totalQuestions)} questões`
       : 'Sem dados suficientes para recomendação personalizada.',
     limitations,
     action: canonicalAction,
