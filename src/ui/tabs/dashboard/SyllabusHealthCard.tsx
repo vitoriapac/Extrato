@@ -41,7 +41,7 @@ export function SyllabusHealthCard({
             class="btn tertiary"
             onClick={onNavigateSubjects}
           >
-            <span>Ver no menu Disciplinas</span>
+            <span>{subjects.length > 5 ? `Mostrando 5 de ${subjects.length} · ver todas em Disciplinas` : 'Ver no menu Disciplinas'}</span>
             <Icon name="arrow-right" size={12} />
           </button>
         ) : (
@@ -49,7 +49,7 @@ export function SyllabusHealthCard({
             href="#disciplinas"
             class="btn tertiary"
           >
-            <span>Ver no menu Disciplinas</span>
+            <span>{subjects.length > 5 ? `Mostrando 5 de ${subjects.length} · ver todas em Disciplinas` : 'Ver no menu Disciplinas'}</span>
             <Icon name="arrow-right" size={12} />
           </a>
         )}

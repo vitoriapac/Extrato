@@ -3872,3 +3872,11 @@ button.performance-window{position:relative}button.performance-window::after{con
 #panel-agenda:not([data-calendar-view]) .calendar-week-view{display:none}
 .month-day.selected{outline:2px solid var(--brand);outline-offset:-2px}
 .cal-event.event-marco{background:var(--highlight-bg);border:1px solid var(--amber);color:var(--ink)}
+
+/* Celular: busca e atalhos numa linha só (ícones), a Próxima ação sobe na primeira tela. */
+@media(max-width:560px){
+  .global-search-row{flex-wrap:nowrap!important;gap:6px;margin-top:12px}
+  .global-search-row .global-search-trigger{flex:1 1 auto;min-width:0}
+  .global-search-row .theme-toggle-btn{flex:0 0 auto;min-width:44px;min-height:44px;padding-inline:10px}
+  .global-search-row .theme-toggle-btn .theme-toggle-label{display:none}
+}

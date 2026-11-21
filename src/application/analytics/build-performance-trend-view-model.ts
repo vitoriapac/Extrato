@@ -126,12 +126,14 @@ export function buildPerformanceTrendViewModel(
   const status: 'ok' | 'attention' | 'insufficient' =
     benchmarkScore == null ? 'insufficient' : benchmarkScore >= targetScore ? 'ok' : 'attention';
 
+  // Diz de onde vem o número (último simulado ou questões em 30 dias) para não parecer outro acerto geral.
+  const benchmarkLabel = simulationLatest != null ? 'Último simulado' : 'Acerto em questões (30 dias)';
   let summaryText = 'Sem registros suficientes para calcular a tendência.';
   if (benchmarkScore != null) {
     if (gap != null && gap >= 0) {
-      summaryText = `Rendimento recente de ${formatDecimal(benchmarkScore)}% alinhado à meta de ${formatDecimal(targetScore)}%.`;
+      summaryText = `${benchmarkLabel}: ${formatDecimal(benchmarkScore)}%, alinhado à meta de ${formatDecimal(targetScore)}%.`;
     } else {
-      summaryText = `Rendimento recente de ${formatDecimal(benchmarkScore)}% está ${formatDecimal(Math.abs(gap!))} p.p. abaixo da meta de ${formatDecimal(targetScore)}%.`;
+      summaryText = `${benchmarkLabel}: ${formatDecimal(benchmarkScore)}%, ${formatDecimal(Math.abs(gap!))} p.p. abaixo da meta de ${formatDecimal(targetScore)}%.`;
     }
   }
 
