@@ -280,7 +280,7 @@ test('"O que mais pesa" conta os tópicos da fila do Diagnóstico sem nomeá-los
   await expect(page.locator('.performance-reading__list [data-performance-investigate="diagnosis"]').first()).toBeVisible();
 });
 
-test('a linha-chave dos universos bate entre Diagnóstico, cabeçalho e Resultados das provas', async ({ page }) => {
+test('a linha-chave dos universos bate entre Diagnóstico, cabeçalho e Análise de resultados', async ({ page }) => {
   test.setTimeout(120_000);
   await page.clock.install({ time: new Date('2026-11-14T12:00:00-03:00') });
   await openDemo(page);

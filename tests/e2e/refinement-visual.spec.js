@@ -21,7 +21,7 @@ for (const { name, width, theme, columns } of [
     await activateTab(page, 'desempenho');
     for (const section of sections) {
       await openPerformanceSection(page, section);
-      // Questões, Simulados e Inteligência da prova são seções da aba "Resultados das provas".
+      // Questões, Simulados e Inteligência da prova são seções da aba "Análise de resultados".
       const tabKey = ['simulations', 'exam'].includes(section) ? 'questions' : section;
       await expect(page.locator(`[data-performance-section="${tabKey}"]`)).toHaveAttribute(
         'aria-selected',

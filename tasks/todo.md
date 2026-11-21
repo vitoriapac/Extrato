@@ -148,7 +148,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T18: Rodapé, "Copiar link" e Instruções (R7, R8, R9) — FEITA (21/11): rodapé de 47% para 39% da tela e sem Instruções/Busca repetidas; "Iniciante · 1 min" só quando foge do padrão; "Copiar link" só ícone; Questões sem botão duplicado no vazio. Ficou: "Esta explicação foi útil?" por tópico e "Comece por aqui" como chip e título
 **Aceite:** rodapé do vazio não ocupa metade da tela; "Copiar link" um por subaba; Instruções sem "Iniciante · 1 min" repetido; botões duplicados de Questões ("Registrar sessão" ×2) unificados. **Dependências:** nenhuma · **Tamanho:** M
 
-### T19: "Resultados das provas" × "Questões & Simulados" (R10)
+### T19: "Resultados das provas" × "Questões & Simulados" (R10) — FEITA (21/11): subaba renomeada para "Análise de resultados" (as rotas antigas continuam valendo); painéis e chips "Questões", "Simulados", "Inteligência da prova", sem repetir "Questões respondidas"
 **Aceite:** a subaba "Resultados das provas" deixa de conter "Questões respondidas" duplicado, ou é renomeada; rotas antigas redirecionam. **Dependências:** D-C · **Tamanho:** M
 
 ### Checkpoint 3: redundância

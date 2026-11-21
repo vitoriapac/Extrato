@@ -619,7 +619,7 @@ export function buildWeeklyPerformanceBrief({
     });
     addLink({ label: 'Hoje', icon: 'sun', kind: 'tab', target: 'hoje' });
   } else {
-    p3 = `Com a rotina em dia e bom aproveitamento, você pode avançar nos próximos conteúdos na aba Disciplinas, aprofundar a evolução de acertos na seção Questões${current.simulationsCount > 0 ? ' ou conferir o detalhamento da sua nota em Resultados das provas' : ' ou acompanhar sua regularidade em Ritmo e aderência'}.`;
+    p3 = `Com a rotina em dia e bom aproveitamento, você pode avançar nos próximos conteúdos na aba Disciplinas, aprofundar a evolução de acertos na seção Questões${current.simulationsCount > 0 ? ' ou conferir o detalhamento da sua nota em Análise de resultados' : ' ou acompanhar sua regularidade em Ritmo e aderência'}.`;
     addLink({
       label: 'Abrir aba Disciplinas',
       icon: 'book',

@@ -134,7 +134,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'chart-line',
   },
   {
-    label: 'Desempenho: Resultados das provas',
+    label: 'Desempenho: Análise de resultados',
     keywords: 'questoes simulados inteligencia da prova alt 4',
     action: 'performance:questions',
     icon: 'chart-line',

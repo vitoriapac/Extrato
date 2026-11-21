@@ -1,5 +1,5 @@
 /**
- * Linha-chave dos universos de tópicos: os números de Diagnóstico e de Resultados das provas saem todos daqui,
+ * Linha-chave dos universos de tópicos: os números de Diagnóstico e de Análise de resultados saem todos daqui,
  * para o aluno ver como 305, 296 e 194 se relacionam em vez de somar de cabeça.
  */
 export interface TopicUniverse {

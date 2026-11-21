@@ -353,7 +353,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     const beginnerGate =
       beginner.beginner && ['subjects', 'diagnosis'].includes(performanceViewState.section);
     const beginnerQuestions = beginner.beginner && examSection;
-    // Resultados das provas mostra um painel por vez (Questões, Simulados ou Inteligência da prova): só o do painel
+    // Análise de resultados mostra um painel por vez (Questões, Simulados ou Inteligência da prova): só o do painel
     // aberto é calculado e desenhado, e a rota diz qual é.
     const proofModels = examSection
       ? {
@@ -389,13 +389,13 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
-    const proofIndex = `<div class="performance-modes performance-proof-index" role="group" aria-label="Seções de Resultados das provas">${[['questions', 'Questões respondidas'], ['simulations', 'Simulados realizados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`).join('')}</div>`;
+    const proofIndex = `<div class="performance-modes performance-proof-index" role="group" aria-label="Seções de Análise de resultados">${[['questions', 'Questões'], ['simulations', 'Simulados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`).join('')}</div>`;
     const sectionHtml = beginnerGate
       ? renderBeginnerState(performanceViewState.section, beginner)
       : examSection
       ? proofIndex +
         (performanceViewState.section === 'simulations'
-          ? proofBlock('simulations', 'Simulados realizados', renderPerformanceSection(proofModels!.simulations!, renderOptions))
+          ? proofBlock('simulations', 'Simulados', renderPerformanceSection(proofModels!.simulations!, renderOptions))
           : performanceViewState.section === 'exam'
             ? proofBlock(
                 'exam',
@@ -404,7 +404,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               )
             : proofBlock(
                 'questions',
-                'Questões respondidas',
+                'Questões',
                 beginnerQuestions
                   ? renderBeginnerState('questions', beginner)
                   : renderPerformanceSection(proofModels!.questions!, renderOptions)

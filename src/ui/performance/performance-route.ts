@@ -1,6 +1,6 @@
 /**
  * Endereço das subabas de Desempenho. O estado interno usa chaves em inglês (`questions`, `simulations`, `exam`);
- * o endereço público das três seções de "Resultados das provas" é em português. Os endereços antigos continuam valendo.
+ * o endereço público das três seções de "Análise de resultados" é em português. Os endereços antigos continuam valendo.
  */
 const PUBLIC_ROUTE: Record<string, string> = {
   questions: 'resultados',
