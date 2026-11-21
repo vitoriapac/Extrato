@@ -23,6 +23,7 @@ export function buildWeeklyClose({
   plans = [],
   questions = [],
   recommendations = [],
+  allQuestions = null,
   targetAccuracy = 80,
 }: Record<string, any> = {}) {
   const planned = n(current.plannedMinutes),
@@ -94,11 +95,20 @@ export function buildWeeklyClose({
       (!period?.start || item.date >= period.start) &&
       (!period?.end || item.date <= period.end)
   );
+  // Tópico com amostra mínima (10 questões) e acerto atual na meta não é foco da próxima semana (D-D).
+  const aboveTarget = (topicId: unknown) => {
+    if (!topicId || !Array.isArray(allQuestions)) return false;
+    const rows = allQuestions.filter((q: Row) => q.topicId === topicId);
+    const resolved = rows.reduce((s: number, q: Row) => s + n(q.resolved), 0);
+    const correct = rows.reduce((s: number, q: Row) => s + n(q.correct), 0);
+    return resolved >= 10 && (correct / resolved) * 100 >= targetAccuracy;
+  };
   const priorities =
     state === 'insufficient'
       ? []
       : periodRecommendations
           .filter((item: Row) => item.accepted !== false)
+          .filter((item: Row) => !aboveTarget(item.topicId))
           .slice(0, 3)
           .map((item: Row, index: number) => ({
             priorityId: item.id || item.recommendationId || item.topicId || String(index),

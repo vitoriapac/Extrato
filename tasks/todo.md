@@ -108,7 +108,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Verificação:** reprodução por teste unitário antes de qualquer correção
 **Dependências:** nenhuma · **Tamanho:** M
 
-### T11: Fonte única de "prioridade" (D2)
+### T11: Fonte única de "prioridade" (D2) — FEITA em parte (20/11): D-B (gravidade antes da pontuação) e foco sem tópico na meta; falta o objeto único consumido pelas 5 telas
 **Nota de escopo:** as Tarefas 59, 62–64 arquivadas já reduziram as prioridades **dentro de Desempenho** (Próxima ação ao lado da fila, sem tópico nomeado em "O que mais pesa"). O que sobra é entre abas: Visão geral × Hoje × Desempenho × Fechamento.
 **Aceite:**
 - [ ] Visão geral, Hoje, Desempenho, Diagnóstico e Fechamento semanal consomem o mesmo objeto, conforme D-A

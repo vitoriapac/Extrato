@@ -11,7 +11,7 @@ Classes: **dado da demo** · **defeito de cálculo** · **defeito de apresentaç
 | 3 | Analytics (diagnóstico) × Língua Portuguesa (plano) | **Correto, mal explicado** | Dois motores: o plano de hoje põe LP; o diagnóstico põe Analytics (Em andamento, 0 sessões, 0 questões, 1 recomendação, alto peso na prova). Já tratado por D-A com os nomes "Plano de hoje" × "Sugestão do diagnóstico" e pelos textos do T-anterior. | Só nomes e explicação (T12). | T12 |
 | 4 | "Garantias bancárias" como #1 da fila do Diagnóstico | **Correto, mal explicado**, com **dado da demo** | Cartão: "Prioridade média · Revisão atrasada ou prevista para agora · Evidência: Baixa · Iniciar revisão". O tópico está "Concluído", 0 questões, 1 sessão, com revisão agendada para 16/11 (4 dias de atraso, status "Não iniciado"). A regra de ordenação põe revisão atrasada na frente. | Decidir (D-B) se revisão atrasada de tópico com evidência baixa deve ficar na frente de tópico crítico; mostrar o motivo no cartão. Na demo, revisão atrasada de tópico concluído sem registro é artefato do gerador. | T11 + decisão D-B |
 
-## Decisão D-B (pendente, vem desta tabela)
+## Decisão D-B (decidida em 20/11: proposta aceita; implementada na T11, sem a exceção dos 7 dias)
 
 Hoje a fila é ordenada primeiro por revisão atrasada. Proposta: **severidade primeiro, revisão atrasada como desempate**, exceto revisão com mais de 7 dias de atraso. Precisa da sua escolha antes do T11.
 

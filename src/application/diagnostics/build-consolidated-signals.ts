@@ -190,14 +190,15 @@ export function buildConsolidatedSignals(input: any = {}) {
       limitation: SHARED_SIGNALS_LIMITATION,
     });
   }
-  // Alerta com evidência vem antes de "dados insuficientes"; no empate de prioridade, a gravidade decide.
+  // Alerta com evidência vem antes de "dados insuficientes"; depois a gravidade, e a pontuação de prioridade desempata (D-B).
+  // shortcut: sem exceção para revisão com mais de 7 dias de atraso; incluir se a fila esconder atrasos antigos.
   const SEVERITY_RANK: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
   const needsAttention = (row: Row) => (row.state === 'attention' ? 1 : 0);
   rows.sort(
     (a, b) =>
       needsAttention(b) - needsAttention(a) ||
-      (b.priority ?? -Infinity) - (a.priority ?? -Infinity) ||
       (SEVERITY_RANK[b.severity] ?? 0) - (SEVERITY_RANK[a.severity] ?? 0) ||
+      (b.priority ?? -Infinity) - (a.priority ?? -Infinity) ||
       stable(a, b)
   );
   const summarize = (items: Row[]) => ({

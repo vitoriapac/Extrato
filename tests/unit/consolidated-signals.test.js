@@ -332,3 +332,24 @@ test('mapeamento compartilhado preserva exatamente fatores e score do mapa de la
   assert.equal(inputs[0].evidenceStrength, 0.8);
   assert.equal(buildTopicGapInputs([{ ...candidate, trendRisk: 0 }])[0].trendRisk, 0);
 });
+
+test('fila do Diagnóstico: gravidade antes da pontuação de prioridade (D-B)', () => {
+  const a = { subjectId: 's', topicId: 'a', name: 'Revisão atrasada', examTags: ['bb'] };
+  const b = { subjectId: 's', topicId: 'b', name: 'Lacuna crítica', examTags: ['bb'] };
+  const result = buildConsolidatedSignals({
+    eligibleEntities: [a, b],
+    activeExamTags: ['bb'],
+    signals: [
+      signal('priority-review', { topicId: 'a', severity: 'medium' }),
+      signal('critical-gap', { topicId: 'b', severity: 'critical' }),
+    ],
+    priorities: [
+      { ...a, score: 95 },
+      { ...b, score: 40 },
+    ],
+  });
+  assert.deepEqual(
+    result.topics.map(row => row.topicId),
+    ['b', 'a']
+  );
+});

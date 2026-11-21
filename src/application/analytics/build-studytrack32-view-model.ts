@@ -92,6 +92,7 @@ export function buildStudyTrack32ViewModel({
     plans: currentPlan.plans,
     sessions: currentSessions,
     questions: currentQuestions,
+    allQuestions: questions,
     recommendations,
     targetAccuracy,
   });

@@ -218,6 +218,7 @@ export function buildWeeklyClosingRitualViewModel(
       : {},
     plans: weekPlans.plans,
     questions: weekQuestions,
+    allQuestions: questions,
     recommendations,
     targetAccuracy,
   });
