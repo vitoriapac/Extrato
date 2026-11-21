@@ -108,7 +108,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Verificação:** reprodução por teste unitário antes de qualquer correção
 **Dependências:** nenhuma · **Tamanho:** M
 
-### T11: Fonte única de "prioridade" (D2) — FEITA em parte (20/11): D-B (gravidade antes da pontuação) e foco sem tópico na meta; sugestão = primeiro da fila com atividade pronta (D-A) em Visão geral, Hoje, Desempenho e Diagnóstico; copiloto (assistente e Visão geral) também segue a fila; Fechamento tem lista própria
+### T11: Fonte única de "prioridade" (D2) — FEITA (20/11): D-B com a exceção da revisão muito atrasada; foco sem tópico na meta; sugestão = primeiro da fila em Visão geral, Hoje, Desempenho, copiloto, timer; teste de contrato. Fechamento mantém lista própria de recomendações aceitas (por desenho)
 **Nota de escopo:** as Tarefas 59, 62–64 arquivadas já reduziram as prioridades **dentro de Desempenho** (Próxima ação ao lado da fila, sem tópico nomeado em "O que mais pesa"). O que sobra é entre abas: Visão geral × Hoje × Desempenho × Fechamento.
 **Aceite:**
 - [ ] Visão geral, Hoje, Desempenho, Diagnóstico e Fechamento semanal consomem o mesmo objeto, conforme D-A

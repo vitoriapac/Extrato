@@ -1,4 +1,5 @@
 import { sameStudyActionTarget } from '../../application/recommendations/recommendation-action.js';
+import { orderByDiagnosisQueue } from '../../application/diagnostics/build-next-best-action.js';
 import { buildSessionResultViewModel } from '../../application/sessions/build-session-result-view-model.js';
 import {
   getCurrentCycleBlock,
@@ -56,6 +57,8 @@ export interface StudyTimerRuntimeControllerOptions {
   getReadinessValue?: () => number | null;
   getReadinessResult?: () => Record<string, any>;
   getCurrentStudyRecommendations: () => any[];
+  /** Ids de tópico na ordem da fila do Diagnóstico; a prioridade é o primeiro dela. */
+  diagnosisQueue?: () => string[];
   guidedStudyService: {
     current: () => any;
     resume: () => void;
@@ -116,6 +119,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     getAchievementNote = () => null,
     getReadinessResult,
     getCurrentStudyRecommendations,
+    diagnosisQueue,
     guidedStudyService,
     sessionService,
     timerUiController,
@@ -680,7 +684,10 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       onSkip: discardSessionFromModal,
       onDismiss: dismissSessionModal,
       onSave: formValues => {
-        const currentRecs = getCurrentStudyRecommendations();
+        const currentRecs = orderByDiagnosisQueue(
+          getCurrentStudyRecommendations(),
+          diagnosisQueue?.()
+        );
         const previousPriority = currentRecs[0] ? { ...currentRecs[0] } : null;
         const effectiveTimerSeconds =
           formValues.durationMinutes && formValues.durationMinutes > 0
@@ -739,7 +746,8 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         };
         renderStudyRecommendation();
         renderDiagnosisCenter();
-        const nextPriority = getCurrentStudyRecommendations()[0] || null;
+        const nextPriority =
+          orderByDiagnosisQueue(getCurrentStudyRecommendations(), diagnosisQueue?.())[0] || null;
         const priorityChanged =
           previousPriority &&
           nextPriority &&

@@ -293,3 +293,18 @@ test('orderByDiagnosisQueue põe a fila na frente e mantém a ordem de quem est�
   assert.equal(orderByDiagnosisQueue(recs, []), recs);
   assert.equal(orderByDiagnosisQueue(recs, null), recs);
 });
+
+test('contrato: a mesma fila dá a mesma sugestão na Visão geral, em Hoje, no copiloto e no timer (T11)', () => {
+  const recs = [
+    { ...recommendation, id: 'r-a', topicId: 'a', score: 95 },
+    { ...recommendation, id: 'r-b', topicId: 'b', score: 60 },
+    { ...recommendation, id: 'r-c', topicId: 'c', score: 40 },
+  ];
+  const queue = ['c', 'b'];
+  const fromNextBestAction = buildNextBestAction({ recommendations: recs, queueOrder: queue }).action.topicId;
+  const fromOverviewCard = orderByDiagnosisQueue(recs, queue)[0].topicId;
+  const fromTimer = orderByDiagnosisQueue(recs, queue)[0].topicId;
+  assert.equal(fromNextBestAction, 'c');
+  assert.equal(fromOverviewCard, fromNextBestAction);
+  assert.equal(fromTimer, fromNextBestAction);
+});

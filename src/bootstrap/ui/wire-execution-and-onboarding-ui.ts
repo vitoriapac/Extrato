@@ -108,6 +108,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
   timerUiController.bindKeyboardShortcuts();
 
   const studyTimerRuntime = createStudyTimerRuntimeController({
+    diagnosisQueue: getDiagnosisQueue,
     document,
     window,
     getState,

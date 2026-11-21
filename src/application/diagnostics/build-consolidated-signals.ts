@@ -191,13 +191,18 @@ export function buildConsolidatedSignals(input: any = {}) {
     });
   }
   // Alerta com evidência vem antes de "dados insuficientes"; depois a gravidade, e a pontuação de prioridade desempata (D-B).
-  // shortcut: sem exceção para revisão com mais de 7 dias de atraso; incluir se a fila esconder atrasos antigos.
   const SEVERITY_RANK: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+  // Revisão com urgência máxima (reviewUrgency 100 = 5 dias ou mais de atraso) sobe ao nível de crítico (D-B).
+  const overdueReview = (row: Row) =>
+    row.primarySignal === 'priority-review' &&
+    row.signals?.some((signal: Row) => signal.kind === 'priority-review' && Number(signal.metrics?.urgency) >= 100);
+  const queueRank = (row: Row) =>
+    Math.max(SEVERITY_RANK[row.severity] ?? 0, overdueReview(row) ? SEVERITY_RANK.critical : 0);
   const needsAttention = (row: Row) => (row.state === 'attention' ? 1 : 0);
   rows.sort(
     (a, b) =>
       needsAttention(b) - needsAttention(a) ||
-      (SEVERITY_RANK[b.severity] ?? 0) - (SEVERITY_RANK[a.severity] ?? 0) ||
+      queueRank(b) - queueRank(a) ||
       (b.priority ?? -Infinity) - (a.priority ?? -Infinity) ||
       stable(a, b)
   );

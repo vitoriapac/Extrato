@@ -353,3 +353,25 @@ test('fila do Diagnóstico: gravidade antes da pontuação de prioridade (D-B)',
     ['b', 'a']
   );
 });
+
+test('fila: revisão com urgência máxima sobe ao nível de crítico; urgência menor fica por gravidade', () => {
+  const mk = (topicId, urgency) => ({ subjectId: 's', topicId, name: topicId, examTags: ['bb'], urgency });
+  const run = urgency => {
+    const a = mk('revisao', urgency);
+    const b = mk('lacuna', 0);
+    return buildConsolidatedSignals({
+      eligibleEntities: [a, b],
+      activeExamTags: ['bb'],
+      signals: [
+        signal('priority-review', { topicId: 'revisao', severity: 'important', metrics: { urgency } }),
+        signal('critical-gap', { topicId: 'lacuna', severity: 'critical' }),
+      ],
+      priorities: [
+        { ...a, score: 95 },
+        { ...b, score: 40 },
+      ],
+    }).topics.map(row => row.topicId);
+  };
+  assert.deepEqual(run(100), ['revisao', 'lacuna']);
+  assert.deepEqual(run(76), ['lacuna', 'revisao']);
+});
