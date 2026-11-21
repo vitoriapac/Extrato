@@ -79,7 +79,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Com dados, "Tempo estudado hoje" tem um denominador só (plano ou meta diária), com rótulo
 **Dependências:** nenhuma · **Arquivos (provável):** `src/ui/tabs/today/*`, `src/application/daily-execution/*` · **Tamanho:** M
 
-### T9: Saldo × "Resgatar" × "Replanejamento indisponível" (D15) — FEITA em parte (20/11): botão sem "30 min" fixo; fechamento × planejamento: eram dois replanejamentos diferentes, agora com nomes distintos — FEITA
+### T9: Saldo × "Resgatar" × "Replanejamento indisponível" (D15) — FEITA em parte (20/11): botão sem "30 min" fixo e replanejamentos com nomes distintos; falta saldo mínimo para oferecer o resgate
 **Aceite:**
 - [ ] "Resgatar em 30 min" só aparece quando o saldo justifica; "6 min" não oferece 30
 - [ ] Fechamento semanal e Planejamento concordam sobre haver ou não capacidade para redistribuir
@@ -94,13 +94,13 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### Checkpoint 1: números
 - [x] `npm test`, `check:types`, `build` verdes (20/11: 1859 unit; E2E dos specs afetados passam, exceto 6 falhas de visual-consolidation.spec.js sem relação com a Fase 1 — ver relatório do checkpoint)
 - [x] Nova passada na demo (20/11): 2 resíduos corrigidos ("9 revisões pendentes" → pendências; "16 abaixo da meta" sem janela); restam 16 (histórico) × 7 (30 d) por janelas diferentes, agora ditas no texto
-- [ ] Revisão humana
+- [x] Revisão humana (aprovada em 20/11)
 
 ---
 
 ## Fase 2: prioridade única
 
-### T10: Investigar demo × produto (D2, D17, D-B) — FEITA (20/11): ver tasks/investigacao-divergencias.md; D-B aguarda decisão
+### T10: Investigar demo × produto (D2, D17, D-B) — FEITA (20/11): ver tasks/investigacao-divergencias.md; D-B decidida (gravidade primeiro)
 **Descrição:** Reproduzir com fixture pequena e com a demo; classificar cada caso como dado da demo, defeito de cálculo, defeito de apresentação ou correto mal explicado.
 **Aceite:**
 - [ ] Tabela em `tasks/investigacao-divergencias.md` com os 4 casos: Classes de palavras (85%) como lacuna; "Iniciar revisão" em tópicos sem registro; Analytics × LP; Garantias bancárias como fila #1
@@ -182,4 +182,4 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] E2E afetados verdes
 - [ ] `impeccable critique` com H4 ≥ 3 e H8 ≥ 3
 - [ ] Nova passada de usuário analítico (vazio e demo): relatório novo sem P0/P1 de divergência
-- [ ] Revisão humana
+- [x] Revisão humana (aprovada em 20/11)
