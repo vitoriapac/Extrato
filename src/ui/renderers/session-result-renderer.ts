@@ -60,7 +60,7 @@ export function renderSessionResult(
       ? `<div class="session-result-actions">${chainQuestionsBtn}${journalBtn}${button}</div>`
       : button;
   const next = model.plan
-    ? `<p>Próxima atividade do plano: <strong>${escapeHtml(model.plan.label)}</strong></p>${model.plan.suggestion ? `<p>Sugestão fora do plano: ${escapeHtml(model.plan.suggestion)}</p>` : ''}${actionCluster}`
+    ? `<p>Próxima atividade do plano: <strong>${escapeHtml(model.plan.label)}</strong></p>${model.plan.suggestion ? `<p>Sugestão do diagnóstico, fora do plano: ${escapeHtml(model.plan.suggestion)}</p>` : ''}${actionCluster}`
     : model.next
       ? `<p>${model.next.changed ? 'Nova prioridade' : 'Sua prioridade principal continua sendo'}: <strong>${escapeHtml(model.next.label)}</strong></p>${actionCluster}`
       : model.simulation

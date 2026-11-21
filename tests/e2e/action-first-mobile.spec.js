@@ -19,7 +19,7 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
     ).toHaveCount(1);
   else await expect(overviewAction).toHaveAttribute('data-study-action-source', 'overview');
   const suggestion = overviewAction.locator('.overview-action-suggestion', {
-    hasText: 'Sugestão fora do plano',
+    hasText: 'Sugestão do diagnóstico',
   });
   const topic = await (
     (await suggestion.count()) ? suggestion : overviewAction.locator('h3')

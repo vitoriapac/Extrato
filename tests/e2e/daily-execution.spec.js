@@ -119,7 +119,7 @@ for (const [width, theme] of [
         })
       );
     const suggestion = card.locator('.overview-action-suggestion');
-    await expect(suggestion).toContainText('Sugestão fora do plano');
+    await expect(suggestion).toContainText('Sugestão do diagnóstico');
     await expect(
       suggestion.getByRole('button', { name: 'Ver por quê', exact: true })
     ).toBeVisible();
@@ -237,7 +237,7 @@ test('sugestão fora do plano permite dispensar sem alterar a agenda', async ({ 
   });
   await activateTab(page, 'hoje');
   const action = page.locator('#studyRecommendation .study-recommendation').first();
-  await expect(action).toContainText('Sugestão fora do plano de hoje');
+  await expect(action).toContainText('Sugestão do diagnóstico fora do Plano de hoje');
   await expect(action.getByRole('button', { name: /Seguir plano de hoje/ })).toBeVisible();
   await expect(
     action.getByRole('button', { name: /Estudar como atividade adicional/ })

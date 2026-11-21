@@ -195,3 +195,25 @@ test('modos da comparação entre disciplinas: estado aceita só os quatro e o r
   assert.equal(updatePerformanceViewState(state, { compareMode: 'radar' }).compareMode, 'radar');
   assert.equal(updatePerformanceViewState(state, { compareMode: 'xyz' }).compareMode, 'accuracy');
 });
+
+test('nomes fixos de ação (D-A): "Sugestão do diagnóstico" e "Plano de hoje"; nenhum rótulo antigo na UI', async () => {
+  const { readdirSync, readFileSync, statSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const walk = dir =>
+    readdirSync(dir).flatMap(name => {
+      const path = join(dir, name);
+      return statSync(path).isDirectory() ? walk(path) : [path];
+    });
+  const files = [...walk('src/ui'), ...walk('src/application')].filter(
+    path => /\.(ts|tsx)$/.test(path) && !path.endsWith('SalesLandingPage.tsx')
+  );
+  const retired = [/Sugestão fora do plano/, /Recomendação estratégica/, /SUGESTÃO OPCIONAL/, /PRÓXIMA MELHOR AÇÃO/i];
+  for (const path of files) {
+    // Só texto de interface: comentários de código ficam de fora.
+    const text = readFileSync(path, 'utf8')
+      .split('\n')
+      .filter(line => !/^\s*(\/\/|\*|\/\*)/.test(line))
+      .join('\n');
+    for (const pattern of retired) assert.doesNotMatch(text, pattern, `${path}: ${pattern}`);
+  }
+});

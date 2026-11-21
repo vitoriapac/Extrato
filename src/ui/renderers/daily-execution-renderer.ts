@@ -75,7 +75,7 @@ export function renderDailyExecution(
     <p class="daily-execution-completed">${progress.completedActivities} de ${model.items.length} atividade${model.items.length === 1 ? '' : 's'} concluída${model.items.length === 1 ? '' : 's'}</p>
     ${model.guidance ? `<p>${escapeHtml(model.guidance)}</p><button type="button" class="btn ghost small" data-delegated-click="navigateKpi('metas')">Abrir planejamento</button>` : ''}
     ${!next && model.items.length ? '<p role="status">Todas as atividades de hoje foram cumpridas.</p>' : ''}
-    </div>${priority.action && !matchesAction && !priority.unplannedAction ? `<p>Recomendação estratégica: ${priority.executed ? 'executada' : priority.planned ? 'prevista no plano' : 'ainda não acomodada no plano'}.</p>` : ''}
+    </div>${priority.action && !matchesAction && !priority.unplannedAction ? `<p>Sugestão do diagnóstico: ${priority.executed ? 'executada' : priority.planned ? 'prevista no plano' : 'ainda não acomodada no plano'}.</p>` : ''}
     ${
       progress.additionalMinutes > 0 || progress.mismatchedMinutes > 0
         ? `<details class="daily-execution-context"><summary>Conferir tempo adicional e vínculos</summary>

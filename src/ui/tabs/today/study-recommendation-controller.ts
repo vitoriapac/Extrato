@@ -1,3 +1,4 @@
+import { orderByDiagnosisQueue } from '../../../application/diagnostics/build-next-best-action.js';
 import { createRecommendationOutcomeRecorder } from './recommendation-outcome-recorder.js';
 import { createOverviewNextActionRenderer } from './overview-next-action-renderer.js';
 import { recommendStudy } from '../../../application/recommend-study.js';
@@ -256,7 +257,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     const state = getState();
     const { availableMinutes, candidates } = refreshStudyRecommendationItems();
     renderOverviewNextAction(availableMinutes);
-    const visible = currentStudyRecommendations.slice(0, 3);
+    const visible = orderByDiagnosisQueue(currentStudyRecommendations, deps.diagnosisQueue?.()).slice(0, 3);
     const summary = summarizeRecommendationFeedback(state.recommendationFeedback),
       impact = renderRecommendationImpact(
         buildRecommendationOutcomeViewModel(state.recommendationFeedback)

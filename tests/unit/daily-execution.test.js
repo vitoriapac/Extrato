@@ -207,7 +207,7 @@ test('renderer não atribui motivos estratégicos a outra atividade do plano', (
   assert.doesNotMatch(html, /Lacuna prioritária/);
   assert.match(
     html,
-    /Sugestão fora do plano: Outra · Revisão\. Seu plano de hoje continua valendo\./
+    /Sugestão do diagnóstico, fora do plano: Outra · Revisão\. Seu plano de hoje continua valendo\./
   );
 });
 test('renderer apresenta dia concluído e orientação sem plano', () => {
@@ -287,7 +287,7 @@ test('contexto excepcional recolhe detalhes, preserva alertas e não duplica rec
   assert.match(html, /10 min de estudo adicional/);
   assert.match(html, /30 min com vínculo/);
   assert.match(html, /<\/details>[\s\S]*não estão vinculadas ao plano semanal atual/);
-  assert.doesNotMatch(html, /Recomendação estratégica:/);
+  assert.doesNotMatch(html, /Sugestão do diagnóstico:/);
   assert.match(html, /daily-execution-footer/);
   assert.doesNotMatch(html, /daily-execution-suggestion/);
   const clean = render(buildDailyExecutionModel(fixture()));
@@ -315,7 +315,7 @@ test('sugestão fora do plano mantém a atividade planejada como escolha operaci
     escapeAttr: String,
     dailyPriority: daily.priority,
   });
-  assert.match(html, /Sugestão fora do plano de hoje/);
+  assert.match(html, /Sugestão do diagnóstico fora do Plano de hoje/);
   assert.doesNotMatch(html, /Seguir plano de hoje/); // a escolha fica no cartão de Hoje
   assert.match(html, /Estudar como atividade adicional/);
   assert.doesNotMatch(html, /data-ignore-outside-suggestion/);
@@ -338,7 +338,7 @@ test('sugestão opcional não recebe CTA primário mesmo quando alinhada', () =>
     },
     { escapeHtml: String, escapeAttr: String, dailyPriority: daily.priority }
   );
-  assert.match(html, /SUGESTÃO OPCIONAL/);
+  assert.match(html, /SUGESTÃO DO DIAGNÓSTICO/);
   assert.match(html, /class="btn ghost small"[^>]*data-study-action-source/);
   assert.match(html, /data-decision-role="recommendation"/);
 });
@@ -354,7 +354,7 @@ test('matriz operacional preserva atividade do plano, sessão ativa e ausência 
     html = planned(model, {
       suggestion: { subjectId: 'x', topicId: 'y', subjectName: 'Outra', topicName: 'Revisão' },
     });
-  assert.match(html, /Sugestão fora do plano/);
+  assert.match(html, /Sugestão do diagnóstico, fora do plano/);
   assert.match(html, /data-daily-start="i"/);
   model.priority.nextItem.status = 'partial';
   assert.match(planned(model), /Continuar estudo/);

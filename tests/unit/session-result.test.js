@@ -76,7 +76,7 @@ test('resultado aponta a próxima atividade do plano antes da sugestão do motor
     { escapeHtml: String }
   );
   assert.match(html, /Próxima atividade do plano: <strong>Português — Crase · 30 min<\/strong>/);
-  assert.match(html, /Sugestão fora do plano: Inglês — Leitura/);
+  assert.match(html, /Sugestão do diagnóstico, fora do plano: Inglês — Leitura/);
   assert.doesNotMatch(html, /continua sendo|Nova prioridade/);
   const same = renderSessionResult(
     buildSessionResultViewModel(session, { ...other, subjectId: 's', topicId: 't' }, false, {
@@ -85,7 +85,7 @@ test('resultado aponta a próxima atividade do plano antes da sugestão do motor
     }),
     { escapeHtml: String }
   );
-  assert.doesNotMatch(same, /Sugestão fora do plano/);
+  assert.doesNotMatch(same, /Sugestão do diagnóstico/);
   const noPlan = renderSessionResult(buildSessionResultViewModel(session, other, true, options), {
     escapeHtml: String,
   });

@@ -116,7 +116,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] "Foco da próxima semana" não recomenda tópico acima da meta (resultado de T10)
 **Dependências:** D-A, D-B, T10 · **Tamanho:** L → dividir por tela se passar de 5 arquivos
 
-### T12: Nomes fixos "Plano de hoje" × "Sugestão do diagnóstico"
+### T12: Nomes fixos "Plano de hoje" × "Sugestão do diagnóstico" — FEITA (20/11): rótulos antigos removidos da UI, com teste de vocabulário; lista de Hoje também segue a fila
 **Aceite:**
 - [ ] Os dois nomes aparecem iguais em todas as telas; "Próxima ação" segue D-A
 - [ ] Testes e E2E que citam o texto antigo atualizados
