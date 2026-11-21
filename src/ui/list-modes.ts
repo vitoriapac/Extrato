@@ -96,7 +96,7 @@ export const DOM_LISTS: DomListSpec[] = [
   more('.diagnosis-summary > section', ':scope > article', 10),
   more('.simulation-trend-list', ':scope > li', 40, {
     exception:
-      'simulados acumulam com o tempo; a lista completa fica em Questões e Simulados, que pagina',
+      'simulados acumulam com o tempo; a lista completa fica em Questões & Simulados, que pagina',
   }),
   more('.performance-topic-analysis', ':scope > li', 30, {
     exception: 'tópicos de uma disciplina na análise; revisar se passar de 30',

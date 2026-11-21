@@ -91,7 +91,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'calendar-event',
   },
   {
-    label: 'Abrir Questões e Simulados',
+    label: 'Abrir Questões & Simulados',
     keywords: 'questoes erros simulados desempenho',
     tab: 'questoes',
     icon: 'clipboard-text',

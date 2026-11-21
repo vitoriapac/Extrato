@@ -177,7 +177,7 @@ export function calculateTopicRetention({
   const raw = reviewRate * 0.45 + accuracy * 0.35 + recency * 0.2,
     score = clamp(50 + (raw - 50) * (0.35 + confidence * 0.65));
   const detail =
-    (due.length ? onTime + ' de ' + due.length + ' revisões no prazo' : 'sem revisões vencidas') +
+    (due.length ? onTime + ' de ' + due.length + ' revisões no prazo' : 'sem revisões atrasadas') +
     ' · ' +
     (resolved
       ? Math.round(accuracy) + '% em ' + resolved + ' questões recentes'

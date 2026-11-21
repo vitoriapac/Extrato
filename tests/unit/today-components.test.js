@@ -176,7 +176,7 @@ test('TodayGoalsCard Preact Component — renderiza metas diárias com BulletBar
   assert.match(html, /2 <span>\/ 3<\/span>/);
   assert.match(html, /Questões resolvidas hoje/);
   assert.match(html, /25 <span>\/ 50<\/span>/);
-  assert.match(html, /Revisões de hoje concluídas/);
+  assert.match(html, /Tarefas e revisões de hoje concluídas/);
   assert.match(html, /4 <span>\/ 4<\/span>/);
   assert.match(html, /Tempo estudado hoje/);
   assert.match(html, /1h 30m/);
@@ -214,7 +214,7 @@ test('revisões sem previsão não anunciam uma meta artificial', () => {
     pctTempo: 0, todayDayOfWeek: 0,
   }));
   assert.match(html, /Nenhuma revisão prevista para hoje/);
-  assert.doesNotMatch(html, /Revisões de hoje concluídas: [^"<]*meta 1/);
+  assert.doesNotMatch(html, /Tarefas e revisões de hoje concluídas: [^"<]*meta 1/);
 });
 
 test('TodayGoalsCard — renderiza páginas lidas quando informado', () => {

@@ -255,7 +255,7 @@ test('meta do cronômetro mostra progresso acessível somente quando configurada
 test('instruções detalham áreas, fluxos, atalhos e dúvidas', async ({ page }) => {
   await page.goto('/');
   await activateTab(page, 'instrucoes');
-  await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');
+  await expect(page.locator('#guide-areas')).toContainText('Questões & Simulados');
   await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');
   await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');
   await expect(page.locator('#guide-faq .help-reference-item')).toHaveCount(6);

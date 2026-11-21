@@ -383,7 +383,7 @@ test('Agenda e disciplinas mantêm contagens identificáveis e questões mostram
   await activateTab(page, 'agenda');
   await expect(page.locator('#calAtrasadas')).toContainText('pendências atrasadas');
   await expect(page.locator('#calAtrasadas')).toContainText(/revisões? \+ \d+ tarefas?/);
-  await expect(page.locator('#upcomingTitle')).toContainText('Tarefas e revisões');
+  await expect(page.locator('#upcomingTitle')).toContainText('Tarefas de estudo e revisões espaçadas');
   await activateTab(page, 'disciplinas');
   for (const label of ['Não iniciados', 'Em andamento', 'Em revisão', 'Concluídos'])
     await expect(page.locator('#quickStats')).toContainText(label);

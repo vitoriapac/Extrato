@@ -58,7 +58,7 @@ const BASE_HELP_CATEGORIES: any[] = [
   {
     id: 'guide-areas',
     title: 'Estudar',
-    summary: 'Disciplinas, sessões, Questões e Simulados, revisões e Plano de hoje.',
+    summary: 'Disciplinas, sessões, Questões & Simulados, revisões e Plano de hoje.',
     entries: [
       {
         id: 'today-guide',
@@ -99,7 +99,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         questions: ['Como a Leitura do Extrato decide o que estudar?', 'Para que serve o Diário de Aprendizagem?'],
         paragraphs: [
           'A Leitura do Extrato responde perguntas práticas ("O que estudar agora?", "Tenho 30 minutos", "Como foi minha semana?", "Por que meu ciclo sugere X?") usando somente seus dados locais, sem alterar planos automaticamente.',
-          'O Estudo Rápido ("Tenho X minutos") monta uma sessão de 15, 30, 45 ou 60 minutos aproveitando revisões vencidas, prioridade ou bloco do ciclo. O Diário de Aprendizagem registra dúvidas, energia e dificuldade por sessão, permitindo transformar uma dúvida em revisão agendada.',
+          'O Estudo Rápido ("Tenho X minutos") monta uma sessão de 15, 30, 45 ou 60 minutos aproveitando revisões atrasadas, prioridade ou bloco do ciclo. O Diário de Aprendizagem registra dúvidas, energia e dificuldade por sessão, permitindo transformar uma dúvida em revisão agendada.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
       },
@@ -165,7 +165,7 @@ const BASE_HELP_CATEGORIES: any[] = [
       },
       {
         id: 'questions',
-        title: 'Questões e Simulados',
+        title: 'Questões & Simulados',
         summary: 'Desempenho e análise de erros têm registro próprio.',
         paragraphs: [
           'Informe quantidade de questões, acertos, tópico e, quando possível, a causa dos erros. Os simulados mostram desempenho por disciplina e podem fundamentar uma proposta de replanejamento.',
@@ -524,7 +524,7 @@ reviews.visual = {
   steps: [
     { title: 'Estudo', detail: 'Registre o contato com o tópico.' },
     { title: 'Revisão', detail: 'Consulte o que está atrasado, hoje ou próximo na Agenda.' },
-    { title: 'Nova revisão', detail: 'Siga a agenda e registre a execução real.' },
+    { title: 'Nova revisão espaçada', detail: 'Siga a agenda e registre a execução real.' },
   ],
 };
 reviews.paragraphs = [

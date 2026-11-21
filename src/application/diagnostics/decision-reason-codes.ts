@@ -11,7 +11,7 @@ export const DECISION_REASON_CODES = Object.freeze([
 ]);
 
 export const DECISION_REASON_LABELS = Object.freeze({
-  overdue_review: 'Revisão crítica vencida',
+  overdue_review: 'Revisão crítica atrasada',
   scheduled_review: 'Revisão programada',
   evidence_collection: 'Coleta de evidências',
   capacity_constraint: 'Restrição de capacidade',

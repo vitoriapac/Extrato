@@ -254,7 +254,7 @@ export function calculateApprovalRevisoesMetric(dueReviews: DueReviewItem[]): Ap
       confidence: 0,
       available: false,
       raw: null,
-      detail: 'Sem revisões vencidas até hoje',
+      detail: 'Sem revisões atrasadas até hoje',
     };
   }
   const completed = dueReviews.filter(r => r.status === 'Concluído').length;

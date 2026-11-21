@@ -233,7 +233,7 @@ export function buildDiagnosisViewModel(
     const reason =
       item.reason ||
       item.reasons?.[0] ||
-      'Uma revisão vencida ou um intervalo longo sem contato pede atenção.';
+      'Uma revisão atrasada ou um intervalo longo sem contato pede atenção.';
     return presentDiagnosisItem(item, {
       type: 'review',
       reason,

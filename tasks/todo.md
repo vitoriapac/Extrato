@@ -159,7 +159,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ## Fase 4: vocabulário e primeira visita
 
-### T20: Revisão × Tarefa de estudo; nomes de aba
+### T20: Revisão × Tarefa de estudo; nomes de aba — FEITA (21/11): "Tarefa de estudo" e "Revisão espaçada" nos rótulos da Agenda e de Hoje; "vencida" virou "atrasada"; "Questões & Simulados" igual no desktop e no menu Mais; teste de vocabulário. Ficaram: "Visão" (curto) × "Visão geral" na barra do celular e "pendente" como status de item
 **Aceite:** "Tarefa de estudo" para tarefas e "Revisão espaçada" para 24h/7d/30d (D-I) em Hoje, Agenda e filtros; "Planejamento" e "Questões & Simulados" iguais no desktop e na barra inferior; "pendência/atrasada/vencida/pendente" reduzidos a "atrasada". **Dependências:** D-I · **Tamanho:** M
 
 ### T21: Onboarding com entrada única (R6, V1–V4)

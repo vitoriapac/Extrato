@@ -179,7 +179,7 @@ test('calendário separa vencidas por tipo e período, ignorando concluídos, se
     before = JSON.stringify(items);
   const html = renderCalendarIndicators({ items, today: '2026-10-04' });
   assert.match(html, /1 revisão \+ 1 tarefa atrasadas/);
-  assert.match(html, /Vencidas/);
+  assert.match(html, /Atrasadas/);
   assert.doesNotMatch(html, /Inclui concluídos/);
   assert.equal(JSON.stringify(items), before);
 });

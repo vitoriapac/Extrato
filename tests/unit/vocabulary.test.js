@@ -212,6 +212,9 @@ test('nomes fixos de ação (D-A): "Sugestão do diagnóstico" e "Plano de hoje"
     /Próxima ação indisponível/,
     /Alinhado à Próxima ação/,
     /Da prova à próxima ação/,
+    /revisões? vencidas?/i,
+    /Revisões e tarefas pendentes/,
+    /Questões e Simulados/,
   ];
   for (const path of files) {
     // Só texto de interface: comentários de código ficam de fora.
@@ -220,5 +223,25 @@ test('nomes fixos de ação (D-A): "Sugestão do diagnóstico" e "Plano de hoje"
       .filter(line => !/^\s*(\/\/|\*|\/\*)/.test(line))
       .join('\n');
     for (const pattern of retired) assert.doesNotMatch(text, pattern, `${path}: ${pattern}`);
+  }
+});
+
+test('nomes das abas secundárias são os mesmos na barra do desktop e no menu "Mais" do celular (D-I)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { h } = await import('preact');
+  const { render } = await import('preact-render-to-string');
+  const { MobileMoreMenu } = await import('../../src/ui/components/MobileMoreMenu.js');
+  const html = readFileSync('index.html', 'utf8');
+  const desktop = id => {
+    const start = html.indexOf(`id="tab-${id}"`);
+    const button = html.slice(start, html.indexOf('</button>', start));
+    const long = button.match(/tab-label-long">([^<]+)</);
+    const text = long ? long[1] : button.match(/class="tab-label">([^<]+)</)[1];
+    return text.replace(/&amp;/g, '&').trim();
+  };
+  const menu = render(h(MobileMoreMenu, { activeTab: 'dashboard', open: true, onOpenChange: () => {}, onSelectTab: () => {} }));
+  for (const id of ['disciplinas', 'questoes', 'metas', 'instrucoes']) {
+    const name = desktop(id);
+    assert.ok(menu.replace(/&amp;/g, '&').includes(name), `menu móvel sem "${name}" (aba ${id})`);
   }
 });

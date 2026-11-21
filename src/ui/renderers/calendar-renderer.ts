@@ -42,7 +42,7 @@ export function renderCalendarIndicators({ items = [], today }: any) {
     cell(
       b.overdue.total ? 'warn' : '',
       b.overdue,
-      'Vencidas',
+      'Atrasadas',
       'atrasadas',
       'Nada atrasado',
       'atrasada'

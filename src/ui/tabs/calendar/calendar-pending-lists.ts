@@ -77,7 +77,7 @@ export function createCalendarPendingLists(deps: CalendarPendingListsDeps) {
     if (!ul) return;
     if (elId === 'calTarefasHoje') {
       const title = ul.parentElement?.querySelector('h3');
-      if (title) title.textContent = 'Compromissos e tarefas de hoje';
+      if (title) title.textContent = 'Tarefas de estudo e compromissos de hoje';
     }
     const today = todayISO();
     const unifiedToday = getUnifiedCalendarItems();

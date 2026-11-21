@@ -84,7 +84,7 @@ export function TodayGoalsCard({
       </div>
 
       <div class="meta-hoje-card">
-        <div class="meta-hoje-label">Revisões de hoje concluídas</div>
+        <div class="meta-hoje-label">Tarefas e revisões de hoje concluídas</div>
         <div class="meta-hoje-value">
           {revisoesConcluidasHoje} <span>/ {totalRevisoesHoje}</span>
         </div>
@@ -94,7 +94,7 @@ export function TodayGoalsCard({
             target={totalRevisoesHoje}
             max={Math.max(totalRevisoesHoje, revisoesConcluidasHoje, 1)}
             unit=""
-            label="Revisões de hoje concluídas"
+            label="Tarefas e revisões de hoje concluídas"
           />
         </div>}
       </div>

@@ -10,7 +10,7 @@ export interface MobileMoreMenuProps {
 
 const SECONDARY_TABS: ReadonlyArray<{ id: string; label: string; icon: IconName }> = [
   { id: 'disciplinas', label: 'Disciplinas', icon: 'books' },
-  { id: 'questoes', label: 'Questões e Simulados', icon: 'list-check' },
+  { id: 'questoes', label: 'Questões & Simulados', icon: 'list-check' },
   { id: 'metas', label: 'Planejamento', icon: 'map-2' },
   { id: 'instrucoes', label: 'Instruções', icon: 'help-circle' },
 ];

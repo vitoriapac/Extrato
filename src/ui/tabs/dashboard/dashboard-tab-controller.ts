@@ -852,7 +852,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const ul = doc.getElementById('upcomingList');
     const title = doc.getElementById('upcomingTitle');
     const footer = doc.getElementById('upcomingFooter');
-    if (title) title.textContent = `Tarefas e revisões a partir de hoje · ${allUpcoming.length}`;
+    if (title) title.textContent = `Tarefas de estudo e revisões espaçadas a partir de hoje · ${allUpcoming.length}`;
     if (ul) {
       // Todos os itens: "Mostrar mais" é do montador de listas (#upcomingList).
       mountUpcomingList(ul, allUpcoming);
