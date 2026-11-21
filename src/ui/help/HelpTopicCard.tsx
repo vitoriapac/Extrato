@@ -44,6 +44,8 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
 
   const searchIndex = buildHelpSearchIndex(entry);
   const metadata = computeTopicMetadata(entry);
+  // "Iniciante · 1 min de leitura" é o padrão: só aparece quando o tópico foge dele (T18).
+  const isDefaultMeta = metadata.level === 'Iniciante' && metadata.readingTimeMinutes <= 1;
 
   return (
     <article
@@ -56,11 +58,15 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
     >
       <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-2 text-xs">
         <div class="flex items-center gap-2">
-          <span class={metadata.levelBadgeClass}>{metadata.level}</span>
-          <span class="text-xs text-text-muted inline-flex items-center gap-1">
-            <Icon name="clock" size={12} class="shrink-0" />
-            <span>{metadata.readingTimeLabel}</span>
-          </span>
+          {!isDefaultMeta && (
+            <>
+              <span class={metadata.levelBadgeClass}>{metadata.level}</span>
+              <span class="text-xs text-text-muted inline-flex items-center gap-1">
+                <Icon name="clock" size={12} class="shrink-0" />
+                <span>{metadata.readingTimeLabel}</span>
+              </span>
+            </>
+          )}
         </div>
         <button
           type="button"
@@ -70,7 +76,7 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
           aria-label={`Copiar atalho direto para ${entry.title}`}
         >
           <Icon name="link" size={12} class="shrink-0" />
-          <span>Copiar link</span>
+          <span class="sr-only">Copiar link</span>
         </button>
       </div>
       <h4>{entry.title}</h4>

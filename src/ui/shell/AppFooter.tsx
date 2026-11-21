@@ -20,7 +20,7 @@ export const APP_FOOTER_SHORTCUTS = Object.freeze([
   { keys: ['Esc'], label: 'fecha' },
 ]);
 
-export function AppFooter({ onOpenSearch, onOpenLegal }: AppFooterProps) {
+export function AppFooter({ onOpenLegal }: AppFooterProps) {
   const openLegal = (tab: 'terms' | 'privacy') => {
     if (onOpenLegal) {
       onOpenLegal(tab);
@@ -110,27 +110,9 @@ export function AppFooter({ onOpenSearch, onOpenLegal }: AppFooterProps) {
 
         <section class="app-footer__column" aria-labelledby="appFooterHelpTitle">
           <h2 class="app-footer__title" id="appFooterHelpTitle">
-            Ajuda
+            Legal
           </h2>
           <ul class="app-footer__list">
-            <li>
-              <a class="app-footer__link" href="#instrucoes">
-                <Icon name="help-circle" size={14} class="icon-inline" />
-                Instruções e dúvidas
-              </a>
-            </li>
-            <li>
-              <button
-                type="button"
-                class="app-footer__link"
-                aria-haspopup="dialog"
-                aria-keyshortcuts="Control+K"
-                onClick={() => onOpenSearch?.()}
-              >
-                <Icon name="search" size={14} class="icon-inline" />
-                Buscar no app
-              </button>
-            </li>
             <li>
               <button
                 type="button"

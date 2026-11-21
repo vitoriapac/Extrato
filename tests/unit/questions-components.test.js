@@ -29,7 +29,8 @@ test('QuestionLogTable Preact Component — exibe estado vazio quando sem quest�
   );
 
   assert.match(html, /Nenhuma sessão de questões registrada ainda/);
-  assert.match(html, /addQuestaoRow\(\)/);
+  assert.doesNotMatch(html, /addQuestaoRow\(\)/, 'o botão Registrar sessão já está no cabeçalho da seção (T18)');
+  assert.match(html, /Registrar sessão/);
 });
 
 test('QuestionLogTable Preact Component — renderiza linhas de questões e categorização de erros', () => {

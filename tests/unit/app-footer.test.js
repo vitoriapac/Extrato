@@ -17,11 +17,11 @@ test('AppFooter preserva os IDs ligados pelos controladores de demonstração, b
 
 test('AppFooter organiza blocos Produto, Seus dados e Ajuda com títulos acessíveis e links legais', () => {
   const html = render(h(AppFooter, { onOpenSearch: () => {} }));
-  for (const title of ['Produto', 'Seus dados', 'Ajuda']) {
+  for (const title of ['Produto', 'Seus dados', 'Legal']) {
     assert.ok(html.includes(`>${title}</h2>`), `bloco ${title} ausente`);
   }
   assert.equal((html.match(/aria-labelledby="appFooter\w+Title"/g) || []).length, 3);
-  assert.match(html, /href="#instrucoes"/);
+  assert.doesNotMatch(html, /href="#instrucoes"|Buscar no app/, 'Instruções e Busca já têm lugar próprio (T18)');
   assert.match(html, /id="openLegalTermsBtn"/);
   assert.match(html, /Termos de uso/);
   assert.match(html, /id="openLegalPrivacyBtn"/);

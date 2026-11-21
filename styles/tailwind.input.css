@@ -2814,7 +2814,7 @@
   .app-footer-shell {
     width: 100%;
     margin-top: 0;
-    padding: var(--space-10) 0 var(--space-8);
+    padding: var(--space-5) 0 var(--space-4);
     border-top: 3px solid var(--footer-secondary);
     background-color: var(--footer-bg);
     color: var(--footer-text);
@@ -2825,7 +2825,7 @@
 
   .app-footer {
     display: grid;
-    gap: var(--space-6);
+    gap: var(--space-3);
     width: min(100%, 1280px);
     margin-inline: auto;
     padding-inline: clamp(16px, 2.5vw, 32px);
@@ -2834,11 +2834,11 @@
   .app-footer__columns {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-6);
+    gap: var(--space-4);
   }
 
   .app-footer__title {
-    margin: 0 0 var(--space-3);
+    margin: 0 0 var(--space-2);
     color: var(--footer-secondary);
     font: var(--font-weight-semibold) var(--text-xs) var(--font-body);
     letter-spacing: 0.08em;
