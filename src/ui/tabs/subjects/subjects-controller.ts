@@ -3,6 +3,7 @@ import { render } from 'preact-render-to-string';
 import { SubjectsTab } from './SubjectsTab.js';
 import { buildSubjectWeeklyAccuracy } from '../../../application/analytics/build-subject-accuracy.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
+import { buildSyllabusHealthViewModel } from '../../../application/analytics/build-syllabus-health-view-model.js';
 
 export interface SubjectsControllerContext {
   state: any;
@@ -91,6 +92,15 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
         accuracyTrends: buildSubjectWeeklyAccuracy(
           ctx.state.questoes || [],
           ctx.today || new Date().toISOString().slice(0, 10)
+        ),
+        accuracy30: new Map(
+          buildSyllabusHealthViewModel(
+            ctx.state,
+            ctx.today || new Date().toISOString().slice(0, 10)
+          ).subjects.map(item => [
+            item.id,
+            item.accuracySource === 'questions' ? item.accuracy : null,
+          ])
         ),
         subjectTopicFilters,
         subjectTopicPages,

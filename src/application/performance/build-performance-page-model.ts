@@ -162,6 +162,8 @@ export function buildPerformancePageModel({
         subjectAccuracy: (() => {
           const totals: Record<string, { resolved: number; correct: number }> = {};
           for (const q of scope.questions?.included || []) {
+            // Mesmo período da página (30 dias por padrão), como a tabela de disciplinas.
+            if (range?.start && q.date && (q.date < range.start || q.date > (range.end || today))) continue;
             const id = subjectIdFor?.(q);
             if (!id) continue;
             const row = (totals[id] ||= { resolved: 0, correct: 0 });

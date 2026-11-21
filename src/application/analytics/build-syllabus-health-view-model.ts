@@ -70,8 +70,11 @@ export function buildSyllabusHealthViewModel(state: any, today?: string): Syllab
     const gap = accuracy != null ? Math.round((accuracy - target) * 10) / 10 : null;
 
     // Mesmo critério do Desempenho: abaixo da meta só com amostra mínima (build-subject-accuracy).
+    // Só questões contam, como em Desempenho; acerto vindo de simulados não entra na contagem.
     const status: 'ok' | 'attention' | 'insufficient' =
-      sample?.state === 'below_target'
+      accuracySource !== 'questions'
+        ? 'insufficient'
+        : sample?.state === 'below_target'
         ? 'attention'
         : sample?.state === 'on_target'
           ? 'ok'
@@ -90,10 +93,11 @@ export function buildSyllabusHealthViewModel(state: any, today?: string): Syllab
     };
   });
 
-  // Sort: subjects needing attention first, then by concludedPct descending
+  // Atenção primeiro, da mais distante da meta para a mais próxima; depois por conclusão.
   subjects.sort((a, b) => {
     if (a.status === 'attention' && b.status !== 'attention') return -1;
     if (b.status === 'attention' && a.status !== 'attention') return 1;
+    if (a.status === 'attention' && b.status === 'attention') return (a.gap ?? 0) - (b.gap ?? 0);
     return b.concludedPct - a.concludedPct;
   });
 

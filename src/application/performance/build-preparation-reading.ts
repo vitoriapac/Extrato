@@ -225,7 +225,7 @@ export function buildPreparationReading({
   ).length;
   if (onTarget > 0)
     steady.push(
-      `${onTarget} ${onTarget === 1 ? 'disciplina já está' : 'disciplinas já estão'} na meta de precisão de ${round(accuracyTarget)}% (10 questões ou mais, todo o histórico).`
+      `${onTarget} ${onTarget === 1 ? 'disciplina já está' : 'disciplinas já estão'} na meta de precisão de ${round(accuracyTarget)}% (10 questões ou mais no período).`
     );
   const simulation = finite(projection?.current?.simulationAccuracy);
   const simulationTarget = finite(projection?.current?.targetScore);

@@ -11,6 +11,8 @@ export interface SubjectBlockProps {
   progressPercent: number;
   /** Weekly question accuracy, oldest first; missing when the subject has no recent questions. */
   accuracyTrend?: Array<number | null>;
+  /** Acerto dos últimos 30 dias, o mesmo de Saúde do Edital e Desempenho. */
+  accuracy30?: number | null;
   /** Palette slot 1–8; the swatch always sits next to the name. */
   colorSlot?: number;
   subjectTopics: any[];
@@ -37,6 +39,7 @@ export function SubjectBlock({
   totalSubjects,
   progressPercent,
   accuracyTrend,
+  accuracy30,
   colorSlot = 1,
   subjectTopics,
   visibleTopics,
@@ -59,7 +62,6 @@ export function SubjectBlock({
   const isLast = index === totalSubjects - 1;
   const isEmptySubject =
     subjectTopics.length === 0 && !topicFilter.status && !topicFilter.difficulty && !searchQuery;
-  const recentAccuracy = [...(accuracyTrend || [])].reverse().find(v => typeof v === 'number');
   const statusCount = (status: string) =>
     subjectTopics.filter((topic: any) => (topic.status || 'Não iniciado') === status).length;
 
@@ -125,9 +127,9 @@ export function SubjectBlock({
           >
             <span style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }} />
           </span>
-          {recentAccuracy !== undefined && (
+          {typeof accuracy30 === 'number' && (
             <span class="subject-recent-accuracy">
-              Acerto · última semana com questões <b>{formatPercent(recentAccuracy)}</b>
+              Acerto · 30 dias <b>{formatPercent(accuracy30)}</b>
             </span>
           )}
           <button
