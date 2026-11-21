@@ -552,7 +552,7 @@ export function buildWeeklyPerformanceBrief({
     });
     addLink({ label: 'Planejamento', icon: 'map-2', kind: 'tab', target: 'metas' });
   } else if (weakestSubject && overdueReviews > 0) {
-    p3 = `Para os próximos dias, vale focar em duas frentes simples: abra a seção Por disciplina ou a aba Questões & Simulados para revisar os assuntos de ${weakestSubject.name} em que houve mais erros, e passe na aba Agenda para colocar em dia ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
+    p3 = `Para os próximos dias, vale focar em duas frentes simples: abra a seção Por disciplina ou a aba Questões & Simulados para revisar os assuntos de ${weakestSubject.name} em que houve mais erros, e passe na aba Agenda para colocar em dia ${pluralize(overdueReviews, 'pendência atrasada', 'pendências atrasadas')}.`;
     addLink({
       label: `${weakestSubject.name}: ver análise (menor acerto da semana)`,
       icon: 'chart-dots',
@@ -594,7 +594,7 @@ export function buildWeeklyPerformanceBrief({
       target: 'disciplinas',
     });
   } else if (overdueReviews > 0) {
-    p3 = `Como você está com ${pluralize(overdueReviews, 'revisão atrasada', 'revisões atrasadas')}, o melhor próximo passo é passar na aba Agenda para colocá-las em dia e proteger o que já estudou, ou abrir a aba Hoje para seguir a prioridade do dia.`;
+    p3 = `Como você está com ${pluralize(overdueReviews, 'pendência atrasada', 'pendências atrasadas')}, o melhor próximo passo é passar na aba Agenda para colocá-las em dia e proteger o que já estudou, ou abrir a aba Hoje para seguir a prioridade do dia.`;
     addLink({
       label: 'Agenda de revisões',
       icon: 'calendar-time',
@@ -661,13 +661,13 @@ export function buildWeeklyPerformanceBrief({
         : ' e ainda não registrou questões no período';
     let tailSnippet = '.';
     if (weakestSubject && overdueReviews > 0) {
-      tailSnippet = `, com ponto de atenção em ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)}) e ${pluralize(overdueReviews, 'revisão pendente', 'revisões pendentes')}.`;
+      tailSnippet = `, com ponto de atenção em ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)}) e ${pluralize(overdueReviews, 'pendência atrasada', 'pendências atrasadas')}.`;
     } else if (weakestSubject) {
       tailSnippet = `, sendo ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)} de acerto) a matéria que mais pede reforço agora.`;
     } else if (bestSubject) {
       tailSnippet = `, com destaque positivo para ${bestSubject.name} (${formatPercent(bestSubject.accuracy)} de acerto).`;
     } else if (overdueReviews > 0) {
-      tailSnippet = `, restando ${pluralize(overdueReviews, 'revisão atrasada', 'revisões atrasadas')} para colocar em dia na Agenda.`;
+      tailSnippet = `, restando ${pluralize(overdueReviews, 'pendência atrasada', 'pendências atrasadas')} para colocar em dia na Agenda.`;
     }
     shortParagraph = `Nos últimos 7 dias, você estudou em ${pluralize(current.activeDays, 'dia', 'dias')}${questionsSnippet}${tailSnippet}`;
   }

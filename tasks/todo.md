@@ -93,7 +93,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ### Checkpoint 1: números
 - [x] `npm test`, `check:types`, `build` verdes (20/11: 1859 unit; E2E dos specs afetados passam, exceto 6 falhas de visual-consolidation.spec.js sem relação com a Fase 1 — ver relatório do checkpoint)
-- [ ] Nova passada na demo: nenhuma grandeza com dois valores sem selo de janela
+- [x] Nova passada na demo (20/11): 2 resíduos corrigidos ("9 revisões pendentes" → pendências; "16 abaixo da meta" sem janela); restam 16 (histórico) × 7 (30 d) por janelas diferentes, agora ditas no texto
 - [ ] Revisão humana
 
 ---

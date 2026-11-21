@@ -30,7 +30,7 @@ export function SyllabusHealthCard({
             {attentionCount > 0 && (
               <>
                 {' · '}
-                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>{' (mín. 10 questões)'}
+                <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>{' (mín. 10 questões, todo o histórico)'}
               </>
             )}
           </p>
