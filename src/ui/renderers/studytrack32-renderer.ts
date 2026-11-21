@@ -54,7 +54,7 @@ export function renderWeeklyCloseNext(
         `<li><strong>${index + 1}. ${safe(escapeHtml, item.action)}</strong><span>${safe(escapeHtml, item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`
     )
     .join('');
-  return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4>${model.decisionCycle ? '' : `<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml, model.recommendedAction)}</p>`}${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ''}</section>`;
+  return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4>${model.decisionCycle ? '' : `<p class="weekly-action"><b>Ação recomendada</b>${safe(escapeHtml, model.recommendedAction)}</p>`}${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ''}</section>`;
 }
 // The three figures of the week, kept apart so the close can show them before the analysis.
 export function renderWeeklyCloseKpis(

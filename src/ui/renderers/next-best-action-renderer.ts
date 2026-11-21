@@ -12,7 +12,7 @@ export function renderNextBestAction(
     NEXT_BEST_ACTION_STATES.ACTION_OPTIONAL,
   ].includes(model.state);
   if (!actionable)
-    return `<section class="next-best-action" aria-label="Sugestão do diagnóstico" data-action-state="${escapeAttr(model.state)}"><span class="diagnostic-kicker">SUGESTÃO DO DIAGNÓSTICO</span><h4>${escapeHtml(({ MAINTAIN_PLAN: 'Manter o plano', INSUFFICIENT_EVIDENCE: 'Reunir evidências', NO_ELIGIBLE_ACTION: 'Nenhuma ação elegível agora' } as Record<string, any>)[model.state] || 'Próxima ação indisponível')}</h4><p>${escapeHtml(model.reason)}</p></section>`;
+    return `<section class="next-best-action" aria-label="Sugestão do diagnóstico" data-action-state="${escapeAttr(model.state)}"><span class="diagnostic-kicker">SUGESTÃO DO DIAGNÓSTICO</span><h4>${escapeHtml(({ MAINTAIN_PLAN: 'Manter o plano', INSUFFICIENT_EVIDENCE: 'Reunir evidências', NO_ELIGIBLE_ACTION: 'Nenhuma ação elegível agora' } as Record<string, any>)[model.state] || 'Sugestão do diagnóstico indisponível')}</h4><p>${escapeHtml(model.reason)}</p></section>`;
   const action = model.action;
   const outside = Boolean(dailyPriority?.unplannedAction && dailyPriority.action?.id === action.id);
   const optional = outside || model.state === NEXT_BEST_ACTION_STATES.ACTION_OPTIONAL;

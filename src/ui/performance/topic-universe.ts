@@ -33,7 +33,7 @@ export function renderTopicUniverse(universe: TopicUniverse): string {
   const notes: string[] = [];
   if (withSignal != null && withSignal < inScope)
     notes.push(`${inScope - withSignal} sem sinal ainda não entram na lista`);
-  if (inNextAction) notes.push(`${inNextAction} aparece em Próxima ação, acima da lista`);
+  if (inNextAction) notes.push(`${inNextAction} aparece na Sugestão do diagnóstico, acima da lista`);
   if (mapped != null && mapped < inScope)
     notes.push(`${inScope - mapped} sem questão no histórico da banca`);
   return `<p class="analytics-note performance-universe" data-topic-universe>${parts.join(' · ')}${notes.length ? ` (${notes.join('; ')})` : ''}.</p>`;

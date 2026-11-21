@@ -207,7 +207,12 @@ test('nomes fixos de ação (D-A): "Sugestão do diagnóstico" e "Plano de hoje"
   const files = [...walk('src/ui'), ...walk('src/application')].filter(
     path => /\.(ts|tsx)$/.test(path) && !path.endsWith('SalesLandingPage.tsx')
   );
-  const retired = [/Sugestão fora do plano/, /Recomendação estratégica/, /SUGESTÃO OPCIONAL/, /PRÓXIMA MELHOR AÇÃO/i];
+  const retired = [/Sugestão fora do plano/, /Recomendação estratégica/, /SUGESTÃO OPCIONAL/, /PRÓXIMA MELHOR AÇÃO/i,
+    /aparece em Próxima ação/,
+    /Próxima ação indisponível/,
+    /Alinhado à Próxima ação/,
+    /Da prova à próxima ação/,
+  ];
   for (const path of files) {
     // Só texto de interface: comentários de código ficam de fora.
     const text = readFileSync(path, 'utf8')

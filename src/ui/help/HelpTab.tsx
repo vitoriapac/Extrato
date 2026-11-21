@@ -57,7 +57,7 @@ export function HelpTab({
             {index === 2 && (
               <aside class="help-principle" data-help-principle="">
                 <span class="section-eyebrow">O que torna o Extrato de Estudos diferente</span>
-                <h3>Da prova à próxima ação</h3>
+                <h3>Da prova à Sugestão do diagnóstico</h3>
                 <p>
                   O Extrato de Estudos combina a importância do conteúdo na prova com sua situação de
                   aprendizagem para orientar o próximo estudo.

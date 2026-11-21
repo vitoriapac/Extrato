@@ -32,7 +32,7 @@ const BASE_HELP_CATEGORIES: any[] = [
           },
           {
             title: 'Siga as recomendações',
-            detail: 'Escolha a próxima ação com base na prova e no seu progresso.',
+            detail: 'Veja a Sugestão do diagnóstico, com base na prova e no seu progresso.',
           },
           {
             title: 'Faça o fechamento semanal',
@@ -58,7 +58,7 @@ const BASE_HELP_CATEGORIES: any[] = [
   {
     id: 'guide-areas',
     title: 'Estudar',
-    summary: 'Disciplinas, sessões, Questões e Simulados, revisões e próxima ação.',
+    summary: 'Disciplinas, sessões, Questões e Simulados, revisões e Plano de hoje.',
     entries: [
       {
         id: 'today-guide',
@@ -214,7 +214,7 @@ const BASE_HELP_CATEGORIES: any[] = [
       {
         id: 'recommendations',
         title: 'Recomendações inteligentes',
-        summary: 'O que importa na prova + sua necessidade → próxima ação.',
+        summary: 'O que importa na prova + sua necessidade → Sugestão do diagnóstico.',
         flow: [
           'Prova: impacto e evidência',
           'Você: domínio, retenção e tendência',
@@ -223,7 +223,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         paragraphs: [
           'A prioridade considera impacto na prova, domínio, retenção, tendência, revisões, desempenho, evidência disponível e pré-requisitos. Sempre que há dados suficientes, o Extrato de Estudos mostra os fatores que levaram à sugestão. Uma recomendação pode iniciar uma sessão vinculada à decisão.',
         ],
-        action: { label: 'Ver próxima ação', target: 'today' },
+        action: { label: 'Ver o Plano de hoje', target: 'today' },
       },
     ],
   },
@@ -547,7 +547,7 @@ recommendation.bullets = [
   'Consulte a justificativa e a força das evidências.',
   'Antes de mudar a carga, confira a prévia e confirme a alteração.',
 ];
-recommendation.keywords = ['próxima ação', 'recomendação', 'justificativa'];
+recommendation.keywords = ['sugestão do diagnóstico', 'próxima ação', 'recomendação', 'justificativa'];
 recommendation.flow = null;
 
 const planningGuide = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-workflows');
@@ -736,7 +736,7 @@ Object.assign(
 examGuide.entries.push({
   id: 'recommendation-origin-guide',
   title: 'De onde vem a recomendação?',
-  summary: 'Evidências diferentes se encontram na próxima ação.',
+  summary: 'Evidências diferentes se encontram na Sugestão do diagnóstico.',
   keywords: ['origem', 'recomendação', 'prioridade', 'questões', 'simulados'],
   visual: {
     type: 'flow',
@@ -747,7 +747,7 @@ examGuide.entries.push({
         detail: 'Questões, simulados, progresso, revisões e histórico da prova',
       },
       { title: 'Prioridade', detail: 'Importância na prova × necessidade pessoal' },
-      { title: 'Próxima ação', detail: 'Proposta explicada com os dados disponíveis' },
+      { title: 'Sugestão do diagnóstico', detail: 'Proposta explicada com os dados disponíveis' },
     ],
   },
   paragraphs: [

@@ -557,7 +557,7 @@ test('T36: a linha-chave dos universos relaciona edital, por concluir, sinal e h
   );
   assert.match(
     renderTopicUniverse({ inScope: 305, remaining: 194, withSignal: 297, inNextAction: 1 }),
-    /(8 sem sinal ainda não entram na lista; 1 aparece em Próxima ação, acima da lista)/
+    /(8 sem sinal ainda não entram na lista; 1 aparece na Sugestão do diagnóstico, acima da lista)/
   );
   const exams = renderTopicUniverse({ inScope: 305, remaining: 194, mapped: 304 });
   assert.match(

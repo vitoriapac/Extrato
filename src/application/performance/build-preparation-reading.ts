@@ -170,7 +170,7 @@ export function buildPreparationReading({
     )
     // Com a fila do Diagnóstico informada, um tópico fora dela não é citado: a Leitura nunca mostra o que a lista não tem.
     .filter(item => isStrategicGap(item) && (!position.size || position.has(item.topicId)));
-  // Uma prioridade só: a Leitura não nomeia tópicos (quem nomeia é a Próxima ação, acima, e a fila do Diagnóstico).
+  // Uma prioridade só: a Leitura não nomeia tópicos (quem nomeia é a Sugestão do diagnóstico, acima, e a fila do Diagnóstico).
   // Aqui só conta quantos tópicos fracos de alto impacto puxam a Prontidão e aponta para a fila.
   if (gaps.length && pulling.length < 3)
     pulling.push({

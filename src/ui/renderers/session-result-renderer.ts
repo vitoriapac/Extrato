@@ -65,6 +65,6 @@ export function renderSessionResult(
       ? `<p>${model.next.changed ? 'Nova prioridade' : 'Sua prioridade principal continua sendo'}: <strong>${escapeHtml(model.next.label)}</strong></p>${actionCluster}`
       : model.simulation
         ? '<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>'
-        : `<p>Consulte a próxima ação sugerida para continuar.</p>${actionCluster}`;
+        : `<p>Consulte a Sugestão do diagnóstico para continuar.</p>${actionCluster}`;
   return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderEffects(model.effects)}${renderAchievement(model.achievement, escapeHtml)}<small>Seus indicadores foram atualizados.</small>${next}`;
 }

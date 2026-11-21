@@ -71,14 +71,14 @@ test('sem estudo: um parágrafo só, sem culpa', () => {
   const summary = buildWeekSummary({ brief: brief({ hasActivity: false }), nextBestAction: null });
   assert.equal(summary.kind, 'no_study');
   assert.deepEqual(summary.paragraphs, [
-    'Nenhuma sessão nos últimos 7 dias. A próxima ação está em Hoje.',
+    'Nenhuma sessão nos últimos 7 dias. O Plano de hoje está em Hoje.',
   ]);
 });
 
 test('sem ação calculada, remete a Hoje; o mesmo estado gera o mesmo texto', () => {
   const a = buildWeekSummary({ brief: brief(), nextBestAction: null });
   const b = buildWeekSummary({ brief: brief(), nextBestAction: null });
-  assert.equal(a.paragraphs.at(-1), 'A próxima ação está em Hoje.');
+  assert.equal(a.paragraphs.at(-1), 'O Plano de hoje está em Hoje.');
   assert.deepEqual(a, b);
 });
 

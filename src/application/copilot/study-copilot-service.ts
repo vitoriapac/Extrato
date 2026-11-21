@@ -244,7 +244,7 @@ export function buildStudyCopilotViewModel(input: BuildStudyCopilotInput): Copil
     : 0;
 
   const whatNowBody = hasPlannedNext
-    ? `Próximo bloco do Plano de hoje${plannedNextItem!.plannedMinutes ? ` (${formatPlanMinutes(plannedNextItem!.plannedMinutes)})` : ''}. Alinhado à Próxima ação${canonicalAction && canonicalAction.topicId !== plannedNextItem!.topicId ? `; fora do plano, o diagnóstico prioriza ${nextBest.subjectName} — ${nextBest.topicName}` : ''}.`
+    ? `Próximo bloco do Plano de hoje${plannedNextItem!.plannedMinutes ? ` (${formatPlanMinutes(plannedNextItem!.plannedMinutes)})` : ''}. Alinhado ao Plano de hoje${canonicalAction && canonicalAction.topicId !== plannedNextItem!.topicId ? `; fora do plano, a Sugestão do diagnóstico é ${nextBest.subjectName} — ${nextBest.topicName}` : ''}.`
     : preferCycleNow && currentCycleBlock
       ? `Próximo bloco da sua fila rotativa (${formatPlanMinutes(cycleBlockMinutes)}).${canonicalAction && canonicalAction.subjectId !== currentCycleBlock.subjectId ? ` Fora do ciclo, o diagnóstico aponta ${nextBest.subjectName} — ${nextBest.topicName}.` : ' Fila alinhada ao diagnóstico atual.'}`
       : canonicalAction

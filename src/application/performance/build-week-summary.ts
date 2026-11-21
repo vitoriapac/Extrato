@@ -35,7 +35,7 @@ export function buildWeekSummary({
   if (!brief || !week) return null;
   const action = nextBestAction?.action
     ? `A sugestão do diagnóstico é ${nextBestAction.topicName}${nextBestAction.subjectName ? ` (${nextBestAction.subjectName})` : ''}; o Plano de hoje e a Próxima ação ficam em Hoje.`
-    : 'A próxima ação está em Hoje.';
+    : 'O Plano de hoje está em Hoje.';
 
   if (!brief.hasActivity)
     return {

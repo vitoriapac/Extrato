@@ -110,7 +110,7 @@ test('fechamento semanal usa hierarquia semântica e comparação em quatro colu
   );
   assert.match(weekly, /weekly-kpis/);
   assert.match(weekly, /weekly-risk/);
-  assert.match(weekly, /Próxima ação/);
+  assert.match(weekly, /Ação recomendada/);
   const comparison = renderPeriodComparison(
     { comparison: { accuracy: { previous: 60, current: 72, delta: 12 } } },
     { escapeHtml: String, formatMinutes: String }

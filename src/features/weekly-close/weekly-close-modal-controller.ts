@@ -264,7 +264,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       : '';
     if (!priorities.length)
       return `<section class="weekly-close-actions">${applied}${undone}</section>`;
-    return `<section class="weekly-close-actions">${applied}${undone}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; a próxima ação de hoje continua no plano. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" type="button" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
+    return `<section class="weekly-close-actions">${applied}${undone}<h4>Foco da próxima semana</h4><p>Vem das sugestões desta semana; o Plano de hoje continua valendo. ${priorities.length === 1 ? 'Marque a prioridade' : 'Selecione até três'}, confira a capacidade restante e confirme.</p>${checks}<button class="btn ghost small" type="button" data-delegated-click="previewWeeklyCloseActions()"${none ? ' disabled aria-describedby="weeklyPreviewHint"' : ''}>Conferir impacto</button>${none ? '<small id="weeklyPreviewHint" class="analytics-note">Marque ao menos uma prioridade para conferir o impacto.</small>' : ''}${previewHtml}</section>`;
   }
 
   // Desfaz só o que ainda não foi estudado: blocos com tempo registrado ficam, e com eles a revisão.
