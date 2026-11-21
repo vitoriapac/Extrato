@@ -77,8 +77,7 @@ function narrativeQuestionSlots(questionSlots: number[], entries: any[], totalQu
     genericTotal = totalQuestions - reserved;
   if (!genericCount || genericTotal < genericCount)
     throw new RangeError('Questões insuficientes para as sessões genéricas.');
-  const genericBase = Math.floor(genericTotal / genericCount),
-    genericExtra = genericTotal % genericCount;
+  const genericVolumes = spreadVolumes(genericTotal, genericCount);
   let genericIndex = 0;
   return new Map(
     questionSlots.map((index: any) => {
@@ -95,10 +94,32 @@ function narrativeQuestionSlots(questionSlots: number[], entries: any[], totalQu
           },
         ];
       }
-      const resolved = genericBase + (genericIndex++ < genericExtra ? 1 : 0);
+      const resolved = genericVolumes[genericIndex++];
       return [index, { entry: null, resolved }];
     })
   );
+}
+
+// Padrão fixo de pesos (sem sorteio, para não mexer no resto da semente): sessões curtas e longas se alternam.
+const VOLUME_WEIGHTS = [0.55, 0.8, 1, 1.3, 0.7, 1.15, 0.9, 1.5, 0.6, 1.1, 1.25, 0.85, 1.4, 0.75];
+const MIN_SESSION_QUESTIONS = 8;
+// Fator semanal sobre a duração das sessões; a média do ciclo é 1, então o total por fase quase não muda.
+const WEEKLY_PACE = [0.85, 1.1, 0.7, 1.2, 1.15, 0.95, 1.05, 0.8];
+
+/** Reparte `total` em `count` sessões com volumes variados, somando exatamente `total` (maior resto). */
+export function spreadVolumes(total: number, count: number): number[] {
+  if (count <= 0) return [];
+  const weights = Array.from({ length: count }, (_, i) => VOLUME_WEIGHTS[i % VOLUME_WEIGHTS.length]);
+  const sum = weights.reduce((acc, w) => acc + w, 0);
+  const spare = Math.max(0, total - MIN_SESSION_QUESTIONS * count);
+  const exact = weights.map(w => (spare * w) / sum);
+  const volumes = exact.map(v => MIN_SESSION_QUESTIONS + Math.floor(v));
+  let missing = total - volumes.reduce((acc, v) => acc + v, 0);
+  const order = exact
+    .map((v, i) => [v - Math.floor(v), i] as const)
+    .sort((x, y) => y[0] - x[0] || x[1] - y[1]);
+  for (let k = 0; missing > 0; k = (k + 1) % order.length, missing--) volumes[order[k][1]]++;
+  return volumes;
 }
 
 function narrativeAccuracy(source: Record<string, any>, day: number, historyDays: number) {
@@ -167,8 +188,13 @@ export function buildDemoStudyHistory(
     }
 
     const date = dateAt(today, day, historyDays);
-    const durationMinutes =
+    const baseDuration =
       durations[(index + Math.floor(random() * durations.length)) % durations.length];
+    // Cada semana tem seu ritmo (média 1): sem semanas idênticas de "7 h de 10 h" (T22).
+    const durationMinutes = Math.max(
+      15,
+      Math.round((baseDuration * WEEKLY_PACE[Math.floor((day - 1) / 7) % WEEKLY_PACE.length]) / 5) * 5
+    );
 
     const slot = index % 10;
     let hour = 8;

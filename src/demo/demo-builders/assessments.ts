@@ -67,10 +67,17 @@ export function addDemoEssays(scenario: Record<string, any>, { today, subjects, 
   });
 }
 
-export function buildDemoReviews(scenario: Record<string, any>, { today, subjects }: any) {
-  const topics = subjects.flatMap((subject: any) =>
-      subject.topics.map((topic: any) => ({ subject, topic }))
-    ),
+export function buildDemoReviews(
+  scenario: Record<string, any>,
+  { today, subjects, sessions = null }: any
+) {
+  const allTopics = subjects.flatMap((subject: any) =>
+    subject.topics.map((topic: any) => ({ subject, topic }))
+  );
+  // Revisão espaçada só existe para tópico já estudado: com sessões, o pool exclui tópicos sem nenhuma (T22).
+  const studied = new Set(((sessions || []) as Array<{ topicId?: string }>).map(session => session.topicId));
+  const withStudy = allTopics.filter((item: { topic: { id: string } }) => studied.has(item.topic.id));
+  const topics = sessions && withStudy.length ? withStudy : allTopics,
     states = scenario.reviews.states;
   const groups = [
     [

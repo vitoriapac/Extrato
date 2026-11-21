@@ -169,7 +169,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ## Fase 5: demo e mobile
 
-### T22: Demo menos sintética
+### T22: Demo menos sintética — FEITA (21/11): sessões de questões de 8 a 30+ (total 1750 mantido), semanas dos padrões de sustentabilidade com minutos diferentes, revisões só em tópicos estudados, recomendações geradas só para tópicos abaixo da meta e conquistas com data real; DEMO-SCENARIO.md atualizado
 **Aceite:** sessões com número de questões variado; semanas com execução diferente; datas das conquistas sem "antes de 20/11"; `docs/DEMO-SCENARIO.md` e os validadores continuam passando. **Verificação:** validador do blueprint, unit do gerador, demo reiniciada. **Dependências:** D-K, Fase 1, T10 · **Arquivos (provável):** `src/demo/demo-builders/*` · **Tamanho:** M
 
 ### T23: Cabeçalho mobile compacto — CANCELADA (D-K, 20/11: manter o cabeçalho)

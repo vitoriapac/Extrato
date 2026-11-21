@@ -8,6 +8,7 @@ import scenario from './demo-scenario.json' with { type: 'json' };
 import { assertDemoScenario } from './demo-scenario-validator.js';
 import { buildDemoSubjects } from './demo-builders/subjects.js';
 import { buildDemoStudyHistory } from './demo-builders/study-history.js';
+import { buildDemoAchievementUnlocks } from './demo-builders/achievement-dates.js';
 import { EXAM_TAGS } from '../domain/exams/exam-constants.js';
 import {
   buildDemoSimulations,
@@ -103,7 +104,11 @@ export function generateDemoData({
   state.questoes = history.questoes;
   addDemoEssays(demoScenario, { today, subjects: state.subjects, sessions: state.studySessions });
   state.simulados = buildDemoSimulations(demoScenario, { today, subjects: state.subjects });
-  state.reviewAgenda = buildDemoReviews(demoScenario, { today, subjects: state.subjects });
+  state.reviewAgenda = buildDemoReviews(demoScenario, {
+    today,
+    subjects: state.subjects,
+    sessions: state.studySessions,
+  });
   prepareDemoExperienceEvidence(state, { profile: preparationProfile, today });
   state.calendar = Array.from({ length: 24 }, (_, index) => {
     const entry = activeTopics[(index * 3) % activeTopics.length],
@@ -280,6 +285,7 @@ export function generateDemoData({
   ]);
   state.alertStates = [];
   state.errorFlashcards = buildDemoFlashcards(demoScenario, { today, subjects: state.subjects });
+  state.achievementUnlocks = buildDemoAchievementUnlocks(state);
   state.achievementsUnlocked = {
     primeira_sessao: timestamp(shiftDate(today, -oldestAge + 1)!),
     cem_questoes: timestamp(shiftDate(today, -oldestAge + 20)!),

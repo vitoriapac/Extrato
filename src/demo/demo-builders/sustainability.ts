@@ -61,13 +61,14 @@ export function buildDemoSustainability(state: Record<string, any>, { today }: a
       if (sessions.length < 2) continue; // Missing evidence stays a gap for custom demo blueprints.
       const weights = sessions.slice(1).map((session: any) => Math.max(1, session.durationSeconds));
       const realMinutes =
+        // Cada padrão mantém sua leitura, mas as semanas não são idênticas (T22).
         profile === 0
-          ? 570
+          ? [570, 555, 585, 575][week]
           : profile === 1
-            ? 580
+            ? [580, 565, 590, 575][week]
             : profile === 2
               ? [660, 240, 600, 300][week]
-              : 420;
+              : [420, 405, 435, 410][week];
       const priorityMinutes = profile === 0 ? 114 : profile === 1 ? 60 : 108;
       const durations = [
           priorityMinutes * 60,

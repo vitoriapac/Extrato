@@ -27,12 +27,12 @@ Os períodos são relativos à segunda-feira da semana atual. Cada grupo contém
 
 | Período | Plano semanal | Execução semanal | Prioridades | Interpretação calculada |
 |---|---:|---:|---:|---|
-| Semanas 1–4 | 600 min | 570 min | 95% | Plano compatível |
-| Semanas 5–8 | 600 min | 580 min | 50% | Prioridades pendentes |
+| Semanas 1–4 | 600 min | 570 / 555 / 585 / 575 min | 95% | Plano compatível |
+| Semanas 5–8 | 600 min | 580 / 565 / 590 / 575 min | 50% | Prioridades pendentes |
 | Semanas 9–12 | 600 min | 660 / 240 / 600 / 300 min | 90% | Execução irregular |
-| Semanas 13–16 | 600 min | 420 min | 90% | Carga acima da execução recente |
+| Semanas 13–16 | 600 min | 420 / 405 / 435 / 410 min | 90% | Carga acima da execução recente |
 
-O realizado é obtido das sessões demonstrativas, não gravado diretamente no resultado analítico. Crédito permanece limitado por bloco; volume excedente não substitui prioridades. Os fechamentos agora são semanas de segunda a domingo e congelam sustentabilidade, contexto e política. Os últimos quatro permitem explorar a prévia de capacidade na Demo. Cenários personalizados sem sessões suficientes deixam lacunas explícitas.
+Dentro de cada grupo o realizado varia alguns minutos por semana (nenhuma semana é idêntica à vizinha), sem mudar a interpretação calculada. As sessões de questões também têm tamanhos variados (de 8 a mais de 30 questões), somando o total do blueprint, e as datas das conquistas de sequência, recomendação e estratégia vêm do histórico da demo. O realizado é obtido das sessões demonstrativas, não gravado diretamente no resultado analítico. Crédito permanece limitado por bloco; volume excedente não substitui prioridades. Os fechamentos agora são semanas de segunda a domingo e congelam sustentabilidade, contexto e política. Os últimos quatro permitem explorar a prévia de capacidade na Demo. Cenários personalizados sem sessões suficientes deixam lacunas explícitas.
 
 Os 200 registros de sessões, 1.750 questões, 17 disciplinas e 305 tópicos permanecem preservados. Esses dados são fictícios e isolados da base real; o builder nunca é chamado para migrar dados pessoais. Consulte [Sustentabilidade do planejamento](PLANNING-SUSTAINABILITY.md).
 

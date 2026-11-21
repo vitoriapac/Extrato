@@ -29,6 +29,22 @@ export function buildDemoRecommendations(
     .flatMap((subject: any) => subject.topics.map((topic: any) => ({ subject, topic })))
     .filter((item: any) => questions.some((row: any) => row.topicId === item.topic.id));
   const examples = scenario.recommendations.examples;
+  // Recomendação só para tópico abaixo da meta no primeiro registro; senão a demo recomendaria reforço de quem já acerta (T10/T22).
+  type QuestionRow = { topicId: string; date: string; correct: number; resolved: number };
+  const firstAccuracy = (topicId: string) => {
+    const first = (questions as QuestionRow[])
+      .filter(row => row.topicId === topicId)
+      .sort((x, y) => x.date.localeCompare(y.date))[0];
+    return first ? (first.correct / first.resolved) * 100 : null;
+  };
+  const pickBelowTarget = (index: number) => {
+    for (let step = 0; step < topics.length; step++) {
+      const candidate = topics[(index * 23 + 12 + step) % topics.length];
+      const accuracy = firstAccuracy(candidate.topic.id);
+      if (accuracy != null && accuracy < 75) return candidate;
+    }
+    return topics[(index * 23 + 12) % topics.length];
+  };
   const feedback = [],
     history = [];
   for (let index = 0; index < scenario.targets.recommendations; index++) {
@@ -38,7 +54,7 @@ export function buildDemoRecommendations(
             (row: any) =>
               row.topic.name.toLocaleLowerCase('pt-BR') === example.topic.toLocaleLowerCase('pt-BR')
           )
-        : topics[(index * 23 + 12) % topics.length];
+        : pickBelowTarget(index);
     if (!item) continue;
     const records = questions
       .filter((row: any) => row.topicId === item.topic.id)
