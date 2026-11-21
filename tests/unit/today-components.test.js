@@ -373,3 +373,21 @@ test('TodayExecutionSummary — o plano conta atividades; o tempo fica na meta d
   assert.match(html, /<strong>1 de 3 atividades<\/strong>/);
   assert.match(html, /33% do plano executado/);
 });
+
+test('TodayExecutionSummary — a barra de distribuição não repete os valores do extrato (T16)', () => {
+  const html = render(
+    h(TodayExecutionSummary, {
+      plannedMinutesFormatted: '1h 20m',
+      executedMinutesFormatted: '0m',
+      dateFormatted: 'hoje',
+      progressPercent: 0,
+      availableMinutes: 120,
+      plannedMinutes: 80,
+      executedMinutes: 0,
+    })
+  );
+  assert.match(html, /today-execution-budget-track/);
+  assert.doesNotMatch(html, /chart-stacked__legend/);
+  assert.match(html, /aria-label="Distribuição do tempo de hoje: A realizar/);
+  assert.equal((html.match(/0%/g) || []).length <= 2, true);
+});

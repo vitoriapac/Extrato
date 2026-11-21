@@ -145,7 +145,8 @@ export function TodayExecutionSummary({
 
       {hasStackedData && (
         <div class="today-execution-budget-track" aria-label="Distribuição do orçamento de tempo">
-          <StackedBar parts={stackedParts} label="Distribuição do tempo de hoje" unit="min" />
+          {/* Os valores já estão no extrato acima: a barra mostra só a proporção, sem repetir Planejado e Livre. */}
+          <StackedBar parts={stackedParts} label="Distribuição do tempo de hoje" unit="min" showLegend={false} />
         </div>
       )}
     </section>

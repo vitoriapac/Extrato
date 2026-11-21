@@ -139,7 +139,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T15: Sugestão Analytics com uma explicação (R2) — FEITA (21/11): explicação completa no bloco do Diagnóstico e no "Por quê" recolhido de Hoje; Hoje mostra 1 motivo e sem alerta repetido do mesmo tópico; Visão geral só nome e link
 **Aceite:** o "Por quê?" completo em um lugar; as demais telas mostram o nome e um link. **Dependências:** T12 · **Tamanho:** M
 
-### T16: Bloco de tempo do dia sem repetição (R4)
+### T16: Bloco de tempo do dia sem repetição (R4) — FEITA (21/11): barra sem legenda repetida, sem "Tempo flexível" e sem % no cabeçalho do plano; "0%" 2 vezes em Hoje
 **Aceite:** "Tempo flexível", "Livre" e "A realizar" não repetem o mesmo valor; "0%" aparece no máximo 2 vezes em Hoje. **Dependências:** T8 · **Tamanho:** S
 
 ### T17: Empty states com uma mensagem e um CTA (R5)

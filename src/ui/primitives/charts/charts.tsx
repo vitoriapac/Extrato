@@ -169,9 +169,11 @@ export interface StackedBarProps {
   /** Formata o valor de cada parte na legenda e na descrição (ex.: duração); sem ele, número + unidade. */
   formatValue?: (value: number) => string;
   className?: string;
+  /** Legenda com os valores; desligue quando outro bloco da tela já os mostra. */
+  showLegend?: boolean;
 }
 
-export function StackedBar({ parts, label, unit = '', formatValue, className = '' }: StackedBarProps) {
+export function StackedBar({ parts, label, unit = '', formatValue, className = '', showLegend = true }: StackedBarProps) {
   const segments = stackedSegments(parts);
   const suffix = unitSuffix(unit);
   const shownValue = (value: unknown) =>
@@ -189,7 +191,7 @@ export function StackedBar({ parts, label, unit = '', formatValue, className = '
           ) : null
         )}
       </svg>
-      {segments && (
+      {segments && showLegend && (
         <ul class="chart-stacked__legend" aria-hidden="true">
           {parts.map((part, i) => (
             <li>

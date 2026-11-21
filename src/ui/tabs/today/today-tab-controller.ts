@@ -668,11 +668,6 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       (sum: number, item: any) => sum + (Number(item.executedSeconds) || 0),
       0
     );
-    const executionPct =
-      plan.plannedMinutes > 0
-        ? Math.min(100, Math.round((executedSeconds / (plan.plannedMinutes * 60)) * 100))
-        : 0;
-
     const executionHint = `
       <div class="today-plan-hint text-xs text-content-secondary mb-3 p-3 rounded bg-surface-subtle border border-border-subtle flex items-center gap-2">
         <span class="text-brand dark:text-accent shrink-0 inline-flex">${renderIconSvg('bulb', { size: 15 })}</span>
@@ -685,10 +680,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       ${listaHtml}
       ${subjectsDistributionHtml}
       ${executionHint}
-      ${plan.flexMinutes! > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes!)} para pausas, correção ou continuidade</div></div>` : ''}
       <div class="plano-meta">
         <div class="plano-depois-label">Planejamento:</div>
-        <div class="plano-depois-item">${formatPlanMinutes(plan.plannedMinutes)} planejados · ${formatDuration(executedSeconds)} executado (${executionPct}%)</div>
+        <div class="plano-depois-item">${formatPlanMinutes(plan.plannedMinutes)} planejados · ${formatDuration(executedSeconds)} executado</div>
       </div>
     `;
   }
