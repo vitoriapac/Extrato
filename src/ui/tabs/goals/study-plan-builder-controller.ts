@@ -647,13 +647,17 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
         decorateReveals(rawContainer);
         return;
       }
-      // Perfil sem plano: o roteiro de 3 passos tem a única ação cheia e vem antes do Resumo vazio.
+      // Perfil sem plano: o roteiro de 4 passos tem a única ação cheia e vem antes do Resumo vazio.
       placePlanCard(true);
       container.innerHTML =
         render(
           h(PlanRoadmap, {
             hasExamDate: Boolean(deps.getState().examDate),
             hasHours: isCapacityInformed(deps.getState()),
+            hasContent: (deps.getState().subjects || []).some(
+              (subject: { archived?: boolean; topics?: unknown[] }) =>
+                !subject.archived && (subject.topics || []).length > 0
+            ),
             hasPlan: false,
           })
         ) + `<p class="study-plan-more">${whatIf}</p>`;

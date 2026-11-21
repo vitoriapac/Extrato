@@ -36,7 +36,7 @@ test('first-access-modal-controller — inicializa fechado e responde a open/clo
   assert.equal(controller.isOpen(), false);
 });
 
-test('first-access-modal-controller — checkAndTrigger abre automaticamente quando é primeiro acesso', () => {
+test('first-access-modal-controller — checkAndTrigger não abre o modal sozinho no primeiro acesso (o cartão da Visão geral é a entrada, D-J)', () => {
   const mockContainer = {
     _preactRoot: null,
   };
@@ -68,8 +68,8 @@ test('first-access-modal-controller — checkAndTrigger abre automaticamente qua
   });
 
   const didTrigger = controller.checkAndTrigger();
-  assert.equal(didTrigger, true);
-  assert.equal(controller.isOpen(), true);
+  assert.equal(didTrigger, false);
+  assert.equal(controller.isOpen(), false);
 });
 
 test('first-access-modal-controller — checkAndTrigger não abre quando já há matérias', () => {

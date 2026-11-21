@@ -380,7 +380,8 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
       forceFirstAccess,
       storage: context.storage,
     });
-    if (shouldOpen) {
+    // D-J: o cartão de boas-vindas da Visão geral é a entrada única; o modal só abre se pedido (?firstAccess=1).
+    if (shouldOpen && forceFirstAccess) {
       open();
       return true;
     }

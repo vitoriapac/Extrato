@@ -2990,6 +2990,8 @@ body:not(.timer-focus-active) .study-timer-card.is-idle .timer-display{display:n
 .agenda-summary-grid{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin-bottom:var(--space-4)}
 @media(min-width:768px){.agenda-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 /* Agenda vazia: as três listas dizem a mesma coisa, então viram uma mensagem só (T17). */
+/* Primeira visita: o cartão da Visão geral já oferece a demonstração; o rodapé não repete o botão ali (T21). */
+body:has(#panel-dashboard.active #enterDemoHeroBtn) .app-footer__item--stacked{display:none!important}
 .agenda-summary-empty{display:none;grid-column:1/-1;margin:0;color:var(--text-secondary,inherit)}
 .agenda-summary-grid:not(:has(.upcoming-list>li:not(.upcoming-empty))) .agenda-summary-empty{display:block}
 .agenda-summary-grid:not(:has(.upcoming-list>li:not(.upcoming-empty))) .chart-card{display:none}

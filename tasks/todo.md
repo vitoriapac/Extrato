@@ -162,7 +162,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T20: Revisão × Tarefa de estudo; nomes de aba — FEITA (21/11): "Tarefa de estudo" e "Revisão espaçada" nos rótulos da Agenda e de Hoje; "vencida" virou "atrasada"; "Questões & Simulados" igual no desktop e no menu Mais; teste de vocabulário. Ficaram: "Visão" (curto) × "Visão geral" na barra do celular e "pendente" como status de item
 **Aceite:** "Tarefa de estudo" para tarefas e "Revisão espaçada" para 24h/7d/30d (D-I) em Hoje, Agenda e filtros; "Planejamento" e "Questões & Simulados" iguais no desktop e na barra inferior; "pendência/atrasada/vencida/pendente" reduzidos a "atrasada". **Dependências:** D-I · **Tamanho:** M
 
-### T21: Onboarding com entrada única (R6, V1–V4)
+### T21: Onboarding com entrada única (R6, V1–V4) — FEITA (21/11): sem modal automático (só com ?firstAccess=1), sem faixa de demo, um só "Explorar demonstração" por tela, roteiro de 4 passos igual ao assistente. Ficou: Instruções repete o fluxo em "Como funciona" e "Primeiros passos"; cabeçalho "Prontidão —" sem concurso (V3)
 **Aceite:** modal ou cartão conforme D-J, nunca ambos; um só botão "Explorar demonstração" na primeira visita; contagem de passos igual (4) em modal, cartão e Planejamento; rodapé reduzido no vazio. **Dependências:** D-J · **Tamanho:** M
 
 ---

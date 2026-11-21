@@ -78,8 +78,8 @@ export function FirstAccessModal({
                   </Badge>
                 </div>
                 <p className="text-xs text-content-secondary m-0 leading-relaxed">
-                  Assistente rápido em 4 passos: prazo da prova, horas semanais e pacote
-                  de matérias pronto para começar hoje.
+                  Assistente rápido em 4 passos: prazo da prova, horas semanais, edital ou
+                  matérias e a prévia do plano para começar hoje.
                 </p>
               </div>
             </div>

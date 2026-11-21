@@ -1,11 +1,12 @@
 export interface PlanRoadmapProps {
   hasExamDate: boolean;
   hasHours: boolean;
+  hasContent?: boolean;
   hasPlan: boolean;
 }
 
-/** Roteiro do perfil vazio: data da prova, horas por dia e plano da semana. Só o passo atual tem ação. */
-export function PlanRoadmap({ hasExamDate, hasHours, hasPlan }: PlanRoadmapProps) {
+/** Roteiro do perfil vazio: os mesmos 4 passos do assistente de primeiro acesso. Só o passo atual tem ação. */
+export function PlanRoadmap({ hasExamDate, hasHours, hasContent = false, hasPlan }: PlanRoadmapProps) {
   const steps = [
     {
       done: hasExamDate,
@@ -32,6 +33,15 @@ export function PlanRoadmap({ hasExamDate, hasHours, hasPlan }: PlanRoadmapProps
       ),
     },
     {
+      done: hasContent,
+      label: 'Edital ou matérias',
+      action: (
+        <button class="btn" type="button" data-delegated-click="openOnboardingContent()">
+          Montar edital ou matérias
+        </button>
+      ),
+    },
+    {
       done: hasPlan,
       label: 'Plano da semana',
       action: (
@@ -46,7 +56,7 @@ export function PlanRoadmap({ hasExamDate, hasHours, hasPlan }: PlanRoadmapProps
   return (
     <section class="plan-roadmap" aria-labelledby="planRoadmapTitle">
       <h4 class="plan-roadmap__title" id="planRoadmapTitle">
-        Monte seu plano em 3 passos
+        Monte seu plano em 4 passos
       </h4>
       <ol class="plan-roadmap__steps">
         {steps.map((step, index) => (

@@ -128,6 +128,21 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await context.close();
 });
 
+test('primeira visita real: sem modal e com um só botão Explorar demonstração por tela (D-J)', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('/');
+  await waitForAppReady(page);
+  await expect(page.locator('.first-access-welcome-modal')).toHaveCount(0);
+  await expect(page.locator('#demoEmptyCta')).toHaveCount(0);
+  const demoButtons = page.getByRole('button', { name: /Explorar demonstração/ });
+  await expect(demoButtons).toHaveCount(1);
+  await expect(demoButtons.first()).toBeVisible();
+  await page.getByRole('tab', { name: 'Agenda' }).click();
+  await expect(page.locator('button:visible', { hasText: 'Explorar demonstração' })).toHaveCount(1);
+  await context.close();
+});
+
 test('modal de boas-vindas do primeiro acesso abre com firstAccess=1 e bifurca para opções', async ({
   browser,
 }) => {

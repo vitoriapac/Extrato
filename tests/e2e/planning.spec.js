@@ -257,7 +257,7 @@ test('a nota do bloco de disciplinas usa o formato único de duração e o vocab
   );
 });
 
-test('perfil vazio abre a Semana com o roteiro de 3 passos e uma única ação cheia', async ({
+test('perfil vazio abre a Semana com o roteiro de 4 passos e uma única ação cheia', async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -267,7 +267,7 @@ test('perfil vazio abre a Semana com o roteiro de 3 passos e uma única ação c
   await openPlanningSubtab(page, 'semana');
   const roadmap = page.locator('#metasSub-semana .plan-roadmap');
   await expect(roadmap).toBeVisible();
-  await expect(roadmap.locator('li')).toHaveCount(3);
+  await expect(roadmap.locator('li')).toHaveCount(4);
   await expect(roadmap.locator('[aria-current="step"]')).toContainText('Data da prova');
   // O roteiro vem antes do Resumo vazio e tem a única ação cheia da primeira tela.
   const firstId = await page.locator('#metasSub-semana > section').first().getAttribute('id');
@@ -316,7 +316,7 @@ test('perfil vazio mostra a disponibilidade fora da dobra e não inventa capacid
   await expect(summary).toContainText('Não informada');
   await expect(page.locator('#metasSub-semana')).not.toContainText('17 h 30 min');
   // O passo "Horas por dia" do roteiro não aparece como feito com o padrão do app.
-  await expect(page.locator('.plan-roadmap__step.is-done')).toHaveCount(0);
+  await expect(page.locator('.plan-roadmap__step.is-done', { hasText: 'Horas por dia' })).toHaveCount(0);
 });
 
 test('metas: o modo Essencial mostra 3 e o modo completo mostra todas', async ({ page }) => {
@@ -349,6 +349,7 @@ test('Jordan: data da prova, horas por dia e plano seguindo só a ação princip
   await page.getByRole('button', { name: 'Informar horas por dia' }).click();
   await page.locator('#metasCapacity input[type="number"]').first().fill('2');
   await page.keyboard.press('Tab');
+  // O perfil de teste já traz matérias: o passo do edital está feito e o atual é o plano da semana.
   await expect(current).toContainText('Plano da semana');
   // O blur do campo de horas acontece no mousedown do botão: o clique não pode se perder.
   await page.getByRole('button', { name: 'Calcular proposta semanal' }).click();

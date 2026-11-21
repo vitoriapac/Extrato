@@ -239,19 +239,26 @@ test('o roteiro avança: com prova e horas o passo atual é calcular a proposta;
   const controller = createStudyPlanBuilderController(deps);
   controller.renderStudyPlanBuilder();
   const before = elements['examStudyPlan'].innerHTML;
-  assert.match(before, /Calcular proposta semanal/);
+  // Sem edital ou matérias, o passo atual é montá-lo (os mesmos 4 passos do assistente).
+  assert.match(before, /Montar edital ou matérias/);
   assert.equal((before.match(/is-done/g) || []).length, 2);
+  const subjects = deps.getState().subjects;
+  deps.getState().subjects = [{ id: 'sx', name: 'X', topics: [{ id: 'tx', name: 'T' }] }];
+  controller.renderStudyPlanBuilder();
+  assert.match(elements['examStudyPlan'].innerHTML, /Calcular proposta semanal/);
+  assert.equal((elements['examStudyPlan'].innerHTML.match(/is-done/g) || []).length, 3);
+  deps.getState().subjects = subjects;
   controller.calculateStudyPlanPreview();
   controller.confirmStudyPlan();
   assert.doesNotMatch(elements['examStudyPlan'].innerHTML, /plan-roadmap/);
 });
 
-test('perfil sem plano mostra o roteiro de 3 passos; o passo 1 é o campo de data da prova', () => {
+test('perfil sem plano mostra o roteiro de 4 passos; o passo 1 é o campo de data da prova', () => {
   const { deps, elements } = createMockDeps();
   deps.getState().examDate = '';
   createStudyPlanBuilderController(deps).renderStudyPlanBuilder();
   const html = elements['examStudyPlan'].innerHTML;
-  assert.match(html, /Monte seu plano em 3 passos/);
+  assert.match(html, /Monte seu plano em 4 passos/);
   assert.match(html, /aria-current="step"/);
   // O campo do cabeçalho fica oculto fora da Visão geral: a data se define dentro do roteiro.
   assert.match(html, /<input type="date"[^>]*data-delegated-change="setRoadmapExamDate\(this\.value\)"/);
