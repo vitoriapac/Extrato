@@ -123,7 +123,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Dependências:** T11 · **Tamanho:** M
 
 ### Checkpoint 2: prioridade
-- [ ] Mesma pergunta, mesma resposta nas 5 telas (verificado na demo)
+- [x] Mesma pergunta, mesma resposta nas telas (20/11, demo): Visão geral, Hoje (lista e cartão), Desempenho, Diagnóstico e copiloto citam a mesma sugestão; Fechamento tem lista própria por desenho. E2E completo: 374 de 406 passam; as 32 falhas são as mesmas da base anterior à sessão (visuais e de layout), exceto 3 regressões que corrigi
 - [ ] Revisão humana
 
 ---
