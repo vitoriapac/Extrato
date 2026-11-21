@@ -176,21 +176,21 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Aceite (não será feito):** a "Próxima ação" visível sem rolagem em 375×812; botões Dados/Preferências/Tema recolhidos; sem rolagem horizontal; alvos ≥ 44 px. **Verificação:** captura 375×812 e E2E mobile. **Dependências:** D-K · **Tamanho:** M
 
 ### T24: Falhas E2E que já existiam antes desta sessão (29 testes)
-**Origem:** suíte E2E completa de 20/11 (374 de 406 passam); as 29 falhas abaixo também falham em  (commit anterior à sessão), então não vêm das tarefas T1–T12. Dois testes a mais falharam por causa de mudanças minhas e já foram corrigidos (, ).
-**Descrição:** para cada falha, classificar como snapshot desatualizado, defeito de layout ou teste frágil, e corrigir. Antes de regenerar qualquer snapshot, abrir a imagem esperada e a obtida (política em ).
+**Origem:** suíte E2E completa de 20/11 (374 de 406 passam); as 29 falhas abaixo também falham em `a6d54ef` (commit anterior à sessão), então não vêm das tarefas T1–T12. Dois testes a mais falharam por causa de mudanças minhas e já foram corrigidos (`legacy-backup`, `pt-br-format`).
+**Descrição:** para cada falha, classificar como snapshot desatualizado, defeito de layout ou teste frágil, e corrigir. Antes de regenerar qualquer snapshot, abrir a imagem esperada e a obtida (política em `docs/VISUAL-TEST-POLICY.md`).
 **Falhas por arquivo:**
--  (6): cabeçalho completo × barra compacta ( oculto); FAQ da ajuda com 7 itens (teste espera 6); snapshot do glossário (altura 897 → 1031); prontidão no topo (timeout no clique); Próxima ação sem rolar no celular (837 px, limite 755); alvos de toque móveis (timeout).
--  (5): Demo densa em desktop/mobile, claro/escuro; Desempenho sem dados.
--  (5): trajetória em Desempenho nos 4 tamanhos; migração do backup anterior.
--  (4): hero e leitura do fechamento em 1366/1440/1920/375 px.
--  (3): prévia e cancelamento do Recovery em 320/375/430 px.
--  (2): calendário móvel (rolagem); hierarquia da Prontidão.
--  (2): Edital Verticalizado; funcionalidades distribuídas.
--  (1) e  (1).
+- `visual-consolidation.spec.js` (6): cabeçalho completo × barra compacta (`.balance-label` oculto); FAQ da ajuda com 7 itens (teste espera 6); snapshot do glossário (altura 897 → 1031); prontidão no topo (timeout no clique); Próxima ação sem rolar no celular (837 px, limite 755); alvos de toque móveis (timeout).
+- `refinement-visual.spec.js` (5): Demo densa em desktop/mobile, claro/escuro; Desempenho sem dados.
+- `achievement-projection.spec.js` (5): trajetória em Desempenho nos 4 tamanhos; migração do backup anterior.
+- `visual-regression.spec.js` (4): hero e leitura do fechamento em 1366/1440/1920/375 px.
+- `recovery-preview-ux.spec.js` (3): prévia e cancelamento do Recovery em 320/375/430 px.
+- `product-consolidation.spec.js` (2): calendário móvel (rolagem); hierarquia da Prontidão.
+- `verticalized-syllabus-and-cycle.spec.js` (2): Edital Verticalizado; funcionalidades distribuídas.
+- `subject-compare-modes.spec.js` (1) e `essential-mode.spec.js` (1).
 **Aceite:**
 - [ ] Cada falha classificada em uma tabela (arquivo, causa, ação)
 - [ ] Snapshots só regenerados depois de comparar as imagens; defeitos de layout corrigidos no código
-- [ ]  completo sem falhas, ou falha restante documentada com motivo
+- [ ] `npx playwright test` completo sem falhas, ou falha restante documentada com motivo
 **Dependências:** nenhuma · **Tamanho:** L → dividir por arquivo
 
 ---
