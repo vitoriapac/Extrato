@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { CURRENT_SCHEMA_VERSION } from '../../src/state/schema.js';
 import {
   activateTab,
   expectNoPageOverflow,
@@ -46,7 +47,10 @@ for (const { width, theme } of [
       await page.evaluate(() =>
         document
           .querySelectorAll('.skip-link,.sticky-shell,#demoBanner,#backToTopBtn')
-          .forEach(element => element.remove())
+          .forEach(element => {
+            element.dataset.t24Display = element.style.display;
+            element.style.display = 'none';
+          })
       );
       const surface = page.locator('.achievement-projection');
       await withPixelAlignedCapture(surface, () =>
@@ -56,6 +60,13 @@ for (const { width, theme } of [
         )
       );
     }
+    // A captura escondeu a barra fixa (as abas ficam dentro dela): volta a mostrar antes de navegar.
+    await page.evaluate(() =>
+      document.querySelectorAll('[data-t24-display]').forEach(element => {
+        element.style.display = element.dataset.t24Display;
+        delete element.dataset.t24Display;
+      })
+    );
     await activateTab(page, 'metas');
     await openPlanningSubtab(page, 'historico');
     await page.locator('#weeklyCloseFullAnalysis .weekly-close-analysis > summary').click();
@@ -91,7 +102,7 @@ test('novo snapshot passa na validação e migração do backup anterior preserv
     algorithmVersion: 2,
     projection: { examDayScore: null, approvalProbability: null },
   });
-  expect(result.migrated.schemaVersion).toBe(31);
+  expect(result.migrated.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
   expect(result.migrated.projectionSnapshots).toContainEqual(result.snapshot);
 });
 

@@ -43,7 +43,8 @@ for (const viewport of viewports) {
     const acts = await close.evaluate(element =>
       [...element.children].map(child => child.querySelector('h4')?.textContent)
     );
-    expect(acts).toEqual(['A semana', 'O retrato', 'A decisão']);
+    // O ritual de fechamento inteligente vem depois dos três atos como bloco à parte.
+    expect(acts.slice(0, 3)).toEqual(['A semana', 'O retrato', 'A decisão']);
     // A semana mostra os três números e uma única dobra, com a tendência de 4 semanas e os sinais.
     const week = await close.evaluate(element =>
       [...element.children[0].children].map(child => child.className)

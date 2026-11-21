@@ -14,15 +14,13 @@ test('quem começa sem dados entra no modo Essencial: análises a um clique e di
   await openPerformanceSection(page, 'diagnosis');
   await expect(page.locator('[data-beginner-state="diagnosis"]')).toBeVisible();
   await activateTab(page, 'dashboard');
-  const hint = page.getByRole('button', { name: 'O que é Índice de prontidão?' });
-  await hint.click();
-  await expect(hint).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('.balance-label + .term-hint-text')).toContainText('Não é chance de aprovação');
+  // Primeiro acesso: o cabeçalho completo (e a dica do Índice de prontidão) só aparece depois que há dado a mostrar.
+  await expect(page.locator('.statement')).toHaveAttribute('data-first-run', '');
+  await expect(page.locator('.statement-body')).toBeHidden();
 
   await page.locator('#preferencesMenuBtn').click();
   await page.locator('#essentialToggleBtn').click();
   await expect(page.locator('html')).not.toHaveAttribute('data-essential', 'on');
-  await expect(hint).toBeHidden();
   await page.reload();
   await expect(page.locator('html')).not.toHaveAttribute('data-essential', 'on');
 });

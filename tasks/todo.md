@@ -175,7 +175,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T23: Cabeçalho mobile compacto — CANCELADA (D-K, 20/11: manter o cabeçalho)
 **Aceite (não será feito):** a "Próxima ação" visível sem rolagem em 375×812; botões Dados/Preferências/Tema recolhidos; sem rolagem horizontal; alvos ≥ 44 px. **Verificação:** captura 375×812 e E2E mobile. **Dependências:** D-K · **Tamanho:** M
 
-### T24: Falhas E2E que já existiam antes desta sessão (30 testes)
+### T24: Falhas E2E que já existiam antes desta sessão (30 testes) — FEITA (21/11): 82 de 83 passam nos 10 arquivos; resta `pwa.spec.js:108`, intermitente também na base. Causas: 9 testes desatualizados (texto, contagem, seletor), 14 snapshots regenerados depois de ver as imagens, 3 defeitos de produto corrigidos
 **Origem:** suíte E2E completa de 20/11 (374 de 406 passam); as 29 falhas abaixo também falham em `a6d54ef` (commit anterior à sessão), então não vêm das tarefas T1–T12. Dois testes a mais falharam por causa de mudanças minhas e já foram corrigidos (`legacy-backup`, `pt-br-format`).
 **Descrição:** para cada falha, classificar como snapshot desatualizado, defeito de layout ou teste frágil, e corrigir. Antes de regenerar qualquer snapshot, abrir a imagem esperada e a obtida (política em `docs/VISUAL-TEST-POLICY.md`).
 **Falhas por arquivo:**
@@ -189,9 +189,9 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - `subject-compare-modes.spec.js` (1) e `essential-mode.spec.js` (1).
 - `pwa.spec.js:108` (1): intermitente — com `--repeat-each=6` falha em parte das repetições tanto no código atual quanto no commit anterior à sessão (corrida entre a leitura de `before` e a primeira gravação do estado vazio); passa quando roda sozinho ou no arquivo inteiro com servidor limpo.
 **Aceite:**
-- [ ] Cada falha classificada em uma tabela (arquivo, causa, ação)
-- [ ] Snapshots só regenerados depois de comparar as imagens; defeitos de layout corrigidos no código
-- [ ] `npx playwright test` completo sem falhas, ou falha restante documentada com motivo
+- [x] Cada falha classificada (resumo no relatório da tarefa)
+- [x] Snapshots só regenerados depois de comparar as imagens; defeitos de layout corrigidos no código
+- [x] Falha restante documentada com motivo (pwa:108, intermitente); suíte E2E completa não rodada de novo depois do T22–T24
 **Dependências:** nenhuma · **Tamanho:** L → dividir por arquivo
 
 ---

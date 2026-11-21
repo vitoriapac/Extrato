@@ -46,9 +46,10 @@ test('Edital Verticalizado alterna visão, exibe etapas e permite marcar checkli
 
   // Encontra o primeiro checkbox de etapa e clica
   const firstCheckbox = mount.locator('input[type="checkbox"]').first();
-  await expect(firstCheckbox).toBeVisible();
+  await expect(firstCheckbox).toBeAttached();
   const wasChecked = await firstCheckbox.isChecked();
-  await firstCheckbox.click();
+  // A caixa é visualmente oculta (o rótulo desenha o controle): o clique vai por ela mesma.
+  await firstCheckbox.evaluate(node => node.click());
   await expect(firstCheckbox).toBeChecked({ checked: !wasChecked });
 });
 
@@ -245,10 +246,11 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
   const copilotCard = page.locator('#overviewCopilotMount [data-overview-copilot="true"]');
   await expect(copilotCard).toBeVisible();
   await expect(copilotCard).toContainText('Leitura do Extrato');
-  await copilotCard.getByRole('button', { name: 'Estudo rápido de 30 minutos' }).click();
+  // O atalho de 30 min saiu da Visão geral (T15): o Estudo rápido abre pela barra de Hoje.
 
-  // 2. Hoje: redirecionamento abre Estudo Rápido em 30 min e chip de 15 min dentro do painel alterna em 1 clique
-  await expect(page.locator('#panel-hoje')).toBeVisible();
+  // 2. Hoje: Estudo Rápido abre em 30 min e chip de 15 min dentro do painel alterna em 1 clique
+  await activateTab(page, 'hoje');
+  await page.getByRole('button', { name: /Tenho X minutos/ }).first().click();
   const quickPanel = page.locator('#todayQuickStudyPanel');
   await expect(quickPanel).toBeVisible();
   await expect(quickPanel).toContainText('Proposta (30 min)');

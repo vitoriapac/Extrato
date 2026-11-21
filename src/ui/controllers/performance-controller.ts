@@ -55,6 +55,24 @@ export function createPerformanceController({
         telemetry.track('tab_open', `desempenho:${jump.dataset.performanceJump}`);
         activateTab('desempenho');
       });
+      // Escape na confirmação equivale a Cancelar: volta à prévia (o evento close não borbulha, por isso captura).
+      let recoveryApplying = false;
+      document.addEventListener(
+        'close',
+        (event: any) => {
+          if (event.target?.id !== 'recoveryConfirmDialog') return;
+          if (recoveryApplying) {
+            recoveryApplying = false;
+            return;
+          }
+          const preview = document.getElementById('recoveryPreviewDialog') as HTMLDialogElement | null;
+          if (preview && !preview.open) {
+            preview.showModal();
+            preview.querySelector<HTMLElement>('[data-recovery-confirm-open]')?.focus();
+          }
+        },
+        true
+      );
       document.getElementById('performancePage')?.addEventListener('click', (event: any) => {
         if (event.target.closest('[data-projection-scenario-open]')) {
           telemetry.track('detail_access', currentFeature());
@@ -78,6 +96,7 @@ export function createPerformanceController({
         }
         const recoveryApply = event.target.closest('[data-recovery-apply]');
         if (recoveryApply) {
+          recoveryApplying = true;
           document.getElementById('recoveryConfirmDialog')?.close();
           document.getElementById('recoveryPreviewDialog')?.close();
           applyRecovery((recoveryApply as any).dataset.recoverySignature);

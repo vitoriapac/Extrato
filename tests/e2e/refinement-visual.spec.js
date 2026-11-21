@@ -162,7 +162,7 @@ test('Desempenho mantém orientação dentro dos cards quando não há dados', a
     await page.locator(`[data-performance-section="${section}"]`).evaluate(element => element.click());
     const state = page.locator('#performanceSectionContent [data-beginner-state]');
     await expect(state).toBeVisible();
-    await expect(state).toContainText('30 questões respondidas ou 2 semanas de registro');
+    await expect(state).toContainText('30 questões respondidas ou 2 semanas de estudo');
     await expect(state).not.toHaveText('Sem dados.');
   }
   // Visão geral e Ritmo seguem completas.

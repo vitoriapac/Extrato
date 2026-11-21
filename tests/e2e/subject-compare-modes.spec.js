@@ -8,9 +8,9 @@ test('Disciplinas: a comparação tem quatro modos, um por vez, com a precisão 
   await openDemo(page);
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'subjects');
-  const modes = page.locator('.performance-modes button');
+  const modes = page.locator('.performance-modes:not(.performance-view-toggle) button');
   await expect(modes).toHaveText(['Precisão', 'Tendência', 'Progresso', 'Radar']);
-  await expect(page.locator('.performance-modes [aria-pressed="true"]')).toHaveText('Precisão');
+  await expect(page.locator('.performance-modes:not(.performance-view-toggle) [aria-pressed="true"]')).toHaveText('Precisão');
   await expect(page.locator('#bloco-comparacao')).toBeVisible();
   await expect(page.locator('#bloco-estabilidade')).toBeHidden();
 
@@ -30,5 +30,5 @@ test('Disciplinas: a comparação tem quatro modos, um por vez, com a precisão 
   // O modo escolhido acompanha a pessoa ao trocar de subaba e voltar.
   await openPerformanceSection(page, 'consistency');
   await openPerformanceSection(page, 'subjects');
-  await expect(page.locator('.performance-modes [aria-pressed="true"]')).toHaveText('Radar');
+  await expect(page.locator('.performance-modes:not(.performance-view-toggle) [aria-pressed="true"]')).toHaveText('Radar');
 });

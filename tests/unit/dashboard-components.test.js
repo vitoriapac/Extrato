@@ -183,8 +183,7 @@ test('createDashboardTabController — renderExamCountdown e renderExamProgress'
 
   controller.renderExamCountdown();
   assert.match(elements['examCountdownFigure'].textContent, /faltam 64 dias para a prova/);
-  assert.match(elements['examProgress'].innerHTML, /dias totais/);
-  assert.match(elements['examProgress'].innerHTML, /64 faltam/);
+  assert.match(elements['examProgress'].innerHTML, /de \d+ dias do plano/);
 });
 
 test('createDashboardTabController — renderHeatmap e filtros', () => {

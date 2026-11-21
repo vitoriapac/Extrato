@@ -23,7 +23,7 @@ const sum = (rows: any[], key: string) =>
 
 export function buildDemoRecommendations(
   scenario: Record<string, any>,
-  { subjects, sessions, questions }: any
+  { subjects, sessions, questions, today }: any
 ) {
   const topics = subjects
     .flatMap((subject: any) => subject.topics.map((topic: any) => ({ subject, topic })))
@@ -37,11 +37,15 @@ export function buildDemoRecommendations(
       .sort((x, y) => x.date.localeCompare(y.date))[0];
     return first ? (first.correct / first.resolved) * 100 : null;
   };
+  const usedTopics = new Set<string>();
   const pickBelowTarget = (index: number) => {
     for (let step = 0; step < topics.length; step++) {
       const candidate = topics[(index * 23 + 12 + step) % topics.length];
       const accuracy = firstAccuracy(candidate.topic.id);
-      if (accuracy != null && accuracy < 75) return candidate;
+      if (accuracy != null && accuracy < 75 && !usedTopics.has(candidate.topic.id)) {
+        usedTopics.add(candidate.topic.id);
+        return candidate;
+      }
     }
     return topics[(index * 23 + 12) % topics.length];
   };
@@ -61,7 +65,11 @@ export function buildDemoRecommendations(
       .sort((a: any, b: any) => a.date.localeCompare(b.date));
     const before = records[0],
       after = records.length > 1 ? records.at(-1) : null;
-    const date = addLocalDays(before.date, 1),
+    // As duas últimas recomendações são recentes: o fechamento da semana atual sempre tem um foco a mostrar.
+    const recentFrom = scenario.targets.recommendations - 2;
+    const recent = today && index >= recentFrom ? addLocalDays(today, -2 - 2 * (index - recentFrom)) : null;
+    const baseDate = addLocalDays(before.date, 1);
+    const date = recent && recent > baseDate! ? recent : baseDate,
       createdAt = stamp(date!),
       id = `demo-recommendation-${index + 1}`;
     const accepted = index % 7 !== 6,

@@ -21,7 +21,7 @@ test('calendário móvel explica a rolagem e mantém lista e teclado acessíveis
   await openDemo(page);
   await activateTab(page, 'agenda');
   const grid = page.locator('#monthCalendar .month-grid-wrap');
-  await expect(page.locator('#calendarScrollHelp')).toContainText('visualização Lista');
+  await expect(page.locator('#calendarScrollHelp')).toContainText('deslize a grade');
   await expect(grid).toHaveAttribute('aria-describedby', 'calendarScrollHelp');
   await page.locator('.calendar-view-btn[data-calendar-view="month"]').click();
   await grid.focus();
@@ -269,6 +269,9 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
         root.getByRole('button', { name: 'Entenda o Índice de Prontidão' })
       ).toBeVisible();
       await detail.locator('summary').click();
+      // O fechamento é registrado no evento toggle (assíncrono); sem esperar, a próxima volta redesenha com o estado antigo.
+      await expect(detail).not.toHaveAttribute('open', '');
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 50)));
     }
   };
   await inspect('insufficient');
