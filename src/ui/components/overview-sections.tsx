@@ -89,7 +89,7 @@ export function WeeklyCloseView({
     <>
       <div class="metas-close-metrics">
         <div>
-          <span>Aderência ao plano</span>
+          <span>Aderência ao plano · tempo</span>
           <strong>{adherence == null ? '—' : `${Math.round(adherence)}%`}</strong>
         </div>
         <div>

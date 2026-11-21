@@ -38,12 +38,12 @@ export function renderConsistencyStrip(
   { formatDate = (iso: string) => iso }: { formatDate?: (iso: string) => string } = {}
 ) {
   const total = strip.cells.length;
-  const label = `Constância: ${strip.activeDays} de ${total} dias com estudo`;
+  const label = `Consistência: ${strip.activeDays} de ${total} dias com estudo`;
   const cells = strip.cells
     .map(
       cell =>
         `<span class="consistency-strip__day level-${cell.level}" title="${formatDate(cell.date)}: ${cell.minutes ? `${cell.minutes} min` : cell.level ? 'questões registradas' : 'sem estudo'}"></span>`
     )
     .join('');
-  return `<section class="consistency-strip" aria-label="Constância nas últimas 4 semanas"><p><strong>${strip.activeDays} de ${total} dias</strong> com estudo nas últimas 4 semanas</p><div class="consistency-strip__grid" role="img" aria-label="${label}">${cells}</div></section>`;
+  return `<section class="consistency-strip" aria-label="Consistência nas últimas 4 semanas"><p><strong>${strip.activeDays} de ${total} dias</strong> com estudo nas últimas 4 semanas</p><div class="consistency-strip__grid" role="img" aria-label="${label}">${cells}</div></section>`;
 }

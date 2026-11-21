@@ -59,8 +59,8 @@ export function createPerformanceController({
       let recoveryApplying = false;
       document.addEventListener(
         'close',
-        (event: any) => {
-          if (event.target?.id !== 'recoveryConfirmDialog') return;
+        (event: Event) => {
+          if ((event.target as HTMLElement | null)?.id !== 'recoveryConfirmDialog') return;
           if (recoveryApplying) {
             recoveryApplying = false;
             return;

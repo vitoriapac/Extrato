@@ -31,7 +31,7 @@ export function PreparationReadingView({ reading }: { reading: PreparationReadin
   return <section class="performance-reading chart-card mb-4" id="bloco-leitura" aria-labelledby="performanceReadingTitle">
     <header class="module-heading module-heading--compact mb-3"><div class="flex flex-wrap items-center justify-between gap-2"><h3 class="module-heading__title" id="performanceReadingTitle">Leitura da preparação</h3></div></header>
     <div class="performance-reading__grid">
-      <section class="performance-reading__todo" aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">O que fazer</h4>
+      <section class="performance-reading__todo" aria-labelledby="performanceReadingTodo"><h4 id="performanceReadingTodo">Sugestão do diagnóstico</h4>
         {action ? <><p class="m-0" data-recommendation-id={action.recommendationId ?? ''}><strong>{action.label}:</strong> {action.text}</p>
           {action.reason && <p class="m-0 performance-reading__support">{action.reason}</p>}
           <p class="performance-reading__facts"><span>No plano: <b>{action.facts.inPlan}</b></span><span>Evidência: <b>{action.facts.evidence}</b></span></p>

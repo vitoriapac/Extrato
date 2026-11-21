@@ -612,7 +612,7 @@ test('UI: renderSessionResult oferece prompt opcional só com sessionId e TodayS
     })
   );
 
-  assert.match(html, /Tenho X minutos/);
+  assert.match(html, /Estudo rápido/);
   assert.match(html, /Leitura do Extrato/);
   assert.doesNotMatch(html, /todayJournalPanel/);
   assert.doesNotMatch(html, /\p{Extended_Pictographic}/u);

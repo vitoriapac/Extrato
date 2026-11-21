@@ -368,8 +368,8 @@ export function NextActionCard({
         {/* Sugestão contextual (fora do plano ou alternativa) */}
         {suggestionNotice ?? (suggestionNoticeHtml ? <div dangerouslySetInnerHTML={{ __html: suggestionNoticeHtml }} /> : null)}
 
-        {/* 2. Por que devo estudar isso? (Racional estruturado) */}
-        {Boolean(why.additionalReasons?.length) && (
+        {/* 2. Motivos adicionais: só quando não há a explicação detalhada, que já os traz (um disclose por decisão). */}
+        {Boolean(why.additionalReasons?.length) && !explanationNode && !explanationHtml && (
           <details className="daily-execution-reasons mt-2">
             <summary>Por que estudar isso agora?</summary>
             <ul>

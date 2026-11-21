@@ -17,7 +17,7 @@ test('Leitura da preparação usa a mesma recomendação de Hoje e leva ao dono'
   await expect(reading).toBeVisible();
   await expect(reading.getByRole('heading', { name: 'Como estou' })).toBeVisible();
   await expect(reading.getByRole('heading', { name: 'O que mais pesa' })).toBeVisible();
-  await expect(reading.getByRole('heading', { name: 'O que fazer' })).toBeVisible();
+  await expect(reading.getByRole('heading', { name: 'Sugestão do diagnóstico' })).toBeVisible();
   // Um único botão sólido na faixa: abrir no dono da recomendação.
   await expect(reading.locator('.btn:not(.ghost):not(.tertiary)')).toHaveCount(1);
   if (todayId)

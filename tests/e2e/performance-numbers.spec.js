@@ -36,7 +36,7 @@ test('T58 e T59: cada contagem diz o critério e cada bloco diz como ordena', as
   await activateTab(page, 'desempenho');
   await openPerformanceSection(page, 'diagnosis');
   await expect(page.locator('.diagnosis-unseen-note')).toContainText('sem nenhum registro');
-  await expect(page.locator('.diagnosis-consolidated > .analytics-note').first()).toContainText(/gravidade e impacto na prova/);
+  await expect(page.locator('.diagnosis-consolidated > .analytics-note').first()).not.toContainText('é o primeiro item da fila');
   await openPerformanceSection(page, 'exam');
   await expect(page.locator('.incidence-quadrant', { hasText: 'Sem evidência suficiente para posicionar' })).toContainText('domínio medido');
   await expect(page.locator('.exam-opportunity')).toHaveCount(0);
@@ -52,9 +52,9 @@ test('T62 a T64: uma prioridade só, com uma linha que explica a Próxima ação
   const pull = page.locator('.performance-reading__pull');
   await expect(pull).toContainText(/tópicos? fracos? de alto impacto na prova/);
   await expect(pull.getByRole('button', { name: 'Ver no Diagnóstico' }).first()).toBeVisible();
-  // Diagnóstico: uma linha com a Próxima ação e o primeiro da fila lado a lado.
+  // Diagnóstico: sem texto extra explicando a diferença entre sugestão e fila.
   await openPerformanceSection(page, 'diagnosis');
-  await expect(page.locator('.diagnosis-consolidated > .analytics-note').first()).toContainText(/A sugestão acima \(.+\) é o primeiro item da fila e não se repete na lista; a lista abaixo segue com/);
+  await expect(page.locator('.diagnosis-consolidated > .analytics-note').first()).not.toContainText('é o primeiro item da fila');
   // Simulados: o passo da projeção conta tópicos, sem nomear um.
   await openPerformanceSection(page, 'simulations');
   const needed = page.locator('.achievement-projection__details', { has: page.locator(':scope > summary', { hasText: 'O que seria necessário?' }) });

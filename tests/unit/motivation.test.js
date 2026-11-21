@@ -30,7 +30,7 @@ test('constância: 28 dias terminando hoje, faixas de intensidade e total em tex
   assert.equal(strip.activeDays, 4);
   const html = renderConsistencyStrip(strip);
   assert.match(html, /<strong>4 de 28 dias<\/strong>/);
-  assert.match(html, /role="img" aria-label="Constância: 4 de 28 dias com estudo"/);
+  assert.match(html, /role="img" aria-label="Consistência: 4 de 28 dias com estudo"/);
 });
 
 test('cabeçalho fixo: sequência com chama só aparece a partir de 1 dia', () => {

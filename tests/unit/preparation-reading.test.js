@@ -63,7 +63,7 @@ test('leitura da preparação: o render tem um botão sólido, três blocos e ne
   const html = renderPreparationReading(reading);
   assert.match(html, /Como estou/);
   assert.match(html, /O que mais pesa/);
-  assert.match(html, /O que fazer/);
+  assert.match(html, /Sugestão do diagnóstico/);
   assert.equal((html.match(/class="btn small"/g) || []).length, 1);
   assert.doesNotMatch(html, /porque|garante|graças/i);
 });
@@ -126,7 +126,7 @@ test('ação aparece com motivo e ressalvas antes dos controles e da análise de
   });
   const html = renderPreparationReading(reading);
   assert.match(html, /Revisão prevista para hoje/);
-  assert.ok(html.indexOf('O que fazer') < html.indexOf('O que mais pesa'));
+  assert.ok(html.indexOf('Sugestão do diagnóstico') < html.indexOf('O que mais pesa'));
   assert.ok(html.indexOf('No plano:') < html.indexOf('Abrir em Hoje'));
   assert.match(html, /Evidência:.*Baixa/);
 });

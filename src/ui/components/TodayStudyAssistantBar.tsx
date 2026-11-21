@@ -327,7 +327,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           onClick={() => props.onTogglePanel(activePanel === 'quick' ? 'none' : 'quick')}
         >
           <Icon name="clock" size={14} class="icon-inline shrink-0" />
-          <span>Tenho X minutos</span>
+          <span>Estudo rápido</span>
         </Button>
 
         <Button

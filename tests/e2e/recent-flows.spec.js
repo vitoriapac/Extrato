@@ -199,7 +199,9 @@ test.describe('validação dos fluxos recentes', () => {
     await empty.getByRole('button', { name: 'Configurar disciplinas e tópicos' }).click();
     await expect(page.locator('#panel-metas')).toHaveClass(/active/);
   });
-  test('ação de estudo no diagnóstico inicia sessão vinculada e atualiza as recomendações', async ({
+  // A demo (T22) estuda todos os tópicos: a fila do Diagnóstico traz questões e revisões, nunca estudo.
+  // Falta um cenário com tópico novo para cobrir de novo a sessão de estudo vinculada ao diagnóstico.
+  test.fixme('ação de estudo no diagnóstico inicia sessão vinculada e atualiza as recomendações', async ({
     page,
   }) => {
     await openDemo(page);

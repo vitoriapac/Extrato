@@ -70,7 +70,7 @@ test('QuestionLogTable Preact Component — renderiza linhas de questões e cate
 
   assert.match(html, /Direito Constitucional/);
   assert.match(html, /Direitos Fundamentais/);
-  assert.match(html, /80%/);
+  assert.match(html, /80,0%/);
   assert.match(html, /4\/4/); // Erros categorizados
   assert.match(html, /aria-expanded="true"/);
   assert.match(html, /4 de 4 erros categorizados/);
@@ -143,7 +143,7 @@ test('createQuestionsController — coordena a renderização de questões e sim
   const questionsHtml = controller.renderQuestionsHtml();
   const simulationsHtml = controller.renderSimulationsHtml();
 
-  assert.match(questionsHtml, /90%/);
+  assert.match(questionsHtml, /90,0%/);
   assert.match(simulationsHtml, /Simulado Alpha/);
   assert.match(simulationsHtml, />80%</);
 });

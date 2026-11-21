@@ -6,7 +6,7 @@ import { SHARED_SIGNALS_LIMITATION } from '../../application/diagnostics/build-c
 
 export function renderConsolidatedDiagnosis(
   model: Record<string, any>,
-  { studyActionForItem, escapeHtml, escapeAttr, filters = {}, allocation = {}, nextActionName = null }: any
+  { studyActionForItem, escapeHtml, escapeAttr, filters = {}, allocation = {} }: any
 ) {
   const rows = [...(model.topics || []), ...(model.subjects || [])].filter(
     item => item.primarySignal
@@ -121,12 +121,6 @@ export function renderConsolidatedDiagnosis(
     .join('');
   // Oito disciplinas à vista; as demais entram na lista progressiva ("Mostrar mais · +N").
   const body = groupsHtml ? `<div class="diagnosis-groups">${groupsHtml}</div>` : '';
-  // A única linha que põe a Próxima ação e o primeiro da fila lado a lado, para a diferença não parecer duas prioridades.
-  const firstInQueue = visible.find(({ item }) => item.granularity === 'topic' && item.primarySignal !== 'collect-evidence')?.item.name;
-  const priorityNote =
-    nextActionName && firstInQueue && nextActionName !== firstInQueue
-      ? `A sugestão acima (${escapeHtml(nextActionName)}) é o primeiro item da fila e não se repete na lista; a lista abaixo segue com ${escapeHtml(firstInQueue)}, o próximo de maior gravidade e impacto na prova. `
-      : 'A fila ordena por gravidade e impacto na prova; a sugestão acima é o primeiro item dela. ';
   const unseenAll = ordered.flatMap(([, group]) =>
     group.items.filter(({ item }: any) => item.primarySignal === 'collect-evidence')
   );
@@ -134,5 +128,5 @@ export function renderConsolidatedDiagnosis(
     !filtering && unseenAll.length
       ? `<p class="analytics-note diagnosis-unseen-note"><strong>${unseenAll.length}</strong> ${unseenAll.length === 1 ? 'tópico sem nenhum registro ainda fica' : 'tópicos sem nenhum registro ainda ficam'} fora dos grupos abaixo. <button type="button" class="btn ghost small" data-diagnosis-severity="${escapeAttr(unseenAll[0].item.severity)}">Ver os ${unseenAll.length}</button></p>`
       : '';
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">${priorityNote}${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}<p class="analytics-note diagnosis-scope-note" data-diagnosis-scope-note>Só entram na fila os tópicos do concurso ativo que têm algum sinal de diagnóstico; "N de M" mostra quantos tópicos da disciplina aparecem, e o total M é o de Disciplinas.${dropped ? ' O tópico da sugestão aparece acima e não se repete na fila.' : ''}</p>${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}<p class="analytics-note diagnosis-scope-note" data-diagnosis-scope-note>Só entram na fila os tópicos do concurso ativo que têm algum sinal de diagnóstico; "N de M" mostra quantos tópicos da disciplina aparecem, e o total M é o de Disciplinas.${dropped ? ' O tópico da sugestão aparece acima e não se repete na fila.' : ''}</p>${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }

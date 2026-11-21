@@ -103,7 +103,7 @@ export function buildPreparationReading({
     `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(Math.round(n))} ${Math.abs(Math.round(n)) === 1 ? 'ponto' : 'pontos'}`;
   const demoClosing = String(pair?.current?.id || '').startsWith('demo-readiness-');
   const closingNote = closingDiffers
-    ? ` O valor acima é o de hoje (${formatSignedPoints(readinessValue! - Number(pair!.current.score))} frente a esse fechamento).${demoClosing ? ' Na demonstração, os fechamentos são fictícios.' : ''}`
+    ? ` Hoje: ${formatSignedPoints(readinessValue! - Number(pair!.current.score))} frente a esse fechamento.${demoClosing ? ' Na demonstração, os fechamentos são fictícios.' : ''}`
     : '';
   // A tendência usa os dois últimos fechamentos (independente do período); sem o campo novo, cai no delta do período.
   const closingDelta = model.readinessClosingDelta !== undefined ? model.readinessClosingDelta : model.readinessDelta;

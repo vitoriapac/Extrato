@@ -49,7 +49,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Visão Geral',
         summary: 'Seu painel diário de decisão e ritmo.',
         paragraphs: [
-          'Reúne Próxima ação, Atenção (pendências e carga de revisões), Fase atual da preparação, Leitura do Extrato, Resumo dos últimos 7 dias, Constância e Saldo do edital. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
+          'Reúne Próxima ação, Atenção (pendências e carga de revisões), Fase atual da preparação, Leitura do Extrato, Resumo dos últimos 7 dias, Consistência e Saúde do Edital. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
         ],
         action: { label: 'Abrir Visão Geral', target: 'overview' },
       },
@@ -99,7 +99,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         questions: ['Como a Leitura do Extrato decide o que estudar?', 'Para que serve o Diário de Aprendizagem?'],
         paragraphs: [
           'A Leitura do Extrato responde perguntas práticas ("O que estudar agora?", "Tenho 30 minutos", "Como foi minha semana?", "Por que meu ciclo sugere X?") usando somente seus dados locais, sem alterar planos automaticamente.',
-          'O Estudo Rápido ("Tenho X minutos") monta uma sessão de 15, 30, 45 ou 60 minutos aproveitando revisões atrasadas, prioridade ou bloco do ciclo. O Diário de Aprendizagem registra dúvidas, energia e dificuldade por sessão, permitindo transformar uma dúvida em revisão agendada.',
+          'O Estudo rápido monta uma sessão de 15, 30, 45 ou 60 minutos aproveitando revisões atrasadas, prioridade ou bloco do ciclo. O Diário de Aprendizagem registra dúvidas, energia e dificuldade por sessão, permitindo transformar uma dúvida em revisão agendada.',
         ],
         action: { label: 'Abrir Hoje', target: 'today' },
       },

@@ -176,7 +176,7 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     icon: 'file-type-pdf',
   },
   {
-    label: 'Estudo rápido: Tenho X minutos',
+    label: 'Estudo rápido: escolher o tempo',
     keywords: 'estudo rapido minutos tempo livre 15 30 45 60 bloco curto',
     action: 'quick-study',
     icon: 'clock',

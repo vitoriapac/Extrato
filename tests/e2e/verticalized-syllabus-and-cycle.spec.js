@@ -203,7 +203,7 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
   await expect(bar).toBeVisible();
 
   // Modo Estudo Rápido
-  await bar.getByRole('button', { name: 'Tenho X minutos' }).click();
+  await bar.getByRole('button', { name: 'Estudo rápido' }).click();
   const quickPanel = page.locator('#todayQuickStudyPanel');
   await expect(quickPanel).toBeVisible();
   await expect(quickPanel).toContainText('Proposta (30 min)');
@@ -250,7 +250,7 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
 
   // 2. Hoje: Estudo Rápido abre em 30 min e chip de 15 min dentro do painel alterna em 1 clique
   await activateTab(page, 'hoje');
-  await page.getByRole('button', { name: /Tenho X minutos/ }).first().click();
+  await page.getByRole('button', { name: /Estudo rápido/ }).first().click();
   const quickPanel = page.locator('#todayQuickStudyPanel');
   await expect(quickPanel).toBeVisible();
   await expect(quickPanel).toContainText('Proposta (30 min)');
