@@ -133,7 +133,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T13: Pendências atrasadas num lugar (R1) — FEITA (21/11): Hoje sem alerta duplicado, cartão da Visão geral e resumo semanal sem a contagem repetida; Questões mantém só o KPI com link; Agenda mantém a lista (área de trabalho) e agora diz "7 revisões atrasadas, de 9 pendências"
 **Aceite:** card completo só em Hoje (D-G); Visão geral, Agenda e Questões mostram número com link; "9 pendências atrasadas" some da aba Questões. **Dependências:** D-G · **Tamanho:** M
 
-### T14: Ciclo de Estudos num lugar só (R3)
+### T14: Ciclo de Estudos num lugar só (R3) — FEITA (21/11): Hoje sem o gráfico de distribuição e sem "Ativar ciclo recomendado"; criação e confirmação só na Central do Ciclo; o fluxo E2E ficou dentro de um teste que já falhava antes (T24)
 **Aceite:** Hoje e Planejamento não repetem "39 h · prévia" e a lista de 4 disciplinas; um CTA ("Ativar ciclo recomendado" ou "Confirmar nova versão") conforme D-H; teste E2E do fluxo mantido. **Dependências:** D-H · **Tamanho:** M
 
 ### T15: Sugestão Analytics com uma explicação (R2)

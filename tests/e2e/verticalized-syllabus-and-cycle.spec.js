@@ -227,7 +227,7 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
   await page.locator('#executionSequenceBtn').click();
   const cyclePanel = page.locator('[data-study-cycle-panel="true"]');
   await expect(cyclePanel).toBeVisible();
-  await cyclePanel.getByRole('button', { name: 'Ajustar na Central do Ciclo' }).first().click();
+  await cyclePanel.getByRole('button', { name: /Central do Ciclo/ }).first().click();
   const cycleCenter = page.locator('#metasCycleCenterMount [data-study-cycle-center="true"]');
   await expect(cycleCenter).toBeVisible();
   await cycleCenter.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();

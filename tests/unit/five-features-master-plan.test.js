@@ -804,3 +804,58 @@ test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSi
   }
   assert.ok(SEARCH_COMMANDS.some(c => c.action === 'achievements' && c.label === 'Ver conquistas'));
 });
+
+test('Hoje resume o ciclo e leva à Central: sem gráfico de distribuição e com um único CTA de criação (D-H)', () => {
+  const quick = buildQuickStudyProposal({ durationMinutes: 30, candidates: SAMPLE_CANDIDATES, subjects: SUBJECTS });
+  const copilot = buildStudyCopilotViewModel({
+    today: '2026-11-16',
+    nowISO: '2026-11-16T16:00:00.000Z',
+    recommendations: SAMPLE_CANDIDATES,
+    candidates: SAMPLE_CANDIDATES,
+    subjects: SUBJECTS,
+  });
+  const noop = () => {};
+  const props = {
+    activePanel: 'none',
+    executionMode: 'sequence',
+    subjects: SUBJECTS,
+    cycleLap: { round: 1, totalBlocks: 2, completedBlocks: 0, skippedBlocks: 0, partialBlocks: 0, resolvedBlocks: 0, executedCoveragePct: 0, actualMinutesInRound: 0 },
+    cycleDivergence: { diverges: false, currentBlockSubject: 'Português', recommendedSubject: 'Português', urgentReview: false, explanation: '' },
+    cycleSkipReason: '',
+    quickMinutes: 30,
+    quickFocus: 'priority',
+    quickProposal: quick,
+    copilot,
+    copilotQuestion: 'what_now',
+    journalEntries: [],
+    journalFilters: { subjectId: '', tag: '', query: '' },
+    journalForm: { sessionId: null, subjectId: '', topicId: '', difficultyRating: '', energyRating: '', tags: [], note: '', nextStep: '' },
+    weeklyClosing: null,
+    onOpenPlanningCycle: noop,
+    onTogglePanel: noop, onStartCycleBlock: noop, onToggleCyclePause: noop, onSkipReasonChange: noop,
+    onSkipCycleBlock: noop, onChangeCycleDraftConfig: noop, onMoveCycleDraftBlock: noop, onConfirmCycleDraft: noop,
+    onChangeQuickConfig: noop, onStartQuickStudy: noop, onSelectCopilotQuestion: noop, onExecuteCopilotAnswer: noop,
+    onChangeJournalFilter: noop, onChangeJournalForm: noop, onSaveJournalEntry: noop, onDeleteJournalEntry: noop,
+    onCreateReviewFromJournal: noop, onConfirmWeeklyClosingSnapshot: noop, onTestWeeklyImprovement: noop,
+  };
+  const withoutCycle = render(
+    h(TodayStudyAssistantBar, {
+      ...props,
+      cycle: null,
+      cycleDraft: { mode: 'adaptive', blockDurationMinutes: 60, preview: { valid: true, subjectShares: [] } },
+    })
+  );
+  assert.match(withoutCycle, /Montar o ciclo na Central do Ciclo/);
+  assert.doesNotMatch(withoutCycle, /Ajustar na Central do Ciclo/);
+  assert.doesNotMatch(withoutCycle, /Ativar ciclo recomendado|data-study-cycle-donut/);
+  const withCycle = render(
+    h(TodayStudyAssistantBar, {
+      ...props,
+      cycle: buildStudyCycleQueue({ subjects: SUBJECTS, nowISO: '2026-11-16T10:00:00.000Z' }),
+      cycleDraft: { mode: 'adaptive', blockDurationMinutes: 60, preview: null },
+    })
+  );
+  assert.match(withCycle, /Próximo bloco/);
+  assert.match(withCycle, /Iniciar bloco/);
+  assert.doesNotMatch(withCycle, /data-study-cycle-donut/);
+});

@@ -9,14 +9,12 @@ import type {
 import type { QuickStudyFocusMode, QuickStudyProposal } from '../../domain/quick-study/quick-study-engine.js';
 import type { LearningJournalEntry, LearningJournalTag } from '../../core/types.js';
 import {
-  computeStudyCycleSubjectShares,
   type StudyCycleMode,
   type StudyCycleQueue,
 } from '../../domain/planning/study-cycle-engine.js';
 import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
-import { StudyCycleDonut } from './StudyCycleDonut.js';
 
 export type AssistantPanelKind =
   | 'none'
@@ -129,12 +127,10 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
   const {
     activePanel,
     executionMode,
-    subjects,
     cycle,
     cycleLap,
     cycleDivergence,
     cycleSkipReason,
-    cycleDraft,
     quickMinutes,
     quickFocus,
     quickProposal,
@@ -168,11 +164,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         ...primaryCopilotQuestions,
         ...secondaryCopilotQuestions.filter(item => item.key === copilotQuestion),
       ];
-  const activeSubjects = subjects.filter(s => s && !s.archived);
-  const activeCycleShares =
-    cycle && Array.isArray(cycle.blocks) && cycle.blocks.length > 0
-      ? computeStudyCycleSubjectShares(cycle.blocks)
-      : cycleDraft.preview?.subjectShares || [];
 
   const cyclePanelNode =
     executionMode === 'sequence' ? (
@@ -195,7 +186,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             )}
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            {props.onOpenPlanningCycle && (
+            {props.onOpenPlanningCycle && cycle && (
               <Button variant="ghost" size="small" onClick={props.onOpenPlanningCycle}>
                 <Icon name="settings" size={14} class="icon-inline shrink-0" />
                 <span>Ajustar na Central do Ciclo</span>
@@ -269,18 +260,6 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
               )
             )}
 
-            {activeCycleShares.length > 0 && (
-              <StudyCycleDonut
-                shares={activeCycleShares}
-                subjects={activeSubjects}
-                size={116}
-                strokeWidth={14}
-                centerLabel="por volta"
-                compact
-                maxVisibleLegend={4}
-              />
-            )}
-
             <div class="flex flex-wrap items-center gap-2 pt-1">
               <Button
                 variant="primary"
@@ -316,33 +295,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             <p class="text-xs text-content-secondary m-0">
               Estude em fila rotativa por blocos de 15 a 120 minutos sem gerar atrasos automáticos em dias sem estudo.
             </p>
-            {activeCycleShares.length > 0 && (
-              <StudyCycleDonut
-                shares={activeCycleShares}
-                subjects={activeSubjects}
-                size={116}
-                strokeWidth={14}
-                centerLabel="prévia"
-                compact
-                maxVisibleLegend={4}
-              />
-            )}
-            {cycleDraft.preview?.valid && (
-              <div class="flex flex-wrap items-center gap-2">
-                <Button variant="primary" size="small" onClick={props.onConfirmCycleDraft}>
-                  <Icon name="play" size={13} class="icon-inline" />
-                  <span>Ativar ciclo recomendado</span>
-                </Button>
-                {props.onOpenPlanningCycle && (
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    onClick={props.onOpenPlanningCycle}
-                  >
-                    <span>Ajustar na Central do Ciclo</span>
-                  </Button>
-                )}
-              </div>
+            {props.onOpenPlanningCycle && (
+              <Button variant="primary" size="small" onClick={props.onOpenPlanningCycle}>
+                <Icon name="settings" size={13} class="icon-inline" />
+                <span>Montar o ciclo na Central do Ciclo</span>
+              </Button>
             )}
           </div>
         )}
