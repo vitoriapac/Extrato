@@ -21,13 +21,26 @@ export function buildNextBestAction({
   weeklyCapacityMinutes = 0,
   projection = null,
   activeExamTags = [],
+  queueOrder = null,
 }: any = {}) {
   const normalizedExamTags = Array.isArray(activeExamTags)
     ? activeExamTags.map(tag => String(tag).trim()).filter(Boolean).sort()
     : [];
   const examScopeKey = normalizedExamTags.join('|') || 'all';
 
-  for (const recommendation of recommendations) {
+  // A sugestão é o primeiro da fila do Diagnóstico (T11/D-A): quem está na fila vem antes, na ordem dela.
+  const queue: string[] | null = Array.isArray(queueOrder)
+    ? queueOrder
+    : Array.isArray(diagnosis?.topics)
+      ? (diagnosis.topics as Array<{ primarySignal?: string; topicId: string }>)
+          .filter(row => row.primarySignal)
+          .map(row => row.topicId)
+      : null;
+  const position = new Map((queue || []).map((id, index) => [id, index] as const));
+  const rank = (item: { topicId?: string }) => position.get(item.topicId as string) ?? position.size;
+  const ordered = queue ? [...recommendations].sort((a, b) => rank(a) - rank(b)) : recommendations;
+
+  for (const recommendation of ordered) {
     const action = buildStudyAction(recommendation, { source: 'diagnosis' });
     if (
       !action ||

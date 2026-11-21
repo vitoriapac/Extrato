@@ -68,6 +68,8 @@ export interface TodayTabControllerContext {
   weeklyStrategyCapacity?: () => number;
   computeStudyPriorities?: () => any[];
   getCurrentStudyRecommendations?: () => any[];
+  /** Ids de tópico na ordem da fila do Diagnóstico; a sugestão é o primeiro dela. */
+  diagnosisQueue?: () => string[];
   refreshStudyRecommendationItems?: (opts?: any) => any;
   renderOverviewDecisionArea?: () => void;
   uniqueTopicsCompletedBetween?: (start: string, end: string) => number;
@@ -428,6 +430,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     getNextBestAction: () =>
       buildNextBestAction({
         recommendations: getCurrentStudyRecommendations(),
+        queueOrder: ctx.diagnosisQueue?.() ?? null,
         activePlan: latestStudyPlan(),
         weeklyCapacityMinutes: weeklyStrategyCapacity(),
       }),
@@ -519,6 +522,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       activePlan: latestStudyPlan(),
       nextBestAction: buildNextBestAction({
         recommendations: getCurrentStudyRecommendations(),
+        queueOrder: ctx.diagnosisQueue?.() ?? null,
         activePlan: latestStudyPlan(),
         weeklyCapacityMinutes: weeklyStrategyCapacity(),
       }),

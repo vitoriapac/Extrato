@@ -113,8 +113,8 @@ export function renderConsolidatedDiagnosis(
   const firstInQueue = visible.find(({ item }) => item.granularity === 'topic' && item.primarySignal !== 'collect-evidence')?.item.name;
   const priorityNote =
     nextActionName && firstInQueue && nextActionName !== firstInQueue
-      ? `A sugestão acima (${escapeHtml(nextActionName)}) combina o diagnóstico com o plano de hoje; a fila abaixo começa por ${escapeHtml(firstInQueue)}, o de maior gravidade e impacto na prova. `
-      : 'A fila ordena por gravidade e impacto na prova; a sugestão acima combina isso com o plano de hoje. ';
+      ? `A sugestão acima (${escapeHtml(nextActionName)}) é o primeiro da fila com atividade de estudo disponível; a fila abaixo começa por ${escapeHtml(firstInQueue)}, o de maior gravidade e impacto na prova, mas ele ainda não tem atividade pronta. `
+      : 'A fila ordena por gravidade e impacto na prova; a sugestão acima é o primeiro item dela. ';
   const unseenAll = ordered.flatMap(([, group]) =>
     group.items.filter(({ item }: any) => item.primarySignal === 'collect-evidence')
   );

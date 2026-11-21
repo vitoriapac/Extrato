@@ -25,7 +25,7 @@ export type OverviewNextActionDeps = Pick<
   | 'topicResumeLabel'
   | 'activeTimerMatchesRecommendation'
   | 'getTopicById'
-> & { getCurrentRecommendations: () => any[] };
+> & { getCurrentRecommendations: () => any[]; diagnosisQueue?: () => string[] };
 
 /** Card "próxima ação" da Visão geral: prioriza o plano do dia e cai na recomendação do motor. */
 export function createOverviewNextActionRenderer(deps: OverviewNextActionDeps) {
@@ -51,7 +51,11 @@ export function createOverviewNextActionRenderer(deps: OverviewNextActionDeps) {
     const effectiveMinutes = availableMinutes ?? Math.max(0, Math.round(metaHoursToday() * 60));
     const state = getState();
     const outcome = '';
-    const item = getCurrentRecommendations()[0];
+    const recs = getCurrentRecommendations();
+    const queue = deps.diagnosisQueue?.();
+    const position = new Map((queue || []).map((id, index) => [id, index] as const));
+    const rank = (rec: { topicId?: string }) => position.get(rec.topicId as string) ?? position.size;
+    const item = queue?.length ? [...recs].sort((a, b) => rank(a) - rank(b))[0] : recs[0];
     const { priority } = dailyExecutionController.build();
 
     if (

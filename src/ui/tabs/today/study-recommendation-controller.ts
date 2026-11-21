@@ -40,6 +40,8 @@ import { buildStudyStrategy } from '../../../domain/recommendations/study-strate
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 
 export interface StudyRecommendationControllerDeps {
+  /** Ids de tópico na ordem da fila do Diagnóstico; a sugestão é o primeiro dela. */
+  diagnosisQueue?: () => string[];
   document: any;
   getState: () => any;
   metaHoursToday: () => number;

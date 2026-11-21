@@ -49,6 +49,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     renderHeatmap,
     renderDiagnosisCenter,
     getAchievementNote,
+    getDiagnosisQueue,
     getAchievements,
     renderAlertasInteligentes,
     renderRecommendationHistorySummary,
@@ -174,6 +175,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
   });
 
   todayTabController = createTodayTabController({
+    diagnosisQueue: getDiagnosisQueue,
     formatPlanMinutes,
     formatDatePt,
     formatDuration,
@@ -264,6 +266,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
   todayTabController.bindEvents();
 
   studyRecommendationController = createStudyRecommendationController({
+    diagnosisQueue: getDiagnosisQueue,
     document,
     getState,
     metaHoursToday: goalsBlueprintService.metaHoursToday,

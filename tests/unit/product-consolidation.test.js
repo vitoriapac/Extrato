@@ -264,3 +264,21 @@ test('explicação não decompõe versões ou conjuntos de evidência diferentes
   assert.equal(result.state, 'evidence-change');
   assert.deepEqual(result.factors, []);
 });
+
+test('a sugestão é o primeiro da fila do Diagnóstico, não o primeiro do motor de pontuação (D-A)', () => {
+  const first = { ...recommendation, id: 'rec-a', topicId: 'a', score: 95 };
+  const second = { ...recommendation, id: 'rec-b', topicId: 'b', score: 40 };
+  const queueRows = [
+    { ...row, topicId: 'b', severity: 'critical' },
+    { ...row, topicId: 'a', severity: 'important' },
+  ];
+  const byDiagnosis = buildNextBestAction({
+    recommendations: [first, second],
+    diagnosis: diagnosis(queueRows),
+  });
+  const byQueue = buildNextBestAction({ recommendations: [first, second], queueOrder: ['b', 'a'] });
+  const noQueue = buildNextBestAction({ recommendations: [first, second] });
+  assert.equal(byDiagnosis.action.topicId, 'b');
+  assert.equal(byQueue.action.topicId, 'b');
+  assert.equal(noQueue.action.topicId, 'a');
+});

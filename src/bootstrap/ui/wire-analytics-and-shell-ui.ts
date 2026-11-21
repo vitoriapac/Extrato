@@ -321,6 +321,29 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     showToast,
   });
 
+  // A ordem dos cards do Diagnóstico (a fila de estudo oficial), calculada com os mesmos insumos.
+  const diagnosisQueue = (): string[] => {
+      const state = getState();
+      const { candidates } = refreshStudyRecommendationItems();
+      const model = buildDiagnosisPageModel({
+        candidates,
+        subjects: studyMetricsSelectors.examScopedSubjects(),
+        scope: studyMetricsSelectors.examEvidenceContext(),
+        blueprint: state.examBlueprint,
+        globalTarget: state.metas?.metaAprovacao,
+        today: todayISO(),
+        activeExamTags: state.examBlueprint?.activeExamTags || [],
+        recommendations: getCurrentStudyRecommendations(),
+        activePlan: getLatestStudyPlan(),
+        weeklyCapacityMinutes: studyMetricsSelectors.weeklyStrategyCapacity(),
+        hoursByDay: state.metas?.horasPorDia || {},
+      });
+      // Só os tópicos que entram na lista do Diagnóstico (os com sinal): é a mesma fila que a Leitura segue.
+      return (model.consolidated?.topics || [])
+        .filter((row: any) => row.primarySignal)
+        .map((row: any) => row.topicId);
+  };
+
   performanceTabController = createPerformanceTabController({
     document,
     window,
@@ -342,30 +365,11 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     // Os mesmos candidatos (e a mesma pontuação) do Diagnóstico: uma fila de estudo só.
     intelligenceCandidates: () => refreshStudyRecommendationItems().candidates,
     // A ordem dos cards do Diagnóstico (a fila de estudo oficial), calculada com os mesmos insumos.
-    diagnosisOrder: () => {
-      const state = getState();
-      const { candidates } = refreshStudyRecommendationItems();
-      const model = buildDiagnosisPageModel({
-        candidates,
-        subjects: studyMetricsSelectors.examScopedSubjects(),
-        scope: studyMetricsSelectors.examEvidenceContext(),
-        blueprint: state.examBlueprint,
-        globalTarget: state.metas?.metaAprovacao,
-        today: todayISO(),
-        activeExamTags: state.examBlueprint?.activeExamTags || [],
-        recommendations: getCurrentStudyRecommendations(),
-        activePlan: getLatestStudyPlan(),
-        weeklyCapacityMinutes: studyMetricsSelectors.weeklyStrategyCapacity(),
-        hoursByDay: state.metas?.horasPorDia || {},
-      });
-      // Só os tópicos que entram na lista do Diagnóstico (os com sinal): é a mesma fila que a Leitura segue.
-      return (model.consolidated?.topics || [])
-        .filter((row: any) => row.primarySignal)
-        .map((row: any) => row.topicId);
-    },
+    diagnosisOrder: diagnosisQueue,
     nextBestAction: () =>
       buildNextBestAction({
         recommendations: getCurrentStudyRecommendations(),
+        queueOrder: diagnosisQueue(),
         activePlan: getLatestStudyPlan(),
         weeklyCapacityMinutes: studyMetricsSelectors.weeklyStrategyCapacity(),
       }),
@@ -390,6 +394,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
   performanceTabController.registerController();
 
   return {
+    diagnosisQueue,
     achievementsController,
     todaySubtabs,
     guidedTourController,
