@@ -100,7 +100,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ## Fase 2: prioridade única
 
-### T10: Investigar demo × produto (D2, D17, D-B)
+### T10: Investigar demo × produto (D2, D17, D-B) — FEITA (20/11): ver tasks/investigacao-divergencias.md; D-B aguarda decisão
 **Descrição:** Reproduzir com fixture pequena e com a demo; classificar cada caso como dado da demo, defeito de cálculo, defeito de apresentação ou correto mal explicado.
 **Aceite:**
 - [ ] Tabela em `tasks/investigacao-divergencias.md` com os 4 casos: Classes de palavras (85%) como lacuna; "Iniciar revisão" em tópicos sem registro; Analytics × LP; Garantias bancárias como fila #1
