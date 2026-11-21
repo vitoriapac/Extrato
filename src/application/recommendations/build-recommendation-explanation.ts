@@ -1,5 +1,6 @@
 import { buildOpportunityCost } from '../../domain/planning/opportunity-cost.js';
 import { recommendationActionKind, recommendationActionLabel } from './recommendation-action.js';
+import { formatDecimal } from '../../core/format-number.js';
 const IMPACT_SOURCE_LABELS: Record<string, string> = {
   official: 'Oficial',
   manual: 'Manual',
@@ -9,7 +10,7 @@ const IMPACT_SOURCE_LABELS: Record<string, string> = {
 const number = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
 const row = (label: string, value: unknown, unit = '') =>
-  number(value) === null ? null : { label, value: number(value) + unit };
+  number(value) === null ? null : { label, value: formatDecimal(number(value)) + unit };
 
 export function buildRecommendationExplanation(
   item: any = {},

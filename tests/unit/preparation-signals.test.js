@@ -170,3 +170,14 @@ test('custo de oportunidade exige uma transferência equilibrada', () => {
   assert.equal(buildOpportunityCost({ ...advice, to: { ...advice.to, afterMinutes: 150 } }), null);
   assert.equal(buildOpportunityCost({ ...advice, state: 'stable' }), null);
 });
+
+test('explicação da recomendação: decimais saem com vírgula (57,1%), nunca com ponto', async () => {
+  const { buildRecommendationExplanation } = await import(
+    '../../src/application/recommendations/build-recommendation-explanation.js'
+  );
+  const model = buildRecommendationExplanation({ accuracy: 57.1, evidence: { evidenceStrength: 0.147 } });
+  const text = JSON.stringify(model);
+  assert.match(text, /57,1%/);
+  assert.match(text, /14,7%/);
+  assert.doesNotMatch(text, /57\.1%|14\.7%/);
+});

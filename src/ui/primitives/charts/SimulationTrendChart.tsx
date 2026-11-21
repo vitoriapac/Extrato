@@ -1,4 +1,4 @@
-import { formatPercent, formatPoints } from '../../../core/format-number.js';
+import { formatDecimal, formatPercent, formatPoints } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../icon.js';
 import { simulationTrendGeometry } from './geometry.js';
@@ -221,7 +221,7 @@ export function SimulationTrendChart({
                   text-anchor="middle"
                   class="text-xs font-semibold font-mono fill-content-primary"
                 >
-                  {pt.score}%
+                  {formatDecimal(pt.score)}%
                 </text>
 
                 {/* Data ou número do simulado abaixo */}

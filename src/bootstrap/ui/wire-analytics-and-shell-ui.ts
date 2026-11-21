@@ -323,9 +323,25 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
   });
 
   // A ordem dos cards do Diagnóstico (a fila de estudo oficial), calculada com os mesmos insumos.
+  // Sem efeito colateral: não chama refreshStudyRecommendationItems (que grava histórico e troca as recomendações).
+  // shortcut: cache por assinatura barata (dia, recomendações atuais e tamanho das listas); uma edição que não muda
+  // esses tamanhos só aparece na fila no próximo refresh das recomendações.
+  let queueCache: { key: string; recs: unknown; value: string[] } | null = null;
   const diagnosisQueue = (): string[] => {
       const state = getState();
-      const { candidates } = refreshStudyRecommendationItems();
+      const recs = getCurrentStudyRecommendations();
+      const key = [
+        todayISO(),
+        (state.studySessions || []).length,
+        (state.questoes || []).length,
+        (state.reviewAgenda || []).length,
+        (state.subjects || []).reduce(
+          (sum: number, sub: { topics?: unknown[] }) => sum + (sub.topics || []).length,
+          0
+        ),
+      ].join('|');
+      if (queueCache && queueCache.key === key && queueCache.recs === recs) return queueCache.value;
+      const candidates = studyCandidateService.intelligenceCandidates();
       const model = buildDiagnosisPageModel({
         candidates,
         subjects: studyMetricsSelectors.examScopedSubjects(),
@@ -340,9 +356,11 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
         hoursByDay: state.metas?.horasPorDia || {},
       });
       // Só os tópicos que entram na lista do Diagnóstico (os com sinal): é a mesma fila que a Leitura segue.
-      return (model.consolidated?.topics || [])
+      const value = (model.consolidated?.topics || [])
         .filter((row: any) => row.primarySignal)
         .map((row: any) => row.topicId);
+      queueCache = { key, recs, value };
+      return value;
   };
 
   performanceTabController = createPerformanceTabController({
