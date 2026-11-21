@@ -39,3 +39,16 @@ test('carga de revisões some sem pendências e não mostra coluna de atraso sem
   assert.doesNotMatch(html, /chart-columns__bar--attention/);
   assert.match(html, /nenhuma atrasada/);
 });
+
+test('a carga de revisões diz de quantas pendências as atrasadas fazem parte (Agenda)', () => {
+  const load = buildReviewLoad(
+    [
+      { date: '2026-11-10', status: 'Pendente' },
+      { date: '2026-11-11', status: 'Pendente' },
+    ],
+    '2026-11-20'
+  );
+  assert.match(renderReviewLoad(load, { overduePending: 9 }), /2 revisões atrasadas, de 9 pendências/);
+  assert.doesNotMatch(renderReviewLoad(load, { overduePending: 2 }), /de 2 pendências/);
+  assert.doesNotMatch(renderReviewLoad(load), /pendências/);
+});

@@ -144,6 +144,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
 
   practiceUi = wirePracticeAndCatalogUi({
     ...deps,
+    getOverduePendingCount: () => analyticsUi?.revisoesAtrasadas?.() ?? null,
     listViewState,
     isMobileHistoryLayout,
     activeTabName,

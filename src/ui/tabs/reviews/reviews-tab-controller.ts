@@ -42,6 +42,8 @@ import { runUndoable } from '../../undoable.js';
 import { countActiveFilters, filterPanelLabel } from '../../filter-panel.js';
 
 export interface ReviewsTabControllerContext {
+  /** Pendências atrasadas (revisões e tarefas): o mesmo número do resto do app. */
+  getOverduePendingCount?: () => number | null;
   state: {
     reviewAgenda: ReviewItem[];
     subjects?: any[];
@@ -415,6 +417,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         buildReviewLoad(getFilteredAndSortedReviews(), todayISO()),
         {
           formatDate: formatDatePt,
+          overduePending: ctx.getOverduePendingCount?.() ?? null,
         }
       );
     renderRedistribution();
@@ -441,7 +444,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       container.innerHTML =
         undo +
         (overdue
-          ? `<button type="button" class="btn tonal small" data-review-redistribute>${renderIconSvg('arrows-shuffle', { size: 14, className: 'icon-inline' })}Redistribuir ${plural(overdue, 'revisão atrasada', 'revisões atrasadas')}</button>`
+          ? `<button type="button" class="btn tonal small" data-review-redistribute title="Só as revisões atrasadas são redistribuídas; as tarefas atrasadas ficam como estão.">${renderIconSvg('arrows-shuffle', { size: 14, className: 'icon-inline' })}Redistribuir ${plural(overdue, 'revisão atrasada', 'revisões atrasadas')}</button>`
           : '');
       return;
     }

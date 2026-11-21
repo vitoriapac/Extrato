@@ -59,13 +59,21 @@ export function buildReviewLoad(reviews: Array<Record<string, any>> = [], today:
 
 export function renderReviewLoad(
   load: ReturnType<typeof buildReviewLoad>,
-  { formatDate = (iso: string) => iso }: { formatDate?: (iso: string) => string } = {}
+  {
+    formatDate = (iso: string) => iso,
+    overduePending = null,
+  }: { formatDate?: (iso: string) => string; overduePending?: number | null } = {}
 ) {
   if (!load.total && !load.overdue) return '';
   const peak = load.days.reduce((best, day) => (day.count > best.count ? day : best), load.days[0]);
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const summary = `${plural(load.total, 'revisão', 'revisões')} nos próximos ${load.days.length} dias${peak.count ? `, pico de ${peak.count} em ${formatDate(peak.date)}` : ''}`;
   const overdueText = load.overdue ? plural(load.overdue, 'revisão atrasada', 'revisões atrasadas') : 'nenhuma atrasada';
+  // As revisões são parte das pendências atrasadas (que incluem tarefas): o texto diz a relação.
+  const overdueLabel =
+    load.overdue && overduePending != null && overduePending > load.overdue
+      ? `${overdueText}, de ${plural(overduePending, 'pendência', 'pendências')}`
+      : overdueText;
   const chart = renderColumnChart({
     label: `Carga de revisões: ${overdueText}; ${summary}`,
     className: 'review-load__svg',
@@ -79,5 +87,5 @@ export function renderReviewLoad(
       })),
     ],
   });
-  return `<section class="review-load" aria-label="Carga de revisões"><p class="review-load__label"><strong class="${load.overdue ? 'is-overdue' : ''}">${overdueText}</strong> · ${summary}</p>${chart}<div class="review-load__axis" aria-hidden="true"><span>${load.overdue ? 'Atrasadas · ' : ''}Hoje</span><span>+${load.days.length - 1} dias</span></div></section>`;
+  return `<section class="review-load" aria-label="Carga de revisões"><p class="review-load__label"><strong class="${load.overdue ? 'is-overdue' : ''}">${overdueLabel}</strong> · ${summary}</p>${chart}<div class="review-load__axis" aria-hidden="true"><span>${load.overdue ? 'Atrasadas · ' : ''}Hoje</span><span>+${load.days.length - 1} dias</span></div></section>`;
 }

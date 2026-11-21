@@ -130,7 +130,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ## Fase 3: redundância
 
-### T13: Pendências atrasadas num lugar (R1) — FEITA (21/11): Hoje sem alerta duplicado, cartão da Visão geral e resumo semanal sem a contagem repetida; Questões mantém só o KPI com link; Agenda mantém a lista (área de trabalho)
+### T13: Pendências atrasadas num lugar (R1) — FEITA (21/11): Hoje sem alerta duplicado, cartão da Visão geral e resumo semanal sem a contagem repetida; Questões mantém só o KPI com link; Agenda mantém a lista (área de trabalho) e agora diz "7 revisões atrasadas, de 9 pendências"
 **Aceite:** card completo só em Hoje (D-G); Visão geral, Agenda e Questões mostram número com link; "9 pendências atrasadas" some da aba Questões. **Dependências:** D-G · **Tamanho:** M
 
 ### T14: Ciclo de Estudos num lugar só (R3)

@@ -414,6 +414,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
   performanceTabController.registerController();
 
   return {
+    revisoesAtrasadas: studyCandidateService.revisoesAtrasadas,
     diagnosisQueue,
     achievementsController,
     todaySubtabs,

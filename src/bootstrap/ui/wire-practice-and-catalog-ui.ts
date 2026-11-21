@@ -158,6 +158,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
   subjectsTabController.bindEvents();
 
   const reviewsTabController = createReviewsTabController({
+    getOverduePendingCount: deps.getOverduePendingCount,
     get state() {
       return getState();
     },
