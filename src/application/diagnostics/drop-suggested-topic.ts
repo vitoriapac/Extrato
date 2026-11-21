@@ -8,6 +8,8 @@ export function dropSuggestedTopic(diagnosis: Row, suggested?: Row | null): Row 
     ...diagnosis,
     consolidated: {
       ...diagnosis.consolidated,
+      // O tópico sai da lista, mas continua no escopo: a contagem por disciplina o conta (D12).
+      suggestedDropped: { subjectId: suggested.subjectId, topicId: suggested.topicId },
       topics: topics.filter(
         (item: Row) => !(item.subjectId === suggested.subjectId && item.topicId === suggested.topicId)
       ),

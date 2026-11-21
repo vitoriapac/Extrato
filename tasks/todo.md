@@ -59,7 +59,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] Teste: 83% × 87,5% × 71% × 86% reproduzidos com rótulo
 **Dependências:** T1 · **Tamanho:** M (sobrepõe a Tarefa 44 arquivada)
 
-### T6: Contagem de tópicos por disciplina (D12) — FEITA em parte (20/11): nota de escopo no Diagnóstico; Tecnologia e IA já bate (13); ainda diferem LP 17×18, Mat. Financeira 12×14, Inglês 8×9, Redação 14×16, Matemática 19×20, Conhec. Bancários 23×24 — causa não achada (não são tag nem arquivados)
+### T6: Contagem de tópicos por disciplina (D12) — FEITA (20/11): cabeçalho "N de M tópicos no escopo"; as 17 disciplinas da demo fecham com Disciplinas
 **Aceite:**
 - [ ] Diagnóstico e Disciplinas mostram o mesmo total, ou o Diagnóstico explica o que exclui (D-E)
 - [ ] Teste: LP 18/17, Tecnologia e IA 13/12, Matemática Financeira 14/12 resolvidos

@@ -1059,5 +1059,28 @@ test('Auditoria 4.2/4.5/4.6: seleção de até 3 disciplinas em Questões, açã
 });
 
 test('explica que só entram tópicos do concurso ativo e não arquivados (contagem × Disciplinas)', () => {
-  assert.match(render({}), /data-diagnosis-scope-note>Só entram tópicos do concurso ativo, não arquivados e avaliáveis pelo diagnóstico/);
+  assert.match(render({}), /data-diagnosis-scope-note>Só entram na fila os tópicos do concurso ativo que têm algum sinal de diagnóstico/);
+});
+
+test('cabeçalho da disciplina diz quantos tópicos do escopo entram na fila (N de M)', () => {
+  const noSignal = { ...topics[0], topicId: 't-sem-sinal', name: 'Sem sinal', primarySignal: null };
+  const html = renderConsolidatedDiagnosis(
+    { topics: [...topics, noSignal], subjects: [] },
+    { studyActionForItem: () => null, escapeHtml: String, escapeAttr: String, filters: {} }
+  );
+  assert.match(html, /Disciplina a<\/strong> · 2 de 3 tópicos no escopo/);
+  assert.match(html, /Disciplina b<\/strong> · 1 tópico</);
+});
+
+test('o tópico da sugestão sai da lista mas continua no total da disciplina', async () => {
+  const { dropSuggestedTopic } = await import('../../src/application/diagnostics/drop-suggested-topic.js');
+  const model = dropSuggestedTopic({ consolidated: { topics } }, { subjectId: 'a', topicId: 't1' });
+  const html = renderConsolidatedDiagnosis(model.consolidated, {
+    studyActionForItem: () => null,
+    escapeHtml: String,
+    escapeAttr: String,
+    filters: {},
+  });
+  assert.match(html, /Disciplina a<\/strong> · 1 de 2 tópicos no escopo/);
+  assert.match(html, /O tópico da sugestão aparece acima/);
 });

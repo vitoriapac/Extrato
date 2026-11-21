@@ -24,3 +24,7 @@ Hoje a fila é ordenada primeiro por revisão atrasada. Proposta: **severidade p
 - Não confirmei a ordem exata da fila (peso de cada fator) para o caso 4; a regra "revisão atrasada na frente" vem da leitura do cartão, não do código de ordenação.
 - A frase "lacuna de cobertura 100/100" do caso 2 não foi localizada no código; só o rótulo "Iniciar revisão".
 - Rodei só a demo; não reproduzi com fixture pequena fora dela.
+
+## Adendo T6 (20/11): por que a contagem diferia
+
+Duas causas, verificadas no código e na demo: (1) tópicos sem nenhum sinal de diagnóstico não viram linha da fila (`primarySignal` vazio no renderizador), e o cabeçalho contava também linhas de disciplina; (2) o tópico da sugestão sai da lista (`drop-suggested-topic.ts`) e a disciplina dele perdia 1. O cabeçalho agora mostra "N de M", e M é o total de Disciplinas.

@@ -90,6 +90,18 @@ export function renderConsolidatedDiagnosis(
       : sort === 'vulnerable'
         ? ` · ${criticals(group)} ${criticals(group) === 1 ? 'crítico' : 'críticos'}`
         : '';
+  // Tópicos de cada disciplina no escopo, com e sem sinal: quem não tem nenhum sinal não vira linha da fila (D12).
+  const topicTotals = new Map<string, number>();
+  for (const item of (model.topics || []) as Array<{ subjectId: string }>)
+    topicTotals.set(item.subjectId, (topicTotals.get(item.subjectId) || 0) + 1);
+  const dropped = model.suggestedDropped as { subjectId: string } | undefined;
+  if (dropped) topicTotals.set(dropped.subjectId, (topicTotals.get(dropped.subjectId) || 0) + 1);
+  const topicCount = (id: string, group: { items: { item: { granularity?: string } }[] }) => {
+    const listed = group.items.filter(({ item }) => item.granularity === 'topic').length;
+    const total = topicTotals.get(id) || listed;
+    const noun = (total === 1 ? 'tópico' : 'tópicos') + (total > listed ? ' no escopo' : '');
+    return total > listed ? `${listed} de ${total} ${noun}` : `${listed} ${noun}`;
+  };
   const groupsHtml = ordered
     .map(([id, group], index) => {
       const open = index === 0;
@@ -103,8 +115,8 @@ export function renderConsolidatedDiagnosis(
       const inner = (studied.length ? listOf(studied) : '') + unseen;
       // Grupo sem nada para abrir (só conteúdo sem evidência) é uma linha, não uma dobra vazia.
       if (!inner)
-        return `<p class="diagnosis-group-line"><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'tópico' : 'tópicos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</p>`;
-      return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${group.items.length} ${group.items.length === 1 ? 'tópico' : 'tópicos'}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
+        return `<p class="diagnosis-group-line"><strong>${escapeHtml(group.name)}</strong> · ${topicCount(id, group)}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</p>`;
+      return `<details class="diagnosis-group"${open ? ' open' : ''}><summary><strong>${escapeHtml(group.name)}</strong> · ${topicCount(id, group)}${noData.length ? ` · ${studied.length} com evidência` : ''}${note(id, group)}</summary>${open ? inner : `<template data-lazy>${inner}</template>`}</details>`;
     })
     .join('');
   // Oito disciplinas à vista; as demais entram na lista progressiva ("Mostrar mais · +N").
@@ -122,5 +134,5 @@ export function renderConsolidatedDiagnosis(
     !filtering && unseenAll.length
       ? `<p class="analytics-note diagnosis-unseen-note"><strong>${unseenAll.length}</strong> ${unseenAll.length === 1 ? 'tópico sem nenhum registro ainda fica' : 'tópicos sem nenhum registro ainda ficam'} fora dos grupos abaixo. <button type="button" class="btn ghost small" data-diagnosis-severity="${escapeAttr(unseenAll[0].item.severity)}">Ver os ${unseenAll.length}</button></p>`
       : '';
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">${priorityNote}${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}<p class="analytics-note" data-diagnosis-scope-note>Só entram tópicos do concurso ativo, não arquivados e avaliáveis pelo diagnóstico; por isso a contagem por disciplina pode ser menor que em Disciplinas.</p>${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">${priorityNote}${escapeHtml(SHARED_SIGNALS_LIMITATION)}</p>${renderGapImpactChart(rows, { escapeHtml })}${controls}<p class="analytics-note" data-diagnosis-scope-note>Só entram na fila os tópicos do concurso ativo que têm algum sinal de diagnóstico; "N de M" mostra quantos tópicos da disciplina aparecem, e o total M é o de Disciplinas.${dropped ? ' O tópico da sugestão aparece acima e não se repete na fila.' : ''}</p>${unseenNote}${body || '<p class="analytics-note">Nenhum tópico com esse filtro.</p>'}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }
