@@ -182,4 +182,4 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - [ ] E2E afetados verdes
 - [ ] `impeccable critique` com H4 ≥ 3 e H8 ≥ 3
 - [ ] Nova passada de usuário analítico (vazio e demo): relatório novo sem P0/P1 de divergência
-- [x] Revisão humana (aprovada em 20/11)
+- [ ] Revisão humana
