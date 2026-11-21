@@ -154,6 +154,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
   analysisNavigationController.bindEvents();
 
   const diagnosticsTabController = createDiagnosticsTabController({
+    diagnosisQueue: () => diagnosisQueue(),
     document,
     getState,
     scheduleSave,

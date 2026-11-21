@@ -1,4 +1,5 @@
 import { renderNextBestAction as defaultRenderNextBestAction } from '../../renderers/next-best-action-renderer.js';
+import { orderByDiagnosisQueue } from '../../../application/diagnostics/build-next-best-action.js';
 import { dropSuggestedTopic } from '../../../application/diagnostics/drop-suggested-topic.js';
 import { countRemainingTopics, renderTopicUniverse } from '../../performance/topic-universe.js';
 import { buildExecutiveSummary as defaultBuildExecutiveSummary } from '../../../application/build-executive-summary.js';
@@ -65,6 +66,8 @@ export interface DiagnosticsTabControllerOptions {
   buildStudyAction?: (recommendation: any, opts: any) => any;
   recommendationActionLabel?: (action: any) => string;
   getCurrentStudyRecommendations: () => any[];
+  /** Ids de tópico na ordem da fila do Diagnóstico. */
+  diagnosisQueue?: () => string[];
   setCurrentConsolidatedDiagnosis?: (diag: any) => void;
   latestStudyPlan: () => any;
   weeklyStrategyCapacity: () => number;
@@ -116,17 +119,23 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     }
 
     const alertas = reconciliation.visible;
-    const recommendations = opts.getCurrentStudyRecommendations();
-    const presentation = renderIntelligentAlerts({
-      alerts: alertas,
-      additional: reconciliation.additional,
-      currentAction: recommendations[0],
-      escapeHtml: opts.escapeHtml,
-      escapeAttr: opts.escapeAttr,
-    });
+    const recommendations = orderByDiagnosisQueue(
+      opts.getCurrentStudyRecommendations(),
+      opts.diagnosisQueue?.()
+    );
+    const render = (alerts: typeof alertas) =>
+      renderIntelligentAlerts({
+        alerts,
+        additional: reconciliation.additional,
+        currentAction: recommendations[0],
+        escapeHtml: opts.escapeHtml,
+        escapeAttr: opts.escapeAttr,
+      });
 
-    if (container) container.innerHTML = presentation.list;
-    if (overview) overview.innerHTML = presentation.overview;
+    // Pendências atrasadas têm o resumo próprio de Hoje (hojeAtrasadas): a lista de alertas de Hoje não as repete (D-G).
+    if (container)
+      container.innerHTML = render(alertas.filter((alert: { id?: string }) => alert.id !== 'reviews-overdue')).list;
+    if (overview) overview.innerHTML = render(alertas).overview;
   }
 
   function dismissIntelligentAlert(id: string): void {

@@ -416,7 +416,8 @@ test('carga da semana nomeia itens mistos e não os chama todos de revisões', (
   const html = render(h(CockpitSidebarCards, { model }));
   assert.match(html, /Tarefas e revisões/);
   assert.match(html, /Semana atual/);
-  assert.match(html, /1 pendência atrasada/);
+  assert.match(html, /1 atrasadas/);
+  assert.doesNotMatch(html, /1 pendência atrasada/);
 });
 
 test('tópico legado sem status segue a mesma leitura não iniciado da disciplina', async () => {

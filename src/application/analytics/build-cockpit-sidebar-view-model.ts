@@ -189,9 +189,8 @@ export function buildCockpitSidebarViewModel(
       peakDayName === 'Sex' ? 'Sexta-feira' :
       peakDayName === 'Sáb' ? 'Sábado' : 'Domingo';
     tip = `${fullDayName} tem pico de ${maxCount} tarefas e revisões agendadas.`;
-  } else if (overdueCount > 0) {
-    tip = `${overdueCount} ${overdueCount === 1 ? 'pendência atrasada' : 'pendências atrasadas'}.`;
   }
+  // Os atrasos têm lugar próprio (Atenção, na Visão geral; resumo em Hoje): este cartão não repete a contagem.
 
   const reviewLoad: WeeklyReviewLoadData = {
     days,

@@ -660,9 +660,8 @@ export function buildWeeklyPerformanceBrief({
         ? ''
         : ' e ainda não registrou questões no período';
     let tailSnippet = '.';
-    if (weakestSubject && overdueReviews > 0) {
-      tailSnippet = `, com ponto de atenção em ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)}) e ${pluralize(overdueReviews, 'pendência atrasada', 'pendências atrasadas')}.`;
-    } else if (weakestSubject) {
+    // A contagem de pendências tem lugar próprio (Atenção e Hoje): este texto não a repete (D-G).
+    if (weakestSubject) {
       tailSnippet = `, sendo ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)} de acerto) a matéria que mais pede reforço agora.`;
     } else if (bestSubject) {
       tailSnippet = `, com destaque positivo para ${bestSubject.name} (${formatPercent(bestSubject.accuracy)} de acerto).`;

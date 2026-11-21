@@ -106,3 +106,20 @@ test('buildWeeklyPerformanceBrief e renderWeeklyPerformanceBriefCard — estado 
   assert.match(html, /data-performance-open="hoje"/);
   assert.doesNotMatch(html, /\p{Extended_Pictographic}/u);
 });
+
+test('resumo curto: com matéria fraca e atrasos, a contagem de pendências não é repetida (D-G)', () => {
+  const brief = buildWeeklyPerformanceBrief({
+    today: '2026-11-07',
+    subjects: [{ id: 's1', name: 'Português' }],
+    sessions: [{ date: '2026-11-03', durationSeconds: 3600 }],
+    dailyPlans: [],
+    questions: [{ date: '2026-11-03', subjectId: 's1', resolved: 40, correct: 20 }],
+    reviews: [
+      { date: '2026-11-04', status: 'Pendente' },
+      { date: '2026-11-05', status: 'Pendente' },
+    ],
+    simulations: [],
+  });
+  assert.doesNotMatch(brief.shortParagraph, /pendência/);
+  assert.match(brief.shortParagraph, /Português/);
+});

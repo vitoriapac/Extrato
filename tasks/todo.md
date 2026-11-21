@@ -124,13 +124,13 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ### Checkpoint 2: prioridade
 - [x] Mesma pergunta, mesma resposta nas telas (20/11, demo): Visão geral, Hoje (lista e cartão), Desempenho, Diagnóstico e copiloto citam a mesma sugestão; Fechamento tem lista própria por desenho. E2E completo: 374 de 406 passam; as 32 falhas são as mesmas da base anterior à sessão (visuais e de layout), exceto 3 regressões que corrigi
-- [ ] Revisão humana
+- [x] Revisão humana (aprovada em 21/11)
 
 ---
 
 ## Fase 3: redundância
 
-### T13: Pendências atrasadas num lugar (R1)
+### T13: Pendências atrasadas num lugar (R1) — FEITA (21/11): Hoje sem alerta duplicado, cartão da Visão geral e resumo semanal sem a contagem repetida; Questões mantém só o KPI com link; Agenda mantém a lista (área de trabalho)
 **Aceite:** card completo só em Hoje (D-G); Visão geral, Agenda e Questões mostram número com link; "9 pendências atrasadas" some da aba Questões. **Dependências:** D-G · **Tamanho:** M
 
 ### T14: Ciclo de Estudos num lugar só (R3)
