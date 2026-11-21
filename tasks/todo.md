@@ -153,7 +153,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 
 ### Checkpoint 3: redundância
 - [x] Altura das telas medida antes e depois (21/11, 1440×900, painel da aba): vazio — Hoje −205, Agenda −187, Questões −57, Desempenho −44, demais 0; demo — Hoje −288, Visão geral +16, Desempenho +34, demais 0. Axe: 118 E2E com axe passam; 1 teste meu corrigido (visual-consolidation:628); `pwa.spec.js:108` já falhava na base e entrou no T24
-- [ ] Revisão humana
+- [x] Revisão humana (aprovada em 21/11)
 
 ---
 
@@ -187,7 +187,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - `product-consolidation.spec.js` (2): calendário móvel (rolagem); hierarquia da Prontidão.
 - `verticalized-syllabus-and-cycle.spec.js` (2): Edital Verticalizado; funcionalidades distribuídas.
 - `subject-compare-modes.spec.js` (1) e `essential-mode.spec.js` (1).
-- `pwa.spec.js:108` (1): falha só rodando o arquivo inteiro e também na base (estado gravado no localStorage ao entrar na demo); passa isolado.
+- `pwa.spec.js:108` (1): intermitente — com `--repeat-each=6` falha em parte das repetições tanto no código atual quanto no commit anterior à sessão (corrida entre a leitura de `before` e a primeira gravação do estado vazio); passa quando roda sozinho ou no arquivo inteiro com servidor limpo.
 **Aceite:**
 - [ ] Cada falha classificada em uma tabela (arquivo, causa, ação)
 - [ ] Snapshots só regenerados depois de comparar as imagens; defeitos de layout corrigidos no código
