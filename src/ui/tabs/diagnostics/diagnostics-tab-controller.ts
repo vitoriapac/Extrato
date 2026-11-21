@@ -134,7 +134,18 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
 
     // Pendências atrasadas têm o resumo próprio de Hoje (hojeAtrasadas): a lista de alertas de Hoje não as repete (D-G).
     if (container)
-      container.innerHTML = render(alertas.filter((alert: { id?: string }) => alert.id !== 'reviews-overdue')).list;
+      container.innerHTML = render(
+        alertas.filter(
+          (alert: { id?: string; topicId?: string | null; subjectId?: string | null }) =>
+            alert.id !== 'reviews-overdue' &&
+            // O alerta do próprio tópico da sugestão repetiria o "Por quê?" do cartão de estudo (T15).
+            !(
+              alert.topicId &&
+              alert.topicId === recommendations[0]?.topicId &&
+              alert.subjectId === recommendations[0]?.subjectId
+            )
+        )
+      ).list;
     if (overview) overview.innerHTML = render(alertas).overview;
   }
 

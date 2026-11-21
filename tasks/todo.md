@@ -136,7 +136,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T14: Ciclo de Estudos num lugar só (R3) — FEITA (21/11): Hoje sem o gráfico de distribuição e sem "Ativar ciclo recomendado"; criação e confirmação só na Central do Ciclo; o fluxo E2E ficou dentro de um teste que já falhava antes (T24)
 **Aceite:** Hoje e Planejamento não repetem "39 h · prévia" e a lista de 4 disciplinas; um CTA ("Ativar ciclo recomendado" ou "Confirmar nova versão") conforme D-H; teste E2E do fluxo mantido. **Dependências:** D-H · **Tamanho:** M
 
-### T15: Sugestão Analytics com uma explicação (R2)
+### T15: Sugestão Analytics com uma explicação (R2) — FEITA (21/11): explicação completa no bloco do Diagnóstico e no "Por quê" recolhido de Hoje; Hoje mostra 1 motivo e sem alerta repetido do mesmo tópico; Visão geral só nome e link
 **Aceite:** o "Por quê?" completo em um lugar; as demais telas mostram o nome e um link. **Dependências:** T12 · **Tamanho:** M
 
 ### T16: Bloco de tempo do dia sem repetição (R4)
