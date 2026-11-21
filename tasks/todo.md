@@ -152,7 +152,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 **Aceite:** a subaba "Resultados das provas" deixa de conter "Questões respondidas" duplicado, ou é renomeada; rotas antigas redirecionam. **Dependências:** D-C · **Tamanho:** M
 
 ### Checkpoint 3: redundância
-- [ ] Altura das telas medida antes e depois; alternativas acessíveis mantidas; axe nos E2E
+- [x] Altura das telas medida antes e depois (21/11, 1440×900, painel da aba): vazio — Hoje −205, Agenda −187, Questões −57, Desempenho −44, demais 0; demo — Hoje −288, Visão geral +16, Desempenho +34, demais 0. Axe: 118 E2E com axe passam; 1 teste meu corrigido (visual-consolidation:628); `pwa.spec.js:108` já falhava na base e entrou no T24
 - [ ] Revisão humana
 
 ---
@@ -175,7 +175,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ### T23: Cabeçalho mobile compacto — CANCELADA (D-K, 20/11: manter o cabeçalho)
 **Aceite (não será feito):** a "Próxima ação" visível sem rolagem em 375×812; botões Dados/Preferências/Tema recolhidos; sem rolagem horizontal; alvos ≥ 44 px. **Verificação:** captura 375×812 e E2E mobile. **Dependências:** D-K · **Tamanho:** M
 
-### T24: Falhas E2E que já existiam antes desta sessão (29 testes)
+### T24: Falhas E2E que já existiam antes desta sessão (30 testes)
 **Origem:** suíte E2E completa de 20/11 (374 de 406 passam); as 29 falhas abaixo também falham em `a6d54ef` (commit anterior à sessão), então não vêm das tarefas T1–T12. Dois testes a mais falharam por causa de mudanças minhas e já foram corrigidos (`legacy-backup`, `pt-br-format`).
 **Descrição:** para cada falha, classificar como snapshot desatualizado, defeito de layout ou teste frágil, e corrigir. Antes de regenerar qualquer snapshot, abrir a imagem esperada e a obtida (política em `docs/VISUAL-TEST-POLICY.md`).
 **Falhas por arquivo:**
@@ -187,6 +187,7 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 - `product-consolidation.spec.js` (2): calendário móvel (rolagem); hierarquia da Prontidão.
 - `verticalized-syllabus-and-cycle.spec.js` (2): Edital Verticalizado; funcionalidades distribuídas.
 - `subject-compare-modes.spec.js` (1) e `essential-mode.spec.js` (1).
+- `pwa.spec.js:108` (1): falha só rodando o arquivo inteiro e também na base (estado gravado no localStorage ao entrar na demo); passa isolado.
 **Aceite:**
 - [ ] Cada falha classificada em uma tabela (arquivo, causa, ação)
 - [ ] Snapshots só regenerados depois de comparar as imagens; defeitos de layout corrigidos no código

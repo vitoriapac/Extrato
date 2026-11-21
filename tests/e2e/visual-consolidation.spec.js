@@ -648,7 +648,7 @@ test('gráficos de acerto, carga de revisões e status das disciplinas têm text
   await expect(load.getByRole('img', { name: /^Carga de revisões: / })).toBeVisible();
   await expect(load.locator('.chart-columns__bar--primary')).toHaveCount(30);
   await expect(load.locator('.review-load__label strong')).toHaveText(
-    /^(\d+ revis(ão|ões) atrasadas?|nenhuma atrasada)$/
+    /^(\d+ revis(ão|ões) atrasadas?(, de \d+ pendências?)?|nenhuma atrasada)$/
   );
 
   // The accuracy summary lives inside the weekly close analysis.
