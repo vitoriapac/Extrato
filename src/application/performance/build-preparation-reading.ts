@@ -123,7 +123,14 @@ export function buildPreparationReading({
     delta == null
       ? null
       : Math.abs(delta) <= 1
-        ? { state: 'steady', text: 'Tendência entre os dois últimos fechamentos: estável' }
+        ? {
+            state: 'steady',
+            // Estável entre os fechamentos, mas o valor de hoje pode ter se movido: diz as duas coisas numa frase só.
+            text:
+              closingDiffers && Math.abs(readinessValue! - Number(pair!.current.score)) > 1
+                ? `Tendência entre os dois últimos fechamentos: estável; hoje, ${formatSignedPoints(readinessValue! - Number(pair!.current.score))} desde o último`
+                : 'Tendência entre os dois últimos fechamentos: estável',
+          }
         : delta < 0
           ? { state: 'down', text: 'Tendência entre os dois últimos fechamentos: em queda' }
           : { state: 'up', text: 'Tendência entre os dois últimos fechamentos: em alta' };

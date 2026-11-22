@@ -197,8 +197,23 @@ Tamanhos: S = 1–2 arquivos, M = 3–5.
 ---
 
 ## Checkpoint final
-- [ ] `npm test`, `npm run check:types`, `npm run build` verdes
-- [ ] E2E afetados verdes
-- [ ] `impeccable critique` com H4 ≥ 3 e H8 ≥ 3
-- [ ] Nova passada de usuário analítico (vazio e demo): relatório novo sem P0/P1 de divergência
+- [x] `npm test`, `npm run check:types`, `npm run build` verdes (1885 unitários)
+- [x] E2E afetados verdes (suíte completa: só falha o `pwa.spec.js:108`, intermitente também na base; `recent-flows.spec.js:202` em `test.fixme`, ver abaixo)
+- [ ] `impeccable critique` com H4 ≥ 3 e H8 ≥ 3 — **parcial**: 6 rodadas em 21/11/2026 (27 → 28 → 28 → 28 → 29 → 29 de 40). H4 chegou a 3 na rodada 5; **H8 segue em 2** (Hoje com 9 h3 e ~50 botões, Visão geral com 7 h3).
+- [x] Nova passada de usuário analítico (vazio e demo): feita nas 6 rodadas. Sem P0. Números por disciplina, "abaixo da meta" (8) e acerto geral (68,4% em 30 dias) batem entre as abas.
 - [ ] Revisão humana
+
+### Resultado do Checkpoint final (21/11/2026)
+Feito: janela padrão de 30 dias (acerto geral, Saúde do Edital, Disciplinas, Resumo); Saúde do Edital ordenada pela distância da meta, só conta acerto de questões e avisa "Mostrando 5 de N"; cartão "Próxima ação" da Visão geral só com o plano; Leitura do Extrato sem segunda resposta; Diagnóstico com dobras ("Como ler a fila", "Legenda dos rótulos"); rótulo "Último simulado"; cabeçalho do celular numa linha de ícones e "Iniciar estudo" acima da barra inferior; tendência "estável" com o movimento de hoje na mesma frase; correções pt-BR (percentual com vírgula, data brasileira).
+
+Pendências conhecidas (próxima fase):
+- **H8 = 2:** cortar blocos de Hoje (Sessão livre × Estudo rápido, Extrato do Dia, Diário, Esforço na semana) e da Visão geral (Qualidade da evidência, Leitura do Extrato). Decisão de produto, ainda não tomada.
+- **Duas respostas a "o que estudo agora?":** Próxima ação (plano) × Sugestão do diagnóstico, em Hoje e Desempenho. Remover o plano da Visão geral foi testado e desfeito: 10 testes E2E iniciam a tarefa do plano por lá.
+- **Diagnóstico:** 11 parágrafos visíveis (1209 caracteres) antes do primeiro grupo, medidos pelo B na rodada 6; conferir se a legenda e as notas realmente ficam em dobra fechada.
+- **Teste `recent-flows.spec.js:202` (estudo vinculado ao diagnóstico) em `test.fixme`:** a demo estuda todos os tópicos, então a fila só traz questões e revisões. Falta cenário com tópico novo.
+- **Dias de estudo e aderência** com janelas diferentes (6 / 5 de 7 / 23 de 28 / 24 / 108 de 364; 81% / 72,5% / 76%): rotulados, não unificados.
+- **Semana:** a Agenda começa no domingo, o resto na segunda.
+- **"Mostrando 5 de 17"** com "8 abaixo da meta": o denominador deveria ser as 8.
+- **Alvos de toque < 44 px:** `button.list-page-btn` (40×44), `button.term-hint` (24×24), botões "todo o histórico"/"30 dias" em Ritmo (24 px de altura), 7 botões de disciplina (43×44) em Análise de resultados.
+- **Rótulos duplicados no DOM das abas** ("Visão geralVisão"): depende do CSS esconder um span por largura; não verificado.
+- Não verificado em tela: contraste do medidor de prioridade em Hoje (o B calculou 1,76, mas acho falso positivo: o gradiente é só uma faixa de 4 px).

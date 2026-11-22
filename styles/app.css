@@ -3879,4 +3879,11 @@ button.performance-window{position:relative}button.performance-window::after{con
   .global-search-row .global-search-trigger{flex:1 1 auto;min-width:0}
   .global-search-row .theme-toggle-btn{flex:0 0 auto;min-width:44px;min-height:44px;padding-inline:10px}
   .global-search-row .theme-toggle-btn .theme-toggle-label{display:none}
+  /* Sem o rótulo decorativo e e com os espaços da faixa reduzidos, o Iniciar estudo sobe acima da barra inferior. */
+  .statement-eyebrow{display:none}
+  .statement{padding-block:14px}
+  .statement .exam-countdown{margin-top:8px;padding-top:8px}
+  .statement .statement-top{padding-bottom:8px;margin-bottom:8px}
+  .overview-now-action{padding:16px}
+  .overview-now-action .module-heading,.overview-now-action>h2{margin-bottom:8px}
 }
