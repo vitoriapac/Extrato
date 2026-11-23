@@ -35,11 +35,11 @@ async function expectDiagnosisScreenshot(page, name, height) {
 test('baseline visual da ação principal no desktop', async ({ page }) => {
   await prepareDemo(page, { width: 1440, height: 900 });
   const action = await page.locator('.overview-now-action').boundingBox(),
-    attention = await page.locator('.overview-now-attention').boundingBox();
+    attention = await page.locator('#overviewExamToday').boundingBox();
   expect(action.x + action.width).toBeLessThanOrEqual(attention.x + 1);
   expect(action.y).toBe(attention.y);
   if (process.platform === 'win32') {
-    await page.locator('.sticky-shell, .bottom-nav, #demoBanner, #backToTopBtn').evaluateAll(elements => elements.forEach(element => { element.style.visibility = 'hidden'; }));
+    await page.locator('.sticky-shell, .bottom-nav, #demoBanner, #backToTopBtn, .skip-link, #saveIndicator').evaluateAll(elements => elements.forEach(element => { element.style.visibility = 'hidden'; }));
     await expect(page.locator('.overview-now')).toHaveScreenshot(
       screenshotName('agora-desktop-light.png'),
       screenshotOptions
@@ -50,7 +50,7 @@ test('baseline visual da ação principal no desktop', async ({ page }) => {
 test('baseline visual da ação principal no mobile escuro', async ({ page }) => {
   await prepareDemo(page, { width: 375, height: 812, theme: 'dark' });
   const action = await page.locator('.overview-now-action').boundingBox(),
-    attention = await page.locator('.overview-now-attention').boundingBox();
+    attention = await page.locator('#overviewExamToday').boundingBox();
   expect(attention.y).toBeGreaterThanOrEqual(action.y + action.height);
   expect(
     await page.evaluate(
@@ -58,7 +58,7 @@ test('baseline visual da ação principal no mobile escuro', async ({ page }) =>
     )
   ).toBeLessThanOrEqual(1);
   if (process.platform === 'win32') {
-    await page.locator('.sticky-shell, .bottom-nav, #demoBanner, #backToTopBtn').evaluateAll(elements => elements.forEach(element => { element.style.visibility = 'hidden'; }));
+    await page.locator('.sticky-shell, .bottom-nav, #demoBanner, #backToTopBtn, .skip-link, #saveIndicator').evaluateAll(elements => elements.forEach(element => { element.style.visibility = 'hidden'; }));
     await expect(page.locator('.overview-now')).toHaveScreenshot(
       screenshotName('agora-mobile-dark.png'),
       screenshotOptions

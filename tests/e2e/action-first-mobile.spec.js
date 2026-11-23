@@ -25,7 +25,7 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
     (await suggestion.count()) ? suggestion : overviewAction.locator('h3')
   ).innerText();
   const actionId = await overviewRecommendationId(page);
-  await expect(page.locator('#overviewAttention')).toBeVisible();
+  await expect(page.locator('#overviewExamToday')).toBeVisible();
   // O cabeçalho fixo passa de 45px para 87px ao rolar e desloca o conteúdo 42px; o clique por
   // coordenadas erra o botão nesse limite, então o atalho é acionado direto (como activateTab).
   await page.locator('#overviewAttentionViewAll').evaluate(button => button.click());

@@ -49,7 +49,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Visão Geral',
         summary: 'Seu painel diário de decisão e ritmo.',
         paragraphs: [
-          'Reúne Próxima ação, Atenção (pendências e carga de revisões), Fase atual da preparação, Leitura do Extrato, Resumo dos últimos 7 dias, Consistência e Saúde do Edital. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
+          'Começa por A prova hoje: nota projetada comparada à meta, disciplinas abaixo do mínimo no último simulado e pendências atrasadas, cada uma levando à aba onde se age. Depois vêm Próxima ação, Tarefas e revisões da semana, Fase atual da preparação, Resumo dos últimos 7 dias, Consistência e Saúde do Edital. A Leitura do Extrato fica na barra da aba Hoje. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
         ],
         action: { label: 'Abrir Visão Geral', target: 'overview' },
       },

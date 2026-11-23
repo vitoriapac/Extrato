@@ -373,9 +373,12 @@ export function createSearchController(options: SearchControllerOptions) {
         options.onOpenJournal();
       } else {
         activateTab('hoje');
-        (
-          document.querySelector('#todayJournalSidebarMount, [data-today-journal-sidebar="true"]') as HTMLElement | null
-        )?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
+        const journal = document.querySelector(
+          '#todayJournalSidebarMount, [data-today-journal-sidebar="true"]'
+        ) as HTMLElement | null;
+        const fold = journal?.closest('details');
+        if (fold) fold.open = true;
+        journal?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
       }
     } else if (action === 'study-cycle-center') {
       if (options.onOpenStudyCycleCenter) {

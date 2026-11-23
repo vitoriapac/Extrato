@@ -44,6 +44,12 @@ export interface TodayAssistantDeps {
   renderPlanoHoje: () => void;
 }
 
+/** O Diário fica na dobra "Esforço na semana e Diário"; quem leva até ele abre a dobra. */
+function openJournalFold(mount: Element | null | undefined) {
+  const fold = mount?.closest?.('details');
+  if (fold) (fold as HTMLDetailsElement).open = true;
+}
+
 /** Barra do assistente da aba Hoje: ciclo de estudos, estudo rápido, copiloto e fechamento semanal. */
 export function createTodayAssistantController({
   ctx,
@@ -334,6 +340,7 @@ export function createTodayAssistantController({
           const sidebarMount = doc?.getElementById(
             'todayJournalSidebarMount'
           ) as HTMLElement | null;
+          openJournalFold(sidebarMount);
           sidebarMount?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
         },
         onStartQuickStudy: () => {
@@ -464,6 +471,7 @@ export function createTodayAssistantController({
         ? doc?.getElementById('todayJournalSidebarMount') ||
           doc?.getElementById('todayStudyAssistantMount')
         : doc?.getElementById('todayStudyAssistantMount');
+    if (panel === 'journal') openJournalFold(targetMount);
     targetMount?.scrollIntoView?.({
       behavior: 'smooth',
       block: 'center',

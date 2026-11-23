@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildEssayEvolutionSummary } from '../../src/domain/calendar/calendar-projection.ts';
 import { studiedTopicsOutsideScope } from '../../src/domain/exams/exam-scope.ts';
-import { resolveExamPhase, withPreEdital } from '../../src/domain/planning/adaptive-planning.ts';
+import {
+  editalPhaseLabel,
+  resolveExamPhase,
+  withPreEdital,
+} from '../../src/domain/planning/adaptive-planning.ts';
 
 const essay = (id, date, score, criteria = {}) => ({
   id,
@@ -70,4 +74,14 @@ test('tópicos estudados fora do edital ativo, com tempo e questões', () => {
     [['t1', 60, 20]]
   );
   assert.deepEqual(studiedTopicsOutsideScope({ subjects, activeExamTags: [] }), []);
+});
+
+test('cabeçalho: Pré-edital sem data; com data, Pós-edital e a fase', () => {
+  assert.equal(editalPhaseLabel({ preEdital: true }), 'Pré-edital');
+  assert.equal(
+    editalPhaseLabel({ examDate: '2027-02-21', preEdital: true, phaseLabel: 'Consolidação' }),
+    'Pós-edital · Consolidação'
+  );
+  // Sem data e sem marcar pré-edital, o app não sabe qual dos dois: não mostra nada.
+  assert.equal(editalPhaseLabel({}), '');
 });

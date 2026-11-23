@@ -25,6 +25,20 @@ export function withPreEdital<T extends { state: string }>(phase: T, preEdital: 
     : phase;
 }
 
+/** Rótulo do cabeçalho: pré-edital sem data; com data, pós-edital e a fase até a prova. */
+export function editalPhaseLabel({
+  examDate,
+  preEdital,
+  phaseLabel,
+}: {
+  examDate?: string | null;
+  preEdital?: boolean | null;
+  phaseLabel?: string | null;
+}): string {
+  if (examDate) return phaseLabel ? `Pós-edital · ${phaseLabel}` : 'Pós-edital';
+  return preEdital ? 'Pré-edital' : '';
+}
+
 export function resolveExamPhase(daysToExam: unknown, thresholds = EXAM_PHASE_THRESHOLDS) {
   if (daysToExam == null || !Number.isFinite(Number(daysToExam)))
     return {

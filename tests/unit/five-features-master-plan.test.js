@@ -44,7 +44,6 @@ import {
 import { buildSessionResultViewModel } from '../../src/application/sessions/build-session-result-view-model.js';
 import { renderSessionResult } from '../../src/ui/renderers/session-result-renderer.js';
 import { TodayStudyAssistantBar } from '../../src/ui/components/TodayStudyAssistantBar.js';
-import { OverviewCopilotCard } from '../../src/ui/components/OverviewCopilotCard.js';
 import { StudyCycleCenterCard } from '../../src/ui/components/StudyCycleCenterCard.js';
 import { TodayJournalSidebarCard } from '../../src/ui/components/TodayJournalSidebarCard.js';
 import { SEARCH_COMMANDS } from '../../src/ui/controllers/search-controller.js';
@@ -618,30 +617,7 @@ test('UI: renderSessionResult oferece prompt opcional só com sessionId e TodayS
   assert.doesNotMatch(html, /\p{Extended_Pictographic}/u);
 });
 
-test('UI distribuída: OverviewCopilotCard, StudyCycleCenterCard, TodayJournalSidebarCard e SEARCH_COMMANDS seguem contratos e ficam sem emojis', () => {
-  const copilot = buildStudyCopilotViewModel({
-    today: '2026-11-16',
-    nowISO: '2026-11-16T16:00:00.000Z',
-    recommendations: SAMPLE_CANDIDATES,
-    candidates: SAMPLE_CANDIDATES,
-    subjects: SUBJECTS,
-  });
-
-  const copilotHtml = render(
-    h(OverviewCopilotCard, {
-      copilot,
-      selectedQuestion: 'what_now',
-      onSelectQuestion: () => {},
-      onExecuteAnswer: () => {},
-      onQuickStudy30: () => {},
-    })
-  );
-  assert.match(copilotHtml, /Leitura do Extrato/);
-  assert.doesNotMatch(copilotHtml, /Estudo rápido: 30 min/);
-  assert.match(copilotHtml, /Tenho 30 minutos/);
-  assert.match(copilotHtml, /Mais perguntas \(3\)/);
-  assert.doesNotMatch(copilotHtml, /\p{Extended_Pictographic}/u);
-
+test('UI distribuída: StudyCycleCenterCard, TodayJournalSidebarCard e SEARCH_COMMANDS seguem contratos e ficam sem emojis', () => {
   const cyclePreview = buildStudyCyclePreview({
     subjects: SUBJECTS,
     blockDurationMinutes: 60,

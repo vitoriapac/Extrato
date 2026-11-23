@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=7b36ecd2fd3e">
-<link rel="stylesheet" href="styles/app.css?v=7b36ecd2fd3e">
+<link rel="stylesheet" href="styles/tailwind.css?v=475b93427209">
+<link rel="stylesheet" href="styles/app.css?v=475b93427209">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -126,8 +126,8 @@
   <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
     <div class="print-report-meta" id="printReportMeta"></div>
     <div id="finalStretchBannerSlot"></div>
-    <!-- CAMADA 1: AÇÃO PRIORITÁRIA + ATENÇÃO -->
-    <section class="overview-now" aria-label="Ação prioritária e atenção">
+    <!-- CAMADA 1: AÇÃO PRIORITÁRIA + A PROVA HOJE E A SEMANA -->
+    <section class="overview-now" aria-label="Ação prioritária, a prova hoje e a semana">
       <article class="chart-card overview-now-action">
         <h2>Próxima ação</h2>
         <div id="overviewNextAction"></div>
@@ -135,13 +135,11 @@
         <div id="cockpitTodayGoalMount"></div>
       </article>
       <div class="overview-now-side">
-        <article class="chart-card overview-now-attention">
-          <h2>Atenção</h2>
-          <div id="overviewAttention"></div>
-          <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver pendências na aba Hoje</button>
-        </article>
+        <section class="chart-card overview-exam-today" id="overviewExamToday" aria-labelledby="overviewExamTodayTitle" hidden>
+          <h2 id="overviewExamTodayTitle">A prova hoje</h2>
+          <div class="overview-exam-today__grid" id="overviewExamTodaySignals"></div>
+        </section>
         <div id="cockpitReviewLoadMount"></div>
-        <div id="overviewEvidence" hidden></div>
       </div>
     </section>
     <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
@@ -149,7 +147,7 @@
     </section>
     <div id="overviewExamPhase"></div>
       <div id="cockpitAnalyticsDisclosure" class="cockpit-three-layers space-y-6 mt-6">
-        <!-- Meta diária/questões ficam em "Próxima ação"; Carga de revisões na coluna de Atenção (acima). -->
+        <!-- Meta diária/questões ficam em "Próxima ação"; A prova hoje e Tarefas e revisões na coluna ao lado (acima). -->
         <h2 class="overview-band">Como venho indo</h2>
         <div class="overview-week">
         <section class="chart-card overview-more" aria-labelledby="overviewMoreTitle">
@@ -395,7 +393,10 @@
           <div id="hojeMetas"></div>
         </section>
 
-        <div id="todayWeeklyRhythmSlot"></div>
+        <details class="decision-fold today-more-details" id="todayMoreDetails">
+          <summary>Esforço na semana e Diário de Aprendizagem</summary>
+          <div id="todayWeeklyRhythmSlot"></div>
+        </details>
 
         <div id="errorNotebookDueToday"></div>
       </div>
@@ -789,7 +790,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=7b36ecd2fd3e"></script>
+  <script src="src/app.bundle.js?v=475b93427209"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

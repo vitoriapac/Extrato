@@ -1,5 +1,4 @@
 import { h } from 'preact';
-import { orderByDiagnosisQueue } from '../../../application/diagnostics/build-next-best-action.js';
 import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
 import {
@@ -36,21 +35,13 @@ import { buildWeeklyPerformanceBrief } from '../../../application/performance/bu
 import { createDashboardHeatmapController } from './dashboard-heatmap-controller.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
 import { readinessWeeklyTrend } from '../../../application/analytics/readiness-history.js';
-import { resolveExamPhase, withPreEdital } from '../../../domain/planning/adaptive-planning.js';
+import { editalPhaseLabel, resolveExamPhase, withPreEdital } from '../../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
-import { buildOverviewStanding } from '../../../application/analytics/build-overview-standing.js';
 import { renderMiniComparisonChart } from '../../performance/weekly-performance-brief-renderer.js';
-import { renderOverviewEvidence } from '../../renderers/overview-standing-renderer.js';
-import { OverviewCopilotCard } from '../../components/OverviewCopilotCard.js';
-import {
-  buildStudyCopilotViewModel,
-  revalidateCopilotAction,
-  type CopilotAnswer,
-  type CopilotQuestionKey,
-} from '../../../application/copilot/study-copilot-service.js';
-import type { OverdueReviewItem } from '../../../domain/recovery/recovery-mission-engine.js';
+import { buildExamTodaySignals } from '../../../application/analytics/build-exam-today-signals.js';
+import { renderExamTodaySignals } from '../../renderers/exam-today-renderer.js';
 
 export interface DashboardTabControllerDeps {
   document?: any;
@@ -113,7 +104,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
   const doc = deps.document || (typeof document !== 'undefined' ? document : null);
   const todayISO = deps.todayISO || (() => new Date().toISOString().slice(0, 10));
   const parseLocalDate = deps.parseLocalDate || ((s: string) => new Date(s + 'T00:00:00'));
-  let selectedCopilotQuestion: CopilotQuestionKey = 'what_now';
   const addDays =
     deps.addDays ||
     ((s: string, d: number) => {
@@ -224,138 +214,35 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     mountPreact(h(PerformanceTrendCard, props), container);
   }
 
-  function collectOverviewOverdueReviews(today: string): OverdueReviewItem[] {
-    const list = deps.getRevisoesUnificadas ? deps.getRevisoesUnificadas() : [];
-    return (Array.isArray(list) ? list : [])
-      .filter((r: any) => r?.date && r.date < today && r.status !== 'Concluído')
-      .map((r: any, idx: number) => ({
-        id: String(r.id || `rev-${idx + 1}`),
-        origin: r.origem || 'Agenda de Revisões',
-        date: r.date,
-        subjectId: r.subjectId || null,
-        subjectName: r.subject || 'Disciplina',
-        topicId: r.topicId || r.topicRef || null,
-        topicName: r.label ? String(r.label).split('·')[0].trim() : 'Revisão',
-        daysOverdue: Math.max(1, Math.abs(deps.diasParaRevisao?.(r.date) || 1)),
-      }));
-  }
-
-  function renderOverviewCopilotCard(hasConfigured: boolean, state: any, today: string): void {
-    if (!doc || typeof globalThis.document === 'undefined') return;
+  /** "A prova hoje": nota projetada × meta, mínimos no último simulado e pendências atrasadas. */
+  function renderExamToday(hasConfigured: boolean, state: any): void {
+    const section = doc?.getElementById('overviewExamToday');
+    const grid = doc?.getElementById('overviewExamTodaySignals');
+    if (!section || !grid) return;
+    section.hidden = !hasConfigured;
+    if (!hasConfigured) return;
+    let calibration = null;
     try {
-      const analyticsDisclosure = doc.getElementById(
-        'cockpitAnalyticsDisclosure'
-      ) as HTMLElement | null;
-      if (!analyticsDisclosure || analyticsDisclosure.ownerDocument !== globalThis.document) return;
-
-      let mount = doc.getElementById('overviewCopilotMount') as HTMLElement | null;
-      if (!mount && hasConfigured) {
-        const created = doc.createElement('div') as HTMLElement;
-        created.id = 'overviewCopilotMount';
-        analyticsDisclosure.insertBefore(created, analyticsDisclosure.firstChild);
-        mount = created;
-      }
-      if (!mount || mount.ownerDocument !== globalThis.document) return;
-      mount.hidden = !hasConfigured;
-      if (!hasConfigured) return;
-
-      const candidates = deps.intelligenceCandidates ? deps.intelligenceCandidates() : [];
-      const recs = orderByDiagnosisQueue(
-        deps.getCurrentStudyRecommendations ? deps.getCurrentStudyRecommendations() : [],
-        deps.diagnosisQueue?.()
-      );
-      const subjects = state?.subjects || [];
-      const isDemo =
-        typeof deps.isDemoMode === 'function'
-          ? Boolean(deps.isDemoMode())
-          : Boolean(deps.isDemoMode);
-      const dailyPriority = deps.getDailyPriority ? deps.getDailyPriority() : null;
-      const copilot = buildStudyCopilotViewModel({
-        today,
-        nowISO: deps.nowISO ? deps.nowISO() : new Date().toISOString(),
-        isDemo,
-        recommendations: recs,
-        candidates,
-        activePlan: deps.getLatestStudyPlan ? deps.getLatestStudyPlan() : null,
-        weeklyCapacityMinutes: deps.weeklyStrategyCapacity ? deps.weeklyStrategyCapacity() : 0,
-        studyCycle: state?.studyCycle || null,
-        overdueReviews: collectOverviewOverdueReviews(today),
-        subjects,
-        sessions: state?.studySessions || [],
-        questions: state?.questoes || [],
-        dailyPlans: state?.dailyPlans || [],
-        weeklyCloseSnapshots: state?.weeklyCloseSnapshots || [],
-        recommendationFeedback: state?.recommendationFeedback || [],
-        activeExamTags: state?.examBlueprint?.activeExamTags || [],
-        plannedNextItem: dailyPriority?.nextItem || null,
+      calibration = deps.projectPerformance?.()?.calibration ?? null;
+    } catch {
+      calibration = null;
+    }
+    grid.innerHTML = renderExamTodaySignals(
+      buildExamTodaySignals({
+        calibration,
+        simulations: state.simulados || [],
+        blueprint: state.examBlueprint || {},
+        subjects: state.subjects || [],
+        overdue: deps.revisoesAtrasadas?.() ?? 0,
+      })
+    );
+    if (!grid.dataset.wired) {
+      grid.dataset.wired = 'true';
+      grid.addEventListener('click', (event: Event) => {
+        const button = (event.target as HTMLElement | null)?.closest?.('[data-signal-tab]');
+        const tab = button?.getAttribute('data-signal-tab');
+        if (tab) navigateKpi(tab);
       });
-
-      const executeCopilotAnswer = (answer: CopilotAnswer) => {
-        if (answer.actionKind === 'open_quick_study') {
-          if (deps.openAssistantPanel) deps.openAssistantPanel('quick', { quickMinutes: 30 });
-          else deps.activateTab?.('hoje');
-          return;
-        }
-        if (answer.actionKind === 'open_planning_preview') {
-          deps.activateTab?.('metas');
-          deps.openPlanningPreview?.();
-          return;
-        }
-        if (answer.actionKind === 'open_weekly_close') {
-          if (deps.openWeeklyClose) deps.openWeeklyClose();
-          else deps.openAssistantPanel?.('weekly_closing');
-          return;
-        }
-        if (answer.actionKind === 'execute_action') {
-          const check = revalidateCopilotAction(
-            copilot.action || {
-              subjectId: answer.targetSubjectId,
-              topicId: answer.targetTopicId,
-              activityType: 'study',
-            },
-            { candidates, recommendations: recs, subjects }
-          );
-          if (!check.valid) {
-            deps.showToast?.(check.reason || 'A orientação precisa ser atualizada.');
-            renderOverviewCopilotCard(true, deps.getState ? deps.getState() : {}, todayISO());
-            return;
-          }
-          if (deps.startGuidedTimerSession) {
-            deps.startGuidedTimerSession({
-              subjectId: answer.targetSubjectId || copilot.action?.subjectId || null,
-              topicId: answer.targetTopicId || copilot.action?.topicId || null,
-              type: copilot.action?.activityType || 'study',
-              targetMinutes: copilot.action?.suggestedMinutes || null,
-              recommendationId: copilot.recommendationId,
-              recommendationSource: 'today',
-              sessionOrigin: 'copilot',
-            });
-          } else if (deps.openAssistantPanel) {
-            deps.openAssistantPanel('copilot');
-          } else {
-            deps.activateTab?.('hoje');
-          }
-        }
-      };
-
-      mountPreact(
-        h(OverviewCopilotCard, {
-          copilot,
-          selectedQuestion: selectedCopilotQuestion,
-          onSelectQuestion: key => {
-            selectedCopilotQuestion = key;
-            renderOverviewCopilotCard(true, deps.getState ? deps.getState() : {}, todayISO());
-          },
-          onExecuteAnswer: executeCopilotAnswer,
-          onQuickStudy30: () => {
-            if (deps.openAssistantPanel) deps.openAssistantPanel('quick', { quickMinutes: 30 });
-            else deps.activateTab?.('hoje');
-          },
-        }),
-        mount
-      );
-    } catch (err) {
-      console.error('Falha ao atualizar Copiloto na Visão Geral:', err);
     }
   }
 
@@ -386,10 +273,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       (performanceGrid as HTMLElement).hidden = !hasConfigured;
     }
 
-    const attentionCard = doc.querySelector('.overview-now-attention');
-    if (attentionCard) {
-      (attentionCard as HTMLElement).hidden = !hasConfigured;
-    }
 
     const reviewLoadSlot = doc.getElementById('cockpitReviewLoadMount');
     if (reviewLoadSlot) (reviewLoadSlot as HTMLElement).hidden = !hasConfigured;
@@ -398,7 +281,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (analyticsDisclosure) {
       analyticsDisclosure.hidden = !hasConfigured;
     }
-    renderOverviewCopilotCard(hasConfigured, state, today);
+    renderExamToday(hasConfigured, state);
 
     // Camada 2: Saúde do Edital por Disciplina
     const healthMount = doc.getElementById('cockpitSyllabusHealthMount');
@@ -498,28 +381,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       note.hidden = !hasConfigured;
     }
 
-    const evidenceMount = doc.getElementById('overviewEvidence');
-    if (evidenceMount) {
-      evidenceMount.hidden = !hasConfigured;
-      if (hasConfigured) {
-        let readiness: any = null;
-        try {
-          readiness =
-            deps.readinessResult && deps.computeApprovalMetrics
-              ? deps.readinessResult(deps.computeApprovalMetrics())
-              : null;
-        } catch {
-          readiness = null;
-        }
-        const standing = buildOverviewStanding({
-          calibration: deps.projectPerformance?.()?.calibration,
-          matrixRows: deps.examMatrixRows ? deps.examMatrixRows() : [],
-          readiness,
-        });
-        // A evidência fica na coluna de Atenção, abaixo da Carga de revisões.
-        evidenceMount.innerHTML = renderOverviewEvidence(standing.evidence);
-      }
-    }
     // O mural histórico mora em Desempenho > Consistência; a Visão geral mostra só as últimas 4 semanas.
     renderHeatmap();
     const consistencyMount = doc.getElementById('overviewConsistency');
@@ -668,7 +529,9 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (!fig) return;
 
     if (!state.examDate) {
-      fig.textContent = 'defina a data da prova';
+      fig.textContent = state.examBlueprint?.preEdital
+        ? 'aguardando o edital'
+        : 'defina a data da prova';
       fig.classList.remove('urgent');
       return;
     }
@@ -805,8 +668,14 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       state.examDate && deps.diasParaRevisao ? deps.diasParaRevisao(state.examDate) : null;
     const phaseChip = doc.getElementById('examPhaseChip');
     if (phaseChip) {
-      const phase = resolveExamPhase(phaseDays);
-      phaseChip.textContent = state.examDate && phase?.label ? `Fase: ${phase.label}` : '';
+      phaseChip.textContent = editalPhaseLabel({
+        examDate: state.examDate,
+        preEdital: state.examBlueprint?.preEdital,
+        phaseLabel: resolveExamPhase(phaseDays)?.label,
+      });
+      phaseChip.title = state.examDate
+        ? 'Edital publicado: a fase conta os dias até a prova.'
+        : 'Edital ainda não publicado: estudo da base comum, sem data de prova.';
       phaseChip.hidden = !phaseChip.textContent;
     }
     const phaseContainer = doc.getElementById('overviewExamPhase');

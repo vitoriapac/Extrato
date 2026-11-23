@@ -1347,11 +1347,6 @@
       "rationale": "Cálculo analítico puro de custo de oportunidade, pontos por hora (PPH) e priorização marginal."
     },
     {
-      "file": "tests/unit/overview-standing.test.js",
-      "tier": "FAST_GATE",
-      "rationale": "Contrato Node barato; leitura consolidada da preparação na Visão Geral."
-    },
-    {
       "file": "tests/unit/overview-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1835,6 +1830,11 @@
       "file": "tests/unit/blueprint-weights.test.js",
       "tier": "FAST_GATE",
       "rationale": "Acerto e cobertura pesados pelos pontos do edital, Node determinístico."
+    },
+    {
+      "file": "tests/unit/exam-today-signals.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Sinais de A prova hoje na Visão geral, Node determinístico."
     },
     {
       "file": "tests/unit/essay-and-pre-edital.test.js",

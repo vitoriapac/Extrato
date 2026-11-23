@@ -241,12 +241,11 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
 }) => {
   await prepare(page);
 
-  // 1. Visão Geral: Leitura do Extrato + atalho Estudo rápido: 30 min
+  // 1. Visão Geral: os três sinais da prova; a Leitura do Extrato mora na barra de Hoje.
   await activateTab(page, 'dashboard');
-  const copilotCard = page.locator('#overviewCopilotMount [data-overview-copilot="true"]');
-  await expect(copilotCard).toBeVisible();
-  await expect(copilotCard).toContainText('Leitura do Extrato');
-  // O atalho de 30 min saiu da Visão geral (T15): o Estudo rápido abre pela barra de Hoje.
+  await expect(page.locator('#overviewExamToday')).toBeVisible();
+  await expect(page.locator('#overviewExamTodaySignals')).toContainText('Pendências atrasadas');
+  await expect(page.locator('#overviewCopilotMount')).toHaveCount(0);
 
   // 2. Hoje: Estudo Rápido abre em 30 min e chip de 15 min dentro do painel alterna em 1 clique
   await activateTab(page, 'hoje');
@@ -257,7 +256,8 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
   await quickPanel.getByRole('button', { name: 'Estudo rápido de 15 minutos' }).click();
   await expect(quickPanel).toContainText('Proposta (15 min)');
 
-  // 3. Hoje lateral: card permanente do Diário de Aprendizagem aceita registro inline
+  // 3. Hoje lateral: o Diário fica na dobra "Esforço na semana e Diário" e aceita registro inline
+  await page.locator('#todayMoreDetails > summary').click();
   const journalSidebar = page.locator('#todayJournalSidebarMount [data-today-journal-sidebar="true"]');
   await expect(journalSidebar).toBeVisible();
   await journalSidebar.getByRole('button', { name: 'Registrar aprendizado ou dúvida' }).click();
@@ -284,7 +284,7 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
   await expect(ritualSection).toContainText('Uma melhoria para testar');
 });
 
-test('Demo Visão Geral renderiza Copiloto e Saúde do Edital sem erros de console nem #appErrorState', async ({
+test('Demo Visão Geral renderiza A prova hoje e Saúde do Edital sem erros de console nem #appErrorState', async ({
   page,
 }) => {
   const runtimeErrors = [];
@@ -296,7 +296,7 @@ test('Demo Visão Geral renderiza Copiloto e Saúde do Edital sem erros de conso
   await openDemo(page);
   await activateTab(page, 'dashboard');
   await expect(page.locator('#appErrorState')).toBeHidden();
-  await expect(page.locator('#overviewCopilotMount [data-overview-copilot="true"]')).toBeVisible();
+  await expect(page.locator('#overviewExamTodaySignals .overview-signal')).toHaveCount(3);
   await expect(page.locator('#cockpitSyllabusHealthMount')).not.toBeEmpty();
   expect(runtimeErrors.filter(text => /isDemoMode|Falha em visão geral/i.test(text))).toEqual([]);
 });
