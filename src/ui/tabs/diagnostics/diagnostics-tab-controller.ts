@@ -22,7 +22,6 @@ import {
   recommendationActionLabel as defaultRecommendationActionLabel,
 } from '../../../application/recommendations/recommendation-action.js';
 import { buildAllocationBalanceViewModel } from '../../../application/analytics/build-allocation-balance-view-model.js';
-import { renderIconSvg } from '../../primitives/icon.js';
 
 export interface DiagnosticsTabControllerOptions {
   document: any;
@@ -287,9 +286,8 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     const energyAnalysis = analyzeFocusAndEnergy(state.studySessions || []);
     let energyAlertHtml = '';
     if (energyAnalysis.fatigueAlert) {
-      energyAlertHtml = `<div class="alerta-item alerta-media mt-4">
-        <span class="alerta-icon">${renderIconSvg('alert-triangle', { size: 16, className: 'inline-block align-middle' })}</span><span><strong>Rendimento por turno:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
-      </div>`;
+      // Leitura de uma métrica, não um alerta do app: nota no fluxo, sem faixa de aviso nem ícone.
+      energyAlertHtml = `<p class="context-note mt-4"><strong>Rendimento por turno:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</p>`;
     }
 
     container.innerHTML =
