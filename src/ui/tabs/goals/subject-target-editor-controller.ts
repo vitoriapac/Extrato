@@ -272,7 +272,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       const existing = (state.examBlueprint?.subjects || []).find(
         (item: any) => item.subjectId === subjectId
       );
-      const configFields = ['priority', 'weight', 'expected', 'accuracy', 'mastery'];
+      const configFields = ['priority', 'weight', 'expected', 'accuracy', 'mastery', 'minimum'];
       if (configFields.some(key => fields[key] !== undefined)) {
         const saved = (value: unknown) => (value == null ? '' : String(value));
         const config = buildSavedSubjectConfig(subjectId, existing, {
@@ -283,6 +283,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
             (existing?.expectedQuestions > 0 ? saved(existing.expectedQuestions) : ''),
           questionWeight: fields.weight ?? saved(existing?.questionWeight),
           accuracyTarget: fields.accuracy ?? saved(existing?.accuracyTarget),
+          minScore: fields.minimum ?? saved(existing?.minScore),
         });
         if (!config) {
           ctx.showToast('Revise as metas, a quantidade de questões e o peso antes de salvar.');
@@ -298,9 +299,14 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       );
       return (
         !existing ||
-        ['priority', 'masteryTarget', 'accuracyTarget', 'expectedQuestions', 'questionWeight'].some(
-          key => JSON.stringify(existing[key]) !== JSON.stringify(config[key])
-        )
+        [
+          'priority',
+          'masteryTarget',
+          'accuracyTarget',
+          'expectedQuestions',
+          'questionWeight',
+          'minScore',
+        ].some(key => JSON.stringify(existing[key]) !== JSON.stringify(config[key]))
       );
     });
     if (changedConfig.length)

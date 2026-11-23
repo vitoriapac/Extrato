@@ -28,6 +28,12 @@ import {
   pluralize,
 } from '../core/utils.js';
 
+/** Erradas opcionais: número não negativo que, somado aos acertos, não passa do total. */
+const validWrong = (item: { correct?: unknown; total?: unknown; wrong?: unknown }) =>
+  item.wrong == null ||
+  (isFiniteNonNegative(item.wrong) &&
+    Number(item.correct) + Number(item.wrong) <= Number(item.total));
+
 export interface BackupValidationSuccess {
   valid: true;
   version: number;
@@ -220,6 +226,8 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       !isFiniteNonNegative(item.total) ||
       !isFiniteNonNegative(item.correct) ||
       Number(item.correct) > Number(item.total) ||
+      !validWrong(item) ||
+      !(item.scoring == null || item.scoring === 'padrao' || item.scoring === 'certo-errado') ||
       !Array.isArray(item.breakdown)
     )
       return fail('Um simulado possui dados inválidos.');
@@ -229,7 +237,8 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       if (
         !isFiniteNonNegative(row.total) ||
         !isFiniteNonNegative(row.correct) ||
-        Number(row.correct) > Number(row.total)
+        Number(row.correct) > Number(row.total) ||
+        !validWrong(row)
       )
         return fail('Uma linha de simulado possui totais inválidos.');
     }
@@ -724,8 +733,7 @@ function validateStudyCycle(cycle: unknown): string {
   if (!isPlainObject(cycle)) return 'O campo "studyCycle" deve ser um objeto válido.';
   if (!isSafeId(cycle.id) || !Array.isArray(cycle.blocks))
     return 'O ciclo de estudos possui estrutura inválida.';
-  if (cycle.blocks.length > 500)
-    return 'O ciclo de estudos excede o limite seguro de 500 blocos.';
+  if (cycle.blocks.length > 500) return 'O ciclo de estudos excede o limite seguro de 500 blocos.';
   const blockIds = new Set<string>();
   for (const block of cycle.blocks) {
     if (!isPlainObject(block) || !isSafeId(block.id))

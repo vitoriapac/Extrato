@@ -1,4 +1,5 @@
 import type { AdaptiveReviewState } from '../domain/reviews.ts';
+import type { SimulationScoring } from '../domain/exams/simulation-score.ts';
 /**
  * @fileoverview Definições de tipos centrais do StudyTrack para TypeScript e JSDoc.
  */
@@ -110,6 +111,8 @@ export interface SimulationBreakdownItem {
   subjectId: string | null;
   correct: number;
   total: number;
+  /** Erradas; sem o campo, nenhuma questão ficou em branco. */
+  wrong?: number | null;
 }
 
 export interface SimulationRecord {
@@ -118,6 +121,9 @@ export interface SimulationRecord {
   date: string;
   correct: number;
   total: number;
+  wrong?: number | null;
+  /** 'certo-errado': um erro anula um acerto (Cebraspe). Ausente: acerto simples. */
+  scoring?: SimulationScoring;
   breakdown?: SimulationBreakdownItem[];
   createdAt?: string;
 }
@@ -223,6 +229,8 @@ export interface ExamBlueprintSubject {
   sourceRef?: string | null;
   official?: boolean;
   mappingType?: string | null;
+  /** Nota mínima eliminatória da disciplina, em % (mesma escala da nota do simulado). */
+  minScore?: number | null;
 }
 
 export interface ExamBlueprint {
@@ -232,6 +240,8 @@ export interface ExamBlueprint {
   activeExamTags: string[];
   configuredAt: string | null;
   subjects: ExamBlueprintSubject[];
+  /** Tipo de prova usado como padrão nos simulados novos. */
+  scoringMode?: SimulationScoring;
 }
 
 export interface TimerStrategy {
@@ -261,12 +271,7 @@ export interface ActiveTimerState {
   cycleBlockId?: string | null;
 }
 
-export type CalendarActivityKind =
-  | 'task'
-  | 'mock_exam'
-  | 'essay'
-  | 'event'
-  | 'manual_review';
+export type CalendarActivityKind = 'task' | 'mock_exam' | 'essay' | 'event' | 'manual_review';
 
 export type CalendarRecurrenceRule = 'none' | 'weekly' | 'biweekly' | 'monthly';
 

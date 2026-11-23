@@ -1,4 +1,5 @@
 import { subjectColorOf } from '../subjects/subject-color.js';
+import { scorePercent } from '../exams/simulation-score.js';
 
 export interface SubjectMeta {
   id: string;
@@ -76,7 +77,8 @@ export function buildSubjectWeeklyTrendVisual({
     };
   });
 
-  const averageAccuracy = totalResolved >= 10 ? Math.round((totalCorrect / totalResolved) * 100) : null;
+  const averageAccuracy =
+    totalResolved >= 10 ? Math.round((totalCorrect / totalResolved) * 100) : null;
 
   let trendDirection: 'improving' | 'stable' | 'worsening' | 'insufficient' = 'insufficient';
   if (trend.key === 'improving' || trend.key === 'stable' || trend.key === 'worsening') {
@@ -156,7 +158,7 @@ export function buildErrorParetoVisual({
     running += count;
     const share = Math.round((count / effectiveTotal) * 100);
     const cumulativeShare = Math.min(100, Math.round((running / effectiveTotal) * 100));
-    
+
     // Regra dos 80/20: se até o item anterior ainda não tínhamos chegado em 80%, este item é vital
     const isVital = idx === 0 || (running - count) / effectiveTotal < 0.8;
     if (isVital) vitalCount++;
@@ -217,6 +219,9 @@ export function buildSimulationTrendVisual({
     date?: string;
     correct?: number;
     total?: number;
+    wrong?: number | null;
+    scoring?: string | null;
+    breakdown?: Array<{ correct?: number; total?: number; wrong?: number | null }>;
     score?: number;
   }>;
   targetScore?: number;
@@ -246,7 +251,7 @@ export function buildSimulationTrendVisual({
   const points: SimulationTrendPointVisual[] = validSims.map((sim, index) => {
     const correct = Math.max(0, Number(sim.correct) || 0);
     const total = Math.max(1, Number(sim.total) || 1);
-    const score = Math.round((Number(sim.score) || (correct / total) * 100) * 10) / 10;
+    const score = Math.round((Number(sim.score) || scorePercent(sim, sim.scoring)) * 10) / 10;
     totalScoreSum += score;
     if (score > bestScore) bestScore = score;
     const onTarget = score >= targetScore;
@@ -308,6 +313,7 @@ export function buildSimulationBreakdownVisual({
   breakdown,
   subjects = [],
   overallScore = 0,
+  scoring = null,
 }: {
   breakdownItems?: Array<{
     id: string;
@@ -323,6 +329,7 @@ export function buildSimulationBreakdownVisual({
   }>;
   subjects: SubjectMeta[];
   overallScore?: number;
+  scoring?: string | null;
 }): SimulationBreakdownVisualModel {
   const items = breakdownItems || breakdown || [];
   const subjectMap = new Map<string, { name: string; colorSlot: number }>();
@@ -341,7 +348,7 @@ export function buildSimulationBreakdownVisual({
     const correct = Math.max(0, Number(item.correct) || 0);
     if (total === 0) continue;
 
-    const score = Math.round((correct / total) * 100);
+    const score = Math.round(scorePercent(item, scoring));
     const meta = subjectMap.get(subId) || {
       name: subId === '__sem_disciplina' ? 'Sem disciplina' : 'Outra',
       colorSlot: 1,

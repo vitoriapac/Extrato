@@ -3,6 +3,7 @@ const sum = (items: any[], selector: (item: any) => unknown) =>
 import { summarizeRecommendationHistory } from '../application/recommendations/recommendation-history.js';
 import { buildRecommendationOutcomeAudit } from '../application/recommendations/build-recommendation-outcome-audit.js';
 import { addLocalDays } from '../core/date-utils.js';
+import { scorePercent } from '../domain/exams/simulation-score.js';
 import { buildExamReportSummary } from './exam-report-summary.js';
 import { buildReportWeeklyFocus } from './weekly-focus-summary.js';
 import { readinessHistoryForScope } from '../application/analytics/readiness-history.js';
@@ -268,7 +269,7 @@ export function buildStrategicReport({
       correct: Number(item.correct) || 0,
       total: Number(item.total) || 0,
       accuracy: Number(item.total)
-        ? Math.round((Number(item.correct || 0) / Number(item.total)) * 100)
+        ? Math.round(scorePercent(item, latestSimulation?.scoring))
         : null,
     })),
     focus = (diagnosis?.weeklyFocus || []).map((item: any) => ({
@@ -489,7 +490,7 @@ export function buildStrategicReport({
     simulations: simulations.map((item: any) => ({
       date: item.date,
       name: item.nome || 'Simulado',
-      score: item.total ? Math.round((item.correct / item.total) * 100) : null,
+      score: item.total ? Math.round(scorePercent(item, item.scoring)) : null,
     })),
     latestSimulation: latestSimulation
       ? {

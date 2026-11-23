@@ -1,3 +1,5 @@
+import { scorePercent } from '../../domain/exams/simulation-score.js';
+
 type Row = Record<string, any>;
 export const projectionComposition = (item: Row) =>
   JSON.stringify([...(item.examTags || [])].sort()) +
@@ -116,7 +118,7 @@ export function buildProjectionCalibration({
         )
         .sort((a, b) => Date.parse(b.issuedAt) - Date.parse(a.issuedAt))[0];
       if (!prior) return null;
-      const observed = Math.round((Number(item.correct) / Number(item.total)) * 1000) / 10;
+      const observed = Math.round(scorePercent(item, item.scoring) * 10) / 10;
       return {
         id: item.id,
         date: item.date,

@@ -1,5 +1,6 @@
 import { addLocalDays } from '../../core/date-utils.js';
 import { formatDecimal } from '../../core/format-number.js';
+import { scorePercent } from '../../domain/exams/simulation-score.js';
 
 export interface PerformanceTrendPoint {
   date: string;
@@ -47,7 +48,9 @@ export function buildPerformanceTrendViewModel(
 
   // Mesma janela padrão de Desempenho (30 dias): o total e a precisão da Visão geral batem com a aba Desempenho.
   const windowStart = addLocalDays(today, -29);
-  const windowQuestoes = validQuestoes.filter((q: { date: string }) => q.date >= (windowStart as string));
+  const windowQuestoes = validQuestoes.filter(
+    (q: { date: string }) => q.date >= (windowStart as string)
+  );
 
   const totalResolved = windowQuestoes.reduce(
     (sum: number, q: any) => sum + (Number(q.resolved) || 0),
@@ -61,12 +64,13 @@ export function buildPerformanceTrendViewModel(
     totalResolved > 0 ? Math.round((totalCorrect / totalResolved) * 1000) / 10 : null;
 
   const simScores = validSimulados.map(
-    (s: any) => Math.round((Number(s.correct) / Number(s.total)) * 1000) / 10
+    (s: any) => Math.round(scorePercent(s, s.scoring) * 10) / 10
   );
   const simulationLatest = simScores.length > 0 ? simScores[simScores.length - 1] : null;
   const simulationMean =
     simScores.length > 0
-      ? Math.round((simScores.reduce((a: number, b: number) => a + b, 0) / simScores.length) * 10) / 10
+      ? Math.round((simScores.reduce((a: number, b: number) => a + b, 0) / simScores.length) * 10) /
+        10
       : null;
   const simulationCount = validSimulados.length;
 
@@ -103,7 +107,7 @@ export function buildPerformanceTrendViewModel(
     let simName: string | undefined;
     if (weekSims.length > 0) {
       const latestSim = weekSims[weekSims.length - 1];
-      simScore = Math.round((Number(latestSim.correct) / Number(latestSim.total)) * 1000) / 10;
+      simScore = Math.round(scorePercent(latestSim, latestSim.scoring) * 10) / 10;
       simName = latestSim.nome || 'Simulado';
     }
 
@@ -127,7 +131,8 @@ export function buildPerformanceTrendViewModel(
     benchmarkScore == null ? 'insufficient' : benchmarkScore >= targetScore ? 'ok' : 'attention';
 
   // Diz de onde vem o número (último simulado ou questões em 30 dias) para não parecer outro acerto geral.
-  const benchmarkLabel = simulationLatest != null ? 'Último simulado' : 'Acerto em questões (30 dias)';
+  const benchmarkLabel =
+    simulationLatest != null ? 'Último simulado' : 'Acerto em questões (30 dias)';
   let summaryText = 'Sem registros suficientes para calcular a tendência.';
   if (benchmarkScore != null) {
     if (gap != null && gap >= 0) {

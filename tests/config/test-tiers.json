@@ -1832,6 +1832,11 @@
       "rationale": "Diagnóstico determinístico de sangria pós-simulado, plano diário de 7 dias e rascunhos de erro."
     },
     {
+      "file": "tests/unit/simulation-score.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Nota líquida Certo ou errado e mínimo eliminatório por disciplina, Node determinístico."
+    },
+    {
       "file": "tests/unit/simulations-tab-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s)."

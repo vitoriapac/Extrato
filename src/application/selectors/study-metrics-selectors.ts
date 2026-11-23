@@ -18,6 +18,7 @@ import {
 import { buildUnifiedReviews } from '../calendar/build-unified-reviews.js';
 import type { AppState } from '../../core/types.js';
 import { firstActivityDate } from './first-activity-date.js';
+import { simulationScore, simulationTotals } from '../../domain/exams/simulation-score.js';
 
 export interface StudyMetricsSelectorsDependencies {
   getState: () => AppState;
@@ -365,17 +366,11 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
   }
 
   function simuladoEffectiveCounts(sim: Record<string, any>) {
-    if (sim.breakdown && sim.breakdown.length > 0) {
-      const correct = sim.breakdown.reduce((s: number, b: any) => s + (Number(b.correct) || 0), 0);
-      const total = sim.breakdown.reduce((s: number, b: any) => s + (Number(b.total) || 0), 0);
-      return { correct, total };
-    }
-    return { correct: Number(sim.correct) || 0, total: Number(sim.total) || 0 };
+    return simulationTotals(sim);
   }
 
   function simuladoNota(sim: Record<string, any>): number {
-    const { correct, total } = simuladoEffectiveCounts(sim);
-    return total > 0 ? Math.round((correct / total) * 100) : 0;
+    return Math.round(simulationScore(sim));
   }
 
   function performanceScopedPlans(scope: any = examEvidenceContext()) {

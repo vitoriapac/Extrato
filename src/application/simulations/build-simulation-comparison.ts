@@ -1,15 +1,19 @@
-type Tally = { correct: number; total: number };
-const accuracy = (correct: number, total: number) => Math.round((correct / total) * 100);
+import { scorePercent, wrongCount } from '../../domain/exams/simulation-score.js';
+
+type Tally = { correct: number; total: number; wrong: number; scoring?: string | null };
+const accuracy = (tally: Tally) => Math.round(scorePercent(tally, tally.scoring));
 const breakdownBySubject = (simulation: Record<string, any>) => {
   const rows = new Map<string, Tally>();
   for (const item of simulation.breakdown || []) {
     const total = Math.max(0, Number(item.total) || 0),
       correct = Math.min(total, Math.max(0, Number(item.correct) || 0));
     if (!item.subjectId || !total) continue;
-    const previous = rows.get(item.subjectId) || { correct: 0, total: 0 };
+    const previous = rows.get(item.subjectId) || { correct: 0, total: 0, wrong: 0 };
     rows.set(item.subjectId, {
       correct: previous.correct + correct,
       total: previous.total + total,
+      wrong: previous.wrong + wrongCount(item),
+      scoring: simulation.scoring,
     });
   }
   return rows;
@@ -37,8 +41,8 @@ export function buildSimulationComparison({ simulations = [], subjects = [] }: a
     .filter(([id]) => before.has(id))
     .map(([id, latest]) => {
       const earlier = before.get(id),
-        previousAccuracy = accuracy(earlier!.correct, earlier!.total),
-        currentAccuracy = accuracy(latest.correct, latest.total);
+        previousAccuracy = accuracy(earlier!),
+        currentAccuracy = accuracy(latest);
       return {
         subjectId: id,
         name: names.get(id) || 'Disciplina removida',

@@ -1,8 +1,9 @@
 import { buildSimulationComparison } from '../simulations/build-simulation-comparison.js';
 import { buildProjectionCalibration } from '../analytics/projection-calibration-history.js';
+import { scorePercent } from '../../domain/exams/simulation-score.js';
 
 const score = (item: Record<string, any>) =>
-  item.total ? Math.round((item.correct / item.total) * 1000) / 10 : null;
+  item.total ? Math.round(scorePercent(item, item.scoring) * 10) / 10 : null;
 const inRange = (date: string, range: { start: string; end: string }) =>
   Boolean(date && range?.end && date <= range.end && (!range.start || date >= range.start));
 

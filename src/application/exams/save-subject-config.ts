@@ -10,12 +10,14 @@ export function buildSavedSubjectConfig(
     expectedQuestions,
     questionWeight,
     accuracyTarget,
+    minScore,
   }: {
     priority: string;
     masteryTarget: string | number;
     expectedQuestions: string | number;
     questionWeight: string | number;
     accuracyTarget?: string | number;
+    minScore?: string | number;
   }
 ): ExamBlueprintSubject | null {
   const mastery = masteryTarget === '' ? null : Number(masteryTarget),
@@ -38,6 +40,14 @@ export function buildSavedSubjectConfig(
         : Number(accuracyTarget);
   if (accuracy !== null && (!Number.isFinite(accuracy) || accuracy < 0 || accuracy > 100))
     return null;
+  // Vazio ou 0: sem mínimo eliminatório.
+  const minimum =
+    minScore === undefined
+      ? (current?.minScore ?? null)
+      : minScore === '' || Number(minScore) === 0
+        ? null
+        : Number(minScore);
+  if (minimum !== null && (!Number.isFinite(minimum) || minimum < 0 || minimum > 100)) return null;
   const next: ExamBlueprintSubject = {
     ...(current || {
       subjectId,
@@ -56,6 +66,7 @@ export function buildSavedSubjectConfig(
     ...next,
     priority: priority as ExamPriority,
     accuracyTarget: accuracy,
+    minScore: minimum ?? undefined,
     masteryTarget: mastery,
     expectedQuestions: questions,
     questionWeight: weight,

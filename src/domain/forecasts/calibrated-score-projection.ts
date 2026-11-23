@@ -1,5 +1,6 @@
 import { PROJECTION_EVIDENCE_POLICY as policy } from './projection-evidence-policy.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
+import { scorePercent } from '../exams/simulation-score.js';
 interface ProjectionBreakdownRow {
   subjectId?: string | null;
   total?: number | string;
@@ -10,6 +11,8 @@ interface ProjectionSimulation {
   date: string;
   total: number | string;
   correct: number | string;
+  wrong?: number | null;
+  scoring?: string | null;
   examTags?: string[];
   breakdown?: ProjectionBreakdownRow[];
 }
@@ -93,7 +96,7 @@ export function buildCalibratedScoreProjection({
       evidence,
       reason: `Registre pelo menos ${policy.minimumObservations} simulados comparáveis em datas distintas, ${policy.minimumQuestions} questões e ${policy.minimumSpanDays} dias de histórico nos últimos ${policy.windowDays} dias.`,
     };
-  const scores = comparable.map(item => (Number(item.correct) / Number(item.total)) * 100),
+  const scores = comparable.map(item => scorePercent(item, item.scoring)),
     center = median(scores.slice(-3));
   const residuals = scores
     .slice(3)

@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { createEditableCollectionController } from '../../controllers/editable-collection-controller.js';
 import { createQuestionsController } from './questions-controller.js';
-import { calcAcertoPct, cloneRecord } from './questions-tab-controller.js';
+import { cloneRecord } from './questions-tab-controller.js';
 import { buildSimulatedRemediationDiagnostic } from '../../../domain/diagnostics/simulated-remediation.js';
 import { SimulatedRemediationModal } from '../../components/SimulatedRemediationModal.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
@@ -10,6 +10,12 @@ import { runUndoable } from '../../undoable.js';
 import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
 import { buildSimulationTrendVisual } from '../../../domain/practice/practice-visual-models.js';
 import { renderSimulationTrendChart } from '../../primitives/charts/charts.js';
+import {
+  simulationScore,
+  simulationTotals,
+  subjectsBelowMinimum,
+  wrongCount,
+} from '../../../domain/exams/simulation-score.js';
 
 export interface SimulationsTabControllerContext {
   document: Document;
@@ -71,18 +77,26 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   }
 
   function simuladoNota(sim: Record<string, any>) {
-    const { correct, total } = simuladoEffectiveCounts(sim);
-    return calcAcertoPct(correct, total);
+    return simulationScore(sim);
   }
 
   function simulationViewModel(sim: Record<string, any>) {
-    const counts = simuladoEffectiveCounts(sim);
+    const totals = simulationTotals(sim);
+    const names = new Map<string, string>(
+      (ctx.activeSubjects() || []).map((s: { id: string; name: string }) => [s.id, s.name])
+    );
     return {
       date: sim.date ? ctx.formatDatePt(sim.date) : 'Sem data',
       name: sim.nome || 'Simulado sem nome',
-      correct: counts.correct,
-      total: counts.total,
+      correct: totals.correct,
+      total: totals.total,
       score: simuladoNota(sim),
+      scoring: sim.scoring === 'certo-errado' ? ('certo-errado' as const) : undefined,
+      blank: totals.total - totals.correct - totals.wrong,
+      belowMinimum: subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(item => ({
+        ...item,
+        name: names.get(item.subjectId) || 'Disciplina removida',
+      })),
     };
   }
 
@@ -93,6 +107,10 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     normalize: (draft: Record<string, any>) => {
       draft.total = Math.max(0, Math.floor(Number(draft.total) || 0));
       draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.total));
+      // Valores explícitos (não delete): a gravação mescla o rascunho com o registro atual.
+      draft.scoring = draft.scoring === 'certo-errado' ? 'certo-errado' : undefined;
+      // Erradas vazias: nenhuma em branco. Com valor, limitadas ao que sobra depois dos acertos.
+      draft.wrong = draft.wrong == null || draft.wrong === '' ? null : wrongCount(draft);
       return draft;
     },
     onSaved: (saved: Record<string, any>) => {
@@ -113,9 +131,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       }
       ctx.persistAndRender();
       ctx.showToast(
-        total > 0
-          ? 'Simulado atualizado e diagnóstico disponível.'
-          : 'Simulado atualizado.'
+        total > 0 ? 'Simulado atualizado e diagnóstico disponível.' : 'Simulado atualizado.'
       );
       if (
         completedLinkedAgendaItem &&
@@ -159,12 +175,14 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     if (!sim) return;
     const b = (sim.breakdown || []).find((x: any) => x.id === breakdownId);
     if (!b) return;
-    b[field] = field === 'correct' || field === 'total' ? Number(value) || 0 : value;
+    if (field === 'wrong' && String(value).trim() === '') b.wrong = null;
+    else b[field] = ['correct', 'total', 'wrong'].includes(field) ? Number(value) || 0 : value;
     b.total = Math.max(0, Number(b.total) || 0);
     if ((Number(b.correct) || 0) > b.total) {
       ctx.showToast('Os acertos foram limitados ao total de questões.');
     }
     b.correct = Math.max(0, Math.min(Number(b.correct) || 0, b.total));
+    if (b.wrong != null) b.wrong = wrongCount(b);
     ctx.persistAndRender();
   }
 
@@ -186,8 +204,18 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   function updateSimulationDraft(field: string, value: any): void {
     simulationEditController.update(
       field,
-      field === 'correct' || field === 'total' ? Math.max(0, Math.floor(Number(value) || 0)) : value
+      field === 'wrong' && String(value).trim() === ''
+        ? null
+        : ['correct', 'total', 'wrong'].includes(field)
+          ? Math.max(0, Math.floor(Number(value) || 0))
+          : field === 'scoring'
+            ? value === true || value === 'certo-errado'
+              ? 'certo-errado'
+              : 'padrao'
+            : value
     );
+    // O campo Erradas só aparece em Certo ou errado: redesenha ao trocar o tipo.
+    if (field === 'scoring') renderSimulados();
   }
 
   function saveSimulationEdit(): void {
@@ -265,6 +293,9 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       correct: 0,
       total: 0,
       breakdown: [],
+      ...(ctx.state?.examBlueprint?.scoringMode === 'certo-errado'
+        ? { scoring: 'certo-errado' }
+        : {}),
     });
     // A linha nova entra em edição na página em que a ordenação por data a colocar.
     const index = [...(ctx.state.simulados || [])]

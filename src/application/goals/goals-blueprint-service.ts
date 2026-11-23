@@ -76,6 +76,16 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
       return updateExamBlueprint('masteryTarget', value, { refresh });
     }
     const state = getState();
+    if (field === 'scoringMode') {
+      const mode = value === 'certo-errado' ? 'certo-errado' : undefined;
+      if (state.examBlueprint.scoringMode === mode) return;
+      captureReadinessBeforeStrategy('Antes de alterar o tipo de prova');
+      state.examBlueprint.scoringMode = mode;
+      state.examBlueprint.configuredAt = nowISO();
+      if (refresh) persistAndRender();
+      else scheduleSave();
+      return;
+    }
     const nextValue =
       field === 'examDate'
         ? value || null

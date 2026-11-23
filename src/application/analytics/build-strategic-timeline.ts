@@ -1,4 +1,5 @@
 import { formatPeriodBR } from '../../core/format-date.js';
+import { scorePercent } from '../../domain/exams/simulation-score.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
 import {
   normalizeExamTags,
@@ -254,7 +255,7 @@ export function buildStrategicTimeline({
         item.date,
         'simulations',
         'Simulado registrado',
-        `${item.nome || 'Simulado'} · ${Number(item.total) > 0 ? Math.round((Number(item.correct) / Number(item.total)) * 100) + '% de acerto' : 'sem amostra'}`,
+        `${item.nome || 'Simulado'} · ${Number(item.total) > 0 ? Math.round(scorePercent(item, item.scoring)) + (item.scoring === 'certo-errado' ? '% de nota líquida' : '% de acerto') : 'sem amostra'}`,
         { ...item, activeExamTags: item.examTags }
       )
     );

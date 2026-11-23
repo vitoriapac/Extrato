@@ -210,13 +210,15 @@ export function renderSubjectTargetEditor({
               return (
                 <tr
                   key={id}
-                  class={[
-                    draftMap.has(id) ? 'is-dirty' : '',
-                    openRows.has(id) ? 'is-open' : '',
-                    !showAllRows && rowIndex >= MOBILE_ROWS ? 'is-extra' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ') || undefined}
+                  class={
+                    [
+                      draftMap.has(id) ? 'is-dirty' : '',
+                      openRows.has(id) ? 'is-open' : '',
+                      !showAllRows && rowIndex >= MOBILE_ROWS ? 'is-extra' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ') || undefined
+                  }
                 >
                   <td data-label="Selecionar">
                     <label class="subject-target-select">
@@ -349,6 +351,19 @@ export function renderSubjectTargetEditor({
                       aria-label={`Meta de domínio de ${row.name}`}
                     />
                   </td>
+                  <td data-label="Mínimo eliminatório">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      data-field="minimum"
+                      data-subject={id}
+                      value={value('minimum', config.minScore)}
+                      placeholder="—"
+                      aria-label={`Nota mínima eliminatória de ${row.name}, em %`}
+                    />
+                  </td>
                 </tr>
               );
             })}
@@ -356,7 +371,9 @@ export function renderSubjectTargetEditor({
         </table>
         {rows.length > MOBILE_ROWS && (
           <button type="button" class="btn ghost small subject-target-showall" data-rows-showall>
-            {showAllRows ? 'Mostrar só as primeiras' : `Mostrar todas as ${rows.length} disciplinas`}
+            {showAllRows
+              ? 'Mostrar só as primeiras'
+              : `Mostrar todas as ${rows.length} disciplinas`}
           </button>
         )}
       </div>
@@ -388,4 +405,5 @@ const HEADERS: Array<{ key: string; label: string; sortable?: boolean; advanced?
   { key: 'accuracy', label: 'Acerto atual', sortable: true },
   { key: 'weekly', label: 'Questões por semana', sortable: true },
   { key: 'mastery', label: 'Meta de domínio', advanced: true },
+  { key: 'minimum', label: 'Mínimo eliminatório (%)' },
 ];

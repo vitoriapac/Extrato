@@ -4,12 +4,14 @@ import { Icon } from '../../primitives/icon.js';
 import { buildSimulationBreakdownVisual } from '../../../domain/practice/practice-visual-models.js';
 import { SimulationBreakdownBarChart } from '../../primitives/charts/SimulationBreakdownBarChart.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
+import { scorePercent } from '../../../domain/exams/simulation-score.js';
 
 export interface SimulationBreakdownItem {
   id: string;
   subjectId?: string | null;
   correct: number;
   total: number;
+  wrong?: number | null;
 }
 
 export interface SimulationItem {
@@ -18,6 +20,8 @@ export interface SimulationItem {
   nome?: string;
   correct: number;
   total: number;
+  wrong?: number | null;
+  scoring?: 'padrao' | 'certo-errado';
   breakdown?: SimulationBreakdownItem[];
 }
 
@@ -27,6 +31,26 @@ export interface SimulationViewModel {
   correct: number;
   total: number;
   score: number;
+  scoring?: 'certo-errado';
+  blank?: number;
+  belowMinimum?: Array<{ subjectId: string; name: string; score: number; minimum: number }>;
+}
+
+const CERTO_ERRADO_HINT =
+  'Certo ou errado: cada erro anula um acerto e a questão em branco vale zero.';
+
+function MinimumBadge({ misses }: { misses?: SimulationViewModel['belowMinimum'] }) {
+  if (!misses?.length) return null;
+  return (
+    <span
+      class="status-badge status-badge--danger"
+      title={misses
+        .map(m => `${m.name}: ${formatDecimal(m.score)}% (mínimo ${formatDecimal(m.minimum)}%)`)
+        .join(' · ')}
+    >
+      Abaixo do mínimo em {misses.length === 1 ? misses[0].name : `${misses.length} disciplinas`}
+    </span>
+  );
 }
 
 export interface SimulationLogTableProps {
@@ -59,7 +83,8 @@ export function SimulationLogTable({
           <div class="empty-state" style={{ border: 'none' }}>
             <p class="font-medium text-content-primary m-0">Nenhum simulado registrado ainda.</p>
             <p class="text-xs text-content-secondary max-w-md mx-auto leading-relaxed mt-1 mb-1">
-              Use "Registrar simulado", acima, para registrar simulados completos ou parciais e alimentar a curva de tendência de pontuação de 30 dias e diagnósticos pós-simulado.
+              Use "Registrar simulado", acima, para registrar simulados completos ou parciais e
+              alimentar a curva de tendência de pontuação de 30 dias e diagnósticos pós-simulado.
             </p>
           </div>
         </td>
@@ -74,6 +99,7 @@ export function SimulationLogTable({
 
         if (isEditing && draft) {
           const hasBreakdown = Boolean(draft.breakdown?.length);
+          const certoErrado = draft.scoring === 'certo-errado';
           return (
             <tr key={sim.id} class="row-editing" data-id={sim.id}>
               <td colSpan={7}>
@@ -104,6 +130,19 @@ export function SimulationLogTable({
                       data-delegated-input="updateSimulationDraft('correct',this.value)"
                     />
                   </label>
+                  {certoErrado && (
+                    <label>
+                      Erradas
+                      <input
+                        type="number"
+                        min="0"
+                        value={draft.wrong ?? ''}
+                        placeholder="Nenhuma em branco"
+                        disabled={hasBreakdown}
+                        data-delegated-input="updateSimulationDraft('wrong',this.value)"
+                      />
+                    </label>
+                  )}
                   <label>
                     Total
                     <input
@@ -113,6 +152,14 @@ export function SimulationLogTable({
                       disabled={hasBreakdown}
                       data-delegated-input="updateSimulationDraft('total',this.value)"
                     />
+                  </label>
+                  <label title={CERTO_ERRADO_HINT}>
+                    <input
+                      type="checkbox"
+                      checked={certoErrado}
+                      data-delegated-change="updateSimulationDraft('scoring',this.checked)"
+                    />{' '}
+                    Certo ou errado (um erro anula um acerto)
                   </label>
                   <div class="inline-edit-actions">
                     <button
@@ -181,7 +228,10 @@ export function SimulationLogTable({
                       <span>
                         {vm.correct} / {vm.total}
                       </span>
-                      <strong>Nota {formatDecimal(vm.score)}%</strong>
+                      <strong title={vm.scoring ? CERTO_ERRADO_HINT : undefined}>
+                        {vm.scoring ? 'Nota líquida' : 'Nota'} {formatDecimal(vm.score)}%
+                      </strong>
+                      <MinimumBadge misses={vm.belowMinimum} />
                       {detailsBtn}
                     </div>
                   </article>
@@ -192,10 +242,18 @@ export function SimulationLogTable({
                 <td>{vm.date}</td>
                 <td>
                   <div class="row-primary">{vm.name}</div>
+                  <MinimumBadge misses={vm.belowMinimum} />
                 </td>
                 <td class="number-cell">{vm.correct}</td>
                 <td class="number-cell">{vm.total}</td>
-                <td class="number-cell">{formatDecimal(vm.score)}%</td>
+                <td class="number-cell" title={vm.scoring ? CERTO_ERRADO_HINT : undefined}>
+                  {formatDecimal(vm.score)}%
+                  {vm.scoring && (
+                    <small class="metadata-text block">
+                      líquida{vm.blank ? ` · ${vm.blank} em branco` : ''}
+                    </small>
+                  )}
+                </td>
                 <td>{detailsBtn}</td>
                 <td>
                   <button
@@ -220,85 +278,117 @@ export function SimulationLogTable({
                           breakdownItems: sim.breakdown,
                           subjects: subjects || [],
                           overallScore: vm.score,
+                          scoring: sim.scoring,
                         })}
                         className="mb-3"
                       />
                     )}
                     {!hasBreakdown && <p>Nenhuma disciplina registrada neste simulado.</p>}
                     <details class="simulation-breakdown-edit">
-                    <summary>Editar disciplinas</summary>
-                    <p>As alterações são salvas automaticamente.</p>
-                    <div class="breakdown-list">
-                      {(sim.breakdown || []).map(row => {
-                        const total = Number(row.total) || 0;
-                        const correct = Number(row.correct) || 0;
-                        const accuracy = total ? Math.round((correct / total) * 100) : null;
-                        const colorSlot = subjectColorOf({ id: row.subjectId || '' }, subjects || []);
+                      <summary>Editar disciplinas</summary>
+                      <p>As alterações são salvas automaticamente.</p>
+                      <div class="breakdown-list">
+                        {(sim.breakdown || []).map(row => {
+                          const total = Number(row.total) || 0;
+                          const correct = Number(row.correct) || 0;
+                          const accuracy = total
+                            ? Math.round(scorePercent(row, sim.scoring))
+                            : null;
+                          const miss = vm.belowMinimum?.find(m => m.subjectId === row.subjectId);
+                          const colorSlot = subjectColorOf(
+                            { id: row.subjectId || '' },
+                            subjects || []
+                          );
 
-                        return (
-                          <div key={row.id} class="breakdown-line">
-                            <label class="breakdown-subject">
-                              <span class="flex items-center gap-2">
-                                <span
-                                  class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
-                                  aria-hidden="true"
-                                />
-                                Disciplina
-                              </span>
-                              <select
-                                class="select-control"
-                                data-delegated-change={`updateBreakdownRow('${sim.id}','${row.id}','subjectId',this.value)`}
-                                dangerouslySetInnerHTML={{
-                                  __html: `<option value="">Selecione</option>${getSubjectOptionsHtml(row.subjectId)}`,
-                                }}
-                              />
-                            </label>
-                            <label>
-                              <span>Acertos</span>
-                              <input
-                                type="number"
-                                min="0"
-                                max={total || 999}
-                                value={correct}
-                                placeholder="0"
-                                data-delegated-blur={`updateBreakdownRow('${sim.id}','${row.id}','correct',this.value)`}
-                              />
-                            </label>
-                            <label>
-                              <span>Questões</span>
-                              <input
-                                type="number"
-                                min="0"
-                                value={total}
-                                placeholder="0"
-                                data-delegated-blur={`updateBreakdownRow('${sim.id}','${row.id}','total',this.value)`}
-                              />
-                            </label>
-                            <div class="breakdown-result">
-                              <span>Aproveitamento</span>
-                              <strong>{accuracy == null ? '—' : `${accuracy}%`}</strong>
-                            </div>
-                            <button
-                              type="button"
-                              class="icon-btn"
-                              aria-label="Excluir disciplina do simulado"
-                              data-delegated-click={`deleteBreakdownRow('${sim.id}','${row.id}')`}
+                          return (
+                            <div
+                              key={row.id}
+                              class={`breakdown-line${sim.scoring === 'certo-errado' ? ' breakdown-line--net' : ''}`}
                             >
-                              <Icon name="x" size={14} />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div class="flex items-center gap-2 mt-2">
-                      <button
-                        type="button"
-                        class="btn ghost small breakdown-add-btn"
-                        data-delegated-click={`addBreakdownRow('${sim.id}')`}
-                      >
-                        + Adicionar disciplina
-                      </button>
-                    </div>
+                              <label class="breakdown-subject">
+                                <span class="flex items-center gap-2">
+                                  <span
+                                    class={`w-2 h-2 rounded-full inline-block flex-shrink-0 subject-bg-${colorSlot}`}
+                                    aria-hidden="true"
+                                  />
+                                  Disciplina
+                                </span>
+                                <select
+                                  class="select-control"
+                                  data-delegated-change={`updateBreakdownRow('${sim.id}','${row.id}','subjectId',this.value)`}
+                                  dangerouslySetInnerHTML={{
+                                    __html: `<option value="">Selecione</option>${getSubjectOptionsHtml(row.subjectId)}`,
+                                  }}
+                                />
+                              </label>
+                              <label>
+                                <span>Acertos</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={total || 999}
+                                  value={correct}
+                                  placeholder="0"
+                                  data-delegated-blur={`updateBreakdownRow('${sim.id}','${row.id}','correct',this.value)`}
+                                />
+                              </label>
+                              {sim.scoring === 'certo-errado' && (
+                                <label>
+                                  <span>Erradas</span>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={row.wrong ?? ''}
+                                    placeholder={String(Math.max(0, total - correct))}
+                                    aria-label="Erradas (vazio: nenhuma em branco)"
+                                    data-delegated-blur={`updateBreakdownRow('${sim.id}','${row.id}','wrong',this.value)`}
+                                  />
+                                </label>
+                              )}
+                              <label>
+                                <span>Questões</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={total}
+                                  placeholder="0"
+                                  data-delegated-blur={`updateBreakdownRow('${sim.id}','${row.id}','total',this.value)`}
+                                />
+                              </label>
+                              <div class="breakdown-result">
+                                <span>
+                                  {sim.scoring === 'certo-errado'
+                                    ? 'Nota líquida'
+                                    : 'Aproveitamento'}
+                                </span>
+                                <strong>{accuracy == null ? '—' : `${accuracy}%`}</strong>
+                                {miss && (
+                                  <small class="status-badge status-badge--danger whitespace-nowrap justify-self-start">
+                                    mín. {formatDecimal(miss.minimum)}%
+                                  </small>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                class="icon-btn"
+                                aria-label="Excluir disciplina do simulado"
+                                data-delegated-click={`deleteBreakdownRow('${sim.id}','${row.id}')`}
+                              >
+                                <Icon name="x" size={14} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div class="flex items-center gap-2 mt-2">
+                        <button
+                          type="button"
+                          class="btn ghost small breakdown-add-btn"
+                          data-delegated-click={`addBreakdownRow('${sim.id}')`}
+                        >
+                          + Adicionar disciplina
+                        </button>
+                      </div>
                     </details>
                     <div class="flex items-center gap-2 mt-2">
                       <button

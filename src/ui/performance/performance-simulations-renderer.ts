@@ -4,6 +4,7 @@ import { renderEvidenceBadge } from './evidence-badge.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
 import { formatPercent, formatPoints } from '../../core/format-number.js';
 import { pluralize } from '../../core/utils.js';
+import { scorePercent } from '../../domain/exams/simulation-score.js';
 import { renderSimulationTrendChart } from '../renderers/simulations-renderer.js';
 import { renderSimulationComparison } from '../renderers/simulation-comparison-renderer.js';
 import { renderProjectionCalibration } from '../renderers/projection-calibration-renderer.js';
@@ -15,18 +16,26 @@ import {
 import { renderPerformanceSampleState } from './performance-sample-state.js';
 
 const percent = (value: number | null | undefined) => formatPercent(value);
-const signed = (value: number) =>
-  value == null ? 'Sem comparação' : formatPoints(value);
+const signed = (value: number) => (value == null ? 'Sem comparação' : formatPoints(value));
 
 /** Faixa calibrada com simulados comparáveis; sem ela, o gráfico fica só com notas e meta. */
 const projectedBand = (model: Record<string, any> | null | undefined) => {
   const band = model?.projection?.calibratedSimulationBand;
-  return Number.isFinite(band?.low) && Number.isFinite(band?.high) ? { low: band.low as number, high: band.high as number } : null;
+  return Number.isFinite(band?.low) && Number.isFinite(band?.high)
+    ? { low: band.low as number, high: band.high as number }
+    : null;
 };
 
 export function renderPerformanceSimulations(
   model: Record<string, any>,
-  { range, targetScore, formatDate, escapeHtml, escapeAttr = escapeHtml, projection = null }: any = {}
+  {
+    range,
+    targetScore,
+    formatDate,
+    escapeHtml,
+    escapeAttr = escapeHtml,
+    projection = null,
+  }: any = {}
 ) {
   // A faixa projetada e a projeção até a prova moram aqui; a Visão geral só traz a faixa numa linha com link.
   const projectionHtml = projection?.model
@@ -50,7 +59,7 @@ export function renderPerformanceSimulations(
   </section>`;
   const chart = renderSimulationTrendChart({
     items: model.items.slice(-12),
-    scoreFor: (item: Record<string, any>) => Math.round((item.correct / item.total) * 1000) / 10,
+    scoreFor: (item: Record<string, any>) => Math.round(scorePercent(item, item.scoring) * 10) / 10,
     formatDate,
     escapeHtml,
     targetScore,

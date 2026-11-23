@@ -23,16 +23,16 @@ export function renderExamBlueprintConfigView({
   const roadmapHtml = !blueprint?.examDate
     ? ''
     : renderPhaseRoadmapTimeline({
-    visual: roadmapVisual,
-    label: 'Régua de preparação e fases até a prova',
-    className: 'mb-4',
-  });
+        visual: roadmapVisual,
+        label: 'Régua de preparação e fases até a prova',
+        className: 'mb-4',
+      });
 
   const undatedCtaHtml = !blueprint?.examDate
     ? `<div class="exam-undated-cta"><label for="examUndatedDateInput">Defina a data prevista da prova para destravar as fases até o edital</label><div class="exam-undated-cta__controls"><input type="date" id="examUndatedDateInput" aria-label="Data prevista da prova"><button type="button" class="btn small" data-delegated-click="applyUndatedExamDate()">Definir data da prova</button></div></div>`
     : '';
 
-  container.innerHTML = `${roadmapHtml}${undatedCtaHtml}<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || '')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label class="exam-target-simple">Meta de acerto (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('allTargets',this.value)"><small>Nota que você quer na prova; também é a meta de domínio de cada tópico, que cada disciplina pode ajustar na tabela abaixo.</small></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[
+  container.innerHTML = `${roadmapHtml}${undatedCtaHtml}<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || '')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label class="exam-target-simple">Meta de acerto (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('allTargets',this.value)"><small>Nota que você quer na prova; também é a meta de domínio de cada tópico, que cada disciplina pode ajustar na tabela abaixo.</small></label><label>Tipo de prova<select data-delegated-change="updateExamBlueprint('scoringMode',this.value)"><option value="padrao" ${blueprint.scoringMode === 'certo-errado' ? '' : 'selected'}>Múltipla escolha</option><option value="certo-errado" ${blueprint.scoringMode === 'certo-errado' ? 'selected' : ''}>Certo ou errado (Cebraspe)</option></select><small>Em Certo ou errado, cada erro anula um acerto: a prontidão usa a nota líquida e os simulados novos já vêm nesse tipo.</small></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[
     ['bb-escriturario', 'Banco do Brasil — Escriturário'],
     ['caixa-tbn', 'Caixa — TBN'],
     ['caixa-tbn-ti', 'Caixa — TBN TI'],

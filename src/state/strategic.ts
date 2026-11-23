@@ -84,8 +84,15 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
           ...(typeof item?.sourceRef === 'string' ? { sourceRef: item.sourceRef } : {}),
           ...('official' in (item || {}) ? { official: Boolean(item.official) } : {}),
           ...(typeof item?.mappingType === 'string' ? { mappingType: item.mappingType } : {}),
+          ...(item?.minScore != null &&
+          item.minScore !== '' &&
+          Number(item.minScore) > 0 &&
+          Number(item.minScore) <= 100
+            ? { minScore: Number(item.minScore) }
+            : {}),
         }))
       : [],
+    ...(source.scoringMode === 'certo-errado' ? { scoringMode: 'certo-errado' as const } : {}),
   };
 }
 

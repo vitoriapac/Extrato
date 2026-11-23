@@ -11,6 +11,7 @@ import {
   calculateApprovalSimuladosMetric,
   calculateApprovalTendenciaMetric,
   extractReadinessFactors,
+  type AcertosQuestionItem,
 } from '../../domain/analytics/approval-metrics.js';
 import { calculateGoalConsistency } from '../../domain/analytics/consistency.js';
 import { calculateSubjectRadar } from '../../domain/analytics/multidimensional-radar.js';
@@ -142,7 +143,20 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
   }
 
   function approvalAcertosMetric() {
-    return calculateApprovalAcertosMetric(examEvidenceContext().questions.included);
+    const questions = examEvidenceContext().questions.included;
+    if (getState().examBlueprint?.scoringMode !== 'certo-errado')
+      return calculateApprovalAcertosMetric(questions);
+    // Certo ou errado: questão avulsa não registra branco, então toda não acertada anula um acerto.
+    const result = calculateApprovalAcertosMetric(
+      questions.map((q: AcertosQuestionItem) => ({
+        ...q,
+        // Sem limitar a zero por registro: o saldo líquido é somado e só a pontuação final é limitada.
+        correct: 2 * (Number(q.correct) || 0) - (Number(q.resolved) || 0),
+      }))
+    );
+    return result.available
+      ? { ...result, detail: result.detail.replace('acerto bruto', 'nota líquida') }
+      : result;
   }
 
   function approvalEditalMetric() {
@@ -341,9 +355,7 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
   function gerarDiagnosticoAprovacao(metrics?: Record<string, any>) {
     const state = getState();
     const m = metrics || computeApprovalMetrics();
-    return buildApprovalSignals(m, { target: state.metas.metaAprovacao }).map(
-      item => item.text
-    );
+    return buildApprovalSignals(m, { target: state.metas.metaAprovacao }).map(item => item.text);
   }
 
   function recordedExamPhase() {
