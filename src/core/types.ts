@@ -124,6 +124,11 @@ export interface SimulationRecord {
   wrong?: number | null;
   /** 'certo-errado': um erro anula um acerto (Cebraspe). Ausente: acerto simples. */
   scoring?: SimulationScoring;
+  /** Tempo gasto na prova, em minutos. */
+  durationMinutes?: number | null;
+  /** Questões respondidas no chute e quantas delas acertaram. */
+  guessed?: number | null;
+  guessedCorrect?: number | null;
   breakdown?: SimulationBreakdownItem[];
   createdAt?: string;
 }

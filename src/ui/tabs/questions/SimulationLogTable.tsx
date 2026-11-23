@@ -4,7 +4,7 @@ import { Icon } from '../../primitives/icon.js';
 import { buildSimulationBreakdownVisual } from '../../../domain/practice/practice-visual-models.js';
 import { SimulationBreakdownBarChart } from '../../primitives/charts/SimulationBreakdownBarChart.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
-import { scorePercent } from '../../../domain/exams/simulation-score.js';
+import { scorePercent, type PaceAndGuess } from '../../../domain/exams/simulation-score.js';
 
 export interface SimulationBreakdownItem {
   id: string;
@@ -34,10 +34,26 @@ export interface SimulationViewModel {
   scoring?: 'certo-errado';
   blank?: number;
   belowMinimum?: Array<{ subjectId: string; name: string; score: number; minimum: number }>;
+  pace?: PaceAndGuess;
 }
 
 const CERTO_ERRADO_HINT =
   'Certo ou errado: cada erro anula um acerto e a questão em branco vale zero.';
+
+/** "2,4 min por questão · chutes +3 p.p." — só o que foi registrado. */
+export function paceSummary(pace?: PaceAndGuess): string {
+  if (!pace) return '';
+  const parts: string[] = [];
+  if (pace.minutesPerQuestion != null)
+    parts.push(`${formatDecimal(pace.minutesPerQuestion)} min por questão`);
+  if (pace.guessGain != null) {
+    const gain = Math.round(pace.guessGain * 10) / 10;
+    parts.push(
+      `${pace.guessedCorrect} de ${pace.guessed} chutes certos (${gain > 0 ? '+' : ''}${formatDecimal(gain)} p.p.)`
+    );
+  }
+  return parts.join(' · ');
+}
 
 function MinimumBadge({ misses }: { misses?: SimulationViewModel['belowMinimum'] }) {
   if (!misses?.length) return null;
@@ -153,6 +169,36 @@ export function SimulationLogTable({
                       data-delegated-input="updateSimulationDraft('total',this.value)"
                     />
                   </label>
+                  <label>
+                    Tempo (min)
+                    <input
+                      type="number"
+                      min="0"
+                      value={draft.durationMinutes ?? ''}
+                      placeholder="Opcional"
+                      data-delegated-input="updateSimulationDraft('durationMinutes',this.value)"
+                    />
+                  </label>
+                  <label title="Questões que você marcou sem saber, para medir se o chute compensa.">
+                    Chutes
+                    <input
+                      type="number"
+                      min="0"
+                      value={draft.guessed ?? ''}
+                      placeholder="Opcional"
+                      data-delegated-input="updateSimulationDraft('guessed',this.value)"
+                    />
+                  </label>
+                  <label>
+                    Chutes certos
+                    <input
+                      type="number"
+                      min="0"
+                      value={draft.guessedCorrect ?? ''}
+                      placeholder="Opcional"
+                      data-delegated-input="updateSimulationDraft('guessedCorrect',this.value)"
+                    />
+                  </label>
                   <label title={CERTO_ERRADO_HINT}>
                     <input
                       type="checkbox"
@@ -232,6 +278,9 @@ export function SimulationLogTable({
                         {vm.scoring ? 'Nota líquida' : 'Nota'} {formatDecimal(vm.score)}%
                       </strong>
                       <MinimumBadge misses={vm.belowMinimum} />
+                      {paceSummary(vm.pace) && (
+                        <small class="metadata-text">{paceSummary(vm.pace)}</small>
+                      )}
                       {detailsBtn}
                     </div>
                   </article>
@@ -242,6 +291,9 @@ export function SimulationLogTable({
                 <td>{vm.date}</td>
                 <td>
                   <div class="row-primary">{vm.name}</div>
+                  {paceSummary(vm.pace) && (
+                    <small class="metadata-text block">{paceSummary(vm.pace)}</small>
+                  )}
                   <MinimumBadge misses={vm.belowMinimum} />
                 </td>
                 <td class="number-cell">{vm.correct}</td>

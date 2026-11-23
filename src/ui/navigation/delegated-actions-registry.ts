@@ -96,6 +96,8 @@ export function buildDelegatedActionHandlers(
     cancelSimulationEdit: (...args: any[]) => c.simulations?.cancelSimulationEdit?.(...args),
     deleteSimuladoRow: (...args: any[]) => c.simulations?.deleteSimuladoRow?.(...args),
     editSimulation: (...args: any[]) => c.simulations?.editSimulation?.(...args),
+    openSimulatedRemediation: (...args: any[]) =>
+      c.simulations?.openSimulatedRemediation?.(...args),
     saveSimulationEdit: (...args: any[]) => c.simulations?.saveSimulationEdit?.(...args),
     toggleBreakdown: (...args: any[]) => c.simulations?.toggleBreakdown?.(...args),
     updateSimulationDraft: (...args: any[]) => c.simulations?.updateSimulationDraft?.(...args),

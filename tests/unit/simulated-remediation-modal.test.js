@@ -23,8 +23,8 @@ test('SimulatedRemediationModal — renderiza dados do diagnóstico, top 3 sangr
       id: 'sim-100',
       nome: 'Simulado TCU Auditor',
       date: '2026-10-26',
-      correct: 72,
-      total: 100,
+      correct: 32,
+      total: 60,
       breakdown: [
         {
           id: 'b1',
@@ -70,11 +70,11 @@ test('SimulatedRemediationModal — renderiza dados do diagnóstico, top 3 sangr
 
   assert.match(html, /Raio-X Pós-Simulado e Plano de Remediação/);
   assert.match(html, /Simulado TCU Auditor/);
-  assert.match(html, /72%/);
-  assert.match(html, /Ponto de Corte \(78%\)/);
-  assert.match(html, /-6 pts/);
-  assert.match(html, /Média Histórica/);
-  assert.match(html, /\+2 pts/);
+  assert.match(html, /53,3%/);
+  assert.match(html, /Meta de nota \(78%\)/);
+  assert.match(html, /-24,7 p\.p\./);
+  assert.match(html, /Média dos outros simulados/);
+  assert.match(html, /-16,7 p\.p\./);
 
   // Top 3 vulnerabilidades
   assert.match(html, /Top 3 Vulnerabilidades — Maior Sangria de Pontos/);
@@ -91,6 +91,40 @@ test('SimulatedRemediationModal — renderiza dados do diagnóstico, top 3 sangr
   assert.match(html, /Dia 7/);
 
   // Botões de ação
-  assert.match(html, /Criar 7 dias de Remediação/);
+  assert.match(html, /Pôr os 7 dias na Agenda/);
   assert.match(html, /Gerar .* rascunhos p\/ Caderno de Erros/);
+});
+
+test('SimulatedRemediationModal — nota líquida, mínimo eliminatório, tempo e chutes', () => {
+  const diagnostic = buildSimulatedRemediationDiagnostic({
+    simulation: {
+      id: 'sim-ce',
+      nome: 'Simulado Cebraspe',
+      correct: 0,
+      total: 0,
+      scoring: 'certo-errado',
+      durationMinutes: 240,
+      guessed: 10,
+      guessedCorrect: 3,
+      breakdown: [
+        { id: 'a', subjectId: 'port', correct: 40, wrong: 10, total: 50 },
+        { id: 'b', subjectId: 'esp', correct: 25, wrong: 20, total: 50 },
+      ],
+    },
+    blueprintSubjects: [{ subjectId: 'esp', minScore: 20, questionWeight: 2 }],
+    subjectsMap: new Map([['esp', { id: 'esp', name: 'Específicos' }]]),
+  });
+  // (40 − 10) + (25 − 20) = 35 de 100
+  assert.equal(diagnostic.scorePercent, 35);
+  assert.equal(diagnostic.minimumMisses[0].name, 'Específicos');
+  // Específicos perde 45 pontos e Português 20; com peso 2, Específicos vem primeiro.
+  assert.equal(diagnostic.topBleedingTopics[0].subjectId, 'esp');
+  const html = render(h(SimulatedRemediationModal, { open: true, onClose: () => {}, diagnostic }));
+  assert.match(html, /Nota líquida/);
+  assert.match(html, /Abaixo do mínimo eliminatório/);
+  assert.match(html, /2,4 min por questão/);
+  // 3 certos − 7 errados = −4 p.p.
+  assert.match(html, /3 de 10 chutes certos/);
+  assert.match(html, /-4 p\.p\./);
+  assert.match(html, /Deixar essas questões em branco teria rendido mais/);
 });

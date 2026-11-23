@@ -228,6 +228,13 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       Number(item.correct) > Number(item.total) ||
       !validWrong(item) ||
       !(item.scoring == null || item.scoring === 'padrao' || item.scoring === 'certo-errado') ||
+      !(item.durationMinutes == null || isFiniteNonNegative(item.durationMinutes)) ||
+      !(item.guessed == null || isFiniteNonNegative(item.guessed)) ||
+      !(
+        item.guessedCorrect == null ||
+        (isFiniteNonNegative(item.guessedCorrect) &&
+          Number(item.guessedCorrect) <= Number(item.guessed ?? 0))
+      ) ||
       !Array.isArray(item.breakdown)
     )
       return fail('Um simulado possui dados inválidos.');

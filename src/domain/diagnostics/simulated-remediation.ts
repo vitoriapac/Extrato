@@ -5,6 +5,15 @@
  * 7 dias realocando 60% da carga para fechar lacunas e pré-popula rascunhos para o Caderno de Erros.
  */
 
+import {
+  paceAndGuess,
+  scorePercent as rowScorePercent,
+  simulationScore,
+  simulationTotals,
+  subjectsBelowMinimum,
+  type PaceAndGuess,
+} from '../exams/simulation-score.js';
+
 export interface SimulationSubjectBreakdown {
   id: string;
   subjectId: string | null;
@@ -13,6 +22,7 @@ export interface SimulationSubjectBreakdown {
   topicName?: string;
   correct: number;
   total: number;
+  wrong?: number | null;
 }
 
 export interface SimulationTargetInput {
@@ -22,6 +32,11 @@ export interface SimulationTargetInput {
   date?: string;
   correct: number;
   total: number;
+  wrong?: number | null;
+  scoring?: string | null;
+  durationMinutes?: number | null;
+  guessed?: number | null;
+  guessedCorrect?: number | null;
   breakdown?: SimulationSubjectBreakdown[];
 }
 
@@ -32,6 +47,14 @@ export interface SimulatedRemediationInput {
     date?: string;
     correct: number;
     total: number;
+    wrong?: number | null;
+    scoring?: string | null;
+  }>;
+  /** Disciplinas da prova: peso por questão ordena as perdas e o mínimo eliminatório gera alerta. */
+  blueprintSubjects?: Array<{
+    subjectId: string | null;
+    questionWeight?: number | null;
+    minScore?: number | null;
   }>;
   historicalAverageScore?: number | null;
   passingScorePercent?: number | null; // Ponto de corte do edital (ex: 70 ou 75%)
@@ -93,6 +116,10 @@ export interface SimulatedRemediationDiagnostic {
   historicalAverageScore: number | null;
   deltaVsHistoricalAverage: number | null;
   topBleedingTopics: DeficitTopicItem[];
+  /** Nota líquida (Certo ou errado) em vez de acerto simples. */
+  netScoring: boolean;
+  minimumMisses: Array<{ subjectId: string; name: string; score: number; minimum: number }>;
+  pace: PaceAndGuess;
   remediationPlan7Days: RemediationPlan7Days;
   errorCardDrafts: ErrorCardDraft[];
 }
@@ -237,10 +264,16 @@ export function buildSimulatedRemediationDiagnostic(
   input: SimulatedRemediationInput
 ): SimulatedRemediationDiagnostic {
   const sim = input.simulation;
-  const total = Number(sim.total) || 0;
-  const correct = Number(sim.correct) || 0;
-  const lostPoints = Math.max(0, total - correct);
-  const scorePercent = total > 0 ? Math.round((correct / total) * 1000) / 10 : 0;
+  const { total, correct } = simulationTotals(sim);
+  const rawScore = simulationScore(sim);
+  // Questões perdidas: o que falta para 100%, já descontada a anulação do Certo ou errado.
+  const lostPoints = Math.round(total - (rawScore * total) / 100);
+  const scorePercent = Math.round(rawScore * 10) / 10;
+  const weights = new Map(
+    (input.blueprintSubjects || [])
+      .filter(item => item.subjectId)
+      .map(item => [item.subjectId as string, Math.max(0.1, Number(item.questionWeight) || 1)])
+  );
 
   // Comparação com ponto de corte
   const passingScore =
@@ -267,8 +300,7 @@ export function buildSimulatedRemediationDiagnostic(
     );
     if (validHistory.length > 0) {
       const avg =
-        validHistory.reduce((sum, h) => sum + (Number(h.correct) / Number(h.total)) * 100, 0) /
-        validHistory.length;
+        validHistory.reduce((sum, h) => sum + simulationScore(h), 0) / validHistory.length;
       historicalAverageScore = Math.round(avg * 10) / 10;
     }
   }
@@ -285,8 +317,9 @@ export function buildSimulatedRemediationDiagnostic(
     .map(row => {
       const rowTotal = Number(row.total) || 0;
       const rowCorrect = Number(row.correct) || 0;
-      const rowLost = Math.max(0, rowTotal - rowCorrect);
-      const rowAcc = rowTotal > 0 ? Math.round((rowCorrect / rowTotal) * 1000) / 10 : 0;
+      const rowScore = rowScorePercent(row, sim.scoring);
+      const rowLost = Math.round(rowTotal - (rowScore * rowTotal) / 100);
+      const rowAcc = Math.round(rowScore * 10) / 10;
 
       const subName =
         row.subjectName ||
@@ -308,7 +341,12 @@ export function buildSimulatedRemediationDiagnostic(
       };
     })
     .filter(item => item.lostPoints > 0)
-    .sort((a, b) => b.lostPoints - a.lostPoints || a.accuracy - b.accuracy);
+    // Perda em pontos da prova: questões perdidas × peso da questão na disciplina.
+    .sort(
+      (a, b) =>
+        b.lostPoints * (weights.get(b.subjectId || '') ?? 1) -
+          a.lostPoints * (weights.get(a.subjectId || '') ?? 1) || a.accuracy - b.accuracy
+    );
 
   // Top 3 sangrias absolutas
   const topBleedingTopics = topicDeficits.slice(0, 3);
@@ -333,6 +371,12 @@ export function buildSimulatedRemediationDiagnostic(
     historicalAverageScore,
     deltaVsHistoricalAverage,
     topBleedingTopics,
+    netScoring: sim.scoring === 'certo-errado',
+    minimumMisses: subjectsBelowMinimum(sim, input.blueprintSubjects || []).map(item => ({
+      ...item,
+      name: subjectsMap?.get(item.subjectId)?.name || 'Disciplina removida',
+    })),
+    pace: paceAndGuess(sim),
     remediationPlan7Days,
     errorCardDrafts,
   };

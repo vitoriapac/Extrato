@@ -3,6 +3,7 @@ import { createEditableCollectionController } from '../../controllers/editable-c
 import { createQuestionsController } from './questions-controller.js';
 import { cloneRecord } from './questions-tab-controller.js';
 import { buildSimulatedRemediationDiagnostic } from '../../../domain/diagnostics/simulated-remediation.js';
+import { addDays } from '../../../application/selectors/app-selectors.js';
 import { SimulatedRemediationModal } from '../../components/SimulatedRemediationModal.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { createErrorFlashcard } from '../../../domain/notebook/error-notebook-engine.js';
@@ -15,6 +16,7 @@ import {
   simulationTotals,
   subjectsBelowMinimum,
   wrongCount,
+  paceAndGuess,
 } from '../../../domain/exams/simulation-score.js';
 
 export interface SimulationsTabControllerContext {
@@ -93,6 +95,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       score: simuladoNota(sim),
       scoring: sim.scoring === 'certo-errado' ? ('certo-errado' as const) : undefined,
       blank: totals.total - totals.correct - totals.wrong,
+      pace: paceAndGuess(sim),
       belowMinimum: subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(item => ({
         ...item,
         name: names.get(item.subjectId) || 'Disciplina removida',
@@ -111,6 +114,16 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       draft.scoring = draft.scoring === 'certo-errado' ? 'certo-errado' : undefined;
       // Erradas vazias: nenhuma em branco. Com valor, limitadas ao que sobra depois dos acertos.
       draft.wrong = draft.wrong == null || draft.wrong === '' ? null : wrongCount(draft);
+      // Tempo e chutes são opcionais: vazio grava null; os chutes ficam limitados às respondidas.
+      const optional = (value: unknown) =>
+        value == null || value === '' ? null : Math.max(0, Math.floor(Number(value) || 0));
+      draft.durationMinutes = optional(draft.durationMinutes);
+      const pace = paceAndGuess(draft);
+      draft.guessed = optional(draft.guessed) == null ? null : pace.guessed;
+      draft.guessedCorrect =
+        draft.guessed == null || optional(draft.guessedCorrect) == null
+          ? null
+          : pace.guessedCorrect;
       return draft;
     },
     onSaved: (saved: Record<string, any>) => {
@@ -204,9 +217,12 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   function updateSimulationDraft(field: string, value: any): void {
     simulationEditController.update(
       field,
-      field === 'wrong' && String(value).trim() === ''
+      ['wrong', 'durationMinutes', 'guessed', 'guessedCorrect'].includes(field) &&
+        String(value).trim() === ''
         ? null
-        : ['correct', 'total', 'wrong'].includes(field)
+        : ['correct', 'total', 'wrong', 'durationMinutes', 'guessed', 'guessedCorrect'].includes(
+              field
+            )
           ? Math.max(0, Math.floor(Number(value) || 0))
           : field === 'scoring'
             ? value === true || value === 'certo-errado'
@@ -346,11 +362,24 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     if (!sim) return;
 
     const subjectsMap = new Map((ctx.activeSubjects() || []).map((s: any) => [s.id, s]));
+    const blueprint = ctx.state.examBlueprint;
+    const metas = ctx.state.metas || {};
+    const weeklyHours =
+      Object.values(metas.horasPorDia || {}).reduce(
+        (sum: number, h) => sum + (Number(h) || 0),
+        0
+      ) ||
+      (Number(metas.horasDiarias) || 0) * 7 ||
+      20;
     const diagnostic = buildSimulatedRemediationDiagnostic({
       simulation: sim,
       historicalSimulations: ctx.state.simulados || [],
-      passingScorePercent: ctx.state.metas?.acertoAlvo ?? 75,
-      weeklyAvailableHours: 20,
+      // Mesma meta de nota da Prontidão: a do edital, quando configurado.
+      passingScorePercent: blueprint?.configuredAt
+        ? blueprint.targetScore
+        : (metas.metaAprovacao ?? null),
+      weeklyAvailableHours: weeklyHours,
+      blueprintSubjects: blueprint?.subjects || [],
       subjectsMap,
     });
 
@@ -371,10 +400,26 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
         onClose: close,
         diagnostic,
         onApplyRemediationPlan: plan => {
-          ctx.showToast(
-            `Plano de remediação de 7 dias criado (${plan.bleedAllocationHours}h focadas nas vulnerabilidades).`
-          );
+          // Uma tarefa de estudo por dia, a partir de amanhã.
+          plan.dailySchedule.forEach(item => {
+            const payload = {
+              kind: 'task',
+              title: item.focusHeadline,
+              date: addDays(todayISO(), item.day),
+              status: 'Não iniciado',
+              estimatedMinutes: item.allocatedMinutes,
+              subjectId: item.subjectId,
+              description: `Raio-X de ${diagnostic.simulationName}`,
+              recurrence: 'none',
+              reviewType: '—',
+            };
+            if (ctx.calendarService?.create) ctx.calendarService.create(payload);
+            else (ctx.state.calendar ||= []).push({ id: uid('cal'), ...payload });
+          });
           ctx.persistAndRender();
+          ctx.showToast(
+            `${plan.dailySchedule.length} tarefas de estudo na Agenda, a partir de amanhã.`
+          );
         },
         onGenerateErrorCards: drafts => {
           if (!Array.isArray(ctx.state.errorFlashcards)) {

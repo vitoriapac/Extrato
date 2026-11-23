@@ -3,6 +3,7 @@ import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
 import { Icon } from '../primitives/icon.js';
+import { formatDecimal } from '../../core/format-number.js';
 import type {
   SimulatedRemediationDiagnostic,
   RemediationDailyAction,
@@ -43,6 +44,9 @@ export function SimulatedRemediationModal({
   };
 
   const isBelowCutoff = diagnostic.gapToCutoff != null && diagnostic.gapToCutoff < 0;
+  const signed = (value: number) => `${value > 0 ? '+' : ''}${formatDecimal(value)} p.p.`;
+  const { pace } = diagnostic;
+  const guessGain = pace.guessGain == null ? null : Math.round(pace.guessGain * 10) / 10;
 
   return (
     <Dialog
@@ -60,39 +64,39 @@ export function SimulatedRemediationModal({
               {diagnostic.simulationName}
             </h3>
             <p class="text-xs text-content-secondary mt-1">
-              Data: {diagnostic.simulationDate} · Total: {diagnostic.totalQuestions} questões
+              Data: {diagnostic.simulationDate.split('-').reverse().join('/')} · Total:{' '}
+              {diagnostic.totalQuestions} questões
             </p>
           </div>
 
           <div class="flex items-center gap-4 flex-wrap">
             <div class="text-right">
-              <span class="text-xs text-content-secondary block">Aproveitamento</span>
+              <span class="text-xs text-content-secondary block">
+                {diagnostic.netScoring ? 'Nota líquida' : 'Nota'}
+              </span>
               <strong class="text-xl font-semibold text-content-primary">
-                {diagnostic.scorePercent}%
+                {formatDecimal(diagnostic.scorePercent)}%
               </strong>
             </div>
 
             {diagnostic.passingScorePercent != null && (
               <div class="text-right pl-3 border-l border-border-subtle">
                 <span class="text-xs text-content-secondary block">
-                  Ponto de Corte ({diagnostic.passingScorePercent}%)
+                  Meta de nota ({formatDecimal(diagnostic.passingScorePercent)}%)
                 </span>
                 <span
                   class={`text-sm font-semibold ${
                     isBelowCutoff ? 'text-status-danger' : 'text-status-success'
                   }`}
                 >
-                  {diagnostic.gapToCutoff! >= 0
-                    ? `+${diagnostic.gapToCutoff}`
-                    : diagnostic.gapToCutoff}{' '}
-                  pts
+                  {signed(diagnostic.gapToCutoff!)}
                 </span>
               </div>
             )}
 
             {diagnostic.historicalAverageScore != null && (
               <div class="text-right pl-3 border-l border-border-subtle">
-                <span class="text-xs text-content-secondary block">Média Histórica</span>
+                <span class="text-xs text-content-secondary block">Média dos outros simulados</span>
                 <span
                   class={`text-sm font-semibold ${
                     diagnostic.deltaVsHistoricalAverage! >= 0
@@ -100,15 +104,54 @@ export function SimulatedRemediationModal({
                       : 'text-status-danger'
                   }`}
                 >
-                  {diagnostic.deltaVsHistoricalAverage! >= 0
-                    ? `+${diagnostic.deltaVsHistoricalAverage}`
-                    : diagnostic.deltaVsHistoricalAverage}{' '}
-                  pts
+                  {signed(diagnostic.deltaVsHistoricalAverage!)}
                 </span>
               </div>
             )}
           </div>
         </div>
+
+        {diagnostic.minimumMisses.length > 0 && (
+          <p class="rounded-default border border-status-danger p-3 text-sm" role="alert">
+            <strong class="text-status-danger">Abaixo do mínimo eliminatório: </strong>
+            {diagnostic.minimumMisses
+              .map(
+                miss =>
+                  `${miss.name} com ${formatDecimal(Math.round(miss.score * 10) / 10)}% (mínimo ${formatDecimal(miss.minimum)}%)`
+              )
+              .join('; ')}
+            . Na prova, isso elimina mesmo com nota total alta.
+          </p>
+        )}
+
+        {(pace.minutesPerQuestion != null || guessGain != null) && (
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-2">
+              Tempo e chutes
+            </h4>
+            <ul class="text-sm space-y-1">
+              {pace.minutesPerQuestion != null && (
+                <li>
+                  {formatDecimal(Math.round(pace.minutesPerQuestion * 10) / 10)} min por questão.
+                </li>
+              )}
+              {guessGain != null && (
+                <li>
+                  {pace.guessedCorrect} de {pace.guessed} chutes certos:{' '}
+                  <strong class={guessGain < 0 ? 'text-status-danger' : undefined}>
+                    {signed(guessGain)}
+                  </strong>{' '}
+                  na nota.{' '}
+                  {guessGain < 0
+                    ? 'Deixar essas questões em branco teria rendido mais.'
+                    : diagnostic.netScoring && pace.guessed > 0
+                      ? 'Em Certo ou errado, só chute quando conseguir eliminar a dúvida pela metade ou mais.'
+                      : ''}
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
 
         {/* Top 3 Vulnerabilidades (Sangria de Pontos) */}
         <div>
@@ -165,10 +208,12 @@ export function SimulatedRemediationModal({
             </div>
             <div class="flex items-center gap-2">
               <Badge variant="info">
-                60% Foco Crítico ({diagnostic.remediationPlan7Days.bleedAllocationHours}h)
+                60% Foco Crítico (
+                {formatDecimal(diagnostic.remediationPlan7Days.bleedAllocationHours)}h)
               </Badge>
               <Badge variant="default">
-                40% Manutenção ({diagnostic.remediationPlan7Days.maintenanceAllocationHours}h)
+                40% Manutenção (
+                {formatDecimal(diagnostic.remediationPlan7Days.maintenanceAllocationHours)}h)
               </Badge>
             </div>
           </div>
@@ -210,15 +255,15 @@ export function SimulatedRemediationModal({
               size="small"
               onClick={handleApplyPlan}
               disabled={appliedPlan}
-              aria-label="Criar 7 dias de Remediação"
+              aria-label="Pôr os 7 dias de remediação na Agenda"
             >
               {appliedPlan ? (
                 <span class="inline-flex items-center gap-2">
                   <Icon name="check" size={14} />
-                  Plano Criado na Agenda
+                  Plano na Agenda
                 </span>
               ) : (
-                'Criar 7 dias de Remediação'
+                'Pôr os 7 dias na Agenda'
               )}
             </Button>
 

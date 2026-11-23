@@ -99,3 +99,41 @@ export function subjectsBelowMinimum(
     }))
     .filter(item => item.score < item.minimum);
 }
+
+interface PacedSimulation extends ScoredSimulation {
+  durationMinutes?: unknown;
+  guessed?: unknown;
+  guessedCorrect?: unknown;
+}
+
+export interface PaceAndGuess {
+  /** Minutos por questão da prova (tempo gasto ÷ total); null sem tempo registrado. */
+  minutesPerQuestion: number | null;
+  guessed: number;
+  guessedCorrect: number;
+  /** Pontos percentuais que os chutes somaram à nota (negativo: custaram); null sem chutes registrados. */
+  guessGain: number | null;
+}
+
+/** Ritmo e chutes do simulado, com os chutes limitados às questões respondidas. */
+export function paceAndGuess(sim: PacedSimulation): PaceAndGuess {
+  const totals = simulationTotals(sim);
+  const minutes = Number(sim.durationMinutes);
+  const guessed = Math.min(count(sim.guessed), totals.correct + totals.wrong);
+  const guessedCorrect = Math.min(count(sim.guessedCorrect), guessed, totals.correct);
+  // Sem os chutes, essas questões ficariam em branco: saem dos acertos e das erradas.
+  const withoutGuesses = {
+    total: totals.total,
+    correct: totals.correct - guessedCorrect,
+    wrong: totals.wrong - (guessed - guessedCorrect),
+  };
+  return {
+    minutesPerQuestion: minutes > 0 && totals.total > 0 ? minutes / totals.total : null,
+    guessed,
+    guessedCorrect,
+    guessGain:
+      sim.guessed == null || sim.guessed === '' || !totals.total
+        ? null
+        : scorePercent(totals, sim.scoring) - scorePercent(withoutGuesses, sim.scoring),
+  };
+}
