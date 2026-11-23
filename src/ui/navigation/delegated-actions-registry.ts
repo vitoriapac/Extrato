@@ -295,6 +295,7 @@ export function buildDelegatedActionHandlers(
 
     // Exam Matrix / Blueprint
     toggleActiveExamTag: (...args: any[]) => c.examMatrix?.toggleActiveExamTag?.(...args),
+    includeTopicInExam: (topicId: string) => c.examMatrix?.includeTopicInExam?.(topicId),
     updateExamBlueprint: (...args: any[]) =>
       (c.examMatrix?.updateExamBlueprint || c.goalsBlueprint?.updateExamBlueprint)?.(...args),
     updateExamSubject: (id: string, f: string, v: any) => {

@@ -66,3 +66,56 @@ export function topicExamScopeLabel(topic: Row) {
 export function institutionsForExamTags(tags: string[] = []) {
   return [...new Set(tags.map(institutionForExamTag).filter(Boolean))];
 }
+
+export interface StudiedTopicOutsideScope {
+  subjectId: string;
+  subjectName: string;
+  topicId: string;
+  topicName: string;
+  minutes: number;
+  questions: number;
+}
+
+/**
+ * Tópicos com estudo registrado que o edital ativo deixa de fora: na troca de edital,
+ * é o histórico que deixaria de contar na Prontidão.
+ */
+export function studiedTopicsOutsideScope({
+  subjects = [],
+  sessions = [],
+  questions = [],
+  activeExamTags = [],
+}: {
+  subjects?: Row[];
+  sessions?: Row[];
+  questions?: Row[];
+  activeExamTags?: string[];
+}): StudiedTopicOutsideScope[] {
+  if (!normalizeExamTags(activeExamTags).length) return [];
+  const outside = new Map<string, StudiedTopicOutsideScope>();
+  for (const subject of subjects) {
+    if (subject?.archived) continue;
+    for (const topic of subject.topics || []) {
+      if (topic?.archived || isTopicInExamScope(topic, activeExamTags)) continue;
+      outside.set(topic.id, {
+        subjectId: subject.id,
+        subjectName: subject.name,
+        topicId: topic.id,
+        topicName: topic.name,
+        minutes: 0,
+        questions: 0,
+      });
+    }
+  }
+  for (const session of sessions) {
+    const row = outside.get(session?.topicId);
+    if (row) row.minutes += Math.round((Number(session.durationSeconds) || 0) / 60);
+  }
+  for (const record of questions) {
+    const row = outside.get(record?.topicId);
+    if (row) row.questions += Number(record.resolved) || 0;
+  }
+  return [...outside.values()]
+    .filter(row => row.minutes > 0 || row.questions > 0)
+    .sort((a, b) => b.minutes - a.minutes || b.questions - a.questions);
+}

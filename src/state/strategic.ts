@@ -93,6 +93,10 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
         }))
       : [],
     ...(source.scoringMode === 'certo-errado' ? { scoringMode: 'certo-errado' as const } : {}),
+    ...(source.preEdital === true ? { preEdital: true } : {}),
+    ...(Number(source.essayMinPercent) > 0 && Number(source.essayMinPercent) <= 100
+      ? { essayMinPercent: Number(source.essayMinPercent) }
+      : {}),
   };
 }
 

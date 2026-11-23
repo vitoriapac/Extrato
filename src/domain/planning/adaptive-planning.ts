@@ -13,6 +13,18 @@ export const EXAM_PHASE_THRESHOLDS = Object.freeze({
   finalStretch: 7,
 });
 
+/** Sem edital publicado, a falta de data é o normal: a fase vira Pré-edital em vez de cobrar a data. */
+export function withPreEdital<T extends { state: string }>(phase: T, preEdital: unknown): T {
+  return preEdital && phase.state === 'undated'
+    ? {
+        ...phase,
+        label: 'Pré-edital',
+        strategy:
+          'Estude a base comum da área. Quando o edital sair, defina a data da prova e confira os tópicos que ficaram de fora.',
+      }
+    : phase;
+}
+
 export function resolveExamPhase(daysToExam: unknown, thresholds = EXAM_PHASE_THRESHOLDS) {
   if (daysToExam == null || !Number.isFinite(Number(daysToExam)))
     return {

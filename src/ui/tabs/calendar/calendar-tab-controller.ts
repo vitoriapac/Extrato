@@ -42,6 +42,7 @@ export interface CalendarTabControllerContext {
     reviewAgenda?: any[];
     simulados?: any[];
     subjects?: any[];
+    examBlueprint?: { essayMinPercent?: number | null };
     metas?: {
       horasDiarias?: number;
       horasPorDia?: Record<string, number>;
@@ -395,7 +396,8 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     const mount = doc?.getElementById('essayEvolutionMount');
     if (!canMountPreact(mount)) return;
     const summary = buildEssayEvolutionSummary(
-      getUnifiedCalendarItems({ includeRecurring: false })
+      getUnifiedCalendarItems({ includeRecurring: false }),
+      ctx.state.examBlueprint?.essayMinPercent ?? null
     );
     mountPreact(
       h(EssayEvolutionCard, {

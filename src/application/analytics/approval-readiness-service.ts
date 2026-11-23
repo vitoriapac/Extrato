@@ -22,7 +22,7 @@ import {
 import { buildCalibratedScoreProjection } from '../../domain/forecasts/calibrated-score-projection.js';
 import { blueprintWeightedMean } from '../../domain/exams/blueprint-weights.js';
 import { buildPerformanceForecast } from '../../domain/forecasts/performance-forecast.js';
-import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
+import { resolveExamPhase, withPreEdital } from '../../domain/planning/adaptive-planning.js';
 import { buildApprovalSignals } from './build-analytics-view-model.js';
 import { createReadinessSnapshot, upsertReadinessSnapshot } from './readiness-history.js';
 import { buildPerformanceOverview } from '../performance/build-performance-overview.js';
@@ -239,10 +239,13 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
 
   function approvalPrazoMetric() {
     const state = getState();
-    return calculateApprovalPrazoMetric({
+    const result = calculateApprovalPrazoMetric({
       ritmo: computeRitmo(),
       hasExamDate: Boolean(state.examDate),
     });
+    return !state.examDate && state.examBlueprint?.preEdital
+      ? { ...result, detail: 'Pré-edital: ainda sem data de prova' }
+      : result;
   }
 
   function approvalRetencaoMetric() {
@@ -398,7 +401,10 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
 
   function recordedExamPhase() {
     const state = getState();
-    return resolveExamPhase(state.examDate ? diasParaRevisao(state.examDate) : null);
+    return withPreEdital(
+      resolveExamPhase(state.examDate ? diasParaRevisao(state.examDate) : null),
+      state.examBlueprint?.preEdital
+    );
   }
 
   function saveCurrentReadinessSnapshot({

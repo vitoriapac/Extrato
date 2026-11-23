@@ -16,6 +16,7 @@ import { renderExamClassificationReview } from '../../renderers/exam-classificat
 import { reviewExamClassification } from '../../../application/exam-intelligence/review-exam-classification.js';
 import { buildExamMasteryMatrix } from '../../../domain/analytics/exam-mastery-matrix.js';
 import { setActiveExamTags } from '../../../application/exams/exam-scope-transition.js';
+import { studiedTopicsOutsideScope } from '../../../domain/exams/exam-scope.js';
 
 export interface ExamMatrixControllerContext {
   document: Document;
@@ -312,6 +313,12 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       globalAccuracyTarget: state.metas?.metaAprovacao,
       today: ctx.todayISO ? ctx.todayISO() : ctx.nowISO().slice(0, 10),
       planStartDate: ctx.planStartDate ? ctx.planStartDate() : null,
+      outsideTopics: studiedTopicsOutsideScope({
+        subjects: state.subjects,
+        sessions: state.studySessions,
+        questions: state.questoes,
+        activeExamTags: state.examBlueprint?.activeExamTags || [],
+      }),
       document: ctx.document,
     });
     renderExamIntelligenceSection();
@@ -356,6 +363,36 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
       return;
     }
     ctx.updateExamBlueprint?.('examDate', val);
+  }
+
+  /** Marca o tópico (ou todos os estudados, com '*') com os concursos ativos, trazendo o histórico para o edital. */
+  function includeTopicInExam(topicId: string) {
+    const state = ctx.getState();
+    const active: string[] = state.examBlueprint?.activeExamTags || [];
+    if (!active.length) return;
+    const ids = new Set(
+      topicId === '*'
+        ? studiedTopicsOutsideScope({
+            subjects: state.subjects,
+            sessions: state.studySessions,
+            questions: state.questoes,
+            activeExamTags: active,
+          }).map(row => row.topicId)
+        : [topicId]
+    );
+    type ScopedTopic = { id: string; examTags?: string[] };
+    const subjects: Array<{ topics?: ScopedTopic[] }> = state.subjects || [];
+    const topics = subjects.flatMap(subject => subject.topics || []).filter(t => ids.has(t.id));
+    const changed = topics.length;
+    if (!changed) return;
+    ctx.captureReadinessBeforeStrategy('Antes de trazer tópicos para o edital');
+    topics.forEach(topic => {
+      topic.examTags = [...new Set([...(topic.examTags || []), ...active])];
+    });
+    ctx.persistAndRender();
+    ctx.showToast(
+      changed === 1 ? 'Tópico trazido para o edital.' : `${changed} tópicos trazidos para o edital.`
+    );
   }
 
   function toggleActiveExamTag(tag: string, checked: boolean) {
@@ -579,6 +616,7 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
     closeExamClassificationReview,
     applyUndatedExamDate,
     toggleActiveExamTag,
+    includeTopicInExam,
     bindEvents,
     getFilters: () => ({ ...examMatrixFilters }),
     // Linhas com os filtros padrão (concurso ativo), para a Visão geral; não altera os filtros da tela.

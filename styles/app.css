@@ -3752,6 +3752,7 @@ button.performance-window{position:relative}button.performance-window::after{con
 /* Laranja só para atenção (precisa de ação): evidência e métricas são neutras. */
 
 .exam-blueprint-main label small{color:var(--text-secondary);font:var(--text-small) var(--font-body);text-transform:none}
+.exam-blueprint-main .exam-pre-edital{flex-direction:row;align-items:center;align-self:end;gap:8px;min-height:38px;color:var(--ink);font:var(--text-small) var(--font-body);text-transform:none}.exam-blueprint-main .exam-pre-edital input{width:16px;height:16px;min-height:0;padding:0;flex:none}
 
 /* T18: análise do Fechamento em uma dobra, com tendência de 4 semanas e sinais em lista curta */
 .weekly-close-trend-axis{display:flex;justify-content:space-around;margin-top:var(--space-1);color:var(--text-secondary);font:var(--text-micro) var(--font-body)}

@@ -29,6 +29,9 @@ export interface UnifiedCalendarItem {
   essayScore?: number | null;
   essayMaxScore?: number | null;
   essayStatus?: 'draft' | 'written' | 'graded' | null;
+  essayContent?: number | null;
+  essayStructure?: number | null;
+  essayLanguage?: number | null;
   isEvent: boolean;
   isDraggable: boolean;
 }
@@ -70,9 +73,9 @@ export function timeToMinutes(hhmm: string | null | undefined): number | null {
   return h * 60 + m;
 }
 
-export function sortCalendarItemsForDay<T extends Pick<UnifiedCalendarItem, 'startTime' | 'title' | 'subject'>>(
-  items: T[]
-): T[] {
+export function sortCalendarItemsForDay<
+  T extends Pick<UnifiedCalendarItem, 'startTime' | 'title' | 'subject'>,
+>(items: T[]): T[] {
   return [...items].sort((a, b) => {
     const ta = timeToMinutes(a.startTime);
     const tb = timeToMinutes(b.startTime);
@@ -144,7 +147,15 @@ export interface EssayEvolutionEntry {
   essayMaxScore: number | null;
   normalizedPercent: number | null;
   taskStatus: string;
+  criteria: Record<EssayCriterion, number | null>;
 }
+
+export type EssayCriterion = 'content' | 'structure' | 'language';
+export const ESSAY_CRITERIA: Array<{ key: EssayCriterion; label: string }> = [
+  { key: 'content', label: 'Conteúdo' },
+  { key: 'structure', label: 'Estrutura' },
+  { key: 'language', label: 'Linguagem' },
+];
 
 export interface EssayEvolutionSummary {
   totalCount: number;
@@ -152,6 +163,13 @@ export interface EssayEvolutionSummary {
   averagePercent: number | null;
   latestScoreLabel: string | null;
   entries: EssayEvolutionEntry[];
+  /** Média de cada critério nas redações que o registraram. */
+  criteriaAverages: Record<EssayCriterion, number | null>;
+  /** Critério com a menor média, quando há pelo menos dois com nota. */
+  weakestCriterion: { key: EssayCriterion; label: string; average: number } | null;
+  /** Mínimo eliminatório da discursiva, em %, e a última nota abaixo dele. */
+  minimumPercent: number | null;
+  latestBelowMinimum: boolean;
 }
 
 /**
@@ -159,16 +177,26 @@ export interface EssayEvolutionSummary {
  * mantendo o lançamento de nota independente da conclusão da tarefa.
  */
 export function buildEssayEvolutionSummary(
-  items: UnifiedCalendarItem[]
+  items: UnifiedCalendarItem[],
+  minimumPercent: number | null = null
 ): EssayEvolutionSummary {
+  const percent = (value: unknown) =>
+    typeof value === 'number' && Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : null;
   const essays = items
-    .filter(item => item.kind === 'essay' && !item.isRecurringInstance && item.status !== 'Cancelado')
+    .filter(
+      item => item.kind === 'essay' && !item.isRecurringInstance && item.status !== 'Cancelado'
+    )
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const entries: EssayEvolutionEntry[] = essays.map(item => {
-    const score = typeof item.essayScore === 'number' && Number.isFinite(item.essayScore) ? item.essayScore : null;
+    const score =
+      typeof item.essayScore === 'number' && Number.isFinite(item.essayScore)
+        ? item.essayScore
+        : null;
     const maxScore =
-      typeof item.essayMaxScore === 'number' && Number.isFinite(item.essayMaxScore) && item.essayMaxScore > 0
+      typeof item.essayMaxScore === 'number' &&
+      Number.isFinite(item.essayMaxScore) &&
+      item.essayMaxScore > 0
         ? item.essayMaxScore
         : null;
     const normalizedPercent =
@@ -189,6 +217,11 @@ export function buildEssayEvolutionSummary(
       essayMaxScore: maxScore,
       normalizedPercent,
       taskStatus: item.status || 'Não iniciado',
+      criteria: {
+        content: percent(item.essayContent),
+        structure: percent(item.essayStructure),
+        language: percent(item.essayLanguage),
+      },
     };
   });
 
@@ -205,12 +238,31 @@ export function buildEssayEvolutionSummary(
     ? `${latestGraded.essayScore}${latestGraded.essayMaxScore ? `/${latestGraded.essayMaxScore}` : ''}`
     : null;
 
+  const criteriaAverages = Object.fromEntries(
+    ESSAY_CRITERIA.map(({ key }) => {
+      const values = entries.map(e => e.criteria[key]).filter((v): v is number => v !== null);
+      return [
+        key,
+        values.length ? Math.round(values.reduce((sum, v) => sum + v, 0) / values.length) : null,
+      ];
+    })
+  ) as Record<EssayCriterion, number | null>;
+  const rated = ESSAY_CRITERIA.filter(({ key }) => criteriaAverages[key] !== null);
+  const weakest = rated.sort((a, b) => criteriaAverages[a.key]! - criteriaAverages[b.key]!)[0];
+  const minimum = minimumPercent != null && minimumPercent > 0 ? minimumPercent : null;
+  const latestPercent = withPercent[0]?.normalizedPercent ?? null;
+
   return {
     totalCount: entries.length,
     gradedCount: graded.length,
     averagePercent,
     latestScoreLabel,
     entries,
+    criteriaAverages,
+    weakestCriterion:
+      rated.length >= 2 ? { ...weakest, average: criteriaAverages[weakest.key]! } : null,
+    minimumPercent: minimum,
+    latestBelowMinimum: minimum !== null && latestPercent !== null && latestPercent < minimum,
   };
 }
 
@@ -227,7 +279,11 @@ export function computeDailyCalendarLoad(
   for (const item of dayItems) {
     if (!isActionableCalendarKind(item.kind)) continue;
     actionableCount += 1;
-    if (item.status !== 'Concluído' && typeof item.estimatedMinutes === 'number' && item.estimatedMinutes > 0) {
+    if (
+      item.status !== 'Concluído' &&
+      typeof item.estimatedMinutes === 'number' &&
+      item.estimatedMinutes > 0
+    ) {
       totalMinutes += item.estimatedMinutes;
     }
   }
@@ -237,11 +293,14 @@ export function computeDailyCalendarLoad(
       const start = timeToMinutes(item.startTime);
       if (start === null) return null;
       const explicitEnd = timeToMinutes(item.endTime);
-      const duration = item.estimatedMinutes && item.estimatedMinutes > 0 ? item.estimatedMinutes : 30;
+      const duration =
+        item.estimatedMinutes && item.estimatedMinutes > 0 ? item.estimatedMinutes : 30;
       const end = explicitEnd !== null && explicitEnd > start ? explicitEnd : start + duration;
       return { item, start, end };
     })
-    .filter((entry): entry is { item: UnifiedCalendarItem; start: number; end: number } => entry !== null);
+    .filter(
+      (entry): entry is { item: UnifiedCalendarItem; start: number; end: number } => entry !== null
+    );
 
   const conflicts: Array<{ first: UnifiedCalendarItem; second: UnifiedCalendarItem }> = [];
   for (let i = 0; i < timed.length; i += 1) {

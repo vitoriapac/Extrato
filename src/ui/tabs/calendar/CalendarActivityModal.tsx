@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { ESSAY_CRITERIA } from '../../../domain/calendar/calendar-projection.js';
 import { useEffect, useState } from 'preact/hooks';
 import type { CalendarActivityKind, CalendarRecurrenceRule } from '../../../core/types.js';
 import {
@@ -32,6 +33,9 @@ export interface CalendarActivityDraft {
   essayScore: string;
   essayMaxScore: string;
   essayStatus: 'draft' | 'written' | 'graded';
+  essayContent: string;
+  essayStructure: string;
+  essayLanguage: string;
 }
 
 export interface CalendarActivityModalProps {
@@ -63,6 +67,9 @@ const EMPTY_DRAFT: CalendarActivityDraft = {
   essayScore: '',
   essayMaxScore: '',
   essayStatus: 'draft',
+  essayContent: '',
+  essayStructure: '',
+  essayLanguage: '',
 };
 
 const LABEL_CLASS =
@@ -94,14 +101,14 @@ export function CalendarActivityModal({
     setErrorField(null);
     const hasAdvancedData = Boolean(
       next.startTime ||
-        next.endTime ||
-        next.estimatedMinutes ||
-        (next.recurrence && next.recurrence !== 'none') ||
-        next.subjectId ||
-        next.location ||
-        next.externalUrl ||
-        next.description ||
-        (!isNew && next.status && next.status !== 'Não iniciado')
+      next.endTime ||
+      next.estimatedMinutes ||
+      (next.recurrence && next.recurrence !== 'none') ||
+      next.subjectId ||
+      next.location ||
+      next.externalUrl ||
+      next.description ||
+      (!isNew && next.status && next.status !== 'Não iniciado')
     );
     setShowAdvanced(hasAdvancedData);
   }, [initialDraft, open, isNew]);
@@ -185,10 +192,10 @@ export function CalendarActivityModal({
           >
             <Icon name="alert-triangle" size={14} class="text-warning shrink-0 mt-0.5" />
             <span>
-              Você reservou <strong>{formatPlanMinutes(overloadPreview.projectedMinutes)}</strong> para
-              atividades neste dia, mas sua disponibilidade configurada é de{' '}
-              <strong>{formatPlanMinutes(overloadPreview.availableMinutes)}</strong>. Você pode ajustar a
-              duração, escolher outra data ou salvar mesmo assim.
+              Você reservou <strong>{formatPlanMinutes(overloadPreview.projectedMinutes)}</strong>{' '}
+              para atividades neste dia, mas sua disponibilidade configurada é de{' '}
+              <strong>{formatPlanMinutes(overloadPreview.availableMinutes)}</strong>. Você pode
+              ajustar a duração, escolher outra data ou salvar mesmo assim.
             </span>
           </div>
         )}
@@ -219,7 +226,10 @@ export function CalendarActivityModal({
                 id="calActivityKind"
                 value={draft.kind}
                 onChange={e =>
-                  updateField('kind', (e.currentTarget as HTMLSelectElement).value as CalendarActivityKind)
+                  updateField(
+                    'kind',
+                    (e.currentTarget as HTMLSelectElement).value as CalendarActivityKind
+                  )
                 }
                 class={CONTROL_CLASS}
               >
@@ -262,7 +272,9 @@ export function CalendarActivityModal({
                 type="text"
                 placeholder="Ex: Desafios da segurança pública digital no Brasil"
                 value={draft.essayTheme || ''}
-                onInput={e => updateField('essayTheme', (e.currentTarget as HTMLInputElement).value)}
+                onInput={e =>
+                  updateField('essayTheme', (e.currentTarget as HTMLInputElement).value)
+                }
                 class={CONTROL_CLASS}
               />
             </div>
@@ -300,7 +312,9 @@ export function CalendarActivityModal({
                   step="0.5"
                   placeholder="Ex: 880"
                   value={draft.essayScore || ''}
-                  onInput={e => updateField('essayScore', (e.currentTarget as HTMLInputElement).value)}
+                  onInput={e =>
+                    updateField('essayScore', (e.currentTarget as HTMLInputElement).value)
+                  }
                   class={`${CONTROL_CLASS} font-mono tabular-nums`}
                 />
               </div>
@@ -315,11 +329,44 @@ export function CalendarActivityModal({
                   step="1"
                   placeholder="Ex: 1000"
                   value={draft.essayMaxScore || ''}
-                  onInput={e => updateField('essayMaxScore', (e.currentTarget as HTMLInputElement).value)}
+                  onInput={e =>
+                    updateField('essayMaxScore', (e.currentTarget as HTMLInputElement).value)
+                  }
                   class={`${CONTROL_CLASS} font-mono tabular-nums`}
                 />
               </div>
             </div>
+            <fieldset class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-0 p-0 m-0 min-w-0">
+              <legend class={`${LABEL_CLASS} col-span-full`}>
+                Nota por critério (%), opcional: mostra onde a discursiva perde ponto
+              </legend>
+              {ESSAY_CRITERIA.map(({ key, label }) => {
+                const field = (
+                  {
+                    content: 'essayContent',
+                    structure: 'essayStructure',
+                    language: 'essayLanguage',
+                  } as const
+                )[key];
+                return (
+                  <div key={key}>
+                    <label for={`calEssay-${key}`} class={LABEL_CLASS}>
+                      {label}
+                    </label>
+                    <input
+                      id={`calEssay-${key}`}
+                      type="number"
+                      min={0}
+                      max={100}
+                      step="1"
+                      value={draft[field] || ''}
+                      onInput={e => updateField(field, (e.currentTarget as HTMLInputElement).value)}
+                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                    />
+                  </div>
+                );
+              })}
+            </fieldset>
           </div>
         )}
 
@@ -331,7 +378,11 @@ export function CalendarActivityModal({
             onClick={() => setShowAdvanced(prev => !prev)}
           >
             <Icon name={showAdvanced ? 'chevron-up' : 'chevron-down'} size={14} />
-            <span>{showAdvanced ? 'Ocultar detalhes opcionais' : 'Mais detalhes (horário, duração, disciplina, local)'}</span>
+            <span>
+              {showAdvanced
+                ? 'Ocultar detalhes opcionais'
+                : 'Mais detalhes (horário, duração, disciplina, local)'}
+            </span>
           </button>
 
           {showAdvanced && (
@@ -345,7 +396,9 @@ export function CalendarActivityModal({
                     id="calActivityStart"
                     type="time"
                     value={draft.startTime}
-                    onChange={e => updateField('startTime', (e.currentTarget as HTMLInputElement).value)}
+                    onChange={e =>
+                      updateField('startTime', (e.currentTarget as HTMLInputElement).value)
+                    }
                     class={`${CONTROL_CLASS} font-mono tabular-nums`}
                   />
                 </div>
@@ -358,7 +411,9 @@ export function CalendarActivityModal({
                     type="time"
                     aria-invalid={errorField === 'endTime'}
                     value={draft.endTime}
-                    onChange={e => updateField('endTime', (e.currentTarget as HTMLInputElement).value)}
+                    onChange={e =>
+                      updateField('endTime', (e.currentTarget as HTMLInputElement).value)
+                    }
                     class={`${CONTROL_CLASS} font-mono tabular-nums`}
                   />
                 </div>
@@ -373,7 +428,9 @@ export function CalendarActivityModal({
                     step="5"
                     placeholder="Ex: 60"
                     value={draft.estimatedMinutes}
-                    onInput={e => updateField('estimatedMinutes', (e.currentTarget as HTMLInputElement).value)}
+                    onInput={e =>
+                      updateField('estimatedMinutes', (e.currentTarget as HTMLInputElement).value)
+                    }
                     class={`${CONTROL_CLASS} font-mono tabular-nums`}
                   />
                 </div>
@@ -387,7 +444,9 @@ export function CalendarActivityModal({
                   <select
                     id="calActivitySubject"
                     value={draft.subjectId}
-                    onChange={e => updateField('subjectId', (e.currentTarget as HTMLSelectElement).value)}
+                    onChange={e =>
+                      updateField('subjectId', (e.currentTarget as HTMLSelectElement).value)
+                    }
                     class={CONTROL_CLASS}
                   >
                     <option value="">Sem disciplina específica</option>
@@ -406,7 +465,9 @@ export function CalendarActivityModal({
                   <select
                     id="calActivityStatus"
                     value={draft.status}
-                    onChange={e => updateField('status', (e.currentTarget as HTMLSelectElement).value)}
+                    onChange={e =>
+                      updateField('status', (e.currentTarget as HTMLSelectElement).value)
+                    }
                     class={CONTROL_CLASS}
                   >
                     {STATUS_OPTIONS.map(st => (
@@ -429,7 +490,9 @@ export function CalendarActivityModal({
                     type="text"
                     placeholder="Ex: Escola Municipal, Sala 12"
                     value={draft.location}
-                    onInput={e => updateField('location', (e.currentTarget as HTMLInputElement).value)}
+                    onInput={e =>
+                      updateField('location', (e.currentTarget as HTMLInputElement).value)
+                    }
                     class={CONTROL_CLASS}
                   />
                 </div>
@@ -442,7 +505,9 @@ export function CalendarActivityModal({
                     type="url"
                     placeholder="https://..."
                     value={draft.externalUrl}
-                    onInput={e => updateField('externalUrl', (e.currentTarget as HTMLInputElement).value)}
+                    onInput={e =>
+                      updateField('externalUrl', (e.currentTarget as HTMLInputElement).value)
+                    }
                     class={CONTROL_CLASS}
                   />
                 </div>
@@ -480,7 +545,9 @@ export function CalendarActivityModal({
                   rows={2}
                   placeholder="Tema, banca, documentos necessários ou detalhes..."
                   value={draft.description}
-                  onInput={e => updateField('description', (e.currentTarget as HTMLTextAreaElement).value)}
+                  onInput={e =>
+                    updateField('description', (e.currentTarget as HTMLTextAreaElement).value)
+                  }
                   class={CONTROL_CLASS}
                 />
               </div>

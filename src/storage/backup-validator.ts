@@ -493,6 +493,12 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     Number(data.examBlueprint.targetScore) < 0 ||
     Number(data.examBlueprint.targetScore) > 100 ||
     !isOptionalTimestamp(data.examBlueprint.configuredAt) ||
+    !(data.examBlueprint.preEdital == null || typeof data.examBlueprint.preEdital === 'boolean') ||
+    !(
+      data.examBlueprint.essayMinPercent == null ||
+      (isFiniteNonNegative(data.examBlueprint.essayMinPercent) &&
+        Number(data.examBlueprint.essayMinPercent) <= 100)
+    ) ||
     !Array.isArray(data.examBlueprint.subjects) ||
     data.examBlueprint.subjects.length > 1000
   )

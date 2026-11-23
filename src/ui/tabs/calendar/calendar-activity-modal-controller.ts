@@ -89,6 +89,9 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       essayScore: '',
       essayMaxScore: '',
       essayStatus: 'draft',
+      essayContent: '',
+      essayStructure: '',
+      essayLanguage: '',
     } satisfies CalendarActivityDraft;
     ui.modalOpen = true;
     renderActivityModal();
@@ -118,9 +121,18 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       essayScore: item.essayScore != null ? String(item.essayScore) : '',
       essayMaxScore: item.essayMaxScore != null ? String(item.essayMaxScore) : '',
       essayStatus: item.essayStatus || 'draft',
+      essayContent: item.essayContent != null ? String(item.essayContent) : '',
+      essayStructure: item.essayStructure != null ? String(item.essayStructure) : '',
+      essayLanguage: item.essayLanguage != null ? String(item.essayLanguage) : '',
     } satisfies CalendarActivityDraft;
     ui.modalOpen = true;
     renderActivityModal();
+  }
+
+  /** Critério da discursiva: vazio grava null; valores fora de 0–100 são limitados. */
+  function criterionPercent(value: string) {
+    const n = value.trim() === '' ? NaN : Number(value.replace(',', '.'));
+    return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : null;
   }
 
   function saveActivityModal(draft: CalendarActivityDraft) {
@@ -149,6 +161,9 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
             essayMaxScore:
               Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : null,
             essayStatus: draft.essayStatus || 'draft',
+            essayContent: criterionPercent(draft.essayContent),
+            essayStructure: criterionPercent(draft.essayStructure),
+            essayLanguage: criterionPercent(draft.essayLanguage),
           }
         : {}),
     };

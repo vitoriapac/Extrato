@@ -76,6 +76,24 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
       return updateExamBlueprint('masteryTarget', value, { refresh });
     }
     const state = getState();
+    if (field === 'preEdital' || field === 'essayMinPercent') {
+      if (field === 'preEdital') {
+        const preEdital = value === true || value === 'true';
+        if (preEdital) {
+          // Sem edital não há data oficial: a data antiga deixaria fases e prazo cobrando o que não existe.
+          captureReadinessBeforeStrategy('Antes de voltar ao pré-edital');
+          state.examBlueprint.examDate = null;
+          state.examDate = '';
+        }
+        state.examBlueprint.preEdital = preEdital ? true : undefined;
+      } else {
+        const min = Number(String(value).replace(',', '.'));
+        state.examBlueprint.essayMinPercent = min > 0 && min <= 100 ? min : null;
+      }
+      if (refresh) persistAndRender();
+      else scheduleSave();
+      return;
+    }
     if (field === 'scoringMode') {
       const mode = value === 'certo-errado' ? 'certo-errado' : undefined;
       if (state.examBlueprint.scoringMode === mode) return;
@@ -116,6 +134,8 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
     if (field === 'examDate') {
       state.examBlueprint.examDate = value || null;
       state.examDate = value || '';
+      // Data definida: o edital saiu.
+      if (value) state.examBlueprint.preEdital = undefined;
     }
     if (field === 'targetScore') {
       const target = Math.max(0, Math.min(100, Number(value) || 0));

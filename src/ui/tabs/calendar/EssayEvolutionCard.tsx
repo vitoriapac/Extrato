@@ -1,5 +1,8 @@
 import type { JSX } from 'preact';
-import type { EssayEvolutionSummary } from '../../../domain/calendar/calendar-projection.js';
+import {
+  ESSAY_CRITERIA,
+  type EssayEvolutionSummary,
+} from '../../../domain/calendar/calendar-projection.js';
 import { Button } from '../../primitives/button.js';
 import { Badge } from '../../primitives/badge.js';
 import { Icon } from '../../primitives/icon.js';
@@ -36,16 +39,40 @@ export function EssayEvolutionCard({
         <div>
           <h3 id="essayEvolutionHeading" class="m-0 flex items-center gap-2">
             <Icon name="file-text" size={16} class="text-brand" />
-            <span>Histórico e evolução de redações</span>
+            <span>Redação e discursiva</span>
           </h3>
           <p class="text-xs text-content-secondary m-0 mt-0.5">
-            {summary.totalCount} {summary.totalCount === 1 ? 'redação registrada' : 'redações registradas'}
+            {summary.totalCount}{' '}
+            {summary.totalCount === 1 ? 'redação registrada' : 'redações registradas'}
             {summary.gradedCount > 0 ? ` · ${summary.gradedCount} com nota` : ''}
             {summary.averagePercent !== null ? ` · Média: ${summary.averagePercent}%` : ''}
             {summary.latestScoreLabel ? ` · Última nota: ${summary.latestScoreLabel}` : ''}
           </p>
         </div>
       </div>
+
+      {summary.latestBelowMinimum && (
+        <p class="text-sm m-0" role="alert">
+          <Badge variant="danger">Abaixo do mínimo</Badge> A última nota ficou abaixo do mínimo
+          eliminatório de {summary.minimumPercent}%. Na prova, isso elimina mesmo com boa nota nas
+          objetivas.
+        </p>
+      )}
+
+      {ESSAY_CRITERIA.some(({ key }) => summary.criteriaAverages[key] !== null) && (
+        <div class="text-xs text-content-secondary">
+          <span>Média por critério: </span>
+          {ESSAY_CRITERIA.filter(({ key }) => summary.criteriaAverages[key] !== null)
+            .map(({ key, label }) => `${label} ${summary.criteriaAverages[key]}%`)
+            .join(' · ')}
+          {summary.weakestCriterion && (
+            <p class="m-0 mt-1 text-content-primary">
+              Onde mais perde ponto: <strong>{summary.weakestCriterion.label}</strong> (
+              {summary.weakestCriterion.average}%). Priorize esse critério na próxima correção.
+            </p>
+          )}
+        </div>
+      )}
 
       <ul class="upcoming-list">
         {summary.entries.slice(0, 8).map(entry => {

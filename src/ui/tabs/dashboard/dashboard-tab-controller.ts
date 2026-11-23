@@ -36,7 +36,7 @@ import { buildWeeklyPerformanceBrief } from '../../../application/performance/bu
 import { createDashboardHeatmapController } from './dashboard-heatmap-controller.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
 import { readinessWeeklyTrend } from '../../../application/analytics/readiness-history.js';
-import { resolveExamPhase } from '../../../domain/planning/adaptive-planning.js';
+import { resolveExamPhase, withPreEdital } from '../../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
@@ -811,7 +811,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     }
     const phaseContainer = doc.getElementById('overviewExamPhase');
     if (phaseContainer) {
-      phaseContainer.innerHTML = renderExamPhaseCompact(resolveExamPhase(phaseDays), {
+      const phase = withPreEdital(resolveExamPhase(phaseDays), state.examBlueprint?.preEdital);
+      phaseContainer.innerHTML = renderExamPhaseCompact(phase, {
         escapeHtml,
       });
     }
@@ -851,7 +852,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     const ul = doc.getElementById('upcomingList');
     const title = doc.getElementById('upcomingTitle');
     const footer = doc.getElementById('upcomingFooter');
-    if (title) title.textContent = `Tarefas de estudo e revisões espaçadas a partir de hoje · ${allUpcoming.length}`;
+    if (title)
+      title.textContent = `Tarefas de estudo e revisões espaçadas a partir de hoje · ${allUpcoming.length}`;
     if (ul) {
       // Todos os itens: "Mostrar mais" é do montador de listas (#upcomingList).
       mountUpcomingList(ul, allUpcoming);

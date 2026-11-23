@@ -11,7 +11,11 @@ function resolveCalendarKind(item: Record<string, any>): CalendarActivityKind {
   return item.reviewType && item.reviewType !== '—' ? 'manual_review' : 'task';
 }
 
-function resolveCalendarTitle(item: Record<string, any>, subjectLabel: string, kind: CalendarActivityKind): string {
+function resolveCalendarTitle(
+  item: Record<string, any>,
+  subjectLabel: string,
+  kind: CalendarActivityKind
+): string {
   if (typeof item.title === 'string' && item.title.trim()) return item.title.trim();
   if (item.reviewType && item.reviewType !== '—') return String(item.reviewType);
   if (kind === 'mock_exam') return subjectLabel ? `Simulado · ${subjectLabel}` : 'Simulado';
@@ -55,6 +59,9 @@ export function buildUnifiedReviews({
       essayScore: typeof item.essayScore === 'number' ? item.essayScore : null,
       essayMaxScore: typeof item.essayMaxScore === 'number' ? item.essayMaxScore : null,
       essayStatus: item.essayStatus || null,
+      essayContent: typeof item.essayContent === 'number' ? item.essayContent : null,
+      essayStructure: typeof item.essayStructure === 'number' ? item.essayStructure : null,
+      essayLanguage: typeof item.essayLanguage === 'number' ? item.essayLanguage : null,
       isEvent: kind === 'event',
       isDraggable: true,
     };

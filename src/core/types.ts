@@ -247,6 +247,10 @@ export interface ExamBlueprint {
   subjects: ExamBlueprintSubject[];
   /** Tipo de prova usado como padrão nos simulados novos. */
   scoringMode?: SimulationScoring;
+  /** Edital ainda não publicado: estudo da base comum, sem data nem prazo. */
+  preEdital?: boolean;
+  /** Nota mínima eliminatória da discursiva, em %. */
+  essayMinPercent?: number | null;
 }
 
 export interface TimerStrategy {
@@ -301,6 +305,10 @@ export interface CalendarItem {
   essayScore?: number | null;
   essayMaxScore?: number | null;
   essayStatus?: 'draft' | 'written' | 'graded' | null;
+  /** Nota por critério da discursiva, em % (conteúdo, estrutura, linguagem). */
+  essayContent?: number | null;
+  essayStructure?: number | null;
+  essayLanguage?: number | null;
   examId?: string | null;
   week?: string | null;
   createdAt?: string | null;
