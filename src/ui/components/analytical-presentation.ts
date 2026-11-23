@@ -10,8 +10,10 @@ export function renderDisclosure({
   className = 'performance-details',
   bodyClassName = 'performance-details__body',
   open = false,
+  // Nome para leitor de tela quando o mesmo título se repete em cartões vizinhos ("Ver evidências: <tópico>").
+  summaryLabel = '',
 }: any = {}) {
-  return `<details class="${escape(className)}"${open ? ' open' : ''}><summary>${escape(title)}</summary><div class="${escape(bodyClassName)}">${contentHTML}</div></details>`;
+  return `<details class="${escape(className)}"${open ? ' open' : ''}><summary${summaryLabel ? ` aria-label="${escape(summaryLabel)}"` : ''}>${escape(title)}</summary><div class="${escape(bodyClassName)}">${contentHTML}</div></details>`;
 }
 export function renderDecisionSummary({ title, summary, details = [] }: any = {}) {
   return `<section class="performance-story" aria-label="Leitura principal"><h3>${escape(title)}</h3><p>${escape(summary)}</p>${

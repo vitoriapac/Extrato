@@ -1,4 +1,4 @@
-import { EXAM_PROFILES } from '../exams/exam-catalog.js';
+import { EXAM_PROFILES } from '../exams/exam-profiles.js';
 
 type Row = Record<string, any>;
 

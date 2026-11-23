@@ -120,7 +120,8 @@ const enrichedSubjects = catalogData.subjects.map(normalizeSubject);
 
 export const EXAM_CATALOG = deepFreeze(enrichedSubjects);
 export const CURATED_TI_TOPICS = deepFreeze(tiTopics);
-export const EXAM_PROFILES = deepFreeze(clone(catalogData.examProfiles || {}));
+export { EXAM_PROFILES } from './exam-profiles.js';
+import { EXAM_PROFILES } from './exam-profiles.js';
 export const CATALOG_METADATA = deepFreeze({
   schemaVersion: catalogData.schemaVersion,
   catalogVersion: CATALOG_VERSION,

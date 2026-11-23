@@ -1,0 +1,101 @@
+{
+  "bb-escriturario-2023": {
+    "label": "Banco do Brasil — Escriturário (Agente Comercial) 2023",
+    "totalQuestions": 70,
+    "totalObjectivePoints": 100,
+    "disciplines": {
+      "Língua Portuguesa": {
+        "questions": 10,
+        "questionWeight": 1.5,
+        "totalPoints": 15
+      },
+      "Língua Inglesa": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Matemática": {
+        "questions": 5,
+        "questionWeight": 1.5,
+        "totalPoints": 7.5
+      },
+      "Atualidades do Mercado Financeiro": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Matemática Financeira": {
+        "questions": 5,
+        "questionWeight": 1.5,
+        "totalPoints": 7.5
+      },
+      "Conhecimentos Bancários": {
+        "questions": 10,
+        "questionWeight": 1.5,
+        "totalPoints": 15
+      },
+      "Conhecimentos de Informática": {
+        "questions": 15,
+        "questionWeight": 1.5,
+        "totalPoints": 22.5
+      },
+      "Vendas e Negociação": {
+        "questions": 15,
+        "questionWeight": 1.5,
+        "totalPoints": 22.5
+      }
+    }
+  },
+  "caixa-tbn-2024": {
+    "label": "Caixa — Técnico Bancário Novo 2024",
+    "totalQuestions": 60,
+    "totalObjectivePoints": 60,
+    "disciplines": {
+      "Língua Portuguesa": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Língua Inglesa": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Matemática Financeira": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Noções de Probabilidade e Estatística": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Comportamentos Éticos e Compliance": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Conhecimentos Bancários": {
+        "questions": 15,
+        "questionWeight": 1,
+        "totalPoints": 15
+      },
+      "Conhecimentos de Tecnologia da Informação e Comunicação": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Conhecimentos e Comportamentos Digitais": {
+        "questions": 5,
+        "questionWeight": 1,
+        "totalPoints": 5
+      },
+      "Atendimento Bancário": {
+        "questions": 10,
+        "questionWeight": 1,
+        "totalPoints": 10
+      }
+    }
+  }
+}

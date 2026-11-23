@@ -67,6 +67,7 @@ export function renderDiagnosticSummary(
         ? ''
         : renderDisclosure({
             title: 'Ver evidências',
+            summaryLabel: `Ver evidências: ${item.name || 'conteúdo sem nome'}`,
             className: 'diagnostic-detail',
             bodyClassName: 'diagnostic-detail__body',
             contentHTML: `

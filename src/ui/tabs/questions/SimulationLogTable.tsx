@@ -245,6 +245,7 @@ export function SimulationLogTable({
             type="button"
             class={`btn ghost small ${hasBreakdown ? 'has-notes' : ''}`}
             aria-expanded={expanded}
+            aria-label={`${expanded ? 'Ocultar detalhes' : 'Ver desempenho'}: ${vm.name}, ${vm.date}`}
             data-delegated-click={`toggleBreakdown('${sim.id}')`}
           >
             {expanded ? 'Ocultar detalhes' : 'Ver desempenho'}
@@ -266,6 +267,7 @@ export function SimulationLogTable({
                         type="button"
                         class="btn ghost small"
                         data-delegated-click={`editSimulation('${sim.id}')`}
+                        aria-label={`Editar simulado: ${vm.name}, ${vm.date}`}
                       >
                         Editar
                       </button>
@@ -312,6 +314,7 @@ export function SimulationLogTable({
                     type="button"
                     class="btn ghost small"
                     data-delegated-click={`editSimulation('${sim.id}')`}
+                    aria-label={`Editar simulado: ${vm.name}, ${vm.date}`}
                   >
                     Editar
                   </button>

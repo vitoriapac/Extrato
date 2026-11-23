@@ -86,9 +86,42 @@ typography:
     fontFamily: "IBM Plex Mono, Consolas, Courier New, monospace"
     fontSize: "12px"
     fontWeight: 400
+  numeral-sm:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "18px"
+    fontWeight: 600
+  numeral-md:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "22px"
+    fontWeight: 600
+  numeral-lg:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "26px"
+    fontWeight: 600
+  numeral-xl:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "30px"
+    fontWeight: 600
+  balance-sm:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "32px"
+    fontWeight: 600
+  balance-md:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "38px"
+    fontWeight: 600
+  balance-lg:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "48px"
+    fontWeight: 600
+  balance-xl:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "54px"
+    fontWeight: 600
 rounded:
   card: "8px"
   control: "6px"
+  mark: "2px"
 spacing:
   space-1: "4px"
   space-2: "8px"
@@ -292,6 +325,8 @@ As três famílias são servidas do próprio projeto (`fonts/`, licença OFL, de
 - **Action** (Sans 500, 0.8125rem, sem caixa-alta): botões e abas.
 - **Label** (Sans 600, 12px, 0.08em, MAIÚSCULAS): rótulos de seção, eyebrows, cabeçalhos de tabela, rótulos de KPI. Caixa-alta só aqui.
 - **Data** (Mono 400, 12px): datas, durações, contagens, percentuais e códigos; 12px é o piso de toda a interface.
+- **Numerais de destaque** (Serifa 600, 18px, 22px, 26px, 30px, 32px, 38px, 48px, 54px): saldo da prontidão no cabeçalho (54px no computador, 38px e 32px em telas menores), números de KPI e de metas (18–26px), foco do fechamento semanal (30px). São números, não títulos; fora deles, use a escala acima.
+- **Títulos fluidos** (`clamp`): títulos de seção, da Central de Ajuda e do Desempenho crescem com a largura entre um passo da escala e o seguinte; o cronômetro em modo foco vai de 64px a 150px.
 
 Pesos permitidos: 400, 500, 600. O 700 existe como token mas não é a voz do sistema.
 

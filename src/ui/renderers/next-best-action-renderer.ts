@@ -31,16 +31,21 @@ export function renderPlanRecommendationChoice(
 ) {
   if (!priority?.unplannedAction || priority.action?.id !== action.id) return '';
   const item = priority.nextItem;
+  const planTopic = item
+    ? `${item.subjectName || 'Disciplina'} · ${item.topicName || 'Tópico'}`
+    : '';
+  // O cartão fala da sugestão; o plano é outra atividade, então o texto diz qual é antes do botão.
+  // Com borda, não sólido: a ação principal de Hoje é a do plano, que já tem o seu botão em "Plano de hoje".
   return (
-    '<section class="plan-recommendation-choice" aria-label="Plano e sugestão"><p class="context-note">Sugestão do diagnóstico fora do Plano de hoje.</p>' +
+    '<section class="plan-recommendation-choice" aria-label="Plano e sugestão"><p class="context-note">Sugestão do diagnóstico fora do Plano de hoje.' +
+    (item ? ' O plano segue com ' + escapeHtml(planTopic) + '.' : '') +
+    '</p>' +
     (item
-      ? '<button class="btn" type="button" data-daily-start="' +
+      ? '<button class="btn ghost" type="button" data-daily-start="' +
         escapeAttr(item.id) +
-        '">Seguir plano de hoje · ' +
-        escapeHtml(item.subjectName || 'Disciplina') +
-        ' · ' +
-        escapeHtml(item.topicName || 'Tópico') +
-        '</button>'
+        '" aria-label="' +
+        escapeAttr('Seguir plano de hoje: ' + planTopic) +
+        '">Seguir plano de hoje</button>'
       : '<p>Não há atividade pendente elegível no plano atual.</p>') +
     (withExtras ? renderPlanRecommendationExtras(action, { escapeAttr }) : '') +
     '</section>'

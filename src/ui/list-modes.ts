@@ -71,7 +71,8 @@ export const DOM_LISTS: DomListSpec[] = [
   more('#alertasInteligentesList', ':scope > .alerta-item', 10, { limit: 2 }),
   pages('#retentionRecords', ':scope > .retention-row', 'tópicos', 400),
   pages('#questionPerformanceRecords', ':scope > .performance-row', 'tópicos', 400),
-  pages('#upcomingList', ':scope > li', 'itens', 100),
+  // Resumo da Agenda: cinco por página; a lista inteira fica em "Ver todas no calendário".
+  pages('#upcomingList', ':scope > li', 'itens', 100, 5),
   pages('#calAtrasadas', ':scope > .overdue-group', 'datas', 60),
   more('.mastery-matrix', ':scope > details', 30, { exception: DISCIPLINAS }),
   pages('.exam-matrix-table tbody', ':scope > tr', 'tópicos', 400),
