@@ -106,7 +106,8 @@ export const READINESS_ON_TRACK_MIN = 70;
  */
 export function classifyApprovalScore(score: number): ApprovalClassification {
   if (score >= 85) return { nivel: 'Excelente preparação', cor: 'ok', faixa: '85–100' };
-  if (score >= READINESS_ON_TRACK_MIN) return { nivel: 'Preparação avançada', cor: 'ok', faixa: '70–84' };
+  if (score >= READINESS_ON_TRACK_MIN)
+    return { nivel: 'Preparação avançada', cor: 'ok', faixa: '70–84' };
   if (score >= 50) return { nivel: 'Em desenvolvimento', cor: 'warn', faixa: '50–69' };
   return { nivel: 'Preparação inicial', cor: 'danger', faixa: '0–49' };
 }
@@ -151,7 +152,9 @@ export function calculateApprovalSimuladosMetric(
  * Calcula a métrica de acertos em questões avulsas no escopo da prova.
  */
 export function calculateApprovalAcertosMetric(
-  questions: AcertosQuestionItem[]
+  questions: AcertosQuestionItem[],
+  /** Acerto médio das disciplinas pesado pelos pontos do edital; substitui o bruto quando presente. */
+  weightedRaw: number | null = null
 ): ApprovalMetricResult {
   const total = questions.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
   const correct = questions.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
@@ -164,14 +167,18 @@ export function calculateApprovalAcertosMetric(
       detail: 'Sem questões registradas',
     };
   }
-  const raw = (correct / total) * 100;
+  const gross = (correct / total) * 100;
+  const raw = weightedRaw ?? gross;
   const confidence = Math.min(1, total / 300);
   return {
     score: clampScore(50 + (raw - 50) * confidence),
     confidence,
     available: true,
     raw,
-    detail: `${total} questões · acerto bruto ${Math.round(raw)}%`,
+    detail:
+      weightedRaw == null
+        ? `${total} questões · acerto bruto ${Math.round(gross)}%`
+        : `${total} questões · ${Math.round(raw)}% pelo peso do edital (${Math.round(gross)}% sem peso)`,
   };
 }
 
@@ -182,8 +189,11 @@ export function calculateApprovalEditalMetric(params: {
   totalTopicsCount: number;
   concludedTopicsCount: number;
   subjectsWithTopicsCount: number;
+  /** Cobertura das disciplinas pesada pelos pontos do edital; substitui a contagem simples quando presente. */
+  weightedRaw?: number | null;
 }): ApprovalMetricResult {
   const { totalTopicsCount, concludedTopicsCount, subjectsWithTopicsCount } = params;
+  const weightedRaw = params.weightedRaw ?? null;
   if (totalTopicsCount === 0) {
     return {
       score: 50,
@@ -193,7 +203,7 @@ export function calculateApprovalEditalMetric(params: {
       detail: 'Sem tópicos cadastrados',
     };
   }
-  const raw = (concludedTopicsCount / totalTopicsCount) * 100;
+  const raw = weightedRaw ?? (concludedTopicsCount / totalTopicsCount) * 100;
   const confidence = Math.min(
     1,
     (totalTopicsCount / 40) * 0.55 + (subjectsWithTopicsCount / 5) * 0.45
@@ -203,7 +213,7 @@ export function calculateApprovalEditalMetric(params: {
     confidence,
     available: true,
     raw,
-    detail: `${concludedTopicsCount} de ${totalTopicsCount} tópicos concluídos`,
+    detail: `${concludedTopicsCount} de ${totalTopicsCount} tópicos concluídos${weightedRaw == null ? '' : ` · ${Math.round(weightedRaw)}% do peso da prova`}`,
   };
 }
 

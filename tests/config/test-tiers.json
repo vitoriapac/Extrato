@@ -1832,6 +1832,11 @@
       "rationale": "Diagnóstico determinístico de sangria pós-simulado, plano diário de 7 dias e rascunhos de erro."
     },
     {
+      "file": "tests/unit/blueprint-weights.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Acerto e cobertura pesados pelos pontos do edital, Node determinístico."
+    },
+    {
       "file": "tests/unit/simulation-score.test.js",
       "tier": "FAST_GATE",
       "rationale": "Nota líquida Certo ou errado e mínimo eliminatório por disciplina, Node determinístico."

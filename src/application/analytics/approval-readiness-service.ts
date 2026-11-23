@@ -20,6 +20,7 @@ import {
   READINESS_WEIGHTS,
 } from '../../domain/analytics/readiness-score.js';
 import { buildCalibratedScoreProjection } from '../../domain/forecasts/calibrated-score-projection.js';
+import { blueprintWeightedMean } from '../../domain/exams/blueprint-weights.js';
 import { buildPerformanceForecast } from '../../domain/forecasts/performance-forecast.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { buildApprovalSignals } from './build-analytics-view-model.js';
@@ -142,20 +143,51 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
     return calculateApprovalSimuladosMetric(completed);
   }
 
+  /** Soma numerador e denominador por disciplina e pesa a razão de cada uma pelos pontos do edital. */
+  function weightedBySubject<T>(
+    items: T[],
+    subjectOf: (item: T) => string | null,
+    hit: (item: T) => number,
+    count: (item: T) => number
+  ) {
+    const bySubject = new Map<string | null, { hit: number; count: number }>();
+    items.forEach(item => {
+      const key = subjectOf(item);
+      const row = bySubject.get(key) || { hit: 0, count: 0 };
+      row.hit += hit(item);
+      row.count += count(item);
+      bySubject.set(key, row);
+    });
+    const parts = [...bySubject]
+      .filter(([, row]) => row.count > 0)
+      .map(([subjectId, row]) => ({ subjectId, value: (row.hit / row.count) * 100 }));
+    return blueprintWeightedMean(parts, getState().examBlueprint?.subjects);
+  }
+
   function approvalAcertosMetric() {
-    const questions = examEvidenceContext().questions.included;
-    if (getState().examBlueprint?.scoringMode !== 'certo-errado')
-      return calculateApprovalAcertosMetric(questions);
-    // Certo ou errado: questão avulsa não registra branco, então toda não acertada anula um acerto.
-    const result = calculateApprovalAcertosMetric(
-      questions.map((q: AcertosQuestionItem) => ({
-        ...q,
+    const certoErrado = getState().examBlueprint?.scoringMode === 'certo-errado';
+    const questions: Array<AcertosQuestionItem & Record<string, any>> = certoErrado
+      ? // Certo ou errado: questão avulsa não registra branco, então toda não acertada anula um acerto.
         // Sem limitar a zero por registro: o saldo líquido é somado e só a pontuação final é limitada.
-        correct: 2 * (Number(q.correct) || 0) - (Number(q.resolved) || 0),
-      }))
+        examEvidenceContext().questions.included.map((q: AcertosQuestionItem) => ({
+          ...q,
+          correct: 2 * (Number(q.correct) || 0) - (Number(q.resolved) || 0),
+        }))
+      : examEvidenceContext().questions.included;
+    const weighted = weightedBySubject(
+      questions,
+      entitySubjectId,
+      q => Number(q.correct) || 0,
+      q => Number(q.resolved) || 0
     );
-    return result.available
-      ? { ...result, detail: result.detail.replace('acerto bruto', 'nota líquida') }
+    const result = calculateApprovalAcertosMetric(questions, weighted);
+    return certoErrado && result.available
+      ? {
+          ...result,
+          detail: result.detail
+            .replace('acerto bruto', 'nota líquida')
+            .replace('% pelo peso', '% de nota líquida pelo peso'),
+        }
       : result;
   }
 
@@ -169,6 +201,12 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
       totalTopicsCount: topics.length,
       concludedTopicsCount: concluded,
       subjectsWithTopicsCount: subjectsWithTopics,
+      weightedRaw: weightedBySubject(
+        topics,
+        t => t.subjectId ?? null,
+        t => (t.status === 'Concluído' ? 1 : 0),
+        () => 1
+      ),
     });
   }
 
