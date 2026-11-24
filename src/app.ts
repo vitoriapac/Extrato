@@ -27,7 +27,11 @@ import {
   createEssentialController,
   createPreferencesController,
 } from './ui/controllers/preferences-controller.js';
-import { decorateAdvancedReveals, decorateTermHints } from './ui/essential-mode.js';
+import {
+  decorateAdvancedReveals,
+  decorateTermHints,
+  renderEssentialGraduation,
+} from './ui/essential-mode.js';
 import { mountAppFooter } from './ui/shell/mount-app-footer.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
@@ -78,9 +82,19 @@ document
   ?.addEventListener('click', () => densityController.toggle());
 densityController.sync();
 const essentialController = createEssentialController({ document, storage: localStorage });
-document
-  .getElementById('essentialToggleBtn')
-  ?.addEventListener('click', () => essentialController.toggle());
+// Aviso único de transição: quem começou no Essencial e já tem evidência pode passar ao completo.
+const syncEssentialGraduation = () =>
+  renderEssentialGraduation({
+    slot: document.getElementById('essentialGraduationSlot'),
+    essentialOn: essentialController.current(),
+    state,
+    storage: localStorage,
+    onShowFull: () => essentialController.set(false),
+  });
+document.getElementById('essentialToggleBtn')?.addEventListener('click', () => {
+  essentialController.toggle();
+  syncEssentialGraduation();
+});
 // O rodapé precisa existir antes dos controladores que ligam listeners nos seus botões.
 mountAppFooter(document);
 decorateAdvancedReveals(document);
@@ -365,6 +379,7 @@ const activateInitialTab = () => {
     demo: IS_DEMO_MODE,
     testMode: TEST_MODE,
   });
+  syncEssentialGraduation();
   uiControllers.tabRouter.activateInitialTab();
   uiControllers.firstAccessModalController?.checkAndTrigger();
   scheduleAchievementCheck();

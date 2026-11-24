@@ -6,7 +6,8 @@ export const TERM_HINTS: Readonly<Record<string, string>> = Object.freeze({
   revisoes: 'Revisões marcadas de hoje em diante, na agenda e no calendário.',
   sequencia: 'Dias seguidos com estudo, questões ou simulado registrados.',
   dominio: 'Taxa de acerto ponderada pela recência e pela amostra em cada tópico ou disciplina.',
-  retencao: 'Estabilidade da memória, estimada pelas revisões no prazo, pelos acertos recentes e pelo intervalo desde a última revisão.',
+  retencao:
+    'Estabilidade da memória, estimada pelas revisões no prazo, pelos acertos recentes e pelo intervalo desde a última revisão.',
   aderencia: 'Parte do tempo ou das atividades planejadas que foi executada no período.',
 });
 
@@ -55,13 +56,109 @@ export function revealAdvanced(block: HTMLElement | null | undefined, focus = tr
 
 /** Puts a "Mostrar …" button before each [data-advanced] block; in essential mode it opens that block. */
 export function decorateAdvancedReveals(root: ParentNode = document) {
-  root.querySelectorAll<HTMLElement>('[data-advanced]:not([data-advanced-ready])').forEach(block => {
-    block.dataset.advancedReady = '';
-    const button = block.ownerDocument.createElement('button');
-    button.type = 'button';
-    button.className = 'btn ghost small advanced-reveal';
-    button.textContent = `Mostrar ${block.dataset.advanced}`;
-    button.addEventListener('click', () => revealAdvanced(block));
-    block.before(button);
+  root
+    .querySelectorAll<HTMLElement>('[data-advanced]:not([data-advanced-ready])')
+    .forEach(block => {
+      block.dataset.advancedReady = '';
+      const button = block.ownerDocument.createElement('button');
+      button.type = 'button';
+      button.className = 'btn ghost small advanced-reveal';
+      button.textContent = `Mostrar ${block.dataset.advanced}`;
+      button.addEventListener('click', () => revealAdvanced(block));
+      block.before(button);
+    });
+}
+
+/** Evidência mínima para sugerir o modo completo a quem começou no Essencial. */
+export const ESSENTIAL_GRADUATION_DAYS = 14;
+export const ESSENTIAL_GRADUATION_QUESTIONS = 300;
+
+/**
+ * Dias distintos com estudo ou questões e total de questões; quando um dos dois passa do mínimo,
+ * as análises completas já têm o que mostrar e o modo completo pode ser oferecido.
+ */
+export function essentialGraduation({
+  studySessions = [],
+  questoes = [],
+}: {
+  studySessions?: Array<{ date?: string | null }>;
+  questoes?: Array<{ date?: string | null; resolved?: number }>;
+}): { ready: boolean; days: number; questions: number } {
+  const days = new Set(
+    [...studySessions, ...questoes].map(item => item?.date).filter(Boolean) as string[]
+  ).size;
+  const questions = questoes.reduce(
+    (sum, item) => sum + Math.max(0, Number(item?.resolved) || 0),
+    0
+  );
+  return {
+    ready: days >= ESSENTIAL_GRADUATION_DAYS || questions >= ESSENTIAL_GRADUATION_QUESTIONS,
+    days,
+    questions,
+  };
+}
+
+/**
+ * Aviso único no topo da Visão geral: só no Essencial, com evidência e sem resposta anterior.
+ * A resposta fica em `storage` para não voltar a aparecer.
+ */
+export function renderEssentialGraduation({
+  slot,
+  essentialOn,
+  state,
+  storage,
+  onShowFull,
+  key = 'studytrack.essential.graduation',
+}: {
+  slot: HTMLElement | null;
+  essentialOn: boolean;
+  state: {
+    studySessions?: Array<{ date?: string | null }>;
+    questoes?: Array<{ date?: string | null; resolved?: number }>;
+  };
+  storage?: Pick<Storage, 'getItem' | 'setItem'> | null;
+  onShowFull: () => void;
+  key?: string;
+}) {
+  if (!slot) return;
+  let answered: string | null = null;
+  try {
+    answered = storage?.getItem(key) ?? null;
+  } catch {
+    answered = null;
+  }
+  const evidence = essentialGraduation(state);
+  if (!essentialOn || answered || !evidence.ready) {
+    slot.replaceChildren();
+    return;
+  }
+  const remember = (value: string) => {
+    try {
+      storage?.setItem(key, value);
+    } catch {
+      // Modo privado: o aviso volta na próxima visita.
+    }
+    slot.replaceChildren();
+  };
+  const doc = slot.ownerDocument;
+  const box = doc.createElement('aside');
+  box.className = 'essential-graduation';
+  box.setAttribute('aria-label', 'Análises completas disponíveis');
+  const text = doc.createElement('p');
+  text.textContent = `Você já registrou ${evidence.days} dias de estudo e ${evidence.questions} questões. Tendências, mapa de lacunas e inteligência da prova já têm evidência para mostrar.`;
+  const show = doc.createElement('button');
+  show.type = 'button';
+  show.className = 'btn small';
+  show.textContent = 'Ver análises completas';
+  show.addEventListener('click', () => {
+    remember('full');
+    onShowFull();
   });
+  const stay = doc.createElement('button');
+  stay.type = 'button';
+  stay.className = 'btn ghost small';
+  stay.textContent = 'Continuar no Essencial';
+  stay.addEventListener('click', () => remember('stay'));
+  box.append(text, show, stay);
+  slot.replaceChildren(box);
 }
