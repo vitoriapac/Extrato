@@ -296,7 +296,6 @@ export function buildDemoStudyHistory(
         // Sem random(): sorteios extras deslocariam o restante da narrativa da demo.
         banca: DEMO_BANCAS[questoes.length % DEMO_BANCAS.length],
         minutes: Math.round(resolved * (2.4 + (questoes.length % 4) * 0.2)),
-        retry: questoes.length % 11 === 10,
         studySessionId: session.id,
         createdAt: startedAt,
       });

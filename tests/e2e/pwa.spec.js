@@ -112,7 +112,8 @@ test('landing orienta a entrada na demonstração sem alterar registros', async 
   await expect(page).toHaveURL(/\/app$/);
   await expect(page.locator('#mainContent')).toBeAttached();
   const before = await page.evaluate(() => localStorage.getItem('bb-premium-study-data'));
-  await page.locator('#enterDemoBtn').click();
+  // Sem dados, a entrada fica no cartão de boas-vindas; o rodapé esconde a cópia duplicada.
+  await page.locator('#enterDemoHeroBtn').click();
   await expect(page.locator('#demoIntroDialog')).toBeVisible();
   await page.getByRole('button', { name: 'Carregar demonstração' }).click();
   await expect(page.locator('#demoBanner')).toBeVisible();
