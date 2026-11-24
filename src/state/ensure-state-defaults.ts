@@ -10,6 +10,7 @@ import { normalizeStudySession } from '../domain/sessions/study-session.js';
 import { CURRENT_SCHEMA_VERSION, DIFFICULTY_OPTIONS } from './schema.js';
 import { assignSubjectColors } from '../domain/subjects/subject-color.js';
 import { normalizeLaw } from '../domain/law-notebook.js';
+import { normalizeSleepEntry } from '../domain/sleep-log.js';
 import {
   normalizeAlgorithmVersions,
   normalizeExamBlueprint,
@@ -59,6 +60,9 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   state.lawNotebook = (Array.isArray(state.lawNotebook) ? state.lawNotebook : [])
     .map(normalizeLaw)
     .filter(law => law !== null);
+  state.sleepLog = (Array.isArray(state.sleepLog) ? state.sleepLog : [])
+    .map(normalizeSleepEntry)
+    .filter(entry => entry !== null);
   if (state.studyCycle === undefined) state.studyCycle = null;
   if (!['agenda', 'sequence'].includes(state.executionMode)) state.executionMode = 'sequence';
 

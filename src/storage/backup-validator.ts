@@ -2,6 +2,7 @@
  * Validador e normalizador profundo para integridade de backups e restaurações.
  */
 
+import { normalizeSleepEntry } from '../domain/sleep-log.js';
 import {
   STATUS_OPTIONS,
   DIFFICULTY_OPTIONS,
@@ -630,6 +631,13 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
   if (materialsError) return fail(materialsError);
   const lawError = validateLawNotebook(data.lawNotebook);
   if (lawError) return fail(lawError);
+  if (
+    data.sleepLog !== undefined &&
+    (!Array.isArray(data.sleepLog) ||
+      data.sleepLog.length > 5000 ||
+      data.sleepLog.some((entry: unknown) => !normalizeSleepEntry(entry)))
+  )
+    return fail('O backup contém registros de sono inválidos.');
   const cycleError = validateStudyCycle(data.studyCycle);
   if (cycleError) return fail(cycleError);
   return { valid: true };
@@ -888,6 +896,7 @@ export function validateBackupData(
     'topicEquivalences',
     'studyMaterials',
     'lawNotebook',
+    'sleepLog',
   ];
   const envelope = validateBackupEnvelope(data, {
     currentVersion: options.currentSchemaVersion ?? CURRENT_SCHEMA_VERSION,

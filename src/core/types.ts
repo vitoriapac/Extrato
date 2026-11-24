@@ -267,6 +267,14 @@ export interface ExamBlueprint {
   protocolChecks?: { examDate: string; keys: string[] } | null;
 }
 
+export type SleepQuality = 'good' | 'ok' | 'poor';
+
+/** Como foi a noite antes de `date`: um toque por dia, na aba Hoje. */
+export interface SleepEntry {
+  date: string;
+  quality: SleepQuality;
+}
+
 /** Lei do Caderno de leis: progresso por artigo e voltas de leitura. */
 export interface LawRecord {
   id: string;
@@ -584,6 +592,7 @@ export interface AppState {
   topicEquivalences?: TopicEquivalenceRecord[];
   studyMaterials?: StudyMaterial[];
   lawNotebook?: LawRecord[];
+  sleepLog?: SleepEntry[];
   studyCycle?: Record<string, any> | null;
   lastBackupAt: string | null;
   /** When the user last downloaded a backup file (F7); lastBackupAt is the automatic in-browser copy. */

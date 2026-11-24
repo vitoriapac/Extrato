@@ -4,6 +4,7 @@ import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
 import { Badge } from '../../primitives/badge.js';
 import type { ShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
+import { SLEEP_MIN_DAYS, type SleepComparison } from '../../../domain/sleep-log.js';
 
 /** Foco profundo por turno no período escolhido (outra janela que as horas e a precisão do cartão). */
 export interface PeriodFocusByShift {
@@ -14,9 +15,44 @@ export interface PeriodFocusByShift {
 export interface ShiftEnergyCardProps {
   model: ShiftEnergyViewModel;
   periodFocus?: PeriodFocusByShift | null;
+  /** Estudo nos dias após sono bom × ruim (registro de um toque em Hoje). */
+  sleep?: SleepComparison | null;
 }
 
-export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardProps): JSX.Element {
+function SleepReading({ sleep }: { sleep: SleepComparison }) {
+  const pct = (value: number | null) =>
+    value === null ? '—' : `${String(value).replace('.', ',')}%`;
+  return (
+    <div class="shift-energy-card__sleep mt-3 pt-2 border-t border-border-subtle text-xs">
+      <h4 class="m-0 mb-1 font-semibold text-content-primary">Sono e estudo</h4>
+      {sleep.enough ? (
+        <>
+          <p class="m-0">
+            Depois de dormir bem ({sleep.good.days} dias):{' '}
+            <strong>{formatStudyMinutes(sleep.good.minutesPerDay)}</strong> por dia, acerto{' '}
+            <strong>{pct(sleep.good.accuracy)}</strong>. Depois de dormir mal ({sleep.poor.days}{' '}
+            dias): <strong>{formatStudyMinutes(sleep.poor.minutesPerDay)}</strong>, acerto{' '}
+            <strong>{pct(sleep.poor.accuracy)}</strong>.
+          </p>
+          <p class="m-0 mt-1 text-content-secondary">
+            É associação, não causa: outros fatores mudam junto com o sono.
+          </p>
+        </>
+      ) : (
+        <p class="m-0 text-content-secondary">
+          Registre o sono na aba Hoje. A comparação aparece com {SLEEP_MIN_DAYS} dias de sono bom e{' '}
+          {SLEEP_MIN_DAYS} de sono ruim ({sleep.good.days} e {sleep.poor.days} até agora).
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function ShiftEnergyCard({
+  model,
+  periodFocus = null,
+  sleep = null,
+}: ShiftEnergyCardProps): JSX.Element {
   const {
     shifts,
     peakShift,
@@ -29,9 +65,7 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
   } = model;
 
   // Uma frase de leitura: o alerta de queda, senão a primeira sugestão, senão o resumo.
-  const reading = isSampleSufficient
-    ? (fatigueAlert ?? recommendations[0] ?? summary)
-    : summary;
+  const reading = isSampleSufficient ? (fatigueAlert ?? recommendations[0] ?? summary) : summary;
 
   const SHIFT_ICONS: Record<string, string> = {
     morning: 'sun',
@@ -54,13 +88,14 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
               {peakShift && <Badge variant="success">Melhor rendimento observado</Badge>}
             </div>
             <p class="text-xs text-content-secondary m-0 mt-1">
-              <WindowBadge kind="history" title="Todo o histórico registrado" /> Horas e precisão, sem o
-              filtro de período ({formatStudyMinutes(totalStudyMinutes ?? totalStudyHours * 60)} no total).
+              <WindowBadge kind="history" title="Todo o histórico registrado" /> Horas e precisão,
+              sem o filtro de período (
+              {formatStudyMinutes(totalStudyMinutes ?? totalStudyHours * 60)} no total).
               {periodFocus && (
                 <>
                   {' '}
-                  <WindowBadge kind="period" title={periodFocus.label} /> Foco profundo, só no período
-                  escolhido.
+                  <WindowBadge kind="period" title={periodFocus.label} /> Foco profundo, só no
+                  período escolhido.
                 </>
               )}
             </p>
@@ -76,7 +111,11 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
             ? periodFocus.byShift[shift.shift]?.percent
             : shift.deepFocusPercent;
           return (
-            <div key={shift.shift} role="listitem" class={`shift-band${shift.isPeak ? ' is-peak' : ''}`}>
+            <div
+              key={shift.shift}
+              role="listitem"
+              class={`shift-band${shift.isPeak ? ' is-peak' : ''}`}
+            >
               <div class="shift-band__head">
                 <span class="shift-band__icon">
                   <Icon name={iconName} size={16} />
@@ -91,8 +130,15 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
                     {formatStudyMinutes(shift.hoursSpent * 60)} ({shift.timePercent}%)
                   </span>
                 </div>
-                <div class="shift-band__track" role="img" aria-label={`${shift.shiftLabel}: ${shift.timePercent}% do tempo de estudo`}>
-                  <i class="shift-band__fill is-hours" style={{ width: `${Math.max(0, Math.min(100, shift.timePercent))}%` }} />
+                <div
+                  class="shift-band__track"
+                  role="img"
+                  aria-label={`${shift.shiftLabel}: ${shift.timePercent}% do tempo de estudo`}
+                >
+                  <i
+                    class="shift-band__fill is-hours"
+                    style={{ width: `${Math.max(0, Math.min(100, shift.timePercent))}%` }}
+                  />
                 </div>
               </div>
               <div class="shift-band__metric">
@@ -102,15 +148,28 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
                     {accuracy !== null ? `${accuracy}%` : '—'}
                   </span>
                 </div>
-                <div class="shift-band__track" role="img" aria-label={accuracy !== null ? `${shift.shiftLabel}: precisão de ${accuracy}%` : `${shift.shiftLabel}: sem questões registradas`}>
+                <div
+                  class="shift-band__track"
+                  role="img"
+                  aria-label={
+                    accuracy !== null
+                      ? `${shift.shiftLabel}: precisão de ${accuracy}%`
+                      : `${shift.shiftLabel}: sem questões registradas`
+                  }
+                >
                   {accuracy !== null && (
-                    <i class="shift-band__fill is-accuracy" style={{ width: `${Math.max(0, Math.min(100, accuracy))}%` }} />
+                    <i
+                      class="shift-band__fill is-accuracy"
+                      style={{ width: `${Math.max(0, Math.min(100, accuracy))}%` }}
+                    />
                   )}
                 </div>
               </div>
               <div class="shift-band__focus text-xs text-content-secondary">
                 <span>Foco profundo{periodFocus ? ' (período)' : ''}:</span>{' '}
-                <span class="font-mono text-content-primary">{deepFocus != null ? `${deepFocus}%` : '—'}</span>
+                <span class="font-mono text-content-primary">
+                  {deepFocus != null ? `${deepFocus}%` : '—'}
+                </span>
               </div>
             </div>
           );
@@ -119,10 +178,14 @@ export function ShiftEnergyCard({ model, periodFocus = null }: ShiftEnergyCardPr
 
       <p class="shift-energy-card__reading mt-3 pt-2 border-t border-border-subtle flex items-start gap-2 text-xs text-content-secondary m-0">
         <span class="inline-flex h-4 items-center shrink-0">
-          <Icon name={fatigueAlert && isSampleSufficient ? 'alert-triangle' : 'info-circle'} size={14} />
+          <Icon
+            name={fatigueAlert && isSampleSufficient ? 'alert-triangle' : 'info-circle'}
+            size={14}
+          />
         </span>
         <span>{reading}</span>
       </p>
+      {sleep && <SleepReading sleep={sleep} />}
     </article>
   );
 }

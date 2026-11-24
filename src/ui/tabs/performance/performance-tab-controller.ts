@@ -19,6 +19,7 @@ import { createPerformanceController } from '../../controllers/performance-contr
 import { createPerformanceAnalyticsController } from '../../controllers/performance-analytics-controller.js';
 import { renderProgressChart as renderProgressChartView } from '../../renderers/study-charts-renderer.js';
 import { ShiftEnergyCard } from './ShiftEnergyCard.js';
+import { compareStudyBySleep } from '../../../domain/sleep-log.js';
 import { NARROW_CHART_BREAKPOINT } from '../../primitives/charts/chart-size.js';
 import { fitCharts, watchCharts } from '../../performance/chart-fit.js';
 import { buildShiftEnergyViewModel } from '../../../application/analytics/build-shift-energy-view-model.js';
@@ -645,7 +646,18 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               ),
             }
           : null;
-      mountPreact(h(ShiftEnergyCard, { model: shiftModel, periodFocus }), shiftEnergyMount);
+      mountPreact(
+        h(ShiftEnergyCard, {
+          model: shiftModel,
+          periodFocus,
+          sleep: compareStudyBySleep({
+            sleepLog: state.sleepLog || [],
+            studySessions: state.studySessions || [],
+            questoes: state.questoes || [],
+          }),
+        }),
+        shiftEnergyMount
+      );
     }
 
     const careerBenchmarkMount =

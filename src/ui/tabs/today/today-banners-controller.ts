@@ -14,6 +14,8 @@ import {
   toggleExamProtocolCheck,
 } from '../../../domain/planning/exam-protocol.js';
 import { examMinutesPerQuestion } from '../../../domain/exams/simulation-score.js';
+import { SleepCheckin } from '../../components/SleepCheckin.js';
+import { recordSleep } from '../../../domain/sleep-log.js';
 import { RealWeekBanner, type RealWeekBannerProps } from '../../components/RealWeekBanner.js';
 import type { TodayTabControllerContext } from './today-tab-controller.js';
 
@@ -174,8 +176,31 @@ export function createTodayBannersController(ctx: TodayTabControllerContext) {
     );
   }
 
+  function renderSleepCheckin() {
+    const mount = doc?.getElementById('sleepCheckinMount');
+    if (!mount) return;
+    const state = getState();
+    const today = todayISO();
+    const current = (state.sleepLog || []).find((entry: { date: string }) => entry.date === today);
+    mountPreact(
+      h(SleepCheckin, {
+        quality: current?.quality || null,
+        onChoose: quality => {
+          const latest = getState();
+          latest.sleepLog = recordSleep(latest.sleepLog || [], todayISO(), quality);
+          ctx.persistAndRender?.();
+          // O render geral pode pular a aba Hoje; o toque precisa refletir na hora.
+          renderSleepCheckin();
+        },
+      }),
+      mount
+    );
+  }
+
   function renderFinalStretchBanner() {
+    // Os avisos diários da semana (protocolo da prova e sono) seguem o mesmo ciclo de render.
     renderExamProtocol();
+    renderSleepCheckin();
     if (!doc) return;
     const slot = doc.getElementById('finalStretchBannerSlot');
     if (!slot) return;

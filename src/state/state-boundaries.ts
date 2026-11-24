@@ -26,6 +26,7 @@ export const PERSISTENT_COLLECTIONS = Object.freeze([
   'topicEquivalences',
   'studyMaterials',
   'lawNotebook',
+  'sleepLog',
 ] as const);
 
 export const PERSISTENT_OBJECTS = Object.freeze([
