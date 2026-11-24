@@ -15,6 +15,10 @@ export interface SimulatedRemediationModalProps {
   diagnostic: SimulatedRemediationDiagnostic | null;
   onApplyRemediationPlan?: (plan: SimulatedRemediationDiagnostic['remediationPlan7Days']) => void;
   onGenerateErrorCards?: (drafts: SimulatedRemediationDiagnostic['errorCardDrafts']) => void;
+  /** Cria a tarefa de correção dos erros para o dia seguinte; devolve false se já existia. */
+  onScheduleErrorCorrection?: () => boolean;
+  /** True quando a correção deste simulado já está na Agenda. */
+  correctionScheduled?: boolean;
 }
 
 export function SimulatedRemediationModal({
@@ -23,8 +27,11 @@ export function SimulatedRemediationModal({
   diagnostic,
   onApplyRemediationPlan,
   onGenerateErrorCards,
+  onScheduleErrorCorrection,
+  correctionScheduled = false,
 }: SimulatedRemediationModalProps) {
   const [appliedPlan, setAppliedPlan] = useState<boolean>(false);
+  const [scheduledCorrection, setScheduledCorrection] = useState<boolean>(correctionScheduled);
   const [generatedCards, setGeneratedCards] = useState<boolean>(false);
 
   if (!diagnostic) return null;
@@ -132,7 +139,19 @@ export function SimulatedRemediationModal({
             <ul class="text-sm space-y-1">
               {pace.minutesPerQuestion != null && (
                 <li>
-                  {formatDecimal(Math.round(pace.minutesPerQuestion * 10) / 10)} min por questão.
+                  {formatDecimal(Math.round(pace.minutesPerQuestion * 10) / 10)} min por questão
+                  {pace.examMinutesPerQuestion == null ? (
+                    '.'
+                  ) : pace.minutesPerQuestion > pace.examMinutesPerQuestion ? (
+                    <>
+                      ; a prova permite {formatDecimal(pace.examMinutesPerQuestion)}.{' '}
+                      <strong class="text-status-danger">Nesse ritmo, faltaria tempo.</strong>
+                    </>
+                  ) : (
+                    <>
+                      ; a prova permite {formatDecimal(pace.examMinutesPerQuestion)}: cabe no tempo.
+                    </>
+                  )}
                 </li>
               )}
               {guessGain != null && (
@@ -246,6 +265,39 @@ export function SimulatedRemediationModal({
             ))}
           </div>
         </div>
+
+        {/* Ritual pós-simulado: corrigir os erros em até 48 horas, antes que o raciocínio se perca. */}
+        {onScheduleErrorCorrection && diagnostic.correctQuestions < diagnostic.totalQuestions && (
+          <div class="rounded-default border border-border-subtle p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary m-0 mb-1">
+                Correção dos erros
+              </h4>
+              <p class="m-0 text-sm">
+                Refaça cada questão errada sem olhar o gabarito, leia o comentário e classifique o
+                erro, em até 48 horas.
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              size="small"
+              disabled={scheduledCorrection}
+              onClick={() => {
+                onScheduleErrorCorrection();
+                setScheduledCorrection(true);
+              }}
+            >
+              {scheduledCorrection ? (
+                <span class="inline-flex items-center gap-2">
+                  <Icon name="check" size={14} />
+                  Correção na Agenda
+                </span>
+              ) : (
+                'Agendar para amanhã'
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* Botões de Ação */}
         <div class="pt-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3">

@@ -8,6 +8,12 @@ import {
 } from '../../../application/onboarding/build-first-steps-mission.js';
 import { buildFinalStretchBanner } from '../../../domain/planning/final-stretch-policy.js';
 import { FinalStretchBanner } from '../../components/FinalStretchBanner.js';
+import { ExamProtocolCard } from '../../components/ExamProtocolCard.js';
+import {
+  buildExamProtocol,
+  toggleExamProtocolCheck,
+} from '../../../domain/planning/exam-protocol.js';
+import { examMinutesPerQuestion } from '../../../domain/exams/simulation-score.js';
 import { RealWeekBanner, type RealWeekBannerProps } from '../../components/RealWeekBanner.js';
 import type { TodayTabControllerContext } from './today-tab-controller.js';
 
@@ -132,7 +138,44 @@ export function createTodayBannersController(ctx: TodayTabControllerContext) {
     mountFirstStepsMission(slot, missionModel);
   }
 
+  function renderExamProtocol() {
+    const slot = doc?.getElementById('examProtocolSlot');
+    if (!slot) return;
+    const state = getState();
+    const blueprint = state.examBlueprint || {};
+    const examDate = state.examDate || null;
+    const protocol = buildExamProtocol({
+      daysToExam: examDate ? diasParaRevisao(examDate) : null,
+      examDate,
+      checks: blueprint.protocolChecks,
+      examMinutesPerQuestion: examMinutesPerQuestion(blueprint),
+      netScoring: blueprint.scoringMode === 'certo-errado',
+    });
+    if (!protocol) {
+      unmountPreact(slot);
+      slot.replaceChildren();
+      return;
+    }
+    mountPreact(
+      h(ExamProtocolCard, {
+        protocol,
+        onToggle: (key: string) => {
+          const current = getState();
+          if (!current.examBlueprint || !examDate) return;
+          current.examBlueprint.protocolChecks = toggleExamProtocolCheck(
+            current.examBlueprint.protocolChecks,
+            examDate,
+            key
+          );
+          ctx.persistAndRender?.();
+        },
+      }),
+      slot
+    );
+  }
+
   function renderFinalStretchBanner() {
+    renderExamProtocol();
     if (!doc) return;
     const slot = doc.getElementById('finalStretchBannerSlot');
     if (!slot) return;

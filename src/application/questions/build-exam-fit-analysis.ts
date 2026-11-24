@@ -1,4 +1,5 @@
 import type { ExamBlueprint, QuestionRecord, Subject } from '../../core/types.ts';
+import { examMinutesPerQuestion as examPaceOf } from '../../domain/exams/simulation-score.ts';
 
 export const EXAM_FIT_WINDOW_DAYS = 90;
 /** Questões mínimas para comparar acertos (geral, por disciplina e refeitas). */
@@ -116,14 +117,7 @@ export function buildExamFitAnalysis({
         .sort((a, b) => (a.delta ?? Infinity) - (b.delta ?? Infinity))
     : [];
 
-  const examQuestions = (blueprint?.subjects || []).reduce(
-    (sum, item) => sum + Math.max(0, Number(item.expectedQuestions) || 0),
-    0
-  );
-  const examMinutesPerQuestion =
-    blueprint?.durationMinutes && examQuestions
-      ? round1(blueprint.durationMinutes / examQuestions)
-      : null;
+  const examMinutesPerQuestion = examPaceOf(blueprint);
   // Refeitas saem do ritmo: já conhecidas, são resolvidas mais rápido do que na prova.
   const timed = recent.filter(q => !q.retry && Number(q.minutes) > 0);
   const timedQuestions = sample(timed).resolved;

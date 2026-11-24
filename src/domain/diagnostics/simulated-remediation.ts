@@ -50,6 +50,8 @@ export interface SimulatedRemediationInput {
     wrong?: number | null;
     scoring?: string | null;
   }>;
+  /** Minutos por questão que a prova permite, para comparar com o ritmo do simulado. */
+  examMinutesPerQuestion?: number | null;
   /** Disciplinas da prova: peso por questão ordena as perdas e o mínimo eliminatório gera alerta. */
   blueprintSubjects?: Array<{
     subjectId: string | null;
@@ -376,7 +378,7 @@ export function buildSimulatedRemediationDiagnostic(
       ...item,
       name: subjectsMap?.get(item.subjectId)?.name || 'Disciplina removida',
     })),
-    pace: paceAndGuess(sim),
+    pace: paceAndGuess(sim, input.examMinutesPerQuestion ?? null),
     remediationPlan7Days,
     errorCardDrafts,
   };

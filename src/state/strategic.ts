@@ -104,6 +104,18 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
       ? { durationMinutes: normalizeQuestionMinutes(source.durationMinutes) }
       : {}),
     ...(normalizeExamCutoff(source.cutoff) ? { cutoff: normalizeExamCutoff(source.cutoff) } : {}),
+    ...(source.protocolChecks &&
+    typeof source.protocolChecks.examDate === 'string' &&
+    Array.isArray(source.protocolChecks.keys)
+      ? {
+          protocolChecks: {
+            examDate: source.protocolChecks.examDate,
+            keys: source.protocolChecks.keys
+              .filter((key: unknown) => typeof key === 'string')
+              .slice(0, 50),
+          },
+        }
+      : {}),
   };
 }
 

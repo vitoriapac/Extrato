@@ -106,9 +106,29 @@ interface PacedSimulation extends ScoredSimulation {
   guessedCorrect?: unknown;
 }
 
+/**
+ * Minutos por questão que a prova permite: duração ÷ questões previstas por disciplina.
+ * Null sem duração ou sem total de questões. Não desconta redação nem marcação do gabarito.
+ */
+export function examMinutesPerQuestion(
+  blueprint?: {
+    durationMinutes?: number | null;
+    subjects?: Array<{ expectedQuestions?: unknown }> | null;
+  } | null
+): number | null {
+  const questions = (blueprint?.subjects || []).reduce(
+    (sum, item) => sum + Math.max(0, Number(item.expectedQuestions) || 0),
+    0
+  );
+  const minutes = Number(blueprint?.durationMinutes);
+  return minutes > 0 && questions > 0 ? Math.round((minutes / questions) * 10) / 10 : null;
+}
+
 export interface PaceAndGuess {
   /** Minutos por questão da prova (tempo gasto ÷ total); null sem tempo registrado. */
   minutesPerQuestion: number | null;
+  /** Minutos por questão que a prova real permite; null sem configuração. */
+  examMinutesPerQuestion: number | null;
   guessed: number;
   guessedCorrect: number;
   /** Pontos percentuais que os chutes somaram à nota (negativo: custaram); null sem chutes registrados. */
@@ -116,7 +136,7 @@ export interface PaceAndGuess {
 }
 
 /** Ritmo e chutes do simulado, com os chutes limitados às questões respondidas. */
-export function paceAndGuess(sim: PacedSimulation): PaceAndGuess {
+export function paceAndGuess(sim: PacedSimulation, examPace: number | null = null): PaceAndGuess {
   const totals = simulationTotals(sim);
   const minutes = Number(sim.durationMinutes);
   const guessed = Math.min(count(sim.guessed), totals.correct + totals.wrong);
@@ -129,6 +149,7 @@ export function paceAndGuess(sim: PacedSimulation): PaceAndGuess {
   };
   return {
     minutesPerQuestion: minutes > 0 && totals.total > 0 ? minutes / totals.total : null,
+    examMinutesPerQuestion: examPace,
     guessed,
     guessedCorrect,
     guessGain:

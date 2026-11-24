@@ -263,6 +263,8 @@ export interface ExamBlueprint {
   durationMinutes?: number | null;
   /** Nota de corte de referência informada pelo aluno, na escala em que ele a conhece. */
   cutoff?: ExamCutoff | null;
+  /** Itens marcados do protocolo da semana da prova, válidos só para esta data de prova. */
+  protocolChecks?: { examDate: string; keys: string[] } | null;
 }
 
 /** Lei do Caderno de leis: progresso por artigo e voltas de leitura. */

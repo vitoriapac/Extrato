@@ -17,6 +17,7 @@ import {
   subjectsBelowMinimum,
   wrongCount,
   paceAndGuess,
+  examMinutesPerQuestion,
 } from '../../../domain/exams/simulation-score.js';
 
 export interface SimulationsTabControllerContext {
@@ -95,7 +96,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       score: simuladoNota(sim),
       scoring: sim.scoring === 'certo-errado' ? ('certo-errado' as const) : undefined,
       blank: totals.total - totals.correct - totals.wrong,
-      pace: paceAndGuess(sim),
+      pace: paceAndGuess(sim, examMinutesPerQuestion(ctx.state?.examBlueprint)),
       belowMinimum: subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(item => ({
         ...item,
         name: names.get(item.subjectId) || 'Disciplina removida',
@@ -381,6 +382,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       weeklyAvailableHours: weeklyHours,
       blueprintSubjects: blueprint?.subjects || [],
       subjectsMap,
+      examMinutesPerQuestion: examMinutesPerQuestion(blueprint),
     });
 
     let mount = ctx.document.getElementById('simulatedRemediationMount');
@@ -394,11 +396,39 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       if (mount) unmountPreact(mount);
     };
 
+    const correctionTitle = `Corrigir os erros do simulado ${diagnostic.simulationName}`;
+    const correctionExists = () =>
+      (ctx.state.calendar || []).some(
+        (item: { kind?: string; title?: string }) =>
+          item?.kind === 'task' && item.title === correctionTitle
+      );
     mountPreact(
       h(SimulatedRemediationModal, {
         open: true,
         onClose: close,
         diagnostic,
+        correctionScheduled: correctionExists(),
+        onScheduleErrorCorrection: () => {
+          if (correctionExists()) return false;
+          const errors = Math.max(0, diagnostic.totalQuestions - diagnostic.correctQuestions);
+          const payload = {
+            kind: 'task',
+            title: correctionTitle,
+            date: addDays(todayISO(), 1),
+            status: 'Não iniciado',
+            // Cerca de 3 minutos por erro, entre meia hora e duas horas.
+            estimatedMinutes: Math.min(120, Math.max(30, errors * 3)),
+            subjectId: null,
+            description: `${errors} questões a corrigir: refaça sem olhar o gabarito, leia o comentário e classifique o erro na aba Questões.`,
+            recurrence: 'none',
+            reviewType: '—',
+          };
+          if (ctx.calendarService?.create) ctx.calendarService.create(payload);
+          else (ctx.state.calendar ||= []).push({ id: uid('cal'), ...payload });
+          ctx.persistAndRender();
+          ctx.showToast('Correção dos erros agendada para amanhã.');
+          return true;
+        },
         onApplyRemediationPlan: plan => {
           // Uma tarefa de estudo por dia, a partir de amanhã.
           plan.dailySchedule.forEach(item => {

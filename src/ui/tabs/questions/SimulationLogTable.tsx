@@ -45,7 +45,13 @@ export function paceSummary(pace?: PaceAndGuess): string {
   if (!pace) return '';
   const parts: string[] = [];
   if (pace.minutesPerQuestion != null)
-    parts.push(`${formatDecimal(pace.minutesPerQuestion)} min por questão`);
+    parts.push(
+      `${formatDecimal(pace.minutesPerQuestion)} min por questão${
+        pace.examMinutesPerQuestion != null
+          ? ` (prova: ${formatDecimal(pace.examMinutesPerQuestion)})`
+          : ''
+      }`
+    );
   if (pace.guessGain != null) {
     const gain = Math.round(pace.guessGain * 10) / 10;
     parts.push(
