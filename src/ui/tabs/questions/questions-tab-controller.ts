@@ -8,6 +8,13 @@ import { PlateauDetectorCard } from './PlateauDetectorCard.js';
 import { buildPlateauDetectorViewModel } from '../../../application/analytics/build-plateau-detector-view-model.js';
 import { runUndoable } from '../../undoable.js';
 import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
+import { normalizeBanca, normalizeQuestionMinutes } from '../../../domain/questions/bancas.js';
+import { addLocalDays } from '../../../core/date-utils.js';
+import {
+  buildExamFitAnalysis,
+  EXAM_FIT_WINDOW_DAYS,
+} from '../../../application/questions/build-exam-fit-analysis.js';
+import { ExamFitCard } from './ExamFitCard.js';
 
 export function calcAcertoPct(correct: number, resolved: number): number {
   const r = Number(resolved) || 0;
@@ -118,6 +125,9 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
       draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
       draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
       normalizeErrorBreakdown(draft);
+      draft.banca = normalizeBanca(draft.banca);
+      draft.minutes = normalizeQuestionMinutes(draft.minutes);
+      draft.retry = draft.retry === true;
       return draft;
     },
     onSaved: () => {
@@ -246,6 +256,21 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
 
     body.innerHTML = controller.renderQuestionsHtml();
 
+    const examFitMount = ctx.document.getElementById('examFitMount');
+    if (examFitMount) {
+      mountPreact(
+        h(ExamFitCard, {
+          model: buildExamFitAnalysis({
+            questions: ctx.state.questoes || [],
+            subjects: ctx.state.subjects || [],
+            blueprint: ctx.state.examBlueprint || null,
+            fromDate: addLocalDays(todayISO(), 1 - EXAM_FIT_WINDOW_DAYS) || todayISO(),
+          }),
+        }),
+        examFitMount
+      );
+    }
+
     const plateauMount = ctx.document.getElementById('plateauDetectorMount');
     if (plateauMount) {
       const plateauModel = buildPlateauDetectorViewModel({
@@ -271,11 +296,14 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
   function addQuestaoRow(initial: any = {}) {
     // The subject of the latest record comes first: most sessions log the same subject in a row.
     const active = ctx.activeSubjects();
-    const lastSubjectId = [...(ctx.state.questoes || [])]
-      .filter((q: any) => q.subjectId && active.some((s: any) => s.id === q.subjectId))
-      .sort((x: any, y: any) =>
-        String(y.createdAt || y.date).localeCompare(String(x.createdAt || x.date))
-      )[0]?.subjectId;
+    const newestFirst = [...(ctx.state.questoes || [])].sort((x: any, y: any) =>
+      String(y.createdAt || y.date).localeCompare(String(x.createdAt || x.date))
+    );
+    const lastSubjectId = newestFirst.find(
+      (q: any) => q.subjectId && active.some((s: any) => s.id === q.subjectId)
+    )?.subjectId;
+    // Quem treina para uma prova costuma repetir a banca: a última usada já vem preenchida.
+    const lastBanca = newestFirst.find((q: any) => q.banca)?.banca || null;
     const subjectId = initial.subjectId || lastSubjectId || active[0]?.id || null;
     // Com um único tópico possível, já o seleciona para reduzir o atrito do primeiro registro.
     let topicId = initial.topicId || null;
@@ -291,6 +319,9 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
       resolved: 0,
       correct: 0,
       errorBreakdown: emptyErrorBreakdown(),
+      banca: initial.banca || lastBanca,
+      minutes: null,
+      retry: false,
       recommendationId: initial.recommendationId || null,
       createdAt: nowISO(),
     };

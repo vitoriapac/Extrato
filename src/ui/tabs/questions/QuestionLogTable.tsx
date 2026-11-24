@@ -1,6 +1,7 @@
 import { formatDecimal, formatPercent } from '../../../core/format-number.js';
 import type { JSX } from 'preact';
 import { Icon } from '../../primitives/icon.js';
+import { KNOWN_BANCAS } from '../../../domain/questions/bancas.js';
 
 export interface QuestionItem {
   id: string;
@@ -12,6 +13,16 @@ export interface QuestionItem {
   errorBreakdown?: Record<string, number>;
   recommendationId?: string | null;
   createdAt?: string;
+  banca?: string | null;
+  minutes?: number | null;
+  retry?: boolean;
+}
+
+/** "Cesgranrio · 30 min · refeitas": o que o bloco informa além de disciplina e tópico. */
+function questionDetails(q: QuestionItem): string {
+  return [q.banca, q.minutes ? `${q.minutes} min` : null, q.retry ? 'refeitas' : null]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 export interface QuestionViewModel {
@@ -167,6 +178,41 @@ export function QuestionLogTable({
                       </button>
                     </div>
                   </div>
+                  <label>
+                    Banca
+                    <input
+                      type="text"
+                      list="questionBancaOptions"
+                      value={draft.banca || ''}
+                      placeholder="Opcional"
+                      autoComplete="off"
+                      data-delegated-change="updateQuestionDraft('banca',this.value)"
+                    />
+                    <datalist id="questionBancaOptions">
+                      {KNOWN_BANCAS.map(name => (
+                        <option key={name} value={name} />
+                      ))}
+                    </datalist>
+                  </label>
+                  <label>
+                    Tempo (min)
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      value={draft.minutes ?? ''}
+                      placeholder="Opcional"
+                      data-delegated-input="updateQuestionDraft('minutes',this.value)"
+                    />
+                  </label>
+                  <label title="Questões que você já tinha resolvido antes: o acerto delas não mede domínio novo.">
+                    <input
+                      type="checkbox"
+                      checked={draft.retry === true}
+                      data-delegated-change="updateQuestionDraft('retry',this.checked)"
+                    />{' '}
+                    Questões refeitas
+                  </label>
                   <div class="inline-edit-actions">
                     <button
                       type="button"
@@ -213,6 +259,7 @@ export function QuestionLogTable({
         );
 
         const colorSlot = getSubjectColorSlot ? getSubjectColorSlot(q.subjectId) : null;
+        const details = questionDetails(q);
 
         return (
           <>
@@ -233,6 +280,7 @@ export function QuestionLogTable({
                           <span>{vm.subject}</span>
                         </div>
                         <div class="mobile-card-subtitle">{vm.topic}</div>
+                        {details && <div class="mobile-card-subtitle">{details}</div>}
                       </div>
                       <button
                         type="button"
@@ -268,6 +316,7 @@ export function QuestionLogTable({
                 </td>
                 <td>
                   <div class="row-secondary">{vm.topic}</div>
+                  {details && <div class="row-secondary">{details}</div>}
                 </td>
                 <td class="number-cell">{vm.resolved}</td>
                 <td class="number-cell">{vm.correct}</td>
@@ -302,7 +351,7 @@ export function QuestionLogTable({
                       {Object.entries(errorCategories).map(([key, meta]) => (
                         <label key={key} class="error-breakdown-field">
                           <span>
-                            {meta.icon} {meta.label}
+                            <Icon name={meta.icon as any} size={14} /> {meta.label}
                           </span>
                           <input
                             type="number"

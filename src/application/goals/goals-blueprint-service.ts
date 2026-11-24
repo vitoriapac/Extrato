@@ -3,6 +3,7 @@ import type { AppState } from '../../core/types.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { EXAM_PRIORITIES } from '../../state/strategic.js';
 import { runUndoable } from '../../ui/undoable.js';
+import { normalizeBanca, normalizeQuestionMinutes } from '../../domain/questions/bancas.js';
 
 export interface GoalsBlueprintServiceDependencies {
   getState: () => AppState;
@@ -76,6 +77,14 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
       return updateExamBlueprint('masteryTarget', value, { refresh });
     }
     const state = getState();
+    if (field === 'banca' || field === 'durationMinutes') {
+      // Só alimentam a leitura de banca e ritmo das questões: não mudam prioridade nem prontidão.
+      if (field === 'banca') state.examBlueprint.banca = normalizeBanca(value) || undefined;
+      else state.examBlueprint.durationMinutes = normalizeQuestionMinutes(value) || undefined;
+      if (refresh) persistAndRender();
+      else scheduleSave();
+      return;
+    }
     if (field === 'preEdital' || field === 'essayMinPercent') {
       if (field === 'preEdital') {
         const preEdital = value === true || value === 'true';

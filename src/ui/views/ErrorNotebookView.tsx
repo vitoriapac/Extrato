@@ -37,8 +37,9 @@ const ERROR_CATEGORY_LABELS: Record<string, string> = {
   esqueci: 'Esqueci o conceito',
   interpretacao: 'Erro de interpretação',
   calculo: 'Erro de cálculo',
-  desatencao: 'Desatenção / Pegadinha',
+  desatencao: 'Desatenção',
   chute: 'Chute sem certeza',
+  pegadinha: 'Pegadinha da banca',
 };
 
 export function ErrorNotebookView({

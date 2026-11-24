@@ -2,6 +2,7 @@ import { EXAM_INTELLIGENCE_VERSION } from '../domain/exam-intelligence/config.js
 import { PRIORITY_ALGORITHM_VERSION } from '../domain/analytics/priority-score.js';
 import { ADAPTIVE_PLANNING_VERSION } from '../domain/planning/adaptive-planning.js';
 import { normalizeTopicBookmark } from '../domain/topic-bookmark.ts';
+import { normalizeBanca, normalizeQuestionMinutes } from '../domain/questions/bancas.ts';
 import type { ExamBlueprint, ExamPriority, Topic } from '../core/types.ts';
 
 export const DEFAULT_ALGORITHM_VERSIONS = Object.freeze({
@@ -96,6 +97,10 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
     ...(source.preEdital === true ? { preEdital: true } : {}),
     ...(Number(source.essayMinPercent) > 0 && Number(source.essayMinPercent) <= 100
       ? { essayMinPercent: Number(source.essayMinPercent) }
+      : {}),
+    ...(normalizeBanca(source.banca) ? { banca: normalizeBanca(source.banca) } : {}),
+    ...(normalizeQuestionMinutes(source.durationMinutes)
+      ? { durationMinutes: normalizeQuestionMinutes(source.durationMinutes) }
       : {}),
   };
 }

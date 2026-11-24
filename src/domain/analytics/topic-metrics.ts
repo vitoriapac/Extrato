@@ -3,7 +3,8 @@ import { describeScoreEvidence } from './score-evidence.js';
 
 type Row = Record<string, any>;
 const clamp = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-export const MASTERY_ALGORITHM_VERSION = 2;
+// 3: refeitas com meio peso e banca da prova em dobro no acerto (calculateWeightedTopicPerformance).
+export const MASTERY_ALGORITHM_VERSION = 3;
 export const MASTERY_BANDS = Object.freeze([
   { min: 90, label: 'Dominado' },
   { min: 75, label: 'Bom' },
@@ -79,6 +80,10 @@ export function calculateTopicMastery({
     : ['Sem questões ou revisões para estimar domínio'];
   if (recentSeconds > 0 && !available)
     reasons.push('Tempo estudado é atividade, não medida de domínio');
+  const weighting = hasQuestions ? performance.weighting : null;
+  if (weighting?.retryQuestions > 0) reasons.push('Questões refeitas contam meio peso no acerto');
+  if (weighting?.bancaWeighted)
+    reasons.push(`Questões da ${weighting.targetBanca} contam em dobro no acerto`);
   return {
     value: available ? score : null,
     state: !available ? 'empty' : confidence < 0.35 ? 'insufficient' : 'estimated',

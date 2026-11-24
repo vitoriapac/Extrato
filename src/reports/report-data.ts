@@ -258,6 +258,7 @@ export function buildStrategicReport({
       calculo: 'Cálculo',
       desatencao: 'Desatenção',
       chute: 'Chute',
+      pegadinha: 'Pegadinha da banca',
     },
     errors = rawErrors.map(([key, count]) => ({ key, label: errorLabels[key] || key, count })),
     errorTotal = errors.reduce((total: number, item: any) => total + (Number(item.count) || 0), 0),

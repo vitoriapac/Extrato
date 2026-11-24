@@ -3,6 +3,7 @@ import {
   repositoryReadLocalState,
   repositoryWriteLocalState,
 } from '../storage/repository.js';
+import { normalizeBanca, normalizeQuestionMinutes } from '../domain/questions/bancas.js';
 import { DB_NAME, DB_VERSION, STORE_NAME, STORAGE_KEY, DEMO_STORAGE_KEY } from '../state/schema.js';
 import { createRealStorageProvider } from '../storage/real-storage-provider.js';
 import { createDemoStorageProvider } from '../storage/demo-storage-provider.js';
@@ -284,6 +285,9 @@ export function wireAppDependencies(options: WireAppDependenciesOptions) {
       item.resolved = Math.max(0, Math.floor(Number(item.resolved) || 0));
       item.correct = Math.min(item.resolved, Math.max(0, Math.floor(Number(item.correct) || 0)));
       normalizeErrorBreakdown(item);
+      item.banca = normalizeBanca(item.banca);
+      item.minutes = normalizeQuestionMinutes(item.minutes);
+      item.retry = item.retry === true;
       return item;
     },
   });

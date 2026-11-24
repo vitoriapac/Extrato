@@ -12,6 +12,17 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 const dateAt = (today: string, day: number, historyDays: number) =>
   addLocalDays(today, day - historyDays);
 
+// A prova da demo é da Cesgranrio; parte do treino vem de outras bancas.
+const DEMO_BANCAS = [
+  'Cesgranrio',
+  'Cesgranrio',
+  'Cesgranrio',
+  'FGV',
+  'Cesgranrio',
+  'Cebraspe',
+  'Cesgranrio',
+];
+
 export function allocateErrors(errors: number, categories: string[], profile: Record<string, any>) {
   const weights = categories.map((key: any) =>
     Math.max(0, Number(profile?.[key] ?? genericErrors[key] ?? 0))
@@ -109,7 +120,10 @@ const WEEKLY_PACE = [0.85, 1.1, 0.7, 1.2, 1.15, 0.95, 1.05, 0.8];
 /** Reparte `total` em `count` sessões com volumes variados, somando exatamente `total` (maior resto). */
 export function spreadVolumes(total: number, count: number): number[] {
   if (count <= 0) return [];
-  const weights = Array.from({ length: count }, (_, i) => VOLUME_WEIGHTS[i % VOLUME_WEIGHTS.length]);
+  const weights = Array.from(
+    { length: count },
+    (_, i) => VOLUME_WEIGHTS[i % VOLUME_WEIGHTS.length]
+  );
   const sum = weights.reduce((acc, w) => acc + w, 0);
   const spare = Math.max(0, total - MIN_SESSION_QUESTIONS * count);
   const exact = weights.map(w => (spare * w) / sum);
@@ -193,7 +207,8 @@ export function buildDemoStudyHistory(
     // Cada semana tem seu ritmo (média 1): sem semanas idênticas de "7 h de 10 h" (T22).
     const durationMinutes = Math.max(
       15,
-      Math.round((baseDuration * WEEKLY_PACE[Math.floor((day - 1) / 7) % WEEKLY_PACE.length]) / 5) * 5
+      Math.round((baseDuration * WEEKLY_PACE[Math.floor((day - 1) / 7) % WEEKLY_PACE.length]) / 5) *
+        5
     );
 
     const slot = index % 10;
@@ -278,6 +293,10 @@ export function buildDemoStudyHistory(
           scenario.questions.errorCategories,
           scenario.questions.profiles?.[entry.subject.name]
         ),
+        // Sem random(): sorteios extras deslocariam o restante da narrativa da demo.
+        banca: DEMO_BANCAS[questoes.length % DEMO_BANCAS.length],
+        minutes: Math.round(resolved * (2.4 + (questoes.length % 4) * 0.2)),
+        retry: questoes.length % 11 === 10,
         studySessionId: session.id,
         createdAt: startedAt,
       });

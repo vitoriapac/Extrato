@@ -148,6 +148,8 @@ export function generateDemoData({
     examDate: state.examDate,
     targetScore: demoScenario.goals.targetScorePct,
     activeExamTags: [EXAM_TAGS.BB, EXAM_TAGS.CAIXA],
+    // Sem duração: o total de questões da demo é sintético e daria um ritmo enganoso.
+    banca: 'Cesgranrio',
     configuredAt: timestamp(today),
     subjects: state.subjects.map((subject: any, index: any) => {
       const expectedQuestions = index < 4 ? 18 : 14;

@@ -105,7 +105,8 @@ export function createQuestionImportService({
             q.subjectId === matchedSubject.id &&
             (record.topicName ? matchedTopic && q.topicId === matchedTopic.id : !q.topicId) &&
             q.resolved === record.resolved &&
-            q.correct === record.correct
+            q.correct === record.correct &&
+            (q.banca || null) === (record.banca || null)
         )
       );
 
@@ -223,6 +224,9 @@ export function createQuestionImportService({
         resolved: record.resolved,
         correct: record.correct,
         errorBreakdown: record.errorBreakdown,
+        banca: record.banca,
+        minutes: record.minutes,
+        retry: record.retry,
         recommendationId: null,
       });
 

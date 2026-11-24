@@ -306,7 +306,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Central de Diagnóstico',
         summary: 'Riscos, lacunas, oportunidades e qualidade das evidências.',
         paragraphs: [
-          'Domínio resume o desempenho observado; retenção indica manutenção do conhecimento; tendência aponta a direção recente; evidência mostra o quanto a conclusão é sustentada. Impacto representa importância na prova, e lacuna combina essa importância com a necessidade pessoal.',
+          'Domínio resume o desempenho observado; retenção indica manutenção do conhecimento; tendência aponta a direção recente; evidência mostra o quanto a conclusão é sustentada. Impacto representa importância na prova, e lacuna combina essa importância com a necessidade pessoal. No acerto do Domínio, questões refeitas contam meio peso e, com ao menos 10 questões da banca da prova no tópico, elas contam em dobro.',
         ],
         action: { label: 'Abrir diagnóstico', target: 'diagnosis' },
       },

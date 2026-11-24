@@ -15,6 +15,7 @@ import {
   calculateSubjectWeeklyTrend,
   calculateTopicErrorRate,
   calculateTopicPerformance,
+  calculateWeightedTopicPerformance,
   calculateTopicWeeklyTrend,
   calculateWeightedTrend,
   classifyAccuracy as classifyAccuracyTarget,
@@ -205,7 +206,9 @@ export function createTopicDiagnosisService(deps: TopicDiagnosisServiceDependenc
       cutoff = addDays(today, -29);
     return calculateTopicMastery({
       topic: found.topic,
-      performance: getTopicPerformance(topicId),
+      performance: calculateWeightedTopicPerformance(validQuestionRecords(), topicId, {
+        targetBanca: state.examBlueprint?.banca || null,
+      }),
       trend: calculateWeightedTrend(getTopicWeeklyTrend(topicId), MIN_TOPIC_TREND_WINDOW_QUESTIONS),
       reviews: state.reviewAgenda.filter(
         review =>

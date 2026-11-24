@@ -1,3 +1,5 @@
+import { normalizeBanca, normalizeQuestionMinutes, parseDurationMinutes } from './bancas.js';
+
 const clean = (value: unknown) => String(value ?? '').trim();
 
 export const normalizeKey = (value: unknown) =>
@@ -56,6 +58,17 @@ const HEADER_ALIASES: Record<string, string> = {
   'categoria do erro': 'errorCategory',
   'tipo de erro': 'errorCategory',
   errorcategory: 'errorCategory',
+  banca: 'banca',
+  'banca examinadora': 'banca',
+  organizadora: 'banca',
+  tempo: 'minutes',
+  minutos: 'minutes',
+  'tempo min': 'minutes',
+  'tempo minutos': 'minutes',
+  refeita: 'retry',
+  refeitas: 'retry',
+  refazendo: 'retry',
+  'ja resolvida': 'retry',
 };
 
 const RESULT_CORRECT = new Set([
@@ -93,7 +106,8 @@ const ERROR_CATEGORY_MAP: Record<string, string> = {
   desatencao: 'desatencao',
   interpretacao: 'interpretacao',
   leitura: 'interpretacao',
-  pegadinha: 'interpretacao',
+  pegadinha: 'pegadinha',
+  'pegadinha da banca': 'pegadinha',
   tempo: 'chute',
   chute: 'chute',
   esqueci: 'esqueci',
@@ -275,6 +289,9 @@ export function normalizeQuestionImportRows(
     correct: number;
     errorCategory: string | null;
     unknownErrorCategory: boolean;
+    banca: string | null;
+    minutes: number | null;
+    retry: boolean;
   }> = [];
 
   rows.forEach(({ values, line }) => {
@@ -389,6 +406,9 @@ export function normalizeQuestionImportRows(
       correct,
       errorCategory,
       unknownErrorCategory: Boolean(rawCategory) && !errorCategory,
+      banca: normalizeBanca(record.banca),
+      minutes: parseDurationMinutes(record.minutes),
+      retry: RESULT_CORRECT.has(normalizeKey(record.retry)),
     });
   });
 
@@ -396,15 +416,18 @@ export function normalizeQuestionImportRows(
     throw new QuestionImportError(issues);
   }
 
-  // Aggregate by (date, subjectName, topicName)
+  // Junta por data, disciplina, tópico, banca e refeita: bancas diferentes não se misturam num bloco.
   const grouped = new Map();
   for (const item of parsedRecords) {
-    const key = `${item.date}|${normalizeKey(item.subjectName)}|${normalizeKey(item.topicName || '')}`;
+    const key = `${item.date}|${normalizeKey(item.subjectName)}|${normalizeKey(item.topicName || '')}|${normalizeKey(item.banca || '')}|${item.retry}`;
     if (!grouped.has(key)) {
       grouped.set(key, {
         date: item.date,
         subjectName: item.subjectName,
         topicName: item.topicName,
+        banca: item.banca,
+        retry: item.retry,
+        minutes: null as number | null,
         resolved: 0,
         correct: 0,
         errorBreakdown: Object.fromEntries(errorCategoryKeys.map(categoryKey => [categoryKey, 0])),
@@ -416,6 +439,7 @@ export function normalizeQuestionImportRows(
     current.resolved += item.resolved;
     current.correct += item.correct;
     current.lines.push(item.line);
+    if (item.minutes != null) current.minutes = (current.minutes || 0) + item.minutes;
     if (item.errorCategory) {
       current.errorBreakdown[item.errorCategory] += item.resolved - item.correct;
     }
@@ -426,6 +450,9 @@ export function normalizeQuestionImportRows(
     date: entry.date,
     subjectName: entry.subjectName,
     topicName: entry.topicName,
+    banca: entry.banca,
+    minutes: normalizeQuestionMinutes(entry.minutes),
+    retry: entry.retry,
     resolved: entry.resolved,
     correct: entry.correct,
     errorBreakdown: entry.errorBreakdown,

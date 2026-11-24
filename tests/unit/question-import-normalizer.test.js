@@ -8,7 +8,15 @@ import {
 } from '../../src/domain/questions/question-import-normalizer.js';
 
 // Espelha as chaves de ERROR_CATEGORIES em src/app.js.
-const KEYS = ['naoSabia', 'esqueci', 'interpretacao', 'calculo', 'desatencao', 'chute'];
+const KEYS = [
+  'naoSabia',
+  'esqueci',
+  'interpretacao',
+  'calculo',
+  'desatencao',
+  'chute',
+  'pegadinha',
+];
 const opts = { errorCategoryKeys: KEYS, defaultDate: '2026-10-20' };
 
 test('parseDate converte formatos brasileiros e ISO para YYYY-MM-DD', () => {
@@ -129,7 +137,8 @@ test('categorias de erro do CSV são gravadas com as chaves de ERROR_CATEGORIES 
     Desatenção: 'desatencao',
     Interpretação: 'interpretacao',
     Leitura: 'interpretacao',
-    Pegadinha: 'interpretacao',
+    Pegadinha: 'pegadinha',
+    'Pegadinha da banca': 'pegadinha',
     Tempo: 'chute',
     Chute: 'chute',
     Esqueci: 'esqueci',
@@ -247,4 +256,23 @@ test('modelo CSV para download é datado com o dia informado e passa na importa�
   const records = normalizeQuestionImportRows(buildQuestionImportTemplate('2026-03-07'), opts);
   assert.equal(records.length, 2);
   assert.ok(records.every(record => record.date === '2026-03-07'));
+});
+
+test('banca, tempo e refeitas são importados e separam blocos de bancas diferentes', () => {
+  const csv = [
+    'Data,Disciplina,Tópico,Banca,Resultado,Tempo,Refeita',
+    '19/10/2026,Português,Crase,CESPE,Certo,00:01:30,não',
+    '19/10/2026,Português,Crase,cebraspe,Errado,1:30,não',
+    '19/10/2026,Português,Crase,FGV,Certo,2,não',
+    '19/10/2026,Português,Crase,FGV,Certo,2,sim',
+    '19/10/2026,Português,Crase,,Certo,,',
+  ].join('\n');
+  const records = normalizeQuestionImportRows(csv, opts);
+  const byKey = Object.fromEntries(records.map(r => [`${r.banca}|${r.retry}`, r]));
+  assert.equal(records.length, 4);
+  assert.equal(byKey['Cebraspe|false'].resolved, 2);
+  assert.equal(byKey['Cebraspe|false'].minutes, 3);
+  assert.equal(byKey['FGV|false'].minutes, 2);
+  assert.equal(byKey['FGV|true'].resolved, 1);
+  assert.equal(byKey['null|false'].minutes, null);
 });

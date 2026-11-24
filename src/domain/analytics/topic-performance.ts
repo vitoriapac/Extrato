@@ -38,7 +38,8 @@ export function performanceConfidence(
 export function classifyAccuracy(accuracy: number | null, target: number): AccuracyClassification {
   if (accuracy === null) return { key: 'none', icon: 'circle', label: 'Sem dados' };
   if (accuracy >= target) return { key: 'strong', icon: 'circle-check', label: 'Na meta' };
-  if (accuracy >= target - 10) return { key: 'attention', icon: 'alert-triangle', label: 'Atenção' };
+  if (accuracy >= target - 10)
+    return { key: 'attention', icon: 'alert-triangle', label: 'Atenção' };
   return { key: 'weak', icon: 'alert-circle', label: 'Prioritário' };
 }
 
@@ -50,6 +51,66 @@ export function calculateTopicPerformance(
   const resolved = filtered.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
   const correct = filtered.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
   return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
+}
+
+/** Questões refeitas valem metade: já vistas, medem menos domínio novo. */
+export const RETRY_QUESTION_WEIGHT = 0.5;
+/** Questões da banca da prova valem o dobro quando o tópico tem evidência suficiente dela. */
+export const TARGET_BANCA_QUESTION_WEIGHT = 2;
+export const MIN_TARGET_BANCA_TOPIC_QUESTIONS = 10;
+
+export interface WeightedPerformanceCounts extends PerformanceCounts {
+  weighting: {
+    retryQuestions: number;
+    targetBanca: string | null;
+    targetBancaQuestions: number;
+    /** True quando as questões da banca da prova entraram com peso dobrado. */
+    bancaWeighted: boolean;
+  };
+}
+
+/**
+ * Acerto do tópico para o Domínio: refeitas com meio peso e, com ao menos 10 questões da banca da
+ * prova, essas questões em dobro. O volume (resolved) só desconta as refeitas, para o peso da banca
+ * mudar o acerto sem inflar a confiança da amostra.
+ */
+export function calculateWeightedTopicPerformance(
+  records: Array<{
+    topicId?: string | null;
+    resolved?: number;
+    correct?: number;
+    banca?: string | null;
+    retry?: boolean;
+  }>,
+  topicId: string,
+  { targetBanca = null }: { targetBanca?: string | null } = {}
+): WeightedPerformanceCounts {
+  const filtered = records.filter(q => q.topicId === topicId);
+  const count = (q: { resolved?: number }) => Math.max(0, Number(q.resolved) || 0);
+  const isTarget = (q: { banca?: string | null }) =>
+    Boolean(targetBanca) && q.banca === targetBanca;
+  const targetBancaQuestions = filtered.filter(isTarget).reduce((sum, q) => sum + count(q), 0);
+  const bancaWeighted = targetBancaQuestions >= MIN_TARGET_BANCA_TOPIC_QUESTIONS;
+  let volume = 0;
+  let weightedTotal = 0;
+  let weightedCorrect = 0;
+  let retryQuestions = 0;
+  for (const q of filtered) {
+    const resolved = count(q);
+    const correct = Math.min(resolved, Math.max(0, Number(q.correct) || 0));
+    const retryWeight = q.retry ? RETRY_QUESTION_WEIGHT : 1;
+    const weight = retryWeight * (bancaWeighted && isTarget(q) ? TARGET_BANCA_QUESTION_WEIGHT : 1);
+    if (q.retry) retryQuestions += resolved;
+    volume += resolved * retryWeight;
+    weightedTotal += resolved * weight;
+    weightedCorrect += correct * weight;
+  }
+  return {
+    resolved: Math.round(volume * 10) / 10,
+    correct: Math.round(weightedCorrect * 10) / 10,
+    accuracy: accuracyFromCounts(weightedCorrect, weightedTotal),
+    weighting: { retryQuestions, targetBanca, targetBancaQuestions, bancaWeighted },
+  };
 }
 
 export function calculateSubjectPerformanceCounts(

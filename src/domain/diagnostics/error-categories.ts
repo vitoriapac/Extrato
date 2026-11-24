@@ -17,6 +17,7 @@ export const ERROR_CATEGORIES: Record<string, ErrorCategoryMeta> = {
   calculo: { label: 'Cálculo', icon: 'calculator' },
   desatencao: { label: 'Desatenção', icon: 'alert-triangle' },
   chute: { label: 'Chute', icon: 'dice' },
+  pegadinha: { label: 'Pegadinha da banca', icon: 'flag' },
 };
 
 export const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
@@ -59,6 +60,12 @@ export const ERROR_RECOMMENDATIONS: Record<string, ErrorRecommendationPrescripti
     studyType: 'study',
     estimatedMinutes: 30,
     questions: 10,
+  },
+  pegadinha: {
+    action: 'Resolver questões da banca e anotar a pegadinha no caderno de erros',
+    studyType: 'questions',
+    estimatedMinutes: 35,
+    questions: 15,
   },
 };
 

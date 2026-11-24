@@ -82,6 +82,12 @@ export interface QuestionRecord {
   recommendationId?: string | null;
   createdAt?: string;
   studySessionId?: string | null;
+  /** Banca das questões do bloco; ausente em registros antigos (banca não informada). */
+  banca?: string | null;
+  /** Tempo gasto no bloco, em minutos. */
+  minutes?: number | null;
+  /** Questões já resolvidas antes: o acerto delas não mede domínio novo. */
+  retry?: boolean;
 }
 
 export type ErrorFlashcardStatus = 'pending' | 'reviewing' | 'mastered';
@@ -251,6 +257,10 @@ export interface ExamBlueprint {
   preEdital?: boolean;
   /** Nota mínima eliminatória da discursiva, em %. */
   essayMinPercent?: number | null;
+  /** Banca que aplica a prova, na grafia de normalizeBanca. */
+  banca?: string | null;
+  /** Duração total da prova objetiva, em minutos. */
+  durationMinutes?: number | null;
 }
 
 export interface TimerStrategy {
