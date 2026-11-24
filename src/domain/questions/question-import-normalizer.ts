@@ -108,7 +108,10 @@ const ERROR_CATEGORY_MAP: Record<string, string> = {
   leitura: 'interpretacao',
   pegadinha: 'pegadinha',
   'pegadinha da banca': 'pegadinha',
-  tempo: 'chute',
+  // Falta de tempo é ritmo, não conteúdo: categoria própria, separada de chute.
+  tempo: 'tempo',
+  'falta de tempo': 'tempo',
+  'sem tempo': 'tempo',
   chute: 'chute',
   esqueci: 'esqueci',
   calculo: 'calculo',

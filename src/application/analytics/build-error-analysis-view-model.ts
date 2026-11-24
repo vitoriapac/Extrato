@@ -6,6 +6,7 @@ const LABELS: Record<string, string> = {
   desatencao: 'Desatenção',
   chute: 'Chute',
   pegadinha: 'Pegadinha da banca',
+  tempo: 'Falta de tempo',
 };
 const ICONS: Record<string, string> = {
   naoSabia: 'book',
@@ -15,6 +16,7 @@ const ICONS: Record<string, string> = {
   desatencao: 'alert-triangle',
   chute: 'dice',
   pegadinha: 'flag',
+  tempo: 'clock',
 };
 export function buildErrorAnalysisViewModel({
   current,

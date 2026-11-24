@@ -16,6 +16,7 @@ const KEYS = [
   'desatencao',
   'chute',
   'pegadinha',
+  'tempo',
 ];
 const opts = { errorCategoryKeys: KEYS, defaultDate: '2026-10-20' };
 
@@ -139,7 +140,8 @@ test('categorias de erro do CSV são gravadas com as chaves de ERROR_CATEGORIES 
     Leitura: 'interpretacao',
     Pegadinha: 'pegadinha',
     'Pegadinha da banca': 'pegadinha',
-    Tempo: 'chute',
+    Tempo: 'tempo',
+    'Falta de tempo': 'tempo',
     Chute: 'chute',
     Esqueci: 'esqueci',
     Cálculo: 'calculo',

@@ -40,6 +40,7 @@ const ERROR_CATEGORY_LABELS: Record<string, string> = {
   desatencao: 'Desatenção',
   chute: 'Chute sem certeza',
   pegadinha: 'Pegadinha da banca',
+  tempo: 'Falta de tempo',
 };
 
 export function ErrorNotebookView({

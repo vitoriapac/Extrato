@@ -18,6 +18,7 @@ export const ERROR_CATEGORIES: Record<string, ErrorCategoryMeta> = {
   desatencao: { label: 'Desatenção', icon: 'alert-triangle' },
   chute: { label: 'Chute', icon: 'dice' },
   pegadinha: { label: 'Pegadinha da banca', icon: 'flag' },
+  tempo: { label: 'Falta de tempo', icon: 'clock' },
 };
 
 export const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
@@ -66,6 +67,12 @@ export const ERROR_RECOMMENDATIONS: Record<string, ErrorRecommendationPrescripti
     studyType: 'questions',
     estimatedMinutes: 35,
     questions: 15,
+  },
+  tempo: {
+    action: 'Resolver blocos de questões cronometrados no tempo da prova',
+    studyType: 'questions',
+    estimatedMinutes: 40,
+    questions: 20,
   },
 };
 

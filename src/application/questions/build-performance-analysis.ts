@@ -36,6 +36,7 @@ export function buildPerformanceAnalysis({
     desatencao: 'Desatenção',
     chute: 'Chute',
     pegadinha: 'Pegadinha da banca',
+    tempo: 'Falta de tempo',
   };
   const errorCounts = Object.fromEntries(Object.keys(categories).map(key => [key, 0]));
   for (const item of selected) {

@@ -7,6 +7,7 @@ export const ERROR_CATEGORIES = Object.freeze([
   'desatencao',
   'chute',
   'pegadinha',
+  'tempo',
 ]);
 export const ERROR_ACTIONS = Object.freeze({
   naoSabia: {
@@ -51,6 +52,12 @@ export const ERROR_ACTIONS = Object.freeze({
     estimatedMinutes: 35,
     questions: 15,
   },
+  tempo: {
+    action: 'Resolver blocos de questões cronometrados no tempo da prova',
+    studyType: 'questions',
+    estimatedMinutes: 40,
+    questions: 20,
+  },
 });
 export const ERROR_ANALYSIS_VERSION = 1;
 export function analyzeErrors(records: any[] = [], options: Record<string, any> = {}) {
@@ -77,7 +84,7 @@ export function analyzeErrors(records: any[] = [], options: Record<string, any> 
     : null;
   const mode = !dominant
     ? 'insufficient'
-    : ['interpretacao', 'calculo', 'desatencao', 'pegadinha'].includes(dominant.key)
+    : ['interpretacao', 'calculo', 'desatencao', 'pegadinha', 'tempo'].includes(dominant.key)
       ? 'practice'
       : ['esqueci'].includes(dominant.key)
         ? 'review'
