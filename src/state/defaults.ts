@@ -69,6 +69,7 @@ export function createDefaultState(): AppState {
     learningJournal: [],
     topicEquivalences: [],
     studyMaterials: [],
+    lawNotebook: [],
     studyCycle: null,
     lastBackupAt: null,
     lastExportAt: null,

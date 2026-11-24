@@ -9,6 +9,7 @@ import { createAdaptiveReviewState, REVIEW_RATINGS } from '../domain/reviews.js'
 import { normalizeStudySession } from '../domain/sessions/study-session.js';
 import { CURRENT_SCHEMA_VERSION, DIFFICULTY_OPTIONS } from './schema.js';
 import { assignSubjectColors } from '../domain/subjects/subject-color.js';
+import { normalizeLaw } from '../domain/law-notebook.js';
 import {
   normalizeAlgorithmVersions,
   normalizeExamBlueprint,
@@ -54,6 +55,10 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   if (!Array.isArray(state.learningJournal)) state.learningJournal = [];
   if (!Array.isArray(state.topicEquivalences)) state.topicEquivalences = [];
   if (!Array.isArray(state.studyMaterials)) state.studyMaterials = [];
+  // Coleção opcional, sem migração: backups antigos chegam sem ela e começam vazios.
+  state.lawNotebook = (Array.isArray(state.lawNotebook) ? state.lawNotebook : [])
+    .map(normalizeLaw)
+    .filter(law => law !== null);
   if (state.studyCycle === undefined) state.studyCycle = null;
   if (!['agenda', 'sequence'].includes(state.executionMode)) state.executionMode = 'sequence';
 

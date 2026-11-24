@@ -628,6 +628,8 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
   if (equivalenceError) return fail(equivalenceError);
   const materialsError = validateStudyMaterials(data.studyMaterials);
   if (materialsError) return fail(materialsError);
+  const lawError = validateLawNotebook(data.lawNotebook);
+  if (lawError) return fail(lawError);
   const cycleError = validateStudyCycle(data.studyCycle);
   if (cycleError) return fail(cycleError);
   return { valid: true };
@@ -699,6 +701,27 @@ function validateTopicEquivalences(entries: unknown): string {
     }
     if (typeof entry.confirmedAt !== 'string' || !entry.confirmedAt) {
       return 'Uma equivalência de tópico não possui data de confirmação.';
+    }
+  }
+  return '';
+}
+
+function validateLawNotebook(entries: unknown): string {
+  if (entries === undefined) return '';
+  if (!Array.isArray(entries)) return 'O campo "lawNotebook" deve ser uma lista.';
+  if (entries.length > 5000) return 'O campo "lawNotebook" excede o limite seguro.';
+  const seen = new Set<string>();
+  for (const entry of entries) {
+    if (!isPlainObject(entry)) return 'Uma lei do caderno não é um objeto válido.';
+    if (!isSafeId(entry.id) || seen.has(entry.id)) {
+      return 'O backup contém leis com identificador inválido ou duplicado.';
+    }
+    seen.add(entry.id);
+    if (typeof entry.name !== 'string' || !entry.name.trim() || entry.name.length > 120) {
+      return 'Uma lei do caderno possui nome inválido.';
+    }
+    if (entry.subjectId != null && !isSafeId(entry.subjectId)) {
+      return 'Uma lei do caderno possui disciplina inválida.';
     }
   }
   return '';
@@ -864,6 +887,7 @@ export function validateBackupData(
     'learningJournal',
     'topicEquivalences',
     'studyMaterials',
+    'lawNotebook',
   ];
   const envelope = validateBackupEnvelope(data, {
     currentVersion: options.currentSchemaVersion ?? CURRENT_SCHEMA_VERSION,

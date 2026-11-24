@@ -265,6 +265,21 @@ export interface ExamBlueprint {
   cutoff?: ExamCutoff | null;
 }
 
+/** Lei do Caderno de leis: progresso por artigo e voltas de leitura. */
+export interface LawRecord {
+  id: string;
+  name: string;
+  subjectId: string | null;
+  totalArticles: number | null;
+  /** Último artigo lido na volta atual; 0 antes de começar a volta. */
+  currentArticle: number;
+  /** Voltas completas. */
+  laps: number;
+  lastReadAt: string | null;
+  lapCompletedAt: string | null;
+  createdAt: string;
+}
+
 export interface ExamCutoff {
   score: number;
   maxScore: number;
@@ -566,6 +581,7 @@ export interface AppState {
   learningJournal?: LearningJournalEntry[];
   topicEquivalences?: TopicEquivalenceRecord[];
   studyMaterials?: StudyMaterial[];
+  lawNotebook?: LawRecord[];
   studyCycle?: Record<string, any> | null;
   lastBackupAt: string | null;
   /** When the user last downloaded a backup file (F7); lastBackupAt is the automatic in-browser copy. */

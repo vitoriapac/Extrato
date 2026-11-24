@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=8121a94e263d">
-<link rel="stylesheet" href="styles/app.css?v=8121a94e263d">
+<link rel="stylesheet" href="styles/tailwind.css?v=b19c42473ab4">
+<link rel="stylesheet" href="styles/app.css?v=b19c42473ab4">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -428,6 +428,9 @@
     <div class="stat-grid mb-4" id="quickStats"></div>
     <div id="subjectsContainer"></div>
     <div id="verticalizedSyllabusMount" hidden></div>
+    <details class="chart-card decision-fold mt-4" id="lawNotebookCard" data-remember="subjects-law-notebook"><summary>Caderno de leis</summary>
+      <div id="lawNotebookMount"></div>
+    </details>
   </div>
 
   <!-- AGENDA: revisões espaçadas e tarefas de estudo numa aba só (antes eram Agenda e Calendário) -->
@@ -793,7 +796,7 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=8121a94e263d"></script>
+  <script src="src/app.bundle.js?v=b19c42473ab4"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

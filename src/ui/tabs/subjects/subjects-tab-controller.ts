@@ -10,8 +10,16 @@ import { buildTopicStatusSummary } from '../../../application/subjects/build-top
 import { createSubjectsController } from './subjects-controller.js';
 import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './topic-analytics-view.js';
 import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './topic-strategy-editor-view.js';
-import type { Subject, Topic, TopicStageChecklist, TopicStatus } from '../../../core/types.js';
+import type {
+  LawRecord,
+  Subject,
+  Topic,
+  TopicStageChecklist,
+  TopicStatus,
+} from '../../../core/types.js';
 import { runUndoable } from '../../undoable.js';
+import { LawNotebookCard } from './LawNotebookCard.js';
+import { completeLawLap, registerLawReading } from '../../../domain/law-notebook.js';
 
 export interface SubjectsTabControllerContext {
   document: Document;
@@ -189,12 +197,20 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     if (!subject || !topic) return;
 
     const topicQuestions = (ctx.state.questoes || []).filter((q: any) => q.topicId === topicId);
-    const totalQuestions = topicQuestions.reduce((sum: number, q: any) => sum + (Number(q.total) || 0), 0);
-    const correctCount = topicQuestions.reduce((sum: number, q: any) => sum + (Number(q.correct) || 0), 0);
+    const totalQuestions = topicQuestions.reduce(
+      (sum: number, q: any) => sum + (Number(q.total) || 0),
+      0
+    );
+    const correctCount = topicQuestions.reduce(
+      (sum: number, q: any) => sum + (Number(q.correct) || 0),
+      0
+    );
     const reviewsCount = (ctx.state.reviewAgenda || []).filter(
       (r: any) => r.topicId === topicId && r.status === 'Concluído'
     ).length;
-    const errorCount = (ctx.state.errorNotebook || []).filter((e: any) => e.topicId === topicId).length;
+    const errorCount = (ctx.state.errorNotebook || []).filter(
+      (e: any) => e.topicId === topicId
+    ).length;
     const lastSession = [...(ctx.state.studySessions || [])]
       .filter((s: any) => s.topicId === topicId)
       .sort((a: any, b: any) => String(b.date || '').localeCompare(String(a.date || '')))[0];
@@ -239,7 +255,11 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         onStartTopic: (subId: string, topId: string) => {
           close();
           if (ctx.state.activeTimer) {
-            Object.assign(ctx.state.activeTimer, { subjectId: subId, topicId: topId, type: 'study' });
+            Object.assign(ctx.state.activeTimer, {
+              subjectId: subId,
+              topicId: topId,
+              type: 'study',
+            });
           }
           if (ctx.populateTimerContextControls) ctx.populateTimerContextControls();
           if (ctx.startTimer) ctx.startTimer();
@@ -341,7 +361,58 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     );
   }
 
+  function updateLaw(id: string, change: (law: LawRecord) => LawRecord, message: string): void {
+    const laws: LawRecord[] = ctx.state.lawNotebook || [];
+    const index = laws.findIndex(law => law.id === id);
+    if (index < 0) return;
+    laws[index] = change(laws[index]);
+    ctx.persistAndRender();
+    ctx.showToast(message);
+  }
+
+  function renderLawNotebook(): void {
+    const mount = ctx.document.getElementById('lawNotebookMount');
+    if (!mount) return;
+    if (!Array.isArray(ctx.state.lawNotebook)) ctx.state.lawNotebook = [];
+    mountPreact(
+      h(LawNotebookCard, {
+        laws: ctx.state.lawNotebook,
+        subjects: (ctx.state.subjects || [])
+          .filter((subject: Subject) => !subject.archived)
+          .map((subject: Subject) => ({ id: subject.id, name: subject.name })),
+        today: todayISO(),
+        onAdd: input => {
+          ctx.state.lawNotebook!.push({
+            id: uid('law'),
+            ...input,
+            currentArticle: 0,
+            laps: 0,
+            lastReadAt: null,
+            lapCompletedAt: null,
+            createdAt: nowISO(),
+          });
+          ctx.persistAndRender();
+          ctx.showToast('Lei adicionada ao caderno.');
+        },
+        onRead: (id, article) =>
+          updateLaw(id, law => registerLawReading(law, article, todayISO()), 'Leitura registrada.'),
+        onCompleteLap: id =>
+          updateLaw(id, law => completeLawLap(law, todayISO()), 'Volta concluída.'),
+        onDelete: id => {
+          const law = ctx.state.lawNotebook!.find((item: LawRecord) => item.id === id);
+          runUndoable(`Lei "${law?.name || ''}" excluída.`, () => {
+            ctx.state.lawNotebook = ctx.state.lawNotebook!.filter(
+              (item: LawRecord) => item.id !== id
+            );
+          });
+        },
+      }),
+      mount
+    );
+  }
+
   function renderSubjects(): void {
+    renderLawNotebook();
     const container = ctx.document.getElementById('subjectsContainer');
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     const toggleBtn = ctx.document.getElementById('verticalizedSyllabusToggleBtn');
