@@ -1,3 +1,5 @@
+import { questionErrorCount } from '../../domain/diagnostics/error-categories.js';
+
 export function buildQuestionViewModel(
   item: Record<string, any>,
   { formatDate, getSubjectName, getTopicName, subjectIdOf, accuracy }: any = {}
@@ -11,6 +13,6 @@ export function buildQuestionViewModel(
     resolved,
     correct,
     accuracy: accuracy(correct, resolved),
-    errors: Math.max(0, resolved - correct),
+    errors: questionErrorCount(item),
   };
 }

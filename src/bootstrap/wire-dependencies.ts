@@ -34,7 +34,10 @@ import {
   applyReplan as defaultApplyReplan,
   undoReplan as defaultUndoReplan,
 } from '../application/replan-study.js';
-import { normalizeErrorBreakdown as defaultNormalizeErrorBreakdown } from '../domain/diagnostics/error-categories.js';
+import {
+  normalizeErrorBreakdown as defaultNormalizeErrorBreakdown,
+  normalizeQuestionBlank,
+} from '../domain/diagnostics/error-categories.js';
 import { completeRecommendationFeedback as defaultCompleteRecommendationFeedback } from '../application/recommendations/recommendation-feedback.js';
 import { parseLocalDate as defaultParseLocalDate } from '../core/date-utils.js';
 import { normalizeTopicStrategy as defaultNormalizeTopicStrategy } from '../state/strategic.js';
@@ -284,6 +287,7 @@ export function wireAppDependencies(options: WireAppDependenciesOptions) {
     normalize: (item: Record<string, any>) => {
       item.resolved = Math.max(0, Math.floor(Number(item.resolved) || 0));
       item.correct = Math.min(item.resolved, Math.max(0, Math.floor(Number(item.correct) || 0)));
+      item.blank = normalizeQuestionBlank(item);
       normalizeErrorBreakdown(item);
       item.banca = normalizeBanca(item.banca);
       item.minutes = normalizeQuestionMinutes(item.minutes);

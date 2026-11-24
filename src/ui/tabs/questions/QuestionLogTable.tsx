@@ -16,11 +16,17 @@ export interface QuestionItem {
   banca?: string | null;
   minutes?: number | null;
   retry?: boolean;
+  blank?: number | null;
 }
 
-/** "Cesgranrio · 30 min · refeitas": o que o bloco informa além de disciplina e tópico. */
+/** "Cebraspe · 30 min · 4 em branco · refeitas": o que o bloco informa além de disciplina e tópico. */
 function questionDetails(q: QuestionItem): string {
-  return [q.banca, q.minutes ? `${q.minutes} min` : null, q.retry ? 'refeitas' : null]
+  return [
+    q.banca,
+    q.minutes ? `${q.minutes} min` : null,
+    Number(q.blank) > 0 ? `${q.blank} em branco` : null,
+    q.retry ? 'refeitas' : null,
+  ]
     .filter(Boolean)
     .join(' · ');
 }
@@ -48,6 +54,8 @@ export interface QuestionLogTableProps {
   subjectOptionsHtml?: string;
   topicOptionsHtml?: string;
   footerHtml?: string;
+  /** Prova certo/errado: mostra o campo Em branco na edição. */
+  showBlank?: boolean;
 }
 
 export function QuestionLogTable({
@@ -63,6 +71,7 @@ export function QuestionLogTable({
   subjectOptionsHtml = '',
   topicOptionsHtml = '',
   footerHtml = '',
+  showBlank = false,
 }: QuestionLogTableProps): JSX.Element {
   if (questions.length === 0) {
     return (
@@ -178,6 +187,23 @@ export function QuestionLogTable({
                       </button>
                     </div>
                   </div>
+                  {(showBlank || Number(draft.blank) > 0) && (
+                    <label title="Na prova certo/errado, deixar em branco não desconta. Em branco não conta como erro.">
+                      Em branco
+                      <input
+                        id="questionDraft-blank"
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        max={Math.max(
+                          0,
+                          (Number(draft.resolved) || 0) - (Number(draft.correct) || 0)
+                        )}
+                        value={Number(draft.blank) || 0}
+                        data-delegated-input="updateQuestionDraft('blank',this.value)"
+                      />
+                    </label>
+                  )}
                   <label>
                     Banca
                     <input

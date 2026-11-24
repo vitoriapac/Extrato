@@ -351,6 +351,15 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
       scope = examEvidenceContext(),
       scopedQuestions = scope.questions.included;
     const eligibleSubjectIds = new Set(examScopedTopics().map(topic => topic.subjectId));
+    // Peso na prova = questões previstas × peso da questão; sem edital configurado, 0.
+    const examWeight = new Map<string, number>(
+      (state.examBlueprint?.subjects || [])
+        .filter(row => row.subjectId)
+        .map(row => [
+          row.subjectId as string,
+          (Number(row.expectedQuestions) || 0) * (Number(row.questionWeight) || 1),
+        ])
+    );
     const subjects = activeSubjects()
       .filter(subject => eligibleSubjectIds.has(subject.id))
       .map(subject => {
@@ -374,6 +383,7 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
             delta: trend.delta,
           },
           daysSinceStudy,
+          examWeight: examWeight.get(subject.id) || 0,
         };
       });
     const topics = intelligenceCandidates().map((item: any) => ({

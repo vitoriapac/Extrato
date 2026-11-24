@@ -47,6 +47,7 @@ export interface SimulationScoreItem {
 export interface AcertosQuestionItem {
   resolved?: number | null;
   correct?: number | null;
+  blank?: number | null;
 }
 
 export interface ConsistencyDayItem {

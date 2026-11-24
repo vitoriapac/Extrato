@@ -257,7 +257,10 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     const state = getState();
     const { availableMinutes, candidates } = refreshStudyRecommendationItems();
     renderOverviewNextAction(availableMinutes);
-    const visible = orderByDiagnosisQueue(currentStudyRecommendations, deps.diagnosisQueue?.()).slice(0, 3);
+    const visible = orderByDiagnosisQueue(
+      currentStudyRecommendations,
+      deps.diagnosisQueue?.()
+    ).slice(0, 3);
     const summary = summarizeRecommendationFeedback(state.recommendationFeedback),
       impact = renderRecommendationImpact(
         buildRecommendationOutcomeViewModel(state.recommendationFeedback)
@@ -345,7 +348,11 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         : blocked
           ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
           : `<button class="btn ${planChoice || sameAsPlan ? 'ghost' : index > 0 ? 'tonal' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
-      return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : sameAsPlan ? 'Alinhada ao 1º item do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empate técnico com a 2ª sugestão (${Math.round(Number(item.score))})` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${effectiveMinutesLabel}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIconHtml} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
+      // Fora do plano, a sugestão é secundária: o plano de hoje continua sendo a única ação em destaque.
+      const gauge = planChoice
+        ? ''
+        : `<div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div>`;
+      return `<article class="study-recommendation ${planChoice ? 'is-outside-plan' : index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}">${gauge}<div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'O diagnóstico também sugere · ' : sameAsPlan ? 'Alinhada ao 1º item do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empate técnico com a 2ª sugestão (${Math.round(Number(item.score))})` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${effectiveMinutesLabel}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIconHtml} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
         .slice(0, 1)
         .map(reason => `<span>+ ${escapeHtml(reason)}</span>`)
         .join(

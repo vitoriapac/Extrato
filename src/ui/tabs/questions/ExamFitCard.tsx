@@ -143,6 +143,53 @@ function RetrySection({ retry }: { retry: ExamFitAnalysis['retry'] }) {
   );
 }
 
+/**
+ * Na prova certo/errado cada resposta vale, em média, 2p − 1 ponto (p = acerto ao arriscar):
+ * abaixo de 50% arriscar tira pontos. A faixa de 50–60% é apertada por causa da amostra.
+ */
+function RiskSection({ risk }: { risk: NonNullable<ExamFitAnalysis['risk']> }) {
+  const { answered, blankShare } = risk;
+  if (answered.resolved < EXAM_FIT_MIN_QUESTIONS || answered.accuracy === null) {
+    return (
+      <p class="m-0">
+        Informe quantas ficaram em branco ao registrar as questões. Com {EXAM_FIT_MIN_QUESTIONS}{' '}
+        respondidas ({answered.resolved} até agora), dá para ver se arriscar está somando pontos.
+      </p>
+    );
+  }
+  const p = answered.accuracy;
+  const badge: { variant: BadgeVariant; label: string } =
+    p < 50
+      ? { variant: 'danger', label: 'Arriscar está tirando pontos' }
+      : p < 60
+        ? { variant: 'warning', label: 'Margem apertada' }
+        : { variant: 'success', label: 'Arriscar está compensando' };
+  return (
+    <>
+      <p class="m-0 flex flex-wrap items-center gap-2">
+        <span>
+          Acerto quando arrisca: <strong>{pct(answered)}</strong>{' '}
+          <small>({answered.resolved} respondidas)</small>
+          {blankShare !== null && (
+            <>
+              {' '}
+              · Em branco: <strong>{blankShare}%</strong> dos itens
+            </>
+          )}
+        </span>
+        <Badge variant={badge.variant}>{badge.label}</Badge>
+      </p>
+      <p class="text-xs text-content-secondary m-0 mt-1">
+        {p < 50
+          ? 'Abaixo de 50%, cada resposta desconta mais do que soma: na dúvida, deixe em branco.'
+          : p < 60
+            ? 'Cada resposta soma pouco: arrisque quando conseguir descartar a dúvida principal.'
+            : 'Cada resposta soma, em média, mais do que desconta. Deixar em branco demais também custa pontos.'}
+      </p>
+    </>
+  );
+}
+
 export function ExamFitCard({ model }: { model: ExamFitAnalysis }): JSX.Element {
   return (
     <div class="space-y-4">
@@ -176,6 +223,12 @@ export function ExamFitCard({ model }: { model: ExamFitAnalysis }): JSX.Element 
             <h3 id="examFitRetryTitle">Inéditas e refeitas</h3>
             <RetrySection retry={model.retry} />
           </section>
+          {model.risk && (
+            <section aria-labelledby="examFitRiskTitle">
+              <h3 id="examFitRiskTitle">Certo ou errado: arriscar ou deixar em branco</h3>
+              <RiskSection risk={model.risk} />
+            </section>
+          )}
         </>
       )}
     </div>

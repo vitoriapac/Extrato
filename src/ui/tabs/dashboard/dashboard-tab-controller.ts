@@ -234,6 +234,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
         blueprint: state.examBlueprint || {},
         subjects: state.subjects || [],
         overdue: deps.revisoesAtrasadas?.() ?? 0,
+        questions: state.questoes || [],
+        today: todayISO(),
       })
     );
     if (!grid.dataset.wired) {

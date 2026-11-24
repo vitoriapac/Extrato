@@ -105,3 +105,26 @@ test('refeitas são comparadas com inéditas só com evidência nas duas', () =>
   });
   assert.equal(few.retry.gap, null);
 });
+
+test('certo/errado: acerto quando arrisca ignora brancos, refeitas e registros sem branco', () => {
+  const model = buildExamFitAnalysis({
+    questions: [
+      q({ resolved: 20, correct: 12, blank: 4 }), // 12 de 16 respondidas
+      q({ resolved: 10, correct: 6, blank: 0 }), // 6 de 10
+      q({ resolved: 30, correct: 10 }), // sem branco informado: fora
+      q({ resolved: 10, correct: 10, blank: 0, retry: true }), // refeitas: fora
+    ],
+    subjects,
+    blueprint: { ...blueprint, scoringMode: 'certo-errado' },
+    fromDate,
+  });
+  assert.deepEqual(model.risk, {
+    answered: { resolved: 26, correct: 18, accuracy: 69.2 },
+    blankShare: 13,
+  });
+  // Prova de acerto simples: não há análise de risco.
+  assert.equal(
+    buildExamFitAnalysis({ questions: [q()], subjects, blueprint, fromDate }).risk,
+    null
+  );
+});

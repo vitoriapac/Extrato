@@ -88,6 +88,8 @@ export interface QuestionRecord {
   minutes?: number | null;
   /** Questões já resolvidas antes: o acerto delas não mede domínio novo. */
   retry?: boolean;
+  /** Deixadas em branco (prova certo/errado): contam em `resolved`, não são erro. Ausente: não informado. */
+  blank?: number | null;
 }
 
 export type ErrorFlashcardStatus = 'pending' | 'reviewing' | 'mastered';

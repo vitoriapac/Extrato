@@ -1,3 +1,4 @@
+import { questionErrorCount } from '../diagnostics/error-categories.js';
 /**
  * Motor do Caderno de Erros Ativo & Flashcards de Bolso (src/domain/notebook/error-notebook-engine.ts)
  *
@@ -284,7 +285,7 @@ export function findQuestionsAwaitingFlashcard(
       subjectId: question.subjectId,
       topicId: question.topicId ?? null,
       date: question.date,
-      errorCount: Number(question.resolved) - Number(question.correct),
+      errorCount: questionErrorCount(question),
       errorCategory: dominantErrorCategory(question),
     }))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));

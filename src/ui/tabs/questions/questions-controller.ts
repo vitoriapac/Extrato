@@ -15,6 +15,7 @@ export interface QuestionsControllerOptions {
     questoes: QuestionItem[];
     simulados: SimulationItem[];
     subjects?: any[];
+    examBlueprint?: { scoringMode?: string | null } | null;
   };
   listViewState: {
     questionsPage: number;
@@ -118,6 +119,7 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
         subjectOptionsHtml,
         topicOptionsHtml,
         footerHtml,
+        showBlank: opts.state.examBlueprint?.scoringMode === 'certo-errado',
       })
     );
   }

@@ -94,19 +94,56 @@ export function buildIntelligentAlerts({
           recommendedAction: 'Revise os erros recentes e reduza conteúdo novo nesta disciplina.',
         })
       );
-    if (Number(subject.daysSinceStudy) >= 14)
-      alerts.push(
-        createDiagnosticAlert({
-          type: 'subject_neglected',
-          severity: Number(subject.daysSinceStudy) >= 28 ? 'high' : 'medium',
-          subjectId: subject.subjectId,
-          createdAt: today,
-          reason:
-            subject.name + ' está há ' + subject.daysSinceStudy + ' dias sem estudo registrado.',
-          recommendedAction: 'Reserve uma sessão curta para retomar a disciplina.',
-        })
-      );
   });
+  // Um alerta por disciplina parada vira ruído (13 numa demo de 17 disciplinas). Com duas ou mais,
+  // um alerta só, com as de maior peso na prova primeiro: no ciclo, as de pouco peso podem esperar.
+  const neglected = subjects
+    .filter((subject: Row) => Number(subject.daysSinceStudy) >= 14)
+    .sort(
+      (a: Row, b: Row) =>
+        (Number(b.examWeight) || 0) - (Number(a.examWeight) || 0) ||
+        Number(b.daysSinceStudy) - Number(a.daysSinceStudy)
+    );
+  const severityOf = (rows: Row[]) =>
+    rows.some(row => Number(row.daysSinceStudy) >= 28) ? 'high' : 'medium';
+  if (neglected.length === 1)
+    alerts.push(
+      createDiagnosticAlert({
+        type: 'subject_neglected',
+        severity: severityOf(neglected),
+        subjectId: neglected[0].subjectId,
+        createdAt: today,
+        reason:
+          neglected[0].name +
+          ' está há ' +
+          neglected[0].daysSinceStudy +
+          ' dias sem estudo registrado.',
+        recommendedAction: 'Reserve uma sessão curta para retomar a disciplina.',
+      })
+    );
+  else if (neglected.length > 1) {
+    const shown = neglected
+      .slice(0, 3)
+      .map((row: Row) => `${row.name} (${row.daysSinceStudy} dias)`);
+    const rest = neglected.length - shown.length;
+    const weighted = neglected.some((row: Row) => Number(row.examWeight) > 0);
+    alerts.push(
+      createDiagnosticAlert({
+        id: 'subjects-neglected',
+        type: 'subject_neglected',
+        severity: severityOf(neglected),
+        createdAt: today,
+        reason:
+          `${neglected.length} disciplinas sem estudo há 14 dias ou mais` +
+          (weighted ? ', da de maior peso na prova para a de menor' : '') +
+          ': ' +
+          (rest > 0 ? `${shown.join(', ')} e mais ${rest}.` : `${shown.join(', ')}.`),
+        recommendedAction: weighted
+          ? 'Retome a primeira com uma sessão curta; as de pouco peso podem esperar a vez no ciclo.'
+          : 'Retome a primeira da lista com uma sessão curta.',
+      })
+    );
+  }
   if (Number.isFinite(weeklyBalanceMinutes) && weeklyBalanceMinutes < 0)
     alerts.push(
       createDiagnosticAlert({

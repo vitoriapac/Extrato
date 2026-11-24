@@ -167,11 +167,12 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
   function approvalAcertosMetric() {
     const certoErrado = getState().examBlueprint?.scoringMode === 'certo-errado';
     const questions: Array<AcertosQuestionItem & Record<string, any>> = certoErrado
-      ? // Certo ou errado: questão avulsa não registra branco, então toda não acertada anula um acerto.
+      ? // Certo ou errado: cada erro anula um acerto; branco (quando registrado) não desconta.
         // Sem limitar a zero por registro: o saldo líquido é somado e só a pontuação final é limitada.
         examEvidenceContext().questions.included.map((q: AcertosQuestionItem) => ({
           ...q,
-          correct: 2 * (Number(q.correct) || 0) - (Number(q.resolved) || 0),
+          correct:
+            2 * (Number(q.correct) || 0) - (Number(q.resolved) || 0) + (Number(q.blank) || 0),
         }))
       : examEvidenceContext().questions.included;
     const weighted = weightedBySubject(

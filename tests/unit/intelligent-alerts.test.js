@@ -86,3 +86,37 @@ test('não interpreta domínio ausente como zero e usa erros apenas com diagnós
   assert.equal(alert.recommendedAction, 'Treinar cálculos guiados');
   assert.equal(alert.topicId, 't1');
 });
+
+test('disciplinas paradas viram um alerta só, da de maior peso na prova para a de menor', () => {
+  const row = (subjectId, name, daysSinceStudy, examWeight) => ({
+    subjectId,
+    name,
+    daysSinceStudy,
+    examWeight,
+    trend: { direction: 'stable' },
+  });
+  const alerts = buildIntelligentAlerts({
+    subjects: [
+      row('a', 'Atendimento', 29, 5),
+      row('b', 'Tecnologia', 33, 10),
+      row('c', 'Inglês', 40, 0),
+      row('d', 'Matemática', 20, 10),
+      row('e', 'Recente', 3, 50),
+    ],
+  });
+  const neglected = alerts.filter(item => item.type === 'subject_neglected');
+  assert.equal(neglected.length, 1);
+  assert.equal(neglected[0].id, 'subjects-neglected');
+  assert.equal(neglected[0].severity, 'high');
+  // Peso desempata primeiro, depois quem está parada há mais tempo.
+  assert.match(
+    neglected[0].reason,
+    /^4 disciplinas sem estudo há 14 dias ou mais, da de maior peso na prova para a de menor: Tecnologia \(33 dias\), Matemática \(20 dias\), Atendimento \(29 dias\) e mais 1\.$/
+  );
+  assert.match(neglected[0].recommendedAction, /as de pouco peso podem esperar/);
+
+  // Uma só continua como antes.
+  const single = buildIntelligentAlerts({ subjects: [row('a', 'Atendimento', 15, 0)] });
+  assert.equal(single[0].reason, 'Atendimento está há 15 dias sem estudo registrado.');
+  assert.equal(single[0].severity, 'medium');
+});

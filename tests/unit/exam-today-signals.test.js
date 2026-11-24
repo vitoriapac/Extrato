@@ -35,6 +35,11 @@ test('A prova hoje: nota projetada × meta, mínimo no último simulado e pendê
     net: true,
     cutoff: null,
     cutoffGap: null,
+    low: null,
+    high: null,
+    confidenceLabel: null,
+    simulations: 0,
+    questionAccuracy: null,
   });
   assert.deepEqual(model.minimum.names, ['Específicos']);
   assert.equal(model.minimum.simulationDate, '2026-11-01');
@@ -44,6 +49,67 @@ test('A prova hoje: nota projetada × meta, mínimo no último simulado e pendê
   assert.match(html, /Específicos · simulado de 01\/11\/2026/);
   assert.match(html, /id="overviewAttentionViewAll"[^>]*data-signal-tab="hoje"/);
   assert.match(html, /9<\/strong><span class="overview-signal__label">Pendências atrasadas/);
+});
+
+test('A prova hoje mostra a faixa, não o centro, e não fica verde com a meta dentro dela', () => {
+  const calibration = {
+    available: true,
+    central: 81.2,
+    low: 69.4,
+    high: 93,
+    target: 80,
+    confidenceLabel: 'Baixa',
+    observations: [{}, {}, {}],
+  };
+  const model = buildExamTodaySignals({
+    calibration,
+    blueprint: { targetScore: 80, subjects: [] },
+    today: '2026-11-24',
+    questions: [
+      { date: '2026-11-20', resolved: 100, correct: 68 },
+      { date: '2026-11-21', resolved: 40, correct: 40, retry: true }, // refeitas não contam
+      { date: '2026-10-01', resolved: 100, correct: 100 }, // fora dos 30 dias
+    ],
+  });
+  assert.equal(model.score.low, 69);
+  assert.equal(model.score.high, 93);
+  assert.equal(model.score.questionAccuracy, 68);
+  const html = renderExamTodaySignals(model);
+  assert.match(html, /overview-signal--warning/);
+  assert.match(html, /69–93%<\/strong>/);
+  assert.match(html, /Meta de 80% dentro da faixa · confiança baixa, 3 simulados comparáveis/);
+  assert.match(html, /acerto em questões \(30 dias\): 68%, abaixo dos simulados/);
+  assert.doesNotMatch(html, /81%/);
+
+  // Faixa toda acima, questões coerentes e amostra pequena de questões: verde, sem aviso.
+  const ok = renderExamTodaySignals(
+    buildExamTodaySignals({
+      calibration: { ...calibration, central: 88, low: 82, high: 94 },
+      blueprint: { targetScore: 80, subjects: [] },
+      today: '2026-11-24',
+      questions: [{ date: '2026-11-20', resolved: 20, correct: 10 }],
+    })
+  );
+  assert.match(ok, /overview-signal--success/);
+  assert.match(ok, /Faixa toda acima da meta de 80%/);
+  assert.doesNotMatch(ok, /acerto em questões/);
+
+  // Certo/errado: nota líquida não se compara com acerto bruto; corte abaixo da faixa toda é perigo.
+  const net = buildExamTodaySignals({
+    calibration: { ...calibration, central: 50, low: 40, high: 60 },
+    blueprint: {
+      targetScore: 80,
+      scoringMode: 'certo-errado',
+      cutoff: { score: 65, maxScore: 100 },
+      subjects: [],
+    },
+    today: '2026-11-24',
+    questions: [{ date: '2026-11-20', resolved: 100, correct: 30 }],
+  });
+  assert.equal(net.score.questionAccuracy, null);
+  const netHtml = renderExamTodaySignals(net);
+  assert.match(netHtml, /overview-signal--danger/);
+  assert.match(netHtml, /Faixa toda abaixo do corte de 65% · meta 80%/);
 });
 
 test('A prova hoje sem projeção nem mínimos diz o que falta, sem números inventados', () => {

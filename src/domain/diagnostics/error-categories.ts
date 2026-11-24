@@ -89,6 +89,28 @@ export function emptyErrorBreakdown(
   return Object.fromEntries(Object.keys(categories).map(key => [key, 0]));
 }
 
+type QuestionCounts = { resolved?: unknown; correct?: unknown; blank?: unknown } | null | undefined;
+
+/**
+ * Em branco entre 0 e resolvidas − acertos. Ausente segue ausente: registro antigo não diz se
+ * houve branco, e isso é diferente de zero.
+ */
+export function normalizeQuestionBlank(question: QuestionCounts): number | null {
+  if (question?.blank == null || question.blank === '') return null;
+  const room = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
+  return Math.min(room, Math.max(0, Math.floor(Number(question.blank) || 0)));
+}
+
+/** Erros do bloco: questão deixada em branco (prova certo/errado) não é erro. */
+export function questionErrorCount(question: QuestionCounts): number {
+  return Math.max(
+    0,
+    (Number(question?.resolved) || 0) -
+      (Number(question?.correct) || 0) -
+      (Number(question?.blank) || 0)
+  );
+}
+
 export function normalizeErrorBreakdown(
   question: Record<string, any>,
   categories: Record<string, unknown> = ERROR_CATEGORIES
@@ -97,10 +119,7 @@ export function normalizeErrorBreakdown(
   Object.keys(normalized).forEach(key => {
     normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
   });
-  const realErrors = Math.max(
-    0,
-    (Number(question?.resolved) || 0) - (Number(question?.correct) || 0)
-  );
+  const realErrors = questionErrorCount(question);
   let excess = Object.values(normalized).reduce((sum, value) => sum + value, 0) - realErrors;
   [...Object.keys(normalized)].reverse().forEach(key => {
     if (excess <= 0) return;

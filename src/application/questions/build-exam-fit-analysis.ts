@@ -48,6 +48,13 @@ export interface ExamFitAnalysis {
     /** Pontos percentuais (refeitas − inéditas); null com evidência insuficiente. */
     gap: number | null;
   };
+  /** Prova certo/errado: acerto entre as respondidas; null nas demais provas. */
+  risk: {
+    /** Inéditas com branco informado, sem as deixadas em branco. */
+    answered: AccuracySample;
+    /** % dos itens desses registros deixados em branco; null sem registros. */
+    blankShare: number | null;
+  } | null;
 }
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -85,7 +92,7 @@ export function buildExamFitAnalysis({
 }: {
   questions?: QuestionRecord[];
   subjects?: Subject[];
-  blueprint?: Pick<ExamBlueprint, 'banca' | 'durationMinutes' | 'subjects'> | null;
+  blueprint?: Pick<ExamBlueprint, 'banca' | 'durationMinutes' | 'subjects' | 'scoringMode'> | null;
   fromDate: string;
 }): ExamFitAnalysis {
   const recent = questions.filter(q => q.date >= fromDate && (Number(q.resolved) || 0) > 0);
@@ -137,6 +144,18 @@ export function buildExamFitAnalysis({
   const fresh = sample(recent.filter(q => !q.retry));
   const retried = sample(recent.filter(q => q.retry));
 
+  // Só registros que informam o branco: nos antigos, "não acertou" pode ter sido branco.
+  let risk: ExamFitAnalysis['risk'] = null;
+  if (blueprint?.scoringMode === 'certo-errado') {
+    const known = recent.filter(q => !q.retry && q.blank != null);
+    const items = sample(known).resolved;
+    const blanks = known.reduce((sum, q) => sum + Math.max(0, Number(q.blank) || 0), 0);
+    const answered = sample(
+      known.map(q => ({ ...q, resolved: Math.max(0, Number(q.resolved) - (Number(q.blank) || 0)) }))
+    );
+    risk = { answered, blankShare: items ? Math.round((blanks / items) * 100) : null };
+  }
+
   return {
     windowDays: EXAM_FIT_WINDOW_DAYS,
     totalResolved,
@@ -155,5 +174,6 @@ export function buildExamFitAnalysis({
       status,
     },
     retry: { fresh, retried, gap: delta(retried, fresh) },
+    risk,
   };
 }

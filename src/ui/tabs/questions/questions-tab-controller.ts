@@ -11,6 +11,10 @@ import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
 import { normalizeBanca, normalizeQuestionMinutes } from '../../../domain/questions/bancas.js';
 import { addLocalDays } from '../../../core/date-utils.js';
 import {
+  normalizeQuestionBlank,
+  questionErrorCount,
+} from '../../../domain/diagnostics/error-categories.js';
+import {
   buildExamFitAnalysis,
   EXAM_FIT_WINDOW_DAYS,
 } from '../../../application/questions/build-exam-fit-analysis.js';
@@ -97,10 +101,7 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     Object.keys(normalized).forEach(key => {
       normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
     });
-    const realErrors = Math.max(
-      0,
-      (Number(question?.resolved) || 0) - (Number(question?.correct) || 0)
-    );
+    const realErrors = questionErrorCount(question);
     let excess = Object.values(normalized).reduce((sum, value) => sum + value, 0) - realErrors;
     [...Object.keys(normalized)].reverse().forEach(key => {
       if (excess <= 0) return;
@@ -124,6 +125,7 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     normalize: (draft: Record<string, any>) => {
       draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
       draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
+      draft.blank = normalizeQuestionBlank(draft);
       normalizeErrorBreakdown(draft);
       draft.banca = normalizeBanca(draft.banca);
       draft.minutes = normalizeQuestionMinutes(draft.minutes);
@@ -175,7 +177,7 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     if (!draft) return;
     questionEditController.update(
       field,
-      field === 'resolved' || field === 'correct'
+      field === 'resolved' || field === 'correct' || field === 'blank'
         ? Math.max(0, Math.floor(Number(value) || 0))
         : value
     );
@@ -322,6 +324,8 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
       banca: initial.banca || lastBanca,
       minutes: null,
       retry: false,
+      // Na prova certo/errado o branco é parte do registro; nas demais fica ausente.
+      blank: ctx.state.examBlueprint?.scoringMode === 'certo-errado' ? 0 : null,
       recommendationId: initial.recommendationId || null,
       createdAt: nowISO(),
     };
@@ -347,10 +351,7 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     const question = (ctx.state.questoes || []).find((q: any) => q.id === id);
     if (!question || !ctx.errorCategories[key]) return;
     normalizeErrorBreakdown(question);
-    const realErrors = Math.max(
-      0,
-      (Number(question.resolved) || 0) - (Number(question.correct) || 0)
-    );
+    const realErrors = questionErrorCount(question);
     const others = Object.entries(question.errorBreakdown!).reduce(
       (sum, [category, count]) => (category === key ? sum : sum + (count as number)),
       0

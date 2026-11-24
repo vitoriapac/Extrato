@@ -1,3 +1,4 @@
+import { questionErrorCount } from '../../domain/diagnostics/error-categories.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 const count = (value: unknown) => Math.max(0, Number(value) || 0);
 const accuracy = (correct: number, total: number) =>
@@ -40,10 +41,7 @@ export function buildPerformanceAnalysis({
   };
   const errorCounts = Object.fromEntries(Object.keys(categories).map(key => [key, 0]));
   for (const item of selected) {
-    let remaining = Math.max(
-      0,
-      count(item.resolved) - Math.min(count(item.resolved), count(item.correct))
-    );
+    let remaining = Math.max(0, questionErrorCount(item));
     for (const key of Object.keys(categories)) {
       const value = Math.min(remaining, count(item.errorBreakdown?.[key]));
       errorCounts[key] += value;

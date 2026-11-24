@@ -235,7 +235,11 @@ test('sugestão fora do plano permite dispensar sem alterar a agenda', async ({ 
   await activateTab(page, 'hoje');
   const action = page.locator('#studyRecommendation .study-recommendation').first();
   await expect(action).toContainText('Sugestão do diagnóstico fora do Plano de hoje');
-  await expect(action.getByRole('button', { name: /Seguir plano de hoje/ })).toBeVisible();
+  await expect(action).toContainText('A próxima ação continua sendo');
+  // Uma ação principal só: a sugestão fora do plano não tem medidor nem botão de seguir o plano.
+  await expect(action).toHaveClass(/is-outside-plan/);
+  await expect(action.locator('.priority-score-gauge')).toHaveCount(0);
+  await expect(action.getByRole('button', { name: /Seguir plano de hoje/ })).toHaveCount(0);
   await expect(
     action.getByRole('button', { name: /Estudar como atividade adicional/ })
   ).toBeVisible();
@@ -342,10 +346,7 @@ test('finalizar no modo foco mostra o registro da sessão por cima do cronômetr
   // toBeVisible and elementFromPoint both miss this: the open modal makes the focus card inert, which removes it from hit testing while it still paints on top.
   const layers = await page.evaluate(() => ({
     modal: Number(getComputedStyle(document.getElementById('sessionModalOverlay')).zIndex),
-    focus: Number(
-      getComputedStyle(document.querySelector('#study-timer'))
-        .zIndex
-    ),
+    focus: Number(getComputedStyle(document.querySelector('#study-timer')).zIndex),
   }));
   expect(layers.modal).toBeGreaterThan(layers.focus);
   await page.locator('#sessionModalSaveBtn').click();
