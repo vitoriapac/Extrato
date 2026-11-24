@@ -265,6 +265,16 @@ export interface ExamBlueprint {
   cutoff?: ExamCutoff | null;
   /** Itens marcados do protocolo da semana da prova, válidos só para esta data de prova. */
   protocolChecks?: { examDate: string; keys: string[] } | null;
+  /** Gabarito preliminar e prazo de recurso da prova de `examDate`. */
+  postExam?: PostExamRecord | null;
+}
+
+export interface PostExamRecord {
+  examDate: string;
+  total: number | null;
+  correct: number | null;
+  wrong: number | null;
+  appealDeadline: string | null;
 }
 
 export type SleepQuality = 'good' | 'ok' | 'poor';

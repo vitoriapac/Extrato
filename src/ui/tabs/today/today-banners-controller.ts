@@ -15,6 +15,12 @@ import {
 } from '../../../domain/planning/exam-protocol.js';
 import { examMinutesPerQuestion } from '../../../domain/exams/simulation-score.js';
 import { SleepCheckin } from '../../components/SleepCheckin.js';
+import { PostExamCard } from '../../components/PostExamCard.js';
+import {
+  appealTaskDate,
+  buildPostExamModel,
+  normalizePostExam,
+} from '../../../domain/planning/post-exam.js';
 import { recordSleep } from '../../../domain/sleep-log.js';
 import { RealWeekBanner, type RealWeekBannerProps } from '../../components/RealWeekBanner.js';
 import type { TodayTabControllerContext } from './today-tab-controller.js';
@@ -140,6 +146,61 @@ export function createTodayBannersController(ctx: TodayTabControllerContext) {
     mountFirstStepsMission(slot, missionModel);
   }
 
+  function renderPostExam(slot: HTMLElement): boolean {
+    const state = getState();
+    const blueprint = state.examBlueprint || {};
+    const examDate: string | null = state.examDate || null;
+    const model = buildPostExamModel({
+      examDate,
+      today: todayISO(),
+      record: blueprint.postExam || null,
+      scoring: blueprint.scoringMode || null,
+      cutoff: blueprint.cutoff,
+      targetScore: blueprint.targetScore ?? null,
+    });
+    if (!model) return false;
+    const appealTitle = `Prazo de recurso da prova de ${model.examDate.split('-').reverse().join('/')}`;
+    const save = (change: Record<string, unknown>) => {
+      const latest = getState();
+      if (!latest.examBlueprint) return;
+      latest.examBlueprint.postExam = normalizePostExam({ ...model.record, ...change });
+      ctx.persistAndRender?.();
+      renderExamProtocol();
+    };
+    mountPreact(
+      h(PostExamCard, {
+        model,
+        appealScheduled: (state.calendar || []).some(
+          (item: { kind?: string; title?: string }) =>
+            item?.kind === 'task' && item.title === appealTitle
+        ),
+        onSaveAnswers: answers => save(answers),
+        onSaveAppeal: deadline => save({ appealDeadline: deadline || null }),
+        onScheduleAppeal: () => {
+          const latest = getState();
+          const deadline = model.record.appealDeadline;
+          if (!deadline) return;
+          (latest.calendar ||= []).push({
+            id: ctx.uid ? ctx.uid('cal') : `cal-${Date.now()}`,
+            kind: 'task',
+            title: appealTitle,
+            date: appealTaskDate(deadline, todayISO()),
+            status: 'Não iniciado',
+            estimatedMinutes: 60,
+            subjectId: null,
+            description: `Prazo final: ${deadline.split('-').reverse().join('/')}. Confira o gabarito preliminar e o edital antes de recorrer.`,
+            recurrence: 'none',
+            reviewType: '—',
+          });
+          ctx.persistAndRender?.();
+          renderExamProtocol();
+        },
+      }),
+      slot
+    );
+    return true;
+  }
+
   function renderExamProtocol() {
     const slot = doc?.getElementById('examProtocolSlot');
     if (!slot) return;
@@ -154,6 +215,8 @@ export function createTodayBannersController(ctx: TodayTabControllerContext) {
       netScoring: blueprint.scoringMode === 'certo-errado',
     });
     if (!protocol) {
+      // Depois da data da prova, o mesmo lugar mostra o gabarito, o recurso e o próximo concurso.
+      if (renderPostExam(slot)) return;
       unmountPreact(slot);
       slot.replaceChildren();
       return;
