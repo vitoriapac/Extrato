@@ -4,6 +4,7 @@ import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { EXAM_PRIORITIES } from '../../state/strategic.js';
 import { runUndoable } from '../../ui/undoable.js';
 import { normalizeBanca, normalizeQuestionMinutes } from '../../domain/questions/bancas.js';
+import { normalizeExamCutoff } from '../../domain/analytics/cutoff-reference.js';
 
 export interface GoalsBlueprintServiceDependencies {
   getState: () => AppState;
@@ -77,6 +78,20 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
       return updateExamBlueprint('masteryTarget', value, { refresh });
     }
     const state = getState();
+    if (field === 'cutoffScore' || field === 'cutoffMax' || field === 'cutoffYear') {
+      // Referência para ler a nota projetada; não altera meta, prioridades nem prontidão.
+      const key = { cutoffScore: 'score', cutoffMax: 'maxScore', cutoffYear: 'year' }[field];
+      const current: Record<string, unknown> = { ...(state.examBlueprint.cutoff || {}) };
+      current[key] = value;
+      // Sem nota não há corte: limpar a nota apaga a referência inteira.
+      state.examBlueprint.cutoff =
+        field === 'cutoffScore' && !String(value ?? '').trim()
+          ? undefined
+          : normalizeExamCutoff(current) || state.examBlueprint.cutoff || undefined;
+      if (refresh) persistAndRender();
+      else scheduleSave();
+      return;
+    }
     if (field === 'banca' || field === 'durationMinutes') {
       // Só alimentam a leitura de banca e ritmo das questões: não mudam prioridade nem prontidão.
       if (field === 'banca') state.examBlueprint.banca = normalizeBanca(value) || undefined;

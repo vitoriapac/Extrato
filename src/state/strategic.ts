@@ -3,6 +3,7 @@ import { PRIORITY_ALGORITHM_VERSION } from '../domain/analytics/priority-score.j
 import { ADAPTIVE_PLANNING_VERSION } from '../domain/planning/adaptive-planning.js';
 import { normalizeTopicBookmark } from '../domain/topic-bookmark.ts';
 import { normalizeBanca, normalizeQuestionMinutes } from '../domain/questions/bancas.ts';
+import { normalizeExamCutoff } from '../domain/analytics/cutoff-reference.ts';
 import type { ExamBlueprint, ExamPriority, Topic } from '../core/types.ts';
 
 export const DEFAULT_ALGORITHM_VERSIONS = Object.freeze({
@@ -102,6 +103,7 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
     ...(normalizeQuestionMinutes(source.durationMinutes)
       ? { durationMinutes: normalizeQuestionMinutes(source.durationMinutes) }
       : {}),
+    ...(normalizeExamCutoff(source.cutoff) ? { cutoff: normalizeExamCutoff(source.cutoff) } : {}),
   };
 }
 

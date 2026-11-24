@@ -103,7 +103,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
   doc?.defaultView
     ?.matchMedia?.(`(max-width: ${NARROW_CHART_BREAKPOINT - 1}px)`)
     ?.addEventListener?.('change', () => {
-      if ((doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho')
+      if (
+        (doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho'
+      )
         renderPerformance();
     });
   const rawHashSection = /^#desempenho\/([a-z]+)/.exec(doc?.defaultView?.location?.hash || '')?.[1];
@@ -117,7 +119,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (!PERFORMANCE_SECTIONS.includes(next)) return;
     // Endereço antigo ("#desempenho/exams") vira o novo, mesmo quando a seção já é a aberta.
     const canonical = hash.replace(/^#desempenho\/[a-z]+/, `#desempenho/${routeOfSection(next)}`);
-    if (nextRoute && canonical !== hash) doc?.defaultView?.history?.replaceState(null, '', canonical);
+    if (nextRoute && canonical !== hash)
+      doc?.defaultView?.history?.replaceState(null, '', canonical);
     if (next === performanceViewState.section) return;
     performanceViewState = updatePerformanceViewState(performanceViewState, { section: next });
     if ((doc.querySelector('.tab-btn.active') as HTMLElement | null)?.dataset.tab === 'desempenho')
@@ -242,106 +245,98 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
 
     const buildModelFor = (view: any) =>
       buildPerformancePageModel({
-          viewState: view,
-          range,
-          today,
-          activeExamTags,
-          scope,
-          subjects: deps.examScopedSubjects ? deps.examScopedSubjects() : [],
-          simulations:
-            view.section === 'overview' ||
-            view.section === 'subjects' ||
-            view.section === 'simulations'
-              ? deps.examScopedSimulations
-                ? deps.examScopedSimulations()
-                : []
-              : [],
-          achievementProjection: achievement?.model || null,
-          achievementHistory: deps.achievementProjectionHistory
-            ? deps.achievementProjectionHistory(
-                state.projectionSnapshots || [],
-                activeExamTags,
-                today
-              )
+        viewState: view,
+        range,
+        today,
+        activeExamTags,
+        scope,
+        subjects: deps.examScopedSubjects ? deps.examScopedSubjects() : [],
+        simulations:
+          view.section === 'overview' ||
+          view.section === 'subjects' ||
+          view.section === 'simulations'
+            ? deps.examScopedSimulations
+              ? deps.examScopedSimulations()
+              : []
             : [],
-          achievementCapacityMinutes: achievement?.weeklyCapacityMinutes || 0,
-          adherenceContext: achievement?.adherenceContext || null,
-          recoveryPlan:
-            achievement && deps.recoveryController
-              ? deps.recoveryController.preview(achievement.model)
-              : null,
-          projectionSnapshots: state.projectionSnapshots || [],
-          readinessSnapshots: state.readinessSnapshots || [],
-          readiness:
-            view.section === 'overview' &&
-            deps.readinessResult &&
-            deps.computeApprovalMetrics
-              ? deps.readinessResult(deps.computeApprovalMetrics())
-              : null,
-          blueprint: state.examBlueprint,
-          globalTarget: state.metas?.metaAprovacao,
-          recommendationFeedback: state.recommendationFeedback || [],
-          allSessions: state.studySessions || [],
-          nextBestAction:
-            view.section === 'overview' && deps.nextBestAction
-              ? deps.nextBestAction()
-              : null,
-          overdueCount:
-            view.section === 'overview' && deps.overdueCount ? deps.overdueCount() : null,
-          diagnosisOrder:
-            view.section === 'overview' && deps.diagnosisOrder
-              ? deps.diagnosisOrder()
-              : [],
-          candidates:
-            ['subjects', 'overview'].includes(view.section) &&
-            deps.intelligenceCandidates
-              ? deps.intelligenceCandidates()
-              : [],
-          dailyPlans: performanceScopedPlans(scope),
-          executionSource: {
-            dailyPlans: state.dailyPlans || [],
-            sessions: state.studySessions || [],
-            subjects: state.subjects || [],
-            capacityHistory: state.planningCapacityHistory || [],
-            adherenceTarget: state.metas?.aderenciaSemanal,
-          },
-          subjectIdFor: deps.entitySubjectId || ((item: any) => item.subjectId),
-          simulationCountsFor:
-            deps.simuladoEffectiveCounts || ((s: any) => ({ total: s.total, correct: s.correct })),
-          reviewCompletedDateFor: (item: Record<string, any>) =>
-            deps.localDateFromTimestamp
-              ? deps.localDateFromTimestamp(item.completedAt)
-              : item.completedAt,
-          topicMetricsFor: (subjectId: string, topicId: string) => {
-            const mastery = deps.topicMasteryIndex
-              ? deps.topicMasteryIndex(subjectId, topicId)
-              : null;
-            const retention = deps.topicRetentionScore
-              ? deps.topicRetentionScore(subjectId, topicId)
-              : null;
-            return {
-              mastery: mastery?.confidence > 0 ? mastery.score : null,
-              retention: retention?.available ? retention.score : null,
-              evidence: mastery?.confidence || 0,
-            };
-          },
-          topicProfileFor: (topic: Record<string, any>, subject: Record<string, any>) =>
-            deps.buildTopicExamProfile
-              ? deps.buildTopicExamProfile({
-                  topic,
-                  subjectConfig: (state.examBlueprint?.subjects || []).find(
-                    (item: any) => item.subjectId === subject.id
-                  ),
-                  activeExamTags,
-                  exams: state.exams || [],
-                  examQuestions: state.examQuestions || [],
-                })
-              : {},
-          topicHistoryFor: (topicId: string) =>
-            deps.topicHistoryService
-              ? deps.topicHistoryService.list({ topicId, includeLifecycle: false })
-              : [],
-        });
+        achievementProjection: achievement?.model || null,
+        achievementHistory: deps.achievementProjectionHistory
+          ? deps.achievementProjectionHistory(
+              state.projectionSnapshots || [],
+              activeExamTags,
+              today
+            )
+          : [],
+        achievementCapacityMinutes: achievement?.weeklyCapacityMinutes || 0,
+        adherenceContext: achievement?.adherenceContext || null,
+        recoveryPlan:
+          achievement && deps.recoveryController
+            ? deps.recoveryController.preview(achievement.model)
+            : null,
+        projectionSnapshots: state.projectionSnapshots || [],
+        readinessSnapshots: state.readinessSnapshots || [],
+        readiness:
+          view.section === 'overview' && deps.readinessResult && deps.computeApprovalMetrics
+            ? deps.readinessResult(deps.computeApprovalMetrics())
+            : null,
+        blueprint: state.examBlueprint,
+        globalTarget: state.metas?.metaAprovacao,
+        recommendationFeedback: state.recommendationFeedback || [],
+        allSessions: state.studySessions || [],
+        nextBestAction:
+          view.section === 'overview' && deps.nextBestAction ? deps.nextBestAction() : null,
+        overdueCount: view.section === 'overview' && deps.overdueCount ? deps.overdueCount() : null,
+        diagnosisOrder:
+          view.section === 'overview' && deps.diagnosisOrder ? deps.diagnosisOrder() : [],
+        candidates:
+          ['subjects', 'overview'].includes(view.section) && deps.intelligenceCandidates
+            ? deps.intelligenceCandidates()
+            : [],
+        dailyPlans: performanceScopedPlans(scope),
+        executionSource: {
+          dailyPlans: state.dailyPlans || [],
+          sessions: state.studySessions || [],
+          subjects: state.subjects || [],
+          capacityHistory: state.planningCapacityHistory || [],
+          adherenceTarget: state.metas?.aderenciaSemanal,
+        },
+        subjectIdFor: deps.entitySubjectId || ((item: any) => item.subjectId),
+        simulationCountsFor:
+          deps.simuladoEffectiveCounts || ((s: any) => ({ total: s.total, correct: s.correct })),
+        reviewCompletedDateFor: (item: Record<string, any>) =>
+          deps.localDateFromTimestamp
+            ? deps.localDateFromTimestamp(item.completedAt)
+            : item.completedAt,
+        topicMetricsFor: (subjectId: string, topicId: string) => {
+          const mastery = deps.topicMasteryIndex
+            ? deps.topicMasteryIndex(subjectId, topicId)
+            : null;
+          const retention = deps.topicRetentionScore
+            ? deps.topicRetentionScore(subjectId, topicId)
+            : null;
+          return {
+            mastery: mastery?.confidence > 0 ? mastery.score : null,
+            retention: retention?.available ? retention.score : null,
+            evidence: mastery?.confidence || 0,
+          };
+        },
+        topicProfileFor: (topic: Record<string, any>, subject: Record<string, any>) =>
+          deps.buildTopicExamProfile
+            ? deps.buildTopicExamProfile({
+                topic,
+                subjectConfig: (state.examBlueprint?.subjects || []).find(
+                  (item: any) => item.subjectId === subject.id
+                ),
+                activeExamTags,
+                exams: state.exams || [],
+                examQuestions: state.examQuestions || [],
+              })
+            : {},
+        topicHistoryFor: (topicId: string) =>
+          deps.topicHistoryService
+            ? deps.topicHistoryService.list({ topicId, includeLifecycle: false })
+            : [],
+      });
     // Poucos registros: as abas analíticas mostram só o estado vazio (Visão geral e Ritmo seguem completas).
     const beginner = assessBeginner({
       questions: state.questoes || [],
@@ -389,27 +384,40 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     };
     const proofBlock = (key: string, title: string, inner: string) =>
       `<section class="performance-proof" id="prova-${key}" aria-labelledby="proofTitle-${key}"><h3 class="performance-proof__title" id="proofTitle-${key}">${title}</h3>${inner}</section>`;
-    const proofIndex = `<div class="performance-modes performance-proof-index" role="group" aria-label="Seções de Análise de resultados">${[['questions', 'Questões'], ['simulations', 'Simulados'], ['exam', 'Inteligência da prova']].map(([key, label]) => `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`).join('')}</div>`;
+    const proofIndex = `<div class="performance-modes performance-proof-index" role="group" aria-label="Seções de Análise de resultados">${[
+      ['questions', 'Questões'],
+      ['simulations', 'Simulados'],
+      ['exam', 'Inteligência da prova'],
+    ]
+      .map(
+        ([key, label]) =>
+          `<button type="button" class="btn ghost small" data-performance-investigate="${key}" aria-pressed="${key === performanceViewState.section}">${label}</button>`
+      )
+      .join('')}</div>`;
     const sectionHtml = beginnerGate
       ? renderBeginnerState(performanceViewState.section, beginner)
       : examSection
-      ? proofIndex +
-        (performanceViewState.section === 'simulations'
-          ? proofBlock('simulations', 'Simulados', renderPerformanceSection(proofModels!.simulations!, renderOptions))
-          : performanceViewState.section === 'exam'
+        ? proofIndex +
+          (performanceViewState.section === 'simulations'
             ? proofBlock(
-                'exam',
-                'Inteligência da prova',
-                '<p class="analytics-note">Histórico das provas da banca: não segue o filtro de período.</p><div id="examIntelligenceMount"></div>'
+                'simulations',
+                'Simulados',
+                renderPerformanceSection(proofModels!.simulations!, renderOptions)
               )
-            : proofBlock(
-                'questions',
-                'Questões',
-                beginnerQuestions
-                  ? renderBeginnerState('questions', beginner)
-                  : renderPerformanceSection(proofModels!.questions!, renderOptions)
-              ))
-      : renderPerformanceSection(pageModel!, renderOptions);
+            : performanceViewState.section === 'exam'
+              ? proofBlock(
+                  'exam',
+                  'Inteligência da prova',
+                  '<p class="analytics-note">Histórico das provas da banca: não segue o filtro de período.</p><div id="examIntelligenceMount"></div>'
+                )
+              : proofBlock(
+                  'questions',
+                  'Questões',
+                  beginnerQuestions
+                    ? renderBeginnerState('questions', beginner)
+                    : renderPerformanceSection(proofModels!.questions!, renderOptions)
+                ))
+        : renderPerformanceSection(pageModel!, renderOptions);
 
     if ((target as HTMLElement).dataset && !(target as HTMLElement).dataset.foldMemory) {
       (target as HTMLElement).dataset.foldMemory = 'true';
@@ -456,7 +464,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       const chromeArea = target.querySelector('#performanceChromeArea');
       if (chromeArea) {
         const filtersExpanded =
-          chromeArea.querySelector('#performanceToolbar')?.getAttribute('data-collapsed') === 'false';
+          chromeArea.querySelector('#performanceToolbar')?.getAttribute('data-collapsed') ===
+          'false';
         chromeArea.innerHTML = renderPerformanceChromeHtml({
           viewState: performanceViewState,
           range,
@@ -470,7 +479,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       // conteúdo, voltam para a seção de origem, senão o innerHTML os destruiria.
       for (const id of ['performanceProgressMode', 'performanceRadarMode']) {
         const mode = doc.getElementById(id);
-        if (mode && progressSection && mode.parentElement !== progressSection) progressSection.append(mode);
+        if (mode && progressSection && mode.parentElement !== progressSection)
+          progressSection.append(mode);
       }
       const sectionContent = target.querySelector('#performanceSectionContent');
       if (sectionContent) {
@@ -560,7 +570,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       // Âncora de bloco ("#desempenho/subjects/comparacao"): vale só na seção a que pertence.
       const anchored = /^#desempenho\/([a-z]+)\/([a-z0-9-]+)/.exec(win.location.hash);
       const block =
-        anchored && sectionFromRoute(anchored[1]) === performanceViewState.section ? anchored[2] : '';
+        anchored && sectionFromRoute(anchored[1]) === performanceViewState.section
+          ? anchored[2]
+          : '';
       const base =
         performanceViewState.section === 'overview'
           ? '#desempenho'
@@ -577,9 +589,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       target.querySelector('.performance-section-nav [role="tab"][aria-selected="true"]')
     )?.textContent?.trim();
     const activeProofLabel = examSection
-      ? target
-          .querySelector('.performance-proof-index [aria-pressed="true"]')
-          ?.textContent?.trim()
+      ? target.querySelector('.performance-proof-index [aria-pressed="true"]')?.textContent?.trim()
       : '';
     const section = activeProofLabel || activeTabLabel;
     const statusText = section
@@ -601,7 +611,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             opener.focus();
           } else if (openedTopicId) {
             (
-              target.querySelector(`[data-performance-topic="${openedTopicId}"]`) as HTMLElement | null
+              target.querySelector(
+                `[data-performance-topic="${openedTopicId}"]`
+              ) as HTMLElement | null
             )?.focus();
           }
         },
@@ -663,6 +675,7 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
           cutoffReference: buildCutoffReference({
             activeExamTags: state.examBlueprint?.activeExamTags || [],
             goalPercent: Number(state.metas?.metaAprovacao) || 80,
+            informed: state.examBlueprint?.cutoff,
           }),
           onSelectCareer: (newId: CareerClusterId) => {
             selectedCareerClusterId = newId;

@@ -261,6 +261,14 @@ export interface ExamBlueprint {
   banca?: string | null;
   /** Duração total da prova objetiva, em minutos. */
   durationMinutes?: number | null;
+  /** Nota de corte de referência informada pelo aluno, na escala em que ele a conhece. */
+  cutoff?: ExamCutoff | null;
+}
+
+export interface ExamCutoff {
+  score: number;
+  maxScore: number;
+  year?: number | null;
 }
 
 export interface TimerStrategy {

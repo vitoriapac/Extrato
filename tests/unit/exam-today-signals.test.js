@@ -27,7 +27,15 @@ test('A prova hoje: nota projetada × meta, mínimo no último simulado e pendê
     subjects,
     overdue: 9,
   });
-  assert.deepEqual(model.score, { available: true, central: 72, target: 80, gap: -8, net: true });
+  assert.deepEqual(model.score, {
+    available: true,
+    central: 72,
+    target: 80,
+    gap: -8,
+    net: true,
+    cutoff: null,
+    cutoffGap: null,
+  });
   assert.deepEqual(model.minimum.names, ['Específicos']);
   assert.equal(model.minimum.simulationDate, '2026-11-01');
   const html = renderExamTodaySignals(model);

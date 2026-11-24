@@ -6,6 +6,7 @@ const escapeText = (value: string) =>
     c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c
   );
 const dateBR = (iso: string) => iso.split('-').reverse().join('/');
+const decimalBR = (value: number) => String(Math.round(value * 10) / 10).replace('.', ',');
 
 function cell(opts: {
   id?: string;
@@ -21,18 +22,33 @@ function cell(opts: {
 /** Os três sinais de "A prova hoje": cada um leva à aba onde se age sobre ele. */
 export function renderExamTodaySignals(model: ExamTodaySignals): string {
   const { score, minimum, overdue } = model;
+  const targetDetail =
+    score.target === null
+      ? 'Sem meta de nota definida'
+      : score.gap === 0
+        ? `Na meta de ${score.target}%`
+        : `${Math.abs(score.gap!)} p.p. ${score.gap! > 0 ? 'acima' : 'abaixo'} da meta de ${score.target}%`;
+  // Com corte: abaixo dele é perigo; entre corte e meta, atenção; na meta, ok.
+  const cutoffDetail =
+    score.cutoffGap === null
+      ? null
+      : score.cutoffGap === 0
+        ? `No corte de ${decimalBR(score.cutoff!)}%`
+        : `${decimalBR(Math.abs(score.cutoffGap))} p.p. ${score.cutoffGap > 0 ? 'acima' : 'abaixo'} do corte de ${decimalBR(score.cutoff!)}%`;
   const scoreCell = score.available
     ? cell({
         tab: 'questoes',
-        tone: score.gap !== null && score.gap < 0 ? 'warning' : 'success',
+        tone:
+          score.cutoffGap !== null && score.cutoffGap < 0
+            ? 'danger'
+            : score.gap !== null && score.gap < 0
+              ? 'warning'
+              : 'success',
         value: `${score.central}%`,
         label: score.net ? 'Nota líquida projetada' : 'Nota projetada',
-        detail:
-          score.target === null
-            ? 'Sem meta de nota definida'
-            : score.gap === 0
-              ? `Na meta de ${score.target}%`
-              : `${Math.abs(score.gap!)} p.p. ${score.gap! > 0 ? 'acima' : 'abaixo'} da meta de ${score.target}%`,
+        detail: cutoffDetail
+          ? `${cutoffDetail} · meta ${score.target === null ? 'não definida' : `${score.target}%`}`
+          : targetDetail,
       })
     : cell({
         tab: 'questoes',

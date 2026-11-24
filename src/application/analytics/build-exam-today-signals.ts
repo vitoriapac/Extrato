@@ -1,5 +1,6 @@
 import { subjectsBelowMinimum } from '../../domain/exams/simulation-score.js';
 import { isSimulationInExamScope } from '../../domain/exams/exam-scope.js';
+import { cutoffPercent } from '../../domain/analytics/cutoff-reference.js';
 
 type Row = Record<string, any>;
 
@@ -11,6 +12,10 @@ export interface ExamTodaySignals {
     /** Pontos percentuais acima (+) ou abaixo (−) da meta. */
     gap: number | null;
     net: boolean;
+    /** Nota de corte informada, em % da escala; null sem corte. */
+    cutoff: number | null;
+    /** Pontos percentuais acima (+) ou abaixo (−) do corte. */
+    cutoffGap: number | null;
   };
   minimum: {
     /** Data do último simulado considerado; null sem simulado com detalhamento. */
@@ -48,6 +53,8 @@ export function buildExamTodaySignals({
         ? Math.round(Number(blueprint.targetScore))
         : null;
 
+  const cutoff = cutoffPercent(blueprint.cutoff);
+
   const blueprintSubjects: Row[] = blueprint.subjects || [];
   const configured = blueprintSubjects.some(item => Number(item.minScore) > 0);
   const latest = simulations
@@ -71,6 +78,9 @@ export function buildExamTodaySignals({
       target,
       gap: central !== null && target !== null ? central - target : null,
       net: blueprint.scoringMode === 'certo-errado',
+      cutoff,
+      cutoffGap:
+        central !== null && cutoff !== null ? Math.round((central - cutoff) * 10) / 10 : null,
     },
     minimum: {
       simulationDate: latest?.date || null,
