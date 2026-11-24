@@ -8,7 +8,11 @@ import {
 } from '../../../application/reviews/redistribute-overdue-reviews.js';
 import { renderIconSvg } from '../../primitives/icon.js';
 import { mountPreact } from '../../preact-mount.js';
-import { ReviewRatingSheet, type ReviewRatingKey } from '../../modals/ReviewRatingSheet.js';
+import {
+  ReviewRatingSheet,
+  type ReviewPractice,
+  type ReviewRatingKey,
+} from '../../modals/ReviewRatingSheet.js';
 import { SubjectCombobox } from '../../components/SubjectCombobox.js';
 import type { ComboboxOption } from '../../primitives/select-field.js';
 import { render } from 'preact-render-to-string';
@@ -56,6 +60,8 @@ export interface ReviewsTabControllerContext {
   };
   reviewAgendaRepo?: any;
   reviewService?: any;
+  /** Registra as questões feitas na revisão. */
+  questionService?: { create: (input: Record<string, unknown>) => unknown };
   diagnoseTopic?: (subjectId: string, topicId: string) => any;
   subjectAccuracyTarget?: (subjectId: string) => number;
   getTopicById?: (topicId: string) => { subject: any; topic: any } | null;
@@ -201,6 +207,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   let reviewRatingOrigin: HTMLElement | null = null;
   let reviewRatingOpen = false;
   let reviewRatingTopicLabel = '';
+  let reviewRatingTarget = 70;
   let reviewRatingRestoreFocus = true;
   let selectedAgendaSubjectId = '';
   let agendaSubjectOptions: ComboboxOption[] = [{ value: '', label: 'Todas as disciplinas' }];
@@ -214,7 +221,9 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
         open: reviewRatingOpen,
         topicLabel: reviewRatingTopicLabel,
         restoreFocusOnClose: reviewRatingRestoreFocus,
-        onRate: (rating: ReviewRatingKey) => rateCompletedReview(rating),
+        accuracyTarget: reviewRatingTarget,
+        onRate: (rating: ReviewRatingKey, practice: ReviewPractice | null) =>
+          rateCompletedReview(rating, practice),
         onCancel: () => closeReviewRating({ restoreFocus: true }),
       }),
       mount
@@ -795,6 +804,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       const subjectName = getSubjectName(entitySubjectId(item));
       const topicName = topicId ? getTopicName(topicId) : item.topic || '';
       reviewRatingTopicLabel = [subjectName, topicName].filter(Boolean).join(' — ');
+      const subjectId = entitySubjectId(item);
+      reviewRatingTarget = (subjectId && ctx.subjectAccuracyTarget?.(subjectId)) || 70;
       reviewRatingRestoreFocus = true;
       reviewRatingOpen = true;
       renderReviewRatingSheet();
@@ -808,16 +819,29 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     }
   }
 
-  function rateCompletedReview(rating: any) {
+  function rateCompletedReview(rating: any, practice: ReviewPractice | null = null) {
     const ratingKey = String(rating || '');
     const ratingDef = (REVIEW_RATINGS as Record<string, any>)[ratingKey];
     if (!ratingDef) {
       return closeReviewRating({ restoreFocus: true });
     }
+    const reviewItem = (ctx.state.reviewAgenda || []).find(x => x.id === pendingReviewRatingId);
     const result = ctx.reviewService?.rateReview(pendingReviewRatingId, ratingKey, {
       label: ratingDef.label,
     });
     if (!result) return closeReviewRating({ restoreFocus: true });
+    const topicId = reviewItem?.topicId || reviewItem?.topicRef || null;
+    if (practice && topicId && ctx.questionService) {
+      ctx.questionService.create({
+        date: todayISO(),
+        subjectId: reviewItem ? entitySubjectId(reviewItem) : null,
+        topicId,
+        resolved: practice.resolved,
+        correct: practice.correct,
+        retry: practice.retry,
+        recommendationId: null,
+      });
+    }
     closeReviewRating({ restoreFocus: false });
     persistAndRender();
     const list = getDoc()?.getElementById('agendaBody');
@@ -826,7 +850,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       queueMicrotask(() => list.focus());
     }
     showToast(
-      `Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState?.nextReviewDate)}.`
+      `Revisão concluída${practice ? ` com ${practice.resolved} questões registradas` : ''}. Próxima em ${formatDatePt(result.adaptiveState?.nextReviewDate)}.`
     );
   }
 

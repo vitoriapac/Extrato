@@ -179,3 +179,26 @@ export function reviewBaseDaysFromType(type: string): number {
   const match = String(type || '').match(/(\d+)/);
   return match ? Math.max(1, Number(match[1])) : 7;
 }
+
+/**
+ * Avaliação sugerida pelo acerto nas questões feitas na revisão, com os mesmos limites de
+ * calculateAdaptiveInterval: abaixo de 50% errei, abaixo da meta difícil, meta + 15 fácil.
+ */
+export function suggestReviewRating(
+  resolved: number,
+  correct: number,
+  target = 70
+): { rating: ReviewRatingKey; accuracy: number } | null {
+  const total = Math.max(0, Math.floor(Number(resolved) || 0));
+  if (!total) return null;
+  const accuracy = Math.round((Math.min(total, Math.max(0, Number(correct) || 0)) / total) * 100);
+  const rating: ReviewRatingKey =
+    accuracy < 50
+      ? 'again'
+      : accuracy < target
+        ? 'hard'
+        : accuracy >= target + 15
+          ? 'easy'
+          : 'good';
+  return { rating, accuracy };
+}

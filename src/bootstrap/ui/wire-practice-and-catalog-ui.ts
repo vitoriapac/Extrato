@@ -165,6 +165,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     listViewState,
     reviewAgendaRepo: appContext.repositories.reviewAgenda,
     reviewService: services.reviewService,
+    questionService: services.questionService,
     diagnoseTopic: topicDiagnosisService.diagnoseTopic,
     subjectAccuracyTarget: topicDiagnosisService.subjectAccuracyTarget,
     getTopicById,
