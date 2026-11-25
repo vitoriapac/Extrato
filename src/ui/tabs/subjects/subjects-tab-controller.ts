@@ -289,12 +289,44 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         bookmark: t.bookmark || null,
         link: t.link || '',
         customPracticeUrl: t.customPracticeUrl || '',
+        lastLawReadAt: t.lastLawReadAt || null,
+        legislativeUpdatePending: Boolean(t.legislativeUpdatePending),
+        legislativeUpdateNote: t.legislativeUpdateNote || null,
       })),
     }));
 
     mountPreact(
       h(VerticalizedSyllabusView, {
         subjects: subjectsData,
+        todayDate: ctx.todayISO?.() || '',
+        targetBanca: ctx.state.examBlueprint?.banca || null,
+        onMarkLawRead: (topicId: string) => {
+          const found = ctx.getTopicById?.(topicId);
+          if (!found) return;
+          const currentChecklist = found.topic.stageChecklist || {
+            theoryDone: false,
+            summaryDone: false,
+            lawOrNotesDone: false,
+            questionsDone: false,
+          };
+          ctx.subjectService.updateTopic(found.subject.id, topicId, {
+            lastLawReadAt: ctx.todayISO?.() || null,
+            legislativeUpdatePending: false,
+            legislativeUpdateNote: null,
+            stageChecklist: { ...currentChecklist, lawOrNotesDone: true },
+          });
+          ctx.persistAndRender();
+          ctx.showToast?.('Leitura de lei seca registrada para hoje.');
+        },
+        onToggleLegislativeUpdate: (topicId: string, pending: boolean) => {
+          const found = ctx.getTopicById?.(topicId);
+          if (!found) return;
+          ctx.subjectService.updateTopic(found.subject.id, topicId, {
+            legislativeUpdatePending: pending,
+            status: pending && found.topic.status === 'Concluído' ? 'Revisão' : found.topic.status,
+          });
+          ctx.persistAndRender();
+        },
         onToggleStage: (topicId: string, stage: keyof TopicStageChecklist, done: boolean) => {
           const found = ctx.getTopicById(topicId);
           if (found) {

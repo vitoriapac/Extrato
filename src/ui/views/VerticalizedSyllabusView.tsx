@@ -17,6 +17,7 @@ import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
 import { Icon } from '../primitives/icon.js';
 import { buildPracticeLinks } from '../../domain/questions/practice-link-generator.js';
+import { evaluateLawRecency } from '../../domain/analytics/law-recency.js';
 
 export interface VerticalizedTopicItem {
   id: string;
@@ -26,6 +27,9 @@ export interface VerticalizedTopicItem {
   bookmark?: TopicBookmark | null;
   link?: string;
   customPracticeUrl?: string;
+  lastLawReadAt?: string | null;
+  legislativeUpdatePending?: boolean;
+  legislativeUpdateNote?: string | null;
 }
 
 export interface VerticalizedSubjectItem {
@@ -36,7 +40,11 @@ export interface VerticalizedSubjectItem {
 
 export interface VerticalizedSyllabusViewProps {
   subjects: VerticalizedSubjectItem[];
+  todayDate?: string;
+  targetBanca?: string | null;
   onToggleStage?: (topicId: string, stage: keyof TopicStageChecklist, done: boolean) => void;
+  onMarkLawRead?: (topicId: string) => void;
+  onToggleLegislativeUpdate?: (topicId: string, pending: boolean) => void;
   onStartStudy?: (subjectId: string, topicId: string) => void;
   onOpenTopicIntelligence?: (subjectId: string, topicId: string) => void;
   onImportParsedSyllabus?: (result: RawSyllabusParsedResult) => void;
@@ -52,7 +60,11 @@ export interface VerticalizedSyllabusViewProps {
 
 export function VerticalizedSyllabusView({
   subjects = [],
+  todayDate = '',
+  targetBanca = null,
   onToggleStage,
+  onMarkLawRead,
+  onToggleLegislativeUpdate,
   onStartStudy,
   onOpenTopicIntelligence,
   onImportParsedSyllabus,
@@ -178,6 +190,9 @@ export function VerticalizedSyllabusView({
                   subjectName: subject.name,
                   customUrl,
                 });
+                const lawStatus = todayDate
+                  ? evaluateLawRecency(topic, todayDate, targetBanca)
+                  : null;
                 return (
                   <div
                     key={topic.id}
@@ -202,6 +217,46 @@ export function VerticalizedSyllabusView({
                               ? `pág. ${topic.bookmark.currentUnit}`
                               : topic.bookmark.positionText || 'retomar'}
                           </span>
+                        </div>
+                      )}
+                      {lawStatus && (lawStatus.lastLawReadAt || lawStatus.needsAttention || onMarkLawRead) && (
+                        <div class="text-xs mt-1.5 flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant={
+                              lawStatus.legislativeUpdatePending
+                                ? 'danger'
+                                : lawStatus.isStale
+                                  ? 'warning'
+                                  : 'default'
+                            }
+                          >
+                            {lawStatus.label}
+                          </Badge>
+                          {onMarkLawRead && (
+                            <button
+                              type="button"
+                              class="text-xs underline text-content-secondary hover:text-content-primary cursor-pointer bg-transparent border-0 p-0"
+                              onClick={() => onMarkLawRead(topic.id)}
+                            >
+                              Li a lei hoje
+                            </button>
+                          )}
+                          {onToggleLegislativeUpdate && (
+                            <button
+                              type="button"
+                              class="text-xs underline text-content-secondary hover:text-content-primary cursor-pointer bg-transparent border-0 p-0"
+                              onClick={() =>
+                                onToggleLegislativeUpdate(
+                                  topic.id,
+                                  !topic.legislativeUpdatePending
+                                )
+                              }
+                            >
+                              {topic.legislativeUpdatePending
+                                ? 'Limpar alteração'
+                                : 'Marcar alteração'}
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

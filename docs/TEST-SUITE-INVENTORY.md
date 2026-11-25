@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-398 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+402 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -165,6 +165,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/cloud-saas-provider.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cockpit-sidebar-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cognitive-profile.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/composite-score-projection.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/consolidated-signal-contract.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/consolidated-signals.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/critical-vulnerabilities-view-model.test.js | node | Aplicação | functional | — | contract | none |
@@ -251,6 +252,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/focus-shift.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-duration.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-number.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/fresh-vs-retry-metrics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/goal-service.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-components.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-renderer.test.js | node | Metas | functional | — | contract | none |
@@ -276,6 +278,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/keyboard-shortcuts.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/law-notebook.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/law-ranges-and-jurisprudence.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/law-recency.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ledger-line.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/legal-compliance.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/list-components.test.js | node | Aplicação | functional | — | contract | none |
@@ -404,6 +407,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/simulated-remediation-modal.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation-quick-wins.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/simulation-pace-guess-aggregate.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulation-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulation-weighted-and-blocks.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulations-tab-controller.test.js | node | Aplicação | functional | — | contract | none |

@@ -2467,6 +2467,26 @@
       "rationale": "Regra de negócio pura em Node pré-existente: desempenho ponderado por banca e peso do tópico."
     },
     {
+      "file": "tests/unit/composite-score-projection.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de projeção composta (objetiva + discursivas corrigidas)."
+    },
+    {
+      "file": "tests/unit/fresh-vs-retry-metrics.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de proporção de questões inéditas vs. refeitas na janela de 30 dias."
+    },
+    {
+      "file": "tests/unit/law-recency.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de recência de leitura de Lei Seca e alteração legislativa por banca."
+    },
+    {
+      "file": "tests/unit/simulation-pace-guess-aggregate.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de análise histórica de chutes e custo temporal por disciplina em simulados."
+    },
+    {
       "file": "tests/unit/batch-question-entry.test.js",
       "tier": "FAST_GATE",
       "rationale": "Regra pura de validação e normalização de lançamento em lote de caderno misto."

@@ -268,3 +268,108 @@ export function paceAndGuess(sim: PacedSimulation, examPace: number | null = nul
         : scorePercent(totals, sim.scoring) - scorePercent(withoutGuesses, sim.scoring),
   };
 }
+
+export interface AggregatedGuessPerformance {
+  simulationsWithGuesses: number;
+  totalGuessed: number;
+  totalGuessedCorrect: number;
+  guessAccuracyPercent: number | null;
+  cumulativeGuessGainPercent: number;
+  recommendation: string | null;
+}
+
+/**
+ * Agrega a estratégia de chutes ao longo dos simulados (especialmente Certo/Errado),
+ * respondendo se o candidato está ganhando ou perdendo nota líquida ao arriscar.
+ */
+export function aggregateGuessPerformance(
+  simulations: PacedSimulation[] = []
+): AggregatedGuessPerformance {
+  let simulationsWithGuesses = 0;
+  let totalGuessed = 0;
+  let totalGuessedCorrect = 0;
+  let cumulativeGuessGainPercent = 0;
+
+  for (const sim of simulations) {
+    const info = paceAndGuess(sim);
+    if (info.guessGain == null || info.guessed <= 0) continue;
+    simulationsWithGuesses++;
+    totalGuessed += info.guessed;
+    totalGuessedCorrect += info.guessedCorrect;
+    cumulativeGuessGainPercent += info.guessGain;
+  }
+
+  const guessAccuracyPercent =
+    totalGuessed > 0 ? Math.round((totalGuessedCorrect / totalGuessed) * 1000) / 10 : null;
+  const roundedGain = Math.round(cumulativeGuessGainPercent * 10) / 10;
+
+  let recommendation: string | null = null;
+  if (simulationsWithGuesses > 0 && guessAccuracyPercent != null) {
+    if (roundedGain < 0) {
+      recommendation = `Seus chutes custaram ${Math.abs(roundedGain)} p.p. acumulados (${guessAccuracyPercent}% de acerto). Deixar em branco os itens sem eliminação elevaria sua nota.`;
+    } else if (guessAccuracyPercent >= 60) {
+      recommendation = `Chute calibrado (${guessAccuracyPercent}% de acerto), gerando +${roundedGain} p.p. acumulados.`;
+    } else {
+      recommendation = `Acerto nos chutes em ${guessAccuracyPercent}% (${roundedGain >= 0 ? '+' : ''}${roundedGain} p.p.). Só arrisque quando eliminar metade das alternativas.`;
+    }
+  }
+
+  return {
+    simulationsWithGuesses,
+    totalGuessed,
+    totalGuessedCorrect,
+    guessAccuracyPercent,
+    cumulativeGuessGainPercent: roundedGain,
+    recommendation,
+  };
+}
+
+export interface SubjectPaceItem {
+  subjectId: string;
+  subjectName: string;
+  total: number;
+  accuracyPercent: number;
+  durationMinutes: number;
+  minutesPerQuestion: number;
+  examMinutesPerQuestion: number | null;
+  costlyPace: boolean;
+}
+
+/**
+ * Calcula o ritmo (min/questão) por disciplina em um simulado quando `breakdown[i].durationMinutes`
+ * é informado, destacando disciplinas com custo temporal elevado (> 15% acima do ritmo-alvo).
+ */
+export function subjectPaceBreakdown(
+  sim: ScoredSimulation & {
+    breakdown?: Array<ScoreCounts & { subjectId?: string | null; durationMinutes?: unknown }>;
+  },
+  examPace: number | null = null,
+  subjectNames: Map<string, string> = new Map()
+): SubjectPaceItem[] {
+  const rows = Array.isArray(sim.breakdown) ? sim.breakdown : [];
+  const items: SubjectPaceItem[] = [];
+
+  for (const row of rows) {
+    if (!row.subjectId) continue;
+    const total = count(row.total);
+    const minutes = Number(row.durationMinutes);
+    if (!total || !Number.isFinite(minutes) || minutes <= 0) continue;
+
+    const minPerQ = Math.round((minutes / total) * 10) / 10;
+    const acc = Math.round(scorePercent(row, sim.scoring) * 10) / 10;
+    const costlyPace = examPace != null && examPace > 0 ? minPerQ > examPace * 1.15 : false;
+
+    items.push({
+      subjectId: row.subjectId,
+      subjectName: subjectNames.get(row.subjectId) || 'Disciplina',
+      total,
+      accuracyPercent: acc,
+      durationMinutes: Math.round(minutes),
+      minutesPerQuestion: minPerQ,
+      examMinutesPerQuestion: examPace,
+      costlyPace,
+    });
+  }
+
+  return items.sort((a, b) => b.minutesPerQuestion - a.minutesPerQuestion);
+}

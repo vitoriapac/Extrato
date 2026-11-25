@@ -131,7 +131,8 @@ export function PostEditalDiffModal({
                 <div class="text-xs text-content-secondary">Aproveitamento da bagagem</div>
                 <strong class="text-lg text-content-primary">{diff.baggageReusePercent}%</strong>
                 <div class="text-xs text-content-secondary">
-                  {diff.coveredCount} de {diff.totalIncomingTopics} tópicos já estudados
+                  {diff.coveredCount} de {diff.totalIncomingTopics} tópicos já estudados ·{' '}
+                  <strong>{diff.masteredReusePercent}%</strong> já dominados (&ge; 75%)
                 </div>
               </div>
               <div class="p-3 rounded-default border border-border-subtle bg-surface-subtle">

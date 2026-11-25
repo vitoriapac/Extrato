@@ -8,6 +8,7 @@ import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
 import { BatchQuestionEntryModal } from '../modals/BatchQuestionEntryModal.js';
 import type { BatchQuestionBuildResult } from '../../domain/questions/batch-question-entry.js';
+import type { FreshVsRetryStats } from '../../domain/analytics/study-metrics.js';
 
 export interface QuickQuestionEntryPayload {
   subjectId: string;
@@ -27,6 +28,7 @@ export interface QuickQuestionEntryBarProps {
   defaultBanca?: string | null;
   todayDate?: string;
   scoringMode?: 'padrao' | 'certo-errado';
+  freshVsRetryStats?: FreshVsRetryStats | null;
   onSaveEntry: (entry: QuickQuestionEntryPayload) => void;
   onSaveBatch?: (records: BatchQuestionBuildResult['records']) => void;
 }
@@ -38,6 +40,7 @@ export function QuickQuestionEntryBar({
   defaultBanca = null,
   todayDate = '',
   scoringMode = 'padrao',
+  freshVsRetryStats = null,
   onSaveEntry,
   onSaveBatch,
 }: QuickQuestionEntryBarProps): JSX.Element | null {
@@ -301,6 +304,24 @@ export function QuickQuestionEntryBar({
           </div>
         </div>
       )}
+      {freshVsRetryStats && freshVsRetryStats.totalResolved >= 10 && (
+        <div
+          class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle text-xs text-content-secondary"
+          data-testid="fresh-vs-retry-strip"
+        >
+          <span>
+            Últimos {freshVsRetryStats.windowDays}d:{' '}
+            <strong>{freshVsRetryStats.freshPercent}% inéditas</strong> ({freshVsRetryStats.freshResolved}) ·{' '}
+            <strong>{freshVsRetryStats.retryPercent}% refeitas</strong> ({freshVsRetryStats.retryResolved})
+          </span>
+          {freshVsRetryStats.highRetryAlert && (
+            <span class="text-status-warning font-medium">
+              Atenção: &gt;40% de questões repetidas nos últimos {freshVsRetryStats.windowDays} dias.
+            </span>
+          )}
+        </div>
+      )}
+
       {onSaveBatch && todayDate && (
         <BatchQuestionEntryModal
           open={batchOpen}

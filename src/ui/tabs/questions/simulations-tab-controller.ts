@@ -12,6 +12,7 @@ import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
 import { buildSimulationTrendVisual } from '../../../domain/practice/practice-visual-models.js';
 import { renderSimulationTrendChart } from '../../primitives/charts/charts.js';
 import {
+  aggregateGuessPerformance,
   weightedSimulationScore,
   simulationTotals,
   subjectsBelowMinimum,
@@ -279,8 +280,16 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
         targetScore,
       });
 
-      if (trendVisual.simulations.length >= 2) {
-        evolutionSlot.innerHTML = renderSimulationTrendChart({ visual: trendVisual });
+      const guessSummary = aggregateGuessPerformance(simulations);
+      const guessBannerHtml = guessSummary.recommendation
+        ? `<div class="rounded-default border border-border-subtle bg-surface-subtle p-3 text-xs mt-3" data-testid="simulation-guess-summary"><strong>Estratégia de Chute (${guessSummary.simulationsWithGuesses} simulados · ${guessSummary.totalGuessedCorrect}/${guessSummary.totalGuessed} acertos):</strong> ${escapeHtml(guessSummary.recommendation)}</div>`
+        : '';
+
+      if (trendVisual.simulations.length >= 2 || guessBannerHtml) {
+        evolutionSlot.innerHTML =
+          (trendVisual.simulations.length >= 2
+            ? renderSimulationTrendChart({ visual: trendVisual })
+            : '') + guessBannerHtml;
         evolutionSlot.hidden = false;
       } else {
         evolutionSlot.innerHTML = '';

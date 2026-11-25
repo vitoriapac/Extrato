@@ -18,6 +18,8 @@ export interface PostEditalDiffTopicItem {
 
 export interface PostEditalDiffResult {
   baggageReusePercent: number;
+  masteredReusePercent: number;
+  masteredCount: number;
   totalIncomingTopics: number;
   coveredCount: number;
   equivalentCandidateCount: number;
@@ -288,6 +290,27 @@ export function buildPostEditalDiff({
 
   const baggageReusePercent =
     totalWeight > 0 ? Math.round((coveredWeight / totalWeight) * 100) : 0;
+
+  const topicStats = new Map<string, { resolved: number; correct: number }>();
+  for (const q of questions || []) {
+    if (!q?.topicId) continue;
+    const resolved = Math.max(0, Number(q.resolved) || 0);
+    const correct = Math.max(0, Number(q.correct) || 0);
+    if (!resolved) continue;
+    const cur = topicStats.get(q.topicId) || { resolved: 0, correct: 0 };
+    cur.resolved += resolved;
+    cur.correct += correct;
+    topicStats.set(q.topicId, cur);
+  }
+  const masteredCovered = covered.filter(item => {
+    if (!item.matchedTopicId) return false;
+    const stat = topicStats.get(item.matchedTopicId);
+    return Boolean(stat && stat.resolved >= 10 && (stat.correct / stat.resolved) * 100 >= 75);
+  });
+  const masteredWeight = masteredCovered.reduce((sum, item) => sum + item.weight, 0);
+  const masteredReusePercent =
+    totalWeight > 0 ? Math.round((masteredWeight / totalWeight) * 100) : 0;
+
   const deltaEstimatedHours =
     Math.round(((deltaNew.length * estimatedMinutesPerNewTopic) / 60) * 10) / 10;
 
@@ -302,6 +325,8 @@ export function buildPostEditalDiff({
 
   return {
     baggageReusePercent,
+    masteredReusePercent,
+    masteredCount: masteredCovered.length,
     totalIncomingTopics: items.length,
     coveredCount: covered.length,
     equivalentCandidateCount: equivalentCandidates.length,

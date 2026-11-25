@@ -18,6 +18,7 @@ import {
   buildExamFitAnalysis,
   EXAM_FIT_WINDOW_DAYS,
 } from '../../../application/questions/build-exam-fit-analysis.js';
+import { calculateFreshVsRetryStats } from '../../../domain/analytics/study-metrics.js';
 import { ExamFitCard, CebraspeRiskStrip } from './ExamFitCard.js';
 import {
   QuickQuestionEntryBar,
@@ -290,6 +291,7 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
           todayDate: todayISO(),
           scoringMode:
             ctx.state.examBlueprint?.scoringMode === 'certo-errado' ? 'certo-errado' : 'padrao',
+          freshVsRetryStats: calculateFreshVsRetryStats(ctx.state.questoes || [], todayISO(), 30),
           onSaveBatch: records => {
             runUndoable(`${records.length} registro(s) do caderno misto salvos.`, () => {
               records.forEach(record => {

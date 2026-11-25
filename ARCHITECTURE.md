@@ -86,6 +86,8 @@ flowchart TD
 - `src/ui/components/FinalStretchBanner.tsx`: banner de urgência contextual do Modo Reta Final com atalho para o simulador.
 - `src/ui/views/VerticalizedSyllabusView.tsx`: visão declarativa de edital verticalizado com checklist de 4 etapas de estudo, filtros e importação por texto colado.
 - `src/ui/views/ErrorNotebookView.tsx`: visão declarativa do Caderno de Erros e Flashcards com repetição espaçada, pegadinha da banca, conceito correto, campo de referência normativa/banca e modo **Aquecimento Pré-Prova** sem mutação de SM-2 (`selectWarmupFlashcards`).
+- `src/domain/analytics/law-recency.ts`: avaliação de recência dedicada de Lei Seca e sinalizador de alteração legislativa (`evaluateLawRecency`) integrado a `VerticalizedSyllabusView.tsx`.
+- `src/domain/forecasts/composite-score-projection.ts`: projeção composta Objetiva + Discursiva (`buildCompositeScoreProjection`) e agregadores `aggregateGuessPerformance` / `subjectPaceBreakdown` (`simulation-score.ts`) e `calculateFreshVsRetryStats` (`study-metrics.ts`).
 - `src/ui/modals/BatchQuestionEntryModal.tsx` e `src/domain/questions/batch-question-entry.ts`: lançamento rápido em lote por caderno misto de disciplina preservando granularidade por tópico.
 - `src/domain/diagnostics/simulated-remediation.ts` e `src/ui/components/SimulatedRemediationModal.tsx`: Autópsia Pós-Simulado em 3 Passos (sangria ponderada, pontos recuperáveis `extractQuickWinRecoverablePoints` e ações em 1 clique).
 - `src/ui/components/ErrorNotebookDueNotice.tsx`: componente Preact de aviso e contagem de flashcards pendentes com navegação direta para revisão na Agenda e Hoje.
