@@ -109,6 +109,7 @@ Uma função pura `getDueFlashcards(cards, todayDate)` determina os cartões que
 
 ## 6. Integridade de Dados e Migração
 
-- Cartões de erro integram a lista de coleções persistentes (`PERSISTENT_COLLECTIONS`).
+- Cartões de erro integram a lista de coleções persistentes (`PERSISTENT_COLLECTIONS`), incluindo os campos opcionais `reference` (referência normativa/ID da questão) e `banca` (schema `v37`).
 - O schema valida arrays sem reescrever ou destruir histórico em caso de payload parcial.
 - Relações com `topicId` ou `subjectId` órfãos são preservadas e assinaladas na UI em vez de causar falhas em lote.
+- O modo **Aquecimento Pré-Prova** (`selectWarmupFlashcards`) filtra cartões por disciplina, banca ou motivo de erro para revisão livre antes de simulados/provas **sem mutar** `intervalDays`, `easeFactor` ou `nextReviewDate`.

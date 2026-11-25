@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-394 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+398 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -142,6 +142,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/backup-restore-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-validator.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/bancas.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/batch-question-entry.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/beginner-gate.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/blueprint-weights.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/bundle-size-budget.test.js | node | Aplicação | functional | — | contract | none |
@@ -207,6 +208,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/error-notebook-engine.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-notebook-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/error-notebook-view.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/error-notebook-warmup.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/essay-and-pre-edital.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/essay-cebraspe-and-technical.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/essential-mode.test.js | node | Aplicação | functional | — | contract | none |
@@ -388,6 +390,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/routine-sustainability.test.js | node | Sustentabilidade | functional | — | contract | none |
 | tests/unit/row-action-names.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/schema-migration-v37.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/schema-v36-migration.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/scroll-behavior.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
@@ -399,6 +402,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/shell-ui-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/shift-energy-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation-modal.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/simulated-remediation-quick-wins.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulation-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulation-weighted-and-blocks.test.js | node | Aplicação | functional | — | contract | none |

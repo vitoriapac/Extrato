@@ -248,7 +248,17 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   }
 
   function saveSimulationEdit(): void {
-    if (!simulationEditController.save()) cancelSimulationEdit();
+    const savedId = simulationEditController.state?.editingId;
+    if (!simulationEditController.save()) {
+      cancelSimulationEdit();
+      return;
+    }
+    const saved = (ctx.state?.simulados || []).find(
+      (s: { id?: string; total?: number }) => s.id === savedId
+    );
+    if (saved && Number(saved.total) > 0) {
+      ctx.showToast('Simulado salvo. Abra o Raio-X para ver a Autópsia em 3 Passos.');
+    }
   }
 
   function renderSimulados(): void {
@@ -384,6 +394,21 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       ) ||
       (Number(metas.horasDiarias) || 0) * 7 ||
       20;
+    const priorMasteryById = new Map<string, number>();
+    const subjectTotals = new Map<string, { resolved: number; correct: number }>();
+    for (const q of ctx.state.questoes || []) {
+      if (!q?.subjectId || Number(q.resolved) <= 0) continue;
+      const cur = subjectTotals.get(q.subjectId) || { resolved: 0, correct: 0 };
+      cur.resolved += Number(q.resolved) || 0;
+      cur.correct += Number(q.correct) || 0;
+      subjectTotals.set(q.subjectId, cur);
+    }
+    subjectTotals.forEach((acc, sId) => {
+      if (acc.resolved >= 10) {
+        priorMasteryById.set(sId, Math.round((acc.correct / acc.resolved) * 100));
+      }
+    });
+
     const diagnostic = buildSimulatedRemediationDiagnostic({
       simulation: sim,
       historicalSimulations: ctx.state.simulados || [],
@@ -395,6 +420,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       blueprintSubjects: blueprint?.subjects || [],
       blocks: blueprint?.blocks || [],
       subjectsMap,
+      priorMasteryById,
       examMinutesPerQuestion: examMinutesPerQuestion(blueprint),
     });
 

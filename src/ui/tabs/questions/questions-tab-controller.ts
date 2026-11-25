@@ -287,6 +287,21 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
             ctx.topicsForSelection ? ctx.topicsForSelection(subId, null) : [],
           defaultSubjectId: newestWithSubject?.subjectId || activeSubjects[0]?.id || null,
           defaultBanca,
+          todayDate: todayISO(),
+          scoringMode:
+            ctx.state.examBlueprint?.scoringMode === 'certo-errado' ? 'certo-errado' : 'padrao',
+          onSaveBatch: records => {
+            runUndoable(`${records.length} registro(s) do caderno misto salvos.`, () => {
+              records.forEach(record => {
+                questionCrudController.create({
+                  id: uid('question'),
+                  ...record,
+                  recommendationId: null,
+                  createdAt: nowISO(),
+                });
+              });
+            });
+          },
           onSaveEntry: (entry: QuickQuestionEntryPayload) => {
             runUndoable('Questões registradas no histórico.', () => {
               questionCrudController.create({

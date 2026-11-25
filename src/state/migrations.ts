@@ -529,6 +529,47 @@ export function createStateMigrator({
     return data;
   }
 
+  function migrateV36toV37(data: Record<string, unknown>) {
+    if (Array.isArray(data.subjects)) {
+      data.subjects.forEach(subject => {
+        if (!subject || typeof subject !== 'object' || !Array.isArray((subject as Record<string, unknown>).topics)) return;
+        ((subject as Record<string, unknown>).topics as Array<Record<string, unknown>>).forEach(topic => {
+          if (!topic || typeof topic !== 'object') return;
+          if (topic.lastLawReadAt === undefined) topic.lastLawReadAt = null;
+          if (typeof topic.legislativeUpdatePending !== 'boolean') {
+            topic.legislativeUpdatePending = false;
+          }
+          if (topic.legislativeUpdateNote === undefined) topic.legislativeUpdateNote = null;
+        });
+      });
+    }
+    if (Array.isArray(data.errorFlashcards)) {
+      (data.errorFlashcards as Array<Record<string, unknown>>).forEach(card => {
+        if (!card || typeof card !== 'object') return;
+        if (card.reference === undefined) card.reference = null;
+        if (card.banca === undefined) card.banca = null;
+      });
+    }
+    if (Array.isArray(data.simulacoes)) {
+      (data.simulacoes as Array<Record<string, unknown>>).forEach(sim => {
+        if (!sim || typeof sim !== 'object' || !Array.isArray(sim.breakdown)) return;
+        (sim.breakdown as Array<Record<string, unknown>>).forEach(item => {
+          if (!item || typeof item !== 'object') return;
+          if (item.durationMinutes === undefined) item.durationMinutes = null;
+        });
+      });
+    }
+    if (data.examBlueprint && typeof data.examBlueprint === 'object') {
+      const bp = data.examBlueprint as Record<string, unknown>;
+      if (bp.essayMaxScore === undefined) bp.essayMaxScore = null;
+      if (bp.essayWeightPercent === undefined) {
+        bp.essayWeightPercent = null;
+      }
+    }
+    data.schemaVersion = 37;
+    return data;
+  }
+
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -568,6 +609,7 @@ export function createStateMigrator({
         33: migrateV33toV34,
         34: migrateV34toV35,
         35: migrateV35toV36,
+        36: migrateV36toV37,
       },
     });
   }

@@ -172,10 +172,10 @@ export function SimulatedRemediationModal({
           </div>
         )}
 
-        {/* Top 3 Vulnerabilidades (Sangria de Pontos) */}
+        {/* Passo 1: Top 3 Vulnerabilidades (Sangria de Pontos) */}
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">
-            Top 3 Vulnerabilidades — Maior Sangria de Pontos
+            Passo 1 · Top 3 Vulnerabilidades — Maior Sangria de Pontos
           </h4>
           {diagnostic.topBleedingTopics.length === 0 ? (
             <p class="text-xs text-content-muted">Nenhum detalhamento por disciplina disponível.</p>
@@ -213,12 +213,42 @@ export function SimulatedRemediationModal({
           )}
         </div>
 
-        {/* Plano de Ação: 7 Dias de Remediação */}
+        {/* Passo 2: Pontos Recuperáveis de Curto Prazo (Quick Wins) */}
+        {(diagnostic.quickWinItems?.length ?? 0) > 0 && (
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">
+              Passo 2 · Pontos recuperáveis no curto prazo (Quick Wins)
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {diagnostic.quickWinItems.map(item => (
+                <div
+                  key={item.id}
+                  class="rounded-default border border-border-subtle bg-surface-subtle p-3 flex flex-col justify-between gap-2"
+                >
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                      <strong class="text-xs text-content-primary leading-tight">
+                        {item.name}
+                      </strong>
+                      <Badge variant="success">+{item.recoverablePoints} pts</Badge>
+                    </div>
+                    <p class="text-xs text-content-secondary m-0">{item.reason}</p>
+                  </div>
+                  <p class="text-xs text-content-muted m-0 pt-2 border-t border-border-subtle">
+                    {item.actionHint}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Passo 3: Plano de Ação e Ação Imediata */}
         <div>
           <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div>
               <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-                Plano de Remediação — 7 Dias
+                Passo 3 · Plano de Remediação — 7 Dias & Ação Imediata
               </h4>
               <p class="text-xs text-content-muted mt-1">
                 Realocação estratégica de 60% da carga horária para estancar os tópicos com maior

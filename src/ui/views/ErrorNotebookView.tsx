@@ -4,9 +4,11 @@ import {
   getDueFlashcards,
   calculateFlashcardDeckStats,
   filterFlashcards,
+  selectWarmupFlashcards,
   type CreateFlashcardInput,
   type FlashcardDraft,
 } from '../../domain/notebook/error-notebook-engine.js';
+import { KNOWN_BANCAS } from '../../domain/questions/bancas.js';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
@@ -54,9 +56,16 @@ export function ErrorNotebookView({
   todayDate,
   finalStretchSweep = false,
 }: ErrorNotebookViewProps) {
-  const [viewMode, setViewMode] = useState<'deck' | 'catalog'>('deck');
+  const [viewMode, setViewMode] = useState<'deck' | 'warmup' | 'catalog'>('deck');
   const [currentDeckIndex, setCurrentDeckIndex] = useState<number>(0);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
+
+  // Aquecimento pré-prova (sem mutar SM-2)
+  const [warmupSubjectId, setWarmupSubjectId] = useState<string>('all');
+  const [warmupBanca, setWarmupBanca] = useState<string>('all');
+  const [warmupCategory, setWarmupCategory] = useState<string>('all');
+  const [warmupIndex, setWarmupIndex] = useState<number>(0);
+  const [warmupRevealed, setWarmupRevealed] = useState<boolean>(false);
 
   // Filtros do catálogo
   const [filterSubjectId, setFilterSubjectId] = useState<string>('all');
@@ -71,6 +80,8 @@ export function ErrorNotebookView({
   const [newBancaTrap, setNewBancaTrap] = useState<string>('');
   const [newCorrectConcept, setNewCorrectConcept] = useState<string>('');
   const [newErrorCategory, setNewErrorCategory] = useState<string>('desatencao');
+  const [newReference, setNewReference] = useState<string>('');
+  const [newBanca, setNewBanca] = useState<string>('');
   const [newQuestionId, setNewQuestionId] = useState<string | null>(null);
   const [ariaAnnouncement, setAriaAnnouncement] = useState<string>('');
 
@@ -123,6 +134,8 @@ export function ErrorNotebookView({
         bancaTrap: newBancaTrap.trim() || undefined,
         correctConcept: newCorrectConcept,
         errorCategory: newErrorCategory,
+        reference: newReference.trim() || null,
+        banca: newBanca.trim() || null,
         todayDate,
       });
     }
@@ -130,6 +143,8 @@ export function ErrorNotebookView({
     setNewStatement('');
     setNewBancaTrap('');
     setNewCorrectConcept('');
+    setNewReference('');
+    setNewBanca('');
     setCurrentDeckIndex(0);
     setIsRevealed(false);
     closeModal();
@@ -173,6 +188,21 @@ export function ErrorNotebookView({
     query: searchQuery,
   });
 
+  const warmupCards = selectWarmupFlashcards(flashcards, {
+    subjectId: warmupSubjectId,
+    banca: warmupBanca,
+    errorCategory: warmupCategory,
+    limit: 20,
+  });
+  const activeWarmupCard = warmupCards[warmupIndex] || warmupCards[0] || null;
+  const availableCardBancas = Array.from(
+    new Set(
+      flashcards
+        .map(c => (c.banca ? String(c.banca).trim() : ''))
+        .filter(Boolean)
+    )
+  ).sort();
+
   return (
     <div class="space-y-6">
       {/* Anúncio acessível para leitores de tela */}
@@ -198,14 +228,18 @@ export function ErrorNotebookView({
             label="Modo de visualização do caderno"
             value={viewMode}
             onChange={mode => {
-              const nextMode = mode as 'deck' | 'catalog';
+              const nextMode = mode as 'deck' | 'warmup' | 'catalog';
               setViewMode(nextMode);
               if (nextMode === 'deck') {
                 setIsRevealed(false);
+              } else if (nextMode === 'warmup') {
+                setWarmupIndex(0);
+                setWarmupRevealed(false);
               }
             }}
             options={[
               { value: 'deck', label: `Deck (${stats.dueCount})`, icon: 'cards' },
+              { value: 'warmup', label: 'Aquecimento', icon: 'flame' },
               { value: 'catalog', label: `Todos (${stats.total})`, icon: 'file-text' },
             ]}
           />
@@ -330,6 +364,10 @@ export function ErrorNotebookView({
                           activeCard.errorCategory}
                       </span>
                     )}
+                    {activeCard.banca && <Badge variant="info">{activeCard.banca}</Badge>}
+                    {activeCard.reference && (
+                      <Badge variant="default">{activeCard.reference}</Badge>
+                    )}
                   </div>
                   <p class="text-base font-medium text-primary leading-relaxed whitespace-pre-wrap">
                     {activeCard.statementSummary}
@@ -426,6 +464,177 @@ export function ErrorNotebookView({
               </div>
             </div>
           ) : null}
+        </div>
+      )}
+
+      {/* VISÃO 1B: AQUECIMENTO PRÉ-PROVA (SEM ALTERAR SM-2) */}
+      {viewMode === 'warmup' && (
+        <div class="space-y-4" data-testid="error-notebook-warmup">
+          <div class="rounded-default border border-border-subtle bg-surface-subtle p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 text-content-secondary">
+              <Icon name="flame" size={16} class="text-amber shrink-0" />
+              <span>
+                <strong>Aquecimento Pré-Prova:</strong> revise pegadinhas recentes por disciplina ou
+                banca sem alterar a agenda SM-2.
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select
+                aria-label="Filtrar aquecimento por disciplina"
+                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-primary"
+                value={warmupSubjectId}
+                onChange={e => {
+                  setWarmupSubjectId((e.target as HTMLSelectElement).value);
+                  setWarmupIndex(0);
+                  setWarmupRevealed(false);
+                }}
+              >
+                <option value="all">Todas as disciplinas</option>
+                {subjects.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                aria-label="Filtrar aquecimento por banca"
+                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-primary"
+                value={warmupBanca}
+                onChange={e => {
+                  setWarmupBanca((e.target as HTMLSelectElement).value);
+                  setWarmupIndex(0);
+                  setWarmupRevealed(false);
+                }}
+              >
+                <option value="all">Todas as bancas</option>
+                {availableCardBancas.map(b => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                aria-label="Filtrar aquecimento por tipo de erro"
+                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-primary"
+                value={warmupCategory}
+                onChange={e => {
+                  setWarmupCategory((e.target as HTMLSelectElement).value);
+                  setWarmupIndex(0);
+                  setWarmupRevealed(false);
+                }}
+              >
+                <option value="all">Todos os motivos</option>
+                {Object.entries(ERROR_CATEGORY_LABELS).map(([k, label]) => (
+                  <option key={k} value={k}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {!activeWarmupCard ? (
+            <div class="rounded-default border border-border-default bg-surface-card p-8 text-center text-sm text-content-secondary">
+              Nenhum cartão encontrado para os filtros selecionados.
+            </div>
+          ) : (
+            <div class="max-w-2xl mx-auto space-y-3">
+              <div class="flex items-center justify-between text-xs text-secondary px-1">
+                <span>
+                  Aquecimento {Math.min(warmupIndex + 1, warmupCards.length)} de {warmupCards.length}
+                </span>
+                <span class="font-medium text-primary">
+                  {resolveSubjectName(activeWarmupCard.subjectId)} ·{' '}
+                  {resolveTopicName(activeWarmupCard.subjectId, activeWarmupCard.topicId)}
+                </span>
+              </div>
+
+              <div class="rounded-default border border-border-default bg-surface-card overflow-hidden">
+                <div class="p-panel space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-secondary">
+                      Revisão Rápida (SM-2 intacto)
+                    </span>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      {activeWarmupCard.banca && (
+                        <Badge variant="info">{activeWarmupCard.banca}</Badge>
+                      )}
+                      {activeWarmupCard.reference && (
+                        <Badge variant="default">{activeWarmupCard.reference}</Badge>
+                      )}
+                      {activeWarmupCard.errorCategory && (
+                        <Badge variant="warning">
+                          {ERROR_CATEGORY_LABELS[activeWarmupCard.errorCategory] ||
+                            activeWarmupCard.errorCategory}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <p class="text-base font-medium text-primary leading-relaxed whitespace-pre-wrap">
+                    {activeWarmupCard.statementSummary}
+                  </p>
+                </div>
+
+                {warmupRevealed ? (
+                  <div class="border-t border-border-default p-panel space-y-3 bg-surface-subtle">
+                    {activeWarmupCard.bancaTrap && (
+                      <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
+                        <span class="font-semibold text-amber block mb-1">
+                          Pegadinha da Banca / Armadilha:
+                        </span>
+                        <p class="text-primary leading-relaxed m-0">{activeWarmupCard.bancaTrap}</p>
+                      </div>
+                    )}
+                    <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
+                      <span class="font-semibold text-green block mb-1">
+                        Conceito Correto / Fundamento:
+                      </span>
+                      <p class="text-primary leading-relaxed whitespace-pre-wrap m-0">
+                        {activeWarmupCard.correctConcept}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div class="border-t border-border-default p-card bg-surface-subtle text-center">
+                    <Button
+                      variant="primary"
+                      size="small"
+                      onClick={() => setWarmupRevealed(true)}
+                    >
+                      Revelar Pegadinha &amp; Conceito
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div class="flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  size="small"
+                  disabled={warmupIndex <= 0}
+                  onClick={() => {
+                    setWarmupIndex(Math.max(0, warmupIndex - 1));
+                    setWarmupRevealed(false);
+                  }}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  disabled={warmupIndex >= warmupCards.length - 1}
+                  onClick={() => {
+                    setWarmupIndex(Math.min(warmupCards.length - 1, warmupIndex + 1));
+                    setWarmupRevealed(false);
+                  }}
+                >
+                  Próximo cartão
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -581,22 +790,58 @@ export function ErrorNotebookView({
             </div>
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="errCardCategory" class="block font-medium text-primary mb-1">
+                Motivo do Erro:
+              </label>
+              <select
+                id="errCardCategory"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                value={newErrorCategory}
+                onChange={e => setNewErrorCategory((e.target as HTMLSelectElement).value)}
+              >
+                {Object.entries(ERROR_CATEGORY_LABELS).map(([k, label]) => (
+                  <option key={k} value={k}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label for="errCardBanca" class="block font-medium text-primary mb-1">
+                Banca (Opcional):
+              </label>
+              <input
+                id="errCardBanca"
+                type="text"
+                list="errCardBancasList"
+                placeholder="Ex.: FGV, Cebraspe, FCC"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                value={newBanca}
+                onInput={e => setNewBanca((e.target as HTMLInputElement).value)}
+              />
+              <datalist id="errCardBancasList">
+                {KNOWN_BANCAS.map(b => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
+            </div>
+          </div>
+
           <div>
-            <label for="errCardCategory" class="block font-medium text-primary mb-1">
-              Motivo do Erro:
+            <label for="errCardReference" class="block font-medium text-primary mb-1">
+              Referência Normativa / ID da Questão (Opcional):
             </label>
-            <select
-              id="errCardCategory"
+            <input
+              id="errCardReference"
+              type="text"
+              placeholder="Ex.: CF art. 37 §6º, Súmula 473 STF ou TEC #123456"
               class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-              value={newErrorCategory}
-              onChange={e => setNewErrorCategory((e.target as HTMLSelectElement).value)}
-            >
-              {Object.entries(ERROR_CATEGORY_LABELS).map(([k, label]) => (
-                <option key={k} value={k}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              value={newReference}
+              onInput={e => setNewReference((e.target as HTMLInputElement).value)}
+            />
           </div>
 
           <div>

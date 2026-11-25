@@ -2467,6 +2467,26 @@
       "rationale": "Regra de negócio pura em Node pré-existente: desempenho ponderado por banca e peso do tópico."
     },
     {
+      "file": "tests/unit/batch-question-entry.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de validação e normalização de lançamento em lote de caderno misto."
+    },
+    {
+      "file": "tests/unit/error-notebook-warmup.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de seleção de cartões para aquecimento pré-prova sem mutação de SM-2."
+    },
+    {
+      "file": "tests/unit/schema-migration-v37.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato de migração determinística v1/v36 -> v37 preservando snapshots históricos."
+    },
+    {
+      "file": "tests/unit/simulated-remediation-quick-wins.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra pura de detecção de pontos recuperáveis de curto prazo (Quick Wins) na autópsia pós-simulado."
+    },
+    {
       "file": "tests/e2e/concurseiro-elite-flows.spec.js",
       "tier": "FULL",
       "rationale": "Jornada E2E integrada das frentes de concurseiro analítico (entrada expressa, bateria mista, jurisprudência, discursiva Cebraspe e pós-edital)."

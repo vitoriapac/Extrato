@@ -67,6 +67,21 @@ export interface SimulatedRemediationInput {
   passingScorePercent?: number | null; // Ponto de corte do edital (ex: 70 ou 75%)
   weeklyAvailableHours?: number; // Carga horária semanal padrão (ex: 20h)
   subjectsMap?: Map<string, { id: string; name: string }>;
+  /** Domínio histórico conhecido (0-100) por subjectId ou topicId para detectar pontos recuperáveis (quick wins). */
+  priorMasteryById?: Map<string, number>;
+}
+
+export interface QuickWinRecoverableItem {
+  id: string;
+  subjectId: string | null;
+  topicId: string | null;
+  name: string;
+  subjectName: string;
+  recoverablePoints: number;
+  simulationAccuracy: number;
+  priorMastery: number | null;
+  reason: string;
+  actionHint: string;
 }
 
 export interface DeficitTopicItem {
@@ -128,6 +143,7 @@ export interface SimulatedRemediationDiagnostic {
   netScoring: boolean;
   minimumMisses: Array<{ subjectId: string; name: string; score: number; minimum: number }>;
   pace: PaceAndGuess;
+  quickWinItems: QuickWinRecoverableItem[];
   remediationPlan7Days: RemediationPlan7Days;
   errorCardDrafts: ErrorCardDraft[];
 }
@@ -266,6 +282,80 @@ export function generateDraftErrorCards(
 }
 
 /**
+ * Identifica pontos recuperáveis no curto prazo (Quick Wins):
+ * - Tópicos/disciplinas em que o candidato já tinha domínio prévio >= 70% (erro de atenção, revisão ou pegadinha);
+ * - Ou disciplinas na faixa intermediária (50%–79% no simulado) com peso relevante na prova.
+ */
+export function extractQuickWinRecoverablePoints(
+  simulation: SimulationTargetInput,
+  {
+    subjectsMap,
+    priorMasteryById,
+    weights,
+  }: {
+    subjectsMap?: Map<string, { id: string; name: string }>;
+    priorMasteryById?: Map<string, number>;
+    weights?: Map<string, number>;
+  } = {}
+): QuickWinRecoverableItem[] {
+  const rows = Array.isArray(simulation.breakdown) ? simulation.breakdown : [];
+  const items: Array<QuickWinRecoverableItem & { scorePriority: number }> = [];
+
+  for (const row of rows) {
+    const rowTotal = Math.max(0, Number(row.total) || 0);
+    if (!rowTotal) continue;
+    const rowScore = rowScorePercent(row, simulation.scoring);
+    const lost = Math.round(rowTotal - (rowScore * rowTotal) / 100);
+    if (lost <= 0) continue;
+
+    const key = row.topicId || row.subjectId || row.id;
+    const prior =
+      (row.topicId ? priorMasteryById?.get(row.topicId) : undefined) ??
+      (row.subjectId ? priorMasteryById?.get(row.subjectId) : undefined) ??
+      null;
+    const weight = weights?.get(row.subjectId || '') ?? 1;
+    const simAcc = Math.round(rowScore * 10) / 10;
+
+    const isHighPriorMastery = prior != null && prior >= 70 && simAcc < prior;
+    const isNearThreshold = simAcc >= 50 && simAcc < 80;
+    if (!isHighPriorMastery && !isNearThreshold) continue;
+
+    const subName =
+      row.subjectName ||
+      (row.subjectId && subjectsMap?.get(row.subjectId)?.name) ||
+      'Disciplina não identificada';
+    const name = row.topicName || subName;
+
+    const recoverablePoints = Math.max(1, Math.round(lost * (isHighPriorMastery ? 0.75 : 0.5)));
+    const reason = isHighPriorMastery
+      ? `Domínio prévio de ${Math.round(prior!)}% caiu para ${simAcc}% neste simulado.`
+      : `Faixa intermediária (${simAcc}%) com peso ${weight}x — ganho rápido com bateria dirigida.`;
+    const actionHint = isHighPriorMastery
+      ? 'Revisar pegadinhas no Caderno de Erros e fazer 15 questões de calibração.'
+      : 'Refazer os erros comentados e revisar os pontos-chave em 48h.';
+
+    items.push({
+      id: key,
+      subjectId: row.subjectId || null,
+      topicId: row.topicId || null,
+      name,
+      subjectName: subName,
+      recoverablePoints,
+      simulationAccuracy: simAcc,
+      priorMastery: prior != null ? Math.round(prior) : null,
+      reason,
+      actionHint,
+      scorePriority: recoverablePoints * weight + (isHighPriorMastery ? 5 : 0),
+    });
+  }
+
+  return items
+    .sort((a, b) => b.scorePriority - a.scorePriority)
+    .slice(0, 3)
+    .map(({ scorePriority: _drop, ...rest }) => rest);
+}
+
+/**
  * Constrói o diagnóstico completo de Raio-X pós-simulado.
  */
 export function buildSimulatedRemediationDiagnostic(
@@ -360,6 +450,11 @@ export function buildSimulatedRemediationDiagnostic(
 
   // Top 3 sangrias absolutas
   const topBleedingTopics = topicDeficits.slice(0, 3);
+  const quickWinItems = extractQuickWinRecoverablePoints(sim, {
+    subjectsMap: input.subjectsMap,
+    priorMasteryById: input.priorMasteryById,
+    weights,
+  });
 
   // Geração do plano de 7 dias e rascunhos de cartões
   const remediationPlan7Days = generate7DayRemediationPlan(
@@ -396,6 +491,7 @@ export function buildSimulatedRemediationDiagnostic(
       })),
     ],
     pace: paceAndGuess(sim, input.examMinutesPerQuestion ?? null),
+    quickWinItems,
     remediationPlan7Days,
     errorCardDrafts,
   };

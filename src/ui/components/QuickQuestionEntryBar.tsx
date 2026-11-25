@@ -6,6 +6,8 @@ import {
 } from '../../domain/questions/quick-question-parser.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
+import { BatchQuestionEntryModal } from '../modals/BatchQuestionEntryModal.js';
+import type { BatchQuestionBuildResult } from '../../domain/questions/batch-question-entry.js';
 
 export interface QuickQuestionEntryPayload {
   subjectId: string;
@@ -23,7 +25,10 @@ export interface QuickQuestionEntryBarProps {
   topicsForSubject: (subjectId: string) => Array<{ id: string; name: string }>;
   defaultSubjectId?: string | null;
   defaultBanca?: string | null;
+  todayDate?: string;
+  scoringMode?: 'padrao' | 'certo-errado';
   onSaveEntry: (entry: QuickQuestionEntryPayload) => void;
+  onSaveBatch?: (records: BatchQuestionBuildResult['records']) => void;
 }
 
 export function QuickQuestionEntryBar({
@@ -31,7 +36,10 @@ export function QuickQuestionEntryBar({
   topicsForSubject,
   defaultSubjectId = null,
   defaultBanca = null,
+  todayDate = '',
+  scoringMode = 'padrao',
   onSaveEntry,
+  onSaveBatch,
 }: QuickQuestionEntryBarProps): JSX.Element | null {
   const [subjectId, setSubjectId] = useState<string>(
     defaultSubjectId || subjects[0]?.id || ''
@@ -40,6 +48,7 @@ export function QuickQuestionEntryBar({
   const [shorthand, setShorthand] = useState<string>('');
   const [pasteOpen, setPasteOpen] = useState<boolean>(false);
   const [pasteText, setPasteText] = useState<string>('');
+  const [batchOpen, setBatchOpen] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -202,6 +211,21 @@ export function QuickQuestionEntryBar({
             <Icon name="clipboard-text" size={14} class="icon-inline" />
             Colar TEC/QConcursos
           </Button>
+          {onSaveBatch && (
+            <Button
+              id="quickQuestionBatchBtn"
+              type="button"
+              variant="ghost"
+              size="small"
+              onClick={() => {
+                setBatchOpen(true);
+                setSubmitError(null);
+              }}
+            >
+              <Icon name="list" size={14} class="icon-inline" />
+              Caderno misto (lote)
+            </Button>
+          )}
         </div>
       </form>
 
@@ -276,6 +300,19 @@ export function QuickQuestionEntryBar({
             </Button>
           </div>
         </div>
+      )}
+      {onSaveBatch && todayDate && (
+        <BatchQuestionEntryModal
+          open={batchOpen}
+          onClose={() => setBatchOpen(false)}
+          subjects={subjects}
+          topicsForSubject={topicsForSubject}
+          defaultSubjectId={subjectId || defaultSubjectId}
+          defaultBanca={defaultBanca}
+          todayDate={todayDate}
+          scoringMode={scoringMode}
+          onSaveBatch={onSaveBatch}
+        />
       )}
     </section>
   );

@@ -26,6 +26,8 @@ export interface CreateFlashcardInput {
   bancaTrap?: string;
   correctConcept: string;
   errorCategory?: string;
+  reference?: string | null;
+  banca?: string | null;
   createdAt?: string;
   todayDate?: string;
 }
@@ -88,6 +90,8 @@ export function createErrorFlashcard(input: CreateFlashcardInput): ErrorFlashcar
     bancaTrap: input.bancaTrap ? String(input.bancaTrap).trim() : undefined,
     correctConcept: String(input.correctConcept || '').trim(),
     errorCategory: input.errorCategory ? String(input.errorCategory).trim() : undefined,
+    reference: input.reference ? String(input.reference).trim() : null,
+    banca: input.banca ? String(input.banca).trim() : null,
     status: 'pending',
     reviewCount: 0,
     consecutiveSuccesses: 0,
@@ -354,4 +358,47 @@ export function addErrorFlashcard(
   const existing = cards.find(card => card.id === candidate.id || flashcardKey(card) === key);
   if (existing) return { cards, card: existing, created: false };
   return { cards: [candidate, ...cards], card: candidate, created: true };
+}
+
+export interface WarmupSelectionOptions {
+  subjectId?: string;
+  banca?: string;
+  errorCategory?: string;
+  limit?: number;
+}
+
+/**
+ * Seleciona cartões para sessão livre de "Aquecimento Pré-Prova" por disciplina, banca ou
+ * categoria de erro, ordenando pelos de menor facilidade e mais recentes.
+ * Função pura: não altera `intervalDays`, `easeFactor` ou `nextReviewDate` (SM-2 intacto).
+ */
+export function selectWarmupFlashcards(
+  cards: ErrorFlashcard[] = [],
+  options: WarmupSelectionOptions = {}
+): ErrorFlashcard[] {
+  const { subjectId, banca, errorCategory, limit = 20 } = options;
+  const bancaNorm = banca ? String(banca).trim().toLowerCase() : '';
+  const maxItems = Math.max(1, Math.min(100, Math.floor(Number(limit) || 20)));
+
+  return cards
+    .filter(card => {
+      if (subjectId && subjectId !== 'all' && card.subjectId !== subjectId) return false;
+      if (errorCategory && errorCategory !== 'all' && card.errorCategory !== errorCategory) {
+        return false;
+      }
+      if (bancaNorm && bancaNorm !== 'all') {
+        const cardBanca = String(card.banca || '')
+          .trim()
+          .toLowerCase();
+        if (!cardBanca || !cardBanca.includes(bancaNorm)) return false;
+      }
+      return true;
+    })
+    .slice()
+    .sort((a, b) => {
+      const easeDiff = (Number(a.easeFactor) || 2.5) - (Number(b.easeFactor) || 2.5);
+      if (Math.abs(easeDiff) > 0.01) return easeDiff;
+      return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+    })
+    .slice(0, maxItems);
 }

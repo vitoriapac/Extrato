@@ -55,6 +55,12 @@ export interface Topic {
   examImportanceEstimates?: Record<string, number>;
   adaptiveReview?: AdaptiveReviewState | null;
   completedAt?: string | null;
+  /** Última leitura dedicada de Lei Seca / Jurisprudência (YYYY-MM-DD). */
+  lastLawReadAt?: string | null;
+  /** Sinalizador de alteração legislativa / súmula recente pendente de revisão. */
+  legislativeUpdatePending?: boolean;
+  /** Nota breve sobre a alteração legislativa ou súmula. */
+  legislativeUpdateNote?: string | null;
 }
 
 export interface Subject {
@@ -104,6 +110,10 @@ export interface ErrorFlashcard {
   bancaTrap?: string;
   correctConcept: string;
   errorCategory?: string;
+  /** Referência normativa ou ID da questão (ex.: CF art. 37 §6º, TEC #123456). */
+  reference?: string | null;
+  /** Banca examinadora associada ao erro (para aquecimento pré-prova). */
+  banca?: string | null;
   status: ErrorFlashcardStatus;
   reviewCount: number;
   consecutiveSuccesses: number;
@@ -121,6 +131,8 @@ export interface SimulationBreakdownItem {
   total: number;
   /** Erradas; sem o campo, nenhuma questão ficou em branco. */
   wrong?: number | null;
+  /** Minutos gastos especificamente nesta disciplina durante o simulado. */
+  durationMinutes?: number | null;
 }
 
 export interface SimulationRecord {
@@ -270,6 +282,10 @@ export interface ExamBlueprint {
   preEdital?: boolean;
   /** Nota mínima eliminatória da discursiva, em %. */
   essayMinPercent?: number | null;
+  /** Pontuação máxima da prova discursiva (ex.: 40 ou 100). */
+  essayMaxScore?: number | null;
+  /** Peso percentual da discursiva na nota final composta (0 a 100). */
+  essayWeightPercent?: number | null;
   /** Banca que aplica a prova, na grafia de normalizeBanca. */
   banca?: string | null;
   /** Duração total da prova objetiva, em minutos. */

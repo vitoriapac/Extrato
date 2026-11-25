@@ -85,7 +85,9 @@ flowchart TD
 - `src/ui/forecasts/WhatIfSimulatorModal.tsx` e `src/ui/controllers/what-if-controller.ts`: modal com `<Dialog>` / `<Tooltip>` e controlador de simulação de cenários em memória.
 - `src/ui/components/FinalStretchBanner.tsx`: banner de urgência contextual do Modo Reta Final com atalho para o simulador.
 - `src/ui/views/VerticalizedSyllabusView.tsx`: visão declarativa de edital verticalizado com checklist de 4 etapas de estudo, filtros e importação por texto colado.
-- `src/ui/views/ErrorNotebookView.tsx`: visão declarativa do Caderno de Erros e Flashcards com repetição espaçada, pegadinha da banca e conceito correto.
+- `src/ui/views/ErrorNotebookView.tsx`: visão declarativa do Caderno de Erros e Flashcards com repetição espaçada, pegadinha da banca, conceito correto, campo de referência normativa/banca e modo **Aquecimento Pré-Prova** sem mutação de SM-2 (`selectWarmupFlashcards`).
+- `src/ui/modals/BatchQuestionEntryModal.tsx` e `src/domain/questions/batch-question-entry.ts`: lançamento rápido em lote por caderno misto de disciplina preservando granularidade por tópico.
+- `src/domain/diagnostics/simulated-remediation.ts` e `src/ui/components/SimulatedRemediationModal.tsx`: Autópsia Pós-Simulado em 3 Passos (sangria ponderada, pontos recuperáveis `extractQuickWinRecoverablePoints` e ações em 1 clique).
 - `src/ui/components/ErrorNotebookDueNotice.tsx`: componente Preact de aviso e contagem de flashcards pendentes com navegação direta para revisão na Agenda e Hoje.
 - `src/ui/controllers/error-notebook-controller.ts`: controlador desacoplado para a visão do Caderno de Erros, gestão de rascunhos, criação e avisos de cartões pendentes.
 - `src/ui/modals/TopicIntelligenceModal.tsx`: modal declarativo da Ficha Inteligente do Tópico reunindo ponto de parada, última sessão, caderno de erros, retenção e próximo passo recomendado.

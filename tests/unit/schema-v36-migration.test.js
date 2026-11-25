@@ -37,7 +37,7 @@ test('migração v1 e v35 para v36 preserva snapshots congelados e inicializa no
 
   const migrated = migrateState(v35);
   assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
-  assert.equal(CURRENT_SCHEMA_VERSION, 36);
+  assert.ok(CURRENT_SCHEMA_VERSION >= 36);
   assert.deepEqual(migrated.jurisprudenceNotebook, []);
   assert.equal(migrated.metas.orcamentoRevisaoPct, null);
   assert.deepEqual(migrated.readinessSnapshots, frozenReadiness);
@@ -46,7 +46,7 @@ test('migração v1 e v35 para v36 preserva snapshots congelados e inicializa no
   const v1 = migrateState({
     subjects: [{ name: 'Português', topics: [{ name: 'Crase' }] }],
   });
-  assert.equal(v1.schemaVersion, 36);
+  assert.equal(v1.schemaVersion, CURRENT_SCHEMA_VERSION);
   assert.deepEqual(v1.jurisprudenceNotebook, []);
   assert.equal(v1.metas.orcamentoRevisaoPct, null);
 });
