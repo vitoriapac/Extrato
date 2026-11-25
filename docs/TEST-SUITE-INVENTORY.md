@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-402 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+403 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -173,6 +173,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/csp-headers.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cutoff-reference.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/daily-execution.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/daily-focus-mode.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/daily-plan-distribution.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/daily-session-reconciliation.test.js | node | Sessões | critical | — | contract | none |
 | tests/unit/dashboard-components.test.js | node | Aplicação | functional | — | contract, viewport | none |

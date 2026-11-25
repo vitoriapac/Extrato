@@ -139,3 +139,50 @@ export function createEssentialController({
     },
   });
 }
+
+/**
+ * Daily Focus Mode (Onda 3): oculta gráficos secundários na aba Hoje durante a rotina diária,
+ * mantendo Meta do Dia, Próxima Ação / Ciclo e Revisões/Erros vencidos. Desativado por padrão.
+ */
+export function createDailyFocusController({
+  document,
+  storage,
+  key = 'studytrack.dailyFocus',
+}: {
+  document: {
+    documentElement: Pick<HTMLElement, 'getAttribute' | 'setAttribute' | 'removeAttribute'>;
+  };
+  storage?: Pick<Storage, 'getItem' | 'setItem'> | null;
+  key?: string;
+}) {
+  if (!document) throw new TypeError('Controlador do modo foco diário requer documento.');
+  const current = () => document.documentElement.getAttribute('data-daily-focus') === 'on';
+  const apply = (on: boolean) => {
+    if (on) document.documentElement.setAttribute('data-daily-focus', 'on');
+    else document.documentElement.removeAttribute('data-daily-focus');
+    return on;
+  };
+  const init = () => {
+    let stored: string | null = null;
+    try {
+      stored = storage?.getItem(key) ?? null;
+    } catch {
+      stored = null;
+    }
+    return apply(stored === 'on');
+  };
+  const set = (on: boolean) => {
+    try {
+      storage?.setItem(key, on ? 'on' : 'off');
+    } catch {
+      // Modo privado: mantém apenas na sessão atual.
+    }
+    return apply(Boolean(on));
+  };
+  return Object.freeze({
+    current,
+    init,
+    set,
+    toggle: () => set(!current()),
+  });
+}

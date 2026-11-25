@@ -24,6 +24,7 @@ import { selectPlannedSimulationsForTodayView } from '../../../domain/calendar/c
 import { createTodayJournalController } from './today-journal-controller.js';
 import { createTodayAssistantController } from './today-assistant-controller.js';
 import { createTodayBannersController } from './today-banners-controller.js';
+import { createDailyFocusController } from '../../controllers/preferences-controller.js';
 
 const PRIORITY_TIER_EMOJI: Record<string, string> = {
   Alta: 'alert-circle',
@@ -474,10 +475,33 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderPlanoHoje();
   }
 
+  function getDailyFocusController() {
+    if (!doc) return null;
+    const storage =
+      typeof globalThis.localStorage !== 'undefined' ? globalThis.localStorage : null;
+    return createDailyFocusController({ document: doc, storage });
+  }
+
+  function applyDailyFocusVisibility(active: boolean): void {
+    if (!doc) return;
+    const secondaryIds = [
+      'todayWeeklyRhythmSlot',
+      'todayExecutionSummarySlot',
+      'todayLearningJournalMount',
+    ];
+    for (const id of secondaryIds) {
+      const el = doc.getElementById(id) as HTMLElement | null;
+      if (el) el.hidden = active;
+    }
+  }
+
   function renderExecutionModeSwitch(): void {
     if (!doc) return;
     const state = getState();
     const mode: ExecutionMode = state?.executionMode === 'agenda' ? 'agenda' : 'sequence';
+    const focusCtrl = getDailyFocusController();
+    const dailyFocusMode = focusCtrl ? focusCtrl.init() : false;
+    applyDailyFocusVisibility(dailyFocusMode);
     const mount = doc.getElementById('todayExecutionModeMount') as Element | null;
     if (
       mount &&
@@ -488,6 +512,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         h(TodayExecutionModeSwitch, {
           value: mode,
           onChange: setExecutionMode,
+          dailyFocusMode,
+          onToggleDailyFocus: (next: boolean) => {
+            focusCtrl?.set(next);
+            applyDailyFocusVisibility(next);
+            renderPlanoHoje();
+          },
         }),
         mount
       );

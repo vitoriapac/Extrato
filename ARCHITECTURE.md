@@ -196,7 +196,7 @@ flowchart TD
 - `src/ui/controllers/navigation-controller.ts`: abas, menu móvel, atalhos numéricos, busca e fechamento por Escape.
 - `src/ui/controllers/modal-controller.ts`: confirmações e prompts acessíveis com validação e restauração de foco.
 - `src/ui/controllers/editable-collection-controller.ts`: estado de rascunho e ciclo de edição dos registros operacionais.
-- `src/ui/controllers/preferences-controller.ts`: tema visual e persistência das preferências locais.
+- `src/ui/controllers/preferences-controller.ts`: tema visual, densidade, modo essencial e Modo Foco Diário (`createDailyFocusController`, desativado por padrão) integrado a `TodayExecutionModeSwitch.tsx` e `today-tab-controller.ts`.
 - `src/ui/controllers/backup-modal-controller.ts`: leitura, exportação e importação de arquivos de backup no navegador.
 - `src/ui/controllers/delegated-events-controller.ts`: roteamento seguro das ações declarativas da interface sem funções globais.
 - `src/ui/renderers/application-renderer.ts`: composição resiliente e seletiva das seções visuais.

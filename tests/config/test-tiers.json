@@ -2467,6 +2467,11 @@
       "rationale": "Regra de negócio pura em Node pré-existente: desempenho ponderado por banca e peso do tópico."
     },
     {
+      "file": "tests/unit/daily-focus-mode.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Preferência local do Modo Foco Diário (desativado por padrão) e persistência em storage."
+    },
+    {
       "file": "tests/unit/composite-score-projection.test.js",
       "tier": "FAST_GATE",
       "rationale": "Regra pura de projeção composta (objetiva + discursivas corrigidas)."
