@@ -10,7 +10,13 @@ export function buildReviewQueueSummary({ reviews = [], flashcards = [], today }
   const pending = reviews.filter(item => item.status !== 'Concluído' && parseLocalDate(item.date));
   const upcomingTopics = pending.map(item => item.date).filter(date => date > today).sort();
   const upcomingCards = flashcards
-    .filter(card => card.status === 'reviewing' && card.nextReviewDate && parseLocalDate(card.nextReviewDate) && card.nextReviewDate > today)
+    .filter(
+      card =>
+        card.status !== 'pending' &&
+        card.nextReviewDate &&
+        parseLocalDate(card.nextReviewDate) &&
+        card.nextReviewDate > today
+    )
     .map(card => card.nextReviewDate!)
     .sort();
   return {

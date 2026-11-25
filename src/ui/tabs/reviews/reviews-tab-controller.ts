@@ -37,6 +37,7 @@ import {
   AGENDA_INTERVALS,
   DIFFICULTY_INTERVALS,
   REVIEW_RATINGS,
+  buildPreExamGeneralReviewItems,
   calculateAdaptiveInterval,
   reviewBaseDaysFromType,
 } from '../../../domain/reviews.js';
@@ -884,6 +885,21 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
           adicionados++;
         }
       });
+    });
+    const preExamDrafts = buildPreExamGeneralReviewItems({
+      topics: concluidos,
+      existingAgenda: ctx.state.reviewAgenda || [],
+      examDate: (ctx.state as { examDate?: string | null }).examDate || null,
+      today: todayISO(),
+    });
+    preExamDrafts.forEach(draft => {
+      (ctx.state.reviewAgenda as any[]).push({
+        id: uid('review'),
+        ...draft,
+        createdAt: nowISO(),
+        completedAt: null,
+      });
+      adicionados++;
     });
     persistAndRender();
     if (adicionados > 0) {

@@ -98,6 +98,22 @@ export function createErrorFlashcard(input: CreateFlashcardInput): ErrorFlashcar
   };
 }
 
+export const MASTERED_LONG_INTERVALS = Object.freeze([30, 60, 120] as const);
+
+function resolveMasteredIntervalDays(card: ErrorFlashcard): number {
+  if (card.status !== 'mastered') {
+    return MASTERED_LONG_INTERVALS[0];
+  }
+  const current = Number(card.intervalDays) || 0;
+  if (current < MASTERED_LONG_INTERVALS[0]) return MASTERED_LONG_INTERVALS[0];
+  if (current < MASTERED_LONG_INTERVALS[1]) return MASTERED_LONG_INTERVALS[1];
+  return MASTERED_LONG_INTERVALS[2];
+}
+
+export interface DueFlashcardsOptions {
+  finalStretchSweep?: boolean;
+}
+
 /**
  * Processa a avaliação de um flashcard (Again, Hard, Good, Easy) e calcula o próximo agendamento.
  */
@@ -139,6 +155,9 @@ export function reviewErrorFlashcard(
       }
       consecutiveSuccesses += 1;
       status = consecutiveSuccesses >= 3 ? 'mastered' : 'reviewing';
+      if (status === 'mastered') {
+        intervalDays = resolveMasteredIntervalDays(card);
+      }
       break;
 
     case 'easy':
@@ -150,6 +169,9 @@ export function reviewErrorFlashcard(
       consecutiveSuccesses += 1;
       easeFactor = Math.min(3.5, easeFactor + 0.15);
       status = consecutiveSuccesses >= 2 ? 'mastered' : 'reviewing';
+      if (status === 'mastered') {
+        intervalDays = resolveMasteredIntervalDays(card);
+      }
       break;
   }
 
@@ -169,15 +191,22 @@ export function reviewErrorFlashcard(
 
 /**
  * Retorna os flashcards prontos para revisão na data estipulada (vencidos ou pendentes).
+ * Cartões dominados retornam quando atingem seu intervalo longo (30/60/120 dias), ou
+ * imediatamente durante a varredura de Reta Final (exceto os já revisados hoje).
  */
 export function getDueFlashcards(
   cards: ErrorFlashcard[] = [],
-  todayDate = getTodayString()
+  todayDate = getTodayString(),
+  options: DueFlashcardsOptions = {}
 ): ErrorFlashcard[] {
   return cards.filter(card => {
-    if (card.status === 'mastered') return false;
     if (card.status === 'pending') return true;
-    return !card.nextReviewDate || card.nextReviewDate <= todayDate;
+    if (!card.nextReviewDate || card.nextReviewDate <= todayDate) return true;
+    if (options.finalStretchSweep) {
+      const reviewedToday = card.lastReviewedAt && card.lastReviewedAt.slice(0, 10) === todayDate;
+      return !reviewedToday;
+    }
+    return false;
   });
 }
 
@@ -186,9 +215,10 @@ export function getDueFlashcards(
  */
 export function calculateFlashcardDeckStats(
   cards: ErrorFlashcard[] = [],
-  todayDate = getTodayString()
+  todayDate = getTodayString(),
+  options: DueFlashcardsOptions = {}
 ): FlashcardDeckStats {
-  const dueCards = getDueFlashcards(cards, todayDate);
+  const dueCards = getDueFlashcards(cards, todayDate, options);
   let pendingCount = 0;
   let reviewingCount = 0;
   let masteredCount = 0;

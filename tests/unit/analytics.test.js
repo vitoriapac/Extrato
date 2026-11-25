@@ -67,8 +67,9 @@ test('redistribui pesos quando um fator de prontidão está ausente', () => {
     simulations: { score: 0, confidence: 0, available: false },
   };
   const result = calculateReadinessScore(metrics);
-  assert.equal(result.value, 67);
+  assert.equal(result.value, 71);
   assert.equal(result.state, 'estimated');
+  assert.equal(result.algorithmVersion, 2);
   assert.deepEqual(result.missingFactors, ['simulations']);
   assert.equal(result.factors.simulations, null);
 });
@@ -86,7 +87,25 @@ test('não inventa índice quando todos os fatores estão ausentes', () => {
   const result = calculateReadinessScore({});
   assert.equal(result.value, null);
   assert.equal(result.state, 'empty');
-  assert.equal(result.missingFactors.length, 5);
+  assert.equal(result.missingFactors.length, 4);
+});
+
+test('prontidão v2 migra pesos dinamicamente conforme simulados comparáveis e exclui consistência', () => {
+  const baseMetrics = {
+    coverage: { score: 80, confidence: 0.8, available: true },
+    mastery: { score: 60, confidence: 0.8, available: true },
+    retention: { score: 70, confidence: 0.8, available: true },
+    consistency: { score: 100, confidence: 1, available: true },
+    simulations: { score: 90, confidence: 0.9, available: true },
+  };
+  const lowSim = calculateReadinessScore(baseMetrics, { comparableSimulationsCount: 1 });
+  const midSim = calculateReadinessScore(baseMetrics, { comparableSimulationsCount: 2 });
+  const highSim = calculateReadinessScore(baseMetrics, { comparableSimulationsCount: 4 });
+  assert.equal(lowSim.weights.simulations, 0.1);
+  assert.equal(midSim.weights.simulations, 0.25);
+  assert.equal(highSim.weights.simulations, 0.35);
+  assert.equal(highSim.factors.consistency, undefined);
+  assert.ok(highSim.value > lowSim.value);
 });
 
 test('calcula cobertura ignorando tópicos arquivados', () => {

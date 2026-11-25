@@ -153,7 +153,7 @@ test('buildWeeklyAllocationBarVisual — agrega fatias de disciplinas e mix de a
 });
 
 test('buildPhaseRoadmapVisual — determina fases de preparação e contagem regressiva', () => {
-  // Cenário 1: 20 dias restantes -> Modo Reta Final (85/15)
+  // Cenário 1: 20 dias restantes -> Intensificação (25/45/30)
   const roadmap20d = buildPhaseRoadmapVisual({
     examDate: '2026-11-24',
     today: '2026-11-04',
@@ -161,13 +161,22 @@ test('buildPhaseRoadmapVisual — determina fases de preparação e contagem reg
   });
 
   assert.equal(roadmap20d.daysRemaining, 20);
-  assert.equal(roadmap20d.phase, 'final_stretch');
-  assert.equal(roadmap20d.phaseLabel, 'Modo Reta Final (85/15)');
+  assert.equal(roadmap20d.phase, 'intensification');
+  assert.equal(roadmap20d.phaseLabel, 'Intensificação (25/45/30)');
   assert.equal(roadmap20d.progressPercentage, 63); // 34 de 54 dias do plano
-  assert.equal(roadmap20d.phaseProgressPercentage, 43); // 10 de 23 dias da reta final
+  assert.equal(roadmap20d.phaseProgressPercentage, 63); // 10 de 16 dias da intensificação (30->14)
 
   const activePhase = roadmap20d.phasesList.find(p => p.isActive);
-  assert.equal(activePhase?.key, 'final_stretch');
+  assert.equal(activePhase?.key, 'intensification');
+
+  // Cenário 1b: 10 dias restantes -> Modo Reta Final (15/50/35)
+  const roadmap10d = buildPhaseRoadmapVisual({
+    examDate: '2026-11-14',
+    today: '2026-11-04',
+  });
+  assert.equal(roadmap10d.daysRemaining, 10);
+  assert.equal(roadmap10d.phase, 'final_stretch');
+  assert.equal(roadmap10d.phaseLabel, 'Modo Reta Final (15/50/35)');
 
   // Cenário 2: 5 dias restantes -> Revisão Final
   const roadmap5d = buildPhaseRoadmapVisual({

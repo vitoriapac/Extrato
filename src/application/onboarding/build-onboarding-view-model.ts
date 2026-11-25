@@ -5,6 +5,13 @@ import {
   validateRoutineSustainability,
   type RoutineSustainabilityResult,
 } from '../../domain/onboarding/routine-sustainability.js';
+import {
+  CANDIDATE_PROFILE_LIST,
+  normalizeCandidateProfile,
+  resolveEffectiveExamPhase,
+} from '../../domain/onboarding/candidate-profile.js';
+import { KNOWN_BANCAS } from '../../domain/questions/bancas.js';
+import { suggestBancaRatios } from '../../domain/planning/banca-strategy-policy.js';
 
 export type { StarterPack, RoutineSustainabilityResult };
 
@@ -158,6 +165,9 @@ export function buildOnboardingViewModel({
   presets = [],
   presetId = null,
   customExamName = null,
+  candidateProfile = 'iniciante',
+  examBanca = null,
+  activityMixOverride = null,
 }: any = {}) {
   type Row = Record<string, any>;
   const hasGoal = Boolean(examDate),
@@ -304,6 +314,15 @@ export function buildOnboardingViewModel({
     weeklyHours: availableMinutes / 60,
   });
 
+  const normalizedCandidateProfile = normalizeCandidateProfile(candidateProfile);
+  const effectivePhase = resolveEffectiveExamPhase(days, normalizedCandidateProfile);
+  const bancaStrategy = suggestBancaRatios({
+    banca: examBanca,
+    phaseState: effectivePhase.state,
+    candidateProfile: normalizedCandidateProfile,
+  });
+  const activityMixRatios = activityMixOverride || bancaStrategy.ratios;
+
   return {
     visible: !hasHistory && !hasPlan && Boolean(next),
     steps,
@@ -328,6 +347,13 @@ export function buildOnboardingViewModel({
     presets,
     presetId,
     customExamName,
+    candidateProfile: normalizedCandidateProfile,
+    candidateProfiles: CANDIDATE_PROFILE_LIST,
+    examBanca: bancaStrategy.banca,
+    knownBancas: KNOWN_BANCAS,
+    effectivePhase,
+    bancaStrategy,
+    activityMixRatios,
     dateShortcuts: EXAM_DATE_SHORTCUTS,
     availabilityPresets: AVAILABILITY_PRESETS,
     starterPacks: STARTER_PACKS,

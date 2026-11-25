@@ -22,6 +22,7 @@ import { createRemoteSyncProvider } from '../storage/remote-sync-provider.js';
 import { createRemoteSyncController } from '../ui/controllers/remote-sync-controller.js';
 import { createDemoController } from '../ui/controllers/demo-controller.js';
 import { enterDemoMode, exitDemoMode, resetDemoMode } from '../application/demo/demo-mode.js';
+import { ensurePersistentStorage } from '../storage/persistent-storage.js';
 
 export interface WireStorageAndSyncDeps {
   /** Depois de qualquer alteração de dados que agenda salvamento (ex.: conferir conquistas). */
@@ -62,6 +63,7 @@ export interface WireStorageAndSyncDeps {
 
 export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
   let suppressBeforeUnloadSave = false;
+  let persistentStorageRequested = false;
 
   const sha256 = (value: any) => calculateSha256(value);
   const rotateAutomaticBackup = (previousRaw: string | null, options: any = {}) =>
@@ -210,6 +212,10 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     demoController,
     appStateStore: stateSyncCoordinator.appStateStore,
     scheduleSave: (options?: { silent?: boolean }) => {
+      if (!deps.isDemoMode && !persistentStorageRequested) {
+        persistentStorageRequested = true;
+        void ensurePersistentStorage();
+      }
       demoController.sync();
       stateSyncCoordinator.scheduleSave(options);
       deps.onStateChanged?.();

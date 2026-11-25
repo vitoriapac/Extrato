@@ -1,6 +1,6 @@
 import { strategicScopeKey } from './build-strategic-timeline.js';
 
-const phaseOrder = ['construction', 'consolidation', 'final_stretch', 'final_review'];
+const phaseOrder = ['construction', 'consolidation', 'intensification', 'final_stretch', 'final_review'];
 const rounded = (value: number) => Math.round(value * 10) / 10;
 const validPhase = (record: Record<string, any> | null | undefined) =>
   phaseOrder.includes(record?.examPhase?.state) ? record!.examPhase : null;

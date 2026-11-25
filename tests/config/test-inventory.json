@@ -3118,7 +3118,7 @@
         "../../src/domain/analytics/trends.js",
         "../../src/domain/analytics/study-metrics.js"
       ],
-      "staticTestDeclarations": 13,
+      "staticTestDeclarations": 14,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3736,6 +3736,37 @@
         "../../src/ui/tabs/calendar/calendar-tab-controller.js"
       ],
       "staticTestDeclarations": 9,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/candidate-and-banca-strategy.test.js",
+      "layer": "node",
+      "area": "Datas",
+      "areaBasis": "filename_hint",
+      "criticality": "critical",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/onboarding/candidate-profile.js",
+        "../../src/domain/planning/banca-strategy-policy.js"
+      ],
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -8784,6 +8815,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/persistent-storage.test.js",
+      "layer": "node",
+      "area": "Persistência",
+      "areaBasis": "filename_hint",
+      "criticality": "critical",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/storage/persistent-storage.js"
+      ],
+      "staticTestDeclarations": 4,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/phase-strategy.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -10963,6 +11024,36 @@
         "../../src/ui/tabs/calendar/calendar-tab-controller.js"
       ],
       "staticTestDeclarations": 7,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/reviews-long-horizon.test.js",
+      "layer": "node",
+      "area": "Revisões",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/reviews.js"
+      ],
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

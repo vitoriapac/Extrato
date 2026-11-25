@@ -27,7 +27,9 @@ export function calculateWeightedConfidence(metrics: any, weights: Record<string
   );
 }
 
-export const READINESS_WEIGHTS = Object.freeze({
+export const READINESS_ALGORITHM_VERSION = 2;
+
+export const READINESS_LEGACY_WEIGHTS_V1 = Object.freeze({
   coverage: 0.3,
   mastery: 0.25,
   retention: 0.2,
@@ -35,11 +37,71 @@ export const READINESS_WEIGHTS = Object.freeze({
   simulations: 0.1,
 });
 
+export const READINESS_WEIGHTS = Object.freeze({
+  coverage: 0.35,
+  mastery: 0.3,
+  retention: 0.25,
+  simulations: 0.1,
+});
+
+export const READINESS_WEIGHTS_MEDIUM_SIMULATIONS = Object.freeze({
+  coverage: 0.25,
+  mastery: 0.3,
+  retention: 0.2,
+  simulations: 0.25,
+});
+
+export const READINESS_WEIGHTS_HIGH_SIMULATIONS = Object.freeze({
+  coverage: 0.2,
+  mastery: 0.25,
+  retention: 0.2,
+  simulations: 0.35,
+});
+
+export interface ReadinessScoreOptions {
+  comparableSimulationsCount?: number | null;
+  weights?: Record<string, number>;
+}
+
+/**
+ * Seleciona pesos dinâmicos para o Índice de Prontidão conforme a quantidade de simulados comparáveis.
+ * Consistência não compõe a Prontidão v2 (permanece como métrica de hábito).
+ */
+export function resolveDynamicReadinessWeights(
+  comparableSimulationsCount: number | null | undefined = 0
+): Record<string, number> {
+  const count = Math.max(0, Number(comparableSimulationsCount) || 0);
+  if (count >= 4) return { ...READINESS_WEIGHTS_HIGH_SIMULATIONS };
+  if (count >= 2) return { ...READINESS_WEIGHTS_MEDIUM_SIMULATIONS };
+  return { ...READINESS_WEIGHTS };
+}
+
+function isReadinessOptions(value: unknown): value is ReadinessScoreOptions {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      ('comparableSimulationsCount' in value || 'weights' in value)
+  );
+}
+
 export function calculateReadinessScore(
   metrics: any,
-  weights: Record<string, number> = READINESS_WEIGHTS
+  weightsOrOptions: Record<string, number> | ReadinessScoreOptions = {}
 ) {
-  const entries = Object.entries(weights);
+  const resolvedWeights: Record<string, number> = isReadinessOptions(weightsOrOptions)
+    ? weightsOrOptions.weights ||
+      resolveDynamicReadinessWeights(
+        weightsOrOptions.comparableSimulationsCount ??
+          metrics?.simulations?.count ??
+          metrics?.simulations?.comparableCount ??
+          0
+      )
+    : Object.keys(weightsOrOptions || {}).length > 0
+      ? (weightsOrOptions as Record<string, number>)
+      : resolveDynamicReadinessWeights(
+          metrics?.simulations?.count ?? metrics?.simulations?.comparableCount ?? 0
+        );
+  const entries = Object.entries(resolvedWeights);
   const available = entries.filter(
     ([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score))
   );
@@ -57,7 +119,8 @@ export function calculateReadinessScore(
       availableFactors: [] as string[],
       evidence: describeScoreEvidence(),
       reasons: ['sem fatores disponíveis'],
-      algorithmVersion: 1,
+      weights: { ...resolvedWeights },
+      algorithmVersion: READINESS_ALGORITHM_VERSION,
     };
   const availableWeight = available.reduce((sum, [, weight]) => sum + weight, 0);
   const value = clampMetric(
@@ -88,6 +151,7 @@ export function calculateReadinessScore(
     reasons: missingFactors.length
       ? [pluralize(missingFactors.length, 'fator', 'fatores') + ' aguardando dados']
       : ['todos os fatores disponíveis'],
-    algorithmVersion: 1,
+    weights: { ...resolvedWeights },
+    algorithmVersion: READINESS_ALGORITHM_VERSION,
   };
 }

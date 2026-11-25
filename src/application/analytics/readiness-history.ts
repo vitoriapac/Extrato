@@ -1,6 +1,5 @@
 import {
   calculateReadinessScore,
-  READINESS_WEIGHTS,
 } from '../../domain/analytics/readiness-score.js';
 import {
   isTopicInExamScope,
@@ -30,7 +29,9 @@ export function createReadinessSnapshot({
   reason = null,
   examPhase = null,
 }: any = {}) {
-  const result = calculateReadinessScore(metrics, READINESS_WEIGHTS);
+  const result = calculateReadinessScore(metrics, {
+    comparableSimulationsCount: metrics?.simulations?.count ?? metrics?.simulations?.comparableCount ?? 0,
+  });
   if (!date || result.value == null) return null;
   return {
     id,
@@ -45,7 +46,7 @@ export function createReadinessSnapshot({
     confidence: result.confidence,
     confidenceLabel: result.confidenceLabel,
     factors: { ...result.factors },
-    weights: { ...READINESS_WEIGHTS },
+    weights: { ...result.weights },
     algorithmVersion: result.algorithmVersion,
     version: READINESS_SNAPSHOT_VERSION,
     captureKind,

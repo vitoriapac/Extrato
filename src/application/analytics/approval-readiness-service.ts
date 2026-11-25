@@ -17,7 +17,6 @@ import { calculateGoalConsistency } from '../../domain/analytics/consistency.js'
 import { calculateSubjectRadar } from '../../domain/analytics/multidimensional-radar.js';
 import {
   calculateReadinessScore,
-  READINESS_WEIGHTS,
 } from '../../domain/analytics/readiness-score.js';
 import { buildCalibratedScoreProjection } from '../../domain/forecasts/calibrated-score-projection.js';
 import { blueprintWeightedMean } from '../../domain/exams/blueprint-weights.js';
@@ -302,7 +301,10 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
   }
 
   function readinessResult(metrics?: Record<string, any>) {
-    return calculateReadinessScore(readinessFactors(metrics), READINESS_WEIGHTS);
+    const m = metrics || computeApprovalMetrics();
+    return calculateReadinessScore(readinessFactors(m), {
+      comparableSimulationsCount: m?.simulados?.count ?? 0,
+    });
   }
 
   function indiceProntidao(metrics?: Record<string, any>) {

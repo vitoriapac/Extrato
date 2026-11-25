@@ -1,7 +1,11 @@
 import type { JSX } from 'preact';
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { Button } from '../primitives/button.js';
 import { Dialog } from '../primitives/dialog.js';
+import {
+  formatPersistentStorageSummary,
+  getPersistentStorageStatus,
+} from '../../storage/persistent-storage.js';
 
 export interface DataManagementModalProps {
   open: boolean;
@@ -11,12 +15,24 @@ export interface DataManagementModalProps {
 export function DataManagementModal({ open, onClose }: DataManagementModalProps): JSX.Element {
   const periodStartRef = useRef<HTMLInputElement | null>(null);
   const periodEndRef = useRef<HTMLInputElement | null>(null);
+  const [storageStatusText, setStorageStatusText] = useState<string>('');
 
   useEffect(() => {
     // Estado inicial oculto definido apenas no mount para não sobrescrever alternância do ReportController.
     if (periodStartRef.current) periodStartRef.current.hidden = true;
     if (periodEndRef.current) periodEndRef.current.hidden = true;
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    void getPersistentStorageStatus().then(status => {
+      if (active) setStorageStatusText(formatPersistentStorageSummary(status));
+    });
+    return () => {
+      active = false;
+    };
+  }, [open]);
 
   return (
     <Dialog
@@ -37,6 +53,11 @@ export function DataManagementModal({ open, onClose }: DataManagementModalProps)
             Tudo fica salvo só neste navegador. Exporte de vez em quando para não perder nada e
             importe para restaurar em outro dispositivo.
           </div>
+          {storageStatusText ? (
+            <p class="text-xs text-content-secondary mt-1" id="persistentStorageStatus" role="status">
+              {storageStatusText}
+            </p>
+          ) : null}
           <p class="backup-export-status" id="backupExportStatus" role="status" />
         </div>
 

@@ -143,7 +143,23 @@ export function renderOnboardingContent(
       model.presetId === 'custom'
         ? `<label for="guidedCustomExamName">Nome do concurso ou exame<input id="guidedCustomExamName" type="text" placeholder="Ex: OAB, Residência Médica, Vestibular..." value="${escapeAttr(model.customExamName || '')}"></label>`
         : '';
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso ou exame<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso"><option value="undecided" ${!model.presetId || model.presetId === 'undecided' ? 'selected' : ''}>Ainda não escolhi um concurso</option>${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}<option value="custom" ${model.presetId === 'custom' ? 'selected' : ''}>Outro concurso ou exame...</option></select></label>${customExamField}${optionalDate}</div>`;
+    const profileButtons = (model.candidateProfiles || [])
+      .map((profile: any) => {
+        const isActive = profile.id === model.candidateProfile;
+        return `<button type="button" class="btn ghost small guided-preset-btn${isActive ? ' is-active' : ''}" data-guided-candidate-profile="${escapeAttr(profile.id)}" aria-pressed="${isActive}" title="${escapeAttr(profile.description)}">${escapeHtml(profile.label)}</button>`;
+      })
+      .join('');
+    const profileField = profileButtons
+      ? `<div class="guided-date-shortcuts" role="group" aria-label="Seu momento de preparação"><span class="guided-shortcut-title">Seu momento de preparação</span><div class="guided-shortcut-chips">${profileButtons}</div></div>`
+      : '';
+    const bancaOptions = (model.knownBancas || [])
+      .map(
+        (banca: string) =>
+          `<option value="${escapeAttr(banca)}" ${banca === model.examBanca ? 'selected' : ''}>${escapeHtml(banca)}</option>`
+      )
+      .join('');
+    const bancaField = `<label for="guidedExamBanca">Banca examinadora (opcional)<select id="guidedExamBanca" aria-label="Banca examinadora"><option value="" ${!model.examBanca ? 'selected' : ''}>Não definida</option>${bancaOptions}</select></label>`;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso ou exame<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso"><option value="undecided" ${!model.presetId || model.presetId === 'undecided' ? 'selected' : ''}>Ainda não escolhi um concurso</option>${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}<option value="custom" ${model.presetId === 'custom' ? 'selected' : ''}>Outro concurso ou exame...</option></select></label>${customExamField}${bancaField}${profileField}${optionalDate}</div>`;
   }
   if (step.id === 'availability') {
     const presets = (model.availabilityPresets || [])
@@ -217,7 +233,15 @@ export function renderOnboardingContent(
     : 'Sem data de prova, não dá para calcular o prazo e criar um plano semanal. Você pode abrir o app agora e informar a data depois em Planejamento.';
   const examDate = /^\d{4}-\d{2}-\d{2}$/.test(model.examDate || '') ? model.examDate.split('-').reverse().join('/') : 'Não informada';
   const subjectNames = (model.subjects || []).map((subject: any) => escapeHtml(subject.name)).join(', ');
-  return `<div class="guided-onboarding-panel"><h3>${title}</h3><p>${help}</p><p class="guided-plan-overview">Prova: <strong>${escapeHtml(examDate)}</strong> · Matérias: ${subjectNames || 'Nenhuma'}</p><div class="study-plan-summary onboarding-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${formatMinutes(model.weeklyPlannedMinutes || 0)}</strong><span>alocado na semana</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h4 id="onboardingFirstActivitiesTitle">Distribuição semanal por tópico</h4><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
+  const ratios = model.activityMixRatios || model.bancaStrategy?.ratios || { theory: 0.45, questions: 0.4, reviews: 0.15 };
+  const tPct = Math.round((Number(ratios.theory) || 0) * 100);
+  const qPct = Math.round((Number(ratios.questions) || 0) * 100);
+  const rPct = Math.round((Number(ratios.reviews) || 0) * 100);
+  const blocksHtml = (model.bancaStrategy?.recommendedBlocks || [])
+    .map((block: string) => `<span class="status-badge">${escapeHtml(block)}</span>`)
+    .join(' ');
+  const strategyHtml = `<section class="guided-feasibility-card" aria-labelledby="guidedStrategyMixTitle"><div class="guided-feasibility-header"><strong id="guidedStrategyMixTitle">Proporção sugerida (${escapeHtml(model.effectivePhase?.label || 'Construção')}${model.examBanca ? ` · ${escapeHtml(model.examBanca)}` : ''})</strong><p class="guided-feasibility-message">${escapeHtml(model.bancaStrategy?.focusNote || '')}</p>${blocksHtml ? `<div class="flex flex-wrap gap-1.5 mt-1">${blocksHtml}</div>` : ''}</div><div class="grid grid-cols-3 gap-2 mt-2"><label class="text-xs" for="guidedRatioTheory">Teoria (%)<input id="guidedRatioTheory" type="number" min="0" max="100" step="5" value="${tPct}" data-guided-ratio="theory" aria-label="Percentual de teoria"></label><label class="text-xs" for="guidedRatioQuestions">Questões (%)<input id="guidedRatioQuestions" type="number" min="0" max="100" step="5" value="${qPct}" data-guided-ratio="questions" aria-label="Percentual de questões"></label><label class="text-xs" for="guidedRatioReviews">Revisões (%)<input id="guidedRatioReviews" type="number" min="0" max="100" step="5" value="${rPct}" data-guided-ratio="reviews" aria-label="Percentual de revisões"></label></div></section>`;
+  return `<div class="guided-onboarding-panel"><h3>${title}</h3><p>${help}</p><p class="guided-plan-overview">Prova: <strong>${escapeHtml(examDate)}</strong> · Matérias: ${subjectNames || 'Nenhuma'}</p><div class="study-plan-summary onboarding-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${formatMinutes(model.weeklyPlannedMinutes || 0)}</strong><span>alocado na semana</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${strategyHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h4 id="onboardingFirstActivitiesTitle">Distribuição semanal por tópico</h4><ul>${activities}</ul></section>` : ''}${flexibilityNote}${
     model.canCreatePlan
       ? '<p class="confidence-note">Os minutos acima são alocações semanais por tópico. A distribuição diária divide essa carga em atividades conforme a disponibilidade.</p>'
       : model.canConfigurePlan

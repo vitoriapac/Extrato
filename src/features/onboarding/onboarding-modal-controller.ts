@@ -6,6 +6,8 @@ import {
 } from '../../application/onboarding/build-onboarding-view-model.js';
 import { findStarterPackById, type StarterPack } from '../../domain/onboarding/starter-packs.js';
 import { applySundayRestDay } from '../../domain/onboarding/routine-sustainability.js';
+import { normalizeCandidateProfile } from '../../domain/onboarding/candidate-profile.js';
+import { normalizeEditableRatios } from '../../domain/planning/banca-strategy-policy.js';
 import { syncOnboardingPhase } from '../../ui/controllers/onboarding-phase-controller.js';
 import { h } from 'preact';
 import { mountPreact, unmountPreact } from '../../ui/preact-mount.js';
@@ -181,6 +183,9 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       presets: examPresets,
       presetId: uiState.onboarding.presetId,
       customExamName: state.examBlueprint?.customTitle || null,
+      candidateProfile: state.metas?.candidateProfile || 'iniciante',
+      examBanca: state.metas?.examBanca || state.examBlueprint?.banca || null,
+      activityMixOverride: state.metas?.activityMixOverride || null,
     });
     return { ...model, manualDraftError: validateManualSubjects(manualDrafts, (state.subjects || []).map((subject: any) => subject.name || '')) };
   }
@@ -631,6 +636,18 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       showToast('Domingo definido como dia de folga.');
       return;
     }
+    const profileBtn = (event.target as HTMLElement)?.closest<HTMLElement>('[data-guided-candidate-profile]');
+    if (profileBtn) {
+      const state = getState();
+      state.metas = state.metas || {};
+      state.metas.candidateProfile = normalizeCandidateProfile(
+        profileBtn.dataset.guidedCandidateProfile
+      );
+      state.metas.activityMixOverride = null;
+      scheduleSave();
+      renderGuidedOnboarding();
+      return;
+    }
     if (action === 'import' && deps.openExamImport) {
       deps.openExamImport(getUiState().onboarding.presetId, 'onboarding');
     }
@@ -734,6 +751,34 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
         if (target?.id === 'guidedCustomExamName') {
           const customName = (target as HTMLInputElement).value;
           deps.updateExamBlueprint?.('customTitle', customName, { refresh: false });
+          return;
+        }
+        if (target?.id === 'guidedExamBanca') {
+          const state = getState();
+          state.metas = state.metas || {};
+          state.metas.examBanca = (target as HTMLSelectElement).value || null;
+          state.metas.activityMixOverride = null;
+          scheduleSave();
+          return;
+        }
+        if (target?.dataset?.guidedRatio) {
+          const theory = Number(
+            (document.getElementById('guidedRatioTheory') as HTMLInputElement | null)?.value ?? 45
+          );
+          const questions = Number(
+            (document.getElementById('guidedRatioQuestions') as HTMLInputElement | null)?.value ?? 40
+          );
+          const reviews = Number(
+            (document.getElementById('guidedRatioReviews') as HTMLInputElement | null)?.value ?? 15
+          );
+          const state = getState();
+          state.metas = state.metas || {};
+          state.metas.activityMixOverride = normalizeEditableRatios({
+            theory,
+            questions,
+            reviews,
+          });
+          scheduleSave();
           return;
         }
         if (target?.id === 'guidedExamDate') {

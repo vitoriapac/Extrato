@@ -10,6 +10,7 @@ export const ADAPTIVE_COOLDOWN_DAYS = EXAM_INTELLIGENCE_CONFIG.cooldownDays;
 export const EXAM_PHASE_THRESHOLDS = Object.freeze({
   construction: 90,
   consolidation: 30,
+  intensification: 14,
   finalStretch: 7,
 });
 
@@ -51,7 +52,7 @@ export function resolveExamPhase(daysToExam: unknown, thresholds = EXAM_PHASE_TH
     return {
       state: 'construction',
       label: 'Construção',
-      strategy: 'Priorize teoria e cobertura do edital.',
+      strategy: 'Combine teoria, questões desde o início e revisões espaçadas.',
       days,
     };
   if (days > thresholds.consolidation)
@@ -61,11 +62,18 @@ export function resolveExamPhase(daysToExam: unknown, thresholds = EXAM_PHASE_TH
       strategy: 'Combine questões, revisão e tópicos ainda não cobertos.',
       days,
     };
+  if (days > (thresholds.intensification ?? 14))
+    return {
+      state: 'intensification',
+      label: 'Intensificação',
+      strategy: 'Aumente o volume de questões da banca e feche lacunas prioritárias.',
+      days,
+    };
   if (days > thresholds.finalStretch)
     return {
       state: 'final_stretch',
       label: 'Reta final',
-      strategy: 'Concentre-se nas lacunas e nas revisões de maior impacto.',
+      strategy: 'Concentre-se nas lacunas e nas revisões de maior impacto (85% questões e revisão).',
       days,
     };
   return {

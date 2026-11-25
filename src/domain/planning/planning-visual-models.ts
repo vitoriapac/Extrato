@@ -339,6 +339,7 @@ export type PreparationPhase =
   | 'undated'
   | 'construction'
   | 'consolidation'
+  | 'intensification'
   | 'final_stretch'
   | 'final_review';
 
@@ -365,13 +366,15 @@ export interface PhaseRoadmapVisualModel {
 
 const PHASE_GUIDANCE: Record<PreparationPhase, string> = {
   construction:
-    'Foco recomendado: construir base teórica nas disciplinas de maior peso e iniciar revisões.',
+    'Foco recomendado: construir base teórica nas disciplinas de maior peso com questões desde o início (45/40/15).',
   consolidation:
-    'Foco recomendado: equilibrar teoria pendente com baterias de questões e revisões em dia.',
+    'Foco recomendado: equilibrar teoria pendente com baterias de questões e revisões em dia (35/40/25).',
+  intensification:
+    'Foco recomendado: acelerar baterias de questões da banca e fechar lacunas prioritárias (25/45/30).',
   final_stretch:
-    'Foco recomendado: priorizar questões da banca e revisão de erros nos tópicos de alto impacto.',
+    'Foco recomendado: priorizar questões da banca e revisão de erros nos tópicos de alto impacto (15/50/35).',
   final_review:
-    'Foco recomendado: revisão leve de pontos críticos e controle de ritmo até a prova.',
+    'Foco recomendado: revisão leve de pontos críticos e controle de ritmo até a prova (10/40/50).',
   undated: '',
 };
 
@@ -412,9 +415,12 @@ export function buildPhaseRoadmapVisual({
   if (daysRemaining <= 7) {
     phase = 'final_review';
     phaseLabel = 'Semana de Revisão Final';
-  } else if (daysRemaining <= 30) {
+  } else if (daysRemaining <= 14) {
     phase = 'final_stretch';
-    phaseLabel = 'Modo Reta Final (85/15)';
+    phaseLabel = 'Modo Reta Final (15/50/35)';
+  } else if (daysRemaining <= 30) {
+    phase = 'intensification';
+    phaseLabel = 'Intensificação (25/45/30)';
   } else if (daysRemaining <= 90) {
     phase = 'consolidation';
     phaseLabel = 'Consolidação e Fixação';
@@ -426,16 +432,28 @@ export function buildPhaseRoadmapVisual({
   const elapsedDays = Math.max(0, Math.round(((todayObj?.getTime() || 0) - (startObj?.getTime() || 0)) / (1000 * 60 * 60 * 24)));
   const progressPercentage = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDurationDays) * 100)));
 
-  // Fronteiras das fases em dias restantes: início do plano > 90 > 30 > 7 > 0.
-  const phaseStartRemaining = { construction: Math.max(totalDurationDays, 91), consolidation: 90, final_stretch: 30, final_review: 7 }[phase];
-  const phaseEndRemaining = { construction: 90, consolidation: 30, final_stretch: 7, final_review: 0 }[phase];
+  // Fronteiras das fases em dias restantes: início do plano > 90 > 30 > 14 > 7 > 0.
+  const phaseStartRemaining = {
+    construction: Math.max(totalDurationDays, 91),
+    consolidation: 90,
+    intensification: 30,
+    final_stretch: 14,
+    final_review: 7,
+  }[phase];
+  const phaseEndRemaining = {
+    construction: 90,
+    consolidation: 30,
+    intensification: 14,
+    final_stretch: 7,
+    final_review: 0,
+  }[phase];
   const phaseProgressPercentage = Math.min(100, Math.max(0, Math.round(((phaseStartRemaining - daysRemaining) / (phaseStartRemaining - phaseEndRemaining)) * 100)));
 
   const phasesList = [
     {
       key: 'construction' as const,
       label: 'Construção',
-      description: 'Teoria e fundação de base (>90 dias)',
+      description: 'Teoria, questões iniciais e base (>90 dias)',
       minDays: 91,
       maxDays: 365,
       isActive: phase === 'construction',
@@ -451,11 +469,20 @@ export function buildPhaseRoadmapVisual({
       isPassed: daysRemaining <= 30,
     },
     {
+      key: 'intensification' as const,
+      label: 'Intensificação',
+      description: 'Foco em questões da banca e lacunas (15–30 dias)',
+      minDays: 15,
+      maxDays: 30,
+      isActive: phase === 'intensification',
+      isPassed: daysRemaining <= 14,
+    },
+    {
       key: 'final_stretch' as const,
       label: 'Reta Final',
-      description: '85% em questões/revisão e 15% teoria (8–30 dias)',
+      description: '85% em questões/revisão e 15% teoria (8–14 dias)',
       minDays: 8,
-      maxDays: 30,
+      maxDays: 14,
       isActive: phase === 'final_stretch',
       isPassed: daysRemaining <= 7,
     },

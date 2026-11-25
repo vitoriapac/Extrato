@@ -717,6 +717,11 @@
       "rationale": "Contrato Node barato; componente Preact declarativo de comparativo de ritmo com aprovados por carreira."
     },
     {
+      "file": "tests/unit/candidate-and-banca-strategy.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node puro; valida perfil do candidato e proporções sugeridas por banca."
+    },
+    {
       "file": "tests/unit/career-benchmarks.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node puro e determinístico; benchmarks de aprovados por carreira e agregação de ritmo recente."
@@ -1407,6 +1412,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/persistent-storage.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; valida armazenamento persistente sem browser."
+    },
+    {
       "file": "tests/unit/phase-strategy.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1730,6 +1740,11 @@
       "file": "tests/unit/reviews-calendar-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; componentes Preact e controllers de revisões e calendário."
+    },
+    {
+      "file": "tests/unit/reviews-long-horizon.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; valida revisões de 60/90 dias e revisão geral pré-prova."
     },
     {
       "file": "tests/unit/reviews-tab-controller.test.js",

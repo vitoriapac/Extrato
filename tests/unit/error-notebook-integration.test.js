@@ -133,10 +133,11 @@ test('resumo mantém revisões de tópico e flashcards separados sem alterar os 
     { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('pending'), nextReviewDate: '2026-11-20' },
     { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('reviewing'), nextReviewDate: '2026-11-09' },
     { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('mastered'), nextReviewDate: '2026-11-01' },
+    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('mastered'), nextReviewDate: '2026-12-06' },
   ];
   const before = JSON.stringify({ topics, cards });
   assert.deepEqual(buildReviewQueueSummary({ reviews: topics, flashcards: cards, today: '2026-11-06' }), {
-    topicsDue: 1, topicsNext: '2026-11-08', flashcardsDue: 1, flashcardsNext: '2026-11-09',
+    topicsDue: 1, topicsNext: '2026-11-08', flashcardsDue: 2, flashcardsNext: '2026-11-09',
   });
   assert.equal(JSON.stringify({ topics, cards }), before);
 });

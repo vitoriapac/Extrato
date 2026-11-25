@@ -74,12 +74,20 @@ test('reviewErrorFlashcard — rating good progride intervalos e atinge mastered
   assert.equal(rev2.status, 'reviewing');
   assert.equal(rev2.nextReviewDate, '2026-10-07');
 
-  // 3ª revisão: good -> intervalo 4 * 2.5 = 10 dias, atinge mastered
+  // 3ª revisão: good -> atinge mastered com intervalo longo inicial de 30 dias
   const rev3 = reviewErrorFlashcard(rev2, 'good', { todayDate: '2026-10-07' });
-  assert.equal(rev3.intervalDays, 10);
+  assert.equal(rev3.intervalDays, 30);
   assert.equal(rev3.consecutiveSuccesses, 3);
   assert.equal(rev3.status, 'mastered');
-  assert.equal(rev3.nextReviewDate, '2026-10-17');
+  assert.equal(rev3.nextReviewDate, '2026-11-06');
+
+  // 4ª e 5ª revisões de cartão dominado progridem para 60 e 120 dias
+  const rev4 = reviewErrorFlashcard(rev3, 'good', { todayDate: '2026-11-06' });
+  assert.equal(rev4.status, 'mastered');
+  assert.equal(rev4.intervalDays, 60);
+  const rev5 = reviewErrorFlashcard(rev4, 'easy', { todayDate: '2027-01-05' });
+  assert.equal(rev5.status, 'mastered');
+  assert.equal(rev5.intervalDays, 120);
 });
 
 test('getDueFlashcards e calculateFlashcardDeckStats — filtram corretamente vencidos e contabilizam status', () => {
@@ -127,14 +135,19 @@ test('getDueFlashcards e calculateFlashcardDeckStats — filtram corretamente ve
   const cards = [c1, c2, c3, c4];
   const due = getDueFlashcards(cards, '2026-10-27');
 
-  // c1 (pending) e c2 (reviewing com data 25 <= 27) devem estar no due; c3 é futuro (01/11); c4 é mastered
-  assert.equal(due.length, 2);
+  // c1 (pending), c2 (reviewing vencido) e c4 (mastered vencido em 20/10) devem estar no due; c3 é futuro (01/11)
+  assert.equal(due.length, 3);
   assert.ok(due.some(c => c.id === c1.id));
   assert.ok(due.some(c => c.id === c2.id));
+  assert.ok(due.some(c => c.id === c4.id));
+
+  // Na varredura da Reta Final, inclusive cartões futuros entram na fila (exceto já revisados hoje)
+  const sweepDue = getDueFlashcards(cards, '2026-10-27', { finalStretchSweep: true });
+  assert.equal(sweepDue.length, 4);
 
   const stats = calculateFlashcardDeckStats(cards, '2026-10-27');
   assert.equal(stats.total, 4);
-  assert.equal(stats.dueCount, 2);
+  assert.equal(stats.dueCount, 3);
   assert.equal(stats.pendingCount, 1);
   assert.equal(stats.reviewingCount, 2);
   assert.equal(stats.masteredCount, 1);

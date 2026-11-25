@@ -10,6 +10,8 @@ export const AGENDA_INTERVALS: ReviewIntervalOption[] = [
   { dias: 1, tipo: 'Revisão 24h' },
   { dias: 7, tipo: 'Revisão 7 dias' },
   { dias: 30, tipo: 'Revisão 30 dias' },
+  { dias: 60, tipo: 'Revisão 60 dias' },
+  { dias: 90, tipo: 'Revisão 90 dias' },
 ];
 
 export const DIFFICULTY_INTERVALS: Record<TopicDifficulty, ReviewIntervalOption[]> = {
@@ -18,18 +20,99 @@ export const DIFFICULTY_INTERVALS: Record<TopicDifficulty, ReviewIntervalOption[
     { dias: 3, tipo: 'Revisão 3 dias' },
     { dias: 7, tipo: 'Revisão 7 dias' },
     { dias: 15, tipo: 'Revisão 15 dias' },
+    { dias: 30, tipo: 'Revisão 30 dias' },
+    { dias: 60, tipo: 'Revisão 60 dias' },
+    { dias: 90, tipo: 'Revisão 90 dias' },
   ],
   Médio: [
     { dias: 1, tipo: 'Revisão 24h' },
     { dias: 7, tipo: 'Revisão 7 dias' },
     { dias: 30, tipo: 'Revisão 30 dias' },
+    { dias: 60, tipo: 'Revisão 60 dias' },
+    { dias: 90, tipo: 'Revisão 90 dias' },
   ],
   Fácil: [
     { dias: 1, tipo: 'Revisão 24h' },
     { dias: 14, tipo: 'Revisão 14 dias' },
     { dias: 30, tipo: 'Revisão 30 dias' },
+    { dias: 60, tipo: 'Revisão 60 dias' },
+    { dias: 90, tipo: 'Revisão 90 dias' },
   ],
 };
+
+export const PRE_EXAM_GENERAL_REVIEW_TYPE = 'Revisão geral pré-prova';
+export const PRE_EXAM_WINDOW_OFFSETS = Object.freeze([-14, -13, -12, -11, -10]);
+
+export interface PreExamReviewTopicInput {
+  id: string;
+  subjectId: string;
+  status?: string;
+}
+
+export interface PreExamReviewExistingItem {
+  topicId?: string | null;
+  topicRef?: string | null;
+  tipo?: string | null;
+}
+
+export interface PreExamGeneralReviewDraft {
+  subjectId: string;
+  topicId: string;
+  date: string;
+  suggestedDate: string;
+  baseIntervalDays: number;
+  adaptive: boolean;
+  manualDate: boolean;
+  adaptiveReason: string;
+  tipo: string;
+  status: 'Não iniciado';
+}
+
+/**
+ * Gera rascunhos de Revisão Geral Pré-Prova na janela de 10 a 15 dias antes da prova
+ * para todos os tópicos já concluídos que ainda não possuam esse marco agendado.
+ */
+export function buildPreExamGeneralReviewItems({
+  topics = [],
+  existingAgenda = [],
+  examDate,
+  today,
+}: {
+  topics: PreExamReviewTopicInput[];
+  existingAgenda: PreExamReviewExistingItem[];
+  examDate?: string | null;
+  today: string;
+}): PreExamGeneralReviewDraft[] {
+  if (!examDate || !/^\d{4}-\d{2}-\d{2}$/.test(examDate) || examDate <= today) {
+    return [];
+  }
+  const existingTopicIds = new Set(
+    existingAgenda
+      .filter(item => item.tipo === PRE_EXAM_GENERAL_REVIEW_TYPE)
+      .map(item => item.topicId || item.topicRef)
+      .filter(Boolean)
+  );
+  const completedTopics = topics.filter(
+    topic => topic.status === 'Concluído' && !existingTopicIds.has(topic.id)
+  );
+  return completedTopics.map((topic, index) => {
+    const offset = PRE_EXAM_WINDOW_OFFSETS[index % PRE_EXAM_WINDOW_OFFSETS.length];
+    const rawTarget = addLocalDays(examDate, offset) || examDate;
+    const date = rawTarget < today ? today : rawTarget;
+    return {
+      subjectId: topic.subjectId,
+      topicId: topic.id,
+      date,
+      suggestedDate: date,
+      baseIntervalDays: Math.abs(offset),
+      adaptive: false,
+      manualDate: false,
+      adaptiveReason: 'Revisão geral automática na janela de 10–15 dias antes da prova.',
+      tipo: PRE_EXAM_GENERAL_REVIEW_TYPE,
+      status: 'Não iniciado',
+    };
+  });
+}
 
 export interface CalculateAdaptiveIntervalParams {
   baseDays: number;

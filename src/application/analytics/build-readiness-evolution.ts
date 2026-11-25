@@ -1,4 +1,7 @@
-import { READINESS_WEIGHTS } from '../../domain/analytics/readiness-score.js';
+import {
+  READINESS_LEGACY_WEIGHTS_V1,
+  READINESS_WEIGHTS,
+} from '../../domain/analytics/readiness-score.js';
 import { readinessHistoryForScope } from './readiness-history.js';
 
 type Row = Record<string, any>;
@@ -12,7 +15,13 @@ const labels: Record<string, string> = {
 const finite = (value: unknown) =>
   value !== null && value !== undefined && Number.isFinite(Number(value));
 const weightsFor = (item: Row | null | undefined) => {
-  const weights = item?.weights || (item?.algorithmVersion === 1 ? READINESS_WEIGHTS : null);
+  const weights =
+    item?.weights ||
+    (item?.algorithmVersion === 1
+      ? READINESS_LEGACY_WEIGHTS_V1
+      : item?.algorithmVersion === 2
+        ? READINESS_WEIGHTS
+        : null);
   if (
     !weights ||
     typeof weights !== 'object' ||

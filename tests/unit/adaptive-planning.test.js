@@ -50,7 +50,10 @@ test('fases da prova distinguem ausência de data e limites configurados', () =>
   assert.equal(resolveExamPhase(null).state, 'undated');
   assert.equal(resolveExamPhase(91).state, 'construction');
   assert.equal(resolveExamPhase(90).state, 'consolidation');
-  assert.equal(resolveExamPhase(30).state, 'final_stretch');
+  assert.equal(resolveExamPhase(30).state, 'intensification');
+  assert.equal(resolveExamPhase(15).state, 'intensification');
+  assert.equal(resolveExamPhase(14).state, 'final_stretch');
+  assert.equal(resolveExamPhase(8).state, 'final_stretch');
   assert.equal(resolveExamPhase(7).state, 'final_review');
 });
 
