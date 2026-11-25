@@ -1,4 +1,4 @@
-import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
+import { resolveEffectiveExamPhase } from '../../domain/onboarding/candidate-profile.js';
 import { buildPhaseStrategyProposal } from '../../domain/planning/phase-strategy.js';
 const scope = (tags: string[] | null | undefined) => [...new Set(tags || [])].sort();
 // Projection supplies context; existing phase strategy owns the activity split.
@@ -14,7 +14,7 @@ export function buildPhasePlanningPreview({
   const unavailable = (reason: string) => ({
     state: 'insufficient',
     version: 1,
-    phase: resolveExamPhase(input.daysToExam),
+    phase: resolveEffectiveExamPhase(input.daysToExam, input.candidateProfile),
     reason,
   });
   if (

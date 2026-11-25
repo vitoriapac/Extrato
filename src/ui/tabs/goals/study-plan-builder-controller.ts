@@ -157,6 +157,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       examDate: state.examDate,
       activeExamTags: state.examBlueprint?.activeExamTags || [],
       eligibleTopicIds: evidenceScope.content.eligibleTopics.map((topic: any) => topic.id),
+      candidateProfile: state.metas?.candidateProfile || 'iniciante',
+      examBanca: state.metas?.examBanca || state.examBlueprint?.banca || null,
+      activityMixOverride: state.metas?.activityMixOverride || null,
     });
   }
 

@@ -11,6 +11,8 @@ import { ErrorNotebookView } from '../views/ErrorNotebookView.js';
 import { ErrorNotebookDueNotice } from '../components/ErrorNotebookDueNotice.js';
 import { ReviewQueueSummary } from '../components/ReviewQueueSummary.js';
 import { buildReviewQueueSummary } from '../../application/reviews/build-review-queue-summary.js';
+import { parseLocalDate } from '../../core/date-utils.js';
+import { isFinalStretchActive } from '../../domain/planning/final-stretch-policy.js';
 import {
   addErrorFlashcard,
   reviewErrorFlashcard,
@@ -58,6 +60,15 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
     syncView();
   }
 
+  function isFinalStretchSweepActive(state: AppState): boolean {
+    if (!state.examDate) return false;
+    const todayObj = parseLocalDate(context.todayISO());
+    const examObj = parseLocalDate(state.examDate);
+    if (!todayObj || !examObj) return false;
+    const days = Math.ceil((examObj.getTime() - todayObj.getTime()) / 86400000);
+    return isFinalStretchActive(days);
+  }
+
   function renderView(): void {
     const mount = context.getMount();
     if (!mount) return;
@@ -81,6 +92,7 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
           state.errorFlashcards || []
         ),
         todayDate: context.todayISO(),
+        finalStretchSweep: isFinalStretchSweepActive(state),
         onSaveFlashcard: (input: CreateFlashcardInput) => {
           const result = addErrorFlashcard(state.errorFlashcards || [], {
             ...input,
@@ -152,7 +164,12 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
 
   function renderDueNotices(): void {
     const state = context.getState();
-    const summary = buildReviewQueueSummary({ reviews: state.reviewAgenda || [], flashcards: state.errorFlashcards || [], today: context.todayISO() });
+    const summary = buildReviewQueueSummary({
+      reviews: state.reviewAgenda || [],
+      flashcards: state.errorFlashcards || [],
+      today: context.todayISO(),
+      finalStretchSweep: isFinalStretchSweepActive(state),
+    });
     const agenda = context.getDueAgendaMount();
     if (agenda) mountComponent(h(ReviewQueueSummary, {
       summary, onFlashcards: open,

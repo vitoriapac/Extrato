@@ -3,6 +3,8 @@ import {
   PHASE_ACTIVITY_KEYS as keys,
 } from './phase-strategy-policy.js';
 import { resolveExamPhase, ADAPTIVE_COOLDOWN_DAYS } from './adaptive-planning.js';
+import { resolveEffectiveExamPhase } from '../onboarding/candidate-profile.js';
+import { suggestBancaRatios } from './banca-strategy-policy.js';
 import { localDateFromTimestamp } from '../sessions/study-session.js';
 import { parseLocalDate, addLocalDays } from '../../core/date-utils.js';
 const excluded = new Set(['skipped', 'replaced', 'discarded', 'deferred']);
@@ -21,8 +23,13 @@ export function buildPhaseStrategyProposal({
   history = [],
   readiness = null,
   weeklyCapacityMinutes = null,
+  candidateProfile = 'iniciante',
+  examBanca = null,
+  activityMixOverride = null,
 }: Record<string, any> = {}) {
-  const phase = resolveExamPhase(daysToExam);
+  const phase = candidateProfile && candidateProfile !== 'iniciante'
+    ? resolveEffectiveExamPhase(daysToExam, candidateProfile)
+    : resolveExamPhase(daysToExam);
   const unavailable = (reason: string) => ({ state: 'insufficient', reason, phase, version: 1 });
   if (
     !parseLocalDate(today) ||
@@ -96,6 +103,32 @@ export function buildPhaseStrategyProposal({
     if (!candidate || candidate.mastery == null || Number(candidate.evidenceStrength) < 0.35)
       return structuredClone(item);
     let weights = [...phaseRatios[phase.state]];
+    if (
+      activityMixOverride &&
+      !['final_stretch', 'final_review'].includes(phase.state) &&
+      Number.isFinite(Number(activityMixOverride.theory)) &&
+      Number.isFinite(Number(activityMixOverride.questions)) &&
+      Number.isFinite(Number(activityMixOverride.reviews))
+    ) {
+      const sum =
+        Number(activityMixOverride.theory) +
+        Number(activityMixOverride.questions) +
+        Number(activityMixOverride.reviews);
+      if (sum > 0) {
+        weights = [
+          Number(activityMixOverride.theory) / sum,
+          Number(activityMixOverride.questions) / sum,
+          Number(activityMixOverride.reviews) / sum,
+        ];
+      }
+    } else if (examBanca || (candidateProfile && candidateProfile !== 'iniciante')) {
+      const suggested = suggestBancaRatios({
+        banca: examBanca,
+        phaseState: phase.state,
+        candidateProfile,
+      }).ratios;
+      weights = [suggested.theory, suggested.questions, suggested.reviews];
+    }
     const reasons = [phase.strategy];
     const critical = candidate.mastery < 50 && candidate.examImpact >= 70;
     const lowCoverage =

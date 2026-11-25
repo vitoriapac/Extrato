@@ -28,6 +28,7 @@ export interface ErrorNotebookViewProps {
   /** Registros de questões com erros que ainda não geraram flashcard (sugestões, nunca criação automática). */
   questionDrafts?: FlashcardDraft[];
   todayDate?: string;
+  finalStretchSweep?: boolean;
 }
 
 const MAX_VISIBLE_DRAFTS = 5;
@@ -51,6 +52,7 @@ export function ErrorNotebookView({
   onDeleteFlashcard,
   questionDrafts = [],
   todayDate,
+  finalStretchSweep = false,
 }: ErrorNotebookViewProps) {
   const [viewMode, setViewMode] = useState<'deck' | 'catalog'>('deck');
   const [currentDeckIndex, setCurrentDeckIndex] = useState<number>(0);
@@ -72,8 +74,8 @@ export function ErrorNotebookView({
   const [newQuestionId, setNewQuestionId] = useState<string | null>(null);
   const [ariaAnnouncement, setAriaAnnouncement] = useState<string>('');
 
-  const stats = calculateFlashcardDeckStats(flashcards, todayDate);
-  const dueCards = getDueFlashcards(flashcards, todayDate);
+  const stats = calculateFlashcardDeckStats(flashcards, todayDate, { finalStretchSweep });
+  const dueCards = getDueFlashcards(flashcards, todayDate, { finalStretchSweep });
 
   const activeCard = dueCards[currentDeckIndex] || null;
 

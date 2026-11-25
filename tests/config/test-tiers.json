@@ -1097,6 +1097,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/experience-cutoff-essay.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node puro; valida Modo Essencial/Analítico, corte por modalidade e discursiva multibanca."
+    },
+    {
       "file": "tests/unit/final-stretch-policy.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

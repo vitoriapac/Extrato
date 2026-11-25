@@ -24,6 +24,12 @@ export interface RawSyllabusParsedResult {
 
 const DISCIPLINE_PREFIX_REGEX = /^(?:disciplina|mat[eé]ria|conte[uú]do|m[oó]dulo)\s*:\s*/i;
 
+const PDF_NOISE_LINE_REGEX =
+  /^(?:p[áa]g(?:ina)?\.?\s*\d+(?:\s*(?:de|\/)\s*\d+)?|\d+\s*\/\s*\d+|edital\s*(?:n[ºo°.]*\s*)?\d+.*)$/i;
+
+const SECTION_BANNER_REGEX =
+  /^(?:anexo\s+[ivxlcdm\d]+.*|conte[úu]do\s+program[áa]tico|conhecimentos\s+(?:b[áa]sicos|gerais|espec[íi]ficos)|(?:parte|bloco)\s+[ivxlcdm\d]+)$/i;
+
 /** Expressão para detectar números hierárquicos: ex: "1", "1.1", "1.1.2", "12.3" */
 const NUMBERED_ITEM_REGEX = /(?:^|\s)(?:(\d+(?:\.\d+)*)\s*[-.)]\s*|\b(\d+(?:\.\d+)+)\s+)/;
 
@@ -123,7 +129,11 @@ function mergeWrappedPdfLines(rawLines: string[]): string[] {
       (/^[a-záéíóúâêîôûãõç(]/.test(current) || endsWithConnector.test(prev));
 
     if (shouldMerge) {
-      merged[merged.length - 1] = `${prev} ${current}`.replace(/\s+/g, ' ');
+      if (/[a-záéíóúâêîôûãõç]-$/i.test(prev) && /^[a-záéíóúâêîôûãõç]/i.test(current)) {
+        merged[merged.length - 1] = `${prev.slice(0, -1)}${current}`.replace(/\s+/g, ' ');
+      } else {
+        merged[merged.length - 1] = `${prev} ${current}`.replace(/\s+/g, ' ');
+      }
     } else {
       merged.push(current);
     }
@@ -278,7 +288,7 @@ export function parseRawSyllabusText(rawText: string): RawSyllabusParsedResult {
     normalized
       .split('\n')
       .map(l => l.trim())
-      .filter(Boolean)
+      .filter(l => Boolean(l) && !PDF_NOISE_LINE_REGEX.test(l) && !SECTION_BANNER_REGEX.test(l))
   );
 
   if (lines.length === 0) {
@@ -295,9 +305,11 @@ export function parseRawSyllabusText(rawText: string): RawSyllabusParsedResult {
 
   for (const line of lines) {
     // 1. Verifica se a linha contém cabeçalho de disciplina (em linha própria ou antes de dois pontos)
-    // Ex: "DIREITO ADMINISTRATIVO: 1 Estado..." ou "LÍNGUA PORTUGUESA:"
+    // Ex: "DIREITO ADMINISTRATIVO: 1 Estado...", "RACIOCÍNIO LÓGICO-MATEMÁTICO: 1 ...", "LÍNGUA PORTUGUESA:"
     const inlineHeaderMatch =
-      /^([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s]{3,60}|(?:disciplina|mat[eé]ria)\s*:\s*[^:\n]+):\s*(.*)$/i.exec(line);
+      /^([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ0-9\s\-/()&,]{2,70}|(?:disciplina|mat[eé]ria)\s*:\s*[^:\n]+):\s*(.*)$/.exec(
+        line
+      );
     let topicLine = line;
 
     if (inlineHeaderMatch) {
@@ -330,13 +342,86 @@ export function parseRawSyllabusText(rawText: string): RawSyllabusParsedResult {
     }
   }
 
-  // Deduplicação leve e contagem total
-  const totalTopics = subjects.reduce((sum, s) => sum + s.topics.length, 0);
+  // Remove disciplinas vazias caso algum cabeçalho de seção tenha ficado sem tópicos
+  const nonEmptySubjects = subjects.filter(s => s.topics.length > 0);
+  const totalTopics = nonEmptySubjects.reduce((sum, s) => sum + s.topics.length, 0);
 
   return {
-    subjects,
-    totalSubjects: subjects.length,
+    subjects: nonEmptySubjects,
+    totalSubjects: nonEmptySubjects.length,
     totalTopics,
     warnings,
   };
+}
+
+/**
+ * Junta um tópico quebrado pelo PDF ao tópico imediatamente anterior na mesma disciplina.
+ */
+export function mergeParsedSyllabusTopics(
+  subjects: ParsedSyllabusSubject[],
+  subjectIndex: number,
+  topicIndex: number
+): ParsedSyllabusSubject[] {
+  const target = subjects[subjectIndex];
+  if (!target || topicIndex <= 0 || topicIndex >= target.topics.length) return subjects;
+  const nextTopics = target.topics.map(t => ({ ...t }));
+  const current = nextTopics[topicIndex];
+  const prev = nextTopics[topicIndex - 1];
+  prev.name = `${prev.name.replace(/[-]+$/, '')} ${current.name}`.replace(/\s+/g, ' ').trim();
+  nextTopics.splice(topicIndex, 1);
+  return subjects.map((s, idx) => (idx === subjectIndex ? { ...s, topics: nextTopics } : s));
+}
+
+/**
+ * Divide um tópico longo em múltiplos tópicos usando um separador (padrão ";").
+ */
+export function splitParsedSyllabusTopic(
+  subjects: ParsedSyllabusSubject[],
+  subjectIndex: number,
+  topicIndex: number,
+  delimiter = ';'
+): ParsedSyllabusSubject[] {
+  const target = subjects[subjectIndex];
+  const topic = target?.topics[topicIndex];
+  if (!target || !topic || !topic.name.includes(delimiter)) return subjects;
+  const parts = topic.name
+    .split(delimiter)
+    .map(part => part.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return subjects;
+  const nextTopics = [...target.topics];
+  nextTopics.splice(
+    topicIndex,
+    1,
+    ...parts.map((name, idx) => ({
+      name,
+      ...(topic.code ? { code: idx === 0 ? topic.code : `${topic.code}.${idx + 1}` } : {}),
+    }))
+  );
+  return subjects.map((s, idx) => (idx === subjectIndex ? { ...s, topics: nextTopics } : s));
+}
+
+/**
+ * Exporta o edital estruturado no formato JSON padrão do Extrato de Estudos.
+ */
+export function serializeParsedSyllabusJson(
+  result: Pick<RawSyllabusParsedResult, 'subjects'>,
+  examMeta: { name?: string; banca?: string; year?: number } = {}
+): string {
+  return JSON.stringify(
+    {
+      ...(examMeta.name ? { name: examMeta.name } : {}),
+      ...(examMeta.banca ? { banca: examMeta.banca } : {}),
+      ...(examMeta.year ? { year: examMeta.year } : {}),
+      subjects: (result.subjects || []).map(s => ({
+        name: s.name,
+        topics: (s.topics || []).map(t => ({
+          name: t.name,
+          ...(t.code ? { code: t.code } : {}),
+        })),
+      })),
+    },
+    null,
+    2
+  );
 }

@@ -291,6 +291,12 @@ export function SessionModalSheet({
                 placeholder="Ex.: 25/21 fgv 2b"
                 value={quickShorthandValue}
                 onInput={e => onQuickShorthandChange(e.currentTarget.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    onSave();
+                  }
+                }}
               />
             </label>
             <div class="session-question-fields">

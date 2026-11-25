@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseRawSyllabusText } from '../../src/application/subjects/raw-syllabus-parser.js';
+import {
+  parseRawSyllabusText,
+  mergeParsedSyllabusTopics,
+  splitParsedSyllabusTopic,
+  serializeParsedSyllabusJson,
+} from '../../src/application/subjects/raw-syllabus-parser.js';
 
 test('parseRawSyllabusText — analisa texto contínuo no padrão Cebraspe com subitens numerados', () => {
   const rawText = `
@@ -63,4 +68,58 @@ test('parseRawSyllabusText — lida com texto vazio graciosamente', () => {
   assert.equal(result.totalSubjects, 0);
   assert.equal(result.totalTopics, 0);
   assert.ok(result.warnings.length > 0);
+});
+
+test('parseRawSyllabusText — remove ruído de PDF, junta hifenização e reconhece FGV/FCC/Vunesp/Cesgranrio', () => {
+  const rawText = `
+ANEXO II - CONTEÚDO PROGRAMÁTICO
+CONHECIMENTOS BÁSICOS
+Página 14 de 48
+RACIOCÍNIO LÓGICO-MATEMÁTICO: 1 Estruturas lógicas. 2 Lógica de argumentação.
+CONHECIMENTOS ESPECÍFICOS
+DIREITO TRIBUTÁRIO (CTN E CF/88):
+Sistema Tributário Nacional: princípios constitucionais tributários; limitações ao poder de tributar; Lei Complementar nº 116/2003; administra-
+ção tributária e dívida ativa.
+`;
+
+  const result = parseRawSyllabusText(rawText);
+
+  assert.equal(result.totalSubjects, 2);
+  assert.equal(result.subjects[0].name, 'RACIOCÍNIO LÓGICO-MATEMÁTICO');
+  assert.equal(result.subjects[0].topics.length, 2);
+  assert.equal(result.subjects[1].name, 'DIREITO TRIBUTÁRIO (CTN E CF/88)');
+  assert.ok(result.subjects[1].topics.length >= 3);
+  assert.ok(
+    result.subjects[1].topics.some(t => t.name.includes('administração tributária e dívida ativa'))
+  );
+});
+
+test('mergeParsedSyllabusTopics, splitParsedSyllabusTopic e serializeParsedSyllabusJson funcionam de forma pura', () => {
+  const initial = [
+    {
+      name: 'Direito Constitucional',
+      topics: [
+        { name: 'Direitos e garantias' },
+        { name: 'fundamentais (Art. 5º)' },
+        { name: 'Poder Executivo; Poder Legislativo', code: '3' },
+      ],
+    },
+  ];
+
+  const merged = mergeParsedSyllabusTopics(initial, 0, 1);
+  assert.equal(merged[0].topics.length, 2);
+  assert.equal(merged[0].topics[0].name, 'Direitos e garantias fundamentais (Art. 5º)');
+
+  const split = splitParsedSyllabusTopic(merged, 0, 1);
+  assert.equal(split[0].topics.length, 3);
+  assert.equal(split[0].topics[1].name, 'Poder Executivo');
+  assert.equal(split[0].topics[2].name, 'Poder Legislativo');
+  assert.equal(split[0].topics[2].code, '3.2');
+
+  const json = JSON.parse(
+    serializeParsedSyllabusJson({ subjects: split }, { name: 'TJ-SP', banca: 'Vunesp', year: 2026 })
+  );
+  assert.equal(json.name, 'TJ-SP');
+  assert.equal(json.banca, 'Vunesp');
+  assert.equal(json.subjects[0].topics.length, 3);
 });

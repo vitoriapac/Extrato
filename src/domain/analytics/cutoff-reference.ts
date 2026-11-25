@@ -3,9 +3,24 @@ import type { ExamCutoff } from '../../core/types.js';
 
 type Row = Record<string, any>;
 
+export type CutoffModality = 'ampla' | 'cotas' | 'pcd';
+
+export const CUTOFF_MODALITY_LABELS: Readonly<Record<CutoffModality, string>> = Object.freeze({
+  ampla: 'Ampla concorrência',
+  cotas: 'Cotas raciais',
+  pcd: 'PcD',
+});
+
+export interface ExtendedExamCutoff extends ExamCutoff {
+  modality?: CutoffModality;
+  region?: string;
+}
+
 export interface CutoffReference {
   readonly kind: 'informed' | 'official' | 'goal';
   readonly text: string;
+  readonly modality?: CutoffModality;
+  readonly region?: string;
 }
 
 const percent = (value: number) => String(Math.round(value * 10) / 10).replace('.', ',');
@@ -14,18 +29,28 @@ const positive = (value: unknown) => {
   return Number.isFinite(number) && number > 0 ? number : null;
 };
 
+function normalizeModality(value: unknown): CutoffModality | undefined {
+  if (value === 'ampla' || value === 'cotas' || value === 'pcd') return value;
+  return undefined;
+}
+
 /** Corte válido (nota > 0, nota ≤ máximo, ano plausível) ou null. Máximo ausente vale 100. */
-export function normalizeExamCutoff(value: unknown): ExamCutoff | null {
+export function normalizeExamCutoff(value: unknown): ExtendedExamCutoff | null {
   if (!value || typeof value !== 'object') return null;
   const source = value as Record<string, unknown>;
   const score = positive(source.score);
   const maxScore = positive(source.maxScore) ?? 100;
   if (score === null || score > maxScore) return null;
   const year = Math.round(Number(source.year));
+  const modality = normalizeModality(source.modality);
+  const region =
+    typeof source.region === 'string' && source.region.trim() ? source.region.trim() : undefined;
   return {
     score,
     maxScore,
     ...(year >= 1990 && year <= 2100 ? { year } : {}),
+    ...(modality ? { modality } : {}),
+    ...(region ? { region } : {}),
   };
 }
 
@@ -45,21 +70,36 @@ export function buildCutoffReference({
   goalPercent = 80,
   profiles = EXAM_PROFILES as Row,
   informed = null,
+  region = null,
 }: {
   activeExamTags?: string[];
   goalPercent?: number;
   profiles?: Row;
   informed?: unknown;
+  region?: string | null;
 } = {}): CutoffReference {
   const own = normalizeExamCutoff(informed);
-  if (own)
+  if (own) {
+    const contextParts = [
+      own.modality ? CUTOFF_MODALITY_LABELS[own.modality] : null,
+      own.region || null,
+    ].filter(Boolean);
+    const contextSuffix = contextParts.length ? ` (${contextParts.join(' · ')})` : '';
     return {
       kind: 'informed',
-      text: `Nota de corte${own.year ? ` ${own.year}` : ''} informada por você: ${percent(cutoffPercent(own)!)}% da escala. A precisão em questões não é a nota da prova: use como referência.`,
+      ...(own.modality ? { modality: own.modality } : {}),
+      ...(own.region ? { region: own.region } : {}),
+      text: `Nota de corte${own.year ? ` ${own.year}` : ''}${contextSuffix} informada por você: ${percent(cutoffPercent(own)!)}% da escala. A precisão em questões não é a nota da prova: use como referência.`,
     };
-  const entries: Row[] = Object.entries<Row>(profiles)
+  }
+  const allEntries: Row[] = Object.entries<Row>(profiles)
     .filter(([id]) => activeExamTags.some(tag => id.startsWith(`${tag}-`)))
     .flatMap(([, profile]) => profile?.cutoffScores || []);
+  const normalizedRegion = typeof region === 'string' && region.trim() ? region.trim().toLowerCase() : '';
+  const regionEntries = normalizedRegion
+    ? allEntries.filter(entry => String(entry.praca || '').toLowerCase().includes(normalizedRegion))
+    : [];
+  const entries = regionEntries.length ? regionEntries : allEntries;
   if (!entries.length)
     return {
       kind: 'goal',
