@@ -567,9 +567,9 @@ test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostr
   const ring = page.locator('#balanceRing svg[role="img"]');
   await expect(ring).toHaveAttribute('aria-label', 'Índice de prontidão: sem dados suficientes');
   await expect(ring).toHaveClass(/chart-ring--empty/);
-  // F8: no number yet; the figure says what is missing and each factor is an action.
-  await expect(page.locator('#balanceFigure')).toHaveText('faltam 5 de 5 fatores');
-  await expect(page.locator('.readiness-factor-action')).toHaveCount(5);
+  // F8: no number yet; the figure says what is missing and each factor is an action (Prontidão v2 = 4 fatores).
+  await expect(page.locator('#balanceFigure')).toHaveText('faltam 4 de 4 fatores');
+  await expect(page.locator('.readiness-factor-action')).toHaveCount(4);
   // Primeiro acesso: o corpo do cabeçalho fica recolhido; os controles continuam no DOM e respondem a clique programático.
   await page.locator('.readiness-factors > summary').evaluate(node => node.click());
   await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute(
@@ -577,9 +577,8 @@ test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostr
     /histórico insuficiente/
   );
 
-  await page.locator('.readiness-factor-action', { hasText: 'Consistência: estudar hoje' }).evaluate(node => node.click());
-  await expect(page.locator('#panel-hoje')).toBeVisible();
-  await expect(page.locator('#timerSubjectSelect')).toBeFocused();
+  await page.locator('.readiness-factor-action', { hasText: 'Domínio: registrar questões' }).evaluate(node => node.click());
+  await expect(page.locator('#panel-questoes')).toBeVisible();
 
   await openDemo(page);
   await expect(page.locator('.readiness-factor-action')).toHaveCount(0);

@@ -48,12 +48,12 @@ export function PhaseRoadmapTimeline({
     >
       {/* Top Banner com Dias Restantes e Fase Ativa */}
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div class="p-3 rounded-default bg-accent-subtle text-accent-emphasis flex items-center justify-center">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="p-3 rounded-default bg-accent-subtle text-accent-emphasis flex items-center justify-center shrink-0">
             <Icon name="flag" size={20} />
           </div>
-          <div>
-            <div class="flex items-center gap-2">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
               <span class="text-xs font-semibold uppercase tracking-wider text-accent-emphasis">
                 Fase Atual
               </span>
@@ -89,7 +89,7 @@ export function PhaseRoadmapTimeline({
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
-        <div class="flex justify-between text-xs text-content-secondary px-1">
+        <div class="flex flex-wrap justify-between gap-1 text-xs text-content-secondary px-1">
           <span>Início do plano</span>
           <span class="font-medium text-content-primary font-mono">Tempo até a prova: {progressPercentage}%</span>
           <span>Dia da Prova</span>
@@ -97,7 +97,7 @@ export function PhaseRoadmapTimeline({
       </div>
 
       {/* Grid das 4 Fases Pedagógicas */}
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1">
         {phasesList.map(item => {
           const isCurrent = item.isActive;
           const isPassed = item.isPassed;
@@ -116,7 +116,7 @@ export function PhaseRoadmapTimeline({
           return (
             <div
               key={item.key}
-              class={`p-3 rounded-default border flex flex-col justify-between transition-all ${cardClass}`}
+              class={`min-w-0 p-3 rounded-default border flex flex-col justify-between transition-all ${cardClass}`}
             >
               <div>
                 <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
