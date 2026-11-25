@@ -13,6 +13,12 @@ export interface EssayEvolutionCardProps {
   onEditEssay: (id: string) => void;
 }
 
+const ESSAY_KIND_LABEL: Record<string, string> = {
+  questao_discursiva: 'Questão discursiva',
+  estudo_caso: 'Estudo de caso',
+  peca_tecnica: 'Peça técnica',
+};
+
 const ESSAY_STATUS_BADGE: Record<
   'draft' | 'written' | 'graded',
   { label: string; variant: 'default' | 'info' | 'success' }
@@ -88,6 +94,16 @@ export function EssayEvolutionCard({
               <span class="upcoming-date">{formatDatePt(entry.date)}</span>
               <span class="min-w-0 flex-1">
                 <strong>{entry.title}</strong>
+                {entry.essayKind && ESSAY_KIND_LABEL[entry.essayKind] && (
+                  <span class="ml-1.5 text-xs text-content-secondary">
+                    · {ESSAY_KIND_LABEL[entry.essayKind]}
+                  </span>
+                )}
+                {entry.essayScoringMode === 'cebraspe_linhas' && entry.errorsPerLine !== null && (
+                  <span class="ml-1.5 text-xs text-content-secondary">
+                    (Cebraspe · {entry.errorsPerLine} erros/linha)
+                  </span>
+                )}
                 {entry.essayTheme && (
                   <span class="block text-xs text-content-secondary truncate">
                     Tema: {entry.essayTheme}

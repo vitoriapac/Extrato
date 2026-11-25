@@ -2322,6 +2322,136 @@
       "rationale": "Contrato Node rápido e determinístico: regra das listas (acima de 20 itens pagina) e guarda contra Mostrar mais escrito à mão."
     },
     {
+      "file": "tests/unit/schema-v36-migration.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato e determinístico: migração pura v35->v36, preservação de snapshots históricos e validação de backup."
+    },
+    {
+      "file": "tests/unit/simulation-weighted-and-blocks.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: nota ponderada por pesos, blocos eliminatórios, reserva de tempo, projeção ponderada e replan."
+    },
+    {
+      "file": "tests/unit/cebraspe-mastery-and-recency.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: platô/decaimento temporal do Domínio v4, taxa Cebraspe com brancas, CSV em branco e benchmark."
+    },
+    {
+      "file": "tests/unit/diagnostic-engines-calibration.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: taxonomia letraLei/jurisprudencia, plateau-detector, volatile-mastery e tiro curto reta final."
+    },
+    {
+      "file": "tests/unit/quick-question-parser.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Parser determinístico em Node sem ReDoS para lançamento expresso e colagem de estatísticas TEC/QConcursos."
+    },
+    {
+      "file": "tests/unit/mixed-review-batch.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: consolidação de revisões vencidas em bateria mista e avaliação do orçamento semanal de revisão."
+    },
+    {
+      "file": "tests/unit/idle-timer-guardian.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: detecção determinística de sessões anômalas em cronômetro esquecido."
+    },
+    {
+      "file": "tests/unit/post-edital-diff-and-fgv-parser.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Parser e diff em memória em Node: proteção de referências jurídicas FGV, quebra por ';' e raio-X de aproveitamento pós-edital."
+    },
+    {
+      "file": "tests/unit/law-ranges-and-jurisprudence.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: recorte de artigos da lei seca, caderno de jurisprudência 7/21/45d e Estudo Rápido modo lei."
+    },
+    {
+      "file": "tests/unit/essay-cebraspe-and-technical.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node: apenação gramatical por linhas estilo Cebraspe e resumo de evolução para discursivas técnicas."
+    },
+    {
+      "file": "tests/unit/bancas.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node determinístico pré-existente: normalização de bancas, tempo por questão e histórico de banca."
+    },
+    {
+      "file": "tests/unit/bundle-size-budget.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: garante orçamento gzip dos bundles gerados em src/."
+    },
+    {
+      "file": "tests/unit/demo-realism.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: valida realismo do dataset da Demo sem inflacionamento artificial."
+    },
+    {
+      "file": "tests/unit/exam-count-import.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: contagem e importação de prova anterior por tópico."
+    },
+    {
+      "file": "tests/unit/exam-cutoff.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: cálculo e leitura de nota de corte do edital."
+    },
+    {
+      "file": "tests/unit/exam-fit-analysis.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: análise de aderência à banca, ritmo e risco em provas."
+    },
+    {
+      "file": "tests/unit/exam-week-rituals.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: protocolo da semana da prova."
+    },
+    {
+      "file": "tests/unit/help-topic-card.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: renderização de cartões de ajuda sem emojis ou XSS."
+    },
+    {
+      "file": "tests/unit/law-notebook.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: progresso por artigo e voltas no Caderno de Leis."
+    },
+    {
+      "file": "tests/unit/post-exam.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: fluxo de encerramento e leitura pós-prova."
+    },
+    {
+      "file": "tests/unit/question-blank.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: registro e cômputo de questões em branco."
+    },
+    {
+      "file": "tests/unit/review-practice.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node pré-existente: prática integrada de questões ao concluir revisão."
+    },
+    {
+      "file": "tests/unit/sleep-log.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: registro diário de sono e comparação com estudo."
+    },
+    {
+      "file": "tests/unit/weekly-close-priorities-stale.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: sinalização de prioridades obsoletas no fechamento semanal."
+    },
+    {
+      "file": "tests/unit/weighted-topic-performance.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Regra de negócio pura em Node pré-existente: desempenho ponderado por banca e peso do tópico."
+    },
+    {
+      "file": "tests/e2e/concurseiro-elite-flows.spec.js",
+      "tier": "FULL",
+      "rationale": "Jornada E2E integrada das frentes de concurseiro analítico (entrada expressa, bateria mista, jurisprudência, discursiva Cebraspe e pós-edital)."
+    },
+    {
       "file": "tests/e2e/performance-diagnosis-lean.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."

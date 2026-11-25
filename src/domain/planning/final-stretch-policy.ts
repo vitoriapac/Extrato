@@ -27,8 +27,23 @@ export interface FinalStretchTopicInput {
   sessionsCount?: number;
   totalStudySeconds?: number;
   historicalPresencePercent?: number | null;
+  examImportance?: number | null;
+  estimatedStudyMinutes?: number | null;
   currentMastery?: number | null;
   recentAccuracy?: number | null;
+}
+
+function resolveEffectivePresence(topic: FinalStretchTopicInput): number {
+  if (
+    topic.historicalPresencePercent != null &&
+    Number.isFinite(topic.historicalPresencePercent)
+  ) {
+    return topic.historicalPresencePercent;
+  }
+  if (topic.examImportance != null && Number.isFinite(topic.examImportance)) {
+    return Math.round(topic.examImportance * 100);
+  }
+  return 50;
 }
 
 export interface FinalStretchBanner {
@@ -82,7 +97,14 @@ export function shouldFreezeNewTheoryTopic(
   if (!isFinalStretchActive(daysToExam)) return false;
   const sessions = topic.sessionsCount ?? 0;
   const seconds = topic.totalStudySeconds ?? 0;
-  return sessions === 0 && seconds === 0;
+  if (sessions > 0 || seconds > 0) return false;
+  const presence = resolveEffectivePresence(topic);
+  const est = topic.estimatedStudyMinutes;
+  // Tiro Curto de Alto ROI (< 15d): tópicos curtos (<= 45 min) com alta presença (>= 60%) ficam liberados.
+  if (est != null && Number.isFinite(est) && est > 0 && est <= 45 && presence >= 60) {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -95,7 +117,7 @@ export function calculateFinalStretchWeightMultiplier(
 ): number {
   if (!isFinalStretchActive(daysToExam)) return 1.0;
 
-  const presence = topic.historicalPresencePercent ?? 0;
+  const presence = resolveEffectivePresence(topic);
   const mastery = topic.currentMastery ?? topic.recentAccuracy ?? 50;
 
   // Lacuna Crítica de Prova: alta presença (>= 60%) e domínio frágil (< 70%)

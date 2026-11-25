@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-362 arquivos Node e 82 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+390 arquivos Node e 83 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -32,6 +32,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/backup-schema24-cycle.spec.js | browser | Backup | critical | 5.1 | journey | none |
 | tests/e2e/chart-sizes.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/comfort.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
+| tests/e2e/concurseiro-elite-flows.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/consolidated-signals.spec.js | browser | Datas | critical | 2.6 | journey | none |
 | tests/e2e/csp.spec.js | browser | Aplicação | functional | 2.3 | journey | none |
 | tests/e2e/daily-execution.spec.js | browser | Aplicação | critical | 106.6 | journey, visual-comparison, demo, viewport | windows-only |
@@ -140,7 +141,10 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/backup-modal-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-restore-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-validator.test.js | node | Backup | critical | — | contract | none |
+| tests/unit/bancas.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/beginner-gate.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/blueprint-weights.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/bundle-size-budget.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-load.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-projection.test.js | node | Trajetória | functional | — | contract | none |
@@ -149,6 +153,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |
 | tests/unit/career-benchmark-card.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/career-benchmarks.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/cebraspe-mastery-and-recency.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/chart-primitives.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/chart-size.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/clerk-saas-auth.test.js | node | Aplicação | functional | — | contract | none |
@@ -182,11 +187,13 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/demo-intelligence-scenarios.test.js | node | Demo | functional | — | contract, demo | none |
 | tests/unit/demo-mode.test.js | node | Demo | functional | — | contract, demo | none |
 | tests/unit/demo-notebook.test.js | node | Demo | functional | — | contract, demo | none |
+| tests/unit/demo-realism.test.js | node | Demo | functional | — | contract, demo | none |
 | tests/unit/demo-scenario-v2.test.js | node | Demo | functional | — | contract, demo | none |
 | tests/unit/demo-sustainability.test.js | node | Sustentabilidade | functional | — | contract, demo | none |
 | tests/unit/density-preference.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnosis-center.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnosis-groups.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/diagnostic-engines-calibration.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/diagnostics-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/edge-request-validation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/editable-collection-controller.test.js | node | Aplicação | functional | — | contract | none |
@@ -199,12 +206,17 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/error-notebook-engine.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-notebook-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/error-notebook-view.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/essay-and-pre-edital.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/essay-cebraspe-and-technical.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/essential-mode.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-badge.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-quality.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-scope-migration.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/exam-count-import.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-cutoff-scores.test.js | node | Inteligência da prova | functional | — | contract | none |
+| tests/unit/exam-cutoff.test.js | node | Inteligência da prova | functional | — | contract | none |
 | tests/unit/exam-evidence-scope.test.js | node | Inteligência da prova | critical | — | contract | none |
+| tests/unit/exam-fit-analysis.test.js | node | Inteligência da prova | functional | — | contract | none |
 | tests/unit/exam-import-feature.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-import-modal-controller.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-import-renderer.test.js | node | Inteligência da prova | critical | — | contract | none |
@@ -219,6 +231,8 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/exam-report-weekly-focus.test.js | node | Inteligência da prova | functional | — | contract | none |
 | tests/unit/exam-scope-transition.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-scope.test.js | node | Inteligência da prova | critical | — | contract | none |
+| tests/unit/exam-today-signals.test.js | node | Inteligência da prova | functional | — | contract | none |
+| tests/unit/exam-week-rituals.test.js | node | Inteligência da prova | functional | — | contract | none |
 | tests/unit/execution-contract.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/executive-summary.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/export-reminder.test.js | node | Aplicação | functional | — | contract | none |
@@ -245,15 +259,19 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/help-evidence-simulator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-feedback.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-retention-simulator.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/help-topic-card.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-topic-metadata.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/historical-adherence-integrity.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/history-lists-render.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/id-injection.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/idle-timer-guardian.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/import-exam-json.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/incidence-quadrants-paging.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/intelligence-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/intelligent-alerts.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/keyboard-shortcuts.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/law-notebook.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/law-ranges-and-jurisprudence.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ledger-line.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/legal-compliance.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/list-components.test.js | node | Aplicação | functional | — | contract | none |
@@ -261,6 +279,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/load-persisted-state.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/local-usage-telemetry.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/master-renderer.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/mixed-review-batch.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/modal-dialogs.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/motivation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/multidimensional-radar.test.js | node | Aplicação | functional | — | contract | none |
@@ -275,7 +294,6 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/onda3-primitives-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/onda4-modals-and-css.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/opportunity-cost-analytics.test.js | node | Aplicação | functional | — | contract | none |
-| tests/unit/overview-standing.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/overview-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/performance-accuracy-delta.test.js | node | Desempenho | functional | — | contract | none |
@@ -298,6 +316,8 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/planning-visual-charts.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/plateau-detector-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/plateau-detector.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/post-edital-diff-and-fgv-parser.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/post-exam.test.js | node | Inteligência da prova | functional | — | contract | none |
 | tests/unit/post-simulation-replan.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/practice-link-generator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/practice-visual-charts.test.js | node | Visual | visual | — | contract | none |
@@ -313,11 +333,13 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/projection-scenarios.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/projection-ux-simulator.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/question-analytics-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/question-blank.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/question-import-normalizer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/question-import-service.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/question-weak-topics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/questions-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/questions-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/quick-question-parser.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/raw-syllabus-parser.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/real-week-banner.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recommend-study.test.js | node | Recomendações | functional | — | contract | none |
@@ -348,6 +370,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/result-goals-and-period-comparison.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/review-health.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-load.test.js | node | Revisões | functional | — | contract | none |
+| tests/unit/review-practice.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-queue-summary.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-redistribution.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-service.test.js | node | Revisões | functional | — | contract | none |
@@ -361,6 +384,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/routine-sustainability.test.js | node | Sustentabilidade | functional | — | contract | none |
 | tests/unit/row-action-names.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/schema-v36-migration.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/scroll-behavior.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/session-history-controller.test.js | node | Sessões | critical | — | contract | none |
@@ -372,7 +396,10 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/shift-energy-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation-modal.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/simulation-score.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/simulation-weighted-and-blocks.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulations-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/sleep-log.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/split-question-goal.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/stability-phase-comparison.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/starter-packs.test.js | node | Aplicação | functional | — | contract | none |
@@ -455,11 +482,13 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/weekly-close-adherence.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/weekly-close-controller.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-modal-controller.test.js | node | Fechamento | functional | — | contract | none |
+| tests/unit/weekly-close-priorities-stale.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-record-renderer.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-snapshot.test.js | node | Fechamento | critical | — | contract | none |
 | tests/unit/weekly-close-trend-renderer.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-history-series-renderer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/weekly-performance-brief.test.js | node | Desempenho | functional | — | contract | none |
+| tests/unit/weighted-topic-performance.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/window-badge.test.js | node | Aplicação | functional | — | contract | none |

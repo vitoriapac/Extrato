@@ -192,6 +192,7 @@ export function wireDomainAnalytics(deps: WireDomainAnalyticsDeps) {
         consistencyTarget: state.metas.consistenciaSemanal,
         snapshots: state.projectionSnapshots,
         activeExamTags: state.examBlueprint.activeExamTags || [],
+        blueprintSubjects: state.examBlueprint?.subjects || [],
       };
     },
     buildRecent: approvalReadinessService.recentPerformance,

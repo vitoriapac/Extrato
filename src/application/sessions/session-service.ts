@@ -91,6 +91,8 @@ export function createSessionService({
         : resolveEvidenceScope(session.topicId),
       resolved: session.questionsResolved,
       correct: session.correctAnswers,
+      ...(session.blank != null ? { blank: session.blank } : {}),
+      ...(session.banca ? { banca: session.banca } : {}),
       studySessionId: session.id,
     };
     const question = existing

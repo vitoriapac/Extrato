@@ -1,4 +1,5 @@
 import { calculateWindowTrend } from './trends.js';
+import { parseLocalDate } from '../../core/date-utils.js';
 
 export interface PerformanceConfidence {
   key: 'insufficient' | 'low' | 'medium' | 'high';
@@ -58,6 +59,26 @@ export const RETRY_QUESTION_WEIGHT = 0.5;
 /** Questões da banca da prova valem o dobro quando o tópico tem evidência suficiente dela. */
 export const TARGET_BANCA_QUESTION_WEIGHT = 2;
 export const MIN_TARGET_BANCA_TOPIC_QUESTIONS = 10;
+/** Decaimento temporal do Domínio: platô de 150 dias sem perda, depois meia-vida de 120d com piso 0,35. */
+export const RECENCY_PLATEAU_DAYS = 150;
+export const RECENCY_HALF_LIFE_DAYS = 120;
+export const MIN_RECENCY_WEIGHT = 0.35;
+
+export function recencyWeight(
+  recordDate?: string | null,
+  referenceDate?: string | null
+): number {
+  if (!recordDate || !referenceDate) return 1;
+  const rec = parseLocalDate(recordDate);
+  const ref = parseLocalDate(referenceDate);
+  if (!rec || !ref) return 1;
+  const ageDays = Math.round((ref.getTime() - rec.getTime()) / 86400000);
+  if (ageDays <= RECENCY_PLATEAU_DAYS) return 1;
+  return Math.max(
+    MIN_RECENCY_WEIGHT,
+    Math.pow(0.5, (ageDays - RECENCY_PLATEAU_DAYS) / RECENCY_HALF_LIFE_DAYS)
+  );
+}
 
 export interface WeightedPerformanceCounts extends PerformanceCounts {
   weighting: {
@@ -66,24 +87,36 @@ export interface WeightedPerformanceCounts extends PerformanceCounts {
     targetBancaQuestions: number;
     /** True quando as questões da banca da prova entraram com peso dobrado. */
     bancaWeighted: boolean;
+    recencyWeighted: boolean;
+    answeredAccuracy: number | null;
+    netAccuracy: number | null;
   };
 }
 
 /**
- * Acerto do tópico para o Domínio: refeitas com meio peso e, com ao menos 10 questões da banca da
- * prova, essas questões em dobro. O volume (resolved) só desconta as refeitas, para o peso da banca
- * mudar o acerto sem inflar a confiança da amostra.
+ * Acerto do tópico para o Domínio: refeitas com meio peso, decaimento após 150 dias (piso 0,35),
+ * banca da prova em dobro com >= 10 questões e leitura líquida Cebraspe quando há brancas explícitas.
  */
 export function calculateWeightedTopicPerformance(
   records: Array<{
     topicId?: string | null;
     resolved?: number;
     correct?: number;
+    blank?: number | null;
     banca?: string | null;
     retry?: boolean;
+    date?: string | null;
   }>,
   topicId: string,
-  { targetBanca = null }: { targetBanca?: string | null } = {}
+  {
+    targetBanca = null,
+    referenceDate = null,
+    scoringMode = 'padrao',
+  }: {
+    targetBanca?: string | null;
+    referenceDate?: string | null;
+    scoringMode?: string | null;
+  } = {}
 ): WeightedPerformanceCounts {
   const filtered = records.filter(q => q.topicId === topicId);
   const count = (q: { resolved?: number }) => Math.max(0, Number(q.resolved) || 0);
@@ -91,25 +124,66 @@ export function calculateWeightedTopicPerformance(
     Boolean(targetBanca) && q.banca === targetBanca;
   const targetBancaQuestions = filtered.filter(isTarget).reduce((sum, q) => sum + count(q), 0);
   const bancaWeighted = targetBancaQuestions >= MIN_TARGET_BANCA_TOPIC_QUESTIONS;
+  const isCebraspe = scoringMode === 'certo-errado';
+
   let volume = 0;
   let weightedTotal = 0;
   let weightedCorrect = 0;
   let retryQuestions = 0;
+  let recencyWeighted = false;
+  let answeredWeightedTotal = 0;
+  let answeredWeightedCorrect = 0;
+  let netWeightedPoints = 0;
+
   for (const q of filtered) {
     const resolved = count(q);
     const correct = Math.min(resolved, Math.max(0, Number(q.correct) || 0));
     const retryWeight = q.retry ? RETRY_QUESTION_WEIGHT : 1;
-    const weight = retryWeight * (bancaWeighted && isTarget(q) ? TARGET_BANCA_QUESTION_WEIGHT : 1);
+    const rWeight = recencyWeight(q.date, referenceDate);
+    if (rWeight < 1) recencyWeighted = true;
+    const weight =
+      retryWeight *
+      rWeight *
+      (bancaWeighted && isTarget(q) ? TARGET_BANCA_QUESTION_WEIGHT : 1);
     if (q.retry) retryQuestions += resolved;
+
+    const hasExplicitBlank = q.blank != null && String(q.blank) !== '';
+    const blank = hasExplicitBlank
+      ? Math.min(resolved - correct, Math.max(0, Math.floor(Number(q.blank) || 0)))
+      : 0;
+    const wrong = Math.max(0, resolved - correct - blank);
+    const answered = Math.max(0, resolved - blank);
+
+    if (isCebraspe) {
+      answeredWeightedTotal += answered * weight;
+      answeredWeightedCorrect += correct * weight;
+      netWeightedPoints += (correct - wrong) * weight;
+    }
+
+    const effectiveCorrect = isCebraspe && hasExplicitBlank ? correct - wrong : correct;
     volume += resolved * retryWeight;
     weightedTotal += resolved * weight;
-    weightedCorrect += correct * weight;
+    weightedCorrect += effectiveCorrect * weight;
   }
+
+  const clampedWeightedCorrect = Math.max(0, weightedCorrect);
   return {
     resolved: Math.round(volume * 10) / 10,
-    correct: Math.round(weightedCorrect * 10) / 10,
-    accuracy: accuracyFromCounts(weightedCorrect, weightedTotal),
-    weighting: { retryQuestions, targetBanca, targetBancaQuestions, bancaWeighted },
+    correct: Math.round(clampedWeightedCorrect * 10) / 10,
+    accuracy: accuracyFromCounts(clampedWeightedCorrect, weightedTotal),
+    weighting: {
+      retryQuestions,
+      targetBanca,
+      targetBancaQuestions,
+      bancaWeighted,
+      recencyWeighted,
+      answeredAccuracy: isCebraspe
+        ? accuracyFromCounts(answeredWeightedCorrect, answeredWeightedTotal)
+        : null,
+      netAccuracy: isCebraspe
+        ? accuracyFromCounts(Math.max(0, netWeightedPoints), weightedTotal)
+        : null,
+    },
   };
 }
 

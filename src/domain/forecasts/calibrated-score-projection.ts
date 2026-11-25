@@ -1,9 +1,15 @@
 import { PROJECTION_EVIDENCE_POLICY as policy } from './projection-evidence-policy.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
-import { scorePercent } from '../exams/simulation-score.js';
+import {
+  scorePercent,
+  weightedSimulationScore,
+  type WeightedBlueprintSubject,
+} from '../exams/simulation-score.js';
 interface ProjectionBreakdownRow {
   subjectId?: string | null;
   total?: number | string;
+  correct?: number | string;
+  wrong?: number | null;
 }
 
 interface ProjectionSimulation {
@@ -23,21 +29,43 @@ const median = (values: number[]) => {
   return ordered.length % 2 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
 };
 const clamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
-const composition = (item: ProjectionSimulation) =>
-  JSON.stringify([...(item.examTags || [])].sort()) +
-  '|' +
-  JSON.stringify(
-    (item.breakdown || [])
-      .filter(row => row.subjectId && Number(row.total) > 0)
-      .map(row => [row.subjectId, Number(row.total)])
-      .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+const composition = (
+  item: ProjectionSimulation,
+  blueprintSubjects: WeightedBlueprintSubject[] = []
+) => {
+  const base =
+    JSON.stringify([...(item.examTags || [])].sort()) +
+    '|' +
+    JSON.stringify(
+      (item.breakdown || [])
+        .filter(row => row.subjectId && Number(row.total) > 0)
+        .map(row => [row.subjectId, Number(row.total)])
+        .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+    );
+  const weightMap = new Map(
+    (blueprintSubjects || [])
+      .filter(s => s?.subjectId && s.questionWeight != null && Number(s.questionWeight) !== 1)
+      .map(s => [s.subjectId as string, Number(s.questionWeight)])
   );
+  if (!weightMap.size || !(item.breakdown || []).length) return base;
+  const activeWeights = (item.breakdown || [])
+    .filter(row => row.subjectId && Number(row.total) > 0)
+    .map(row => [row.subjectId, weightMap.get(row.subjectId as string) ?? 1])
+    .sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+  return `${base}|w:${JSON.stringify(activeWeights)}`;
+};
 
 export function buildCalibratedScoreProjection({
   simulations = [],
   today,
   target = 80,
-}: { simulations?: ProjectionSimulation[]; today?: string; target?: number | string } = {}) {
+  blueprintSubjects = [],
+}: {
+  simulations?: ProjectionSimulation[];
+  today?: string;
+  target?: number | string;
+  blueprintSubjects?: WeightedBlueprintSubject[];
+} = {}) {
   const seen = new Set<string>(),
     cutoff = addLocalDays(today, 1 - policy.windowDays);
   const records = simulations
@@ -59,10 +87,12 @@ export function buildCalibratedScoreProjection({
     })
     .sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
   const latest = records.at(-1),
-    key = latest ? composition(latest) : null;
+    key = latest ? composition(latest, blueprintSubjects) : null;
   const comparable: ProjectionSimulation[] = [
       ...new Map(
-        records.filter(item => composition(item) === key).map(item => [item.date, item])
+        records
+          .filter(item => composition(item, blueprintSubjects) === key)
+          .map(item => [item.date, item])
       ).values(),
     ].slice(-12),
     dates = new Set(comparable.map(item => item.date)),
@@ -96,7 +126,11 @@ export function buildCalibratedScoreProjection({
       evidence,
       reason: `Registre pelo menos ${policy.minimumObservations} simulados comparáveis em datas distintas, ${policy.minimumQuestions} questões e ${policy.minimumSpanDays} dias de histórico nos últimos ${policy.windowDays} dias.`,
     };
-  const scores = comparable.map(item => scorePercent(item, item.scoring)),
+  const scores = comparable.map(item =>
+      blueprintSubjects?.length && item.breakdown?.length
+        ? weightedSimulationScore(item, blueprintSubjects)
+        : scorePercent(item, item.scoring)
+    ),
     center = median(scores.slice(-3));
   const residuals = scores
     .slice(3)

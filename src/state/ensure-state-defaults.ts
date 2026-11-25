@@ -10,6 +10,7 @@ import { normalizeStudySession } from '../domain/sessions/study-session.js';
 import { CURRENT_SCHEMA_VERSION, DIFFICULTY_OPTIONS } from './schema.js';
 import { assignSubjectColors } from '../domain/subjects/subject-color.js';
 import { normalizeLaw } from '../domain/law-notebook.js';
+import { normalizeJurisprudenceRecord } from '../domain/jurisprudence-notebook.js';
 import { normalizeSleepEntry } from '../domain/sleep-log.js';
 import {
   normalizeAlgorithmVersions,
@@ -60,6 +61,11 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   state.lawNotebook = (Array.isArray(state.lawNotebook) ? state.lawNotebook : [])
     .map(normalizeLaw)
     .filter(law => law !== null);
+  state.jurisprudenceNotebook = (
+    Array.isArray(state.jurisprudenceNotebook) ? state.jurisprudenceNotebook : []
+  )
+    .map(normalizeJurisprudenceRecord)
+    .filter(item => item !== null);
   state.sleepLog = (Array.isArray(state.sleepLog) ? state.sleepLog : [])
     .map(normalizeSleepEntry)
     .filter(entry => entry !== null);
@@ -78,6 +84,15 @@ export function ensureStateDefaultsWithDeps(deps: EnsureStateDefaultsDependencie
   if (!state.metas || typeof state.metas !== 'object') state.metas = {} as Metas;
   const consistencyTarget = state.metas.consistenciaSemanal;
   state.metas.aderenciaSemanal = normalizeAdherenceTarget(state.metas.aderenciaSemanal);
+  const rawRevisionBudget = state.metas.orcamentoRevisaoPct;
+  state.metas.orcamentoRevisaoPct =
+    rawRevisionBudget == null || (rawRevisionBudget as unknown) === ''
+      ? null
+      : Number.isFinite(Number(rawRevisionBudget)) &&
+          Number(rawRevisionBudget) >= 10 &&
+          Number(rawRevisionBudget) <= 60
+        ? Math.round(Number(rawRevisionBudget))
+        : null;
   Object.entries(metaDefaults).forEach(([key, value]) => {
     if (!Number.isFinite(Number((state.metas as Record<string, any>)[key])))
       (state.metas as Record<string, any>)[key] = value;

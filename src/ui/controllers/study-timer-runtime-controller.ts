@@ -138,6 +138,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
   let timerRunning = false;
   let timerIntervalId: any = null;
   let timerStartedAt: any = null;
+  let lastHiddenSeconds = 0;
 
   function isTimerRunning() {
     return timerRunning;
@@ -355,6 +356,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     releaseActivePlanItem();
     timerSeconds = 0;
     timerStartedAt = null;
+    lastHiddenSeconds = 0;
     Object.assign(state.activeTimer, {
       startedAt: null,
       runStartedAt: null,
@@ -526,7 +528,12 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
   });
 
   function showSessionModal() {
-    sessionModalController.show(timerSeconds, getState().activeTimer);
+    const active = getState().activeTimer;
+    const hiddenAt = active?.hiddenAt ? Date.parse(active.hiddenAt) : 0;
+    const currentHidden = hiddenAt ? Math.max(0, Math.floor((Date.now() - hiddenAt) / 1000)) : 0;
+    sessionModalController.show(timerSeconds, active || {}, {
+      hiddenSeconds: Math.max(lastHiddenSeconds, currentHidden),
+    });
   }
 
   function closeSessionModal() {
@@ -786,6 +793,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       const hiddenAt = state.activeTimer.hiddenAt ? Date.parse(state.activeTimer.hiddenAt) : 0;
       if (!state.activeTimer.isRunning || !hiddenAt) return;
       const awaySeconds = Math.max(0, Math.floor((Date.now() - hiddenAt) / 1000));
+      if (awaySeconds > lastHiddenSeconds) lastHiddenSeconds = awaySeconds;
       if (awaySeconds >= 2 * 60 * 60) {
         pauseTimer();
         showConfirm(

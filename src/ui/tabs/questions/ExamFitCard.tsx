@@ -190,6 +190,24 @@ function RiskSection({ risk }: { risk: NonNullable<ExamFitAnalysis['risk']> }) {
   );
 }
 
+export function CebraspeRiskStrip({
+  risk,
+}: {
+  risk: NonNullable<ExamFitAnalysis['risk']>;
+}): JSX.Element {
+  return (
+    <div
+      class="p-card rounded-default border border-border-default bg-surface-card space-y-1 text-sm"
+      data-testid="cebraspe-risk-strip"
+    >
+      <div class="text-xs font-semibold uppercase tracking-wide text-content-secondary">
+        Certo ou errado — Risco de marcação e brancos
+      </div>
+      <RiskSection risk={risk} />
+    </div>
+  );
+}
+
 export function ExamFitCard({ model }: { model: ExamFitAnalysis }): JSX.Element {
   return (
     <div class="space-y-4">

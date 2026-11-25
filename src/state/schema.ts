@@ -1,6 +1,8 @@
 import type {
   CalendarActivityKind,
   CalendarRecurrenceRule,
+  EssayKind,
+  EssayScoringMode,
   TopicDifficulty,
   TopicStatus,
 } from '../core/types.ts';
@@ -9,7 +11,7 @@ export const STORAGE_KEY = 'bb-premium-study-data';
 export const BACKUP_KEY = STORAGE_KEY + '-automatic-backup';
 export const BACKUP_INDEX_KEY = BACKUP_KEY + '-index';
 export const AUTOMATIC_BACKUP_SLOTS = 5;
-export const CURRENT_SCHEMA_VERSION = 35;
+export const CURRENT_SCHEMA_VERSION = 36;
 export const MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
 export const DB_NAME = 'extrato-estudos-db';
 export const DB_VERSION = 1;
@@ -77,6 +79,18 @@ export const ESSAY_STATUS_OPTIONS: Array<{ value: 'draft' | 'written' | 'graded'
   { value: 'draft', label: 'A fazer' },
   { value: 'written', label: 'Entregue / Aguardando nota' },
   { value: 'graded', label: 'Corrigida' },
+];
+
+export const ESSAY_KIND_OPTIONS: Array<{ value: EssayKind; label: string }> = [
+  { value: 'redacao', label: 'Redação geral' },
+  { value: 'questao_discursiva', label: 'Questão discursiva' },
+  { value: 'estudo_caso', label: 'Estudo de caso' },
+  { value: 'peca_tecnica', label: 'Peça técnica' },
+];
+
+export const ESSAY_SCORING_MODE_OPTIONS: Array<{ value: EssayScoringMode; label: string }> = [
+  { value: 'padrao', label: 'Nota direta' },
+  { value: 'cebraspe_linhas', label: 'Cebraspe (desconto por linha)' },
 ];
 
 export const CALENDAR_RECURRENCE_OPTIONS: Array<{ value: CalendarRecurrenceRule; label: string }> = [

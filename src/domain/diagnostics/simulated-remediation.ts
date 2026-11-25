@@ -6,13 +6,16 @@
  */
 
 import {
+  blocksBelowMinimum,
   paceAndGuess,
   scorePercent as rowScorePercent,
   simulationScore,
   simulationTotals,
   subjectsBelowMinimum,
+  weightedSimulationScore,
   type PaceAndGuess,
 } from '../exams/simulation-score.js';
+import type { ExamBlockConfig } from '../../core/types.ts';
 
 export interface SimulationSubjectBreakdown {
   id: string;
@@ -57,7 +60,9 @@ export interface SimulatedRemediationInput {
     subjectId: string | null;
     questionWeight?: number | null;
     minScore?: number | null;
+    blockId?: string | null;
   }>;
+  blocks?: ExamBlockConfig[];
   historicalAverageScore?: number | null;
   passingScorePercent?: number | null; // Ponto de corte do edital (ex: 70 ou 75%)
   weeklyAvailableHours?: number; // Carga horária semanal padrão (ex: 20h)
@@ -110,6 +115,7 @@ export interface SimulatedRemediationDiagnostic {
   simulationName: string;
   simulationDate: string;
   scorePercent: number;
+  weightedScorePercent?: number | null;
   totalQuestions: number;
   correctQuestions: number;
   totalLostPoints: number;
@@ -267,10 +273,12 @@ export function buildSimulatedRemediationDiagnostic(
 ): SimulatedRemediationDiagnostic {
   const sim = input.simulation;
   const { total, correct } = simulationTotals(sim);
-  const rawScore = simulationScore(sim);
+  const unweightedRaw = simulationScore(sim);
   // Questões perdidas: o que falta para 100%, já descontada a anulação do Certo ou errado.
-  const lostPoints = Math.round(total - (rawScore * total) / 100);
-  const scorePercent = Math.round(rawScore * 10) / 10;
+  const lostPoints = Math.round(total - (unweightedRaw * total) / 100);
+  const scorePercent = Math.round(unweightedRaw * 10) / 10;
+  const weightedRaw = weightedSimulationScore(sim, input.blueprintSubjects || []);
+  const weightedRounded = Math.round(weightedRaw * 10) / 10;
   const weights = new Map(
     (input.blueprintSubjects || [])
       .filter(item => item.subjectId)
@@ -365,6 +373,7 @@ export function buildSimulatedRemediationDiagnostic(
     simulationName: sim.nome || sim.name || 'Simulado sem nome',
     simulationDate: sim.date || new Date().toISOString().slice(0, 10),
     scorePercent,
+    weightedScorePercent: Math.abs(weightedRounded - scorePercent) >= 0.1 ? weightedRounded : null,
     totalQuestions: total,
     correctQuestions: correct,
     totalLostPoints: lostPoints,
@@ -374,10 +383,18 @@ export function buildSimulatedRemediationDiagnostic(
     deltaVsHistoricalAverage,
     topBleedingTopics,
     netScoring: sim.scoring === 'certo-errado',
-    minimumMisses: subjectsBelowMinimum(sim, input.blueprintSubjects || []).map(item => ({
-      ...item,
-      name: subjectsMap?.get(item.subjectId)?.name || 'Disciplina removida',
-    })),
+    minimumMisses: [
+      ...subjectsBelowMinimum(sim, input.blueprintSubjects || []).map(item => ({
+        ...item,
+        name: subjectsMap?.get(item.subjectId)?.name || 'Disciplina removida',
+      })),
+      ...blocksBelowMinimum(sim, input.blocks || [], input.blueprintSubjects || []).map(item => ({
+        subjectId: `block:${item.blockId}`,
+        score: item.score,
+        minimum: item.minimum,
+        name: `Bloco ${item.blockName}`,
+      })),
+    ],
     pace: paceAndGuess(sim, input.examMinutesPerQuestion ?? null),
     remediationPlan7Days,
     errorCardDrafts,

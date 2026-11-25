@@ -9,6 +9,11 @@
 
 import { h } from 'preact';
 import { SESSION_BOOKMARK_FIELDS } from '../../application/sessions/timer-coordinator.js';
+import { parseQuickQuestionShorthand } from '../../domain/questions/quick-question-parser.js';
+import {
+  detectAnomalousTimerSession,
+  type IdleTimerGuardianResult,
+} from '../../domain/sessions/idle-timer-guardian.js';
 import { mountPreact } from '../preact-mount.js';
 import type { SelectOption } from '../primitives/select-field.js';
 import { SessionModalSheet, type SessionBookmarkViewState } from '../modals/SessionModalSheet.js';
@@ -40,6 +45,8 @@ export interface SessionFormValues {
   type: string;
   resolved: number;
   correct: number;
+  blank?: number | null;
+  banca?: string | null;
   perceivedRetention: string | null;
   perceivedDifficulty: string | null;
   focusLevel: string | null;
@@ -59,6 +66,7 @@ export interface SessionModalEventHandlers {
 
 export interface SessionModalShowOptions {
   durationMinutes?: string;
+  hiddenSeconds?: number;
 }
 
 export interface SessionModalHideOptions {
@@ -122,6 +130,10 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     activityType: 'study',
     resolvedValue: '',
     correctValue: '',
+    quickShorthandValue: '',
+    shorthandBlank: null as number | null,
+    shorthandBanca: null as string | null,
+    guardianAlert: null as IdleTimerGuardianResult | null,
     pagesReadValue: '',
     videoBlocksValue: '',
     difficultyValue: '',
@@ -235,6 +247,8 @@ export function createSessionModalController(opts: SessionModalControllerOptions
         activityType: viewState.activityType,
         resolvedValue: viewState.resolvedValue,
         correctValue: viewState.correctValue,
+        quickShorthandValue: viewState.quickShorthandValue,
+        guardianAlert: viewState.guardianAlert,
         pagesReadValue: viewState.pagesReadValue,
         videoBlocksValue: viewState.videoBlocksValue,
         difficultyValue: viewState.difficultyValue,
@@ -249,6 +263,33 @@ export function createSessionModalController(opts: SessionModalControllerOptions
           const numericVal = Number(value);
           if (Number.isFinite(numericVal) && numericVal > 0) {
             viewState.durationFormatted = formatTimer(Math.min(720, Math.round(numericVal)) * 60);
+            if (
+              viewState.guardianAlert &&
+              numericVal <= viewState.guardianAlert.suggestedMinutes
+            ) {
+              viewState.guardianAlert = null;
+            }
+          }
+          renderDeclarativeSheet();
+        },
+        onGuardianAdjust: () => {
+          const suggested = viewState.guardianAlert?.suggestedMinutes || 60;
+          viewState.durationMinutesValue = String(suggested);
+          viewState.durationFormatted = formatTimer(suggested * 60);
+          viewState.guardianAlert = null;
+          renderDeclarativeSheet();
+        },
+        onQuickShorthandChange: value => {
+          viewState.quickShorthandValue = value;
+          const parsed = parseQuickQuestionShorthand(value);
+          if (parsed.ok) {
+            viewState.resolvedValue = String(parsed.resolved);
+            viewState.correctValue = String(parsed.correct);
+            viewState.shorthandBlank = parsed.blank;
+            viewState.shorthandBanca = parsed.banca;
+          } else {
+            viewState.shorthandBlank = null;
+            viewState.shorthandBanca = null;
           }
           renderDeclarativeSheet();
         },
@@ -437,6 +478,14 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       viewState.activityHint = ACTIVITY_HINTS[viewState.activityType] || ACTIVITY_HINTS.study;
       viewState.resolvedValue = '';
       viewState.correctValue = '';
+      viewState.quickShorthandValue = '';
+      viewState.shorthandBlank = null;
+      viewState.shorthandBanca = null;
+      viewState.guardianAlert = detectAnomalousTimerSession({
+        elapsedSeconds: timerSeconds,
+        targetMinutes: activeTimer.targetMinutes ?? null,
+        hiddenSeconds: showOptions.hiddenSeconds ?? 0,
+      });
       viewState.pagesReadValue = '';
       viewState.videoBlocksValue = '';
       viewState.difficultyValue = '';
@@ -602,6 +651,8 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       type,
       resolved,
       correct,
+      blank: viewState.shorthandBlank,
+      banca: viewState.shorthandBanca,
       perceivedRetention,
       perceivedDifficulty,
       focusLevel,

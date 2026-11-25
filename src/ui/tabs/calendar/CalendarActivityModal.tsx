@@ -1,14 +1,22 @@
 import type { JSX } from 'preact';
 import { ESSAY_CRITERIA } from '../../../domain/calendar/calendar-projection.js';
 import { useEffect, useState } from 'preact/hooks';
-import type { CalendarActivityKind, CalendarRecurrenceRule } from '../../../core/types.js';
+import type {
+  CalendarActivityKind,
+  CalendarRecurrenceRule,
+  EssayKind,
+  EssayScoringMode,
+} from '../../../core/types.js';
 import {
   CALENDAR_ACTIVITY_KINDS,
   CALENDAR_ACTIVITY_LABELS,
   CALENDAR_RECURRENCE_OPTIONS,
+  ESSAY_KIND_OPTIONS,
+  ESSAY_SCORING_MODE_OPTIONS,
   ESSAY_STATUS_OPTIONS,
   STATUS_OPTIONS,
 } from '../../../state/schema.js';
+import { calculateCebraspeEssayScore } from '../../../domain/exams/essay-scoring.js';
 import { Dialog } from '../../primitives/dialog.js';
 import { Button } from '../../primitives/button.js';
 import { Icon } from '../../primitives/icon.js';
@@ -26,10 +34,16 @@ export interface CalendarActivityDraft {
   estimatedMinutes: string;
   recurrence: CalendarRecurrenceRule;
   subjectId: string;
+  topicId?: string;
   location: string;
   externalUrl: string;
   description: string;
   essayTheme: string;
+  essayKind?: EssayKind;
+  essayScoringMode?: EssayScoringMode;
+  essayLinesWritten?: string;
+  essayGrammarErrors?: string;
+  essayErrorWeight?: string;
   essayScore: string;
   essayMaxScore: string;
   essayStatus: 'draft' | 'written' | 'graded';
@@ -42,7 +56,7 @@ export interface CalendarActivityModalProps {
   open: boolean;
   isNew: boolean;
   initialDraft: CalendarActivityDraft | null;
-  subjects: Array<{ id: string; name: string }>;
+  subjects: Array<{ id: string; name: string; topics?: Array<{ id: string; name: string }> }>;
   getDayLoadPreview?: (draft: CalendarActivityDraft) => DraftOverloadPreview;
   onSave: (draft: CalendarActivityDraft) => void;
   onDelete?: (id: string) => void;
@@ -60,10 +74,16 @@ const EMPTY_DRAFT: CalendarActivityDraft = {
   estimatedMinutes: '',
   recurrence: 'none',
   subjectId: '',
+  topicId: '',
   location: '',
   externalUrl: '',
   description: '',
   essayTheme: '',
+  essayKind: 'redacao',
+  essayScoringMode: 'padrao',
+  essayLinesWritten: '',
+  essayGrammarErrors: '',
+  essayErrorWeight: '2',
   essayScore: '',
   essayMaxScore: '',
   essayStatus: 'draft',
@@ -261,11 +281,97 @@ export function CalendarActivityModal({
         {draft.kind === 'essay' && (
           <div class="rounded-lg border border-border bg-surface-elevated p-3 space-y-3">
             <div class="text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary">
-              Dados da redação
+              Dados da redação / discursiva
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="calEssayKind" class={LABEL_CLASS}>
+                  Modalidade
+                </label>
+                <select
+                  id="calEssayKind"
+                  value={draft.essayKind || 'redacao'}
+                  onChange={e =>
+                    updateField('essayKind', (e.currentTarget as HTMLSelectElement).value as EssayKind)
+                  }
+                  class={CONTROL_CLASS}
+                >
+                  {ESSAY_KIND_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label for="calEssayScoringMode" class={LABEL_CLASS}>
+                  Critério gramatical
+                </label>
+                <select
+                  id="calEssayScoringMode"
+                  value={draft.essayScoringMode || 'padrao'}
+                  onChange={e =>
+                    updateField(
+                      'essayScoringMode',
+                      (e.currentTarget as HTMLSelectElement).value as EssayScoringMode
+                    )
+                  }
+                  class={CONTROL_CLASS}
+                >
+                  {ESSAY_SCORING_MODE_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="calEssaySubject" class={LABEL_CLASS}>
+                  Disciplina (opcional)
+                </label>
+                <select
+                  id="calEssaySubject"
+                  value={draft.subjectId}
+                  onChange={e => {
+                    const nextSub = (e.currentTarget as HTMLSelectElement).value;
+                    setDraft(prev => ({ ...prev, subjectId: nextSub, topicId: '' }));
+                  }}
+                  class={CONTROL_CLASS}
+                >
+                  <option value="">Sem disciplina específica</option>
+                  {subjects.map(sub => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label for="calEssayTopic" class={LABEL_CLASS}>
+                  Tópico (opcional)
+                </label>
+                <select
+                  id="calEssayTopic"
+                  value={draft.topicId || ''}
+                  onChange={e =>
+                    updateField('topicId', (e.currentTarget as HTMLSelectElement).value)
+                  }
+                  class={CONTROL_CLASS}
+                >
+                  <option value="">Sem tópico específico</option>
+                  {(subjects.find(s => s.id === draft.subjectId)?.topics || []).map(top => (
+                    <option key={top.id} value={top.id}>
+                      {top.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div>
               <label for="calEssayTheme" class={LABEL_CLASS}>
-                Tema da redação
+                Tema / Questão
               </label>
               <input
                 id="calEssayTheme"
@@ -303,14 +409,16 @@ export function CalendarActivityModal({
               </div>
               <div>
                 <label for="calEssayScore" class={LABEL_CLASS}>
-                  Nota obtida
+                  {draft.essayScoringMode === 'cebraspe_linhas'
+                    ? 'Nota de conteúdo (NC)'
+                    : 'Nota obtida'}
                 </label>
                 <input
                   id="calEssayScore"
                   type="number"
                   min={0}
-                  step="0.5"
-                  placeholder="Ex: 880"
+                  step="0.1"
+                  placeholder="Ex: 18"
                   value={draft.essayScore || ''}
                   onInput={e =>
                     updateField('essayScore', (e.currentTarget as HTMLInputElement).value)
@@ -327,7 +435,7 @@ export function CalendarActivityModal({
                   type="number"
                   min={1}
                   step="1"
-                  placeholder="Ex: 1000"
+                  placeholder="Ex: 20"
                   value={draft.essayMaxScore || ''}
                   onInput={e =>
                     updateField('essayMaxScore', (e.currentTarget as HTMLInputElement).value)
@@ -336,6 +444,91 @@ export function CalendarActivityModal({
                 />
               </div>
             </div>
+            {draft.essayScoringMode === 'cebraspe_linhas' && (
+              <div class="rounded border border-border-subtle bg-surface-subtle p-2.5 space-y-2">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label for="calEssayLinesWritten" class={LABEL_CLASS}>
+                      Linhas escritas (TL)
+                    </label>
+                    <input
+                      id="calEssayLinesWritten"
+                      type="number"
+                      min={1}
+                      max={120}
+                      step="1"
+                      placeholder="Ex: 30"
+                      value={draft.essayLinesWritten || ''}
+                      onInput={e =>
+                        updateField(
+                          'essayLinesWritten',
+                          (e.currentTarget as HTMLInputElement).value
+                        )
+                      }
+                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                    />
+                  </div>
+                  <div>
+                    <label for="calEssayGrammarErrors" class={LABEL_CLASS}>
+                      Erros gramaticais (NE)
+                    </label>
+                    <input
+                      id="calEssayGrammarErrors"
+                      type="number"
+                      min={0}
+                      step="1"
+                      placeholder="Ex: 6"
+                      value={draft.essayGrammarErrors || ''}
+                      onInput={e =>
+                        updateField(
+                          'essayGrammarErrors',
+                          (e.currentTarget as HTMLInputElement).value
+                        )
+                      }
+                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                    />
+                  </div>
+                  <div>
+                    <label for="calEssayErrorWeight" class={LABEL_CLASS}>
+                      Peso do erro (w)
+                    </label>
+                    <input
+                      id="calEssayErrorWeight"
+                      type="number"
+                      min={0.5}
+                      step="0.5"
+                      placeholder="2"
+                      value={draft.essayErrorWeight || ''}
+                      onInput={e =>
+                        updateField(
+                          'essayErrorWeight',
+                          (e.currentTarget as HTMLInputElement).value
+                        )
+                      }
+                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                    />
+                  </div>
+                </div>
+                {Number(draft.essayLinesWritten) > 0 && draft.essayScore !== '' && (
+                  <p
+                    class="text-xs text-content-primary m-0"
+                    role="status"
+                    data-testid="cebraspe-essay-preview"
+                  >
+                    {(() => {
+                      const calc = calculateCebraspeEssayScore({
+                        contentScore: Number(draft.essayScore) || 0,
+                        maxScore: Number(draft.essayMaxScore) || 20,
+                        linesWritten: Number(draft.essayLinesWritten),
+                        grammarErrors: Number(draft.essayGrammarErrors) || 0,
+                        errorWeight: Number(draft.essayErrorWeight) || 2,
+                      });
+                      return `Desconto gramatical: −${calc.deduction} (${calc.errorsPerLine} erros/linha) · Nota líquida final: ${calc.netScore}/${calc.maxScore} (${calc.netPercent}%)`;
+                    })()}
+                  </p>
+                )}
+              </div>
+            )}
             <fieldset class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-0 p-0 m-0 min-w-0">
               <legend class={`${LABEL_CLASS} col-span-full`}>
                 Nota por critério (%), opcional: mostra onde a discursiva perde ponto

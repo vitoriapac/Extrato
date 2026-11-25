@@ -208,6 +208,8 @@ export function createTopicDiagnosisService(deps: TopicDiagnosisServiceDependenc
       topic: found.topic,
       performance: calculateWeightedTopicPerformance(validQuestionRecords(), topicId, {
         targetBanca: state.examBlueprint?.banca || null,
+        referenceDate: today,
+        scoringMode: state.examBlueprint?.scoringMode || 'padrao',
       }),
       trend: calculateWeightedTrend(getTopicWeeklyTrend(topicId), MIN_TOPIC_TREND_WINDOW_QUESTIONS),
       reviews: state.reviewAgenda.filter(
@@ -313,6 +315,39 @@ export function createTopicDiagnosisService(deps: TopicDiagnosisServiceDependenc
           dominantError.share +
           '% dos erros categorizados'
       );
+    const state = getState();
+    const topicEssays = (state.calendar || [])
+      .filter(
+        c =>
+          c?.kind === 'essay' &&
+          c.topicId === topicId &&
+          c.status !== 'Cancelado' &&
+          typeof c.essayScore === 'number' &&
+          typeof c.essayMaxScore === 'number' &&
+          c.essayMaxScore > 0
+      )
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    const latestEssay = topicEssays[0];
+    const essayMinPercent =
+      state.examBlueprint?.essayMinPercent != null && Number(state.examBlueprint.essayMinPercent) > 0
+        ? Number(state.examBlueprint.essayMinPercent)
+        : 60;
+    const latestEssayPercent = latestEssay
+      ? Math.round((Number(latestEssay.essayScore) / Number(latestEssay.essayMaxScore)) * 100)
+      : null;
+    const essayAlert =
+      latestEssay && latestEssayPercent !== null && latestEssayPercent < essayMinPercent
+        ? {
+            scorePercent: latestEssayPercent,
+            minPercent: essayMinPercent,
+            essayKind: latestEssay.essayKind || 'redacao',
+            title: latestEssay.title || 'Discursiva',
+          }
+        : null;
+    if (essayAlert) {
+      reasons.push(`Discursiva recente abaixo do mínimo (${essayAlert.scorePercent}% < ${essayAlert.minPercent}%)`);
+    }
+
     if (reasons.length === 0)
       reasons.push(reliablePerformance ? 'desempenho dentro do esperado' : 'amostra ainda pequena');
 
@@ -333,6 +368,7 @@ export function createTopicDiagnosisService(deps: TopicDiagnosisServiceDependenc
       studySeconds: studyTimeByTopic(topicId),
       pendingReview,
       overdueDays,
+      essayAlert,
       recommendation,
       reasons,
       summary: reasons.join(' · '),

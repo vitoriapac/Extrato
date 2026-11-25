@@ -2,8 +2,16 @@ import { useState } from 'preact/hooks';
 import type { TopicBookmark, TopicStageChecklist, TopicStatus } from '../../core/types.js';
 import {
   parseRawSyllabusText,
+  type ParsedSyllabusSubject,
   type RawSyllabusParsedResult,
 } from '../../application/subjects/raw-syllabus-parser.js';
+import type { TopicEquivalenceRecord } from '../../core/types.js';
+import type {
+  PostEditalBlueprintSubjectLike,
+  PostEditalQuestionLike,
+  PostEditalSessionLike,
+} from '../../domain/exams/post-edital-diff.js';
+import { PostEditalDiffModal } from '../modals/PostEditalDiffModal.js';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
@@ -32,6 +40,14 @@ export interface VerticalizedSyllabusViewProps {
   onStartStudy?: (subjectId: string, topicId: string) => void;
   onOpenTopicIntelligence?: (subjectId: string, topicId: string) => void;
   onImportParsedSyllabus?: (result: RawSyllabusParsedResult) => void;
+  postEditalContext?: {
+    equivalences?: TopicEquivalenceRecord[];
+    sessions?: PostEditalSessionLike[];
+    questions?: PostEditalQuestionLike[];
+    blueprintSubjects?: PostEditalBlueprintSubjectLike[];
+    daysToExam?: number | null;
+    weeklyAvailableMinutes?: number;
+  };
 }
 
 export function VerticalizedSyllabusView({
@@ -40,9 +56,11 @@ export function VerticalizedSyllabusView({
   onStartStudy,
   onOpenTopicIntelligence,
   onImportParsedSyllabus,
+  postEditalContext,
 }: VerticalizedSyllabusViewProps) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('all');
   const [importModalOpen, setImportModalOpen] = useState<boolean>(false);
+  const [postEditalOpen, setPostEditalOpen] = useState<boolean>(false);
   const [rawText, setRawText] = useState<string>('');
   const [parsedPreview, setParsedPreview] = useState<RawSyllabusParsedResult | null>(null);
 
@@ -107,6 +125,16 @@ export function VerticalizedSyllabusView({
           >
             <Icon name="file-text" size={14} class="shrink-0" />
             <span>Colar Edital (PDF)</span>
+          </Button>
+          <Button
+            id="openPostEditalDiffBtn"
+            data-testid="open-post-edital-diff"
+            variant="ghost"
+            className="text-xs shrink-0 inline-flex items-center gap-2"
+            onClick={() => setPostEditalOpen(true)}
+          >
+            <Icon name="search" size={14} class="shrink-0" />
+            <span>Raio-X Pós-Edital</span>
           </Button>
         </div>
       </div>
@@ -412,6 +440,26 @@ export function VerticalizedSyllabusView({
           </div>
         </div>
       </Dialog>
+
+      <PostEditalDiffModal
+        open={postEditalOpen}
+        onClose={() => setPostEditalOpen(false)}
+        existingSubjects={subjects}
+        equivalences={postEditalContext?.equivalences}
+        sessions={postEditalContext?.sessions}
+        questions={postEditalContext?.questions}
+        blueprintSubjects={postEditalContext?.blueprintSubjects}
+        daysToExam={postEditalContext?.daysToExam}
+        weeklyAvailableMinutes={postEditalContext?.weeklyAvailableMinutes}
+        onImportDeltaTopics={(deltaSubjects: ParsedSyllabusSubject[]) => {
+          onImportParsedSyllabus?.({
+            subjects: deltaSubjects,
+            totalSubjects: deltaSubjects.length,
+            totalTopics: deltaSubjects.reduce((sum, s) => sum + s.topics.length, 0),
+            warnings: [],
+          });
+        }}
+      />
     </div>
   );
 }

@@ -504,6 +504,31 @@ export function createStateMigrator({
     return data;
   }
 
+  // v36: blocos eliminatórios, reserva de prova, orçamento de revisão, recortes de lei, jurisprudência e discursiva técnica/Cebraspe.
+  function migrateV35toV36(data: Record<string, unknown>) {
+    if (!Array.isArray(data.jurisprudenceNotebook)) {
+      data.jurisprudenceNotebook = [];
+    }
+    if (data.metas && typeof data.metas === 'object') {
+      const metas = data.metas as Record<string, unknown>;
+      const budget = metas.orcamentoRevisaoPct;
+      metas.orcamentoRevisaoPct =
+        budget == null || budget === ''
+          ? null
+          : Number.isFinite(Number(budget)) && Number(budget) >= 10 && Number(budget) <= 60
+            ? Math.round(Number(budget))
+            : null;
+    }
+    if (data.examBlueprint && typeof data.examBlueprint === 'object') {
+      data.examBlueprint = normalizeExamBlueprint(
+        data.examBlueprint as Record<string, unknown>,
+        typeof data.examDate === 'string' ? data.examDate : undefined
+      );
+    }
+    data.schemaVersion = 36;
+    return data;
+  }
+
   function migrateState(data: Record<string, any>) {
     return runStateMigrations(data, {
       currentVersion: CURRENT_SCHEMA_VERSION,
@@ -542,6 +567,7 @@ export function createStateMigrator({
         32: migrateV32toV33,
         33: migrateV33toV34,
         34: migrateV34toV35,
+        35: migrateV35toV36,
       },
     });
   }

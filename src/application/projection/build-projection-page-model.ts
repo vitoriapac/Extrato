@@ -19,6 +19,7 @@ export function buildProjectionPageModel({
   activeExamTags = [],
   periodStart = null,
   executionContext = null,
+  blueprintSubjects = [],
 }: any = {}) {
   const topicRisks = buildProjectionTopicRisks(candidates);
   const inputs = {
@@ -27,6 +28,7 @@ export function buildProjectionPageModel({
     consistency,
     openHighImpactPriorities: topicRisks.length,
     topicRisks,
+    blueprintSubjects,
   };
   const model = buildAchievementProjection({
     today,

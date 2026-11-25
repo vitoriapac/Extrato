@@ -33,6 +33,12 @@ const QUESTIONS_ITEMS: DropdownMenuItem[] = [
     icon: 'file-import',
   },
   {
+    id: 'paste-platform-stats',
+    domId: 'pastePlatformStatsBtn',
+    label: 'Colar estatísticas do TEC / QConcursos',
+    icon: 'clipboard-text',
+  },
+  {
     id: 'download-questions-csv',
     domId: 'downloadQuestionsCsvBtn',
     label: 'Baixar modelo CSV',

@@ -298,6 +298,12 @@ export function buildDelegatedActionHandlers(
     includeTopicInExam: (topicId: string) => c.examMatrix?.includeTopicInExam?.(topicId),
     updateExamBlueprint: (...args: any[]) =>
       (c.examMatrix?.updateExamBlueprint || c.goalsBlueprint?.updateExamBlueprint)?.(...args),
+    addExamBlock: (...args: unknown[]) =>
+      (c.examMatrix?.addExamBlock || c.goalsBlueprint?.addExamBlock)?.(...args),
+    updateExamBlock: (...args: unknown[]) =>
+      (c.examMatrix?.updateExamBlock || c.goalsBlueprint?.updateExamBlock)?.(...args),
+    removeExamBlock: (...args: unknown[]) =>
+      (c.examMatrix?.removeExamBlock || c.goalsBlueprint?.removeExamBlock)?.(...args),
     updateExamSubject: (id: string, f: string, v: any) => {
       if (c.examMatrix?.updateExamSubject) {
         c.examMatrix.updateExamSubject(id, f, v);

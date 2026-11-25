@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import { mountPreact } from '../../preact-mount.js';
+import { calculateCebraspeEssayScore } from '../../../domain/exams/essay-scoring.js';
 import {
   computeDraftOverloadPreview,
   type UnifiedCalendarItem,
@@ -82,10 +83,16 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       estimatedMinutes: '',
       recurrence: 'none',
       subjectId: '',
+      topicId: '',
       location: '',
       externalUrl: '',
       description: '',
       essayTheme: '',
+      essayKind: 'redacao',
+      essayScoringMode: 'padrao',
+      essayLinesWritten: '',
+      essayGrammarErrors: '',
+      essayErrorWeight: '2',
       essayScore: '',
       essayMaxScore: '',
       essayStatus: 'draft',
@@ -102,6 +109,21 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
     if (!item) return;
     const ui = calendarUiState as any;
     ui.isNew = false;
+    const linesVal = Number(item.essayLinesWritten);
+    const errorsVal = Number(item.essayGrammarErrors);
+    const weightVal = Number(item.essayErrorWeight) > 0 ? Number(item.essayErrorWeight) : 2;
+    let initialEssayScore = item.essayScore != null ? String(item.essayScore) : '';
+    if (
+      item.essayScoringMode === 'cebraspe_linhas' &&
+      item.essayScore != null &&
+      Number.isFinite(linesVal) &&
+      linesVal > 0
+    ) {
+      const deduction = weightVal * ((Number.isFinite(errorsVal) ? errorsVal : 0) / linesVal);
+      const maxLim = Number(item.essayMaxScore) > 0 ? Number(item.essayMaxScore) : 100;
+      const reconstructedNc = Math.min(maxLim, Math.round((Number(item.essayScore) + deduction) * 100) / 100);
+      initialEssayScore = String(reconstructedNc);
+    }
     ui.modalDraft = {
       id: item.id,
       title:
@@ -114,11 +136,17 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       estimatedMinutes: item.estimatedMinutes ? String(item.estimatedMinutes) : '',
       recurrence: item.recurrence || 'none',
       subjectId: item.subjectId || '',
+      topicId: item.topicId || '',
       location: item.location || '',
       externalUrl: item.externalUrl || '',
       description: item.description || '',
       essayTheme: item.essayTheme || '',
-      essayScore: item.essayScore != null ? String(item.essayScore) : '',
+      essayKind: item.essayKind || 'redacao',
+      essayScoringMode: item.essayScoringMode || 'padrao',
+      essayLinesWritten: item.essayLinesWritten != null ? String(item.essayLinesWritten) : '',
+      essayGrammarErrors: item.essayGrammarErrors != null ? String(item.essayGrammarErrors) : '',
+      essayErrorWeight: item.essayErrorWeight != null ? String(item.essayErrorWeight) : '2',
+      essayScore: initialEssayScore,
       essayMaxScore: item.essayMaxScore != null ? String(item.essayMaxScore) : '',
       essayStatus: item.essayStatus || 'draft',
       essayContent: item.essayContent != null ? String(item.essayContent) : '',
@@ -140,6 +168,32 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
     const mins = Number(draft.estimatedMinutes);
     const essayScoreNum = draft.essayScore !== '' ? Number(draft.essayScore) : NaN;
     const essayMaxScoreNum = draft.essayMaxScore !== '' ? Number(draft.essayMaxScore) : NaN;
+    const linesNum = draft.essayLinesWritten ? Math.floor(Number(draft.essayLinesWritten)) : NaN;
+    const errorsNum =
+      draft.essayGrammarErrors !== '' && draft.essayGrammarErrors != null
+        ? Math.max(0, Math.floor(Number(draft.essayGrammarErrors) || 0))
+        : NaN;
+    const weightNum =
+      draft.essayErrorWeight && Number(draft.essayErrorWeight) > 0
+        ? Number(draft.essayErrorWeight)
+        : 2;
+    const isCebraspeEssay =
+      draft.kind === 'essay' &&
+      draft.essayScoringMode === 'cebraspe_linhas' &&
+      Number.isFinite(linesNum) &&
+      linesNum > 0;
+    const finalEssayScore =
+      isCebraspeEssay && Number.isFinite(essayScoreNum) && essayScoreNum >= 0
+        ? calculateCebraspeEssayScore({
+            contentScore: essayScoreNum,
+            maxScore: Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : 20,
+            linesWritten: linesNum,
+            grammarErrors: Number.isFinite(errorsNum) ? errorsNum : 0,
+            errorWeight: weightNum,
+          }).netScore
+        : Number.isFinite(essayScoreNum) && essayScoreNum >= 0
+          ? essayScoreNum
+          : null;
     const payload: Record<string, any> = {
       title: draft.title.trim(),
       kind: draft.kind,
@@ -150,6 +204,7 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       estimatedMinutes: Number.isFinite(mins) && mins > 0 ? Math.round(mins) : null,
       recurrence: draft.recurrence || 'none',
       subjectId: draft.subjectId || null,
+      topicId: draft.topicId || null,
       location: draft.location.trim() || null,
       externalUrl: draft.externalUrl.trim() || null,
       description: draft.description.trim() || null,
@@ -157,9 +212,20 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       ...(draft.kind === 'essay'
         ? {
             essayTheme: draft.essayTheme.trim() || null,
-            essayScore: Number.isFinite(essayScoreNum) && essayScoreNum >= 0 ? essayScoreNum : null,
+            essayKind: draft.essayKind || 'redacao',
+            essayScoringMode: draft.essayScoringMode || 'padrao',
+            essayLinesWritten:
+              isCebraspeEssay && Number.isFinite(linesNum) ? linesNum : null,
+            essayGrammarErrors:
+              isCebraspeEssay && Number.isFinite(errorsNum) ? errorsNum : null,
+            essayErrorWeight: isCebraspeEssay ? weightNum : null,
+            essayScore: finalEssayScore,
             essayMaxScore:
-              Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : null,
+              Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0
+                ? essayMaxScoreNum
+                : isCebraspeEssay && finalEssayScore !== null
+                  ? 20
+                  : null,
             essayStatus: draft.essayStatus || 'draft',
             essayContent: criterionPercent(draft.essayContent),
             essayStructure: criterionPercent(draft.essayStructure),

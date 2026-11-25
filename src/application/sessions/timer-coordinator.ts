@@ -139,6 +139,8 @@ export interface BuildSessionRecordInput {
     type: string;
     resolved: number;
     correct: number;
+    blank?: number | null;
+    banca?: string | null;
     perceivedRetention: string | null;
     perceivedDifficulty: string | null;
     focusLevel: string | null;
@@ -182,6 +184,8 @@ export function buildCompletedSessionRecord(input: BuildSessionRecordInput) {
     type: formValues.type,
     questionsResolved: formValues.resolved,
     correctAnswers: Math.min(formValues.correct, formValues.resolved),
+    blank: formValues.blank ?? null,
+    banca: formValues.banca || null,
     perceivedRetention: formValues.perceivedRetention,
     perceivedDifficulty: formValues.perceivedDifficulty,
     focusLevel: formValues.focusLevel,

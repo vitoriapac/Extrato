@@ -18,7 +18,11 @@ import {
   buildExamFitAnalysis,
   EXAM_FIT_WINDOW_DAYS,
 } from '../../../application/questions/build-exam-fit-analysis.js';
-import { ExamFitCard } from './ExamFitCard.js';
+import { ExamFitCard, CebraspeRiskStrip } from './ExamFitCard.js';
+import {
+  QuickQuestionEntryBar,
+  type QuickQuestionEntryPayload,
+} from '../../components/QuickQuestionEntryBar.js';
 
 export function calcAcertoPct(correct: number, resolved: number): number {
   const r = Number(resolved) || 0;
@@ -258,19 +262,81 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
 
     body.innerHTML = controller.renderQuestionsHtml();
 
+    const quickEntryMount = ctx.document.getElementById('quickQuestionEntryMount');
+    if (quickEntryMount) {
+      const activeSubjects = (
+        ctx.subjectsForSelection ? ctx.subjectsForSelection() : ctx.activeSubjects()
+      ) as Array<{ id: string; name: string }>;
+      const newestWithSubject = [
+        ...((ctx.state.questoes || []) as Array<{
+          createdAt?: string;
+          date?: string;
+          subjectId?: string | null;
+          banca?: string | null;
+        }>),
+      ]
+        .sort((a, b) =>
+          String(b.createdAt || b.date || '').localeCompare(String(a.createdAt || a.date || ''))
+        )
+        .find(q => q.subjectId && activeSubjects.some(s => s.id === q.subjectId));
+      const defaultBanca = ctx.state.examBlueprint?.banca || newestWithSubject?.banca || null;
+      mountPreact(
+        h(QuickQuestionEntryBar, {
+          subjects: activeSubjects,
+          topicsForSubject: (subId: string) =>
+            ctx.topicsForSelection ? ctx.topicsForSelection(subId, null) : [],
+          defaultSubjectId: newestWithSubject?.subjectId || activeSubjects[0]?.id || null,
+          defaultBanca,
+          onSaveEntry: (entry: QuickQuestionEntryPayload) => {
+            runUndoable('Questões registradas no histórico.', () => {
+              questionCrudController.create({
+                id: uid('question'),
+                date: todayISO(),
+                subjectId: entry.subjectId,
+                topicId: entry.topicId,
+                resolved: entry.resolved,
+                correct: entry.correct,
+                blank:
+                  entry.blank != null
+                    ? entry.blank
+                    : ctx.state.examBlueprint?.scoringMode === 'certo-errado'
+                      ? 0
+                      : null,
+                errorBreakdown: emptyErrorBreakdown(),
+                banca: entry.banca,
+                minutes: entry.minutes,
+                retry: entry.retry,
+                recommendationId: null,
+                createdAt: nowISO(),
+              });
+            });
+          },
+        }),
+        quickEntryMount
+      );
+    }
+
+    const examFitModel = buildExamFitAnalysis({
+      questions: ctx.state.questoes || [],
+      subjects: ctx.state.subjects || [],
+      blueprint: ctx.state.examBlueprint || null,
+      fromDate: addLocalDays(todayISO(), 1 - EXAM_FIT_WINDOW_DAYS) || todayISO(),
+    });
+    const cebraspeStripMount = ctx.document.getElementById('cebraspeRiskStripMount');
+    if (cebraspeStripMount) {
+      if (examFitModel.risk) {
+        cebraspeStripMount.hidden = false;
+        mountPreact(h(CebraspeRiskStrip, { risk: examFitModel.risk }), cebraspeStripMount);
+      } else {
+        cebraspeStripMount.hidden = true;
+        if (typeof cebraspeStripMount.replaceChildren === 'function') {
+          cebraspeStripMount.replaceChildren();
+        }
+      }
+    }
     const examFitMount = ctx.document.getElementById('examFitMount');
     if (examFitMount) {
-      mountPreact(
-        h(ExamFitCard, {
-          model: buildExamFitAnalysis({
-            questions: ctx.state.questoes || [],
-            subjects: ctx.state.subjects || [],
-            blueprint: ctx.state.examBlueprint || null,
-            fromDate: addLocalDays(todayISO(), 1 - EXAM_FIT_WINDOW_DAYS) || todayISO(),
-          }),
-        }),
-        examFitMount
-      );
+      mountPreact(h(ExamFitCard, { model: examFitModel }), examFitMount);
     }
 
     const plateauMount = ctx.document.getElementById('plateauDetectorMount');
@@ -370,6 +436,15 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     ctx.document.getElementById('errorNotebookToggleBtn')?.addEventListener('click', () => {
       ctx.errorNotebookController?.toggle();
       renderQuestoes();
+    });
+    ctx.document.getElementById('pastePlatformStatsBtn')?.addEventListener('click', () => {
+      const toggle = ctx.document.getElementById('quickQuestionPasteToggleBtn') as HTMLButtonElement | null;
+      if (toggle && toggle.getAttribute('aria-expanded') !== 'true') {
+        toggle.click();
+      }
+      queueMicrotask(() => {
+        (ctx.document.getElementById('quickQuestionPasteTextarea') as HTMLTextAreaElement | null)?.focus?.();
+      });
     });
   }
 

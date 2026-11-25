@@ -54,6 +54,11 @@ export function renderSubjectTargetEditor({
   const hasDirty = draftMap.size > 0;
   const splitDiff = sumWeekly - globalQuestions;
   const needsSplit = globalQuestions > 0 && sumWeekly > 0 && splitDiff !== 0 && !hasDirty;
+  const blocks: Array<{ id: string; name?: string | null }> = Array.isArray(blueprint?.blocks)
+    ? blueprint.blocks
+    : [];
+  const hasBlocks = blocks.length > 0;
+  const activeHeaders = hasBlocks ? [...HEADERS, { key: 'block', label: 'Bloco' }] : HEADERS;
 
   return render(
     <div class="subject-target-editor">
@@ -164,7 +169,7 @@ export function renderSubjectTargetEditor({
               <th scope="col">
                 <span class="sr-only">Selecionar</span>
               </th>
-              {HEADERS.map(col => (
+              {activeHeaders.map(col => (
                 <th
                   scope="col"
                   class={col.advanced ? 'col-advanced' : undefined}
@@ -364,6 +369,28 @@ export function renderSubjectTargetEditor({
                       aria-label={`Nota mínima eliminatória de ${row.name}, em %`}
                     />
                   </td>
+                  {hasBlocks && (
+                    <td data-label="Bloco">
+                      <select
+                        data-field="block"
+                        data-subject={id}
+                        aria-label={`Bloco eliminatório de ${row.name}`}
+                      >
+                        <option value="" selected={!value('block', config.blockId || '')}>
+                          Sem bloco
+                        </option>
+                        {blocks.map(block => (
+                          <option
+                            key={block.id}
+                            value={block.id}
+                            selected={value('block', config.blockId || '') === block.id}
+                          >
+                            {block.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  )}
                 </tr>
               );
             })}

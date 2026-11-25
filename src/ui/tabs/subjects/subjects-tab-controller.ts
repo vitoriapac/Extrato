@@ -11,6 +11,7 @@ import { createSubjectsController } from './subjects-controller.js';
 import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './topic-analytics-view.js';
 import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './topic-strategy-editor-view.js';
 import type {
+  JurisprudenceRecord,
   LawRecord,
   Subject,
   Topic,
@@ -19,7 +20,9 @@ import type {
 } from '../../../core/types.js';
 import { runUndoable } from '../../undoable.js';
 import { LawNotebookCard } from './LawNotebookCard.js';
+import { JurisprudenceNotebookCard } from './JurisprudenceNotebookCard.js';
 import { completeLawLap, registerLawReading } from '../../../domain/law-notebook.js';
+import { registerJurisprudenceReading } from '../../../domain/jurisprudence-notebook.js';
 
 export interface SubjectsTabControllerContext {
   document: Document;
@@ -327,6 +330,19 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         onOpenTopicIntelligence: (subjectId: string, topicId: string) => {
           openTopicIntelligenceModal(subjectId, topicId);
         },
+        postEditalContext: {
+          equivalences: ctx.state.topicEquivalences || [],
+          sessions: ctx.state.studySessions || [],
+          questions: ctx.state.questoes || [],
+          blueprintSubjects: ctx.state.examBlueprint?.subjects || [],
+          daysToExam: ctx.state.examDate && ctx.diasParaRevisao ? ctx.diasParaRevisao(ctx.state.examDate) : null,
+          weeklyAvailableMinutes: Math.round(
+            (Object.values(ctx.state.metas?.horasPorDia || {}).reduce<number>(
+              (s, h) => s + (Number(h) || 0),
+              0
+            ) || (Number(ctx.state.metas?.horasDiarias) || 0) * 7) * 60
+          ),
+        },
         onImportParsedSyllabus: (result: any) => {
           let addedSubjects = 0;
           let addedTopics = 0;
@@ -411,8 +427,63 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     );
   }
 
+  function renderJurisprudenceNotebook(): void {
+    const mount = ctx.document.getElementById('jurisprudenceNotebookMount');
+    if (!mount) return;
+    if (!Array.isArray(ctx.state.jurisprudenceNotebook)) {
+      ctx.state.jurisprudenceNotebook = [];
+    }
+    const list: JurisprudenceRecord[] = ctx.state.jurisprudenceNotebook;
+    mountPreact(
+      h(JurisprudenceNotebookCard, {
+        records: list,
+        subjects: (ctx.state.subjects || [])
+          .filter((subject: Subject) => !subject.archived)
+          .map((subject: Subject) => ({ id: subject.id, name: subject.name })),
+        today: todayISO(),
+        onAdd: entry => {
+          ctx.state.jurisprudenceNotebook!.push({
+            id: uid('juris'),
+            ...entry,
+            topicId: null,
+            laps: 0,
+            lastReadAt: null,
+            nextReviewDate: null,
+            createdAt: nowISO(),
+          });
+          ctx.persistAndRender();
+          ctx.showToast('Julgado adicionado ao caderno de jurisprudência.');
+        },
+        onReview: id => {
+          const idx = ctx.state.jurisprudenceNotebook!.findIndex(
+            (item: JurisprudenceRecord) => item.id === id
+          );
+          if (idx < 0) return;
+          ctx.state.jurisprudenceNotebook![idx] = registerJurisprudenceReading(
+            ctx.state.jurisprudenceNotebook![idx],
+            todayISO()
+          );
+          ctx.persistAndRender();
+          ctx.showToast('Revisão de jurisprudência registrada.');
+        },
+        onDelete: id => {
+          const target = ctx.state.jurisprudenceNotebook!.find(
+            (item: JurisprudenceRecord) => item.id === id
+          );
+          runUndoable(`Julgado "${target?.code || ''}" excluído.`, () => {
+            ctx.state.jurisprudenceNotebook = ctx.state.jurisprudenceNotebook!.filter(
+              (item: JurisprudenceRecord) => item.id !== id
+            );
+          });
+        },
+      }),
+      mount
+    );
+  }
+
   function renderSubjects(): void {
     renderLawNotebook();
+    renderJurisprudenceNotebook();
     const container = ctx.document.getElementById('subjectsContainer');
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     const toggleBtn = ctx.document.getElementById('verticalizedSyllabusToggleBtn');

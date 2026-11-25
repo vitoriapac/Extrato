@@ -182,6 +182,7 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     uid,
     addHistoryEvent: studyMetricsSelectors.addHistoryEvent,
     refreshTopicReviewStats: topicId => subjectsTabController.refreshTopicReviewStats(topicId),
+    updateGoal: (key, value) => services.goalsService?.update?.(key, value),
     showToast,
     showConfirm,
     persistAndRender,

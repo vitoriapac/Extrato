@@ -12,9 +12,10 @@ import { DEFAULT_PAGE_SIZE } from '../../progressive-list.js';
 import { buildSimulationTrendVisual } from '../../../domain/practice/practice-visual-models.js';
 import { renderSimulationTrendChart } from '../../primitives/charts/charts.js';
 import {
-  simulationScore,
+  weightedSimulationScore,
   simulationTotals,
   subjectsBelowMinimum,
+  blocksBelowMinimum,
   wrongCount,
   paceAndGuess,
   examMinutesPerQuestion,
@@ -80,7 +81,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   }
 
   function simuladoNota(sim: Record<string, any>) {
-    return simulationScore(sim);
+    return weightedSimulationScore(sim, ctx.state?.examBlueprint?.subjects);
   }
 
   function simulationViewModel(sim: Record<string, any>) {
@@ -88,6 +89,20 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     const names = new Map<string, string>(
       (ctx.activeSubjects() || []).map((s: { id: string; name: string }) => [s.id, s.name])
     );
+    const subjectMisses = subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(item => ({
+      ...item,
+      name: names.get(item.subjectId) || 'Disciplina removida',
+    }));
+    const blockMisses = blocksBelowMinimum(
+      sim,
+      ctx.state?.examBlueprint?.blocks,
+      ctx.state?.examBlueprint?.subjects
+    ).map(item => ({
+      subjectId: `block:${item.blockId}`,
+      name: `Bloco ${item.blockName}`,
+      score: item.score,
+      minimum: item.minimum,
+    }));
     return {
       date: sim.date ? ctx.formatDatePt(sim.date) : 'Sem data',
       name: sim.nome || 'Simulado sem nome',
@@ -97,10 +112,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
       scoring: sim.scoring === 'certo-errado' ? ('certo-errado' as const) : undefined,
       blank: totals.total - totals.correct - totals.wrong,
       pace: paceAndGuess(sim, examMinutesPerQuestion(ctx.state?.examBlueprint)),
-      belowMinimum: subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(item => ({
-        ...item,
-        name: names.get(item.subjectId) || 'Disciplina removida',
-      })),
+      belowMinimum: [...subjectMisses, ...blockMisses],
     };
   }
 
@@ -381,6 +393,7 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
         : (metas.metaAprovacao ?? null),
       weeklyAvailableHours: weeklyHours,
       blueprintSubjects: blueprint?.subjects || [],
+      blocks: blueprint?.blocks || [],
       subjectsMap,
       examMinutesPerQuestion: examMinutesPerQuestion(blueprint),
     });

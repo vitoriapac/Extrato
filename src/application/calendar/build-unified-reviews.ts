@@ -59,6 +59,12 @@ export function buildUnifiedReviews({
       essayScore: typeof item.essayScore === 'number' ? item.essayScore : null,
       essayMaxScore: typeof item.essayMaxScore === 'number' ? item.essayMaxScore : null,
       essayStatus: item.essayStatus || null,
+      essayKind: item.essayKind || null,
+      essayScoringMode: item.essayScoringMode || null,
+      essayLinesWritten: typeof item.essayLinesWritten === 'number' ? item.essayLinesWritten : null,
+      essayGrammarErrors:
+        typeof item.essayGrammarErrors === 'number' ? item.essayGrammarErrors : null,
+      essayErrorWeight: typeof item.essayErrorWeight === 'number' ? item.essayErrorWeight : null,
       essayContent: typeof item.essayContent === 'number' ? item.essayContent : null,
       essayStructure: typeof item.essayStructure === 'number' ? item.essayStructure : null,
       essayLanguage: typeof item.essayLanguage === 'number' ? item.essayLanguage : null,

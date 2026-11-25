@@ -171,6 +171,9 @@ export function createTodayAssistantController({
       overdueReviews,
       currentCycleBlock: currentBlock,
       subjects,
+      laws: state.lawNotebook || [],
+      jurisprudence: state.jurisprudenceNotebook || [],
+      today,
       source: 'today',
     });
 

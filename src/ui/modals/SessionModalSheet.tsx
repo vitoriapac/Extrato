@@ -1,6 +1,8 @@
 import type { JSX } from 'preact';
+import type { IdleTimerGuardianResult } from '../../domain/sessions/idle-timer-guardian.js';
 import { BottomSheet } from '../primitives/bottom-sheet.js';
 import { Button } from '../primitives/button.js';
+import { Icon } from '../primitives/icon.js';
 import { SelectField, type SelectOption } from '../primitives/select-field.js';
 
 export interface SessionBookmarkViewState {
@@ -30,6 +32,8 @@ export interface SessionModalSheetProps {
   activityType: string;
   resolvedValue: string;
   correctValue: string;
+  quickShorthandValue?: string;
+  guardianAlert?: IdleTimerGuardianResult | null;
   pagesReadValue: string;
   videoBlocksValue: string;
   difficultyValue: string;
@@ -40,6 +44,8 @@ export interface SessionModalSheetProps {
   notesValue: string;
   bookmark: SessionBookmarkViewState;
   onDurationMinutesChange: (value: string) => void;
+  onGuardianAdjust?: () => void;
+  onQuickShorthandChange?: (value: string) => void;
   onSubjectChange: (subjectId: string) => void;
   onTopicChange: (topicId: string) => void;
   onActivityTypeChange: (type: string) => void;
@@ -121,6 +127,8 @@ export function SessionModalSheet({
   activityType,
   resolvedValue,
   correctValue,
+  quickShorthandValue = '',
+  guardianAlert = null,
   pagesReadValue,
   videoBlocksValue,
   difficultyValue,
@@ -131,6 +139,8 @@ export function SessionModalSheet({
   notesValue,
   bookmark,
   onDurationMinutesChange,
+  onGuardianAdjust = () => {},
+  onQuickShorthandChange = () => {},
   onSubjectChange,
   onTopicChange,
   onActivityTypeChange,
@@ -210,6 +220,29 @@ export function SessionModalSheet({
           </label>
         </div>
 
+        {guardianAlert?.anomalous && (
+          <div
+            id="sessionGuardianAlert"
+            role="alert"
+            data-testid="session-guardian-alert"
+            class="p-3 rounded-default border border-border-default bg-surface-subtle text-xs flex flex-wrap items-center justify-between gap-2 my-2"
+          >
+            <div class="flex items-start gap-2 min-w-0 flex-1">
+              <Icon name="alert-triangle" size={16} class="shrink-0 mt-0.5" />
+              <span class="text-content-primary">{guardianAlert.message}</span>
+            </div>
+            <Button
+              id="sessionGuardianAdjustBtn"
+              type="button"
+              variant="secondary"
+              size="small"
+              onClick={onGuardianAdjust}
+            >
+              Ajustar para {guardianAlert.suggestedMinutes} min
+            </Button>
+          </div>
+        )}
+
         <div class="session-modal-fields">
           <SelectField
             id="sessionModalSubject"
@@ -248,6 +281,18 @@ export function SessionModalSheet({
             aria-labelledby="sessionQuestionsTitle"
           >
             <h4 id="sessionQuestionsTitle">Resultado das questões</h4>
+            <label htmlFor="sessionModalQuickShorthand" class="block mb-2 text-xs">
+              <span>Atalho expresso (opcional)</span>
+              <input
+                class="session-detail-control"
+                type="text"
+                id="sessionModalQuickShorthand"
+                aria-label="Preenchimento rápido de questões"
+                placeholder="Ex.: 25/21 fgv 2b"
+                value={quickShorthandValue}
+                onInput={e => onQuickShorthandChange(e.currentTarget.value)}
+              />
+            </label>
             <div class="session-question-fields">
               <label htmlFor="sessionModalResolved">
                 Questões resolvidas

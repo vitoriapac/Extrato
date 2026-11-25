@@ -11,6 +11,7 @@ export function buildSavedSubjectConfig(
     questionWeight,
     accuracyTarget,
     minScore,
+    blockId,
   }: {
     priority: string;
     masteryTarget: string | number;
@@ -18,6 +19,7 @@ export function buildSavedSubjectConfig(
     questionWeight: string | number;
     accuracyTarget?: string | number;
     minScore?: string | number;
+    blockId?: string | null;
   }
 ): ExamBlueprintSubject | null {
   const mastery = masteryTarget === '' ? null : Number(masteryTarget),
@@ -62,7 +64,13 @@ export function buildSavedSubjectConfig(
     next.official = false;
     next.mappingType = null;
   }
-  return {
+  const resolvedBlockId =
+    blockId === undefined
+      ? current?.blockId
+      : blockId && String(blockId).trim()
+        ? String(blockId).trim()
+        : null;
+  const saved: ExamBlueprintSubject = {
     ...next,
     priority: priority as ExamPriority,
     accuracyTarget: accuracy,
@@ -71,4 +79,7 @@ export function buildSavedSubjectConfig(
     expectedQuestions: questions,
     questionWeight: weight,
   };
+  if (resolvedBlockId) saved.blockId = resolvedBlockId;
+  else delete saved.blockId;
+  return saved;
 }

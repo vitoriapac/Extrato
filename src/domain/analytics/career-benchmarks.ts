@@ -288,7 +288,8 @@ export function aggregateRecentActivity(
   {
     todayISO = new Date().toISOString().slice(0, 10),
     daysWindow = 7,
-  }: { todayISO?: string; daysWindow?: number } = {}
+    scoringMode = 'padrao',
+  }: { todayISO?: string; daysWindow?: number; scoringMode?: string | null } = {}
 ): MetricAggregates {
   const windowStart = new Date(todayISO);
   windowStart.setDate(windowStart.getDate() - daysWindow + 1);
@@ -317,6 +318,14 @@ export function aggregateRecentActivity(
     }
   }
 
+  const netMode = scoringMode === 'certo-errado';
+  const effectiveScorePoints = (q: { blank?: unknown }, total: number, correct: number) => {
+    if (!netMode || q?.blank == null || String(q.blank) === '') return correct;
+    const blank = Math.min(total - correct, Math.max(0, Math.floor(Number(q.blank) || 0)));
+    const wrong = Math.max(0, total - correct - blank);
+    return correct - wrong;
+  };
+
   let totalQuestions = 0;
   let correctQuestions = 0;
 
@@ -328,12 +337,14 @@ export function aggregateRecentActivity(
     const total = Number(q.resolved || q.total || q.quantidade) || 0;
     const correct = Number(q.correct || q.acertos) || 0;
     totalQuestions += total;
-    correctQuestions += correct;
+    correctQuestions += effectiveScorePoints(q, total, correct);
   }
 
   // Se não houver questões nos últimos 7 dias, estende a janela de precisão para 28 dias
   let accuracyPercent: number | null =
-    totalQuestions > 0 ? Math.round((correctQuestions / totalQuestions) * 100) : null;
+    totalQuestions > 0
+      ? Math.round((Math.max(0, correctQuestions) / totalQuestions) * 100)
+      : null;
 
   if (accuracyPercent === null) {
     const extendedStart = new Date(todayISO);
@@ -345,12 +356,14 @@ export function aggregateRecentActivity(
     for (const q of questions) {
       const qDate = q.date || q.createdAt?.slice(0, 10);
       if (qDate && qDate >= extendedStartISO && qDate <= todayISO) {
-        extendedTotal += Number(q.resolved || q.total || q.quantidade) || 0;
-        extendedCorrect += Number(q.correct || q.acertos) || 0;
+        const total = Number(q.resolved || q.total || q.quantidade) || 0;
+        const correct = Number(q.correct || q.acertos) || 0;
+        extendedTotal += total;
+        extendedCorrect += effectiveScorePoints(q, total, correct);
       }
     }
     if (extendedTotal > 0) {
-      accuracyPercent = Math.round((extendedCorrect / extendedTotal) * 100);
+      accuracyPercent = Math.round((Math.max(0, extendedCorrect) / extendedTotal) * 100);
     }
   }
 
@@ -381,9 +394,15 @@ function buildPlanCapacityNote(career: CareerBenchmark, capacityHours: number | 
 export function calculateCareerBenchmarkComparison(
   aggregates: MetricAggregates,
   careerId: CareerClusterId = 'geral',
-  planCapacityHours: number | null = null
+  planCapacityHours: number | null = null,
+  scoringMode: string | null = 'padrao'
 ): CareerBenchmarkComparisonResult {
   const career = CAREER_BENCHMARKS[careerId] || CAREER_BENCHMARKS.geral;
+  const isCebraspe = scoringMode === 'certo-errado';
+  const netShift = isCebraspe ? -12 : 0;
+  const targetAccFinal = Math.max(35, career.targetAccuracy.finalStretch + netShift);
+  const targetAccConsolidation = Math.max(35, career.targetAccuracy.consolidation + netShift);
+  const targetAccConstruction = Math.max(35, career.targetAccuracy.construction + netShift);
 
   // 1. Horas Semanais
   const hours = aggregates.studiedHours;
@@ -455,25 +474,31 @@ export function calculateCareerBenchmarkComparison(
     progressPercent: qProgress,
   });
 
-  // 3. Precisão (% de acertos)
+  // 3. Precisão (% de acertos ou nota líquida Cebraspe)
   const accuracy = aggregates.accuracyPercent ?? 0;
   let accStatus: BenchmarkStatus = 'insufficient';
   let accStatusLabel = aggregates.accuracyPercent === null ? 'Sem evidência' : 'Abaixo do alvo';
   let accCommentary = 'Resolva mais questões para calibrar a precisão média por disciplina.';
 
   if (aggregates.accuracyPercent !== null) {
-    if (accuracy >= career.targetAccuracy.finalStretch) {
+    if (accuracy >= targetAccFinal) {
       accStatus = 'advanced';
       accStatusLabel = 'Acima da faixa de referência';
-      accCommentary = `Precisão acima de ${career.targetAccuracy.finalStretch}%, o alvo interno de reta final. Não é nota de corte: compare com a do edital quando houver.`;
-    } else if (accuracy >= career.targetAccuracy.consolidation) {
+      accCommentary = isCebraspe
+        ? `Precisão líquida acima de ${targetAccFinal}% (régua calibrada em −12 p.p. para Certo/Errado Cebraspe).`
+        : `Precisão acima de ${targetAccFinal}%, o alvo interno de reta final. Não é nota de corte: compare com a do edital quando houver.`;
+    } else if (accuracy >= targetAccConsolidation) {
       accStatus = 'competitive';
       accStatusLabel = 'Na faixa de referência';
-      accCommentary = 'Precisão dentro da faixa de referência interna.';
-    } else if (accuracy >= career.targetAccuracy.construction) {
+      accCommentary = isCebraspe
+        ? 'Precisão líquida dentro da faixa de referência interna para Certo/Errado Cebraspe.'
+        : 'Precisão dentro da faixa de referência interna.';
+    } else if (accuracy >= targetAccConstruction) {
       accStatus = 'building';
       accStatusLabel = 'Ritmo em construção';
-      accCommentary = 'Entre o piso e a faixa de referência interna.';
+      accCommentary = isCebraspe
+        ? 'Precisão líquida entre o piso e a faixa de referência para Certo/Errado.'
+        : 'Entre o piso e a faixa de referência interna.';
     }
   }
 
@@ -481,11 +506,11 @@ export function calculateCareerBenchmarkComparison(
 
   const accuracyComparison: BenchmarkMetricComparison = Object.freeze({
     metric: 'accuracy',
-    label: 'Precisão em questões',
+    label: isCebraspe ? 'Precisão líquida (Certo/Errado)' : 'Precisão em questões',
     unit: '%',
     currentValue: accuracy,
-    targetMin: career.targetAccuracy.consolidation,
-    targetMax: career.targetAccuracy.finalStretch,
+    targetMin: targetAccConsolidation,
+    targetMax: targetAccFinal,
     status: accStatus,
     statusLabel: accStatusLabel,
     commentary: accCommentary,

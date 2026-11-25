@@ -52,6 +52,12 @@ export function createGoalService({
         repository.updateGoal(key, target);
         return true;
       }
+      if (key === 'orcamentoRevisaoPct') {
+        const pct = value === null || value === '' ? null : Number(value);
+        if (pct !== null && (!Number.isFinite(pct) || pct < 10 || pct > 60)) return false;
+        repository.updateGoal(key, pct === null ? null : Math.round(pct));
+        return true;
+      }
       return repository.updateGoal(
         key,
         key === 'metaAprovacao'

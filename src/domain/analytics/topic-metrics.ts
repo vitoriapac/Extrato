@@ -3,8 +3,8 @@ import { describeScoreEvidence } from './score-evidence.js';
 
 type Row = Record<string, any>;
 const clamp = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-// 3: refeitas com meio peso e banca da prova em dobro no acerto (calculateWeightedTopicPerformance).
-export const MASTERY_ALGORITHM_VERSION = 3;
+// 4: decaimento temporal (platô 150d + meia-vida 120d, piso 0.35) e precisão Cebraspe com brancas.
+export const MASTERY_ALGORITHM_VERSION = 4;
 export const MASTERY_BANDS = Object.freeze([
   { min: 90, label: 'Dominado' },
   { min: 75, label: 'Bom' },

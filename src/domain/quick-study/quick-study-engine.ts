@@ -6,7 +6,7 @@
  * executor canônico (`buildStudyAction`), sem criar planejamento ou fila paralela.
  */
 
-import type { StudyActivityType, TimerStrategy } from '../../core/types.js';
+import type { JurisprudenceRecord, LawRecord, StudyActivityType, TimerStrategy } from '../../core/types.js';
 import { buildStudyAction } from '../../application/recommendations/recommendation-action.js';
 import { formatBookmarkLabel } from '../topic-bookmark.js';
 import { canStudy } from '../study-eligibility.js';
@@ -14,9 +14,17 @@ import {
   buildRecoveryMissionPlan,
   type OverdueReviewItem,
 } from '../recovery/recovery-mission-engine.js';
+import { lawEffectiveRange, lawStatus, sortLawsForReview } from '../law-notebook.js';
+import { jurisprudenceStatus, sortJurisprudenceForReview } from '../jurisprudence-notebook.js';
 import type { StudyCycleBlock } from '../planning/study-cycle-engine.js';
 
-export type QuickStudyFocusMode = 'priority' | 'review' | 'questions' | 'resume' | 'cycle';
+export type QuickStudyFocusMode =
+  | 'priority'
+  | 'review'
+  | 'questions'
+  | 'resume'
+  | 'cycle'
+  | 'law';
 
 export interface QuickStudyProposalOptions {
   durationMinutes: number;
@@ -26,11 +34,14 @@ export interface QuickStudyProposalOptions {
   criticalTopicIds?: readonly string[];
   currentCycleBlock?: StudyCycleBlock | null;
   subjects?: Array<Record<string, any>>;
+  laws?: readonly LawRecord[];
+  jurisprudence?: readonly JurisprudenceRecord[];
+  today?: string;
   source?: string;
 }
 
 export interface QuickStudyProposal {
-  kind: 'candidate' | 'recovery_review' | 'cycle_block' | 'free_study';
+  kind: 'candidate' | 'recovery_review' | 'cycle_block' | 'law_reading' | 'free_study';
   requestedMinutes: number;
   plannedMinutes: number;
   focusMode: QuickStudyFocusMode;
@@ -261,6 +272,77 @@ export function buildQuickStudyProposal(
         reviewId: topBlock.reviewId,
         origin: 'quick',
         reasoning: `Aproveitando o motor de resgate: ${recoveryPlan.blocks.length} revisão(ões) urgente(s) ajustada(s) para ${totalMinutes} min (${topBlock.urgencyReason}).`,
+        mutatedState: false,
+      };
+    }
+  }
+
+  // Modo Lei Seca & Jurisprudência: puxa lei/informativo mais urgente sem mutar o plano semanal
+  if (focusMode === 'law') {
+    const todayRef = options.today || '2026-01-01';
+    const sortedLaws = sortLawsForReview([...(options.laws || [])], todayRef);
+    const sortedJuris = sortJurisprudenceForReview([...(options.jurisprudence || [])], todayRef);
+    const topLaw = sortedLaws[0] || null;
+    const topJuris = sortedJuris[0] || null;
+    const topLawUrgent =
+      topLaw && ['stalled', 'due'].includes(lawStatus(topLaw, todayRef).key);
+    const topJurisUrgent =
+      topJuris && ['due', 'new'].includes(jurisprudenceStatus(topJuris, todayRef).key);
+
+    const subjectNameById = new Map(subjects.map(s => [String(s.id), String(s.name || '')]));
+
+    if (topJuris && (topJurisUrgent || !topLaw || (!topLawUrgent && topJuris))) {
+      const st = jurisprudenceStatus(topJuris, todayRef);
+      return {
+        kind: 'law_reading',
+        requestedMinutes: plannedMinutes,
+        plannedMinutes,
+        focusMode,
+        subjectId: topJuris.subjectId || null,
+        subjectName:
+          (topJuris.subjectId && subjectNameById.get(String(topJuris.subjectId))) ||
+          'Jurisprudência',
+        topicId: topJuris.topicId || null,
+        topicName: `${topJuris.code} — ${topJuris.title}`,
+        activityType: 'review',
+        action: null,
+        strategy: null,
+        cycleBlockId: null,
+        cycleWillFinishBlock: null,
+        reviewId: null,
+        origin: 'quick',
+        reasoning: `Revisão de jurisprudência (${st.label.toLowerCase()}): ${topJuris.code}. Sem alterar seu plano semanal.`,
+        mutatedState: false,
+      };
+    }
+
+    if (topLaw) {
+      const range = lawEffectiveRange(topLaw);
+      const rangeSuffix =
+        topLaw.startArticle != null || topLaw.endArticle != null
+          ? range
+            ? ` (Arts. ${range.start}–${range.end})`
+            : ''
+          : '';
+      const st = lawStatus(topLaw, todayRef);
+      return {
+        kind: 'law_reading',
+        requestedMinutes: plannedMinutes,
+        plannedMinutes,
+        focusMode,
+        subjectId: topLaw.subjectId || null,
+        subjectName:
+          (topLaw.subjectId && subjectNameById.get(String(topLaw.subjectId))) || 'Lei Seca',
+        topicId: null,
+        topicName: `${topLaw.name}${rangeSuffix}`,
+        activityType: 'review',
+        action: null,
+        strategy: null,
+        cycleBlockId: null,
+        cycleWillFinishBlock: null,
+        reviewId: null,
+        origin: 'quick',
+        reasoning: `Leitura de lei seca (${st.label.toLowerCase()}): ${topLaw.name}${topLaw.hotArticles ? ` · Foco: ${topLaw.hotArticles}` : ''}.`,
         mutatedState: false,
       };
     }

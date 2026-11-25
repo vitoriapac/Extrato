@@ -232,6 +232,13 @@ export interface Clock {
 
 export type ExamPriority = 'low' | 'normal' | 'high';
 
+export interface ExamBlockConfig {
+  id: string;
+  name: string;
+  /** Nota mínima eliminatória do bloco, em % (0–100). */
+  minScore?: number | null;
+}
+
 export interface ExamBlueprintSubject {
   subjectId: string | null;
   expectedQuestions: number;
@@ -244,6 +251,8 @@ export interface ExamBlueprintSubject {
   mappingType?: string | null;
   /** Nota mínima eliminatória da disciplina, em % (mesma escala da nota do simulado). */
   minScore?: number | null;
+  /** Identificador opcional do bloco eliminatório (ex.: P1 Básicos, P2 Específicos). */
+  blockId?: string | null;
 }
 
 export interface ExamBlueprint {
@@ -253,6 +262,8 @@ export interface ExamBlueprint {
   activeExamTags: string[];
   configuredAt: string | null;
   subjects: ExamBlueprintSubject[];
+  /** Blocos eliminatórios opcionais da prova (ex.: Básicos / Específicos). */
+  blocks?: ExamBlockConfig[];
   /** Tipo de prova usado como padrão nos simulados novos. */
   scoringMode?: SimulationScoring;
   /** Edital ainda não publicado: estudo da base comum, sem data nem prazo. */
@@ -263,6 +274,8 @@ export interface ExamBlueprint {
   banca?: string | null;
   /** Duração total da prova objetiva, em minutos. */
   durationMinutes?: number | null;
+  /** Reserva estimada (min) para discursiva e marcação do cartão-resposta. */
+  overheadMinutes?: number | null;
   /** Nota de corte de referência informada pelo aluno, na escala em que ele a conhece. */
   cutoff?: ExamCutoff | null;
   /** Itens marcados do protocolo da semana da prova, válidos só para esta data de prova. */
@@ -299,6 +312,37 @@ export interface LawRecord {
   laps: number;
   lastReadAt: string | null;
   lapCompletedAt: string | null;
+  createdAt: string;
+  /** Recorte inicial e final de artigos cobrados no edital (ex.: Arts. 37 a 41). */
+  startArticle?: number | null;
+  endArticle?: number | null;
+  /** Artigos de maior incidência da norma. */
+  hotArticles?: string | null;
+  /** Tópicos do edital vinculados a esta norma. */
+  topicIds?: string[];
+}
+
+export type JurisprudenceKind =
+  | 'informativo_stf'
+  | 'informativo_stj'
+  | 'sumula_vinculante'
+  | 'sumula_stj'
+  | 'sumula_stf'
+  | 'sumula_tst'
+  | 'tema_repetitivo';
+
+/** Registro de Informativo STF/STJ, Súmula ou Tema Repetitivo com revisão espaçada. */
+export interface JurisprudenceRecord {
+  id: string;
+  kind: JurisprudenceKind;
+  code: string;
+  title: string;
+  thesisSummary: string;
+  subjectId: string | null;
+  topicId: string | null;
+  laps: number;
+  lastReadAt: string | null;
+  nextReviewDate: string | null;
   createdAt: string;
 }
 
@@ -339,6 +383,9 @@ export type CalendarActivityKind = 'task' | 'mock_exam' | 'essay' | 'event' | 'm
 
 export type CalendarRecurrenceRule = 'none' | 'weekly' | 'biweekly' | 'monthly';
 
+export type EssayKind = 'redacao' | 'questao_discursiva' | 'estudo_caso' | 'peca_tecnica';
+export type EssayScoringMode = 'padrao' | 'cebraspe_linhas';
+
 export interface CalendarItem {
   id: string;
   date: string;
@@ -364,6 +411,11 @@ export interface CalendarItem {
   essayContent?: number | null;
   essayStructure?: number | null;
   essayLanguage?: number | null;
+  essayKind?: EssayKind | null;
+  essayScoringMode?: EssayScoringMode | null;
+  essayLinesWritten?: number | null;
+  essayGrammarErrors?: number | null;
+  essayErrorWeight?: number | null;
   examId?: string | null;
   week?: string | null;
   createdAt?: string | null;
@@ -546,6 +598,7 @@ export interface Metas {
   metaAprovacao: number;
   consistenciaSemanal: number;
   aderenciaSemanal: number | null;
+  orcamentoRevisaoPct?: number | null;
   horasDiarias: number;
   horasPorDia: Record<string, number>;
 }
@@ -604,6 +657,7 @@ export interface AppState {
   topicEquivalences?: TopicEquivalenceRecord[];
   studyMaterials?: StudyMaterial[];
   lawNotebook?: LawRecord[];
+  jurisprudenceNotebook?: JurisprudenceRecord[];
   sleepLog?: SleepEntry[];
   studyCycle?: Record<string, any> | null;
   lastBackupAt: string | null;

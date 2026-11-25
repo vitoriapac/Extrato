@@ -2,14 +2,27 @@ import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import { Badge, type BadgeVariant } from '../../primitives/badge.js';
 import { ProgressBar } from '../../primitives/progress-bar.js';
-import { lawStatus, sortLawsForReview, type LawStatusKey } from '../../../domain/law-notebook.js';
+import {
+  lawEffectiveRange,
+  lawLapProgress,
+  lawStatus,
+  sortLawsForReview,
+  type LawStatusKey,
+} from '../../../domain/law-notebook.js';
 import type { LawRecord } from '../../../core/types.js';
 
 export interface LawNotebookCardProps {
   laws: LawRecord[];
   subjects: Array<{ id: string; name: string }>;
   today: string;
-  onAdd: (input: { name: string; subjectId: string | null; totalArticles: number | null }) => void;
+  onAdd: (input: {
+    name: string;
+    subjectId: string | null;
+    totalArticles: number | null;
+    startArticle?: number | null;
+    endArticle?: number | null;
+    hotArticles?: string | null;
+  }) => void;
   onRead: (id: string, article: number) => void;
   onCompleteLap: (id: string) => void;
   onDelete: (id: string) => void;
@@ -42,6 +55,8 @@ function LawRow({
 }) {
   const [article, setArticle] = useState('');
   const status = lawStatus(law, today);
+  const range = lawEffectiveRange(law);
+  const progress = lawLapProgress(law);
   const inputId = `lawRead-${law.id}`;
   const submit = (event: Event) => {
     event.preventDefault();
@@ -56,14 +71,20 @@ function LawRow({
         <div>
           <strong>{law.name}</strong>
           {subjectName && <span class="law-row__subject"> · {subjectName}</span>}
+          {range.isRange && (
+            <span class="law-row__subject">
+              {' '}
+              · {range.end != null ? `Arts. ${range.start}–${range.end}` : `A partir do art. ${range.start}`}
+            </span>
+          )}
         </div>
         <Badge variant={STATUS_BADGE[status.key]}>{status.label}</Badge>
       </div>
-      {law.totalArticles && law.currentArticle > 0 ? (
+      {progress.total != null && progress.total > 0 && law.currentArticle > 0 ? (
         <ProgressBar
-          value={law.currentArticle}
-          max={law.totalArticles}
-          label={`Art. ${law.currentArticle} de ${law.totalArticles}`}
+          value={progress.done}
+          max={progress.total}
+          label={progress.label || `Art. ${law.currentArticle}`}
           showValueText
         />
       ) : null}
@@ -71,15 +92,18 @@ function LawRow({
         {[
           // Com barra, o artigo atual já aparece nela.
           law.currentArticle > 0
-            ? law.totalArticles
+            ? progress.total != null
               ? null
               : `Art. ${law.currentArticle}`
-            : law.totalArticles
-              ? `${law.totalArticles} artigos`
+            : range.end != null && range.span != null
+              ? range.isRange
+                ? `Recorte: ${range.span} artigos`
+                : `${range.end} artigos`
               : 'Total de artigos não informado',
           law.laps > 0
             ? `${law.laps} ${law.laps === 1 ? 'volta completa' : 'voltas completas'}`
             : null,
+          law.hotArticles ? `Artigos quentes: ${law.hotArticles}` : null,
           law.lastReadAt ? `última leitura ${dateBR(law.lastReadAt)}` : null,
           status.key === 'resting' && status.nextLapDate
             ? `próxima volta ${dateBR(status.nextLapDate)}`
@@ -93,8 +117,8 @@ function LawRow({
         <input
           id={inputId}
           type="number"
-          min="1"
-          max={law.totalArticles || undefined}
+          min={range.isRange ? range.start : 1}
+          max={range.end ?? undefined}
           inputMode="numeric"
           value={article}
           onInput={event => setArticle((event.target as HTMLInputElement).value)}
@@ -132,6 +156,9 @@ export function LawNotebookCard({
   const [name, setName] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [total, setTotal] = useState('');
+  const [startArt, setStartArt] = useState('');
+  const [endArt, setEndArt] = useState('');
+  const [hotArticles, setHotArticles] = useState('');
   const subjectNames = new Map(subjects.map(subject => [subject.id, subject.name]));
   const due = laws.filter(law => ['due', 'stalled'].includes(lawStatus(law, today).key)).length;
 
@@ -139,20 +166,28 @@ export function LawNotebookCard({
     event.preventDefault();
     if (!name.trim()) return;
     const totalArticles = Math.floor(Number(total));
+    const startArticle = Math.floor(Number(startArt));
+    const endArticle = Math.floor(Number(endArt));
     onAdd({
       name: name.trim(),
       subjectId: subjectId || null,
       totalArticles: totalArticles > 0 ? totalArticles : null,
+      startArticle: startArticle > 0 ? startArticle : null,
+      endArticle: endArticle > 0 ? endArticle : null,
+      hotArticles: hotArticles.trim() || null,
     });
     setName('');
     setTotal('');
+    setStartArt('');
+    setEndArt('');
+    setHotArticles('');
   };
 
   return (
     <div class="law-notebook space-y-3">
       <p class="text-xs text-content-secondary m-0">
-        Registre até onde leu cada lei. Ao fechar uma volta, a próxima é sugerida em 7, 15 e depois
-        30 dias.
+        Registre até onde leu cada lei ou recorte de artigos do edital. Ao fechar uma volta, a
+        próxima é sugerida em 7, 15 e depois 30 dias.
         {due > 0 && ` ${due} ${due === 1 ? 'lei pede' : 'leis pedem'} leitura agora.`}
       </p>
       <form class="law-notebook__add" onSubmit={add}>
@@ -162,7 +197,7 @@ export function LawNotebookCard({
             type="text"
             value={name}
             maxLength={120}
-            placeholder="Ex.: Lei 8.112/1990"
+            placeholder="Ex.: CF/88 ou Lei 8.112/1990"
             required
             onInput={event => setName((event.target as HTMLInputElement).value)}
           />
@@ -190,6 +225,41 @@ export function LawNotebookCard({
             value={total}
             placeholder="Opcional"
             onInput={event => setTotal((event.target as HTMLInputElement).value)}
+          />
+        </label>
+        <label>
+          Do art. (recorte)
+          <input
+            type="number"
+            min="1"
+            inputMode="numeric"
+            value={startArt}
+            placeholder="Ex.: 37"
+            aria-label="Artigo inicial do recorte"
+            onInput={event => setStartArt((event.target as HTMLInputElement).value)}
+          />
+        </label>
+        <label>
+          Até o art. (recorte)
+          <input
+            type="number"
+            min="1"
+            inputMode="numeric"
+            value={endArt}
+            placeholder="Ex.: 41"
+            aria-label="Artigo final do recorte"
+            onInput={event => setEndArt((event.target as HTMLInputElement).value)}
+          />
+        </label>
+        <label>
+          Artigos quentes
+          <input
+            type="text"
+            maxLength={120}
+            value={hotArticles}
+            placeholder="Ex.: Arts. 37 §6º, 41"
+            aria-label="Artigos quentes mais cobrados"
+            onInput={event => setHotArticles((event.target as HTMLInputElement).value)}
           />
         </label>
         <button type="submit" class="btn small">

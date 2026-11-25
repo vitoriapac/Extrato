@@ -49,6 +49,13 @@ const HEADER_ALIASES: Record<string, string> = {
   incorrect: 'errors',
   errors: 'errors',
   'questoes erradas': 'errors',
+  'em branco': 'blank',
+  brancas: 'blank',
+  branco: 'blank',
+  'deixadas em branco': 'blank',
+  puladas: 'blank',
+  'sem resposta': 'blank',
+  blank: 'blank',
   resultado: 'result',
   status: 'result',
   situacao: 'result',
@@ -94,6 +101,14 @@ const RESULT_WRONG = new Set([
   'n',
   'false',
 ]);
+const RESULT_BLANK = new Set([
+  'em branco',
+  'branco',
+  'branca',
+  'pulou',
+  'pulei',
+  'sem resposta',
+]);
 
 // Valores do CSV (já normalizados por normalizeKey) → chaves de ERROR_CATEGORIES do app.
 const ERROR_CATEGORY_MAP: Record<string, string> = {
@@ -106,6 +121,16 @@ const ERROR_CATEGORY_MAP: Record<string, string> = {
   desatencao: 'desatencao',
   interpretacao: 'interpretacao',
   leitura: 'interpretacao',
+  'letra de lei': 'letraLei',
+  letralei: 'letraLei',
+  'lei seca': 'letraLei',
+  literalidade: 'letraLei',
+  artigo: 'letraLei',
+  jurisprudencia: 'jurisprudencia',
+  sumula: 'jurisprudencia',
+  informativo: 'jurisprudencia',
+  stf: 'jurisprudencia',
+  stj: 'jurisprudencia',
   pegadinha: 'pegadinha',
   'pegadinha da banca': 'pegadinha',
   // Falta de tempo é ritmo, não conteúdo: categoria própria, separada de chute.
@@ -269,7 +294,7 @@ export function normalizeQuestionImportRows(
   }
 
   const hasMetrics = headers.some(h =>
-    ['resolved', 'correct', 'errors', 'result'].includes(h ?? '')
+    ['resolved', 'correct', 'errors', 'blank', 'result'].includes(h ?? '')
   );
   if (!hasMetrics) {
     throw new QuestionImportError([
@@ -290,6 +315,7 @@ export function normalizeQuestionImportRows(
     date: string | null;
     resolved: number;
     correct: number;
+    blank: number | null;
     errorCategory: string | null;
     unknownErrorCategory: boolean;
     banca: string | null;
@@ -327,6 +353,7 @@ export function normalizeQuestionImportRows(
     let resolved = finite(record.resolved);
     let correct = finite(record.correct);
     let errors = finite(record.errors);
+    let blank = finite(record.blank);
     const resultRaw = normalizeKey(record.result);
 
     if (resultRaw) {
@@ -338,26 +365,29 @@ export function normalizeQuestionImportRows(
         resolved = 1;
         correct = 0;
         errors = 1;
+      } else if (RESULT_BLANK.has(resultRaw)) {
+        resolved = 1;
+        correct = 0;
+        errors = 0;
+        blank = 1;
       }
     }
 
     if (resolved == null) {
-      if (correct != null && errors != null) {
-        resolved = correct + errors;
+      if (errors != null || blank != null) {
+        resolved = (correct ?? 0) + (errors ?? 0) + (blank ?? 0);
       } else if (correct != null) {
         resolved = correct;
-      } else if (errors != null) {
-        resolved = errors;
-        correct = 0;
       }
     }
 
-    if (correct == null && resolved != null && errors != null) {
-      correct = Math.max(0, resolved - errors);
+    if (correct == null && resolved != null && (errors != null || blank != null)) {
+      correct = Math.max(0, resolved - (errors ?? 0) - (blank ?? 0));
     }
 
     resolved = resolved == null ? null : Math.max(0, Math.floor(resolved));
     correct = correct == null ? null : Math.max(0, Math.floor(correct));
+    blank = blank == null ? null : Math.max(0, Math.floor(blank));
 
     if (resolved == null || resolved <= 0) {
       issues.push(
@@ -395,6 +425,18 @@ export function normalizeQuestionImportRows(
       return;
     }
 
+    if (blank != null && correct + blank > resolved) {
+      issues.push(
+        problem(
+          line,
+          'brancas',
+          'range',
+          'A soma de acertos e questões em branco não pode superar o total de resolvidas.'
+        )
+      );
+      return;
+    }
+
     const rawCategory = normalizeKey(record.errorCategory);
     const mappedCategory = ERROR_CATEGORY_MAP[rawCategory];
     const errorCategory =
@@ -407,6 +449,7 @@ export function normalizeQuestionImportRows(
       date,
       resolved,
       correct,
+      blank,
       errorCategory,
       unknownErrorCategory: Boolean(rawCategory) && !errorCategory,
       banca: normalizeBanca(record.banca),
@@ -433,6 +476,8 @@ export function normalizeQuestionImportRows(
         minutes: null as number | null,
         resolved: 0,
         correct: 0,
+        blank: 0,
+        hasBlankInfo: false,
         errorBreakdown: Object.fromEntries(errorCategoryKeys.map(categoryKey => [categoryKey, 0])),
         unknownErrorCategoryCount: 0,
         lines: [],
@@ -441,10 +486,17 @@ export function normalizeQuestionImportRows(
     const current = grouped.get(key);
     current.resolved += item.resolved;
     current.correct += item.correct;
+    if (item.blank != null) {
+      current.hasBlankInfo = true;
+      current.blank += item.blank;
+    }
     current.lines.push(item.line);
     if (item.minutes != null) current.minutes = (current.minutes || 0) + item.minutes;
     if (item.errorCategory) {
-      current.errorBreakdown[item.errorCategory] += item.resolved - item.correct;
+      current.errorBreakdown[item.errorCategory] += Math.max(
+        0,
+        item.resolved - item.correct - (item.blank ?? 0)
+      );
     }
     if (item.unknownErrorCategory) current.unknownErrorCategoryCount++;
   }
@@ -458,6 +510,7 @@ export function normalizeQuestionImportRows(
     retry: entry.retry,
     resolved: entry.resolved,
     correct: entry.correct,
+    blank: entry.hasBlankInfo ? entry.blank : null,
     errorBreakdown: entry.errorBreakdown,
     unknownErrorCategoryCount: entry.unknownErrorCategoryCount,
     sourceLinesCount: entry.lines.length,

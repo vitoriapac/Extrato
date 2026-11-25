@@ -70,7 +70,10 @@ function MinimumBadge({ misses }: { misses?: SimulationViewModel['belowMinimum']
         .map(m => `${m.name}: ${formatDecimal(m.score)}% (mínimo ${formatDecimal(m.minimum)}%)`)
         .join(' · ')}
     >
-      Abaixo do mínimo em {misses.length === 1 ? misses[0].name : `${misses.length} disciplinas`}
+      Abaixo do mínimo em{' '}
+      {misses.length === 1
+        ? misses[0].name
+        : `${misses.length} ${misses.every(m => !m.subjectId.startsWith('block:')) ? 'disciplinas' : 'itens'}`}
     </span>
   );
 }

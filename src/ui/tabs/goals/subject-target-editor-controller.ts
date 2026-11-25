@@ -272,7 +272,15 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       const existing = (state.examBlueprint?.subjects || []).find(
         (item: any) => item.subjectId === subjectId
       );
-      const configFields = ['priority', 'weight', 'expected', 'accuracy', 'mastery', 'minimum'];
+      const configFields = [
+        'priority',
+        'weight',
+        'expected',
+        'accuracy',
+        'mastery',
+        'minimum',
+        'block',
+      ];
       if (configFields.some(key => fields[key] !== undefined)) {
         const saved = (value: unknown) => (value == null ? '' : String(value));
         const config = buildSavedSubjectConfig(subjectId, existing, {
@@ -284,6 +292,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
           questionWeight: fields.weight ?? saved(existing?.questionWeight),
           accuracyTarget: fields.accuracy ?? saved(existing?.accuracyTarget),
           minScore: fields.minimum ?? saved(existing?.minScore),
+          blockId: fields.block !== undefined ? fields.block : existing?.blockId,
         });
         if (!config) {
           ctx.showToast('Revise as metas, a quantidade de questões e o peso antes de salvar.');
@@ -306,6 +315,7 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
           'expectedQuestions',
           'questionWeight',
           'minScore',
+          'blockId',
         ].some(key => JSON.stringify(existing[key]) !== JSON.stringify(config[key]))
       );
     });
@@ -317,8 +327,12 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
         const existing = (state.examBlueprint.subjects || []).find(
           (item: any) => item.subjectId === subjectId
         );
-        if (existing) Object.assign(existing, config);
-        else state.examBlueprint.subjects.push(config);
+        if (existing) {
+          Object.assign(existing, config);
+          if (!config.blockId) delete existing.blockId;
+        } else {
+          state.examBlueprint.subjects.push(config);
+        }
       }
       if (changedConfig.length) {
         state.examBlueprint.configuredAt = ctx.nowISO();

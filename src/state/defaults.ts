@@ -17,6 +17,7 @@ export function createDefaultState(): AppState {
     executionMode: 'sequence',
     metas: {
       ...INITIAL_GOAL_VALUES,
+      orcamentoRevisaoPct: null,
       horasDiarias: 2.5,
       horasPorDia: { 0: 2.5, 1: 2.5, 2: 2.5, 3: 2.5, 4: 2.5, 5: 2.5, 6: 2.5 },
     },
@@ -70,6 +71,7 @@ export function createDefaultState(): AppState {
     topicEquivalences: [],
     studyMaterials: [],
     lawNotebook: [],
+    jurisprudenceNotebook: [],
     sleepLog: [],
     studyCycle: null,
     lastBackupAt: null,

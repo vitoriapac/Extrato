@@ -84,6 +84,7 @@ export function QuickStudyModal({
                 ['priority', 'Prioridade'],
                 ['review', 'Revisão'],
                 ['questions', 'Questões'],
+                ['law', 'Lei seca / Juris'],
                 ['resume', 'Retomar'],
               ] as const
             ).map(([mode, label]) => (

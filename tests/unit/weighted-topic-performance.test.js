@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateWeightedTopicPerformance } from '../../src/domain/analytics/topic-performance.js';
-import { calculateTopicMastery } from '../../src/domain/analytics/topic-metrics.js';
+import {
+  calculateTopicMastery,
+  MASTERY_ALGORITHM_VERSION,
+} from '../../src/domain/analytics/topic-metrics.js';
 
 const q = (over = {}) => ({ topicId: 't1', resolved: 10, correct: 5, ...over });
 
@@ -44,7 +47,7 @@ test('o Domínio explica os pesos aplicados', () => {
     { targetBanca: 'Cesgranrio' }
   );
   const mastery = calculateTopicMastery({ performance });
-  assert.equal(mastery.algorithmVersion, 3);
+  assert.equal(mastery.algorithmVersion, MASTERY_ALGORITHM_VERSION);
   assert.ok(mastery.reasons.includes('Questões refeitas contam meio peso no acerto'));
   assert.ok(mastery.reasons.includes('Questões da Cesgranrio contam em dobro no acerto'));
 });

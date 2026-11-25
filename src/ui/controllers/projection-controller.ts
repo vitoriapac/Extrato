@@ -35,6 +35,7 @@ export function createProjectionController({
           snapshots: context.snapshots,
           activeExamTags: context.activeExamTags,
           executionContext: getExecutionContext(),
+          blueprintSubjects: context.blueprintSubjects || [],
         }),
         weeklyCapacityMinutes: getCapacity(),
       };

@@ -112,6 +112,7 @@ const QUICK_FOCUS_OPTIONS: Array<{ key: QuickStudyFocusMode; label: string }> = 
   { key: 'priority', label: 'Próxima prioridade' },
   { key: 'review', label: 'Revisão' },
   { key: 'questions', label: 'Questões' },
+  { key: 'law', label: 'Lei seca / Juris' },
   { key: 'resume', label: 'Retomar assunto' },
   { key: 'cycle', label: 'Bloco do ciclo' },
 ];

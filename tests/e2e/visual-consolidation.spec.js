@@ -8,6 +8,7 @@ import {
   openPerformanceSection,
   selectSubjectCombobox,
 } from './helpers.js';
+import { withPixelAlignedCapture } from './helpers/visual-capture.js';
 test('destaca prontidão e ativa o cabeçalho compacto ao rolar', async ({ page }) => {
   await openDemo(page);
   await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');
@@ -455,11 +456,15 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis', async
       ).toEqual([]);
     }
     await expect(page.locator('#guide-glossary')).toBeVisible();
-    if (process.platform === 'win32' && width === 1440)
-      await expect(page.locator('#guide-glossary')).toHaveScreenshot(
-        'help-glossary-1440-dark-win32.png',
-        { animations: 'disabled', maxDiffPixelRatio: 0.02 }
+    if (process.platform === 'win32' && width === 1440) {
+      const glossary = page.locator('#guide-glossary');
+      await withPixelAlignedCapture(glossary, () =>
+        expect(glossary).toHaveScreenshot('help-glossary-1440-dark-win32.png', {
+          animations: 'disabled',
+          maxDiffPixelRatio: 0.02,
+        })
       );
+    }
     await page.locator('#helpSearch').fill('SALVAR dados');
     await expect(page.locator('#backup')).toBeVisible();
     await page.locator('#helpSearchClear').click();

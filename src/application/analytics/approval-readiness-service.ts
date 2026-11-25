@@ -324,6 +324,7 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
       target: state.examBlueprint?.configuredAt
         ? state.examBlueprint.targetScore
         : state.metas.metaAprovacao,
+      blueprintSubjects: state.examBlueprint?.subjects || [],
     });
     if (!calibration.available)
       return {

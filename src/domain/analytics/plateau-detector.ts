@@ -4,6 +4,8 @@
  * sem evolução na precisão (estagnação em faixa intermediária < 75%).
  */
 
+import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
+
 export interface RollingWindowSample {
   date: string;
   accuracy: number;
@@ -65,9 +67,9 @@ export function buildWeeklyRollingWindows(
   if (sorted.length === 0) return [];
 
   const lastDateStr = sorted[sorted.length - 1].date;
-  const lastDate = new Date(lastDateStr + 'T00:00:00Z');
+  if (!parseLocalDate(lastDateStr)) return [];
 
-  // Criamos blocos semanais (de 7 dias cada) retrocedendo a partir da última data
+  // Criamos blocos semanais (de 7 dias cada) retrocedendo a partir da última data em calendário civil local.
   const numWeeks = Math.max(1, Math.floor(windowDays / 7));
   const windows: RollingWindowSample[] = [];
 
@@ -75,11 +77,9 @@ export function buildWeeklyRollingWindows(
     const endDaysOffset = w * 7;
     const startDaysOffset = (w + 1) * 7;
 
-    const windowEnd = new Date(lastDate.getTime() - endDaysOffset * 86400000);
-    const windowStart = new Date(lastDate.getTime() - startDaysOffset * 86400000);
-
-    const startIso = windowStart.toISOString().slice(0, 10);
-    const endIso = windowEnd.toISOString().slice(0, 10);
+    const endIso = addLocalDays(lastDateStr, -endDaysOffset);
+    const startIso = addLocalDays(lastDateStr, -startDaysOffset);
+    if (!startIso || !endIso) continue;
 
     const inWindow = sorted.filter(q => q.date >= startIso && q.date <= endIso);
     const count = inWindow.reduce((acc, q) => acc + (Number(q.resolved) || 0), 0);
@@ -119,10 +119,14 @@ function prescribePlateauAction(
       totalErrors += errCount;
       const normalizedKey = key.toLowerCase();
       if (
+        key === 'letraLei' ||
+        key === 'jurisprudencia' ||
         normalizedKey.includes('literal') ||
         normalizedKey.includes('lei') ||
         normalizedKey.includes('artigo') ||
-        normalizedKey.includes('texto')
+        normalizedKey.includes('texto') ||
+        normalizedKey.includes('jurisprudencia') ||
+        normalizedKey.includes('sumula')
       ) {
         statuteErrors += errCount;
       }

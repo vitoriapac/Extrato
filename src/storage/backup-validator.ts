@@ -3,6 +3,7 @@
  */
 
 import { normalizeSleepEntry } from '../domain/sleep-log.js';
+import { JURISPRUDENCE_KINDS } from '../domain/jurisprudence-notebook.js';
 import {
   STATUS_OPTIONS,
   DIFFICULTY_OPTIONS,
@@ -475,6 +476,10 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     Object.entries(data.metas).some(
       ([key, value]) => key !== 'horasPorDia' && !isFiniteNonNegative(value)
     ) ||
+    (data.metas.orcamentoRevisaoPct != null &&
+      (!Number.isFinite(Number(data.metas.orcamentoRevisaoPct)) ||
+        Number(data.metas.orcamentoRevisaoPct) < 10 ||
+        Number(data.metas.orcamentoRevisaoPct) > 60)) ||
     !isPlainObject(data.metas.horasPorDia) ||
     Object.values(data.metas.horasPorDia).some(value => !isFiniteNonNegative(value))
   )
@@ -499,6 +504,27 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       data.examBlueprint.essayMinPercent == null ||
       (isFiniteNonNegative(data.examBlueprint.essayMinPercent) &&
         Number(data.examBlueprint.essayMinPercent) <= 100)
+    ) ||
+    !(
+      data.examBlueprint.overheadMinutes == null ||
+      isFiniteNonNegative(data.examBlueprint.overheadMinutes)
+    ) ||
+    !(
+      data.examBlueprint.blocks == null ||
+      (Array.isArray(data.examBlueprint.blocks) &&
+        data.examBlueprint.blocks.length <= 20 &&
+        data.examBlueprint.blocks.every(
+          (block: unknown) =>
+            isPlainObject(block) &&
+            isSafeId(block.id) &&
+            typeof block.name === 'string' &&
+            textOk(block.name, 80) &&
+            block.name.trim().length > 0 &&
+            (block.minScore == null ||
+              (isFiniteNonNegative(block.minScore) &&
+                Number(block.minScore) > 0 &&
+                Number(block.minScore) <= 100))
+        ))
     ) ||
     !Array.isArray(data.examBlueprint.subjects) ||
     data.examBlueprint.subjects.length > 1000
@@ -631,6 +657,8 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
   if (materialsError) return fail(materialsError);
   const lawError = validateLawNotebook(data.lawNotebook);
   if (lawError) return fail(lawError);
+  const jurisprudenceError = validateJurisprudenceNotebook(data.jurisprudenceNotebook);
+  if (jurisprudenceError) return fail(jurisprudenceError);
   if (
     data.sleepLog !== undefined &&
     (!Array.isArray(data.sleepLog) ||
@@ -730,6 +758,68 @@ function validateLawNotebook(entries: unknown): string {
     }
     if (entry.subjectId != null && !isSafeId(entry.subjectId)) {
       return 'Uma lei do caderno possui disciplina inválida.';
+    }
+    if (
+      (entry.startArticle != null &&
+        (!Number.isInteger(entry.startArticle) || entry.startArticle < 1)) ||
+      (entry.endArticle != null && (!Number.isInteger(entry.endArticle) || entry.endArticle < 1))
+    ) {
+      return 'Uma lei do caderno possui recorte de artigos inválido.';
+    }
+    if (entry.hotArticles != null && (typeof entry.hotArticles !== 'string' || entry.hotArticles.length > 200)) {
+      return 'Uma lei do caderno possui marcação de artigos inválida.';
+    }
+    if (
+      entry.topicIds !== undefined &&
+      (!Array.isArray(entry.topicIds) ||
+        entry.topicIds.length > 50 ||
+        entry.topicIds.some((id: unknown) => !isSafeId(id)))
+    ) {
+      return 'Uma lei do caderno possui tópicos vinculados inválidos.';
+    }
+  }
+  return '';
+}
+
+const VALID_JURISPRUDENCE_KINDS = new Set<string>(JURISPRUDENCE_KINDS);
+
+function validateJurisprudenceNotebook(entries: unknown): string {
+  if (entries === undefined) return '';
+  if (!Array.isArray(entries)) return 'O campo "jurisprudenceNotebook" deve ser uma lista.';
+  if (entries.length > 10000) return 'O campo "jurisprudenceNotebook" excede o limite seguro.';
+  const seen = new Set<string>();
+  for (const entry of entries) {
+    if (!isPlainObject(entry)) return 'Um registro de jurisprudência não é um objeto válido.';
+    if (!isSafeId(entry.id) || seen.has(entry.id)) {
+      return 'O backup contém jurisprudência com identificador inválido ou duplicado.';
+    }
+    seen.add(entry.id);
+    if (!VALID_JURISPRUDENCE_KINDS.has(String(entry.kind))) {
+      return 'Um registro de jurisprudência possui categoria inválida.';
+    }
+    if (typeof entry.code !== 'string' || !entry.code.trim() || entry.code.length > 80) {
+      return 'Um registro de jurisprudência possui identificação inválida.';
+    }
+    if (typeof entry.title !== 'string' || !entry.title.trim() || entry.title.length > 200) {
+      return 'Um registro de jurisprudência possui título inválido.';
+    }
+    if (typeof entry.thesisSummary !== 'string' || entry.thesisSummary.length > 1000) {
+      return 'Um registro de jurisprudência excede o limite do resumo da tese.';
+    }
+    if (entry.subjectId != null && !isSafeId(entry.subjectId)) {
+      return 'Um registro de jurisprudência possui disciplina inválida.';
+    }
+    if (entry.topicId != null && !isSafeId(entry.topicId)) {
+      return 'Um registro de jurisprudência possui tópico inválido.';
+    }
+    if (!Number.isInteger(entry.laps) || entry.laps < 0) {
+      return 'Um registro de jurisprudência possui contagem de revisões inválida.';
+    }
+    if (
+      !(entry.lastReadAt == null || isISODate(entry.lastReadAt)) ||
+      !(entry.nextReviewDate == null || isISODate(entry.nextReviewDate))
+    ) {
+      return 'Um registro de jurisprudência possui data inválida.';
     }
   }
   return '';
@@ -896,6 +986,7 @@ export function validateBackupData(
     'topicEquivalences',
     'studyMaterials',
     'lawNotebook',
+    'jurisprudenceNotebook',
     'sleepLog',
   ];
   const envelope = validateBackupEnvelope(data, {

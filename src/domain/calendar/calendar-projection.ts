@@ -1,4 +1,10 @@
-import type { CalendarActivityKind, CalendarRecurrenceRule, Metas } from '../../core/types.js';
+import type {
+  CalendarActivityKind,
+  CalendarRecurrenceRule,
+  EssayKind,
+  EssayScoringMode,
+  Metas,
+} from '../../core/types.js';
 import { addLocalDays, formatLocalDate, parseLocalDate } from '../../core/date-utils.js';
 
 export type UnifiedCalendarKind = CalendarActivityKind | 'review';
@@ -29,6 +35,11 @@ export interface UnifiedCalendarItem {
   essayScore?: number | null;
   essayMaxScore?: number | null;
   essayStatus?: 'draft' | 'written' | 'graded' | null;
+  essayKind?: EssayKind | null;
+  essayScoringMode?: EssayScoringMode | null;
+  essayLinesWritten?: number | null;
+  essayGrammarErrors?: number | null;
+  essayErrorWeight?: number | null;
   essayContent?: number | null;
   essayStructure?: number | null;
   essayLanguage?: number | null;
@@ -142,6 +153,12 @@ export interface EssayEvolutionEntry {
   date: string;
   title: string;
   essayTheme: string | null;
+  essayKind: EssayKind | null;
+  essayScoringMode: EssayScoringMode | null;
+  essayLinesWritten: number | null;
+  essayGrammarErrors: number | null;
+  essayErrorWeight: number | null;
+  errorsPerLine: number | null;
   essayStatus: 'draft' | 'written' | 'graded';
   essayScore: number | null;
   essayMaxScore: number | null;
@@ -207,11 +224,30 @@ export function buildEssayEvolutionSummary(
         : item.essayStatus === 'written' || item.status === 'Concluído'
           ? 'written'
           : 'draft';
+    const linesWritten =
+      typeof item.essayLinesWritten === 'number' && item.essayLinesWritten > 0
+        ? item.essayLinesWritten
+        : null;
+    const grammarErrors =
+      typeof item.essayGrammarErrors === 'number' && item.essayGrammarErrors >= 0
+        ? item.essayGrammarErrors
+        : null;
+    const errorsPerLine =
+      linesWritten !== null && grammarErrors !== null
+        ? Math.round((grammarErrors / linesWritten) * 100) / 100
+        : null;
     return {
       id: item.id,
       date: item.date,
       title: item.title || 'Redação',
       essayTheme: item.essayTheme || null,
+      essayKind: item.essayKind || null,
+      essayScoringMode: item.essayScoringMode || null,
+      essayLinesWritten: linesWritten,
+      essayGrammarErrors: grammarErrors,
+      essayErrorWeight:
+        typeof item.essayErrorWeight === 'number' ? item.essayErrorWeight : null,
+      errorsPerLine,
       essayStatus,
       essayScore: score,
       essayMaxScore: maxScore,

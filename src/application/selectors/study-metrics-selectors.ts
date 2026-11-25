@@ -18,7 +18,10 @@ import {
 import { buildUnifiedReviews } from '../calendar/build-unified-reviews.js';
 import type { AppState } from '../../core/types.js';
 import { firstActivityDate } from './first-activity-date.js';
-import { simulationScore, simulationTotals } from '../../domain/exams/simulation-score.js';
+import {
+  simulationTotals,
+  weightedSimulationScore,
+} from '../../domain/exams/simulation-score.js';
 
 export interface StudyMetricsSelectorsDependencies {
   getState: () => AppState;
@@ -370,7 +373,7 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
   }
 
   function simuladoNota(sim: Record<string, any>): number {
-    return Math.round(simulationScore(sim));
+    return Math.round(weightedSimulationScore(sim, getState()?.examBlueprint?.subjects));
   }
 
   function performanceScopedPlans(scope: any = examEvidenceContext()) {

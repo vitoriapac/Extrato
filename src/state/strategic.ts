@@ -5,7 +5,8 @@ import { normalizeTopicBookmark } from '../domain/topic-bookmark.ts';
 import { normalizeBanca, normalizeQuestionMinutes } from '../domain/questions/bancas.ts';
 import { normalizeExamCutoff } from '../domain/analytics/cutoff-reference.ts';
 import { normalizePostExam } from '../domain/planning/post-exam.ts';
-import type { ExamBlueprint, ExamPriority, Topic } from '../core/types.ts';
+import { isSafeId } from '../core/utils.ts';
+import type { ExamBlockConfig, ExamBlueprint, ExamPriority, Topic } from '../core/types.ts';
 
 export const DEFAULT_ALGORITHM_VERSIONS = Object.freeze({
   readiness: 1,
@@ -42,12 +43,39 @@ export function normalizeTopicStrategy<T extends Partial<Topic> & Record<string,
   return topic;
 }
 
+export function normalizeExamBlocks(rawBlocks: unknown): ExamBlockConfig[] {
+  if (!Array.isArray(rawBlocks)) return [];
+  const seen = new Set<string>();
+  const normalized: ExamBlockConfig[] = [];
+  for (const raw of rawBlocks) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
+    const item = raw as Record<string, unknown>;
+    const id = typeof item.id === 'string' ? item.id.trim() : '';
+    const name = typeof item.name === 'string' ? item.name.trim().slice(0, 80) : '';
+    if (!id || !name || !isSafeId(id) || seen.has(id)) continue;
+    seen.add(id);
+    const min =
+      item.minScore != null && item.minScore !== '' ? Number(item.minScore) : NaN;
+    const minScore = Number.isFinite(min) && min > 0 && min <= 100 ? Math.round(min * 10) / 10 : null;
+    normalized.push({
+      id,
+      name,
+      ...(minScore != null ? { minScore } : {}),
+    });
+    if (normalized.length >= 20) break;
+  }
+  return normalized;
+}
+
 export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = ''): ExamBlueprint {
   const source: Record<string, any> =
     value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, any>)
       : {};
   const target = Number(source.targetScore);
+  const blocks = normalizeExamBlocks(source.blocks);
+  const blockIds = new Set(blocks.map(block => block.id));
+  const overhead = normalizeQuestionMinutes(source.overheadMinutes);
   return {
     examDate:
       typeof source.examDate === 'string' && source.examDate
@@ -93,8 +121,15 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
           Number(item.minScore) <= 100
             ? { minScore: Number(item.minScore) }
             : {}),
+          ...(typeof item?.blockId === 'string' &&
+          item.blockId &&
+          isSafeId(item.blockId) &&
+          (!blocks.length || blockIds.has(item.blockId))
+            ? { blockId: item.blockId }
+            : {}),
         }))
       : [],
+    ...(blocks.length ? { blocks } : {}),
     ...(source.scoringMode === 'certo-errado' ? { scoringMode: 'certo-errado' as const } : {}),
     ...(source.preEdital === true ? { preEdital: true } : {}),
     ...(Number(source.essayMinPercent) > 0 && Number(source.essayMinPercent) <= 100
@@ -104,6 +139,7 @@ export function normalizeExamBlueprint(value: unknown = {}, legacyExamDate = '')
     ...(normalizeQuestionMinutes(source.durationMinutes)
       ? { durationMinutes: normalizeQuestionMinutes(source.durationMinutes) }
       : {}),
+    ...(overhead ? { overheadMinutes: overhead } : {}),
     ...(normalizeExamCutoff(source.cutoff) ? { cutoff: normalizeExamCutoff(source.cutoff) } : {}),
     ...(normalizePostExam(source.postExam) ? { postExam: normalizePostExam(source.postExam) } : {}),
     ...(source.protocolChecks &&

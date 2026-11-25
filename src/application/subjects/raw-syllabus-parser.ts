@@ -27,6 +27,110 @@ const DISCIPLINE_PREFIX_REGEX = /^(?:disciplina|mat[eé]ria|conte[uú]do|m[oó]d
 /** Expressão para detectar números hierárquicos: ex: "1", "1.1", "1.1.2", "12.3" */
 const NUMBERED_ITEM_REGEX = /(?:^|\s)(?:(\d+(?:\.\d+)*)\s*[-.)]\s*|\b(\d+(?:\.\d+)+)\s+)/;
 
+const LEGAL_TOKEN_REGEX =
+  /\b(?:Lei(?:\s+Complementar)?|LC|Decreto(?:-Lei)?|Emenda\s+Constitucional|EC|Resolu[çc][aã]o|Portaria|Instru[çc][aã]o\s+Normativa|IN|Medida\s+Provis[óo]ria|MP|Art(?:igo)?s?\.?|Par[áa]grafo|§|S[úu]mula(?:\s+Vinculante)?|SV|Tema(?:\s+Repetitivo)?|CF)\s*(?:n[ºo°.]*\s*)?\d+(?:[./\-º°]\d+)*(?:\/\d{2,4})?|\b\d{1,3}\.\d{3}(?!\.\d)/gi;
+
+function protectLegalTokens(text: string): { masked: string; tokens: string[] } {
+  const tokens: string[] = [];
+  const masked = text.replace(LEGAL_TOKEN_REGEX, match => {
+    const idx = tokens.length;
+    tokens.push(match);
+    return `\uE000L${idx}\uE001`;
+  });
+  return { masked, tokens };
+}
+
+function restoreLegalTokens(text: string, tokens: string[]): string {
+  return text.replace(/\uE000L(\d+)\uE001/g, (_, idx) => tokens[Number(idx)] ?? '');
+}
+
+/**
+ * Quebra linhas longas no padrão FGV em prosa (separadas por ";" ou "Subtema: item a, item b")
+ * mantendo tokens jurídicos e referências de lei protegidos.
+ */
+export function splitFgvProseTopics(line: string): string[] {
+  const trimmed = String(line ?? '').trim();
+  if (!trimmed) return [];
+  const { masked, tokens } = protectLegalTokens(trimmed);
+
+  // Separa apenas em ";" fora de parênteses quando há múltiplos segmentos ou linha > 110 caracteres.
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < masked.length; i++) {
+    const ch = masked[i];
+    if (ch === '(') depth++;
+    else if (ch === ')' && depth > 0) depth--;
+    else if (ch === ';' && depth === 0) {
+      parts.push(masked.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(masked.slice(start));
+
+  const cleanParts = parts
+    .map(part =>
+      restoreLegalTokens(part, tokens)
+        .replace(/^[.\s;]+|[.\s;]+$/g, '')
+        .trim()
+    )
+    .filter(Boolean);
+
+  if (cleanParts.length <= 1 && trimmed.length <= 110) {
+    return [trimmed];
+  }
+
+  const expanded: string[] = [];
+  for (const seg of cleanParts) {
+    const colonIdx = seg.indexOf(':');
+    if (colonIdx > 2 && colonIdx <= 55 && seg.length > 110) {
+      const prefix = seg.slice(0, colonIdx).trim();
+      const body = seg.slice(colonIdx + 1).trim();
+      const subItems = body
+        .split(/\s*,\s*(?=[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ]|[a-záéíóúâêîôûãõç]{4,})/)
+        .map(s => s.replace(/\.$/, '').trim())
+        .filter(Boolean);
+      if (subItems.length >= 3 && subItems.every(s => s.length >= 12)) {
+        for (const sub of subItems) {
+          expanded.push(`${prefix}: ${sub}`);
+        }
+        continue;
+      }
+    }
+    expanded.push(seg);
+  }
+
+  return expanded.length ? expanded : [trimmed];
+}
+
+function mergeWrappedPdfLines(rawLines: string[]): string[] {
+  const merged: string[] = [];
+  const endsWithSentenceStop = /[.:;?!]$/;
+  const startsWithBulletOrCode = /^(?:[-*•–]\s+|\d+(?:\.\d+)*[-.)]?\s+|\([a-z0-9]+\)\s+)/i;
+  const endsWithConnector = /\b(?:de|da|do|das|dos|e|ou|em|no|na|nos|nas|para|por|com|a|o|as|os|,)$/i;
+
+  for (const current of rawLines) {
+    if (!merged.length) {
+      merged.push(current);
+      continue;
+    }
+    const prev = merged[merged.length - 1];
+    const shouldMerge =
+      !isDisciplineHeader(prev) &&
+      !isDisciplineHeader(current) &&
+      !endsWithSentenceStop.test(prev) &&
+      !startsWithBulletOrCode.test(current) &&
+      (/^[a-záéíóúâêîôûãõç(]/.test(current) || endsWithConnector.test(prev));
+
+    if (shouldMerge) {
+      merged[merged.length - 1] = `${prev} ${current}`.replace(/\s+/g, ' ');
+    } else {
+      merged.push(current);
+    }
+  }
+  return merged;
+}
+
 /**
  * Avalia se uma linha de texto deve ser interpretada como cabeçalho de disciplina.
  */
@@ -83,19 +187,19 @@ function extractTopicsFromText(text: string): ParsedSyllabusTopic[] {
   const segments: ParsedSyllabusTopic[] = [];
 
   // Regex global para capturar divisores de tópicos numerados: "(1) ", "1. ", "1.1 ", "1 - ", "1 Atos"
+  const { masked, tokens } = protectLegalTokens(trimmed);
   const splitRegex =
     /(?:^|\.\s+|\s{2,})(?:(\d+(?:\.\d+)*)\s*[-.)]\s*|(\d+(?:\.\d+)*)\s+(?=[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ]))/g;
   let lastIndex = 0;
   let lastCode: string | undefined;
   let match: RegExpExecArray | null;
 
-  while ((match = splitRegex.exec(trimmed)) !== null) {
+  while ((match = splitRegex.exec(masked)) !== null) {
     const matchIndex = match.index;
     const code = match[1] || match[2];
 
     if (matchIndex > lastIndex && lastCode !== undefined) {
-      const topicText = trimmed
-        .slice(lastIndex, matchIndex)
+      const topicText = restoreLegalTokens(masked.slice(lastIndex, matchIndex), tokens)
         .replace(/^[.\s-]+/, '')
         .trim();
       if (topicText) {
@@ -106,8 +210,7 @@ function extractTopicsFromText(text: string): ParsedSyllabusTopic[] {
       }
     } else if (matchIndex > 0 && lastCode === undefined) {
       // Texto antes do primeiro número
-      const prefixText = trimmed
-        .slice(0, matchIndex)
+      const prefixText = restoreLegalTokens(masked.slice(0, matchIndex), tokens)
         .replace(/^[.\s-]+/, '')
         .trim();
       if (prefixText) {
@@ -120,9 +223,8 @@ function extractTopicsFromText(text: string): ParsedSyllabusTopic[] {
   }
 
   // Captura o último segmento remanescente
-  if (lastCode !== undefined && lastIndex < trimmed.length) {
-    const topicText = trimmed
-      .slice(lastIndex)
+  if (lastCode !== undefined && lastIndex < masked.length) {
+    const topicText = restoreLegalTokens(masked.slice(lastIndex), tokens)
       .replace(/^[.\s-]+/, '')
       .trim();
     if (topicText) {
@@ -133,12 +235,34 @@ function extractTopicsFromText(text: string): ParsedSyllabusTopic[] {
     }
   }
 
-  // Se nenhum padrão numérico foi detectado, trata a linha inteira como um único tópico
+  // Se nenhum padrão numérico foi detectado, verifica prosa FGV separada por ";" / subtema
   if (segments.length === 0) {
     const cleanLine = trimmed.replace(/^[.\s-]+/, '').trim();
     if (cleanLine) {
-      segments.push({ name: cleanLine });
+      const proseTopics = splitFgvProseTopics(cleanLine);
+      for (const name of proseTopics) {
+        if (name) segments.push({ name });
+      }
     }
+  } else {
+    // Expande segmentos longos sem código adicional caso contenham prosa FGV separada por ";"
+    const refined: ParsedSyllabusTopic[] = [];
+    for (const seg of segments) {
+      if (seg.name.includes(';') && (seg.name.length > 110 || !seg.code)) {
+        const subTopics = splitFgvProseTopics(seg.name);
+        if (subTopics.length > 1) {
+          subTopics.forEach((name, idx) =>
+            refined.push({
+              name,
+              ...(seg.code ? { code: idx === 0 ? seg.code : `${seg.code}.${idx + 1}` } : {}),
+            })
+          );
+          continue;
+        }
+      }
+      refined.push(seg);
+    }
+    return refined;
   }
 
   return segments;
@@ -150,10 +274,12 @@ function extractTopicsFromText(text: string): ParsedSyllabusTopic[] {
 export function parseRawSyllabusText(rawText: string): RawSyllabusParsedResult {
   const warnings: string[] = [];
   const normalized = (rawText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const lines = normalized
-    .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean);
+  const lines = mergeWrappedPdfLines(
+    normalized
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)
+  );
 
   if (lines.length === 0) {
     return {

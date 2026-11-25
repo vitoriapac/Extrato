@@ -44,14 +44,33 @@ import { parseLocalDate } from '../../../core/date-utils.js';
 import { isOverdueItem, isTodayItem } from '../../../application/reviews/build-agenda-buckets.js';
 import { runUndoable } from '../../undoable.js';
 import { countActiveFilters, filterPanelLabel } from '../../filter-panel.js';
+import {
+  buildMixedReviewBatches,
+  evaluateWeeklyReviewBudget,
+  type MixedReviewBatch,
+  type MixedReviewBlueprintSubjectEntry,
+  type MixedReviewSubjectEntry,
+} from '../../../domain/reviews/mixed-review-batch.js';
+import {
+  MixedReviewBatchSheet,
+  MixedReviewBudgetPanel,
+} from '../../modals/MixedReviewBatchSheet.js';
 
 export interface ReviewsTabControllerContext {
   /** Pendências atrasadas (revisões e tarefas): o mesmo número do resto do app. */
   getOverduePendingCount?: () => number | null;
   state: {
     reviewAgenda: ReviewItem[];
-    subjects?: any[];
+    subjects?: MixedReviewSubjectEntry[];
+    metas?: {
+      orcamentoRevisaoPct?: number | null;
+      horasPorDia?: Record<string, number>;
+      horasDiarias?: number;
+    };
+    examBlueprint?: { subjects?: MixedReviewBlueprintSubjectEntry[] };
+    studySessions?: Array<{ type?: string; date?: string; durationSeconds?: number }>;
   };
+  updateGoal?: (key: string, value: number | null) => unknown;
   filters?: {
     subjectId: string;
     status: string;
@@ -178,7 +197,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     if (ctx.getTopicDifficulty) return ctx.getTopicDifficulty(topicId);
     if (!topicId) return 'Médio';
     for (const s of ctx.state.subjects || []) {
-      const t = (s.topics || []).find((x: any) => x.id === topicId);
+      const t = (s.topics || []).find(x => x.id === topicId);
       if (t) return t.difficulty || 'Médio';
     }
     return 'Médio';
@@ -211,6 +230,119 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   let reviewRatingRestoreFocus = true;
   let selectedAgendaSubjectId = '';
   let agendaSubjectOptions: ComboboxOption[] = [{ value: '', label: 'Todas as disciplinas' }];
+  let activeMixedBatch: MixedReviewBatch | null = null;
+
+  function renderMixedReviewBatchSheet() {
+    const doc = getDoc();
+    const mount = getRealMount(doc, 'mixedReviewBatchSheetMount');
+    if (!mount) return;
+    const accuracyTarget =
+      activeMixedBatch?.subjectId && ctx.subjectAccuracyTarget
+        ? ctx.subjectAccuracyTarget(activeMixedBatch.subjectId)
+        : 70;
+    mountPreact(
+      h(MixedReviewBatchSheet, {
+        open: Boolean(activeMixedBatch),
+        batch: activeMixedBatch,
+        accuracyTarget,
+        onConfirm: ({ batch, resolved, correct, ratingsByReviewId }) => {
+          activeMixedBatch = null;
+          runUndoable(`Bateria mista concluída (${batch.count} revisões).`, () => {
+            const touchedTopics = new Set<string>();
+            for (const item of batch.items) {
+              const ratingKey = ratingsByReviewId[item.id] || 'good';
+              const ratingDef =
+                REVIEW_RATINGS[ratingKey as keyof typeof REVIEW_RATINGS] || REVIEW_RATINGS.good;
+              ctx.reviewService?.rateReview(item.id, ratingKey, { label: ratingDef.label });
+              if (item.topicId) touchedTopics.add(item.topicId);
+            }
+            if (resolved > 0 && ctx.questionService) {
+              ctx.questionService.create({
+                date: todayISO(),
+                subjectId: batch.subjectId,
+                topicId: batch.items[0]?.topicId || null,
+                resolved,
+                correct,
+                retry: true,
+                minutes: batch.estimatedMinutes,
+                recommendationId: null,
+              });
+            }
+            for (const tid of touchedTopics) {
+              ctx.refreshTopicReviewStats?.(tid);
+            }
+          });
+        },
+        onCancel: () => {
+          activeMixedBatch = null;
+          renderMixedReviewBatchSheet();
+        },
+      }),
+      mount
+    );
+  }
+
+  function renderMixedReviewBatchPanel() {
+    const doc = getDoc();
+    const mount = getRealMount(doc, 'mixedReviewBatchMount');
+    if (!mount) return;
+    const today = todayISO();
+    const ref = parseLocalDate(today);
+    const weekOffset = ref ? (ref.getDay() + 6) % 7 : 0;
+    const weekStart = addDays(today, -weekOffset) || today;
+    const weekEnd = addDays(weekStart, 6) || today;
+
+    const horasPorDia = ctx.state?.metas?.horasPorDia || {};
+    const plannedWeeklyHours =
+      Object.values(horasPorDia).reduce<number>((sum, hVal) => sum + (Number(hVal) || 0), 0) ||
+      (Number(ctx.state?.metas?.horasDiarias) || 0) * 7;
+    const plannedWeeklyMinutes = Math.round(plannedWeeklyHours * 60);
+
+    const reviewSessionMinutes = (ctx.state?.studySessions || [])
+      .filter(s => s?.type === 'review' && s.date && s.date >= weekStart && s.date <= weekEnd)
+      .reduce((sum, s) => sum + Math.round((Number(s.durationSeconds) || 0) / 60), 0);
+    const dueReviewMinutes =
+      (ctx.state?.reviewAgenda || []).filter(
+        r => r?.status !== 'Concluído' && r.date && r.date >= weekStart && r.date <= weekEnd
+      ).length * MINUTES_PER_REVIEW;
+
+    const budgetPct = ctx.state?.metas?.orcamentoRevisaoPct ?? null;
+    const budget = evaluateWeeklyReviewBudget({
+      plannedWeeklyMinutes,
+      reviewMinutesThisWeek: reviewSessionMinutes + dueReviewMinutes,
+      budgetPct,
+    });
+    const batches = buildMixedReviewBatches({
+      reviewAgenda: ctx.state?.reviewAgenda || [],
+      subjects: ctx.state?.subjects || [],
+      blueprintSubjects: ctx.state?.examBlueprint?.subjects || [],
+      today,
+      entitySubjectId,
+      getTopicName,
+    });
+
+    mountPreact(
+      h(MixedReviewBudgetPanel, {
+        batches,
+        budget,
+        orcamentoRevisaoPct: budgetPct,
+        onChangeBudgetPct: value => {
+          const parsed = value === '' ? null : Number(value);
+          if (ctx.updateGoal) {
+            ctx.updateGoal('orcamentoRevisaoPct', parsed);
+          } else if (ctx.state?.metas) {
+            ctx.state.metas.orcamentoRevisaoPct = parsed;
+          }
+          persistAndRender();
+        },
+        onOpenBatch: batch => {
+          activeMixedBatch = batch;
+          renderMixedReviewBatchSheet();
+        },
+      }),
+      mount
+    );
+  }
 
   function renderReviewRatingSheet() {
     const doc = getDoc();
@@ -429,6 +561,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
           overduePending: ctx.getOverduePendingCount?.() ?? null,
         }
       );
+    renderMixedReviewBatchPanel();
+    renderMixedReviewBatchSheet();
     renderRedistribution();
   }
 
@@ -859,6 +993,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     if (!d) return;
 
     renderReviewRatingSheet();
+    renderMixedReviewBatchSheet();
     renderAgendaSubjectFilter();
 
     createReviewsController({

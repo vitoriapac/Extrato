@@ -28,10 +28,16 @@ export function buildAchievementProjection({
   consistency = null,
   openHighImpactPriorities = 0,
   topicRisks = [],
+  blueprintSubjects = [],
 }: any = {}) {
   const daysRemaining = daysBetweenCalendarDates(today, examDate);
   const target = percent(targetScore) ?? 80;
-  const calibrated = buildCalibratedScoreProjection({ simulations, today, target });
+  const calibrated = buildCalibratedScoreProjection({
+    simulations,
+    today,
+    target,
+    blueprintSubjects,
+  });
   const forecast: any = buildPerformanceForecast({
     currentValue: calibrated.available ? calibrated.central : null,
     currentConfidence: calibrated.confidence === 'moderate' ? 0.55 : 0.25,

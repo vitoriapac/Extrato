@@ -3,6 +3,8 @@ export const ERROR_CATEGORIES = Object.freeze([
   'naoSabia',
   'esqueci',
   'interpretacao',
+  'letraLei',
+  'jurisprudencia',
   'calculo',
   'desatencao',
   'chute',
@@ -26,6 +28,18 @@ export const ERROR_ACTIONS = Object.freeze({
     action: 'Resolver questões comentadas de interpretação',
     studyType: 'questions',
     estimatedMinutes: 40,
+    questions: 15,
+  },
+  letraLei: {
+    action: 'Fazer leitura ativa dos artigos e marcações da lei seca correlata',
+    studyType: 'review',
+    estimatedMinutes: 30,
+    questions: 15,
+  },
+  jurisprudencia: {
+    action: 'Revisar informativos, súmulas e teses repetitivas do tema',
+    studyType: 'review',
+    estimatedMinutes: 30,
     questions: 15,
   },
   calculo: {

@@ -92,10 +92,16 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
       else scheduleSave();
       return;
     }
-    if (field === 'banca' || field === 'durationMinutes') {
+    if (field === 'banca' || field === 'durationMinutes' || field === 'overheadMinutes') {
       // Só alimentam a leitura de banca e ritmo das questões: não mudam prioridade nem prontidão.
       if (field === 'banca') state.examBlueprint.banca = normalizeBanca(value) || undefined;
-      else state.examBlueprint.durationMinutes = normalizeQuestionMinutes(value) || undefined;
+      else if (field === 'durationMinutes')
+        state.examBlueprint.durationMinutes = normalizeQuestionMinutes(value) || undefined;
+      else {
+        const overhead = Math.round(Number(value) || 0);
+        state.examBlueprint.overheadMinutes =
+          overhead > 0 ? Math.min(240, overhead) : undefined;
+      }
       if (refresh) persistAndRender();
       else scheduleSave();
       return;
@@ -287,12 +293,56 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
     });
   }
 
+  function addExamBlock() {
+    const state = getState();
+    const blocks = Array.isArray(state.examBlueprint.blocks)
+      ? state.examBlueprint.blocks
+      : (state.examBlueprint.blocks = []);
+    const index = blocks.length + 1;
+    const id = `blk-${index}-${Date.now().toString(36).slice(-4)}`;
+    blocks.push({ id, name: `Bloco ${index}`, minScore: null });
+    state.examBlueprint.configuredAt = nowISO();
+    persistAndRender();
+  }
+
+  function updateExamBlock(blockId: string, field: 'name' | 'minScore', value: unknown) {
+    const state = getState();
+    const blocks = state.examBlueprint.blocks || [];
+    const block = blocks.find(b => b.id === blockId);
+    if (!block) return;
+    if (field === 'name') {
+      const next = String(value ?? '').trim();
+      if (next) block.name = next;
+    } else if (field === 'minScore') {
+      const parsed = Number(String(value ?? '').replace(',', '.'));
+      block.minScore =
+        value === '' || !Number.isFinite(parsed) || parsed <= 0 ? null : Math.min(100, parsed);
+    }
+    state.examBlueprint.configuredAt = nowISO();
+    persistAndRender();
+  }
+
+  function removeExamBlock(blockId: string) {
+    const state = getState();
+    state.examBlueprint.blocks = (state.examBlueprint.blocks || []).filter(
+      b => b.id !== blockId
+    );
+    for (const item of state.examBlueprint.subjects || []) {
+      if (item.blockId === blockId) delete item.blockId;
+    }
+    state.examBlueprint.configuredAt = nowISO();
+    persistAndRender();
+  }
+
   return {
     metaHoursForDate,
     metaHoursToday,
     updateMetaHoursDay,
     updateExamBlueprint,
     updateExamSubject,
+    addExamBlock,
+    updateExamBlock,
+    removeExamBlock,
     addMetaDisciplina,
     updateMeta,
     applyTodayGoalToAllDays,

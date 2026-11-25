@@ -666,9 +666,11 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     if (careerBenchmarkMount) {
       const detected = detectCareerCluster(state);
       const activeCareerId = selectedCareerClusterId || detected;
+      const scoringMode = state.examBlueprint?.scoringMode || 'padrao';
       const aggregates = aggregateRecentActivity(state.studySessions || [], state.questoes || [], {
         todayISO: today,
         daysWindow: 7,
+        scoringMode,
       });
       const planCapacityHours = Object.values(state.metas?.horasPorDia || {}).reduce<number>(
         (sum, hours) => sum + (Number(hours) || 0),
@@ -677,7 +679,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       const comparison = calculateCareerBenchmarkComparison(
         aggregates,
         activeCareerId,
-        planCapacityHours > 0 ? planCapacityHours : null
+        planCapacityHours > 0 ? planCapacityHours : null,
+        scoringMode
       );
 
       mountPreact(
