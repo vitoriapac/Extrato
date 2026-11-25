@@ -49,7 +49,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Visão Geral',
         summary: 'Seu painel diário de decisão e ritmo.',
         paragraphs: [
-          'Começa por A prova hoje: nota projetada comparada à meta, disciplinas abaixo do mínimo no último simulado e pendências atrasadas, cada uma levando à aba onde se age. Depois vêm Próxima ação, Tarefas e revisões da semana, Fase atual da preparação, Resumo dos últimos 7 dias, Consistência e Saúde do Edital. A Leitura do Extrato fica na barra da aba Hoje. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
+          'Começa por A prova hoje: faixa projetada (do cenário baixo ao alto) comparada à meta ou ao corte, com a confiança e o acerto em questões dos últimos 30 dias quando ele destoa dos simulados, disciplinas abaixo do mínimo no último simulado e pendências atrasadas, cada uma levando à aba onde se age. Depois vêm Próxima ação, Tarefas e revisões da semana, Fase atual da preparação, Resumo dos últimos 7 dias, Consistência e Saúde do Edital. A Leitura do Extrato fica na barra da aba Hoje. As análises detalhadas de evolução e matriz ficam na aba Desempenho, e as conquistas ficam em Hoje > Conquistas.',
         ],
         action: { label: 'Abrir Visão Geral', target: 'overview' },
       },
@@ -168,7 +168,7 @@ const BASE_HELP_CATEGORIES: any[] = [
         title: 'Questões & Simulados',
         summary: 'Desempenho e análise de erros têm registro próprio.',
         paragraphs: [
-          'Informe quantidade de questões, acertos, tópico e, quando possível, a causa dos erros. Os simulados mostram desempenho por disciplina e podem fundamentar uma proposta de replanejamento.',
+          'Informe quantidade de questões, acertos, tópico e, quando possível, a causa dos erros. Em prova certo ou errado (Cebraspe), informe também quantas deixou em branco: branco não conta como erro e não desconta na nota líquida. Com pelo menos 20 itens respondidos, o cartão Banca, ritmo e refeitas mostra o acerto quando você arrisca; abaixo de 50%, arriscar tira pontos. Os simulados mostram desempenho por disciplina e podem fundamentar uma proposta de replanejamento.',
           'Simulados agendados na Agenda ou cadastrados com data futura aparecem em Hoje com o atalho Registrar resultado; ao salvar os acertos, o compromisso na Agenda é concluído automaticamente e o Raio-X & Plano de Remediação é aberto em seguida.',
         ],
         bullets: ['Não sabia · Esqueci', 'Interpretação · Cálculo', 'Desatenção · Chute'],
@@ -374,7 +374,8 @@ const BASE_HELP_CATEGORIES: any[] = [
           'Impacto na prova',
         ],
         paragraphs: [
-          'Importe provas históricas em JSON com prévia e confirmação das associações. Essas questões formam evidência de incidência e ficam separadas das questões que você resolveu para medir seu desempenho. A reimportação da mesma prova evita duplicatas.',
+          'Para saber o que a banca cobra, use Contar uma prova: escolha uma prova anterior, informe instituição, cargo, banca e ano, e diga quantas questões caíram em cada tópico. Sem o total da prova, a contagem vale como a prova inteira; com um total maior que o contado, a prova fica parcial e não entra na incidência. Contar de novo a mesma prova substitui a contagem anterior.',
+          'Quem tem a prova em JSON pode importá-la com prévia e confirmação das associações; reimportar a mesma prova não duplica questões. Nos dois caminhos, essas questões formam evidência de incidência e ficam separadas das questões que você resolveu para medir seu desempenho.',
         ],
         action: { label: 'Abrir Inteligência da Prova', target: 'exam' },
       },
@@ -774,7 +775,7 @@ dataGuide.entries.push({
   id: 'imports-guide',
   title: 'Importar com revisão',
   summary: 'Confira o formato e a prévia do fluxo escolhido.',
-  keywords: ['importação', 'importar', 'JSON', 'edital', 'provas históricas'],
+  keywords: ['importação', 'importar', 'JSON', 'edital', 'provas históricas', 'contar prova', 'incidência'],
   visual: {
     type: 'flow',
     title: 'Importação de provas históricas',
@@ -785,7 +786,7 @@ dataGuide.entries.push({
     ],
   },
   paragraphs: [
-    'O assistente de edital cadastra conteúdo. O importador de provas históricas alimenta incidência, sem criar resultados pessoais de questões respondidas. Backup é um terceiro fluxo: restaura a base e deve ser usado com atenção.',
+    'O assistente de edital cadastra conteúdo. Contar uma prova ou importar uma em JSON alimenta incidência, sem criar resultados pessoais de questões respondidas. Backup é um terceiro fluxo: restaura a base e deve ser usado com atenção.',
     'Confira as associações antes de confirmar. Tópicos desconhecidos exigem decisão e reimportar a mesma prova não deve duplicar suas questões.',
   ],
   action: { label: 'Consultar provas históricas', target: 'exam' },

@@ -21,7 +21,7 @@ Extrato de Estudos planeja estudos semanais e diários a partir da disponibilida
 A combinação de três coisas, juntas:
 
 1. **Decisões explicáveis.** Toda recomendação mostra Prova × Você × Ação, a qualidade da evidência e seus limites. Nada altera dados sem prévia e confirmação; ajustes são reversíveis.
-2. **Inteligência da prova.** Cruza o histórico real de provas da banca (incidência por tópico) com o domínio pessoal para priorizar, e só ajusta o impacto quando há confiança suficiente.
+2. **Inteligência da prova.** Cruza o histórico real de provas da banca (incidência por tópico, contada pelo aluno em *Contar uma prova* ou importada em JSON) com o domínio pessoal para priorizar, e só ajusta o impacto quando há confiança suficiente.
 3. **Local-first e privado.** Tudo funciona no navegador, offline, com persistência em IndexedDB/localStorage, backup em JSON e sincronização remota opcional via WebDAV com criptografia E2EE. Módulos preparatórios de conta e nuvem SaaS seguem a mesma garantia de não-sequestro dos dados locais.
 
 ## Operating Context
@@ -29,11 +29,11 @@ A combinação de três coisas, juntas:
 - Uso diário e em sessões longas: abrir o app, ver "Hoje", estudar com o cronômetro, registrar, voltar ao plano. Fadiga visual em uso prolongado importa.
 - Ritual semanal: fechamento da semana, aderência, comparação de períodos, adaptação do plano.
 - Primeiro uso: assistente com prova e disponibilidade, depois conteúdo via edital do catálogo, arquivo JSON/CSV ou cadastro manual, sempre com prévia. Sem etapa concluída, só o cartão de boas-vindas aparece na Visão Geral; o roteiro de 4 etapas fica dentro do assistente (modal), e depois da primeira etapa o cartão de configuração assume a mesma entrada.
-- Documentos e artefatos reais: editais do catálogo, provas históricas importadas em JSON, relatório estratégico em PDF, backup JSON.
+- Documentos e artefatos reais: editais do catálogo, provas anteriores contadas por tópico ou importadas em JSON, relatório estratégico em PDF, backup JSON.
 
 ## Capabilities and Constraints
 
-- Áreas: Visão Geral (Próxima ação; A prova hoje, com nota projetada × meta, disciplinas abaixo do mínimo e pendências atrasadas; Tarefas e revisões da semana; Resumo dos últimos 7 dias, Consistência, Saúde do Edital e evolução de acertos e simulados), Hoje (Ciclo de Estudos como opção principal com gráfico de donut, Estudo Rápido, Diário de Aprendizagem e subaba Conquistas), Disciplinas e tópicos (com Edital Verticalizado e importador de PDF/texto), Planejamento semanal e Central do Ciclo, Revisões espaçadas, Desempenho (questões, simulados, disciplinas, consistência, Inteligência da prova e Diagnóstico), Dados/backup e Instruções.
+- Áreas: Visão Geral (Próxima ação; A prova hoje, com faixa projetada × corte ou meta, disciplinas abaixo do mínimo e pendências atrasadas; Tarefas e revisões da semana; Resumo dos últimos 7 dias, Consistência, Saúde do Edital e evolução de acertos e simulados), Hoje (Ciclo de Estudos como opção principal com gráfico de donut, Estudo Rápido, Diário de Aprendizagem e subaba Conquistas), Disciplinas e tópicos (com Edital Verticalizado e importador de PDF/texto), Planejamento semanal e Central do Ciclo, Revisões espaçadas, Desempenho (questões, simulados, disciplinas, consistência, Inteligência da prova e Diagnóstico), Dados/backup e Instruções.
 - Terminologia fixa: Prontidão, Domínio, Retenção, Aderência, Próxima melhor ação, Fechamento semanal, Recuperação, Adaptação semanal, Trajetória, Prova × Você, Incidência × Domínio.
 - Regras de produto que a interface deve preservar: prévia antes de salvar; capacidade semanal nunca aumenta por adaptação (15–40 min, cooldown de 14 dias); retratos históricos congelados não são recalculados; evidência insuficiente é declarada, nunca escondida; recomendações não prometem aprovação nem atribuem causalidade.
 - Copy: texto permanente de uma a duas frases; explicações em disclosures fechados, operáveis por teclado ([docs/MICROCOPY-CONTRACT.md](docs/MICROCOPY-CONTRACT.md)).

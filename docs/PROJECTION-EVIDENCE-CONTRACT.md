@@ -11,6 +11,12 @@ A projeção existente combina src/domain/forecasts e src/application/projection
 - Confiança moderada exige composição conhecida, seis datas, três resíduos retrospectivos e 28 dias. O aplicativo exige também tendência disponível para apresentar confiança moderada. Confiança alta não é oferecida.
 - Questões pessoais, cobertura, retenção e volume de estudo não viram pontos artificiais. Cobertura e execução contextualizam riscos.
 
+## Visão Geral: A prova hoje
+
+A Visão Geral mostra a faixa da projeção calibrada (baixa–alta), não só o centro. A referência é o corte informado, quando houver; senão, a meta. O texto diz se a faixa toda está abaixo ou acima da referência ou se a referência cai dentro dela, e traz a confiança e o número de simulados comparáveis. O tom é de perigo quando o topo da faixa fica abaixo do corte e de atenção quando fica abaixo da meta, quando a referência cai dentro da faixa ou quando há a nota de questões.
+
+O acerto em questões dos últimos 30 dias (sem refeitas, mínimo de 50 questões, fora de provas certo/errado) só aparece como nota quando fica 10 pontos ou mais abaixo dos simulados. Ele contextualiza a faixa e não entra no cálculo. Sem faixa calculável, a célula volta a mostrar o valor central.
+
 ## Auditoria determinística
 
 As fixtures em tests/fixtures/projection-scenarios/evidence-audit.js cobrem ausência de dados, questões sem simulados, volume e amplitude insuficientes, composição desconhecida ou alterada e outlier. Os testes também verificam exclusões, limites da faixa, determinismo e imutabilidade.

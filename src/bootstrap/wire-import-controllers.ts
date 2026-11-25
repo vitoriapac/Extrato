@@ -14,6 +14,7 @@ import {
 import { createStructuredImportController } from '../features/structured-import/structured-import-controller.js';
 import { renderStructuredImport } from '../features/structured-import/structured-import-renderer.js';
 import { createHistoricalExamImportController } from '../features/exam-intelligence-import/exam-import-controller.js';
+import { createExamCountController } from '../features/exam-intelligence-import/exam-count-controller.js';
 import { createQuestionImportService } from '../application/questions/question-import-service.js';
 import { createQuestionImportController } from '../features/question-import/question-import-controller.js';
 import { renderQuestionImport } from '../features/question-import/question-import-renderer.js';
@@ -88,18 +89,25 @@ export function wireImportControllers(deps: WireImportControllersDeps) {
     structuredImportOrigin = null;
   });
 
+  const applyExamImport = (result: Record<string, any>) => {
+    const state = deps.getState();
+    state.subjects = result.subjects;
+    state.exams = result.exams;
+    state.examQuestions = result.examQuestions;
+    deps.invalidatePlanPreviews();
+    deps.persistAndRender();
+  };
   createHistoricalExamImportController({
     document: deps.document,
     getState: deps.getState,
     notify: deps.showToast,
-    onImported: (result: Record<string, any>) => {
-      const state = deps.getState();
-      state.subjects = result.subjects;
-      state.exams = result.exams;
-      state.examQuestions = result.examQuestions;
-      deps.invalidatePlanPreviews();
-      deps.persistAndRender();
-    },
+    onImported: applyExamImport,
+  }).mount();
+  createExamCountController({
+    document: deps.document,
+    getState: deps.getState,
+    notify: deps.showToast,
+    onImported: applyExamImport,
   }).mount();
 
   deps.document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click', () => {

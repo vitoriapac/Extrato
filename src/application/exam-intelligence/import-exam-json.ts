@@ -286,3 +286,100 @@ export function mergeExamImport(
     summary: { added, updated, preserved, ignored, createdTopics, examId },
   };
 }
+
+/**
+ * Prova anterior registrada à mão: quantas questões de cada tópico caíram. Vira o mesmo snapshot do
+ * import em JSON, com as questões já vinculadas aos tópicos do aluno. Registrar de novo a mesma prova
+ * substitui a contagem anterior.
+ */
+export function buildExamCountImport(
+  meta: Row,
+  counts: { subjectId: string; topicId: string; count: unknown }[],
+  {
+    subjects = [],
+    exams = [],
+    examQuestions = [],
+  }: { subjects?: Row[]; exams?: Row[]; examQuestions?: Row[] } = {},
+  activeExamTags: string[] = []
+) {
+  const rows: Row[] = [];
+  for (const item of counts) {
+    const count = Math.floor(Number(item.count) || 0);
+    if (count <= 0) continue;
+    if (count > 200) throw new TypeError('Cada tópico aceita até 200 questões.');
+    const subject = subjects.find((entry: Row) => entry.id === item.subjectId && !entry.archived);
+    const topic = subject?.topics?.find(
+      (entry: Row) => entry.id === item.topicId && !entry.archived
+    );
+    if (!subject || !topic) throw new TypeError('Um dos tópicos não existe mais. Abra a contagem de novo.');
+    for (let i = 0; i < count; i++)
+      rows.push({
+        subject: subject.name,
+        topic: topic.name,
+        subjectId: subject.id,
+        topicId: topic.id,
+      });
+  }
+  if (!rows.length) throw new TypeError('Informe quantas questões caíram em pelo menos um tópico.');
+  const total = clean(String(meta.totalQuestions ?? '')) ? Number(meta.totalQuestions) : null;
+  if (total != null && (!Number.isInteger(total) || total < rows.length))
+    throw new TypeError(
+      `O total da prova não pode ser menor que as ${rows.length} questões contadas.`
+    );
+  const exam = {
+    institution: clean(meta.institution),
+    examName: `${clean(meta.role)} ${meta.year ?? ''}`.trim(),
+    role: clean(meta.role),
+    board: clean(meta.board),
+    year: Number(meta.year),
+    date: null,
+    source: 'manual',
+    sourceReference: null,
+    // Sem total informado, a contagem é a prova inteira; com total maior, faltam questões.
+    coverage: total == null || total === rows.length ? 'complete' : 'partial',
+    examTags: unique(activeExamTags),
+    expectedQuestionCount: total ?? rows.length,
+  };
+  createExam({ ...exam, id: 'exam-preview' });
+  const parsed = {
+    exam,
+    questions: rows.map((row, index) => ({
+      number: index + 1,
+      subject: row.subject,
+      topic: row.topic,
+      weight: null,
+    })),
+  };
+  const base = previewExamImport(parsed, { subjects, exams, examQuestions });
+  const preview = {
+    ...base,
+    existingQuestionCount: 0,
+    rows: base.rows.map((row: Row, index: number) => ({
+      ...row,
+      status: 'mapped',
+      subjectId: rows[index].subjectId,
+      topicId: rows[index].topicId,
+    })),
+    mappedCount: rows.length,
+    unresolvedCount: 0,
+  };
+  const result = mergeExamImport(
+    parsed,
+    preview,
+    {},
+    {
+      subjects,
+      exams: exams.map((item: Row) =>
+        item.id === preview.examId ? { ...item, unresolvedQuestions: [] } : item
+      ),
+      examQuestions: examQuestions.filter((question: Row) => question.examId !== preview.examId),
+    }
+  );
+  return {
+    ...result,
+    replaced: Boolean(base.existingExam),
+    counted: rows.length,
+    coverage: exam.coverage,
+    missing: (total ?? rows.length) - rows.length,
+  };
+}

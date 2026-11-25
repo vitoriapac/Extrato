@@ -994,3 +994,18 @@ Oito rodadas de crítica (26 a 27 de 40) mostraram que os defeitos mecânicos es
   - `npm run check:types`: aprovado sem erros.
   - Fast Gate (`npm run test:fast`): aprovado em **58,86 s** (1.771 testes unitários em UTC e São Paulo).
   - Playwright: `tests/e2e/visual-consolidation.spec.js` (26/26 aprovados).
+
+
+---
+
+## 30. Leitura de concurseiro: próxima ação única, faixa projetada, Cebraspe e incidência sem arquivo (24/11/2026)
+
+- **Objetivo concluído:** ajustar o app ao jeito como o concurseiro decide. Menos coisas concorrendo pela atenção e números que respondem às perguntas da banca.
+- **Próxima ação única (Hoje):** a sugestão do diagnóstico fora do Plano de hoje perde o medidor de prioridade e o botão "Seguir plano de hoje" (`study-recommendation-controller.ts`, `next-best-action-renderer.ts`, classe `is-outside-plan`). Regra registrada em [DECISION-EXPERIENCE-CONTRACT.md](DECISION-EXPERIENCE-CONTRACT.md).
+- **Faixa projetada (Visão Geral):** *A prova hoje* mostra baixa–alta da projeção calibrada contra o corte ou a meta, com confiança, simulados comparáveis e acerto em questões de 30 dias quando destoa (`build-exam-today-signals.ts`, `exam-today-renderer.ts`). Regra em [PROJECTION-EVIDENCE-CONTRACT.md](PROJECTION-EVIDENCE-CONTRACT.md).
+- **Questões em branco (certo/errado):** campo opcional `blank` em `QuestionRecord`. Ausente significa não informado, que é diferente de zero. Branco não é erro (`questionErrorCount`), não desconta na nota líquida da Prontidão e alimenta a seção *arriscar ou deixar em branco* do `ExamFitCard.tsx`, com veredito a partir de 20 itens respondidos.
+- **Alertas agregados:** disciplinas paradas há 14 dias ou mais viram um alerta só (`subjects-neglected`), ordenado pela carga na prova (questões previstas × peso). Na demonstração, a lista Atenção caiu de 13 para 9 itens.
+- **Contar uma prova:** `buildExamCountImport` (`import-exam-json.ts`) e `exam-count-controller.ts` registram a contagem de questões por tópico de uma prova anterior, reaproveitando a gravação do import em JSON. Sem total informado, a prova é completa; recontar a mesma prova substitui a anterior.
+- **README:** o "Comparativo com Aprovados" passou a se chamar *Referência interna de ritmo*, como na interface, sem sugerir pesquisa com aprovados.
+- **Validação:** 1.940 testes unitários, `check:types` e E2E das áreas afetadas (Hoje, Visão Geral, Questões, Inteligência da prova e referências visuais `agora-*`).
+- **Pendências:** itens 101 a 103 de [recomendacoes-futuras.md](recomendacoes-futuras.md).

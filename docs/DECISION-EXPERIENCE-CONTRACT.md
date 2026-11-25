@@ -26,6 +26,7 @@ Diagnóstico e projeção podem consumir evidências em paralelo. Esta narrativa
 - Ausência de evidência não é zero. Zero medido permanece um resultado válido.
 - Amostra insuficiente significa registros presentes que não atendem aos critérios do motor. Não aplicável significa que a métrica não se aplica ao contexto.
 - Sugestão fora do plano não recebe aparência de atividade já confirmada. Seu estudo pode ser adicional, explicitamente rotulado.
+- Hoje tem uma próxima ação só. Em Hoje, a sugestão do diagnóstico fora do Plano de hoje usa a classe `is-outside-plan`: sem medidor de prioridade, rótulo "O diagnóstico também sugere" e texto que nomeia a atividade do plano que continua sendo a próxima. Não há botão "Seguir plano de hoje", porque o próprio plano já é a ação principal.
 - Prévia e simulação não persistem mudanças. Aplicação exige confirmação, revalidação e invariantes de capacidade e histórico.
 - Meta sugerida é editável; não é uma prescrição calculada para a rotina.
 - Valores e textos relacionados compartilham período, concurso, entidade e fonte. Arredondamento de apresentação não altera cálculos.

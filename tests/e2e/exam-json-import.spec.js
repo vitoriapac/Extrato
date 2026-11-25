@@ -85,3 +85,42 @@ test('importa JSON com prévia, decisão explícita e reimportação idempotente
   );
   await expectNoPageOverflow(page);
 });
+
+test('conta uma prova anterior por tópico sem arquivo JSON', async ({ page }) => {
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.examBlueprint.activeExamTags = ['bb-escriturario'];
+    api.setState(state);
+    api.renderAll();
+  });
+  await activateTab(page, 'desempenho');
+  await openPerformanceSection(page, 'exam');
+  await openPerformanceFold(page, 'Adicionar evidências');
+  await page.locator('#examCountStart').click();
+  await page.locator('#examCountInstitution').fill('Banco do Brasil');
+  await page.locator('#examCountRole').fill('Escriturário');
+  await page.locator('#examCountBoard').fill('Cesgranrio');
+  await page.locator('#examCountYear').fill('2023');
+  await page.locator('.exam-count-subject summary').first().click();
+  await page.locator('[data-exam-count]').first().fill('3');
+  await expect(page.locator('#examCountSum')).toHaveText('3 questões contadas.');
+  await page.setViewportSize({ width: 320, height: 740 });
+  await expectNoPageOverflow(page);
+  await page.getByRole('button', { name: 'Registrar prova' }).click();
+  await expect(page.locator('#examCountForm')).toContainText('Ela já entra na incidência.');
+  const saved = await page.evaluate(() => {
+    const state = window.__EXTRATO_TEST__.getState();
+    return {
+      exams: state.exams.map(exam => [exam.board, exam.year, exam.coverage, exam.examTags]),
+      questions: state.examQuestions.length,
+    };
+  });
+  expect(saved).toEqual({
+    exams: [['Cesgranrio', 2023, 'complete', ['bb-escriturario']]],
+    questions: 3,
+  });
+});
