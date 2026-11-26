@@ -10,11 +10,11 @@ import {
 test('ordem dos atalhos permanece estável', () => {
   assert.deepEqual(MAIN_TABS, [
     'dashboard',
-    'desempenho',
     'hoje',
-    'disciplinas',
     'agenda',
     'questoes',
+    'desempenho',
+    'disciplinas',
     'metas',
     'instrucoes',
   ]);
@@ -169,11 +169,11 @@ test('atalhos Ctrl/Cmd+Shift+N funcionam com botão focado e Alt+S cede à Visã
   assert.equal(timerStartClicked, false);
   assert.equal(panels.hoje.classList.contains('active'), false);
 
-  // Ctrl+Shift+2 ativa Desempenho mesmo quando o foco está em um botão
+  // Ctrl+Shift+5 ativa Desempenho mesmo quando o foco está em um botão
   let tabShortcutPrevented = false;
   keydown({
-    key: '@',
-    code: 'Digit2',
+    key: '%',
+    code: 'Digit5',
     ctrlKey: true,
     shiftKey: true,
     altKey: false,

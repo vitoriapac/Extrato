@@ -52,7 +52,10 @@ export function createDensityController({
       button.innerHTML = `${renderIconSvg(compact ? 'baseline-density-small' : 'baseline-density-medium', { size: 16 })}<span class="theme-toggle-label">Densidade</span><span class="pref-state">${compact ? 'Compacta' : 'Confortável'}</span>`;
       button.setAttribute('aria-pressed', String(compact));
       button.setAttribute('aria-label', 'Densidade compacta');
-      button.setAttribute('title', compact ? 'Densidade compacta (ativa)' : 'Densidade confortável (ativa)');
+      button.setAttribute(
+        'title',
+        compact ? 'Densidade compacta (ativa)' : 'Densidade confortável (ativa)'
+      );
     }
     return current();
   };
@@ -142,18 +145,21 @@ export function createEssentialController({
 
 /**
  * Daily Focus Mode (Onda 3): oculta gráficos secundários na aba Hoje durante a rotina diária,
- * mantendo Meta do Dia, Próxima Ação / Ciclo e Revisões/Erros vencidos. Desativado por padrão.
+ * mantendo Meta do Dia, Próxima Ação / Ciclo e Revisões/Erros vencidos. Sem escolha salva, vale
+ * `defaultOn`: ligado depois do primeiro uso (P3), desligado no primeiro acesso.
  */
 export function createDailyFocusController({
   document,
   storage,
   key = 'studytrack.dailyFocus',
+  defaultOn = false,
 }: {
   document: {
     documentElement: Pick<HTMLElement, 'getAttribute' | 'setAttribute' | 'removeAttribute'>;
   };
   storage?: Pick<Storage, 'getItem' | 'setItem'> | null;
   key?: string;
+  defaultOn?: boolean;
 }) {
   if (!document) throw new TypeError('Controlador do modo foco diário requer documento.');
   const current = () => document.documentElement.getAttribute('data-daily-focus') === 'on';
@@ -169,7 +175,7 @@ export function createDailyFocusController({
     } catch {
       stored = null;
     }
-    return apply(stored === 'on');
+    return apply(stored == null ? defaultOn : stored === 'on');
   };
   const set = (on: boolean) => {
     try {

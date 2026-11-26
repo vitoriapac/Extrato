@@ -6,7 +6,10 @@ import type {
   CopilotQuestionKey,
   CopilotViewModel,
 } from '../../application/copilot/study-copilot-service.js';
-import type { QuickStudyFocusMode, QuickStudyProposal } from '../../domain/quick-study/quick-study-engine.js';
+import type {
+  QuickStudyFocusMode,
+  QuickStudyProposal,
+} from '../../domain/quick-study/quick-study-engine.js';
 import type { LearningJournalEntry, LearningJournalTag } from '../../core/types.js';
 import {
   type StudyCycleMode,
@@ -16,11 +19,7 @@ import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
 
-export type AssistantPanelKind =
-  | 'none'
-  | 'quick'
-  | 'copilot'
-  | 'weekly_closing';
+export type AssistantPanelKind = 'none' | 'quick' | 'copilot' | 'weekly_closing';
 
 export interface CycleDraftState {
   mode: StudyCycleMode;
@@ -29,7 +28,13 @@ export interface CycleDraftState {
     valid: boolean;
     errors: string[];
     cycle: StudyCycleQueue;
-    subjectShares: Array<{ subjectId: string; subjectName: string; minutes: number; blocks: number; sharePct: number }>;
+    subjectShares: Array<{
+      subjectId: string;
+      subjectName: string;
+      minutes: number;
+      blocks: number;
+      sharePct: number;
+    }>;
     blocksCount: number;
     totalDurationMinutes: number;
   } | null;
@@ -98,7 +103,9 @@ export interface TodayStudyAssistantBarProps {
   onOpenJournalSidebar?: () => void;
   onSelectCopilotQuestion: (key: CopilotQuestionKey) => void;
   onExecuteCopilotAnswer: (answer: CopilotAnswer) => void;
-  onChangeJournalFilter: (patch: Partial<{ subjectId: string; tag: string; query: string }>) => void;
+  onChangeJournalFilter: (
+    patch: Partial<{ subjectId: string; tag: string; query: string }>
+  ) => void;
   onChangeJournalForm: (patch: Partial<JournalFormState>) => void;
   onSaveJournalEntry: () => void;
   onDeleteJournalEntry: (entryId: string) => void;
@@ -180,7 +187,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
               {cycle ? cycle.name : 'Ciclo de Estudos'}
             </strong>
             {cycle && (
-              <Badge variant={cycle.status === 'paused' ? 'warning' : 'default'} icon={false} className="font-data">
+              <Badge
+                variant={cycle.status === 'paused' ? 'warning' : 'default'}
+                icon={false}
+                className="font-data"
+              >
                 {cycle.status === 'paused' ? 'Pausado' : `Volta ${cycleLap.round}`}
                 {(cycle.version || 1) > 1 ? ` · revisão ${cycle.version}` : ''}
               </Badge>
@@ -272,7 +283,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
                 <span>Iniciar bloco</span>
               </Button>
               <Button variant="secondary" size="small" onClick={props.onToggleCyclePause}>
-                <Icon name={cycle?.status === 'paused' ? 'play' : 'pause'} size={13} class="icon-inline" />
+                <Icon
+                  name={cycle?.status === 'paused' ? 'play' : 'pause'}
+                  size={13}
+                  class="icon-inline"
+                />
                 <span>{cycle?.status === 'paused' ? 'Retomar ciclo' : 'Pausar ciclo'}</span>
               </Button>
               <div class="flex items-center gap-1 flex-wrap">
@@ -294,7 +309,8 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         ) : (
           <div class="space-y-3">
             <p class="text-xs text-content-secondary m-0">
-              Estude em fila rotativa por blocos de 15 a 120 minutos sem gerar atrasos automáticos em dias sem estudo.
+              Estude em fila rotativa por blocos de 15 a 120 minutos sem gerar atrasos automáticos
+              em dias sem estudo.
             </p>
             {props.onOpenPlanningCycle && (
               <Button variant="primary" size="small" onClick={props.onOpenPlanningCycle}>
@@ -345,6 +361,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
         <Button
           variant="secondary"
           size="small"
+          data-module="journal"
           onClick={() => {
             if (props.onOpenJournalSidebar) {
               props.onOpenJournalSidebar();
@@ -374,7 +391,12 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             <strong class="module-heading__title text-content-primary">
               Estudo Rápido — <span class="font-data">{formatPlanMinutes(quickMinutes)}</span>
             </strong>
-            <Button variant="ghost" size="small" aria-label="Fechar Estudo Rápido" onClick={() => props.onTogglePanel('none')}>
+            <Button
+              variant="ghost"
+              size="small"
+              aria-label="Fechar Estudo Rápido"
+              onClick={() => props.onTogglePanel('none')}
+            >
               <Icon name="x" size={14} />
             </Button>
           </div>
@@ -422,25 +444,28 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           </div>
 
           <div class="flex flex-wrap gap-2" role="group" aria-label="Foco da sessão rápida">
-            {QUICK_FOCUS_OPTIONS.filter(opt => opt.key !== 'cycle' || Boolean(currentBlock)).map(opt => {
-              const selected = quickFocus === opt.key;
-              return (
-                <Button
-                  key={opt.key}
-                  variant={selected ? 'tonal' : 'secondary'}
-                  size="small"
-                  aria-pressed={selected}
-                  onClick={() => props.onChangeQuickConfig(quickMinutes, opt.key)}
-                >
-                  {opt.label}
-                </Button>
-              );
-            })}
+            {QUICK_FOCUS_OPTIONS.filter(opt => opt.key !== 'cycle' || Boolean(currentBlock)).map(
+              opt => {
+                const selected = quickFocus === opt.key;
+                return (
+                  <Button
+                    key={opt.key}
+                    variant={selected ? 'tonal' : 'secondary'}
+                    size="small"
+                    aria-pressed={selected}
+                    onClick={() => props.onChangeQuickConfig(quickMinutes, opt.key)}
+                  >
+                    {opt.label}
+                  </Button>
+                );
+              }
+            )}
           </div>
 
           <div class="pt-2.5 border-t border-border-subtle border-l-3 border-l-accent pl-3 space-y-1 text-xs">
             <div class="font-medium text-content-primary">
-              Proposta (<span class="font-data">{formatPlanMinutes(quickProposal.plannedMinutes)}</span>):{' '}
+              Proposta (
+              <span class="font-data">{formatPlanMinutes(quickProposal.plannedMinutes)}</span>):{' '}
               {quickProposal.subjectName}
               {quickProposal.topicName ? ` — ${quickProposal.topicName}` : ''}
             </div>
@@ -472,14 +497,17 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           <div class="flex items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2">
               <Icon name="compass" size={16} class="text-accent shrink-0" />
-              <strong class="module-heading__title text-content-primary">
-                Leitura do Extrato
-              </strong>
+              <strong class="module-heading__title text-content-primary">Leitura do Extrato</strong>
               <Badge variant="info" icon={false}>
                 {copilot.confidence.label}
               </Badge>
             </div>
-            <Button variant="ghost" size="small" aria-label="Fechar Leitura do Extrato" onClick={() => props.onTogglePanel('none')}>
+            <Button
+              variant="ghost"
+              size="small"
+              aria-label="Fechar Leitura do Extrato"
+              onClick={() => props.onTogglePanel('none')}
+            >
               <Icon name="x" size={14} />
             </Button>
           </div>
@@ -488,7 +516,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             Orientação atual: <strong class="text-content-primary">{copilot.title}</strong>
           </p>
 
-          <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Perguntas rápidas">
+          <div
+            class="flex flex-wrap items-center gap-2"
+            role="group"
+            aria-label="Perguntas rápidas"
+          >
             {visibleCopilotQuestions.map(item => {
               const selected = copilotQuestion === item.key;
               return (
@@ -566,7 +598,12 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
                 </span>
               </span>
             </div>
-            <Button variant="ghost" size="small" aria-label="Fechar fechamento semanal" onClick={() => props.onTogglePanel('none')}>
+            <Button
+              variant="ghost"
+              size="small"
+              aria-label="Fechar fechamento semanal"
+              onClick={() => props.onTogglePanel('none')}
+            >
               <Icon name="x" size={14} />
             </Button>
           </div>
@@ -613,7 +650,11 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           <div class="flex flex-wrap gap-2 pt-1">
             {!weeklyClosing.isPartialCurrentWeek &&
               weeklyClosing.windowStatus !== 'insufficient_data' && (
-                <Button variant="primary" size="small" onClick={props.onConfirmWeeklyClosingSnapshot}>
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={props.onConfirmWeeklyClosingSnapshot}
+                >
                   <span>
                     {weeklyClosing.windowStatus === 'already_finalized'
                       ? 'Fechamento já registrado'

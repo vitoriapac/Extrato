@@ -477,9 +477,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
   function getDailyFocusController() {
     if (!doc) return null;
-    const storage =
-      typeof globalThis.localStorage !== 'undefined' ? globalThis.localStorage : null;
-    return createDailyFocusController({ document: doc, storage });
+    const storage = typeof globalThis.localStorage !== 'undefined' ? globalThis.localStorage : null;
+    // Depois do primeiro uso (há disciplinas), Hoje abre no Modo Foco; a escolha salva prevalece.
+    const defaultOn = (getState()?.subjects || []).some(
+      (subject: { archived?: boolean }) => !subject.archived
+    );
+    return createDailyFocusController({ document: doc, storage, defaultOn });
   }
 
   function applyDailyFocusVisibility(active: boolean): void {

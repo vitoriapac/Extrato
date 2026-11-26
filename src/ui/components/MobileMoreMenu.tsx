@@ -9,8 +9,8 @@ export interface MobileMoreMenuProps {
 }
 
 const SECONDARY_TABS: ReadonlyArray<{ id: string; label: string; icon: IconName }> = [
-  { id: 'disciplinas', label: 'Disciplinas', icon: 'books' },
   { id: 'questoes', label: 'Questões & Simulados', icon: 'list-check' },
+  { id: 'disciplinas', label: 'Disciplinas', icon: 'books' },
   { id: 'metas', label: 'Planejamento', icon: 'map-2' },
   { id: 'instrucoes', label: 'Instruções', icon: 'help-circle' },
 ];
@@ -49,7 +49,9 @@ export function MobileMoreMenu({
         className="mobile-more-menu-popover"
         triggerVariant="unstyled"
         triggerId="moreTabButton"
-        triggerClassName={isSecondaryActive ? 'tab-btn more-tab-btn active' : 'tab-btn more-tab-btn'}
+        triggerClassName={
+          isSecondaryActive ? 'tab-btn more-tab-btn active' : 'tab-btn more-tab-btn'
+        }
         triggerContent={
           <>
             <Icon name="dots" size={16} class="tab-icon" />

@@ -196,6 +196,10 @@ test('Ciclo flexível e cronobiologia estão disponíveis no motor e avaliam fad
 test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estudos 2.0', async ({
   page,
 }) => {
+  // Módulo opcional: sem registros ele começa oculto; o teste liga como o aluno faria em Preferências.
+  await page.addInitScript(() =>
+    localStorage.setItem('studytrack.modules', JSON.stringify({ journal: true }))
+  );
   await prepare(page);
   await activateTab(page, 'hoje');
 
@@ -216,7 +220,9 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
 
   // Diário de Aprendizagem (atalho da barra abre o card lateral único, com sanitização)
   await bar.getByRole('button', { name: /Diário de aprendizagem/ }).click();
-  const journalSidebar = page.locator('#todayJournalSidebarMount [data-today-journal-sidebar="true"]');
+  const journalSidebar = page.locator(
+    '#todayJournalSidebarMount [data-today-journal-sidebar="true"]'
+  );
   await expect(journalSidebar).toBeVisible();
   await journalSidebar
     .getByLabel('O que aprendeu, dúvida ou pegadinha')
@@ -228,7 +234,10 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
   await page.locator('#executionSequenceBtn').click();
   const cyclePanel = page.locator('[data-study-cycle-panel="true"]');
   await expect(cyclePanel).toBeVisible();
-  await cyclePanel.getByRole('button', { name: /Central do Ciclo/ }).first().click();
+  await cyclePanel
+    .getByRole('button', { name: /Central do Ciclo/ })
+    .first()
+    .click();
   const cycleCenter = page.locator('#metasCycleCenterMount [data-study-cycle-center="true"]');
   await expect(cycleCenter).toBeVisible();
   await cycleCenter.getByRole('button', { name: 'Confirmar nova versão do ciclo' }).click();
@@ -239,6 +248,10 @@ test('Hoje integra Estudo Rápido, Orientação guiada, Diário e Ciclo de Estud
 test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Planejamento', async ({
   page,
 }) => {
+  // Módulo opcional: sem registros ele começa oculto; o teste liga como o aluno faria em Preferências.
+  await page.addInitScript(() =>
+    localStorage.setItem('studytrack.modules', JSON.stringify({ journal: true }))
+  );
   await prepare(page);
 
   // 1. Visão Geral: os três sinais da prova; a Leitura do Extrato mora na barra de Hoje.
@@ -249,7 +262,10 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
 
   // 2. Hoje: Estudo Rápido abre em 30 min e chip de 15 min dentro do painel alterna em 1 clique
   await activateTab(page, 'hoje');
-  await page.getByRole('button', { name: /Estudo rápido/ }).first().click();
+  await page
+    .getByRole('button', { name: /Estudo rápido/ })
+    .first()
+    .click();
   const quickPanel = page.locator('#todayQuickStudyPanel');
   await expect(quickPanel).toBeVisible();
   await expect(quickPanel).toContainText('Proposta (30 min)');
@@ -258,7 +274,9 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
 
   // 3. Hoje lateral: o Diário fica na dobra "Esforço na semana e Diário" e aceita registro inline
   await page.locator('#todayMoreDetails > summary').click();
-  const journalSidebar = page.locator('#todayJournalSidebarMount [data-today-journal-sidebar="true"]');
+  const journalSidebar = page.locator(
+    '#todayJournalSidebarMount [data-today-journal-sidebar="true"]'
+  );
   await expect(journalSidebar).toBeVisible();
   await journalSidebar.getByRole('button', { name: 'Registrar aprendizado ou dúvida' }).click();
   await journalSidebar

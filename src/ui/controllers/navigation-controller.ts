@@ -10,13 +10,14 @@ export const TAB_HASHES: Readonly<Record<string, string>> = Object.freeze({
 export const TAB_ALIASES: Readonly<Record<string, string>> = Object.freeze({
   calendario: 'agenda',
 });
+// Ordem do dia do concurseiro: o que fazer, o que revisar, praticar, medir e só então planejar.
 export const MAIN_TABS = Object.freeze([
   'dashboard',
-  'desempenho',
   'hoje',
-  'disciplinas',
   'agenda',
   'questoes',
+  'desempenho',
+  'disciplinas',
   'metas',
   'instrucoes',
 ]);
@@ -194,8 +195,7 @@ export function createNavigationController({
       if (event.defaultPrevented) return;
       const active = document.activeElement;
       const typing =
-        ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) ||
-        active?.isContentEditable;
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) || active?.isContentEditable;
       if (event.key === 'Escape') {
         const modalOverlay = document.getElementById('modalOverlay') as
           (HTMLElement & { open?: boolean }) | null;

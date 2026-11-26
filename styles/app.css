@@ -67,6 +67,14 @@
   .overview-nav a:hover,.overview-nav a:focus-visible{background:var(--slate-bg);color:var(--heading);outline:2px solid var(--accent);outline-offset:-2px}
   [id^="overview-"]{scroll-margin-top:72px}
   .more-tab-btn{display:none}
+  /* Instruções fica no menu (Preferências no desktop, "Mais" no celular), não na linha de abas. */
+  .tabs .tab-menu-only{display:none!important}
+  /* No primeiro acesso, antes de qualquer valor entregue, o rodapé não oferece planos pagos. */
+  body:has(.statement[data-first-run]) li:has(> #openSaasPlansBtn){display:none}
+  /* Módulos opcionais desligados em Preferências > Módulos (optional-modules-controller.ts). */
+  html[data-module-energy="off"] :is(#sleepCheckinMount,#shiftEnergyMount),
+  html[data-module-achievements="off"] :is(#todayTab-conquistas,#todaySub-conquistas),
+  html[data-module-journal="off"] :is(#todayJournalSidebarMount,[data-module="journal"]){display:none!important}
   .print-report-meta{display:none}
 
   /* ===== HERO / EXTRATO HEADER ===== */

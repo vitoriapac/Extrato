@@ -37,6 +37,7 @@ import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
 import { configureUndo } from './ui/undoable.js';
 import { createReviewReminderController } from './ui/controllers/review-reminder-controller.js';
+import { createOptionalModulesController } from './ui/controllers/optional-modules-controller.js';
 import { createErrorBoundaryController } from './ui/controllers/error-boundary-controller.js';
 import { watchDailyExecutionDate } from './ui/controllers/daily-execution-controller.js';
 import { createApplicationRenderer } from './ui/renderers/application-renderer.js';
@@ -152,6 +153,12 @@ createReviewReminderController({
   getState: () => state,
   showToast,
 }).init();
+const optionalModules = createOptionalModulesController({
+  document,
+  storage: localStorage,
+  getState: () => state,
+});
+optionalModules.init();
 configureUndo({
   getState: () => state,
   persistAndRender: () => persistAndRender(),
@@ -314,7 +321,10 @@ const applicationRenderer = createApplicationRenderer({
   scopes: RENDER_SCOPE_SECTIONS,
   globalSections: ['indicadores', 'cabeçalho', 'execução diária'],
   getActiveScope: uiControllers.activeTabName,
-  afterRender: labelDynamicControls,
+  afterRender: () => {
+    labelDynamicControls();
+    optionalModules.apply();
+  },
   onError: (error: unknown, name: string) => errorBoundary.report(error, name),
 });
 
@@ -333,9 +343,10 @@ function checkAchievementUnlocks() {
   if (!changed) return;
   // A primeira leitura só ajusta a memória: abrir o app não deve reescrever o que está salvo.
   if (persist) storageAndSync.stateSyncCoordinator.scheduleSave();
-  achievementNotifier.notify(
-    buildAchievementNotice(newlyUnlocked, controller.getBadgesDefinitions())
-  );
+  if (optionalModules.isOn('achievements'))
+    achievementNotifier.notify(
+      buildAchievementNotice(newlyUnlocked, controller.getBadgesDefinitions())
+    );
 }
 function scheduleAchievementCheck() {
   if (achievementCheckQueued) return;

@@ -42,3 +42,18 @@ test('createDailyFocusController inicia desativado por padrão e persiste altern
   assert.equal(storage.getItem('studytrack.dailyFocus'), 'off');
   assert.equal(doc.documentElement.getAttribute('data-daily-focus'), null);
 });
+
+test('Modo Foco abre ligado depois do primeiro uso, mas a escolha salva prevalece', () => {
+  const on = createDailyFocusController({
+    document: createFakeDocument(),
+    storage: createFakeStorage(),
+    defaultOn: true,
+  });
+  assert.equal(on.init(), true);
+  const saved = createDailyFocusController({
+    document: createFakeDocument(),
+    storage: createFakeStorage({ 'studytrack.dailyFocus': 'off' }),
+    defaultOn: true,
+  });
+  assert.equal(saved.init(), false);
+});

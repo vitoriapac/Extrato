@@ -4,6 +4,10 @@ import { openAchievements, expectNoPageOverflow } from './helpers.js';
 
 test('conquistas mostram estratégia e próximos passos em tela pequena', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
+  // Módulo opcional: sem registros ele começa oculto; o teste liga como o aluno faria em Preferências.
+  await page.addInitScript(() =>
+    localStorage.setItem('studytrack.modules', JSON.stringify({ achievements: true }))
+  );
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element => element.remove());
