@@ -7,7 +7,7 @@ import {
   createErrorFlashcard,
   findQuestionsAwaitingFlashcard,
 } from '../../src/domain/notebook/error-notebook-engine.js';
-import { ErrorNotebookDueNotice } from '../../src/ui/components/ErrorNotebookDueNotice.js';
+import { TodayReviewQueueCard } from '../../src/ui/components/TodayReviewQueueCard.js';
 import { buildReviewQueueSummary } from '../../src/application/reviews/build-review-queue-summary.js';
 import { ErrorNotebookView } from '../../src/ui/views/ErrorNotebookView.js';
 
@@ -115,30 +115,83 @@ test('addErrorFlashcard permite vários cartões de enunciados diferentes no mes
   assert.deepEqual(findQuestionsAwaitingFlashcard([question()], second.cards), []);
 });
 
-test('ErrorNotebookDueNotice não renderiza sem cartões e informa a quantidade quando há', () => {
-  assert.equal(render(h(ErrorNotebookDueNotice, { dueCount: 0 })), '');
-  assert.equal(render(h(ErrorNotebookDueNotice, { dueCount: Number.NaN })), '');
-  const one = render(h(ErrorNotebookDueNotice, { dueCount: 1 }));
-  assert.ok(one.includes('1 flashcard para revisar'));
-  assert.ok(one.includes('Revisar agora'));
-  assert.ok(one.includes('role="status"'));
+test('TodayReviewQueueCard some sem revisões e soma tópicos e flashcards em minutos', () => {
+  const base = {
+    topicCount: 0,
+    overdueTopics: 0,
+    topicMinutes: 0,
+    flashcardCount: 0,
+    flashcardMinutes: 0,
+    totalMinutes: 0,
+    capMinutes: 30,
+    budgetPct: 25,
+    overCap: false,
+  };
+  const props = { formatMinutes: m => `${m} min`, onTopics() {}, onFlashcards() {} };
+  assert.equal(render(h(TodayReviewQueueCard, { ...props, load: base })), '');
+  const html = render(
+    h(TodayReviewQueueCard, {
+      ...props,
+      load: {
+        ...base,
+        topicCount: 2,
+        overdueTopics: 1,
+        topicMinutes: 30,
+        flashcardCount: 7,
+        flashcardMinutes: 7,
+        totalMinutes: 37,
+        overCap: true,
+      },
+    })
+  );
+  assert.ok(html.includes('Revisão de hoje: 37 min'));
+  assert.ok(html.includes('7 flashcards'));
+  assert.ok(html.includes('Revisar agora'));
   assert.ok(
-    render(h(ErrorNotebookDueNotice, { dueCount: 7 })).includes('7 flashcards para revisar')
+    html.includes('data-action="open-recovery-mission"'),
+    'acima do teto oferece o resgate'
   );
 });
 
 test('resumo mantém revisões de tópico e flashcards separados sem alterar os dados', () => {
-  const topics = [{ id: 'a', date: '2026-11-04', status: 'Pendente' }, { id: 'b', date: '2026-11-08', status: 'Pendente' }, { id: 'c', date: '2026-11-05', status: 'Concluído' }, { id: 'd', date: 'inválida', status: 'Pendente' }];
+  const topics = [
+    { id: 'a', date: '2026-11-04', status: 'Pendente' },
+    { id: 'b', date: '2026-11-08', status: 'Pendente' },
+    { id: 'c', date: '2026-11-05', status: 'Concluído' },
+    { id: 'd', date: 'inválida', status: 'Pendente' },
+  ];
   const cards = [
-    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('pending'), nextReviewDate: '2026-11-20' },
-    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('reviewing'), nextReviewDate: '2026-11-09' },
-    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('mastered'), nextReviewDate: '2026-11-01' },
-    { ...createErrorFlashcard(baseInput), status: /** @type {const} */ ('mastered'), nextReviewDate: '2026-12-06' },
+    {
+      ...createErrorFlashcard(baseInput),
+      status: /** @type {const} */ ('pending'),
+      nextReviewDate: '2026-11-20',
+    },
+    {
+      ...createErrorFlashcard(baseInput),
+      status: /** @type {const} */ ('reviewing'),
+      nextReviewDate: '2026-11-09',
+    },
+    {
+      ...createErrorFlashcard(baseInput),
+      status: /** @type {const} */ ('mastered'),
+      nextReviewDate: '2026-11-01',
+    },
+    {
+      ...createErrorFlashcard(baseInput),
+      status: /** @type {const} */ ('mastered'),
+      nextReviewDate: '2026-12-06',
+    },
   ];
   const before = JSON.stringify({ topics, cards });
-  assert.deepEqual(buildReviewQueueSummary({ reviews: topics, flashcards: cards, today: '2026-11-06' }), {
-    topicsDue: 1, topicsNext: '2026-11-08', flashcardsDue: 2, flashcardsNext: '2026-11-09',
-  });
+  assert.deepEqual(
+    buildReviewQueueSummary({ reviews: topics, flashcards: cards, today: '2026-11-06' }),
+    {
+      topicsDue: 1,
+      topicsNext: '2026-11-08',
+      flashcardsDue: 2,
+      flashcardsNext: '2026-11-09',
+    }
+  );
   assert.equal(JSON.stringify({ topics, cards }), before);
 });
 

@@ -12,6 +12,7 @@ import { createStudyRecommendationController } from '../../ui/tabs/today/study-r
 import { createOnboardingModalController } from '../../features/onboarding/onboarding-modal-controller.js';
 import { createFirstAccessModalController } from '../../ui/controllers/first-access-modal-controller.js';
 import { createRecoveryMissionController } from '../../ui/controllers/recovery-mission-controller.js';
+import { createSyllabusTriageController } from '../../ui/controllers/syllabus-triage-controller.js';
 import type { OverdueReviewItem } from '../../domain/recovery/recovery-mission-engine.js';
 import { createSessionHistoryController } from '../../ui/tabs/today/session-history-controller.js';
 
@@ -283,6 +284,7 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     pluralize,
     showToast,
     showPrompt,
+    showConfirm,
     scheduleSave,
     renderRecommendationHistorySummary,
     getTopicName,
@@ -471,6 +473,21 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     if (btn) {
       event.preventDefault?.();
       recoveryMissionController.open();
+    }
+  });
+
+  const syllabusTriageController = createSyllabusTriageController({
+    document,
+    getState,
+    getTriage: () => studyCandidateService.syllabusTriage(),
+    nowISO,
+    formatMinutes: formatPlanMinutes,
+  });
+  document.addEventListener?.('click', (event: Event) => {
+    const btn = (event.target as Element | null)?.closest?.('[data-action="open-syllabus-triage"]');
+    if (btn) {
+      event.preventDefault?.();
+      syllabusTriageController.open();
     }
   });
 

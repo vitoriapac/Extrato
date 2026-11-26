@@ -39,6 +39,11 @@ import { buildRecommendationExplanation } from '../../../application/recommendat
 import { renderRecommendationExplanation } from '../../renderers/recommendation-explanation-renderer.js';
 import { buildStudyStrategy } from '../../../domain/recommendations/study-strategy.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
+import {
+  applyPlanSwap,
+  planSwapCandidate,
+} from '../../../application/daily-execution/plan-swap.js';
+import { runUndoable } from '../../undoable.js';
 
 export interface StudyRecommendationControllerDeps {
   /** Ids de tópico na ordem da fila do Diagnóstico; a sugestão é o primeiro dela. */
@@ -58,6 +63,12 @@ export interface StudyRecommendationControllerDeps {
   pluralize: (n: number, s: string, p?: string) => string;
   showToast: (msg: string) => void;
   showPrompt: (msg: string, opts: any, cb: (res: string) => void) => void;
+  showConfirm?: (
+    msg: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    opts?: Record<string, unknown>
+  ) => void;
   scheduleSave: () => void;
   renderRecommendationHistorySummary: () => void;
   getTopicName: (id: string) => string;
@@ -347,7 +358,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>`
         : blocked
           ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-          : `<button class="btn ${planChoice || sameAsPlan ? 'ghost' : index > 0 ? 'tonal' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
+          : `${planChoice && planSwapCandidate(todayDailyStudyPlan(), item.topicId) ? `<button class="btn tonal" data-plan-swap data-delegated-click="swapRecommendationIntoPlan('${escapeAttr(item.id)}')">Trocar no plano</button>` : ''}<button class="btn ${planChoice || sameAsPlan ? 'ghost' : index > 0 ? 'tonal' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
       // Fora do plano, a sugestão é secundária: o plano de hoje continua sendo a única ação em destaque.
       const gauge = planChoice
         ? ''
@@ -418,6 +429,89 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     }
   }
 
+  function buildRecommendationPlanItem(
+    recommendation: (typeof currentStudyRecommendations)[number],
+    plan: ReturnType<typeof todayDailyStudyPlan>
+  ) {
+    const state = getState();
+    const item = {
+      id: uid('plan-item'),
+      subjectId: recommendation.subjectId,
+      topicId: recommendation.topicId,
+      subjectName: recommendation.subjectName,
+      topicName: recommendation.topicName,
+      type: recommendation.studyType || 'study',
+      plannedMinutes: recommendation.estimatedMinutes,
+      executedSeconds: 0,
+      status: 'planned',
+      sessionIds: [],
+      score: recommendation.score,
+      tier: recommendation.score >= 70 ? 'Alta' : recommendation.score >= 40 ? 'Média' : 'Baixa',
+      position: plan.items.length + 1,
+      statusIcon: 'target',
+      statusLabel: 'Recomendação inteligente',
+      prioritySnapshot: capturePlanPriority(recommendation, {
+        capturedAt: nowISO(),
+        algorithmVersion: state.algorithmVersions.recommendations,
+      }),
+      reason: (recommendation.reasons || []).join(' · '),
+      action: recommendation.action,
+      recommendedQuestions: 0,
+      originalDate: todayISO(),
+      currentDate: todayISO(),
+      rescheduleCount: 0,
+      skippedReason: null,
+      recommendationId: recommendation.recommendationId,
+      createdAt: nowISO(),
+    };
+    freezePlanExecution(item, {
+      date: todayISO(),
+      activeExamTags: state.examBlueprint?.activeExamTags || [],
+      capturedAt: nowISO(),
+    });
+    return item;
+  }
+
+  // Swaps the outside-plan suggestion into today's plan, after a confirmation that names both blocks.
+  function swapRecommendationIntoPlan(id: string) {
+    const recommendation = currentStudyRecommendations.find(
+      item => item.id === id || item.recommendationId === id
+    );
+    const plan = todayDailyStudyPlan();
+    const candidate = planSwapCandidate(plan, recommendation?.topicId);
+    if (!recommendation || !plan || !candidate) {
+      showToast('Não há bloco ainda não iniciado no plano de hoje para trocar.');
+      return;
+    }
+    const outName = `${String(candidate.subjectName || getSubjectName(String(candidate.subjectId)))} · ${String(candidate.topicName || getTopicName(String(candidate.topicId)))}`;
+    const inName = `${recommendation.subjectName} · ${recommendation.topicName}`;
+    const apply = () =>
+      runUndoable(
+        `Plano de hoje: ${inName} entrou no lugar de ${outName}.`,
+        () => {
+          recordRecommendationFeedback(recommendation, { accepted: true, source: 'today-swap' });
+          applyPlanSwap(
+            plan,
+            candidate.id,
+            buildRecommendationPlanItem(recommendation, plan),
+            nowISO()
+          );
+        },
+        'Troca desfeita. O plano de hoje voltou ao que era.'
+      );
+    if (!deps.showConfirm) return apply();
+    deps.showConfirm(
+      `Sai ${outName} (${formatPlanMinutes(candidate.plannedMinutes ?? 0)}), que é o bloco de menor prioridade ainda não iniciado. Entra ${inName} (${formatPlanMinutes(recommendation.estimatedMinutes)}). O bloco que sai fica registrado como substituído, e você pode desfazer logo em seguida.`,
+      apply,
+      undefined,
+      {
+        title: 'Trocar no plano de hoje?',
+        confirmLabel: 'Trocar no plano',
+        confirmVariant: 'primary',
+      }
+    );
+  }
+
   function startStudyRecommendation(id: string, source = 'today') {
     const state = getState();
     const recommendation = currentStudyRecommendations.find(
@@ -467,41 +561,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       item.type = recommendation.studyType || item.type || 'study';
     }
     if (!item) {
-      item = {
-        id: uid('plan-item'),
-        subjectId: recommendation.subjectId,
-        topicId: recommendation.topicId,
-        subjectName: recommendation.subjectName,
-        topicName: recommendation.topicName,
-        type: recommendation.studyType || 'study',
-        plannedMinutes: recommendation.estimatedMinutes,
-        executedSeconds: 0,
-        status: 'planned',
-        sessionIds: [],
-        score: recommendation.score,
-        tier: recommendation.score >= 70 ? 'Alta' : recommendation.score >= 40 ? 'Média' : 'Baixa',
-        position: plan.items.length + 1,
-        statusIcon: 'target',
-        statusLabel: 'Recomendação inteligente',
-        prioritySnapshot: capturePlanPriority(recommendation, {
-          capturedAt: nowISO(),
-          algorithmVersion: state.algorithmVersions.recommendations,
-        }),
-        reason: (recommendation.reasons || []).join(' · '),
-        action: recommendation.action,
-        recommendedQuestions: 0,
-        originalDate: todayISO(),
-        currentDate: todayISO(),
-        rescheduleCount: 0,
-        skippedReason: null,
-        recommendationId: recommendation.recommendationId,
-        createdAt: nowISO(),
-      };
-      freezePlanExecution(item, {
-        date: todayISO(),
-        activeExamTags: state.examBlueprint?.activeExamTags || [],
-        capturedAt: nowISO(),
-      });
+      item = buildRecommendationPlanItem(recommendation, plan);
       plan.items.push(item);
       plan.plannedMinutes += item.plannedMinutes;
       plan.updatedAt = nowISO();
@@ -709,6 +769,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     rateRecommendationOutcome,
     startStudyRecommendation,
     executeStudyRecommendation,
+    swapRecommendationIntoPlan,
     recommendationController,
     replanController,
     calculateReplanPreview,

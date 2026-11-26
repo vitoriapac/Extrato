@@ -230,7 +230,8 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
       openStudyTimerFocus?.();
     },
     onRegisterSimulationResult: (item: any) => {
-      const existingSimId = item.linkedSimulationId || (item.origem === 'Simulado' ? item.id : null);
+      const existingSimId =
+        item.linkedSimulationId || (item.origem === 'Simulado' ? item.id : null);
       const existingSim = existingSimId
         ? (getState().simulados || []).find((s: any) => s.id === existingSimId)
         : null;
@@ -277,6 +278,8 @@ export function wirePracticeAndCatalogUi(deps: Record<string, any>) {
     getToggleBtn: () => document.getElementById('errorNotebookToggleBtn'),
     getDueAgendaMount: () => document.getElementById('errorNotebookDueAgenda'),
     getDueTodayMount: () => document.getElementById('errorNotebookDueToday'),
+    getDailyGoalMinutes: () =>
+      Math.round((Number(analytics.goalsBlueprintService?.metaHoursToday?.()) || 0) * 60),
     todayISO,
     nowISO,
     persistAndRender,

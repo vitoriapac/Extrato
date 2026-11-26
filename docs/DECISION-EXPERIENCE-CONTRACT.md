@@ -68,7 +68,7 @@ Na Projeção, o resultado observado dos simulados precede a meta. A faixa e a t
 
 ## Pacote 4 — plano, sugestão e execução
 
-A atividade de execução diária recebe o rótulo Próxima atividade do plano. Uma sugestão divergente explica que o plano pode ser mantido. Em Diagnóstico, o rótulo identifica sugestão fora do plano, sugestão opcional ou recomendação estratégica. O CTA de uma sugestão opcional usa tratamento secundário mesmo quando coincide com a atividade planejada.
+A atividade de execução diária recebe o rótulo Próxima atividade do plano. Uma sugestão divergente explica que o plano pode ser mantido. Quando o plano de hoje tem um bloco ainda não iniciado, a sugestão oferece Trocar no plano: uma confirmação nomeia o bloco que sai (menor prioridade, sem tempo registrado) e o que entra; o que sai fica com estado Substituída, e a troca pode ser desfeita. Em Diagnóstico, o rótulo identifica sugestão fora do plano, sugestão opcional ou recomendação estratégica. O CTA de uma sugestão opcional usa tratamento secundário mesmo quando coincide com a atividade planejada.
 
 Os handlers de início, cronômetro, prévia e aplicação permanecem os existentes. A apresentação não altera prioridade, capacidade ou persistência. A matriz Node cobre atividade alinhada, tipo divergente, plano vazio, cronômetro vinculado e cronômetro de outra atividade, além de preservar as proteções anteriores de plano antigo e elegibilidade.
 

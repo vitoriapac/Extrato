@@ -27,6 +27,7 @@ export function buildHeaderViewModel({
   planNumber = '',
   today = null,
   brand = 'Extrato de Estudos',
+  lastClose = null,
 }: any = {}) {
   const activeTopics = topics.filter((item: any) => !item.archived),
     completed = activeTopics.filter((item: any) => item.status === 'Concluído').length,
@@ -62,7 +63,10 @@ export function buildHeaderViewModel({
     ...flat,
     brand: { name: brand, kicker: 'Cada estudo soma' },
     readiness: {
-      value: flat.readinessValue,
+      // Headline = last weekly close; today's calculation is shown as a preview beside it.
+      value: lastClose && flat.readinessValue != null ? lastClose.score : flat.readinessValue,
+      preview: lastClose && flat.readinessValue != null ? flat.readinessValue : null,
+      closeDate: lastClose && flat.readinessValue != null ? lastClose.date : null,
       confidence: flat.readinessConfidence,
       availableFactors,
       totalFactors,

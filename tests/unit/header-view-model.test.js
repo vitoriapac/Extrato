@@ -61,7 +61,34 @@ test('Prontid√£o abaixo do m√≠nimo de fatores aparece como ausente em qualquer s
   assert.equal(displayReadinessValue(null), null);
 });
 
-test('Prontid„o sÛ com cobertura e consistÍncia n„o mostra nota (1s de estudo n„o vira 43/100)', () => {
-  assert.equal(displayReadinessValue({ value: 43, availableFactors: ['coverage', 'consistency'] }), null);
+test('ProntidÔøΩo sÔøΩ com cobertura e consistÔøΩncia nÔøΩo mostra nota (1s de estudo nÔøΩo vira 43/100)', () => {
+  assert.equal(
+    displayReadinessValue({ value: 43, availableFactors: ['coverage', 'consistency'] }),
+    null
+  );
   assert.equal(displayReadinessValue({ value: 43, availableFactors: ['coverage', 'mastery'] }), 43);
+});
+test('cabe√ßalho ancora a Prontid√£o no √∫ltimo fechamento e mostra o c√°lculo de agora como pr√©via', async () => {
+  const { lastWeeklyCloseReadiness } =
+    await import('../../src/application/analytics/readiness-history.js');
+  const snapshots = [
+    { date: '2026-11-08', score: 62, activeExamTags: [], captureKind: 'weekly-close' },
+    { date: '2026-11-22', score: 60, activeExamTags: [], captureKind: 'weekly-close' },
+    { date: '2026-11-24', score: 55, activeExamTags: [], captureKind: 'before-strategy-change' },
+  ];
+  const lastClose = lastWeeklyCloseReadiness(snapshots, [], '2026-11-26');
+  assert.deepEqual(lastClose, { score: 60, date: '2026-11-22' });
+  assert.equal(
+    lastWeeklyCloseReadiness(snapshots, [], '2026-12-20'),
+    null,
+    'fechamento velho n√£o ancora'
+  );
+  const readiness = { value: 49, availableFactors: ['a', 'b', 'c', 'd'], missingFactors: [] };
+  const model = buildHeaderViewModel({ readiness, lastClose });
+  assert.equal(model.readiness.value, 60);
+  assert.equal(model.readiness.preview, 49);
+  assert.equal(model.readiness.closeDate, '2026-11-22');
+  const noClose = buildHeaderViewModel({ readiness });
+  assert.equal(noClose.readiness.value, 49);
+  assert.equal(noClose.readiness.preview, null);
 });

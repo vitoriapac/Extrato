@@ -1,6 +1,4 @@
-import {
-  calculateReadinessScore,
-} from '../../domain/analytics/readiness-score.js';
+import { calculateReadinessScore } from '../../domain/analytics/readiness-score.js';
 import {
   isTopicInExamScope,
   isSimulationInExamScope,
@@ -30,7 +28,8 @@ export function createReadinessSnapshot({
   examPhase = null,
 }: any = {}) {
   const result = calculateReadinessScore(metrics, {
-    comparableSimulationsCount: metrics?.simulations?.count ?? metrics?.simulations?.comparableCount ?? 0,
+    comparableSimulationsCount:
+      metrics?.simulations?.count ?? metrics?.simulations?.comparableCount ?? 0,
   });
   if (!date || result.value == null) return null;
   return {
@@ -201,6 +200,23 @@ export function buildHistoricalReadinessMetrics({
  * A window without a snapshot is null, so the sparkline shows a gap instead of a drop to zero.
  * `current` (today's computed score) replaces the last window, so the line ends on the number shown beside it.
  */
+// The headline shows the last weekly close so it does not swing mid-week; older than 14 days it is stale.
+export function lastWeeklyCloseReadiness(
+  snapshots: Row[] = [],
+  activeExamTags: string[] = [],
+  today: string,
+  maxAgeDays = 14
+): { score: number; date: string } | null {
+  const oldest = addLocalDays(today, -maxAgeDays) as string;
+  const closes = readinessHistoryForScope(snapshots, activeExamTags, oldest, today).filter(
+    item =>
+      (!item.captureKind || item.captureKind === 'weekly-close') &&
+      Number.isFinite(Number(item.score))
+  );
+  const last = closes[closes.length - 1];
+  return last ? { score: Number(last.score), date: last.date } : null;
+}
+
 export function readinessWeeklyTrend(
   snapshots: Row[] = [],
   activeExamTags: string[] = [],

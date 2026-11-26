@@ -8,7 +8,9 @@
 import { h } from 'preact';
 import { mountPreact, unmountPreact } from '../preact-mount.js';
 import { ErrorNotebookView } from '../views/ErrorNotebookView.js';
-import { ErrorNotebookDueNotice } from '../components/ErrorNotebookDueNotice.js';
+import { TodayReviewQueueCard } from '../components/TodayReviewQueueCard.js';
+import { buildTodayReviewLoad } from '../../application/reviews/build-today-review-load.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import { ReviewQueueSummary } from '../components/ReviewQueueSummary.js';
 import { buildReviewQueueSummary } from '../../application/reviews/build-review-queue-summary.js';
 import { parseLocalDate } from '../../core/date-utils.js';
@@ -28,6 +30,7 @@ export interface ErrorNotebookControllerContext {
   getToggleBtn: () => HTMLElement | null;
   getDueAgendaMount: () => HTMLElement | null;
   getDueTodayMount: () => HTMLElement | null;
+  getDailyGoalMinutes?: () => number;
   todayISO: () => string;
   nowISO: () => string;
   persistAndRender: () => void;
@@ -171,18 +174,39 @@ export function createErrorNotebookController(context: ErrorNotebookControllerCo
       finalStretchSweep: isFinalStretchSweepActive(state),
     });
     const agenda = context.getDueAgendaMount();
-    if (agenda) mountComponent(h(ReviewQueueSummary, {
-      summary, onFlashcards: open,
-      onTopics: () => {
-        const target = agenda.ownerDocument.getElementById('agendaBody');
-        if (!target) return;
-        target.tabIndex = -1;
-        target.focus();
-        target.scrollIntoView({ block: 'start' });
-      },
-    }), agenda);
+    if (agenda)
+      mountComponent(
+        h(ReviewQueueSummary, {
+          summary,
+          onFlashcards: open,
+          onTopics: () => {
+            const target = agenda.ownerDocument.getElementById('agendaBody');
+            if (!target) return;
+            target.tabIndex = -1;
+            target.focus();
+            target.scrollIntoView({ block: 'start' });
+          },
+        }),
+        agenda
+      );
     const today = context.getDueTodayMount();
-    if (today) mountComponent(h(ErrorNotebookDueNotice, { dueCount: summary.flashcardsDue, onOpen: open }), today);
+    if (today)
+      mountComponent(
+        h(TodayReviewQueueCard, {
+          load: buildTodayReviewLoad({
+            reviews: state.reviewAgenda || [],
+            flashcards: state.errorFlashcards || [],
+            today: context.todayISO(),
+            dailyGoalMinutes: context.getDailyGoalMinutes?.() || 0,
+            budgetPct: state.metas?.orcamentoRevisaoPct ?? null,
+            finalStretchSweep: isFinalStretchSweepActive(state),
+          }),
+          formatMinutes: formatPlanMinutes,
+          onFlashcards: open,
+          onTopics: () => context.activateTab?.('agenda'),
+        }),
+        today
+      );
   }
 
   return {

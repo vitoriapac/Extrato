@@ -11,6 +11,8 @@ import { buildStudyCandidates } from '../build-study-candidates.js';
 import { buildStudyPlan } from '../build-study-plan.js';
 import { recommendStudy } from '../recommend-study.js';
 import { firstActivityDate } from '../selectors/first-activity-date.js';
+import { buildSyllabusTriage } from '../../domain/planning/syllabus-triage.js';
+import { evaluateWeeklyReviewBudget } from '../../domain/reviews/mixed-review-batch.js';
 
 export interface StudyCandidateServiceDependencies {
   getState: () => AppState;
@@ -227,19 +229,24 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
         ),
       ])
     );
-    return buildStudyCandidates({
-      priorities,
-      topics,
-      retentions,
-      reviewHealths,
-      blueprint: state.examBlueprint.subjects,
-      sessions: state.studySessions,
-      today: todayISO(),
-      examProximity: state.examDate ? proximidadeProvaScore() : null,
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-      exams: state.exams,
-      examQuestions: state.examQuestions,
-    }).map(item => ({ ...item, accuracyTarget: subjectAccuracyTarget(item.subjectId) }));
+    return (
+      buildStudyCandidates({
+        priorities,
+        topics,
+        retentions,
+        reviewHealths,
+        blueprint: state.examBlueprint.subjects,
+        sessions: state.studySessions,
+        today: todayISO(),
+        examProximity: state.examDate ? proximidadeProvaScore() : null,
+        activeExamTags: state.examBlueprint.activeExamTags || [],
+        exams: state.exams,
+        examQuestions: state.examQuestions,
+      })
+        // Topics left out by the syllabus triage leave planning and suggestions, not the analytics.
+        .filter(item => !(item.topicId && getTopicById(item.topicId)?.topic?.outOfStrategy))
+        .map(item => ({ ...item, accuracyTarget: subjectAccuracyTarget(item.subjectId) }))
+    );
   }
 
   function intelligenceCandidates() {
@@ -451,5 +458,42 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
     computeRitmo,
     revisoesAtrasadas,
     computeAlertasInteligentes,
+    syllabusTriage,
   };
+
+  function syllabusTriage() {
+    const state = getState();
+    const days = state.examDate ? diasParaRevisao(state.examDate) : null;
+    const weeks = days === null ? 0 : Math.max(0, Math.ceil(days / 7));
+    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce<number>(
+      (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
+      0
+    );
+    const candidates = resolveStudyPlanCandidates();
+    const plan = buildStudyPlan({
+      topics: candidates,
+      weeklyAvailableMinutes,
+      weeksUntilExam: weeks,
+    });
+    // The returned maintenanceMinutes is what fit in the plan; the full need is inside weeklyNeedMinutes.
+    const planMaintenanceMinutes =
+      plan.weeklyNeedMinutes != null && weeks > 0
+        ? Math.max(0, plan.weeklyNeedMinutes - Math.ceil(plan.remainingMinutes / weeks))
+        : 0;
+    // Maintenance takes the same review budget the Agenda uses; the rest goes to new content.
+    const reviewBudget = evaluateWeeklyReviewBudget({
+      plannedWeeklyMinutes: weeklyAvailableMinutes,
+      budgetPct: state.metas.orcamentoRevisaoPct ?? null,
+    });
+    return {
+      ...buildSyllabusTriage({
+        candidates,
+        weeklyAvailableMinutes,
+        weeksUntilExam: weeks,
+        maintenanceMinutes: reviewBudget.budgetMinutes,
+      }),
+      reviewBudgetPct: reviewBudget.budgetPct,
+      planMaintenanceMinutes,
+    };
+  }
 }

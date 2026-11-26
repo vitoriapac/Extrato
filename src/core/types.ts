@@ -34,6 +34,9 @@ export interface Topic {
   status: TopicStatus;
   archived?: boolean;
   archivedAt?: string | null;
+  /** Left out by the syllabus triage: out of planning and suggestions, still counted in analytics. */
+  outOfStrategy?: boolean;
+  outOfStrategyAt?: string | null;
   notes?: string;
   tags?: string[];
   difficulty?: TopicDifficulty;

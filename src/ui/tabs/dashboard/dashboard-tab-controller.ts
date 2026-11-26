@@ -34,8 +34,15 @@ import { buildCockpitSidebarViewModel } from '../../../application/analytics/bui
 import { buildWeeklyPerformanceBrief } from '../../../application/performance/build-weekly-performance-brief.js';
 import { createDashboardHeatmapController } from './dashboard-heatmap-controller.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
-import { readinessWeeklyTrend } from '../../../application/analytics/readiness-history.js';
-import { editalPhaseLabel, resolveExamPhase, withPreEdital } from '../../../domain/planning/adaptive-planning.js';
+import {
+  lastWeeklyCloseReadiness,
+  readinessWeeklyTrend,
+} from '../../../application/analytics/readiness-history.js';
+import {
+  editalPhaseLabel,
+  resolveExamPhase,
+  withPreEdital,
+} from '../../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
@@ -274,7 +281,6 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (performanceGrid) {
       (performanceGrid as HTMLElement).hidden = !hasConfigured;
     }
-
 
     const reviewLoadSlot = doc.getElementById('cockpitReviewLoadMount');
     if (reviewLoadSlot) (reviewLoadSlot as HTMLElement).hidden = !hasConfigured;
@@ -619,13 +625,18 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       examDate: state.examDate || '',
       planNumber: doc.getElementById('planNumber')?.textContent || '',
       today,
+      lastClose: lastWeeklyCloseReadiness(
+        state.readinessSnapshots || [],
+        state.examBlueprint?.activeExamTags || [],
+        today
+      ),
     });
     const readinessTrend = readinessWeeklyTrend(
       state.readinessSnapshots || [],
       state.examBlueprint?.activeExamTags || [],
       today,
       8,
-      readiness.value
+      model.readiness.value
     );
     renderHeroHeader({ ...model, readinessTrend }, { document: doc });
     renderCompactHeader(model, { document: doc, formatDate: formatDatePt });

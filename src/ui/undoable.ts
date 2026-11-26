@@ -17,7 +17,11 @@ export function configureUndo(value: UndoDeps | null) {
  * Deletes immediately and offers "Desfazer" instead of asking "Tem certeza?" first (F6).
  * `action` mutates the state; this saves, renders and keeps the undo until the notice closes.
  */
-export function runUndoable(message: string, action: () => void) {
+export function runUndoable(
+  message: string,
+  action: () => void,
+  undoneMessage = 'Exclusão desfeita.'
+) {
   if (!deps) {
     action();
     return;
@@ -31,6 +35,6 @@ export function runUndoable(message: string, action: () => void) {
       return;
     }
     persistAndRender();
-    showToast('Exclusão desfeita.');
+    showToast(undoneMessage);
   });
 }

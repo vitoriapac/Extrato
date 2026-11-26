@@ -17,7 +17,13 @@ function renderReadinessSub(readiness: Record<string, any>) {
         ? 'Ainda sem evidência suficiente'
         : 'Aguardando evidências'
       : `Evidência do índice: ${String(readiness.confidence).toLowerCase()}`;
-  if (!missing.length) return `${lead} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
+  const [, mm, dd] = String(readiness.closeDate || '').split('-');
+  const close =
+    readiness.preview != null && dd
+      ? `<span class="readiness-close-note">Fechamento de ${dd}/${mm} · agora ${readiness.preview} (prévia)</span> · `
+      : '';
+  if (!missing.length)
+    return `${close}${lead} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
   const actions = missing
     .filter(key => READINESS_FACTOR_ACTIONS[key])
     .map(
@@ -26,9 +32,12 @@ function renderReadinessSub(readiness: Record<string, any>) {
     )
     .join('');
   // Without a number the figure already says how many are missing.
-  const count = readiness.value == null ? '' : ` · faltam ${missing.length} de ${readiness.totalFactors} fatores`;
+  const count =
+    readiness.value == null
+      ? ''
+      : ` · faltam ${missing.length} de ${readiness.totalFactors} fatores`;
   // Folded so the first screen keeps the next action in view; each factor stays one click away.
-  return `<span>${lead}${count}</span><details class="readiness-factors"><summary>Como liberar os fatores</summary><ul class="readiness-factor-actions">${actions}</ul></details>`;
+  return `${close}<span>${lead}${count}</span><details class="readiness-factors"><summary>Como liberar os fatores</summary><ul class="readiness-factor-actions">${actions}</ul></details>`;
 }
 
 export function renderHeroHeader(model: Record<string, any>, { document }: any) {
@@ -42,7 +51,10 @@ export function renderHeroHeader(model: Record<string, any>, { document }: any) 
       ? `<span class="balance-missing">faltam ${missing} de ${readiness.totalFactors} fatores</span>`
       : `${readiness.value ?? '—'}<span>/100</span>`;
   // Amber is reserved for attention: only below the on-track band.
-  figure.classList?.toggle('is-on-track', readiness.value != null && readiness.value >= READINESS_ON_TRACK_MIN);
+  figure.classList?.toggle(
+    'is-on-track',
+    readiness.value != null && readiness.value >= READINESS_ON_TRACK_MIN
+  );
   figure.classList?.toggle('is-empty', readiness.value == null);
   const ring = document.getElementById('balanceRing');
   if (ring)

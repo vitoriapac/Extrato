@@ -8,7 +8,9 @@ function BadgeIcon({ severity }: { severity: string }): JSX.Element {
   return (
     <span
       class="badge-icon-slot"
-      dangerouslySetInnerHTML={{ __html: renderBadgeIcon(ALERT_SEVERITY_VARIANT[severity] || 'info') }}
+      dangerouslySetInnerHTML={{
+        __html: renderBadgeIcon(ALERT_SEVERITY_VARIANT[severity] || 'info'),
+      }}
     />
   );
 }
@@ -20,8 +22,14 @@ export function AlertListItem({ alert }: { alert: AnyRecord }): JSX.Element {
         <BadgeIcon severity={alert.severity} />
       </span>
       <span>
-        <strong>{alert.reason || alert.texto}</strong> <small>{alert.recommendedAction || ''}</small>
+        <strong>{alert.reason || alert.texto}</strong>{' '}
+        <small>{alert.recommendedAction || ''}</small>
       </span>
+      {alert.action && (
+        <button type="button" class="btn tonal small" data-action={alert.action}>
+          {alert.actionLabel}
+        </button>
+      )}
       {alert.severity !== 'ok' && (
         <button
           type="button"
@@ -84,7 +92,9 @@ export function WeeklyCloseView({
   const adherence = weekly.adherence?.model?.summary?.temporalAdherence;
   const accuracy = weekly.questions?.accuracy;
   const range =
-    period?.start && period?.end ? ` · ${formatDate(period.start)} a ${formatDate(period.end)}` : '';
+    period?.start && period?.end
+      ? ` · ${formatDate(period.start)} a ${formatDate(period.end)}`
+      : '';
   return (
     <>
       <div class="metas-close-metrics">
@@ -102,8 +112,8 @@ export function WeeklyCloseView({
         </div>
       </div>
       <p>
-        Resumo do fechamento{range}. Consulte o fechamento para interpretar sinais e decidir a próxima
-        semana.
+        Resumo do fechamento{range}. Consulte o fechamento para interpretar sinais e decidir a
+        próxima semana.
       </p>
     </>
   );

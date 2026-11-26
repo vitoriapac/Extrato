@@ -207,6 +207,7 @@ export function buildDelegatedActionHandlers(
     undoPlanAdjustment: (...args: any[]) => c.recommendations?.undoPlanAdjustment?.(...args),
     executeStudyRecommendation: (...args: any[]) =>
       c.recommendations?.executeStudyRecommendation?.(...args),
+    swapRecommendationIntoPlan: (id: string) => c.recommendations?.swapRecommendationIntoPlan?.(id),
     dismissStudyRecommendation: (...args: any[]) =>
       c.recommendations?.dismissStudyRecommendation?.(...args),
     markRecommendationNotUseful: (...args: any[]) =>

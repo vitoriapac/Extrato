@@ -33,6 +33,8 @@ export function createDiagnosticAlert({
   recommendedAction,
   createdAt = null,
   id,
+  action = null,
+  actionLabel = null,
 }: Record<string, any> = {}) {
   if (!ALERT_TYPES.includes(type)) throw new TypeError('Tipo de alerta inválido.');
   if (!reason || !recommendedAction) throw new TypeError('Alerta exige motivo e ação recomendada.');
@@ -51,6 +53,8 @@ export function createDiagnosticAlert({
     nivel: view.level,
     icon: view.icon,
     texto: String(reason),
+    // Optional in-place action (a data-action the UI wires), e.g. the syllabus triage.
+    ...(action && actionLabel ? { action: String(action), actionLabel: String(actionLabel) } : {}),
   };
 }
 
@@ -154,7 +158,10 @@ export function buildIntelligentAlerts({
           'A necessidade semanal excede a capacidade em ' +
           hoursAndMinutes(weeklyBalanceMinutes) +
           '.',
-        recommendedAction: 'Aumente a disponibilidade ou reduza a carga antes da prova.',
+        recommendedAction:
+          'Faça a triagem do edital: veja o que cabe até a prova e decida o que deixar de fora.',
+        action: 'open-syllabus-triage',
+        actionLabel: 'Fazer a triagem',
       })
     );
   if (Number.isFinite(weeklyGoalGap) && weeklyGoalGap > 0)
