@@ -8,6 +8,9 @@ import {
   resolveStudyEligibility,
 } from '../domain/study-eligibility.js';
 
+// Same block the review queue and the recovery mission use.
+const REVIEW_BLOCK_MINUTES = 15;
+
 const positive = (value: unknown) =>
   Number.isFinite(Number(value)) && Number(value) > 0 ? Math.round(Number(value)) : 0;
 
@@ -47,9 +50,22 @@ export function buildStudyPlan({
   const remainingMinutes = active
     .filter(item => !item.covered)
     .reduce((sum, item) => sum + effort(item), 0);
+  // Weekly maintenance: fragile topics (low mastery) keep their weekly session; the others count only
+  // when a review is actually due (overdue or today), one review block each. Spaced review does not
+  // revisit every covered topic every week, so retention signals alone wait for the review to come due.
+  // shortcut: reviews due later this week are not counted until they come due; pass the agenda if that matters.
   const maintenanceMinutes = configured
     .filter(item => item.covered)
-    .reduce((sum, item) => sum + effort(item), 0);
+    .reduce(
+      (sum, item) =>
+        sum +
+        (item.masteryGap != null && item.masteryGap > 40
+          ? effort(item)
+          : Number(item.reviewUrgency) >= 40
+            ? REVIEW_BLOCK_MINUTES
+            : 0),
+      0
+    );
   const weeklyNeedMinutes =
     weeks > 0 ? Math.ceil(remainingMinutes / weeks) + maintenanceMinutes : null;
   const weeklyBalanceMinutes = weeklyNeedMinutes === null ? null : availability - weeklyNeedMinutes;

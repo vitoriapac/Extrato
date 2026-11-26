@@ -5,20 +5,32 @@ import { buildDailyPlanProposal } from '../../src/application/planning/distribut
 
 test('prazo longo produz bloco distribuível sem ultrapassar capacidade ou esforço', () => {
   const weekly = buildStudyPlan({
-    weeklyAvailableMinutes: 840, weeksUntilExam: 26,
+    weeklyAvailableMinutes: 840,
+    weeksUntilExam: 26,
     topics: [{ id: 't', topicId: 't', subjectId: 's', estimatedMinutes: 75 }],
   });
   assert.equal(weekly.weeklyNeedMinutes, 3);
   assert.equal(weekly.weeklyPlannedMinutes, 15);
-  const daily = buildDailyPlanProposal({ studyPlan: { ...weekly, id: 'w' }, days: [{ date: '2026-11-06', availableMinutes: 120 }] });
+  const daily = buildDailyPlanProposal({
+    studyPlan: { ...weekly, id: 'w' },
+    days: [{ date: '2026-11-06', availableMinutes: 120 }],
+  });
   assert.equal(daily.plannedMinutes, weekly.weeklyPlannedMinutes);
   assert.equal(daily.unallocatedMinutes, 0);
 });
 
 test('carga e capacidade menores que 15 minutos não são aumentadas', () => {
-  const short = buildStudyPlan({ weeklyAvailableMinutes: 840, weeksUntilExam: 26, topics: [{ id: 't', estimatedMinutes: 7 }] });
+  const short = buildStudyPlan({
+    weeklyAvailableMinutes: 840,
+    weeksUntilExam: 26,
+    topics: [{ id: 't', estimatedMinutes: 7 }],
+  });
   assert.equal(short.weeklyPlannedMinutes, 7);
-  const limited = buildStudyPlan({ weeklyAvailableMinutes: 8, weeksUntilExam: 26, topics: [{ id: 't', estimatedMinutes: 75 }] });
+  const limited = buildStudyPlan({
+    weeklyAvailableMinutes: 8,
+    weeksUntilExam: 26,
+    topics: [{ id: 't', estimatedMinutes: 75 }],
+  });
   assert.equal(limited.weeklyPlannedMinutes, 7);
 });
 
@@ -131,4 +143,25 @@ test('não cria blocos semanais menores que 15 minutos quando o tópico é maior
     ],
   });
   assert.equal(short.items.find(item => item.id === 'curto')?.minutes, 10);
+});
+
+test('manutenção semanal conta revisões vencendo e tópicos frágeis, não todo tópico concluído', () => {
+  const covered = (id, extra) => ({
+    id,
+    subjectId: 's1',
+    covered: true,
+    estimatedMinutes: 60,
+    ...extra,
+  });
+  const plan = buildStudyPlan({
+    weeklyAvailableMinutes: 600,
+    weeksUntilExam: 4,
+    topics: [
+      covered('so-retencao', { retentionRisk: 70 }),
+      covered('revisao-vencida', { retentionRisk: 70, reviewUrgency: 52 }),
+      covered('fragil', { masteryGap: 55 }),
+    ],
+  });
+  // revisão vencida = 1 bloco de 15 min; frágil mantém a sessão semanal (60 min); só retenção espera a revisão.
+  assert.equal(plan.weeklyNeedMinutes, 75);
 });
