@@ -8,8 +8,9 @@ export function buildQuestionImportTemplate(today: string) {
   const [year, month, day] = String(today).split('-');
   const date = `${day}/${month}/${year}`;
   return (
-    'Data,Disciplina,Tópico,Banca,Resolvidas,Acertos,Erros,Tempo,Refeita\n' +
-    `${date},Português,Interpretação de Texto,Cesgranrio,15,13,2,30,não\n` +
-    `${date},Matemática,Porcentagem,FGV,10,8,2,25,sim\n`
+    'Data,Disciplina,Tópico,Banca,Resolvidas,Acertos,Erros,Em branco,Tempo,Refeita\n' +
+    `${date},Português,Interpretação de Texto,Cesgranrio,15,13,2,0,30,não\n` +
+    `${date},Matemática,Porcentagem,FGV,10,8,2,0,25,sim\n` +
+    `${date},Direito Constitucional,Direitos fundamentais,Cebraspe,20,14,3,3,30,não\n`
   );
 }

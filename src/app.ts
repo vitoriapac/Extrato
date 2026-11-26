@@ -36,6 +36,7 @@ import { mountAppFooter } from './ui/shell/mount-app-footer.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
 import { configureUndo } from './ui/undoable.js';
+import { createReviewReminderController } from './ui/controllers/review-reminder-controller.js';
 import { createErrorBoundaryController } from './ui/controllers/error-boundary-controller.js';
 import { watchDailyExecutionDate } from './ui/controllers/daily-execution-controller.js';
 import { createApplicationRenderer } from './ui/renderers/application-renderer.js';
@@ -144,6 +145,13 @@ const dialogFeedback = createDialogFeedback({ document, modalController });
 const flashSaved = (durationMs?: number) => dialogFeedback.flashSaved(durationMs);
 const showToast = (message: string, durationMs?: number) =>
   dialogFeedback.showToast(message, durationMs);
+createReviewReminderController({
+  document,
+  window,
+  storage: localStorage,
+  getState: () => state,
+  showToast,
+}).init();
 configureUndo({
   getState: () => state,
   persistAndRender: () => persistAndRender(),

@@ -75,14 +75,26 @@ export function createTabRouter(options: TabRouterOptions) {
     onHashRewrite?.();
   }
 
+  // Atalho do app instalado ("Registrar questões"): cai direto no campo do registro expresso.
+  function focusQuickQuestionEntry(attempt = 0): void {
+    if (!/^#questoes\/registrar(?:[/?]|$)/.test(window.location.hash)) return;
+    const input = document.getElementById('quickQuestionShorthandInput') as HTMLElement | null;
+    if (input) {
+      input.scrollIntoView?.({ block: 'center' });
+      input.focus();
+    } else if (attempt < 10) setTimeout(() => focusQuickQuestionEntry(attempt + 1), 100);
+  }
+
   function activateInitialTab(): void {
     redirectLegacyHash();
     activateTab(tabFromHash(window.location.hash) || 'dashboard', false);
+    focusQuickQuestionEntry();
     // Links internos e hash editado na barra trocam de aba sem recarregar.
     window.addEventListener?.('hashchange', () => {
       redirectLegacyHash();
       const tab = tabFromHash(window.location.hash);
       if (tab && tab !== activeTabName()) activateTab(tab, false);
+      focusQuickQuestionEntry();
     });
   }
 

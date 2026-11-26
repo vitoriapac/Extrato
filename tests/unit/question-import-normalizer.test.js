@@ -256,8 +256,9 @@ test('modelo CSV para download é datado com o dia informado e passa na importa�
     await import('../../src/features/question-import/question-import-template.js');
   assert.match(QUESTION_IMPORT_TEMPLATE_FILE_NAME, /\.csv$/);
   const records = normalizeQuestionImportRows(buildQuestionImportTemplate('2026-03-07'), opts);
-  assert.equal(records.length, 2);
+  assert.equal(records.length, 3);
   assert.ok(records.every(record => record.date === '2026-03-07'));
+  assert.equal(records[2].blank, 3, 'o modelo mostra a coluna de branco (Cebraspe)');
 });
 
 test('banca, tempo e refeitas são importados e separam blocos de bancas diferentes', () => {
@@ -277,4 +278,32 @@ test('banca, tempo e refeitas são importados e separam blocos de bancas diferen
   assert.equal(byKey['FGV|false'].minutes, 2);
   assert.equal(byKey['FGV|true'].resolved, 1);
   assert.equal(byKey['null|false'].minutes, null);
+});
+
+test('importação traz questões em branco: coluna de contagem (QC) e resultado por questão (TEC)', () => {
+  const qc = normalizeQuestionImportRows(
+    'Matéria;Assunto;Data;Resolvidas;Acertos;Erros;Em branco\nDireito Constitucional;Direitos fundamentais;10/10/2026;40;25;10;5',
+    opts
+  );
+  assert.equal(qc[0].resolved, 40);
+  assert.equal(qc[0].correct, 25);
+  assert.equal(qc[0].blank, 5);
+
+  const tec = normalizeQuestionImportRows(
+    'Disciplina,Assunto,Data,Resultado\n' +
+      'Português,Crase,11/10/2026,Certo\n' +
+      'Português,Crase,11/10/2026,Errado\n' +
+      'Português,Crase,11/10/2026,Em branco',
+    opts
+  );
+  assert.equal(tec.length, 1, 'linhas do mesmo dia e tópico são agregadas');
+  assert.equal(tec[0].resolved, 3);
+  assert.equal(tec[0].correct, 1);
+  assert.equal(tec[0].blank, 1);
+
+  const semColuna = normalizeQuestionImportRows(
+    'Disciplina,Assunto,Data,Resolvidas,Acertos\nPortuguês,Crase,11/10/2026,10,7',
+    opts
+  );
+  assert.equal(semColuna[0].blank, null, 'sem coluna de branco, fica não informado');
 });

@@ -171,7 +171,7 @@ Questões/Simulado → Resultado → Replanejamento**
 98. Planejamento automático da reta final. [Concluído — Fase 2]
 99. Resumo mensal permanente.
 100. Linha do tempo da preparação.
-101. Ler questões em branco na importação do QConcursos/TEC (hoje entram como não informadas).
+101. Ler questões em branco na importação do QConcursos/TEC. [Concluído — coluna de branco e resultado "Em branco"]
 102. Mostrar o acerto quando arrisca (certo/errado) também no modo essencial; hoje ele fica no cartão avançado Banca, ritmo e refeitas.
 103. Abrir a dobra Adicionar evidências quando o aviso de histórico vazio leva até ela.
 

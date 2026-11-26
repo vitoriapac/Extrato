@@ -45,8 +45,8 @@
     {
       "name": "Registrar questões",
       "short_name": "Questões",
-      "description": "Abrir o registro de questões",
-      "url": "/app#questoes",
+      "description": "Lançar questões resolvidas em segundos",
+      "url": "/app#questoes/registrar",
       "icons": [
         {
           "src": "icons/icon-192.png",

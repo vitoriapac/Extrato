@@ -67,7 +67,11 @@ self.addEventListener('activate', event =>
     caches
       .keys()
       .then(keys =>
-        Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
+        Promise.all(
+          keys
+            .filter(key => key !== CACHE_NAME && key !== REMINDER_CACHE)
+            .map(key => caches.delete(key))
+        )
       )
       .then(() => self.clients.claim())
   )
@@ -97,6 +101,71 @@ self.addEventListener('fetch', event => {
         return response;
       });
       return cached ? (event.waitUntil(network.catch(() => null)), cached) : network;
+    })
+  );
+});
+
+// Local review reminder (Periodic Background Sync, Chrome/Edge with the app installed). The page
+// stores only due dates; countDue and reminderText mirror src/domain/reviews/review-reminder.ts.
+const REMINDER_CACHE = 'extrato-reminder';
+const REMINDER_TAG = 'extrato-review-reminder';
+const reminderKey = name => new URL(name, self.registration.scope).href;
+
+function localToday() {
+  const now = new Date();
+  const pad = value => String(value).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+function countDue(digest, today) {
+  return {
+    reviews: (digest.reviewDates || []).filter(date => date <= today).length,
+    flashcards: (digest.flashcardDates || []).filter(date => date <= today).length,
+  };
+}
+
+function reminderText({ reviews, flashcards }) {
+  if (!reviews && !flashcards) return null;
+  const parts = [
+    reviews ? `${reviews} ${reviews === 1 ? 'revisão de tópico' : 'revisões de tópico'}` : '',
+    flashcards ? `${flashcards} ${flashcards === 1 ? 'flashcard' : 'flashcards'}` : '',
+  ].filter(Boolean);
+  return `${parts.join(' e ')} para hoje. Abra a Revisão de hoje no Extrato.`;
+}
+
+async function remindDueReviews() {
+  const cache = await caches.open(REMINDER_CACHE);
+  const [digestResponse, lastResponse] = await Promise.all([
+    cache.match(reminderKey('__reminder-digest')),
+    cache.match(reminderKey('__reminder-last')),
+  ]);
+  if (!digestResponse) return;
+  const today = localToday();
+  // At most one notice a day.
+  if (lastResponse && (await lastResponse.text()) === today) return;
+  const body = reminderText(countDue(await digestResponse.json(), today));
+  if (!body) return;
+  await self.registration.showNotification('Revisão de hoje', {
+    body,
+    tag: REMINDER_TAG,
+    icon: 'icons/icon-192.png',
+    data: { url: './app#hoje' },
+  });
+  await cache.put(reminderKey('__reminder-last'), new Response(today));
+}
+
+self.addEventListener('periodicsync', event => {
+  if (event.tag === REMINDER_TAG) event.waitUntil(remindDueReviews());
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || './app#hoje', self.location.href).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      const open = clients.find(client => new URL(client.url).pathname.startsWith('/app'));
+      if (open) return open.navigate(url).then(client => (client || open).focus());
+      return self.clients.openWindow(url);
     })
   );
 });

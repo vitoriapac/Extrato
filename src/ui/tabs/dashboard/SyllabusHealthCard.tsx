@@ -31,6 +31,8 @@ export function SyllabusHealthCard({
               <>
                 {' · '}
                 <span class="text-amber font-medium">{attentionCount} abaixo da meta</span>{' (mín. 10 questões em 30 dias)'}
+                {subjects.some(subject => subject.pointsAtStake != null) &&
+                  ', das que deixam mais pontos na prova para as que deixam menos'}
               </>
             )}
           </p>
@@ -82,6 +84,12 @@ export function SyllabusHealthCard({
                           {subject.accuracySource === 'simulations' ? ' em simulados' : ''}
                         </span>{' '}
                         <span class="text-content-secondary font-normal">(meta {formatDecimal(subject.target)}%)</span>
+                        {isAttention && subject.pointsAtStake != null && subject.pointsAtStake > 0 && (
+                          <span class="text-content-primary font-medium">
+                            {' '}
+                            · ≈ {formatDecimal(subject.pointsAtStake)} pt em jogo
+                          </span>
+                        )}
                       </>
                     ) : (
                       <span class="text-content-secondary">Sem questões registradas</span>

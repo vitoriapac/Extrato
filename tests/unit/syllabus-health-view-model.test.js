@@ -34,7 +34,7 @@ test('buildSyllabusHealthViewModel: calcula progresso empilhado e acerto por dis
     ],
     questoes: [
       { subjectId: 'sub-admin', resolved: 40, correct: 34 }, // 85%
-      { subjectId: 'sub-rlm', resolved: 20, correct: 12 },   // 60%
+      { subjectId: 'sub-rlm', resolved: 20, correct: 12 }, // 60%
     ],
     metas: {
       metaAprovacao: 80,
@@ -99,4 +99,29 @@ test('buildSyllabusHealthViewModel: "abaixo da meta" exige 10 questões, como no
   assert.equal(by.a.status, 'attention');
   assert.equal(by.b.status, 'insufficient');
   assert.equal(by.b.accuracy, 22.2);
+});
+
+test('buildSyllabusHealthViewModel: abaixo da meta ordena por pontos em jogo, não por distância', () => {
+  const subject = id => ({ id, name: id, topics: [{ id: id + '-t', status: 'Concluído' }] });
+  const state = {
+    subjects: [subject('ingles'), subject('especificos')],
+    questoes: [
+      { subjectId: 'ingles', resolved: 20, correct: 10 }, // 50%: 30 p.p. abaixo
+      { subjectId: 'especificos', resolved: 20, correct: 14 }, // 70%: 10 p.p. abaixo
+    ],
+    metas: { metaAprovacao: 80 },
+    examBlueprint: {
+      subjects: [
+        { subjectId: 'ingles', expectedQuestions: 5, questionWeight: 1 },
+        { subjectId: 'especificos', expectedQuestions: 30, questionWeight: 1.5 },
+      ],
+    },
+  };
+  const { subjects } = buildSyllabusHealthViewModel(state);
+  assert.deepEqual(
+    subjects.map(s => s.id),
+    ['especificos', 'ingles']
+  );
+  assert.equal(subjects[0].pointsAtStake, 4.5); // 45 pts × 10%
+  assert.equal(subjects[1].pointsAtStake, 1.5); // 5 pts × 30%
 });

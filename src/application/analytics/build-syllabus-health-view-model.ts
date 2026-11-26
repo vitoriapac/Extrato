@@ -11,6 +11,8 @@ export interface SyllabusHealthSubject {
   accuracySource: 'questions' | 'simulations' | null;
   target: number;
   gap: number | null;
+  /** Questões esperadas × peso × distância até a meta: pontos que a disciplina deixa na mesa. */
+  pointsAtStake: number | null;
   status: 'ok' | 'attention' | 'insufficient';
 }
 
@@ -47,6 +49,16 @@ export function buildSyllabusHealthViewModel(state: any, today?: string): Syllab
     accuracyMap.set(item.subjectId, item);
   });
 
+  // Mesmo peso dos alertas: questões esperadas × peso da questão, do blueprint.
+  const examWeight = new Map<string, number>(
+    (state.examBlueprint?.subjects || [])
+      .filter((row: { subjectId?: string }) => row.subjectId)
+      .map((row: { subjectId: string; expectedQuestions?: number; questionWeight?: number }) => [
+        row.subjectId,
+        (Number(row.expectedQuestions) || 0) * (Number(row.questionWeight) || 1),
+      ])
+  );
+
   const subjects: SyllabusHealthSubject[] = activeSubjects.map((s: any) => {
     const topics = Array.isArray(s.topics) ? s.topics : [];
     const totalTopics = topics.length;
@@ -68,6 +80,9 @@ export function buildSyllabusHealthViewModel(state: any, today?: string): Syllab
       accuracy == null ? null : acc?.personal?.accuracy != null ? 'questions' : 'simulations';
     const target = acc ? acc.target : (state.metas?.metaAprovacao ?? 80);
     const gap = accuracy != null ? Math.round((accuracy - target) * 10) / 10 : null;
+    const weight = examWeight.get(s.id) || 0;
+    const pointsAtStake =
+      gap != null && weight > 0 ? Math.round(Math.max(0, -gap) * weight) / 100 : null;
 
     // Mesmo critério do Desempenho: abaixo da meta só com amostra mínima (build-subject-accuracy).
     // Só questões contam, como em Desempenho; acerto vindo de simulados não entra na contagem.
@@ -75,10 +90,10 @@ export function buildSyllabusHealthViewModel(state: any, today?: string): Syllab
       accuracySource !== 'questions'
         ? 'insufficient'
         : sample?.state === 'below_target'
-        ? 'attention'
-        : sample?.state === 'on_target'
-          ? 'ok'
-          : 'insufficient';
+          ? 'attention'
+          : sample?.state === 'on_target'
+            ? 'ok'
+            : 'insufficient';
 
     return {
       id: s.id,
@@ -89,15 +104,18 @@ export function buildSyllabusHealthViewModel(state: any, today?: string): Syllab
       accuracySource,
       target,
       gap,
+      pointsAtStake,
       status,
     };
   });
 
-  // Atenção primeiro, da mais distante da meta para a mais próxima; depois por conclusão.
+  // Atenção primeiro, de mais pontos em jogo para menos (sem peso no edital, pela distância da
+  // meta); depois por conclusão.
   subjects.sort((a, b) => {
     if (a.status === 'attention' && b.status !== 'attention') return -1;
     if (b.status === 'attention' && a.status !== 'attention') return 1;
-    if (a.status === 'attention' && b.status === 'attention') return (a.gap ?? 0) - (b.gap ?? 0);
+    if (a.status === 'attention' && b.status === 'attention')
+      return (b.pointsAtStake ?? -1) - (a.pointsAtStake ?? -1) || (a.gap ?? 0) - (b.gap ?? 0);
     return b.concludedPct - a.concludedPct;
   });
 
