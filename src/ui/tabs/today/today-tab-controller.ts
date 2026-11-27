@@ -487,15 +487,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
   function applyDailyFocusVisibility(active: boolean): void {
     if (!doc) return;
-    const secondaryIds = [
-      'todayWeeklyRhythmSlot',
-      'todayExecutionSummarySlot',
-      'todayLearningJournalMount',
-    ];
-    for (const id of secondaryIds) {
-      const el = doc.getElementById(id) as HTMLElement | null;
-      if (el) el.hidden = active;
-    }
+    // CSS hides the secondary blocks (resumo, Atenção, metas, mais detalhes), so
+    // re-renders that toggle `hidden` on them cannot bring them back while focus is on.
+    doc.getElementById('panel-hoje')?.toggleAttribute('data-daily-focus-active', active);
   }
 
   function renderExecutionModeSwitch(): void {
@@ -709,8 +703,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     `;
 
     container.innerHTML = `
-      ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} atrasados de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
       ${listaHtml}
+      ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} atrasados de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
       ${subjectsDistributionHtml}
       ${executionHint}
       <div class="plano-meta">

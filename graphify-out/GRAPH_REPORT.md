@@ -1,17 +1,17 @@
 # Graph Report - Extrato  (2026-11-26)
 
 ## Corpus Check
-- 1501 files · ~1,749,797 words
+- 1501 files · ~1,749,817 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 22 file(s) not represented in the graph (top: (none) 6, .woff2 6, .css 6)
 
 ## Summary
-- 10129 nodes · 32132 edges · 354 communities (341 shown, 13 thin omitted)
+- 10129 nodes · 32132 edges · 353 communities (340 shown, 13 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 4169 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `97d49b84`
+- Built from commit: `e1e487df`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,7 +25,7 @@
 - yt
 - Análise de usuário analítico: divergências, redundâncias e repetições
 - report.bundle.js
-- Ve
+- uE
 - mountPreact
 - preact
 - performance-forecast.ts
@@ -86,7 +86,6 @@
 - createTopicDiagnosisService
 - Recomendações de melhorias --- StudyTrack
 - import-exam-json.ts
-- b0
 - report-data.ts
 - escapeHtml
 - Extrato de Estudos — Cada estudo soma
@@ -281,7 +280,7 @@
 - PerformancePageNav.tsx
 - Microcopy das análises
 - Consolidação da experiência de decisão
-- Bi
+- c
 - 3. Fases de Implementação Técnica no Código
 - recovery-mission-engine.ts
 - Fase 3B — Gráficos aprovados no Checkpoint 3
@@ -393,7 +392,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (354 total, 13 thin omitted)
+## Communities (353 total, 13 thin omitted)
 
 ### Community 0 - "app.ts"
 Cohesion: 0.04
@@ -421,7 +420,7 @@ Nodes (36): Composição atual da aba (10/11/2026), availableKeys(), buildReadin
 
 ### Community 6 - "yt"
 Cohesion: 0.03
-Nodes (223): ax(), x(), A(), S(), T(), x(), dk(), ae() (+215 more)
+Nodes (193): ax(), A(), x(), A(), S(), T(), x(), v() (+185 more)
 
 ### Community 7 - "Análise de usuário analítico: divergências, redundâncias e repetições"
 Cohesion: 0.09
@@ -431,9 +430,9 @@ Nodes (23): 10. Nielsen (0–4), 11. Ações recomendadas (ordem de impacto), 12
 Cohesion: 0.12
 Nodes (35): an(), dt(), en(), F(), fn(), Ge(), gn(), gt() (+27 more)
 
-### Community 9 - "Ve"
-Cohesion: 0.07
-Nodes (31): Cq(), A(), Ga(), gk(), mj(), b(), d(), I() (+23 more)
+### Community 9 - "uE"
+Cohesion: 0.20
+Nodes (10): qE(), uE(), c(), d(), f(), g(), m(), p() (+2 more)
 
 ### Community 10 - "mountPreact"
 Cohesion: 0.05
@@ -485,7 +484,7 @@ Nodes (34): AdaptivePlanningEntry, CalendarItem, DailyPlan, DailyPlanItem, Docum
 
 ### Community 22 - "o"
 Cohesion: 0.02
-Nodes (185): $0(), ah(), As(), I(), y(), Bh(), bt(), bu() (+177 more)
+Nodes (204): $0(), Ad(), ah(), aO(), Ar(), As(), E(), I() (+196 more)
 
 ### Community 23 - "first-access-modal-controller.ts"
 Cohesion: 0.11
@@ -513,7 +512,7 @@ Nodes (22): buildErrorAnalysisViewModel(), ICONS, LABELS, renderQuestionAnalytic
 
 ### Community 29 - "i"
 Cohesion: 0.05
-Nodes (40): Ag(), Al(), we(), Y(), Ik(), c(), l(), u() (+32 more)
+Nodes (83): Ag(), an(), d(), u(), f(), w(), dk(), ae() (+75 more)
 
 ### Community 30 - "subjectColorOf"
 Cohesion: 0.12
@@ -548,8 +547,8 @@ Cohesion: 0.22
 Nodes (9): Checkpoint 11, Fase 12: Dobras fechadas (enxugar, fundir, mover), Tarefa 49: Despejos de "sem evidência", Tarefa 50: Uma só explicação da projeção, Tarefa 51: Um "Como ler esta aba" por subaba, Tarefa 52: Tirar as redundâncias, Tarefa 53: Por disciplina e tempo sem repetição, Tarefa 54: Mover e normalizar (+1 more)
 
 ### Community 38 - "qk"
-Cohesion: 0.07
-Nodes (26): Bn(), Ck(), fk(), Iq(), kk(), mr(), g(), h() (+18 more)
+Cohesion: 0.10
+Nodes (17): Bn(), Ck(), fk(), kk(), g(), qk(), A(), C() (+9 more)
 
 ### Community 39 - "calendar-tab-controller.ts"
 Cohesion: 0.09
@@ -580,8 +579,8 @@ Cohesion: 0.11
 Nodes (18): Ajustes à estrutura do plano, Checkpoint 0 — Decisões (sem código) — fechado em 01/11/2026, Checkpoint 1, Checkpoint 2, Checkpoint 3 (decidir quais gráficos de média e baixa prioridade entram), Checkpoint 4, Checkpoint 5, Decisões que vêm antes do código (Checkpoint 0 — fechado em 01/11/2026; só o item 8 fica para o Checkpoint 4) (+10 more)
 
 ### Community 46 - "ia"
-Cohesion: 0.09
-Nodes (32): af(), s(), bs(), Du(), c(), gt(), gv(), hs() (+24 more)
+Cohesion: 0.11
+Nodes (27): af(), s(), bs(), Du(), gt(), gv(), hs(), ia() (+19 more)
 
 ### Community 47 - "formatDateBR"
 Cohesion: 0.10
@@ -675,10 +674,6 @@ Nodes (18): 🔵 Arquitetura e qualidade, 🟡 Demo 2.0, 🟡 Design e UI, Dire�
 Cohesion: 0.12
 Nodes (26): buildExamCountImport(), clean(), identity(), key(), mergeExamImport(), parseExamImportJson(), previewExamImport(), Row (+18 more)
 
-### Community 70 - "b0"
-Cohesion: 0.10
-Nodes (28): Ar(), b0(), A(), b(), C(), D(), E(), f() (+20 more)
-
 ### Community 71 - "report-data.ts"
 Cohesion: 0.10
 Nodes (25): readinessHistoryForScope(), scopeKey(), summarizeRecommendationHistory(), buildPeriodComparison(), compare(), number(), PERIOD_COMPARISON_VERSION, buildWeeklyClose() (+17 more)
@@ -745,7 +740,7 @@ Nodes (24): 10.1. D-7: Validação de Qualidade e Congelamento de Código, 10.2.
 
 ### Community 87 - "l"
 Cohesion: 0.03
-Nodes (282): $A(), m(), AC(), an(), c(), d(), p(), u() (+274 more)
+Nodes (228): m(), p(), b0(), b(), C(), f(), h(), N() (+220 more)
 
 ### Community 89 - "distribute-study-plan.ts"
 Cohesion: 0.10
@@ -932,8 +927,8 @@ Cohesion: 0.19
 Nodes (14): BuildPlateauDetectorParams, buildPlateauDetectorViewModel(), CONFIDENCE_LABELS, PlateauTopicItem, STRATEGY_LABELS, STRATEGY_VARIANTS, buildWeeklyRollingWindows(), detectAllPlateaus() (+6 more)
 
 ### Community 135 - "rh"
-Cohesion: 0.06
-Nodes (24): s(), Da(), dq(), ex(), iB(), lC(), rh(), g() (+16 more)
+Cohesion: 0.07
+Nodes (17): ex(), iB(), il(), rh(), c(), g(), i(), l() (+9 more)
 
 ### Community 136 - "exam-import/exam-import-state.ts"
 Cohesion: 0.15
@@ -1451,9 +1446,9 @@ Nodes (6): Diretrizes de Tom Acolhedor e Semana Real (Pedagogia Anti-Culpa), Dis
 Cohesion: 0.50
 Nodes (4): Consolidação da experiência de decisão, Entregas, Pacote 7 — acessibilidade e responsividade, Pacote 8 — fechamento técnico
 
-### Community 269 - "Bi"
-Cohesion: 0.29
-Nodes (7): aP(), gj(), gl(), $I(), jI(), pj(), Bi()
+### Community 269 - "c"
+Cohesion: 0.06
+Nodes (101): $A(), AC(), ak(), c(), aP(), ay(), bj(), bl() (+93 more)
 
 ### Community 270 - "3. Fases de Implementação Técnica no Código"
 Cohesion: 0.15
@@ -1601,7 +1596,7 @@ Nodes (9): Atualização das referências Windows após adoção da Grade Híbri
 
 ### Community 308 - "app.bundle.js"
 Cohesion: 0.01
-Nodes (432): $1(), $2(), a0(), a1(), A2(), a3(), aA(), aB() (+424 more)
+Nodes (430): $1(), $2(), a0(), a1(), A2(), a3(), aA(), aB() (+422 more)
 
 ### Community 309 - "study-distribution.ts"
 Cohesion: 0.33

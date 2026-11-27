@@ -24,6 +24,7 @@ export function SleepCheckin({ quality, onChoose }: SleepCheckinProps) {
   return (
     <div class="sleep-checkin" role="group" aria-labelledby="sleepCheckinLabel">
       <span id="sleepCheckinLabel">Como você dormiu esta noite?</span>
+      <span class="sleep-checkin__why">Opcional: compara seu estudo depois de noites boas e ruins, em Desempenho.</span>
       {SLEEP_QUALITIES.map(option => (
         <button
           key={option}
