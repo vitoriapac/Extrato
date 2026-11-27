@@ -1,6 +1,7 @@
 import { formatPercent } from '../../../core/format-number.js';
 import { formatDateBR } from '../../../core/format-date.js';
 import { SubjectTopicRow } from './SubjectTopicRow.js';
+import { CollectionFooter } from '../../components/CollectionFooter.js';
 import { Icon } from '../../primitives/icon.js';
 import { Sparkline, StackedBar } from '../../primitives/charts/charts.js';
 import { SUBJECT_COLOR_NAMES } from '../../../domain/subjects/subject-color.js';
@@ -28,10 +29,16 @@ export interface SubjectBlockProps {
   difficultyOptions: readonly string[];
   difficultyClasses: Record<string, string>;
   searchQuery?: string;
-  footerHtml?: string;
-  getExamBadgesHtml?: (topic: any) => string;
-  getAnalyticsStateHtml?: (subject: any, topic: any) => string;
-  getStrategyEditorHtml?: (subject: any, topic: any) => string;
+  pagination?: {
+    total: number;
+    page: number;
+    pageSize: number;
+    listKey: string;
+    label: string;
+  };
+  renderFooterFn?: (options: any) => string;
+  getAnalyticsStateModel?: (subject: any, topic: any) => any;
+  getStrategyEditorModel?: (subject: any, topic: any) => any;
 }
 
 export function SubjectBlock({
@@ -54,10 +61,10 @@ export function SubjectBlock({
   difficultyOptions,
   difficultyClasses,
   searchQuery = '',
-  footerHtml = '',
-  getExamBadgesHtml,
-  getAnalyticsStateHtml,
-  getStrategyEditorHtml,
+  pagination,
+  renderFooterFn,
+  getAnalyticsStateModel,
+  getStrategyEditorModel,
 }: SubjectBlockProps) {
   const isFirst = index === 0;
   const isLast = index === totalSubjects - 1;
@@ -301,9 +308,8 @@ export function SubjectBlock({
                     statusClasses={statusClasses}
                     difficultyOptions={difficultyOptions}
                     difficultyClasses={difficultyClasses}
-                    examBadgesHtml={getExamBadgesHtml?.(topic)}
-                    analyticsStateHtml={isOpenNotes ? getAnalyticsStateHtml?.(subject, topic) : ''}
-                    strategyEditorHtml={isOpenNotes ? getStrategyEditorHtml?.(subject, topic) : ''}
+                    analyticsStateModel={isOpenNotes ? getAnalyticsStateModel?.(subject, topic) : null}
+                    strategyEditorModel={isOpenNotes ? getStrategyEditorModel?.(subject, topic) : null}
                   />
                 );
               })}
@@ -312,7 +318,27 @@ export function SubjectBlock({
         </div>
         )}
 
-        {footerHtml && <div dangerouslySetInnerHTML={{ __html: footerHtml }} />}
+        {pagination &&
+          (renderFooterFn ? (
+            <div class="list-summary-footer">
+              {renderFooterFn({
+                variant: 'block',
+                total: pagination.total,
+                page: pagination.page,
+                pageSize: pagination.pageSize,
+                pageAction: (n: number) => `goToListPage('${pagination.listKey}',${n})`,
+                label: pagination.label,
+              })}
+            </div>
+          ) : (
+            <CollectionFooter
+              total={pagination.total}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              pageAction={n => `goToListPage('${pagination.listKey}',${n})`}
+              label={pagination.label}
+            />
+          ))}
 
         {archivedTopics.length > 0 && (
           <div class="archived-section">

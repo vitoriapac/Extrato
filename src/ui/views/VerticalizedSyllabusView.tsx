@@ -71,13 +71,41 @@ export function VerticalizedSyllabusView({
   postEditalContext,
 }: VerticalizedSyllabusViewProps) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [importModalOpen, setImportModalOpen] = useState<boolean>(false);
   const [postEditalOpen, setPostEditalOpen] = useState<boolean>(false);
   const [rawText, setRawText] = useState<string>('');
   const [parsedPreview, setParsedPreview] = useState<RawSyllabusParsedResult | null>(null);
 
-  const filteredSubjects =
+  const normalizedQuery = searchQuery
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+  const subjectScoped =
     selectedSubjectId === 'all' ? subjects : subjects.filter(s => s.id === selectedSubjectId);
+
+  const filteredSubjects = !normalizedQuery
+    ? subjectScoped
+    : subjectScoped
+        .map(subject => {
+          const subjectMatches = subject.name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .includes(normalizedQuery);
+          if (subjectMatches) return subject;
+          const matchingTopics = subject.topics.filter(topic =>
+            topic.name
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .toLowerCase()
+              .includes(normalizedQuery)
+          );
+          return { ...subject, topics: matchingTopics };
+        })
+        .filter(subject => subject.topics.length > 0);
 
   const totalTopics = subjects.reduce((sum, s) => sum + s.topics.length, 0);
 
@@ -111,6 +139,14 @@ export function VerticalizedSyllabusView({
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <input
+            type="search"
+            class="min-h-control min-w-[180px] flex-1 sm:flex-initial text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-content-primary"
+            value={searchQuery}
+            placeholder="Buscar tópico ou disciplina..."
+            aria-label="Buscar tópico no edital verticalizado"
+            onInput={e => setSearchQuery((e.target as HTMLInputElement).value)}
+          />
           {/* Seletor de Disciplina */}
           <select
             class="select-control min-h-control min-w-0 flex-1 sm:flex-initial text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-content-primary"

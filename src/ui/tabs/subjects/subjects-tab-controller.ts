@@ -8,6 +8,8 @@ import { buildTopicIntelligence } from '../../../application/topic-intelligence/
 import { QuickStatsGrid } from '../dashboard/QuickStatsGrid.js';
 import { buildTopicStatusSummary } from '../../../application/subjects/build-topic-status-summary.js';
 import { createSubjectsController } from './subjects-controller.js';
+import { buildTopicStrategyViewModel } from '../../../features/topic-strategy/topic-strategy-view-model.js';
+import { buildTopicAnalyticsStateModel } from './TopicAnalyticsStateCard.js';
 import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './topic-analytics-view.js';
 import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './topic-strategy-editor-view.js';
 import type {
@@ -180,6 +182,23 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     return `${tags.includes(ctx.EXAM_TAGS.BB) ? '<span class="exam-tag exam-tag--bb">BB</span>' : ''}${tags.includes(ctx.EXAM_TAGS.CAIXA) ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ''}${tags.includes(ctx.EXAM_TAGS.CAIXA_TI) ? '<span class="exam-tag exam-tag--caixa">CAIXA TI</span>' : ''}`;
   }
 
+  function getTopicStrategyEditorModel(
+    subject: Record<string, any>,
+    topic: Record<string, any>
+  ) {
+    const subjectConfig =
+      ctx.state.examBlueprint?.subjects?.find((item: any) => item.subjectId === subject.id) || null;
+    return buildTopicStrategyViewModel({
+      subject,
+      topic,
+      subjectConfig,
+      activeExamTags: ctx.state.examBlueprint?.activeExamTags || [],
+      topics: ctx.allTopics(),
+      exams: ctx.state.exams || [],
+      examQuestions: ctx.state.examQuestions || [],
+    });
+  }
+
   function renderTopicStrategyEditor(
     subject: Record<string, any>,
     topic: Record<string, any>
@@ -194,6 +213,25 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       topics: ctx.allTopics(),
       exams: ctx.state.exams || [],
       examQuestions: ctx.state.examQuestions || [],
+    });
+  }
+
+  function getTopicAnalyticsStateModel(subject: Subject, topic: Topic) {
+    return buildTopicAnalyticsStateModel({
+      subject,
+      topic,
+      topicMasteryIndex: ctx.topicMasteryIndex || (() => null),
+      topicRetentionScore: ctx.topicRetentionScore || (() => null),
+      diagnoseTopic: ctx.diagnoseTopic || (() => null),
+      topicReviewHealthScore: ctx.topicReviewHealthScore
+        ? (t: any, m: any, r: any, d: any) => (ctx.topicReviewHealthScore as any)(t, m, r, d)
+        : () => null,
+      diasParaRevisao: ctx.diasParaRevisao || (() => null),
+      localDateFromTimestamp: ctx.localDateFromTimestamp || (() => null),
+      prerequisiteBlockers: ctx.prerequisiteBlockers || (() => []),
+      allTopics: ctx.allTopics,
+      needsMaintenance: ctx.needsMaintenance || (() => false),
+      getTopicName: ctx.getTopicName || (() => null),
     });
   }
 
@@ -620,6 +658,8 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       examBadges,
       renderTopicAnalyticsState,
       renderTopicStrategyEditor,
+      getAnalyticsStateModel: getTopicAnalyticsStateModel,
+      getStrategyEditorModel: getTopicStrategyEditorModel,
       onSelectSubtab: selectSubjectsSubtab,
       today: todayISO(),
     });

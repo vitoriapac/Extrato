@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { BookmarkBadge } from '../../components/BookmarkBadge.js';
 import { Icon } from '../../primitives/icon.js';
+import { TopicAnalyticsStateCard, type TopicAnalyticsStateModel } from './TopicAnalyticsStateCard.js';
+import { TopicStrategyEditorCard } from './TopicStrategyEditorCard.js';
 
 export interface SubjectTopicRowProps {
   subjectId: string;
@@ -10,13 +12,24 @@ export interface SubjectTopicRowProps {
   statusClasses: Record<string, string>;
   difficultyOptions: readonly string[];
   difficultyClasses: Record<string, string>;
-  examBadgesHtml?: string;
-  analyticsStateHtml?: string;
-  strategyEditorHtml?: string;
-  onUpdateTopic?: (subjectId: string, topicId: string, field: string, value: any) => void;
-  onUpdateTopicStatus?: (subjectId: string, topicId: string, status: string) => void;
-  onToggleNotes?: (topicId: string) => void;
-  onArchiveTopic?: (subjectId: string, topicId: string) => void;
+  analyticsStateModel?: TopicAnalyticsStateModel | null;
+  strategyEditorModel?: any | null;
+}
+
+function ExamBadges({ tags }: { tags?: string[] }) {
+  if (!Array.isArray(tags) || tags.length === 0) return null;
+  const normalized = tags.map(tag => String(tag).toLowerCase());
+  const hasBb = normalized.includes('bb');
+  const hasCaixa = normalized.includes('caixa');
+  const hasCaixaTi = normalized.includes('caixa-ti') || normalized.includes('caixa_ti');
+  if (!hasBb && !hasCaixa && !hasCaixaTi) return null;
+  return (
+    <>
+      {hasBb && <span class="exam-tag exam-tag--bb">BB</span>}
+      {hasCaixa && <span class="exam-tag exam-tag--caixa">CAIXA</span>}
+      {hasCaixaTi && <span class="exam-tag exam-tag--caixa">CAIXA TI</span>}
+    </>
+  );
 }
 
 export function SubjectTopicRow({
@@ -27,13 +40,8 @@ export function SubjectTopicRow({
   statusClasses,
   difficultyOptions,
   difficultyClasses,
-  examBadgesHtml = '',
-  analyticsStateHtml = '',
-  strategyEditorHtml = '',
-  onUpdateTopic,
-  onUpdateTopicStatus,
-  onToggleNotes,
-  onArchiveTopic,
+  analyticsStateModel = null,
+  strategyEditorModel = null,
 }: SubjectTopicRowProps) {
   const statusClass = statusClasses[topic.status] || 'st-nao';
   const difficultyClass = difficultyClasses[topic.difficulty] || 'diff-medio';
@@ -79,9 +87,6 @@ export function SubjectTopicRow({
             placeholder="Nome do tópico"
             aria-label="Nome do tópico"
             data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','name', this.value)`}
-            onBlur={e =>
-              onUpdateTopic?.(subjectId, topic.id, 'name', (e.target as HTMLInputElement).value)
-            }
             onKeyDown={e => {
               const target = e.currentTarget as HTMLInputElement;
               if (e.key === 'Enter') {
@@ -98,7 +103,7 @@ export function SubjectTopicRow({
             topic.bookmark) && (
             <div class="tag-chips">
               {topic.bookmark && <BookmarkBadge bookmark={topic.bookmark} />}
-              {examBadgesHtml && <span dangerouslySetInnerHTML={{ __html: examBadgesHtml }} />}
+              <ExamBadges tags={topic.examTags} />
               {(topic.tags || []).map((tag: string, idx: number) => (
                 <span key={idx} class="tag-chip">
                   {tag}
@@ -112,9 +117,6 @@ export function SubjectTopicRow({
             class={`status-select ${statusClass}`}
             aria-label={`Status de ${topic.name || 'tópico sem nome'}`}
             data-delegated-change={`updateTopicStatus('${subjectId}','${topic.id}', this)`}
-            onChange={e =>
-              onUpdateTopicStatus?.(subjectId, topic.id, (e.target as HTMLSelectElement).value)
-            }
           >
             {statusOptions.map(opt => (
               <option key={opt} value={opt} selected={opt === topic.status}>
@@ -128,14 +130,6 @@ export function SubjectTopicRow({
             class={`status-select ${difficultyClass}`}
             aria-label={`Dificuldade de ${topic.name || 'tópico sem nome'}`}
             data-delegated-change={`updateTopic('${subjectId}','${topic.id}','difficulty', this.value)`}
-            onChange={e =>
-              onUpdateTopic?.(
-                subjectId,
-                topic.id,
-                'difficulty',
-                (e.target as HTMLSelectElement).value
-              )
-            }
           >
             {difficultyOptions.map(opt => (
               <option key={opt} value={opt} selected={opt === topic.difficulty}>
@@ -153,7 +147,6 @@ export function SubjectTopicRow({
             data-delegated-click={`toggleNotes('${topic.id}')`}
             aria-label={`Detalhes de ${topic.name || 'tópico sem nome'}${hasNotes ? ' (possui anotações)' : ''}`}
             title={hasNotes ? 'Possui anotações ou tags' : undefined}
-            onClick={() => onToggleNotes?.(topic.id)}
           >
             Detalhes
             {hasNotes && <span class="sr-only"> (possui anotações)</span>}
@@ -166,7 +159,6 @@ export function SubjectTopicRow({
             data-delegated-click={`archiveTopic('${subjectId}','${topic.id}')`}
             title="Arquivar tópico"
             aria-label={`Arquivar ${topic.name || 'tópico sem nome'}`}
-            onClick={() => onArchiveTopic?.(subjectId, topic.id)}
           >
             <Icon name="archive" size={14} />
           </button>
@@ -183,11 +175,7 @@ export function SubjectTopicRow({
                 typeof document !== 'undefined'
                   ? document.querySelector<HTMLButtonElement>(`#topic-row-${topic.id} .notes-toggle-btn`)
                   : null;
-              if (onToggleNotes) {
-                onToggleNotes(topic.id);
-              } else {
-                toggleBtn?.click();
-              }
+              toggleBtn?.click();
               toggleBtn?.focus();
             }
           }}
@@ -224,7 +212,6 @@ export function SubjectTopicRow({
                       setLinkError('');
                       markSaved();
                     }
-                    onUpdateTopic?.(subjectId, topic.id, 'link', val);
                   }}
                 />
                 {linkError && (
@@ -241,17 +228,8 @@ export function SubjectTopicRow({
                   placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
                   value={(topic.tags || []).join(', ')}
                   data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
-                  onBlur={e => {
+                  onBlur={() => {
                     markSaved();
-                    onUpdateTopic?.(
-                      subjectId,
-                      topic.id,
-                      'tags',
-                      (e.target as HTMLInputElement).value
-                        .split(',')
-                        .map(t => t.trim())
-                        .filter(Boolean)
-                    );
                   }}
                 />
               </label>
@@ -262,24 +240,18 @@ export function SubjectTopicRow({
                   placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
                   value={topic.notes || ''}
                   data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
-                  onBlur={e => {
+                  onBlur={() => {
                     markSaved();
-                    onUpdateTopic?.(
-                      subjectId,
-                      topic.id,
-                      'notes',
-                      (e.target as HTMLTextAreaElement).value
-                    );
                   }}
                 />
               </label>
-              {(analyticsStateHtml || strategyEditorHtml) && (
+              {(analyticsStateModel || strategyEditorModel) && (
                 <div class="pt-3 border-t border-border-subtle space-y-2">
                   <div class="text-xs font-medium text-content-secondary">
                     Estratégia e evidências
                   </div>
-                  {analyticsStateHtml && <div dangerouslySetInnerHTML={{ __html: analyticsStateHtml }} />}
-                  {strategyEditorHtml && <div dangerouslySetInnerHTML={{ __html: strategyEditorHtml }} />}
+                  {analyticsStateModel && <TopicAnalyticsStateCard model={analyticsStateModel} />}
+                  {strategyEditorModel && <TopicStrategyEditorCard model={strategyEditorModel} />}
                 </div>
               )}
             </div>

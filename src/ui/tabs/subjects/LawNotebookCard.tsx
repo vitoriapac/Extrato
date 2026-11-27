@@ -160,8 +160,23 @@ export function LawNotebookCard({
   const [endArt, setEndArt] = useState('');
   const [hotArticles, setHotArticles] = useState('');
   const [rangeError, setRangeError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const subjectNames = new Map(subjects.map(subject => [subject.id, subject.name]));
   const due = laws.filter(law => ['due', 'stalled'].includes(lawStatus(law, today).key)).length;
+  const normalizedQuery = searchQuery
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+  const filteredLaws = sortLawsForReview(laws, today).filter(law => {
+    if (!normalizedQuery) return true;
+    const subName = law.subjectId ? subjectNames.get(law.subjectId) || '' : '';
+    const haystack = `${law.name} ${subName} ${law.hotArticles || ''}`
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
 
   const add = (event: Event) => {
     event.preventDefault();
@@ -301,11 +316,34 @@ export function LawNotebookCard({
           {rangeError}
         </p>
       )}
+      {laws.length > 0 && (
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            class="min-h-control flex-1 min-w-[200px] px-3 py-1.5 text-xs rounded border border-border-control bg-surface-card text-content-primary"
+            value={searchQuery}
+            placeholder="Buscar lei, disciplina ou artigo..."
+            aria-label="Buscar no caderno de leis"
+            onInput={event => setSearchQuery((event.target as HTMLInputElement).value)}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              class="btn ghost small"
+              onClick={() => setSearchQuery('')}
+            >
+              Limpar busca
+            </button>
+          )}
+        </div>
+      )}
       {laws.length === 0 ? (
         <p class="text-xs text-content-secondary m-0">Nenhuma lei no caderno ainda.</p>
+      ) : filteredLaws.length === 0 ? (
+        <p class="text-xs text-content-secondary m-0">Nenhuma lei encontrada para a busca.</p>
       ) : (
         <ul class="law-notebook__list">
-          {sortLawsForReview(laws, today).map(law => (
+          {filteredLaws.map(law => (
             <LawRow
               key={law.id}
               law={law}

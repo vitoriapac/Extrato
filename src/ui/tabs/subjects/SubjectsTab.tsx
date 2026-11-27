@@ -24,9 +24,8 @@ export interface SubjectsTabProps {
   matchesSearchFn: (subject: any, topic: any, query: string) => boolean;
   pluralizeFn: (count: number, singular: string, plural?: string) => string;
   renderFooterFn?: (options: any) => string;
-  getExamBadgesHtml?: (topic: any) => string;
-  getAnalyticsStateHtml?: (subject: any, topic: any) => string;
-  getStrategyEditorHtml?: (subject: any, topic: any) => string;
+  getAnalyticsStateModel?: (subject: any, topic: any) => any;
+  getStrategyEditorModel?: (subject: any, topic: any) => any;
   onSelectSubtab?: (key: 'materias' | 'verticalizado' | 'leis' | 'jurisprudencia') => void;
 }
 
@@ -50,9 +49,8 @@ export function SubjectsTab({
   matchesSearchFn,
   pluralizeFn,
   renderFooterFn,
-  getExamBadgesHtml,
-  getAnalyticsStateHtml,
-  getStrategyEditorHtml,
+  getAnalyticsStateModel,
+  getStrategyEditorModel,
   onSelectSubtab,
 }: SubjectsTabProps) {
   // Empty state when completely clean
@@ -196,17 +194,6 @@ export function SubjectsTab({
           const listKey = `subjectTopics:${subject.id}`;
           const archivedTopics = (subject.topics || []).filter((t: any) => t.archived);
 
-          const footerHtml = renderFooterFn
-            ? renderFooterFn({
-                variant: 'block',
-                total: allVisibleTopics.length,
-                page: topicList.page,
-                pageSize: topicList.pageSize,
-                pageAction: (n: number) => `goToListPage('${listKey}',${n})`,
-                label: `tópicos filtrados · ${subjectTopics.length} no total`,
-              })
-            : '';
-
           return (
             <SubjectBlock
               key={subject.id}
@@ -229,10 +216,16 @@ export function SubjectsTab({
               difficultyOptions={difficultyOptions}
               difficultyClasses={difficultyClasses}
               searchQuery={searchQuery}
-              footerHtml={footerHtml}
-              getExamBadgesHtml={getExamBadgesHtml}
-              getAnalyticsStateHtml={getAnalyticsStateHtml}
-              getStrategyEditorHtml={getStrategyEditorHtml}
+              pagination={{
+                total: allVisibleTopics.length,
+                page: topicList.page,
+                pageSize: topicList.pageSize,
+                listKey,
+                label: `tópicos filtrados · ${subjectTopics.length} no total`,
+              }}
+              renderFooterFn={renderFooterFn}
+              getAnalyticsStateModel={getAnalyticsStateModel}
+              getStrategyEditorModel={getStrategyEditorModel}
             />
           );
         })

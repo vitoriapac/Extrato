@@ -26,6 +26,8 @@ export interface SubjectsControllerContext {
   examBadges?: (topic: any) => string;
   renderTopicAnalyticsState?: (subject: any, topic: any) => string;
   renderTopicStrategyEditor?: (subject: any, topic: any) => string;
+  getAnalyticsStateModel?: (subject: any, topic: any) => any;
+  getStrategyEditorModel?: (subject: any, topic: any) => any;
   onSelectSubtab?: (key: 'materias' | 'verticalizado' | 'leis' | 'jurisprudencia') => void;
   today?: string;
 }
@@ -114,10 +116,8 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
       topicMatchesExamFn: topicMatchesExam,
       matchesSearchFn: ctx.matchesSubjectSearch,
       pluralizeFn: ctx.pluralize,
-      renderFooterFn: ctx.renderCollectionFooter,
-      getExamBadgesHtml: ctx.examBadges,
-      getAnalyticsStateHtml: ctx.renderTopicAnalyticsState,
-      getStrategyEditorHtml: ctx.renderTopicStrategyEditor,
+      getAnalyticsStateModel: ctx.getAnalyticsStateModel,
+      getStrategyEditorModel: ctx.getStrategyEditorModel,
       onSelectSubtab: ctx.onSelectSubtab,
     });
   }

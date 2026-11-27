@@ -1,0 +1,125 @@
+import type { JSX } from 'preact';
+import { pluralize } from '../../../core/utils.js';
+
+export interface TopicStrategyEditorCardProps {
+  model: any;
+}
+
+export function TopicStrategyEditorCard({ model }: TopicStrategyEditorCardProps): JSX.Element {
+  const value = model?.impactValue == null ? '—' : `${model.impactValue}%`;
+  const profile = model?.examProfile || {};
+  const candidates: any[] = Array.isArray(model?.candidates) ? model.candidates : [];
+
+  return (
+    <>
+      <div class="topic-strategy-summary">
+        <strong>Impacto usado na prioridade: {value}</strong>
+        <span>
+          {model?.impactSourceLabel}. Alterações invalidam a proposta semanal ainda não confirmada.
+        </span>
+      </div>
+
+      {profile.analyzedExamCount > 0 && (
+        <section class="topic-exam-profile" aria-label="Evidências históricas da prova">
+          <strong>IMPACTO NA PROVA · {value}</strong>
+          <dl>
+            <div>
+              <dt>Incidência histórica</dt>
+              <dd>
+                {profile.presenceLevel} · {profile.presencePercent ?? '—'}% ·{' '}
+                {profile.presentExamCount} de {profile.analyzedExamCount} provas
+              </dd>
+            </div>
+            <div>
+              <dt>Participação nas questões</dt>
+              <dd>{profile.participationPercent ?? '—'}%</dd>
+            </div>
+            <div>
+              <dt>Presença recente</dt>
+              <dd>
+                {profile.recentPresentCount} de {profile.recentExamCount} provas ·{' '}
+                {profile.recentPresenceLevel}
+              </dd>
+            </div>
+            <div>
+              <dt>Base histórica</dt>
+              <dd>{profile.confidenceLabel}</dd>
+            </div>
+            {profile.historicalWeight != null && (
+              <div>
+                <dt>Peso histórico por questão</dt>
+                <dd>
+                  {pluralize(profile.historicalWeight, 'ponto', 'pontos')} ·{' '}
+                  {profile.historicalWeightQuestionCount} questões
+                </dd>
+              </div>
+            )}
+            {profile.officialWeight != null && (
+              <div>
+                <dt>Peso oficial por questão</dt>
+                <dd>{pluralize(profile.officialWeight, 'ponto', 'pontos')}</dd>
+              </div>
+            )}
+          </dl>
+          <small>O histórico informa esta leitura; ainda não altera a prioridade.</small>
+        </section>
+      )}
+
+      <div class="topic-strategy-fields">
+        <label>
+          Importância na prova (%)
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            placeholder="Herdar automaticamente"
+            value={model?.examImportance ?? ''}
+            data-delegated-blur={`updateTopicStrategy('${model?.subjectId}','${model?.topicId}','examImportance',this.value)`}
+          />
+          <small>Deixe vazio para usar catálogo ou peso da disciplina.</small>
+        </label>
+        <label>
+          Esforço total estimado (min)
+          <input
+            type="number"
+            min="1"
+            step="5"
+            placeholder="Não definido"
+            value={model?.estimatedStudyMinutes ?? ''}
+            data-delegated-blur={`updateTopicStrategy('${model?.subjectId}','${model?.topicId}','estimatedStudyMinutes',this.value)`}
+          />
+          <small>Define a carga restante, sem limitar cada sessão.</small>
+        </label>
+      </div>
+
+      <details class="topic-prerequisites">
+        <summary>Pré-requisitos ({model?.prerequisiteCount || 0})</summary>
+        <p>
+          O tópico só entra no plano quando as bases estiverem concluídas ou com domínio
+          suficiente.
+        </p>
+        <div>
+          {candidates.length > 0 ? (
+            candidates.map(candidate => (
+              <label key={candidate.id} class="topic-prerequisite-choice">
+                <input
+                  type="checkbox"
+                  checked={Boolean(candidate.checked)}
+                  disabled={Boolean(candidate.cyclic)}
+                  data-delegated-change={`toggleTopicPrerequisite('${model?.subjectId}','${model?.topicId}','${candidate.id}',this.checked)`}
+                />
+                <span>
+                  {candidate.label}
+                  {candidate.cyclic ? ' · criaria ciclo' : ''}
+                </span>
+              </label>
+            ))
+          ) : (
+            <small>Não há outros tópicos disponíveis.</small>
+          )}
+        </div>
+      </details>
+    </>
+  );
+}

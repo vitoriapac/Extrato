@@ -49,6 +49,7 @@ export function JurisprudenceNotebookCard({
   const [subjectId, setSubjectId] = useState('');
   const [filterKind, setFilterKind] = useState<string>('');
   const [filterSubject, setFilterSubject] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [formError, setFormError] = useState('');
 
   const subjectNames = new Map(subjects.map(s => [s.id, s.name]));
@@ -75,9 +76,23 @@ export function JurisprudenceNotebookCard({
     setThesisSummary('');
   };
 
-  const filtered = sortJurisprudenceForReview(records, today).filter(
-    r => (!filterKind || r.kind === filterKind) && (!filterSubject || r.subjectId === filterSubject)
-  );
+  const normalizedQuery = searchQuery
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+  const filtered = sortJurisprudenceForReview(records, today).filter(r => {
+    if (filterKind && r.kind !== filterKind) return false;
+    if (filterSubject && r.subjectId !== filterSubject) return false;
+    if (!normalizedQuery) return true;
+    const subName = r.subjectId ? subjectNames.get(r.subjectId) || '' : '';
+    const haystack = `${r.code} ${r.title} ${r.thesisSummary || ''} ${subName}`
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
 
   return (
     <div class="law-notebook space-y-3" data-testid="jurisprudence-notebook">
@@ -175,6 +190,14 @@ export function JurisprudenceNotebookCard({
 
       {records.length > 0 && (
         <div class="flex flex-wrap items-center gap-2 text-xs">
+          <input
+            type="search"
+            class="min-h-control flex-1 min-w-[180px] px-3 py-1 text-xs rounded border border-border-default bg-surface-card text-content-primary"
+            value={searchQuery}
+            placeholder="Buscar código, título ou tese..."
+            aria-label="Buscar no caderno de jurisprudência"
+            onInput={e => setSearchQuery((e.currentTarget as HTMLInputElement).value)}
+          />
           <select
             aria-label="Filtrar jurisprudência por tipo"
             class="select-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
@@ -219,6 +242,7 @@ export function JurisprudenceNotebookCard({
               onClick={() => {
                 setFilterKind('');
                 setFilterSubject('');
+                setSearchQuery('');
               }}
             >
               Limpar filtros
