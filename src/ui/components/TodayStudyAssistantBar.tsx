@@ -238,7 +238,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
 
             {cycleDivergence.diverges ? (
               <div
-                class="text-xs text-content-secondary border-l-3 border-l-accent pl-4 py-1 space-y-2"
+                class="text-xs text-content-secondary py-1 space-y-2"
                 role="note"
               >
                 <p class="m-0">
@@ -262,7 +262,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             ) : (
               copilot.cycleInsight && (
                 <p
-                  class="text-xs text-content-secondary border-l-3 border-l-accent pl-4 py-1 m-0 flex items-start gap-2"
+                  class="text-xs text-content-secondary py-1 m-0 flex items-start gap-2"
                   role="note"
                   data-cycle-copilot-insight="true"
                 >
@@ -462,7 +462,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             )}
           </div>
 
-          <div class="pt-2.5 border-t border-border-subtle border-l-3 border-l-accent pl-3 space-y-1 text-xs">
+          <div class="pt-2.5 border-t border-border-subtle space-y-1 text-xs">
             <div class="font-medium text-content-primary">
               Proposta (
               <span class="font-data">{formatPlanMinutes(quickProposal.plannedMinutes)}</span>):{' '}
@@ -549,7 +549,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
             )}
           </div>
 
-          <div class="pt-4 border-t border-border-subtle border-l-3 border-l-accent pl-4 space-y-2 text-xs">
+          <div class="pt-4 border-t border-border-subtle space-y-2 text-xs">
             <strong class="text-sm text-content-primary block">{activeAnswer.headline}</strong>
             <p class="text-content-primary m-0 leading-relaxed">{activeAnswer.body}</p>
             {activeAnswer.evidenceSummary && (
@@ -609,7 +609,7 @@ export function TodayStudyAssistantBar(props: TodayStudyAssistantBarProps): JSX.
           </div>
 
           {weeklyClosing.comparisonWarning && (
-            <p class="m-0 text-content-secondary border-l-3 border-l-accent pl-4 py-1">
+            <p class="m-0 text-content-secondary py-1">
               {weeklyClosing.comparisonWarning}
             </p>
           )}

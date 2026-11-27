@@ -110,7 +110,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
       </div>
 
       {cycle && currentBlock && (
-        <div class="pt-4 border-t border-border-subtle border-l-3 border-l-accent pl-4 flex flex-wrap items-center justify-between gap-4 text-xs">
+        <div class="pt-4 border-t border-border-subtle flex flex-wrap items-center justify-between gap-4 text-xs">
           <div class="space-y-1 min-w-0">
             <div class="text-content-primary font-medium">
               Próximo bloco: <strong>{currentBlock.subjectName}</strong> ·{' '}
@@ -204,7 +204,7 @@ export function StudyCycleCenterCard(props: StudyCycleCenterCardProps): JSX.Elem
 
           {copilotHint && (
             <p
-              class="m-0 text-xs text-content-secondary border-l-3 border-l-accent pl-4 py-1 flex items-start gap-2"
+              class="m-0 text-xs text-content-secondary py-1 flex items-start gap-2"
               data-cycle-copilot-hint="true"
             >
               <Icon name="compass" size={14} class="icon-inline text-accent shrink-0 mt-0.5" />
