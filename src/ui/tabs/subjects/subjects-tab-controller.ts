@@ -2,8 +2,7 @@ import { h } from 'preact';
 import { getRovingTabIndex } from '../../primitives/tabs.js';
 import { isSubjectColor } from '../../../domain/subjects/subject-color.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
-import { VerticalizedSyllabusView } from '../../views/VerticalizedSyllabusView.js';
-import { TopicIntelligenceModal } from '../../modals/TopicIntelligenceModal.js';
+import { lazyView } from '../../lazy-view.js';
 import { buildTopicIntelligence } from '../../../application/topic-intelligence/build-topic-intelligence.js';
 import { QuickStatsGrid } from '../dashboard/QuickStatsGrid.js';
 import { buildTopicStatusSummary } from '../../../application/subjects/build-topic-status-summary.js';
@@ -24,6 +23,15 @@ import { JurisprudenceNotebookCard } from './JurisprudenceNotebookCard.js';
 import { completeLawLap, registerLawReading } from '../../../domain/law-notebook.js';
 import { registerJurisprudenceReading } from '../../../domain/jurisprudence-notebook.js';
 
+// Edital verticalizado e Inteligência do tópico: só baixam quando abertos.
+const VerticalizedSyllabusView = lazyView(() =>
+  import('../../views/VerticalizedSyllabusView.js').then(module => module.VerticalizedSyllabusView)
+);
+
+const TopicIntelligenceModal = lazyView(() =>
+  import('../../modals/TopicIntelligenceModal.js').then(module => module.TopicIntelligenceModal)
+);
+
 export interface SubjectsTabControllerContext {
   document: Document;
   window?: Window;
@@ -37,7 +45,12 @@ export interface SubjectsTabControllerContext {
   renderAll?: () => void;
   showToast: (msg: string) => void;
   showPrompt: (title: string, config: any, onConfirm: (val: string) => void) => void;
-  showConfirm: (msg: string, onConfirm: () => void) => void;
+  showConfirm: (
+    msg: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    options?: Record<string, unknown>
+  ) => void;
   activeSubjects: () => any[];
   allTopics: () => any[];
   getTopicById: (topicId: string) => { subject: Subject; topic: Topic } | null;
@@ -367,7 +380,10 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
           sessions: ctx.state.studySessions || [],
           questions: ctx.state.questoes || [],
           blueprintSubjects: ctx.state.examBlueprint?.subjects || [],
-          daysToExam: ctx.state.examDate && ctx.diasParaRevisao ? ctx.diasParaRevisao(ctx.state.examDate) : null,
+          daysToExam:
+            ctx.state.examDate && ctx.diasParaRevisao
+              ? ctx.diasParaRevisao(ctx.state.examDate)
+              : null,
           weeklyAvailableMinutes: Math.round(
             (Object.values(ctx.state.metas?.horasPorDia || {}).reduce<number>(
               (s, h) => s + (Number(h) || 0),
@@ -798,7 +814,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         ctx.subjectService.remove(id);
         ctx.persistAndRender();
         ctx.showToast('Disciplina excluída definitivamente.');
-      }
+      },
+      undefined,
+      { title: 'Excluir disciplina?', confirmLabel: 'Excluir disciplina' }
     );
   }
 

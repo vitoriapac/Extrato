@@ -41,7 +41,7 @@ async function exportBackup(page) {
 async function clearAndReload(page) {
   await openDataManagement(page);
   await page.locator('#clearAllDataBtn').click();
-  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('button', { name: 'Limpar dados…' }).click();
   await page.locator('#modalPromptInput').fill('LIMPAR');
   await Promise.all([
     page.waitForNavigation(),

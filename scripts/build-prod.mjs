@@ -28,7 +28,8 @@ const STYLE_FILES = [
   'styles/print.css',
 ];
 
-const STATIC_DIRECTORIES = ['icons', 'fonts', 'assets/landing', 'assets/achievements'];
+// src/chunks: pedaços do app (ESM com divisão de código), nomes com hash.
+const STATIC_DIRECTORIES = ['icons', 'fonts', 'assets/landing', 'assets/achievements', 'src/chunks'];
 
 const cloudflareHeaders = csp => `/*
   Content-Security-Policy: ${csp}; frame-ancestors 'none'
@@ -39,6 +40,9 @@ const cloudflareHeaders = csp => `/*
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 /src/*.bundle.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/src/chunks/*
   Cache-Control: public, max-age=31536000, immutable
 
 /styles/*.css

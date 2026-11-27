@@ -147,10 +147,9 @@ test('TodayReviewQueueCard some sem revisões e soma tópicos e flashcards em mi
   assert.ok(html.includes('Revisão de hoje: 37 min'));
   assert.ok(html.includes('7 flashcards'));
   assert.ok(html.includes('Revisar agora'));
-  assert.ok(
-    html.includes('data-action="open-recovery-mission"'),
-    'acima do teto oferece o resgate'
-  );
+  assert.ok(html.includes('Hoje cabem'), 'acima do teto diz quanto cabe hoje');
+  // O resgate mora só no card de replanejamento; aqui não se repete.
+  assert.ok(!html.includes('data-action="open-recovery-mission"'));
 });
 
 test('resumo mantém revisões de tópico e flashcards separados sem alterar os dados', () => {

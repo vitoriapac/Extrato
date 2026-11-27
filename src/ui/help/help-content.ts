@@ -912,7 +912,7 @@ studyCategory.entries.push({
   summary: 'Um dia incompleto não apaga o que você estudou.',
   keywords: ['pendência', 'pendências', 'atraso', 'não concluído'],
   paragraphs: [
-    'O rodapé da execução mostra atividades ainda pendentes. O progresso temporal e a contagem de atividades concluídas são medidas diferentes.',
+    'O rodapé da execução mostra as atividades do plano ainda por fazer hoje. O progresso temporal e a contagem de atividades concluídas são medidas diferentes.',
     'Registre o que foi realizado e confira as pendências em Hoje. Sessões sem vínculo contam como estudo adicional; uma atividade incompatível não conclui automaticamente a tarefa planejada. Replanejar exige revisar a proposta e confirmar.',
   ],
   action: { label: 'Revisar em Hoje', target: 'today' },

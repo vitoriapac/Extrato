@@ -642,7 +642,9 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (item.kind === 'event' && ctx.showConfirm) {
       ctx.showConfirm(
         `Mover o evento "${item.title || 'Evento'}" para ${formatDatePt(newDate)}?`,
-        applyMove
+        applyMove,
+        undefined,
+        { title: 'Mover evento?', confirmLabel: 'Mover evento', confirmVariant: 'primary' }
       );
       return;
     }

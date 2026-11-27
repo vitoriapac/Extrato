@@ -63,6 +63,13 @@ for (const source of ['overview', 'today', 'diagnosis'])
         root.querySelectorAll('details').forEach(d => (d.open = true));
       });
     }
+    // Fora do plano, a sugestão de Hoje fica recolhida em "Outra leitura do diagnóstico".
+    if (source === 'today')
+      await page.evaluate(() =>
+        document
+          .querySelectorAll('#studyRecommendation .recommendation-outside-fold')
+          .forEach(d => (d.open = true))
+      );
     const action =
       source === 'overview'
         ? page.locator('#overviewNextAction .overview-action-card[data-activity-type="study"]')

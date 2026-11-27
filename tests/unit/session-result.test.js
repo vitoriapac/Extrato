@@ -150,7 +150,7 @@ test('resultado mostra variação da prontidão e revisões agendadas pela sess�
   });
   assert.equal(withGoal.effects.goal, '80 min de 80 min · cumprida');
   const html = renderSessionResult(model, { escapeHtml: String });
-  assert.match(html, /Prontidão<\/dt><dd>46 → 48\/100 <span class="session-effects__delta">\(\+2\)/);
+  assert.match(html, /Prontidão de hoje \(prévia\)<\/dt><dd>46 → 48\/100 <span class="session-effects__delta">\(\+2\)/);
   assert.match(html, /O índice reúne diferentes sinais/);
   assert.match(html, /não representa probabilidade de aprovação/);
   assert.match(html, /Revisões agendadas<\/dt><dd>2 revisões · próxima em 03\/11\/2026/);

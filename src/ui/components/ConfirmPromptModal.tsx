@@ -17,6 +17,8 @@ export interface ConfirmPromptModalProps {
   onPromptChange?: (value: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Esc, clique fora e o X; por padrão igual a Cancelar. */
+  onDismiss?: () => void;
 }
 
 export function ConfirmPromptModal({
@@ -34,12 +36,13 @@ export function ConfirmPromptModal({
   onPromptChange,
   onConfirm,
   onCancel,
+  onDismiss,
 }: ConfirmPromptModalProps): JSX.Element {
   return (
     <Dialog
       id="modalOverlay"
       open={open}
-      onClose={onCancel}
+      onClose={onDismiss ?? onCancel}
       title={title}
       maxWidth="sm"
       className={open ? 'show' : ''}

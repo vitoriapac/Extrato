@@ -28,7 +28,12 @@ export interface BackupModalControllerContext {
   getState: () => any;
   getDate: () => string;
   notify: (message: string) => void;
-  showConfirm: (message: string, onOk: () => void) => void;
+  showConfirm: (
+    message: string,
+    onOk: () => void,
+    onCancel?: () => void,
+    options?: Record<string, unknown>
+  ) => void;
   showPrompt: (
     message: string,
     config: {
@@ -48,7 +53,12 @@ export interface BackupModalControllerContext {
 }
 
 export function confirmDestructiveReset(
-  showConfirm: (message: string, onOk: () => void) => void,
+  showConfirm: (
+    message: string,
+    onOk: () => void,
+    onCancel?: () => void,
+    options?: Record<string, unknown>
+  ) => void,
   showPrompt: (
     message: string,
     config: {
@@ -73,7 +83,9 @@ export function confirmDestructiveReset(
           validate: value => (value === 'LIMPAR' ? '' : 'Digite LIMPAR exatamente como exibido.'),
         },
         onExecute
-      )
+      ),
+    undefined,
+    { title: 'Limpar todos os dados?', confirmLabel: 'Limpar dados…' }
   );
 }
 
@@ -215,10 +227,12 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
       }
       const summaryText = ctx.summary(result.normalized, result.version || 1);
       ctx.showConfirm(
-        `${summaryText} Importar vai substituir todos os dados atuais. Continuar?`,
+        `${summaryText} Importar vai substituir todos os dados atuais.`,
         () => {
           ctx.onApplyBackup(result.normalized);
-        }
+        },
+        undefined,
+        { title: 'Substituir os dados pelo backup?', confirmLabel: 'Importar e substituir' }
       );
     };
     reader.onerror = () => ctx.notify('Não foi possível ler o arquivo selecionado.');

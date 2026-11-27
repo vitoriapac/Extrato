@@ -4,7 +4,7 @@ import { createQuestionsController } from './questions-controller.js';
 import { cloneRecord } from './questions-tab-controller.js';
 import { buildSimulatedRemediationDiagnostic } from '../../../domain/diagnostics/simulated-remediation.js';
 import { addDays } from '../../../application/selectors/app-selectors.js';
-import { SimulatedRemediationModal } from '../../components/SimulatedRemediationModal.js';
+import { lazyView } from '../../lazy-view.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { createErrorFlashcard } from '../../../domain/notebook/error-notebook-engine.js';
 import { runUndoable } from '../../undoable.js';
@@ -21,6 +21,13 @@ import {
   paceAndGuess,
   examMinutesPerQuestion,
 } from '../../../domain/exams/simulation-score.js';
+
+// Remediação de simulado: só baixa quando aberta.
+const SimulatedRemediationModal = lazyView(() =>
+  import('../../components/SimulatedRemediationModal.js').then(
+    module => module.SimulatedRemediationModal
+  )
+);
 
 export interface SimulationsTabControllerContext {
   document: Document;
@@ -90,10 +97,12 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     const names = new Map<string, string>(
       (ctx.activeSubjects() || []).map((s: { id: string; name: string }) => [s.id, s.name])
     );
-    const subjectMisses = subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(item => ({
-      ...item,
-      name: names.get(item.subjectId) || 'Disciplina removida',
-    }));
+    const subjectMisses = subjectsBelowMinimum(sim, ctx.state?.examBlueprint?.subjects).map(
+      item => ({
+        ...item,
+        name: names.get(item.subjectId) || 'Disciplina removida',
+      })
+    );
     const blockMisses = blocksBelowMinimum(
       sim,
       ctx.state?.examBlueprint?.blocks,

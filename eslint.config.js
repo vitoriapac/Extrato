@@ -7,6 +7,7 @@ export default [
     ignores: [
       '**/node_modules/**',
       'src/*.bundle.js',
+      'src/chunks/**',
       'service-worker.js',
       'styles/tailwind.css',
       '.test-gates/**',

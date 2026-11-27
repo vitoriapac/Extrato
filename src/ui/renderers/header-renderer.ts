@@ -20,7 +20,7 @@ function renderReadinessSub(readiness: Record<string, any>) {
   const [, mm, dd] = String(readiness.closeDate || '').split('-');
   const close =
     readiness.preview != null && dd
-      ? `<span class="readiness-close-note">Fechamento de ${dd}/${mm} · agora ${readiness.preview} (prévia)</span> · `
+      ? `<span class="readiness-close-note">Saldo do fechamento de ${dd}/${mm} · hoje ${readiness.preview} (prévia)</span> · `
       : '';
   if (!missing.length)
     return `${close}${lead} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
@@ -91,6 +91,13 @@ export function renderHeroHeader(model: Record<string, any>, { document }: any) 
 export function renderCompactHeader(model: Record<string, any>, { document, formatDate }: any) {
   document.getElementById('compactReadiness').textContent =
     model.readiness.value == null ? '—' : model.readiness.value + '/100';
+  // O saldo é o último fechamento: a data diz de quando é o número, como no cabeçalho completo.
+  const close = document.getElementById('compactReadinessClose');
+  if (close) {
+    const [, mm, dd] = String(model.readiness.closeDate || '').split('-');
+    close.textContent = dd ? `fech. ${dd}/${mm}` : '';
+    close.hidden = !dd;
+  }
   const exam = document.getElementById('compactExamDate');
   exam.textContent = model.exam.date ? formatDate(model.exam.date) : '';
   exam.hidden = !model.exam.date;

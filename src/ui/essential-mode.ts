@@ -157,7 +157,7 @@ export function renderEssentialGraduation({
   const stay = doc.createElement('button');
   stay.type = 'button';
   stay.className = 'btn ghost small';
-  stay.textContent = 'Continuar no Essencial';
+  stay.textContent = 'Continuar só com o essencial';
   stay.addEventListener('click', () => remember('stay'));
   box.append(text, show, stay);
   slot.replaceChildren(box);

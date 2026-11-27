@@ -1,13 +1,7 @@
 import { h } from 'preact';
 import { mountPreact, unmountPreact } from '../preact-mount.js';
 import { FirstAccessModal } from '../components/FirstAccessModal.js';
-import { SalesLandingPage } from '../components/SalesLandingPage.js';
-import { PaywallModal } from '../components/PaywallModal.js';
-import { AuthAccountModal } from '../components/AuthAccountModal.js';
-import { AdminDashboardView } from '../views/AdminDashboardView.js';
-import { LegalComplianceView } from '../views/LegalComplianceView.js';
-import { CloudExamCatalogModal } from '../components/CloudExamCatalogModal.js';
-import { parseLegalQueryParam } from '../../domain/legal/legal-documents.js';
+import { parseLegalQueryParam } from '../../domain/legal/legal-query-param.js';
 import {
   isFirstAccessSession,
   markFirstAccessDismissed,
@@ -15,14 +9,7 @@ import {
 import type { BillingCycle } from '../../domain/billing/entitlements.js';
 
 export type FirstAccessViewMode =
-  | 'closed'
-  | 'welcome'
-  | 'landing'
-  | 'paywall'
-  | 'auth'
-  | 'admin'
-  | 'legal'
-  | 'catalog';
+  'closed' | 'welcome' | 'landing' | 'paywall' | 'auth' | 'admin' | 'legal' | 'catalog';
 
 export interface FirstAccessModalControllerContext {
   getContainer: () => HTMLElement | null | any;
@@ -46,6 +33,8 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
   let paywallFeatureDescription: string | undefined;
   let legalInitialTab: 'terms' | 'privacy' | 'rights' = 'terms';
   let triggersBound = false;
+  let views: typeof import('./first-access-views.js') | null = null;
+  let viewsLoading: Promise<void> | null = null;
 
   function renderModal() {
     const container = context.getContainer();
@@ -55,6 +44,26 @@ export function createFirstAccessModalController(context: FirstAccessModalContro
       unmountPreact(container);
       return;
     }
+
+    if (activeView !== 'welcome' && !views) {
+      // Primeira vez numa tela rara: baixa o pedaço e desenha a tela que estiver ativa quando chegar.
+      viewsLoading ||= import('./first-access-views.js').then(module => {
+        views = module;
+      });
+      viewsLoading.then(renderModal, error => {
+        viewsLoading = null;
+        console.warn('Não foi possível abrir esta tela agora.', error);
+      });
+      return;
+    }
+    const {
+      SalesLandingPage,
+      PaywallModal,
+      AuthAccountModal,
+      AdminDashboardView,
+      LegalComplianceView,
+      CloudExamCatalogModal,
+    } = views || ({} as typeof import('./first-access-views.js'));
 
     if (activeView === 'landing') {
       mountPreact(

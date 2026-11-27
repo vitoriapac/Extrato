@@ -6,9 +6,14 @@ import {
 } from '../../domain/questions/quick-question-parser.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
-import { BatchQuestionEntryModal } from '../modals/BatchQuestionEntryModal.js';
+import { lazyView } from '../lazy-view.js';
 import type { BatchQuestionBuildResult } from '../../domain/questions/batch-question-entry.js';
 import type { FreshVsRetryStats } from '../../domain/analytics/study-metrics.js';
+
+// Lançamento em lote: só baixa quando aberto.
+const BatchQuestionEntryModal = lazyView(() =>
+  import('../modals/BatchQuestionEntryModal.js').then(module => module.BatchQuestionEntryModal)
+);
 
 export interface QuickQuestionEntryPayload {
   subjectId: string;
@@ -44,9 +49,7 @@ export function QuickQuestionEntryBar({
   onSaveEntry,
   onSaveBatch,
 }: QuickQuestionEntryBarProps): JSX.Element | null {
-  const [subjectId, setSubjectId] = useState<string>(
-    defaultSubjectId || subjects[0]?.id || ''
-  );
+  const [subjectId, setSubjectId] = useState<string>(defaultSubjectId || subjects[0]?.id || '');
   const [topicId, setTopicId] = useState<string>('');
   const [shorthand, setShorthand] = useState<string>('');
   const [pasteOpen, setPasteOpen] = useState<boolean>(false);
@@ -121,16 +124,9 @@ export function QuickQuestionEntryBar({
       aria-label="Registro expresso de questões"
       data-testid="quick-question-entry-bar"
     >
-      <form
-        class="flex flex-wrap items-end gap-2"
-        onSubmit={handleSubmitShorthand}
-        novalidate
-      >
+      <form class="flex flex-wrap items-end gap-2" onSubmit={handleSubmitShorthand} novalidate>
         <div class="flex flex-col gap-1 min-w-[160px] flex-1">
-          <label
-            htmlFor="quickQuestionSubject"
-            class="text-xs font-medium text-content-secondary"
-          >
+          <label htmlFor="quickQuestionSubject" class="text-xs font-medium text-content-secondary">
             Disciplina
           </label>
           <select
@@ -152,10 +148,7 @@ export function QuickQuestionEntryBar({
         </div>
 
         <div class="flex flex-col gap-1 min-w-[160px] flex-1">
-          <label
-            htmlFor="quickQuestionTopic"
-            class="text-xs font-medium text-content-secondary"
-          >
+          <label htmlFor="quickQuestionTopic" class="text-xs font-medium text-content-secondary">
             Tópico (opcional)
           </label>
           <select
@@ -186,13 +179,23 @@ export function QuickQuestionEntryBar({
             type="text"
             class="min-h-control text-xs py-1.5 px-2.5 rounded border border-border-default bg-surface-card text-content-primary"
             placeholder="Ex.: 30q 25c 2b fgv 35m ref ou 25/21 cebraspe"
-            aria-label="Entrada rápida de questões"
+            aria-describedby={
+              submitError
+                ? 'quickQuestionShorthandHint quickQuestionShorthandError'
+                : 'quickQuestionShorthandHint'
+            }
+            aria-invalid={submitError ? 'true' : undefined}
             value={shorthand}
             onInput={e => {
               setShorthand(e.currentTarget.value);
               if (submitError) setSubmitError(null);
             }}
           />
+          {/* A sintaxe fica à vista: o exemplo do campo some ao digitar. */}
+          <p id="quickQuestionShorthandHint" class="text-xs text-content-secondary m-0">
+            q resolvidas · c acertos · b em branco · m minutos; banca e "ref" (refeitas) são
+            opcionais.
+          </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -243,9 +246,7 @@ export function QuickQuestionEntryBar({
             <strong>{parsedShorthand.correct}</strong> acertos (
             {Math.round((parsedShorthand.correct / parsedShorthand.resolved) * 100)}%)
           </span>
-          {parsedShorthand.blank != null && (
-            <span>· {parsedShorthand.blank} em branco</span>
-          )}
+          {parsedShorthand.blank != null && <span>· {parsedShorthand.blank} em branco</span>}
           {(parsedShorthand.banca || defaultBanca) && (
             <span>· Banca: {parsedShorthand.banca || defaultBanca}</span>
           )}
@@ -255,7 +256,7 @@ export function QuickQuestionEntryBar({
       )}
 
       {submitError && (
-        <p class="text-xs text-feedback-danger m-0" role="alert">
+        <p id="quickQuestionShorthandError" class="text-xs text-feedback-danger m-0" role="alert">
           {submitError}
         </p>
       )}
@@ -274,7 +275,9 @@ export function QuickQuestionEntryBar({
           <textarea
             id="quickQuestionPasteTextarea"
             class="w-full h-20 p-2 rounded border border-border-default bg-surface-subtle text-content-primary text-xs"
-            placeholder={'Ex.:\nQuestões resolvidas: 40\nCertas: 32\nErradas: 6\nEm branco: 2\nBanca: Cebraspe\nTempo: 48 min'}
+            placeholder={
+              'Ex.:\nQuestões resolvidas: 40\nCertas: 32\nErradas: 6\nEm branco: 2\nBanca: Cebraspe\nTempo: 48 min'
+            }
             aria-label="Texto colado do TEC ou QConcursos"
             value={pasteText}
             onInput={e => {
@@ -311,12 +314,15 @@ export function QuickQuestionEntryBar({
         >
           <span>
             Últimos {freshVsRetryStats.windowDays}d:{' '}
-            <strong>{freshVsRetryStats.freshPercent}% inéditas</strong> ({freshVsRetryStats.freshResolved}) ·{' '}
-            <strong>{freshVsRetryStats.retryPercent}% refeitas</strong> ({freshVsRetryStats.retryResolved})
+            <strong>{freshVsRetryStats.freshPercent}% inéditas</strong> (
+            {freshVsRetryStats.freshResolved}) ·{' '}
+            <strong>{freshVsRetryStats.retryPercent}% refeitas</strong> (
+            {freshVsRetryStats.retryResolved})
           </span>
           {freshVsRetryStats.highRetryAlert && (
             <span class="text-status-warning font-medium">
-              Atenção: &gt;40% de questões repetidas nos últimos {freshVsRetryStats.windowDays} dias.
+              Atenção: &gt;40% de questões repetidas nos últimos {freshVsRetryStats.windowDays}{' '}
+              dias.
             </span>
           )}
         </div>

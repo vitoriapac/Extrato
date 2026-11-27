@@ -5,8 +5,14 @@ import {
   computeDraftOverloadPreview,
   type UnifiedCalendarItem,
 } from '../../../domain/calendar/calendar-projection.js';
-import { CalendarActivityModal, type CalendarActivityDraft } from './CalendarActivityModal.js';
+import type { CalendarActivityDraft } from './CalendarActivityModal.js';
+import { lazyView } from '../../lazy-view.js';
 import type { CalendarTabControllerContext } from './calendar-tab-controller.js';
+
+// Modal de atividade da Agenda: só baixa quando aberto.
+const CalendarActivityModal = lazyView(() =>
+  import('./CalendarActivityModal.js').then(module => module.CalendarActivityModal)
+);
 
 export interface CalendarActivityModalDeps {
   ctx: CalendarTabControllerContext;
@@ -121,7 +127,10 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
     ) {
       const deduction = weightVal * ((Number.isFinite(errorsVal) ? errorsVal : 0) / linesVal);
       const maxLim = Number(item.essayMaxScore) > 0 ? Number(item.essayMaxScore) : 100;
-      const reconstructedNc = Math.min(maxLim, Math.round((Number(item.essayScore) + deduction) * 100) / 100);
+      const reconstructedNc = Math.min(
+        maxLim,
+        Math.round((Number(item.essayScore) + deduction) * 100) / 100
+      );
       initialEssayScore = String(reconstructedNc);
     }
     ui.modalDraft = {
@@ -186,7 +195,8 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
       isCebraspeEssay && Number.isFinite(essayScoreNum) && essayScoreNum >= 0
         ? calculateCebraspeEssayScore({
             contentScore: essayScoreNum,
-            maxScore: Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : 20,
+            maxScore:
+              Number.isFinite(essayMaxScoreNum) && essayMaxScoreNum > 0 ? essayMaxScoreNum : 20,
             linesWritten: linesNum,
             grammarErrors: Number.isFinite(errorsNum) ? errorsNum : 0,
             errorWeight: weightNum,
@@ -214,10 +224,8 @@ export function createCalendarActivityModalController(deps: CalendarActivityModa
             essayTheme: draft.essayTheme.trim() || null,
             essayKind: draft.essayKind || 'redacao',
             essayScoringMode: draft.essayScoringMode || 'padrao',
-            essayLinesWritten:
-              isCebraspeEssay && Number.isFinite(linesNum) ? linesNum : null,
-            essayGrammarErrors:
-              isCebraspeEssay && Number.isFinite(errorsNum) ? errorsNum : null,
+            essayLinesWritten: isCebraspeEssay && Number.isFinite(linesNum) ? linesNum : null,
+            essayGrammarErrors: isCebraspeEssay && Number.isFinite(errorsNum) ? errorsNum : null,
             essayErrorWeight: isCebraspeEssay ? weightNum : null,
             essayScore: finalEssayScore,
             essayMaxScore:

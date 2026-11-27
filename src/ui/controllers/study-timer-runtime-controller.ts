@@ -406,6 +406,13 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
             () => {
               resetTimer();
               showToast('Intervalo recuperado descartado.');
+            },
+            {
+              title: 'Manter o tempo recuperado?',
+              confirmLabel: 'Manter tempo',
+              cancelLabel: 'Descartar tempo',
+              dismissConfirms: true,
+              confirmVariant: 'primary',
             }
           ),
         0
@@ -558,7 +565,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
           document.getElementById('sessionModalSkipBtn')?.focus();
         });
       },
-      { confirmLabel: 'Descartar sessão' }
+      { title: 'Descartar a sessão?', confirmLabel: 'Descartar sessão' }
     );
   }
 
@@ -675,7 +682,10 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
       if (timerSeconds === 0) {
         return;
       }
-      showConfirm('Zerar o cronômetro? O tempo desta sessão será perdido.', resetTimer);
+      showConfirm('O tempo desta sessão será perdido.', resetTimer, undefined, {
+        title: 'Zerar o cronômetro?',
+        confirmLabel: 'Zerar cronômetro',
+      });
     });
     document.getElementById('timerFinishBtn')!.addEventListener('click', finishStudyTimer);
     const timerPipBtn = document.getElementById('timerPipBtn');
@@ -802,6 +812,13 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
           () => {
             resetTimer();
             showToast('Intervalo descartado.');
+          },
+          {
+            title: 'Manter o intervalo?',
+            confirmLabel: 'Manter intervalo',
+            cancelLabel: 'Descartar intervalo',
+            dismissConfirms: true,
+            confirmVariant: 'primary',
           }
         );
       } else {

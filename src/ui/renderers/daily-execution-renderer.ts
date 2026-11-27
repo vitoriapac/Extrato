@@ -86,5 +86,5 @@ export function renderDailyExecution(
     }
     ${model.needsPlanReview ? '<p class="context-note context-note--info">Há atividades que não estão vinculadas ao plano semanal atual. Elas foram preservadas; revise a distribuição em Planejamento.</p>' : ''}
     ${priority.following.length ? `<details class="daily-execution-following"><summary>Depois · ${priority.following.length} ${priority.following.length === 1 ? 'atividade' : 'atividades'}</summary><ul>${rows(priority.following)}</ul></details>` : ''}
-    ${progress.pendingActivities ? `<footer class="daily-execution-footer"><span>${progress.pendingActivities} atividade${progress.pendingActivities === 1 ? '' : 's'} pendente${progress.pendingActivities === 1 ? '' : 's'}. <button type="button" class="btn ghost small" data-delegated-click="navigateKpi('hoje')">Revisar pendências</button></span></footer>` : ''}</section>`;
+    ${progress.pendingActivities ? `<footer class="daily-execution-footer"><span>${progress.pendingActivities} atividade${progress.pendingActivities === 1 ? '' : 's'} do plano por fazer hoje. <button type="button" class="btn ghost small" data-delegated-click="navigateKpi('hoje')">Abrir o plano de hoje</button></span></footer>` : ''}</section>`;
 }

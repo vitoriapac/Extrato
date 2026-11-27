@@ -34,14 +34,16 @@ export function TodayExecutionModeSwitch({
         <Button
           id="dailyFocusToggleBtn"
           type="button"
-          variant={dailyFocusMode ? 'primary' : 'ghost'}
+          variant="ghost"
           size="small"
+          className="daily-focus-toggle"
           aria-pressed={dailyFocusMode}
-          aria-label="Alternar Modo Foco Diário"
           onClick={() => onToggleDailyFocus(!dailyFocusMode)}
         >
           <Icon name="target" size={14} class="icon-inline" />
-          {dailyFocusMode ? 'Modo Foco: Ativo' : 'Modo Foco'}
+          Modo Foco
+          {/* Preferência ligada/desligada, como em Preferências: não compete com Iniciar. */}
+          <span class="daily-focus-toggle__state">{dailyFocusMode ? 'Ligado' : 'Desligado'}</span>
         </Button>
       )}
     </div>

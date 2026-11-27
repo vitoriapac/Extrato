@@ -160,7 +160,7 @@ export function createCalendarPendingLists(deps: CalendarPendingListsDeps) {
     }
 
     ul.innerHTML =
-      `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}${pluralize(entries.length, 'data', 'datas')} · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar Atrasos (Missão)</button></li>` +
+      `<li class="overdue-summary"><strong>${pluralize(items.length, 'pendência atrasada', 'pendências atrasadas')}</strong><span>${overdueOrigin(items)}${pluralize(entries.length, 'data', 'datas')} · mais antiga em ${formatDatePt(entries[0][0])}</span><button type="button" class="btn small mt-2 w-full" data-action="open-recovery-mission">Resgatar atrasos</button></li>` +
       // Todas as datas: "Mostrar mais" é do montador de listas (#calAtrasadas).
       entries
         .map(([date, dateItems]) => {

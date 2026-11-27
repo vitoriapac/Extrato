@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { build } from 'esbuild';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -37,6 +37,8 @@ async function filesUnder(directory) {
 const indexPath = resolve(projectRoot, 'index.html');
 const indexSource = await readFile(indexPath, 'utf8');
 const normalizedIndex = indexSource
+  // As linhas de modulepreload são geradas a cada build (ver abaixo); não entram na versão.
+  .replace(/[ \t]*<link rel="modulepreload" href="src\/chunks\/[^"]+">\r?\n/g, '')
   .replace(assetVersionPattern, `$1${versionPlaceholder}`)
   .replace(
     /<link rel="icon"[^>]*>/,
@@ -54,9 +56,15 @@ const normalizedLanding = landingSource
     '  <meta name="color-scheme"',
     '  <link rel="icon" type="image/svg+xml" href="/icons/app-icon.svg">\n  <meta name="color-scheme"'
   );
+// O app é ESM com divisão de código: os pedaços compartilhados e os carregados sob demanda
+// saem com hash no nome em src/chunks/ (gerados, fora da versão e do lint).
+const chunkDir = 'src/chunks';
 const sourceFiles = [
   ...(await filesUnder('src')).filter(
-    path => /\.(?:js|ts|tsx)$/.test(path) && !bundles.some(bundle => bundle.output === path)
+    path =>
+      /\.(?:js|ts|tsx)$/.test(path) &&
+      !bundles.some(bundle => bundle.output === path) &&
+      !path.startsWith(`${chunkDir}/`)
   ),
   ...(await filesUnder('styles')).filter(
     path => path.endsWith('.css') && path !== 'styles/tailwind.css'
@@ -89,7 +97,6 @@ const serviceWorkerTemplate = await readFile(
   resolve(projectRoot, 'service-worker.template.js'),
   'utf8'
 );
-const generatedServiceWorker = serviceWorkerTemplate.replaceAll(versionPlaceholder, buildVersion);
 
 let stale = false;
 async function writeOrCheck(output, generated) {
@@ -120,6 +127,7 @@ async function writeOrCheck(output, generated) {
       stale = true;
     } else console.log(`${output} atualizado e reproduzivel.`);
   } else {
+    await mkdir(dirname(outputFile), { recursive: true });
     await writeFile(outputFile, stableGenerated, 'utf8');
     console.log(`Arquivo atualizado: ${outputFile}`);
   }
@@ -141,12 +149,23 @@ try {
 }
 await writeOrCheck('styles/tailwind.css', generatedTailwind);
 
+const chunkFiles = [];
+const startupChunks = [];
 for (const bundle of bundles) {
+  const isApp = bundle.output === 'src/app.bundle.js';
   const result = await build({
     entryPoints: [resolve(projectRoot, bundle.entry)],
     bundle: true,
     write: false,
-    format: 'iife',
+    format: isApp ? 'esm' : 'iife',
+    ...(isApp
+      ? {
+          splitting: true,
+          outdir: resolve(projectRoot, 'src'),
+          entryNames: 'app.bundle',
+          chunkNames: 'chunks/[name]-[hash]',
+        }
+      : {}),
     platform: 'browser',
     target: ['es2020'],
     charset: 'utf8',
@@ -154,12 +173,63 @@ for (const bundle of bundles) {
     jsxImportSource: 'preact',
     legalComments: 'none',
     minify: true,
+    metafile: isApp,
     define: { __STUDYTRACK_BUILD_VERSION__: JSON.stringify(buildVersion) },
     banner: { js: '/* Arquivo gerado. Edite os modulos em src/, nao este bundle. */' },
   });
-  await writeOrCheck(bundle.output, result.outputFiles[0].text);
+  if (!isApp) {
+    await writeOrCheck(bundle.output, result.outputFiles[0].text);
+    continue;
+  }
+  for (const file of result.outputFiles) {
+    const output = relative(projectRoot, file.path).replaceAll('\\', '/');
+    if (output.startsWith(`${chunkDir}/`)) chunkFiles.push(output);
+    await writeOrCheck(output, file.text);
+  }
+  // Pedaços que a abertura importa de forma estática: pré-carregados em paralelo, sem cascata.
+  const outputs = result.metafile.outputs;
+  const toPath = key => relative(projectRoot, resolve(projectRoot, key)).replaceAll('\\', '/');
+  const startup = new Set();
+  const walk = key => {
+    for (const dependency of outputs[key].imports) {
+      if (dependency.kind !== 'import-statement' || startup.has(dependency.path)) continue;
+      startup.add(dependency.path);
+      walk(dependency.path);
+    }
+  };
+  walk(Object.keys(outputs).find(key => outputs[key].entryPoint));
+  startupChunks.push(...[...startup].map(toPath).sort());
 }
-await writeOrCheck('index.html', generatedIndex);
+// Pedaços de builds anteriores (hash antigo) saem: só fica o que este build gerou.
+const existingChunks = await filesUnder(chunkDir).catch(() => []);
+for (const old of existingChunks.filter(path => !chunkFiles.includes(path))) {
+  if (checkOnly) {
+    console.error(`${old} sobrou de um build anterior. Execute npm run build.`);
+    stale = true;
+  } else {
+    await rm(resolve(projectRoot, old));
+    console.log(`Pedaço antigo removido: ${old}`);
+  }
+}
+const generatedServiceWorker = serviceWorkerTemplate
+  .replaceAll(versionPlaceholder, buildVersion)
+  .replace(
+    /  '__APP_CHUNKS__',\r?\n/,
+    chunkFiles
+      .sort()
+      .map(path => `  './${path}',\n`)
+      .join('')
+  );
+const appScriptTag = /([ \t]*)<script type="module" src="src\/app\.bundle\.js\?v=/;
+const indentation = generatedIndex.match(appScriptTag)?.[1] ?? '  ';
+await writeOrCheck(
+  'index.html',
+  generatedIndex.replace(
+    appScriptTag,
+    startupChunks.map(path => `${indentation}<link rel="modulepreload" href="${path}">\n`).join('') +
+      `${indentation}<script type="module" src="src/app.bundle.js?v=`
+  )
+);
 await writeOrCheck('landing.html', normalizedLanding.replaceAll(versionPlaceholder, buildVersion));
 await writeOrCheck('service-worker.js', generatedServiceWorker);
 if (stale) process.exitCode = 1;

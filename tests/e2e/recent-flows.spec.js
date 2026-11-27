@@ -50,6 +50,11 @@ test.describe('validação dos fluxos recentes', () => {
       action =
         /Iniciar estudo|Iniciar revisão|Resolver questões|Estudar pré-requisito|Estudar como atividade adicional/i;
     await expect(recommendation).toContainText(action, { timeout: 10_000 });
+    await page.evaluate(() =>
+      document
+        .querySelectorAll('#studyRecommendation .recommendation-outside-fold')
+        .forEach(d => (d.open = true))
+    );
     const start = recommendation.getByRole('button', { name: action }).first();
     await expect(start).toBeVisible();
     const label = await start.innerText();
@@ -97,6 +102,11 @@ test.describe('validação dos fluxos recentes', () => {
       api.renderAll();
     });
     await activateTab(page, 'hoje');
+    await page.evaluate(() =>
+      document
+        .querySelectorAll('#studyRecommendation .recommendation-outside-fold')
+        .forEach(d => (d.open = true))
+    );
     const action = page
       .locator('#studyRecommendation')
       .getByRole('button', { name: /Iniciar estudo|Estudar como atividade adicional/i })

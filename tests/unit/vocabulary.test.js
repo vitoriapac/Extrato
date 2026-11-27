@@ -7,6 +7,16 @@ import { EVIDENCE_LABELS } from '../../src/ui/performance/evidence-badge.js';
 
 const escapeHtml = value => String(value);
 
+// O app é ESM com divisão de código: o texto do app está no bundle principal e em src/chunks/.
+async function readAppBundleSource() {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const chunks = new URL('../../src/chunks/', import.meta.url);
+  return [
+    readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8'),
+    ...readdirSync(chunks).map(name => readFileSync(new URL(name, chunks), 'utf8')),
+  ].join(String.fromCharCode(10));
+}
+
 test('domínio e retenção da Matriz saem sempre em /100, nunca em %', () => {
   const html = renderPedagogicalMatrixSection(
     {
@@ -66,8 +76,7 @@ test('subaba: um "Copiar link" e linha de comparação só quando há comparaç�
 });
 
 test('bundle: sem "domínio N%", "Gap de" nem "Presença" como rótulo de incidência nas telas de análise', async () => {
-  const { readFileSync } = await import('node:fs');
-  const bundle = readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8');
+  const bundle = await readAppBundleSource();
   assert.doesNotMatch(bundle, /[Dd]omínio \d+(,\d)?%/);
   assert.doesNotMatch(bundle, /Gap de \$\{/);
   assert.doesNotMatch(bundle, /<p>Presença \$\{/);
@@ -169,8 +178,7 @@ test('card do Diagnóstico: ação tonal (repetida na lista), as demais discreta
 });
 
 test('bundle: filtros de retenção por evidência, pesos nomeados e lacuna/impacto em /100', async () => {
-  const { readFileSync } = await import('node:fs');
-  const bundle = readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8');
+  const bundle = await readAppBundleSource();
   assert.doesNotMatch(bundle, /Todas as confianças|Confiança alta|Filtrar retenção por confiança/);
   assert.doesNotMatch(bundle, /'(Cobertura|Domínio|Retenção|Consistência|Simulados) · \d+%'/);
   assert.match(bundle, /Cobertura \(peso 30%\)/);
@@ -178,8 +186,7 @@ test('bundle: filtros de retenção por evidência, pesos nomeados e lacuna/impa
 });
 
 test('contrato de grandezas: cobertura e retenção em /100, "ritmo em construção" e "base histórica" da banca', async () => {
-  const { readFileSync } = await import('node:fs');
-  const bundle = readFileSync(new URL('../../src/app.bundle.js', import.meta.url), 'utf8');
+  const bundle = await readAppBundleSource();
   assert.match(bundle, /coverage:\["Cobertura","\/100"\]/);
   assert.doesNotMatch(bundle, /Fase de Constru[cç][aã]o|Fase de constru[cç][aã]o de base/);
   assert.match(bundle, /base histórica/);

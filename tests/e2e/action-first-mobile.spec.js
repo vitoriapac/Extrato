@@ -48,6 +48,12 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
       )
       .toBe(true);
   }
+  // Fora do plano, a sugestão fica recolhida em "Outra leitura do diagnóstico".
+  await page.evaluate(() =>
+    document
+      .querySelectorAll('#studyRecommendation .recommendation-outside-fold')
+      .forEach(d => (d.open = true))
+  );
   await expect(
     page.locator('#studyRecommendation .recommendation-actions .btn').first()
   ).toBeVisible();
@@ -76,8 +82,14 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
     .locator('#alertasInteligentesList')
     .evaluate(element => element.getBoundingClientRect().top);
   expect(plan).toBeLessThan(action);
-  expect(action).toBeLessThan(alerts);
+  // Com o Modo Foco ligado (padrão da demo), "Atenção" sai da tela de propósito.
+  if (await page.locator('#alertasInteligentesList').isVisible()) expect(action).toBeLessThan(alerts);
   await expect(page.getByRole('heading', { name: 'Sugestão do diagnóstico', exact: true })).toBeVisible();
+  await page.evaluate(() =>
+    document
+      .querySelectorAll('#studyRecommendation .recommendation-outside-fold')
+      .forEach(d => (d.open = true))
+  );
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(page.locator('#planoHojeContent')).toBeVisible();

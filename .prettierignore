@@ -1,5 +1,6 @@
 node_modules/
 src/app.bundle.js
+src/chunks/
 src/exam-catalog.bundle.js
 src/report.bundle.js
 src/help.bundle.js

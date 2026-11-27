@@ -65,10 +65,12 @@ export function buildAffectedTestPlan({
     .sort();
   let full = !diffAvailable;
   if (full) reasons.push({ code: 'diff_unavailable' });
-  const generated = new Set(['src/app.bundle.js', 'src/exam-catalog.bundle.js']);
+  const generatedBundles = new Set(['src/app.bundle.js', 'src/exam-catalog.bundle.js']);
+  // src/chunks/: pedaços do app gerados pelo build (ESM com divisão de código).
+  const isGenerated = file => generatedBundles.has(file) || file.startsWith('src/chunks/');
   const sourceChanged = files.some(
     file =>
-      (file.startsWith('src/') && !generated.has(file)) ||
+      (file.startsWith('src/') && !isGenerated(file)) ||
       file.startsWith('styles/') ||
       file.startsWith('icons/')
   );
@@ -79,7 +81,7 @@ export function buildAffectedTestPlan({
       continue;
     }
     if (file.endsWith('.md')) continue;
-    if (generated.has(file) && sourceChanged) {
+    if (isGenerated(file) && sourceChanged) {
       reasons.push({ code: 'derived_artifact', file });
       continue;
     }

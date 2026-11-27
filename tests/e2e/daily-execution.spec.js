@@ -240,6 +240,10 @@ test('sugestão fora do plano permite dispensar sem alterar a agenda', async ({ 
   await expect(action).toHaveClass(/is-outside-plan/);
   await expect(action.locator('.priority-score-gauge')).toHaveCount(0);
   await expect(action.getByRole('button', { name: /Seguir plano de hoje/ })).toHaveCount(0);
+  // Recolhida por padrão: o Plano de hoje é a única prioridade à vista.
+  const fold = page.locator('#studyRecommendation .recommendation-outside-fold');
+  await expect(fold).not.toHaveAttribute('open', '');
+  await fold.locator(':scope > summary').click();
   await expect(
     action.getByRole('button', { name: /Estudar como atividade adicional/ })
   ).toBeVisible();

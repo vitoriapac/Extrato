@@ -25,34 +25,29 @@ export function RealWeekBanner({
 
   return (
     <aside
-      class="mb-4 p-4 rounded-default border border-accent/30 bg-surface-elevated shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+      class="mb-4 p-4 rounded-default border border-accent/30 bg-surface-elevated flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4"
       role="region"
       aria-label="Replanejamento da semana"
     >
-      <div class="flex items-start gap-4">
+      <div class="flex items-start gap-4 flex-1 min-w-0">
         <div class="p-2 rounded-default bg-accent/10 text-accent shrink-0">
           <Icon name="heart-handshake" size={20} class="shrink-0" />
         </div>
         <div class="space-y-1">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h4 class="font-semibold text-sm text-content-primary m-0 tracking-tight">
-              Sua semana não saiu como planejada? Tudo bem.
-            </h4>
-            <span class="text-xs px-2 py-1 rounded font-medium bg-accent/10 text-accent">
-              Replanejamento
-            </span>
-          </div>
+          <h4 class="font-semibold text-sm text-content-primary m-0 tracking-tight">
+            Sua semana não saiu como planejada? Tudo bem.
+          </h4>
           <p class="text-xs text-content-secondary leading-relaxed max-w-2xl m-0">
             {hasOverdue && hasDeficit
-              ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'pendência atrasada' : 'pendências atrasadas'} e ${formatPlanMinutes(deficitMinutes)} a redistribuir. A consistência se constrói na adaptação, não na culpa: resgate em blocos curtos ou redistribua o saldo sem perder seu histórico.`
+              ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'pendência atrasada' : 'pendências atrasadas'} e ${formatPlanMinutes(deficitMinutes)} a redistribuir. Resgate em blocos curtos ou redistribua nos próximos dias; seu histórico fica como está.`
               : hasOverdue
-                ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'pendência aguardando resgate' : 'pendências aguardando resgate'}. Em vez de acumular ansiedade, recupere os tópicos essenciais em uma missão rápida e guiada de até 30 minutos.`
+                ? `Você tem ${overdueCount} ${overdueCount === 1 ? 'pendência aguardando resgate' : 'pendências aguardando resgate'}. Uma missão guiada de até 30 minutos recupera as essenciais.`
                 : `Você tem ${formatPlanMinutes(deficitMinutes)} de tarefas marcadas ainda por fazer nesta semana. Redistribua nos próximos dias, respeitando sua disponibilidade.`}
           </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 self-end md:self-center shrink-0 flex-wrap">
+      <div class="flex items-center gap-2 self-end xl:self-center shrink-0 flex-wrap">
         {hasOverdue && onOpenRecoveryMission && (
           <Button
             variant="secondary"

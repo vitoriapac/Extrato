@@ -209,7 +209,12 @@ export function createNavigationController({
           (HTMLElement & { open?: boolean }) | null;
         if (modalOverlay?.classList.contains('show') || modalOverlay?.open) {
           event.preventDefault();
-          document.getElementById('modalCancelBtn')?.click();
+          // Esc é "sair", não "Cancelar": o diálogo decide (onDismiss), p.ex. manter o tempo recuperado.
+          if (modalOverlay.tagName === 'DIALOG') {
+            modalOverlay.dispatchEvent(new Event('cancel', { cancelable: true }));
+          } else {
+            document.getElementById('modalCancelBtn')?.click();
+          }
           return;
         }
         if (document.querySelector?.('dialog[open]')) {

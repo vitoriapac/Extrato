@@ -238,10 +238,15 @@ export function buildDelegatedActionHandlers(
       c.dashboard?.viewSelectedHeatmapSessions?.(...args),
     toggleStreakActiveDays: (...args: any[]) => c.dashboard?.toggleStreakActiveDays?.(...args),
     openNextSessionAction: () => {
-      deps.activateTab('dashboard');
-      deps.document
-        ?.getElementById('overviewNextAction')
-        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+      // O lançamento fecha e o plano volta a ser o primeiro bloco de Hoje.
+      const result = deps.document?.getElementById('sessionResult');
+      if (result) result.hidden = true;
+      deps.activateTab('hoje');
+      const plan = deps.document?.querySelector('.plano-hoje-card') as HTMLElement | null;
+      plan?.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
+      (plan?.querySelector('.plano-item-actions button') as HTMLElement | null)?.focus({
+        preventScroll: true,
+      });
     },
     chainQuestionsForTopic: (subjectId?: string, topicId?: string) => {
       deps.activateTab('questoes');

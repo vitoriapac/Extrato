@@ -2,6 +2,7 @@ import type { ComponentChildren, JSX } from 'preact';
 import { useEffect, useId, useRef } from 'preact/hooks';
 import { Button } from './button.js';
 import { Icon } from './icon.js';
+import { captureFocusOnOpen, restoreFocusTo } from './dialog.js';
 
 export type BottomSheetProps = Omit<JSX.IntrinsicElements['dialog'], 'title'> & {
   open: boolean;
@@ -41,6 +42,7 @@ export function BottomSheet({
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
+  captureFocusOnOpen(open, wasOpenRef.current, previousFocusRef);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -74,13 +76,9 @@ export function BottomSheet({
       const targetToFocus = previousFocusRef.current;
       previousFocusRef.current = null;
       if (restoreFocusOnClose && targetToFocus && typeof targetToFocus.focus === 'function') {
-        if (targetToFocus.isConnected) {
-          targetToFocus.focus();
-        }
+        restoreFocusTo(targetToFocus);
         queueMicrotask(() => {
-          if (targetToFocus.isConnected && document.activeElement !== targetToFocus) {
-            targetToFocus.focus();
-          }
+          if (document.activeElement !== targetToFocus) restoreFocusTo(targetToFocus);
         });
       }
     }

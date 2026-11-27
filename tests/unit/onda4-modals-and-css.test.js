@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
-import { Dialog, isBackdropClick, syncDialogOpen } from '../../src/ui/primitives/dialog.js';
+import { Dialog, captureFocusOnOpen, isBackdropClick, syncDialogOpen } from '../../src/ui/primitives/dialog.js';
 import { DataManagementModal } from '../../src/ui/modals/DataManagementModal.js';
 import { ExamClassificationModal } from '../../src/ui/modals/ExamClassificationModal.js';
 import { StructuredImportModal } from '../../src/ui/modals/StructuredImportModal.js';
@@ -406,5 +406,31 @@ test('Governança Onda 4 — cascade @layer único no app.css, zero CSS duplicad
       `HTML imperativo proibido em ${file}`
     );
     assert.ok(!/\bstyle=/.test(src), `Style inline proibido em ${file}`);
+  }
+});
+
+test('captureFocusOnOpen guarda a origem do foco antes de showModal(), e só na abertura', () => {
+  const previous = globalThis.document;
+  const trigger = { closest: () => null };
+  const body = {};
+  globalThis.document = { activeElement: trigger, body };
+  try {
+    const ref = { current: null };
+    captureFocusOnOpen(true, false, ref);
+    assert.equal(ref.current, trigger, 'abertura guarda o botão que abriu');
+    const inside = { closest: () => ({}) };
+    globalThis.document.activeElement = inside;
+    captureFocusOnOpen(true, true, ref);
+    assert.equal(ref.current, trigger, 'rerender com o diálogo aberto não troca a origem');
+    const fresh = { current: null };
+    captureFocusOnOpen(true, false, fresh);
+    assert.equal(fresh.current, null, 'foco já dentro de um diálogo aberto não vira origem');
+    globalThis.document.activeElement = body;
+    captureFocusOnOpen(true, false, fresh);
+    assert.equal(fresh.current, null, 'body não é origem');
+    captureFocusOnOpen(false, false, fresh);
+    assert.equal(fresh.current, null);
+  } finally {
+    globalThis.document = previous;
   }
 });

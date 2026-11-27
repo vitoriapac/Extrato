@@ -263,7 +263,7 @@ Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com
   - `secondary-bg` (`#FBEBDA` claro, `#2E2112` escuro): fundo de selo `.status-badge--highlight`.
   Componentes: `.btn.secondary`, `.card--secondary`, `.status-badge--highlight`.
   Presença contínua (sempre em `secondary-text`/`secondary-strong`, nunca em texto longo; eyebrows e rótulos de meta sobre papel ficam em `ink-soft`): barra antes dos títulos de card e de seção, preenchimento das barras de progresso (metas, plano, diagnóstico, foco semanal, conquistas, cronômetro), semana atual no gráfico de ritmo, cabeçalho de tabela (`2px`), sublinhado das sub-abas ativas e sublinhado dos botões terciários.
-- **Âmbar Saldo** (`attention`, `#E9953F`): continua o tom do saldo da prontidão, da contagem regressiva e da barra até a prova, mas agora é só um alias semântico de estado.
+- **Âmbar Saldo** (`attention`, `#E9953F`): o tom do saldo da prontidão abaixo da meta, como alias semântico de estado. A contagem regressiva e a barra até a prova ficam em Sálvia Claro; a contagem só vira âmbar (`--warn-on-dark`) a 7 dias ou menos da prova.
 
 ### Tertiary (semânticos)
 - **Verde Conta** (`green` sobre `green-bg`): positivo, meta atingida.

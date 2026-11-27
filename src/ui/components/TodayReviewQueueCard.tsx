@@ -61,15 +61,10 @@ export function TodayReviewQueueCard({
         </div>
       )}
       {load.overCap && (
-        <div class="flex flex-wrap items-center justify-between gap-2" role="status">
-          <span class="text-content-secondary">
-            Passou do teto. Faça hoje só o que cabe em {formatMinutes(load.capMinutes!)}, começando
-            pelas atrasadas de maior peso; o resto entra nos próximos dias.
-          </span>
-          <button type="button" class="btn tonal small" data-action="open-recovery-mission">
-            Resgatar atrasos
-          </button>
-        </div>
+        <p class="text-content-secondary m-0" role="status">
+          Hoje cabem {formatMinutes(load.capMinutes!)} de revisão. Comece pelas de maior peso; o
+          resto entra nos próximos dias.
+        </p>
       )}
     </section>
   );

@@ -7,8 +7,9 @@ import { gzipSync } from 'node:zlib';
 const srcDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 const format = bytes => bytes.toLocaleString('pt-BR');
 
-const rows = readdirSync(srcDir)
-  .filter(name => name.endsWith('.bundle.js'))
+// O app é ESM com divisão de código: os pedaços em src/chunks/ entram na conta.
+const chunkNames = readdirSync(resolve(srcDir, 'chunks')).map(name => `chunks/${name}`);
+const rows = [...readdirSync(srcDir).filter(name => name.endsWith('.bundle.js')), ...chunkNames]
   .sort()
   .map(name => {
     const content = readFileSync(resolve(srcDir, name));

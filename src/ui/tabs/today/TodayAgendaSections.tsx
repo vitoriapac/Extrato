@@ -67,7 +67,7 @@ export function TodayAgendaSections({
               aria-label="Abrir missão de recuperação de revisões atrasadas"
             >
               <Icon name="bolt" size={14} class="shrink-0" />
-              <span>Resgatar Atrasos</span>
+              <span>Resgatar atrasos</span>
             </Button>
           )}
         </div>

@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=6eed4484bd43">
-<link rel="stylesheet" href="styles/app.css?v=6eed4484bd43">
+<link rel="stylesheet" href="styles/tailwind.css?v=feb016c36d86">
+<link rel="stylesheet" href="styles/app.css?v=feb016c36d86">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -40,9 +40,9 @@
       <p id="demoIntroDescription">Explore cerca de cinco meses de dados fictícios. Seus registros pessoais ficam preservados.</p>
       <ul class="demo-intro-features">
         <li>17 disciplinas e 305 tópicos alinhados a BB e Caixa</li>
-        <li>1.750 questões de estudo e Detector de Platô com prescrições</li>
+        <li>1.750 questões de estudo e os tópicos estagnados, com o que fazer em cada um</li>
         <li>Caderno de Erros com flashcards e pegadinhas de banca</li>
-        <li>Análise cronobiológica de turnos (Manhã, Tarde, Noite) e fadiga</li>
+        <li>Rendimento por turno de estudo (manhã, tarde e noite) e sinais de cansaço</li>
         <li>9 simulados, 50 revisões, metas e 14 fechamentos semanais</li>
       </ul>
       <div class="demo-intro-actions"><button class="btn ghost" type="button" id="cancelDemoIntroBtn">Cancelar</button><button class="btn" type="button" id="confirmDemoIntroBtn">Carregar demonstração</button></div>
@@ -89,7 +89,7 @@
   </div>
 
   <div class="sticky-shell">
-    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral"><img src="icons/app-icon.svg" alt="" width="28" height="28">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flame icon-inline" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
+    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral"><img src="icons/app-icon.svg" alt="" width="28" height="28">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b><small class="compact-readiness-close" id="compactReadinessClose" hidden></small></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flame icon-inline" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
     <div class="primary-nav-shell">
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
         <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-layout-dashboard tab-icon" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Visão</span></span></button>
@@ -115,7 +115,7 @@
     <div class="preferences-menu" id="preferencesMenu">
       <button class="theme-toggle-btn preferences-menu__trigger" id="preferencesMenuBtn" type="button" aria-expanded="false" aria-controls="preferencesMenuItems" aria-label="Preferências de exibição"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-sparkles" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg><span class="theme-toggle-label">Preferências</span></button>
       <div class="preferences-menu__items" id="preferencesMenuItems">
-        <button class="theme-toggle-btn" id="essentialToggleBtn" type="button" aria-pressed="false" aria-label="Modo essencial" title="Modo completo (ativo)"><span class="theme-toggle-label">Essencial</span></button>
+        <button class="theme-toggle-btn" id="essentialToggleBtn" type="button" aria-pressed="false" aria-label="Só o essencial" title="Todas as análises ficam à vista"><span class="theme-toggle-label">Só o essencial</span></button>
         <button class="theme-toggle-btn" id="densityToggleBtn" type="button" aria-pressed="false" aria-label="Densidade compacta" title="Densidade confortável (ativa)"><span class="theme-toggle-label">Densidade</span></button>
         <button class="theme-toggle-btn" id="reviewReminderToggleBtn" type="button" aria-pressed="false" aria-label="Lembrete diário de revisão"><span class="theme-toggle-label">Lembrete</span></button>
         <button class="theme-toggle-btn" id="optionalModulesBtn" type="button" aria-haspopup="dialog"><span class="theme-toggle-label">Módulos</span></button>
@@ -809,7 +809,19 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <script src="src/app.bundle.js?v=6eed4484bd43"></script>
+  <link rel="modulepreload" href="src/chunks/chunk-5KRK53LP.js">
+  <link rel="modulepreload" href="src/chunks/chunk-5PFPAWQM.js">
+  <link rel="modulepreload" href="src/chunks/chunk-DMJU5MKT.js">
+  <link rel="modulepreload" href="src/chunks/chunk-EPH6HTAM.js">
+  <link rel="modulepreload" href="src/chunks/chunk-FGVLQL72.js">
+  <link rel="modulepreload" href="src/chunks/chunk-IVOVVXKA.js">
+  <link rel="modulepreload" href="src/chunks/chunk-NVKDSI47.js">
+  <link rel="modulepreload" href="src/chunks/chunk-OTRHJ3S4.js">
+  <link rel="modulepreload" href="src/chunks/chunk-PJ3MCI22.js">
+  <link rel="modulepreload" href="src/chunks/chunk-SUIAGQ6E.js">
+  <link rel="modulepreload" href="src/chunks/chunk-U2JQVAN3.js">
+  <link rel="modulepreload" href="src/chunks/chunk-UKQ4EAO4.js">
+  <script type="module" src="src/app.bundle.js?v=feb016c36d86"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

@@ -704,7 +704,6 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
 
     container.innerHTML = `
       ${listaHtml}
-      ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} atrasados de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
       ${subjectsDistributionHtml}
       ${executionHint}
       <div class="plano-meta">

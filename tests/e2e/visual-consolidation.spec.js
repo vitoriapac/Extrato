@@ -43,7 +43,7 @@ test('limpeza exige confirmação textual e fica desabilitada na demo', async ({
   await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
   await page.getByRole('button', { name: 'Limpar todos os dados' }).click();
   await expect(page.locator('#modalMessage')).toContainText('excluirá');
-  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('button', { name: 'Limpar dados…' }).click();
   await expect(page.locator('#modalPromptInput')).toBeVisible();
   await page.locator('#modalPromptInput').fill('ERRADO');
   await page.getByRole('button', { name: 'Limpar dados' }).click();
@@ -169,6 +169,12 @@ test('ações guiadas permanecem fáceis de tocar em celular e o aviso de sessã
   await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
   await activateTab(page, 'hoje');
+  // Fora do plano, a sugestão fica recolhida; abrir para medir os alvos de toque.
+  await page.evaluate(() =>
+    document
+      .querySelectorAll('#studyRecommendation .recommendation-outside-fold')
+      .forEach(d => (d.open = true))
+  );
   const buttons = page.locator('#studyRecommendation .recommendation-actions .btn');
   await expect(buttons.first()).toBeVisible();
   expect(

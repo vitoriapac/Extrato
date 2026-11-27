@@ -15,6 +15,7 @@ const APP_SHELL = [
   './styles/print.css',
   './src/theme-bootstrap.js',
   './src/app.bundle.js?v=__BUILD_VERSION__',
+  '__APP_CHUNKS__',
   './src/report.bundle.js?v=__BUILD_VERSION__',
   './src/exam-catalog.bundle.js?v=__BUILD_VERSION__',
   './src/help.bundle.js?v=__BUILD_VERSION__',

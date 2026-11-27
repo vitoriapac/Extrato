@@ -67,6 +67,48 @@ export function isBackdropClick(event: MouseEvent): boolean {
   );
 }
 
+/**
+ * Guarda quem tinha o foco já na renderização que abre o diálogo. O controlador
+ * pode chamar showModal() antes do efeito do componente, e showModal() leva o
+ * foco para dentro do diálogo; no efeito, a origem já se perdeu.
+ */
+export function captureFocusOnOpen(
+  open: boolean,
+  wasOpen: boolean,
+  previousFocusRef: { current: HTMLElement | null }
+): void {
+  if (!open || wasOpen || previousFocusRef.current || typeof document === 'undefined') return;
+  const active = document.activeElement as HTMLElement | null;
+  if (active && active !== document.body && !active.closest?.('dialog[open]')) {
+    previousFocusRef.current = active;
+  }
+}
+
+/**
+ * Devolve o foco a quem abriu o diálogo. Se ele sumiu (item de um menu que fechou),
+ * o foco vai para o botão que controla esse menu (`aria-controls`).
+ */
+export function restoreFocusTo(target: HTMLElement): void {
+  if (!target.isConnected) return;
+  const isShown = (el: HTMLElement) =>
+    typeof el.getClientRects !== 'function' || el.getClientRects().length > 0;
+  if (isShown(target)) {
+    target.focus();
+    return;
+  }
+  for (let node = target.parentElement; node; node = node.parentElement) {
+    if (!node.id) continue;
+    const owner = node.ownerDocument?.querySelector<HTMLElement>(
+      `[aria-controls~="${node.id}"]`
+    );
+    if (owner && isShown(owner)) {
+      owner.focus();
+      return;
+    }
+  }
+  target.focus();
+}
+
 export function syncDialogOpen(
   doc: Document | null | undefined,
   id: string,
@@ -130,6 +172,7 @@ export function Dialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
+  captureFocusOnOpen(open, wasOpenRef.current, previousFocusRef);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -170,16 +213,11 @@ export function Dialog({
         restoreFocusOnClose &&
         (!active || active === document.body || dialog.contains(active));
       if (shouldRestore && targetToFocus && typeof targetToFocus.focus === 'function') {
-        if (targetToFocus.isConnected) {
-          targetToFocus.focus();
-        }
+        restoreFocusTo(targetToFocus);
         queueMicrotask(() => {
           const currentActive = document.activeElement;
-          if (
-            targetToFocus.isConnected &&
-            (!currentActive || currentActive === document.body || currentActive === dialog)
-          ) {
-            targetToFocus.focus();
+          if (!currentActive || currentActive === document.body || currentActive === dialog) {
+            restoreFocusTo(targetToFocus);
           }
         });
       }

@@ -7,7 +7,8 @@
 
 import { h } from 'preact';
 import { mountPreact, unmountPreact } from '../preact-mount.js';
-import { ErrorNotebookView } from '../views/ErrorNotebookView.js';
+import { lazyView } from '../lazy-view.js';
+
 import { TodayReviewQueueCard } from '../components/TodayReviewQueueCard.js';
 import { buildTodayReviewLoad } from '../../application/reviews/build-today-review-load.js';
 import { formatPlanMinutes } from '../../core/format-duration.js';
@@ -22,6 +23,11 @@ import {
   type CreateFlashcardInput,
 } from '../../domain/notebook/error-notebook-engine.js';
 import type { AppState, FlashcardRating } from '../../core/types.js';
+
+// Caderno de Erros: só baixa quando aberto.
+const ErrorNotebookView = lazyView(() =>
+  import('../views/ErrorNotebookView.js').then(module => module.ErrorNotebookView)
+);
 
 export interface ErrorNotebookControllerContext {
   getState: () => AppState;

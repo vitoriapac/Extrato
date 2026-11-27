@@ -139,7 +139,7 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
         </span>
       </div>
 
-      <div class="grid grid-cols-7 gap-2 items-end h-20 pt-3 pb-1 border-b border-border-default">
+      <div class="grid grid-cols-7 gap-2 items-end h-28 pt-3 pb-1 border-b border-border-default">
         {days.map(d => (
           <div key={d.dateISO} class="flex flex-col items-center gap-1 h-full justify-end">
             <span
@@ -153,19 +153,23 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             >
               {d.count}
             </span>
-            <div
-              class={`w-full rounded-t transition-all ${
-                d.isPeak
-                  ? 'bg-warning-emphasis'
-                  : d.isToday
-                    ? 'bg-brand'
-                    : d.count > 0
-                      ? 'bg-brand-secondary opacity-50'
-                      : 'bg-surface-subtle'
-              }`}
-              style={{ height: `${d.heightPct}%` }}
-              title={`${d.dayName}: ${d.count} tarefas e revisões`}
-            />
+            {/* Trilho próprio: a % vale sobre o espaço livre, não sobre a coluna com os rótulos. */}
+            <div class="w-full flex-1 min-h-0 flex items-end">
+              <div
+                class={`w-full rounded-t transition-all ${
+                  d.isPeak
+                    ? 'bg-warning-emphasis'
+                    : d.isToday
+                      ? // Sálvia cheio: bg-brand some sobre o card no escuro (1,1:1).
+                        'bg-brand-secondary'
+                      : d.count > 0
+                        ? 'bg-brand-secondary opacity-50'
+                        : 'bg-surface-subtle'
+                }`}
+                style={{ height: `${d.heightPct}%` }}
+                title={`${d.dayName}: ${d.count} tarefas e revisões`}
+              />
+            </div>
             <span
               class={`text-xs font-data ${
                 d.isToday ? 'font-semibold text-content-primary' : 'text-content-secondary'

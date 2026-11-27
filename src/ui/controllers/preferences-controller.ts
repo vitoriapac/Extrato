@@ -109,10 +109,15 @@ export function createEssentialController({
     else document.documentElement.removeAttribute('data-essential');
     const button = document.getElementById('essentialToggleBtn');
     if (button) {
-      button.innerHTML = `${renderIconSvg('sparkles', { size: 16 })}<span class="theme-toggle-label">Essencial</span><span class="pref-state">${on ? 'Ligado' : 'Desligado'}</span>`;
+      button.innerHTML = `${renderIconSvg('sparkles', { size: 16 })}<span class="theme-toggle-label">Só o essencial</span><span class="pref-state">${on ? 'Ligado' : 'Desligado'}</span>`;
       button.setAttribute('aria-pressed', String(on));
-      button.setAttribute('aria-label', 'Modo essencial');
-      button.setAttribute('title', on ? 'Modo essencial (ativo)' : 'Modo completo (ativo)');
+      button.setAttribute('aria-label', 'Só o essencial');
+      button.setAttribute(
+        'title',
+        on
+          ? 'Análises avançadas ficam recolhidas até você pedir'
+          : 'Todas as análises ficam à vista'
+      );
     }
     return on;
   };

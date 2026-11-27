@@ -24,9 +24,11 @@ export function createModalController({ document, window }: any = {}) {
     promptPlaceholder: string;
     promptError: string;
     confirmLabel: string;
+    cancelLabel: string;
     confirmVariant: 'primary' | 'danger';
     onConfirm: () => void;
     onCancel: () => void;
+    onDismiss: () => void;
   } = {
     open: false,
     title: 'Confirmar ação',
@@ -37,9 +39,11 @@ export function createModalController({ document, window }: any = {}) {
     promptPlaceholder: '',
     promptError: '',
     confirmLabel: 'Confirmar',
+    cancelLabel: 'Cancelar',
     confirmVariant: 'danger',
     onConfirm: () => {},
     onCancel: () => {},
+    onDismiss: () => {},
   };
 
   function renderDeclarativeModal(): void {
@@ -55,12 +59,14 @@ export function createModalController({ document, window }: any = {}) {
         promptPlaceholder: viewState.promptPlaceholder,
         promptError: viewState.promptError,
         confirmLabel: viewState.confirmLabel,
+        cancelLabel: viewState.cancelLabel,
         confirmVariant: viewState.confirmVariant,
         onPromptChange: value => {
           viewState.promptValue = value;
         },
         onConfirm: () => viewState.onConfirm(),
         onCancel: () => viewState.onCancel(),
+        onDismiss: () => viewState.onDismiss(),
       }),
       mountNode
     );
@@ -145,9 +151,12 @@ export function createModalController({ document, window }: any = {}) {
       viewState.promptPlaceholder = options.prompt?.placeholder || '';
       viewState.promptError = '';
       viewState.confirmLabel = confirmLabel;
+      viewState.cancelLabel = options.cancelLabel || 'Cancelar';
       viewState.confirmVariant = confirmVariant;
       viewState.onConfirm = accept;
       viewState.onCancel = cancel;
+      // Quando Cancelar destrói algo (descartar tempo), sair pelo Esc ou pelo X escolhe a ação segura.
+      viewState.onDismiss = options.dismissConfirms ? accept : cancel;
 
       activeCleanup = cleanup;
       renderDeclarativeModal();

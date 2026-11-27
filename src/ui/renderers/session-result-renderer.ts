@@ -29,7 +29,7 @@ function renderEffects(effects: Record<string, any> | null) {
         ? ' <span class="session-effects__delta">sem variação</span>'
         : ` <span class="session-effects__delta">(${readiness.delta > 0 ? '+' : '−'}${Math.abs(readiness.delta)})</span>`;
   const rows =
-    (readiness ? `<div><dt>Prontidão</dt><dd>${readiness.text}${delta}</dd></div>` : '') +
+    (readiness ? `<div><dt>Prontidão de hoje (prévia)</dt><dd>${readiness.text}${delta}</dd></div>` : '') +
     (goal ? `<div><dt>Meta do dia</dt><dd>${goal}</dd></div>` : '') +
     (reviews ? `<div><dt>Revisões agendadas</dt><dd>${reviews.text}</dd></div>` : '');
   const factors = readiness?.factors?.length
@@ -57,7 +57,7 @@ export function renderSessionResult(
     ? ` · ${model.questions.resolved} questões · ${model.questions.correct} acertos (${model.questions.accuracy}%)`
     : '';
   const button =
-    '<button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>';
+    '<button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Voltar ao plano de hoje</button>';
   const chainQuestionsBtn =
     model.subjectId && model.rawType !== 'questions'
       ? `<button class="btn tonal small chain-questions-btn" type="button" data-delegated-click="chainQuestionsForTopic('${escapeAttr(model.subjectId)}', '${escapeAttr(model.topicId || '')}')">${renderIconSvg('list-check', { size: 14, className: 'icon-inline' })}Registrar questões deste tópico →</button>`

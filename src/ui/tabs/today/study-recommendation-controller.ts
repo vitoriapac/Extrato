@@ -308,6 +308,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       return;
     }
     const dailyPriority = dailyExecutionController.build().priority;
+    let firstOutsidePlan = false;
     const cards = visible.map((item, index) => {
       const action = buildStudyAction(item, { source: 'today' }),
         model = buildPriorityViewModel(item, index + 1),
@@ -354,6 +355,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
               })
             : '',
         planExtras = planChoice ? renderPlanRecommendationExtras(action!, { escapeAttr }) : '';
+      if (planChoice) firstOutsidePlan = true;
       const actionButton = inProgress
         ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>`
         : blocked
@@ -375,7 +377,13 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         ? `<details class="study-recommendation-more"><summary>Ver outras ${cards.length - 1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>`
         : '';
     // Só a sugestão e a pergunta pendente ficam à vista; o contexto da sugestão fica recolhido.
-    container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${renderPendingRecommendationOutcome()}<details class="recommendation-context editorial-disclosure"><summary>Resultado anterior, capacidade e histórico</summary>${impact}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}</details>`;
+    // Fora do plano, a sugestão fica recolhida: o Plano de hoje é a única prioridade à vista.
+    // A pergunta sobre a recomendação anterior fica à vista: ela fecha o ciclo de avaliação.
+    const suggestion = `${cards[0]}${moreRecommendations}`;
+    const suggestionBlock = firstOutsidePlan
+      ? `<details class="recommendation-outside-fold editorial-disclosure"><summary>Outra leitura do diagnóstico: ${escapeHtml(visible[0].subjectName)}</summary>${suggestion}</details>`
+      : suggestion;
+    container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${suggestionBlock}${renderPendingRecommendationOutcome()}<details class="recommendation-context editorial-disclosure"><summary>Resultado anterior, capacidade e histórico</summary>${impact}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}</details>`;
   }
 
   function dismissStudyRecommendation(id: string) {
