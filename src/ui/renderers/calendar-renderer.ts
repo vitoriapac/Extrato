@@ -97,7 +97,7 @@ export function renderCalendarMonth({
       isSelected = iso === selectedDate,
       outside = cursor.getMonth() !== monthIndex;
     const load = pending.get(iso) || 0;
-    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} load-${loadLevel(load)}" data-calendar-date="${iso}" data-calendar-drop-date="${iso}" role="button" tabindex="0" aria-label="Dia ${cursor.getDate()}, ${load} ${load === 1 ? 'pendência' : 'pendências'}"${load ? ` title="${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'})</span>` : ''}</div>`;
+    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} load-${loadLevel(load)}" data-calendar-date="${iso}" data-calendar-drop-date="${iso}" role="gridcell" tabindex="0" aria-label="Dia ${cursor.getDate()}, ${load} ${load === 1 ? 'pendência' : 'pendências'}"${load ? ` title="${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'})</span>` : ''}</div>`;
     dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
       const stage = calendarEventStage(event, daysUntil);
       const timePrefix = event.startTime ? `${event.startTime} · ` : '';

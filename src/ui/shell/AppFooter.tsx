@@ -59,7 +59,7 @@ export function AppFooter({ onOpenLegal }: AppFooterProps) {
                 id="openSaasPlansBtn"
                 aria-haspopup="dialog"
               >
-                <Icon name="crown" size={14} class="icon-inline" />
+                <Icon name="shield-check" size={14} class="icon-inline" />
                 Planos Free &amp; Pro
               </button>
             </li>

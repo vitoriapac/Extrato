@@ -129,27 +129,30 @@ export function TodayGoalsCard({
               </div>
             )}
           </div>
-          <label class="meta-hoje-time-goal">
-            <span>Meta</span>
-            <input
-              type="number"
-              min="0"
-              step="0.25"
-              value={metaHorasHoje}
-              data-delegated-blur={`updateMetaHoursDay(${todayDayOfWeek},this.value)`}
-              onBlur={showSavedFeedback}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') (event.currentTarget as HTMLInputElement).blur();
-              }}
-              title="Ajuste rápido da meta de hoje"
-              aria-label="Meta de horas de hoje"
-            />
-            {savedGoalFeedback && (
-              <span class="text-xs text-status-success font-medium" role="status" aria-live="polite">
-                Salvo
-              </span>
-            )}
-          </label>
+          <details class="inline-goal-edit">
+            <summary class="btn tertiary small cursor-pointer select-none">Ajustar meta</summary>
+            <label class="meta-hoje-time-goal mt-2">
+              <span>Meta (h)</span>
+              <input
+                type="number"
+                min="0"
+                step="0.25"
+                value={metaHorasHoje}
+                data-delegated-blur={`updateMetaHoursDay(${todayDayOfWeek},this.value)`}
+                onBlur={showSavedFeedback}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') (event.currentTarget as HTMLInputElement).blur();
+                }}
+                title="Ajuste rápido da meta de hoje"
+                aria-label="Meta de horas de hoje"
+              />
+              {savedGoalFeedback && (
+                <span class="text-xs text-status-success font-medium" role="status" aria-live="polite">
+                  Salvo
+                </span>
+              )}
+            </label>
+          </details>
         </div>
         <div class="meta-hoje-chart mt-2">
           <BulletBar

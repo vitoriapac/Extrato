@@ -200,7 +200,7 @@ test('TodayGoalsCard Preact Component — renderiza metas diárias com BulletBar
     })
   );
   assert.match(unset, /Você ainda não definiu metas/);
-  assert.match(unset, /href="#metas"/);
+  assert.match(unset, /href="#planejamento\/semana"/);
   assert.doesNotMatch(unset, /21|2h30/);
   assert.match(html, /updateMetaHoursDay\(2,this\.value\)/);
   assert.match(html, /chart-bullet/);

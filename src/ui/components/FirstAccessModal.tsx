@@ -46,7 +46,7 @@ export function FirstAccessModal({
   return (
     <Dialog
       open={open}
-      onClose={handleExploreManually}
+      onClose={onClose}
       title="Boas-vindas ao Extrato de Estudos"
       maxWidth="md"
       className="first-access-welcome-modal"
