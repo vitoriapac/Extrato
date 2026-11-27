@@ -172,7 +172,7 @@ export function CalendarDayDrawer({
                     <Button
                       type="button"
                       size="small"
-                      variant="secondary"
+                      variant="tonal"
                       className="inline-flex items-center gap-1"
                       onClick={() => onCompleteItem(item)}
                     >
@@ -180,57 +180,78 @@ export function CalendarDayDrawer({
                       <span>Concluir</span>
                     </Button>
                   )}
-                  {!isCompleted &&
-                    !item.isEvent &&
-                    item.kind !== 'mock_exam' &&
-                    onStartTimer && (
-                      <Button
-                        type="button"
-                        size="small"
-                        variant="ghost"
-                        className="inline-flex items-center gap-1"
-                        onClick={() => onStartTimer(item)}
-                      >
-                        <Icon name="clock" size={13} />
-                        <span>Iniciar</span>
-                      </Button>
-                    )}
-                  {item.kind === 'mock_exam' &&
-                    item.origem === 'Calendário' &&
-                    !item.linkedSimulationId &&
-                    onRegisterSimulationResult && (
-                      <Button
-                        type="button"
-                        size="small"
-                        variant="ghost"
-                        onClick={() => onRegisterSimulationResult(item)}
-                      >
-                        Registrar resultado
-                      </Button>
-                    )}
                   {canEdit && !item.isRecurringInstance && reschedulingId !== item.id && (
-                    <>
-                      <Button
-                        type="button"
-                        size="small"
-                        variant="ghost"
-                        onClick={() => onEditItem(item.id)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        type="button"
-                        size="small"
-                        variant="ghost"
-                        onClick={() => {
-                          setReschedulingId(item.id);
-                          setRescheduleDate(item.date);
-                        }}
-                      >
-                        Reagendar
-                      </Button>
-                    </>
+                    <Button
+                      type="button"
+                      size="small"
+                      variant="ghost"
+                      onClick={() => onEditItem(item.id)}
+                    >
+                      Editar
+                    </Button>
                   )}
+                  {reschedulingId !== item.id &&
+                    ((!isCompleted && !item.isEvent && item.kind !== 'mock_exam' && onStartTimer) ||
+                      (item.kind === 'mock_exam' &&
+                        item.origem === 'Calendário' &&
+                        !item.linkedSimulationId &&
+                        onRegisterSimulationResult) ||
+                      (canEdit && !item.isRecurringInstance)) && (
+                      <details class="relative">
+                        <summary
+                          class="btn ghost small list-none cursor-pointer inline-flex items-center gap-1"
+                          aria-label={`Mais ações para ${item.title}`}
+                        >
+                          <Icon name="more-horizontal" size={14} />
+                          <span>Mais</span>
+                        </summary>
+                        <div class="absolute right-0 mt-1 z-20 flex flex-col gap-1 rounded-lg border border-border bg-surface p-1.5 shadow-[0_10px_24px_var(--shadow-color)] min-w-[180px]">
+                          {!isCompleted &&
+                            !item.isEvent &&
+                            item.kind !== 'mock_exam' &&
+                            onStartTimer && (
+                              <Button
+                                type="button"
+                                size="small"
+                                variant="ghost"
+                                className="justify-start inline-flex items-center gap-1.5"
+                                onClick={() => onStartTimer(item)}
+                              >
+                                <Icon name="clock" size={13} />
+                                <span>Iniciar cronômetro</span>
+                              </Button>
+                            )}
+                          {item.kind === 'mock_exam' &&
+                            item.origem === 'Calendário' &&
+                            !item.linkedSimulationId &&
+                            onRegisterSimulationResult && (
+                              <Button
+                                type="button"
+                                size="small"
+                                variant="ghost"
+                                className="justify-start"
+                                onClick={() => onRegisterSimulationResult(item)}
+                              >
+                                Registrar resultado
+                              </Button>
+                            )}
+                          {canEdit && !item.isRecurringInstance && (
+                            <Button
+                              type="button"
+                              size="small"
+                              variant="ghost"
+                              className="justify-start"
+                              onClick={() => {
+                                setReschedulingId(item.id);
+                                setRescheduleDate(item.date);
+                              }}
+                            >
+                              Reagendar data
+                            </Button>
+                          )}
+                        </div>
+                      </details>
+                    )}
                   {canEdit && !item.isRecurringInstance && reschedulingId === item.id && (
                     <div class="inline-flex flex-wrap items-center gap-1.5">
                       <label class="sr-only" for={`reschedule-${item.id}`}>

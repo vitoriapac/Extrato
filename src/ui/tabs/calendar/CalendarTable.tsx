@@ -11,6 +11,9 @@ export interface CalendarTableRowModel {
   date: string;
   week: string;
   subject: string;
+  title?: string;
+  startTime?: string;
+  kindLabel?: string;
   status: string;
   reviewType: string;
   pending: boolean;
@@ -103,6 +106,10 @@ export function CalendarTable({
             );
           }
           const view = getRowModel(item);
+          const primaryLabel = view.title || view.subject;
+          const secondarySubject =
+            view.title && view.subject && view.subject !== view.title ? view.subject : '';
+          const categoryLabel = view.kindLabel || view.reviewType;
           if (mobile) {
             return (
               <tr key={item.id} class="mobile-history-row" data-id={item.id}>
@@ -111,17 +118,20 @@ export function CalendarTable({
                     <div class="mobile-card-head">
                       <div>
                         <div class="mobile-card-date font-mono tabular-nums">
-                          {view.date} · {view.week}
+                          {view.date} · {view.startTime || view.week}
                         </div>
-                        <div class="mobile-card-title">{view.subject}</div>
-                        <div class="mobile-card-subtitle">{view.reviewType}</div>
+                        <div class="mobile-card-title">{primaryLabel}</div>
+                        <div class="mobile-card-subtitle">
+                          {categoryLabel}
+                          {secondarySubject ? ` · ${secondarySubject}` : ''}
+                        </div>
                       </div>
                       <Button
                         type="button"
                         variant="ghost"
                         size="small"
                         onClick={() => onEditItem?.(item.id)}
-                        aria-label={`Editar atividade: ${view.subject}, ${view.reviewType}, ${view.date}`}
+                        aria-label={`Editar atividade: ${primaryLabel}, ${categoryLabel}, ${view.date}`}
                       >
                         Editar
                       </Button>
@@ -134,10 +144,11 @@ export function CalendarTable({
                       <div class="mobile-card-actions">
                         <Button
                           type="button"
+                          variant="tonal"
                           size="small"
                           className="history-primary-action"
                           onClick={() => onCompleteItem?.(item.id)}
-                          aria-label={`Concluir tarefa: ${view.subject}, ${view.reviewType}, ${view.date}`}
+                          aria-label={`Concluir tarefa: ${primaryLabel}, ${categoryLabel}, ${view.date}`}
                         >
                           Concluir
                         </Button>
@@ -155,23 +166,29 @@ export function CalendarTable({
               data-id={item.id}
             >
               <td class="font-mono tabular-nums">{view.date}</td>
-              <td>{view.week}</td>
-              <td>
-                <div class="row-primary">{view.subject}</div>
+              <td class="font-mono tabular-nums text-xs text-content-secondary">
+                {view.startTime || '—'}
               </td>
+              <td>
+                <div class="row-primary">{primaryLabel}</div>
+                {secondarySubject && (
+                  <div class="row-secondary text-xs text-content-secondary">{secondarySubject}</div>
+                )}
+              </td>
+              <td>{categoryLabel}</td>
               <td>
                 <span class={`history-status ${view.statusClass}`}>{view.status}</span>
               </td>
-              <td>{view.reviewType}</td>
               <td>{view.daysLabel}</td>
               <td>
                 <div class="row-actions">
                   {view.pending && (
                     <Button
                       type="button"
+                      variant="tonal"
                       size="small"
                       onClick={() => onCompleteItem?.(item.id)}
-                      aria-label={`Concluir tarefa: ${view.subject}, ${view.reviewType}, ${view.date}`}
+                      aria-label={`Concluir tarefa: ${primaryLabel}, ${categoryLabel}, ${view.date}`}
                     >
                       Concluir
                     </Button>
@@ -181,7 +198,7 @@ export function CalendarTable({
                     variant="ghost"
                     size="small"
                     onClick={() => onEditItem?.(item.id)}
-                    aria-label={`Editar tarefa: ${view.subject}, ${view.reviewType}, ${view.date}`}
+                    aria-label={`Editar tarefa: ${primaryLabel}, ${categoryLabel}, ${view.date}`}
                   >
                     Editar
                   </Button>

@@ -33,17 +33,18 @@ export function MixedReviewBudgetPanel({
             Orçamento semanal de revisão:{' '}
             {budget.budgetMinutes > 0 ? (
               <>
-                <strong>{budget.usedMinutes}</strong> de <strong>{budget.budgetMinutes} min</strong>{' '}
-                (teto {budget.budgetPct}%)
+                <strong class="font-mono tabular-nums">{budget.usedMinutes}</strong> de{' '}
+                <strong class="font-mono tabular-nums">{budget.budgetMinutes} min</strong>{' '}
+                (teto <span class="font-mono tabular-nums">{budget.budgetPct}%</span>)
               </>
             ) : (
               <>
-                teto <strong>{budget.budgetPct}%</strong> da carga semanal
+                teto <strong class="font-mono tabular-nums">{budget.budgetPct}%</strong> da carga semanal
               </>
             )}
           </span>
           {budget.exceeded && (
-            <span class="status-badge status-badge--danger" role="status">
+            <span class="status-badge status-badge--warning" role="status">
               Acima do teto — prefira bateria mista por questões
             </span>
           )}
@@ -78,9 +79,9 @@ export function MixedReviewBudgetPanel({
               <div class="flex items-center gap-2 min-w-0 flex-1">
                 <Icon name="cards" size={16} class="shrink-0 text-content-secondary" />
                 <span>
-                  Você tem <strong>{batch.count} revisões</strong> de{' '}
+                  Você tem <strong class="font-mono tabular-nums">{batch.count} revisões</strong> de{' '}
                   <strong>{batch.subjectName}</strong> — Quitar em 1 bateria mista (
-                  {batch.recommendedQuestions} questões · ~{batch.estimatedMinutes} min)
+                  <span class="font-mono tabular-nums">{batch.recommendedQuestions} questões · ~{batch.estimatedMinutes} min</span>)
                 </span>
               </div>
               <Button

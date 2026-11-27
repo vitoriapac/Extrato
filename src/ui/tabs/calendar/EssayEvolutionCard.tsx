@@ -47,7 +47,7 @@ export function EssayEvolutionCard({
             <Icon name="file-text" size={16} class="text-brand" />
             <span>Redação e discursiva</span>
           </h3>
-          <p class="text-xs text-content-secondary m-0 mt-0.5">
+          <p class="text-xs font-mono tabular-nums text-content-secondary m-0 mt-0.5">
             {summary.totalCount}{' '}
             {summary.totalCount === 1 ? 'redação registrada' : 'redações registradas'}
             {summary.gradedCount > 0 ? ` · ${summary.gradedCount} com nota` : ''}

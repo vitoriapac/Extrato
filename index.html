@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=cad30245711c">
-<link rel="stylesheet" href="styles/app.css?v=cad30245711c">
+<link rel="stylesheet" href="styles/tailwind.css?v=9f89d8ac178b">
+<link rel="stylesheet" href="styles/app.css?v=9f89d8ac178b">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -493,11 +493,13 @@
       </select>
       <details class="relative" id="agendaMoreFilters">
         <summary class="btn ghost small list-none cursor-pointer">Mais filtros</summary>
-        <div class="mt-2 flex flex-wrap gap-2 rounded-lg border border-border bg-surface p-2 shadow-[0_10px_24px_var(--shadow-color)]">
+        <div class="absolute right-0 mt-1 z-20 flex flex-col gap-2 rounded-lg border border-border bg-surface p-2.5 shadow-[0_10px_24px_var(--shadow-color)] min-w-[240px]">
           <label for="agendaFilterMes" class="sr-only">Filtrar por mês</label>
           <select class="select-control ui-select-field__control" id="agendaFilterMes" aria-label="Filtrar por mês"><option value="">Todos os meses</option></select>
           <label for="agendaFilterTipo" class="sr-only">Filtrar revisões por tipo</label>
           <select class="select-control ui-select-field__control" id="agendaFilterTipo" aria-label="Filtrar revisões por tipo"><option value="">Todos os tipos de revisão</option></select>
+          <label for="calFilterTipo" class="sr-only">Filtrar tarefas de estudo por tipo</label>
+          <select class="select-control ui-select-field__control" id="calFilterTipo" aria-label="Filtrar tarefas de estudo por tipo"><option value="">Todos os tipos de tarefa de estudo</option></select>
         </div>
       </details>
       <button type="button" class="btn ghost small" id="clearAgendaFiltersBtn" hidden>Limpar filtros</button>
@@ -514,52 +516,6 @@
       </select>
                 <select id="calFilterMes" aria-label="Filtrar tarefas por mês"><option value="">Todos os meses</option></select>
     </div>
-
-    <section class="agenda-section" aria-labelledby="agendaTasksTitle">
-      <div class="section-head">
-        <h3 class="section-title" id="agendaTasksTitle">Calendário de preparação</h3>
-        <div id="calendarViewSwitchMount"></div>
-      </div>
-
-      <div class="chart-card calendar-month-card" id="calendarMonthCard">
-        <div class="calendar-month-toolbar">
-          <button class="month-nav-btn inline-flex items-center justify-center" id="monthPrevBtn" aria-label="Mês anterior" title="Mês anterior"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-left" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
-          <h3 id="calendarMonthTitle"></h3>
-          <button class="month-nav-btn inline-flex items-center justify-center" id="monthNextBtn" aria-label="Próximo mês" title="Próximo mês"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
-          <button class="btn ghost small ml-2" id="monthTodayBtn">Hoje</button>
-        </div>
-        <p class="helper-text helper-text--compact calendar-helper-text">
-          Clique em um dia para ver ou adicionar compromissos · arraste atividades entre datas para reagendar
-        </p>
-        <div id="monthCalendar"></div>
-      </div>
-
-      <div class="calendar-week-view" id="calendarWeekMount"></div>
-      <div id="calendarDayDrawerMount"></div>
-      <div id="calendarActivityModalMount"></div>
-
-      <div class="cal-table-wrap calendar-agenda-view" id="calendarAgendaView">
-        <div class="cal-filters responsive-filters">
-          <label for="calFilterTipo" class="sr-only">Filtrar tarefas de estudo por tipo</label>
-          <select class="select-control ui-select-field__control" id="calFilterTipo" aria-label="Filtrar tarefas de estudo por tipo"><option value="">Todos os tipos de tarefa de estudo</option></select>
-        </div>
-        <table class="cal responsive-history-table">
-          <caption class="sr-only">Calendário de tarefas de estudo</caption>
-          <thead>
-            <tr>
-              <th style="width:110px;">Data</th>
-              <th style="width:70px;">Semana</th>
-              <th>Disciplina</th>
-              <th style="width:130px;">Status</th>
-              <th style="width:150px;">Categoria / Tipo</th>
-              <th style="width:120px;">Prazo</th>
-              <th style="width:36px;"><span class="sr-only">Ações</span></th>
-            </tr>
-          </thead>
-          <tbody id="calBody"></tbody>
-        </table>
-      </div>
-    </section>
 
     <section class="agenda-section" aria-labelledby="agendaStatusTitle">
       <div class="section-head">
@@ -586,6 +542,49 @@
         </div>
       </div>
       <div id="essayEvolutionMount"></div>
+    </section>
+
+    <section class="agenda-section" aria-labelledby="agendaTasksTitle">
+      <div class="section-head">
+        <h3 class="section-title" id="agendaTasksTitle">Calendário de preparação</h3>
+        <div id="calendarViewSwitchMount"></div>
+      </div>
+
+      <div id="calendarDayDrawerMount"></div>
+      <div id="calendarActivityModalMount"></div>
+
+      <div class="chart-card calendar-month-card" id="calendarMonthCard">
+        <div class="calendar-month-toolbar">
+          <button class="month-nav-btn inline-flex items-center justify-center" id="monthPrevBtn" aria-label="Mês anterior" title="Mês anterior"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-left" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+          <h3 id="calendarMonthTitle"></h3>
+          <button class="month-nav-btn inline-flex items-center justify-center" id="monthNextBtn" aria-label="Próximo mês" title="Próximo mês"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+          <button class="btn ghost small ml-2" id="monthTodayBtn">Hoje</button>
+        </div>
+        <p class="helper-text helper-text--compact calendar-helper-text">
+          Clique em um dia para ver ou adicionar compromissos · arraste atividades entre datas para reagendar
+        </p>
+        <div id="monthCalendar"></div>
+      </div>
+
+      <div class="calendar-week-view" id="calendarWeekMount"></div>
+
+      <div class="cal-table-wrap calendar-agenda-view" id="calendarAgendaView">
+        <table class="cal responsive-history-table">
+          <caption class="sr-only">Calendário de tarefas de estudo</caption>
+          <thead>
+            <tr>
+              <th style="width:110px;">Data</th>
+              <th style="width:80px;">Horário</th>
+              <th>Atividade / Disciplina</th>
+              <th style="width:140px;">Categoria</th>
+              <th style="width:120px;">Status</th>
+              <th style="width:110px;">Prazo</th>
+              <th style="width:36px;"><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="calBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <section class="agenda-section" aria-labelledby="agendaReviewsTitle">
@@ -827,7 +826,7 @@
   <link rel="modulepreload" href="src/chunks/chunk-PJ3MCI22.js">
   <link rel="modulepreload" href="src/chunks/chunk-SUIAGQ6E.js">
   <link rel="modulepreload" href="src/chunks/chunk-U2JQVAN3.js">
-  <script type="module" src="src/app.bundle.js?v=cad30245711c"></script>
+  <script type="module" src="src/app.bundle.js?v=9f89d8ac178b"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

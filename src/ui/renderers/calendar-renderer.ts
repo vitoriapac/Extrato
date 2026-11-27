@@ -12,8 +12,8 @@ export function renderCalendarRead({
   today,
 }: any) {
   if (mobile)
-    return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(view.date)} · ${escapeHtml(view.week)}</div><div class="mobile-card-title">${escapeHtml(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(view.reviewType)}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')" aria-label="Editar tarefa: ${escapeHtml(view.subject)}, ${escapeHtml(view.reviewType)}, ${escapeHtml(view.date)}">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(view.status)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')" aria-label="Concluir tarefa: ${escapeHtml(view.subject)}, ${escapeHtml(view.reviewType)}, ${escapeHtml(view.date)}">Concluir</button>` : ''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row ${item.date === today ? 'today' : ''}" data-id="${item.id}"><td>${escapeHtml(view.date)}</td><td>${escapeHtml(view.week)}</td><td><div class="row-primary">${escapeHtml(view.subject)}</div></td><td><span class="history-status ${statusClass[item.status] || ''}">${escapeHtml(view.status)}</span></td><td>${escapeHtml(view.reviewType)}</td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small" data-delegated-click="completeCalendarItem('${item.id}')" aria-label="Concluir tarefa: ${escapeHtml(view.subject)}, ${escapeHtml(view.reviewType)}, ${escapeHtml(view.date)}">Concluir</button>` : ''}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')" aria-label="Editar tarefa: ${escapeHtml(view.subject)}, ${escapeHtml(view.reviewType)}, ${escapeHtml(view.date)}">Editar</button></div></td></tr>`;
+    return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(view.date)} · ${escapeHtml(view.startTime || view.week)}</div><div class="mobile-card-title">${escapeHtml(view.title || view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(view.kindLabel || view.reviewType)}${view.title && view.subject && view.subject !== view.title ? ` · ${escapeHtml(view.subject)}` : ''}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')" aria-label="Editar tarefa: ${escapeHtml(view.title || view.subject)}, ${escapeHtml(view.kindLabel || view.reviewType)}, ${escapeHtml(view.date)}">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(view.status)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn tonal small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')" aria-label="Concluir tarefa: ${escapeHtml(view.title || view.subject)}, ${escapeHtml(view.kindLabel || view.reviewType)}, ${escapeHtml(view.date)}">Concluir</button>` : ''}</div></article></td></tr>`;
+  return `<tr class="history-read-row history-desktop-row ${item.date === today ? 'today' : ''}" data-id="${item.id}"><td class="font-mono tabular-nums">${escapeHtml(view.date)}</td><td class="font-mono tabular-nums">${escapeHtml(view.startTime || '—')}</td><td><div class="row-primary">${escapeHtml(view.title || view.subject)}</div>${view.title && view.subject && view.subject !== view.title ? `<div class="row-secondary">${escapeHtml(view.subject)}</div>` : ''}</td><td>${escapeHtml(view.kindLabel || view.reviewType)}</td><td><span class="history-status ${statusClass[item.status] || ''}">${escapeHtml(view.status)}</span></td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn tonal small" data-delegated-click="completeCalendarItem('${item.id}')" aria-label="Concluir tarefa: ${escapeHtml(view.title || view.subject)}, ${escapeHtml(view.kindLabel || view.reviewType)}, ${escapeHtml(view.date)}">Concluir</button>` : ''}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')" aria-label="Editar tarefa: ${escapeHtml(view.title || view.subject)}, ${escapeHtml(view.kindLabel || view.reviewType)}, ${escapeHtml(view.date)}">Editar</button></div></td></tr>`;
 }
 export function renderCalendarEdit({
   item,
@@ -85,34 +85,55 @@ export function renderCalendarMonth({
   const busiest = Math.max(0, ...pending.values());
   const loadLevel = (count: number) =>
     count && busiest ? Math.max(1, Math.ceil((count / busiest) * 3)) : 0;
-  let html =
-    `<p id="calendarScrollHelp" class="calendar-scroll-help text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use as setas do teclado.</p><div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid">` +
-    ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-      .map(day => `<div class="month-header">${day}</div>`)
-      .join('');
-  for (let index = 0; index < 42; index++) {
-    const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
-    const dayEvents = visibleEvents.filter((event: any) => event.date === iso),
-      isToday = iso === today,
-      isSelected = iso === selectedDate,
-      outside = cursor.getMonth() !== monthIndex;
-    const load = pending.get(iso) || 0;
-    html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} load-${loadLevel(load)}" data-calendar-date="${iso}" data-calendar-drop-date="${iso}" role="gridcell" tabindex="0" aria-label="Dia ${cursor.getDate()}, ${load} ${load === 1 ? 'pendência' : 'pendências'}"${load ? ` title="${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'}"` : ''}><div class="day-number">${cursor.getDate()}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'})</span>` : ''}</div>`;
-    dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
-      const stage = calendarEventStage(event, daysUntil);
-      const timePrefix = event.startTime ? `${event.startTime} · ` : '';
-      const displayLabel = event.title || event.subject || event.label;
-      const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${timePrefix}${displayLabel} (${event.origem})`;
-      const dragAttrs = event.isDraggable
-        ? ` draggable="true" data-calendar-drag-id="${escapeAttr(event.id)}"`
-        : '';
-      const eventCls = event.isEvent ? ' event-marco' : '';
-      html += `<div class="cal-event event-${stage}${eventCls}"${dragAttrs} title="${escapeAttr(tooltip)}"><span class="sr-only">${CALENDAR_EVENT_STAGES[stage]}: </span>${escapeHtml(timePrefix + displayLabel)}</div>`;
+  const firstMonthIso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`;
+  const gridCells: Array<{ iso: string; day: number; outside: boolean }> = [];
+  const tempCursor = new Date(cursor);
+  for (let i = 0; i < 42; i++) {
+    gridCells.push({
+      iso: `${tempCursor.getFullYear()}-${String(tempCursor.getMonth() + 1).padStart(2, '0')}-${String(tempCursor.getDate()).padStart(2, '0')}`,
+      day: tempCursor.getDate(),
+      outside: tempCursor.getMonth() !== monthIndex,
     });
-    if (dayEvents.length > maxEventsPerDay)
-      html += `<div class="cal-event-more">+${dayEvents.length - maxEventsPerDay} mais</div>`;
+    tempCursor.setDate(tempCursor.getDate() + 1);
+  }
+  const activeTabIso =
+    (selectedDate && gridCells.some(c => c.iso === selectedDate) ? selectedDate : null) ||
+    (today && gridCells.some(c => c.iso === today) ? today : null) ||
+    firstMonthIso;
+
+  let html =
+    `<p id="calendarScrollHelp" class="calendar-scroll-help text-xs text-content-secondary">No celular, deslize a grade para ver os outros dias ou use as setas do teclado.</p><div class="month-grid-wrap" role="region" aria-label="Calendário de ${title}" aria-describedby="calendarScrollHelp"><div class="month-grid" role="grid" aria-label="Calendário de ${title}"><div role="row" class="contents">` +
+    ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+      .map(day => `<div class="month-header" role="columnheader">${day}</div>`)
+      .join('') +
+    '</div>';
+  for (let week = 0; week < 6; week++) {
+    html += '<div role="row" class="contents">';
+    for (let dow = 0; dow < 7; dow++) {
+      const index = week * 7 + dow;
+      const { iso, day, outside } = gridCells[index];
+      const dayEvents = visibleEvents.filter((event: any) => event.date === iso),
+        isToday = iso === today,
+        isSelected = iso === selectedDate;
+      const load = pending.get(iso) || 0;
+      const tabIndex = iso === activeTabIso ? '0' : '-1';
+      html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} load-${loadLevel(load)}" data-calendar-date="${iso}" data-calendar-drop-date="${iso}" data-grid-index="${index}" role="gridcell" tabindex="${tabIndex}" aria-selected="${isSelected ? 'true' : 'false'}" aria-label="Dia ${day}, ${load} ${load === 1 ? 'pendência' : 'pendências'}"${load ? ` title="${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'}"` : ''}><div class="day-number">${day}${load ? `<span class="sr-only"> (${load} ${load === 1 ? 'atividade pendente' : 'atividades pendentes'})</span>` : ''}</div>`;
+      dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
+        const stage = calendarEventStage(event, daysUntil);
+        const timePrefix = event.startTime ? `${event.startTime} · ` : '';
+        const displayLabel = event.title || event.subject || event.label;
+        const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${timePrefix}${displayLabel} (${event.origem})`;
+        const dragAttrs = event.isDraggable
+          ? ` draggable="true" data-calendar-drag-id="${escapeAttr(event.id)}"`
+          : '';
+        const eventCls = event.isEvent ? ' event-marco' : '';
+        html += `<div class="cal-event event-${stage}${eventCls}"${dragAttrs} title="${escapeAttr(tooltip)}"><span class="sr-only">${CALENDAR_EVENT_STAGES[stage]}: </span>${escapeHtml(timePrefix + displayLabel)}</div>`;
+      });
+      if (dayEvents.length > maxEventsPerDay)
+        html += `<div class="cal-event-more">+${dayEvents.length - maxEventsPerDay} mais</div>`;
+      html += '</div>';
+    }
     html += '</div>';
-    cursor.setDate(cursor.getDate() + 1);
   }
   // Cor nunca é o único indicador: a legenda nomeia cada cor dos itens.
   const legend = `<ul class="cal-legend" aria-label="Legenda do calendário">${Object.entries(

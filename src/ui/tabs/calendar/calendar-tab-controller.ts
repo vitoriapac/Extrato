@@ -29,7 +29,12 @@ import {
 import { buildCalendarItemViewModel } from '../../view-models/calendar-view-model.js';
 import { createCalendarState } from '../../calendar/calendar-state.js';
 import { createCalendarController } from '../../calendar/calendar-controller.js';
-import { STATUS_CLASS, STATUS_OPTIONS, REVIEW_OPTIONS } from '../../../state/schema.js';
+import {
+  CALENDAR_ACTIVITY_LABELS,
+  STATUS_CLASS,
+  STATUS_OPTIONS,
+  REVIEW_OPTIONS,
+} from '../../../state/schema.js';
 import { createCalendarPendingLists } from './calendar-pending-lists.js';
 import { createCalendarActivityModalController } from './calendar-activity-modal-controller.js';
 import { createProgressiveList } from '../../progressive-list.js';
@@ -327,6 +332,9 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       date: view.date,
       week: view.week,
       subject: view.subject,
+      title: item.title || '',
+      startTime: item.startTime || '',
+      kindLabel: CALENDAR_ACTIVITY_LABELS[item.kind || 'task'] || view.reviewType,
       status: view.status,
       reviewType: view.reviewType,
       pending: view.pending,
@@ -909,9 +917,33 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         }
       });
       monthContainer.addEventListener('keydown', (event: any) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
         const dayEl = event.target?.closest?.('[data-calendar-date]');
         if (!dayEl) return;
+        const deltaByKey: Record<string, number> = {
+          ArrowLeft: -1,
+          ArrowRight: 1,
+          ArrowUp: -7,
+          ArrowDown: 7,
+        };
+        if (event.key in deltaByKey || event.key === 'Home' || event.key === 'End') {
+          const currentIndex = Number(dayEl.getAttribute('data-grid-index'));
+          if (Number.isNaN(currentIndex)) return;
+          const nextIndex =
+            event.key === 'Home'
+              ? 0
+              : event.key === 'End'
+                ? 41
+                : currentIndex + deltaByKey[event.key];
+          if (nextIndex < 0 || nextIndex > 41) return;
+          const nextEl = monthContainer.querySelector?.(`[data-grid-index="${nextIndex}"]`) as HTMLElement | null;
+          if (!nextEl) return;
+          event.preventDefault();
+          dayEl.setAttribute('tabindex', '-1');
+          nextEl.setAttribute('tabindex', '0');
+          nextEl.focus?.();
+          return;
+        }
+        if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
         const date = dayEl.getAttribute('data-calendar-date');
         if (date) {

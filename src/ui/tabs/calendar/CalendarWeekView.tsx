@@ -99,7 +99,7 @@ export function CalendarWeekView({
               data-calendar-drop-date={date}
               class={`rounded-lg border p-2.5 flex flex-col gap-2 min-h-[140px] transition-colors ${
                 isDropTarget
-                  ? 'border-brand bg-brand/5'
+                  ? 'border-brand bg-surface-elevated'
                   : isSelected
                     ? 'border-brand bg-surface-elevated'
                     : isToday

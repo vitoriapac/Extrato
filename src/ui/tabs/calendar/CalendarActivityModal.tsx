@@ -283,48 +283,24 @@ export function CalendarActivityModal({
             <div class="text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary">
               Dados da redação / discursiva
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="calEssayKind" class={LABEL_CLASS}>
-                  Modalidade
-                </label>
-                <select
-                  id="calEssayKind"
-                  value={draft.essayKind || 'redacao'}
-                  onChange={e =>
-                    updateField('essayKind', (e.currentTarget as HTMLSelectElement).value as EssayKind)
-                  }
-                  class={CONTROL_CLASS}
-                >
-                  {ESSAY_KIND_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label for="calEssayScoringMode" class={LABEL_CLASS}>
-                  Critério gramatical
-                </label>
-                <select
-                  id="calEssayScoringMode"
-                  value={draft.essayScoringMode || 'padrao'}
-                  onChange={e =>
-                    updateField(
-                      'essayScoringMode',
-                      (e.currentTarget as HTMLSelectElement).value as EssayScoringMode
-                    )
-                  }
-                  class={CONTROL_CLASS}
-                >
-                  {ESSAY_SCORING_MODE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <label for="calEssayKind" class={LABEL_CLASS}>
+                Modalidade
+              </label>
+              <select
+                id="calEssayKind"
+                value={draft.essayKind || 'redacao'}
+                onChange={e =>
+                  updateField('essayKind', (e.currentTarget as HTMLSelectElement).value as EssayKind)
+                }
+                class={CONTROL_CLASS}
+              >
+                {ESSAY_KIND_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -444,122 +420,157 @@ export function CalendarActivityModal({
                 />
               </div>
             </div>
-            {draft.essayScoringMode === 'cebraspe_linhas' && (
-              <div class="rounded border border-border-subtle bg-surface-subtle p-2.5 space-y-2">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label for="calEssayLinesWritten" class={LABEL_CLASS}>
-                      Linhas escritas (TL)
-                    </label>
-                    <input
-                      id="calEssayLinesWritten"
-                      type="number"
-                      min={1}
-                      max={120}
-                      step="1"
-                      placeholder="Ex: 30"
-                      value={draft.essayLinesWritten || ''}
-                      onInput={e =>
-                        updateField(
-                          'essayLinesWritten',
-                          (e.currentTarget as HTMLInputElement).value
-                        )
-                      }
-                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
-                    />
-                  </div>
-                  <div>
-                    <label for="calEssayGrammarErrors" class={LABEL_CLASS}>
-                      Erros gramaticais (NE)
-                    </label>
-                    <input
-                      id="calEssayGrammarErrors"
-                      type="number"
-                      min={0}
-                      step="1"
-                      placeholder="Ex: 6"
-                      value={draft.essayGrammarErrors || ''}
-                      onInput={e =>
-                        updateField(
-                          'essayGrammarErrors',
-                          (e.currentTarget as HTMLInputElement).value
-                        )
-                      }
-                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
-                    />
-                  </div>
-                  <div>
-                    <label for="calEssayErrorWeight" class={LABEL_CLASS}>
-                      Peso do erro (w)
-                    </label>
-                    <input
-                      id="calEssayErrorWeight"
-                      type="number"
-                      min={0.5}
-                      step="0.5"
-                      placeholder="2"
-                      value={draft.essayErrorWeight || ''}
-                      onInput={e =>
-                        updateField(
-                          'essayErrorWeight',
-                          (e.currentTarget as HTMLInputElement).value
-                        )
-                      }
-                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
-                    />
-                  </div>
-                </div>
-                {Number(draft.essayLinesWritten) > 0 && draft.essayScore !== '' && (
-                  <p
-                    class="text-xs text-content-primary m-0"
-                    role="status"
-                    data-testid="cebraspe-essay-preview"
+            <details
+              class="rounded border border-border bg-surface p-2.5 space-y-3"
+              open={
+                draft.essayScoringMode === 'cebraspe_linhas' ||
+                Boolean(draft.essayContent || draft.essayStructure || draft.essayLanguage)
+              }
+            >
+              <summary class="text-xs font-medium text-content-primary cursor-pointer">
+                Correção detalhada e critérios (opcional)
+              </summary>
+              <div class="pt-2 space-y-3">
+                <div>
+                  <label for="calEssayScoringMode" class={LABEL_CLASS}>
+                    Critério gramatical
+                  </label>
+                  <select
+                    id="calEssayScoringMode"
+                    value={draft.essayScoringMode || 'padrao'}
+                    onChange={e =>
+                      updateField(
+                        'essayScoringMode',
+                        (e.currentTarget as HTMLSelectElement).value as EssayScoringMode
+                      )
+                    }
+                    class={CONTROL_CLASS}
                   >
-                    {(() => {
-                      const calc = calculateCebraspeEssayScore({
-                        contentScore: Number(draft.essayScore) || 0,
-                        maxScore: Number(draft.essayMaxScore) || 20,
-                        linesWritten: Number(draft.essayLinesWritten),
-                        grammarErrors: Number(draft.essayGrammarErrors) || 0,
-                        errorWeight: Number(draft.essayErrorWeight) || 2,
-                      });
-                      return `Desconto gramatical: −${calc.deduction} (${calc.errorsPerLine} erros/linha) · Nota líquida final: ${calc.netScore}/${calc.maxScore} (${calc.netPercent}%)`;
-                    })()}
-                  </p>
-                )}
-              </div>
-            )}
-            <fieldset class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-0 p-0 m-0 min-w-0">
-              <legend class={`${LABEL_CLASS} col-span-full`}>
-                Nota por critério (%), opcional: mostra onde a discursiva perde ponto
-              </legend>
-              {ESSAY_CRITERIA.map(({ key, label }) => {
-                const field = (
-                  {
-                    content: 'essayContent',
-                    structure: 'essayStructure',
-                    language: 'essayLanguage',
-                  } as const
-                )[key];
-                return (
-                  <div key={key}>
-                    <label for={`calEssay-${key}`} class={LABEL_CLASS}>
-                      {label}
-                    </label>
-                    <input
-                      id={`calEssay-${key}`}
-                      type="number"
-                      min={0}
-                      max={100}
-                      step="1"
-                      value={draft[field] || ''}
-                      onInput={e => updateField(field, (e.currentTarget as HTMLInputElement).value)}
-                      class={`${CONTROL_CLASS} font-mono tabular-nums`}
-                    />
+                    {ESSAY_SCORING_MODE_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {draft.essayScoringMode === 'cebraspe_linhas' && (
+                  <div class="rounded border border-border-subtle bg-surface-subtle p-2.5 space-y-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label for="calEssayLinesWritten" class={LABEL_CLASS}>
+                          Linhas escritas (TL)
+                        </label>
+                        <input
+                          id="calEssayLinesWritten"
+                          type="number"
+                          min={1}
+                          max={120}
+                          step="1"
+                          placeholder="Ex: 30"
+                          value={draft.essayLinesWritten || ''}
+                          onInput={e =>
+                            updateField(
+                              'essayLinesWritten',
+                              (e.currentTarget as HTMLInputElement).value
+                            )
+                          }
+                          class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                        />
+                      </div>
+                      <div>
+                        <label for="calEssayGrammarErrors" class={LABEL_CLASS}>
+                          Erros gramaticais (NE)
+                        </label>
+                        <input
+                          id="calEssayGrammarErrors"
+                          type="number"
+                          min={0}
+                          step="1"
+                          placeholder="Ex: 6"
+                          value={draft.essayGrammarErrors || ''}
+                          onInput={e =>
+                            updateField(
+                              'essayGrammarErrors',
+                              (e.currentTarget as HTMLInputElement).value
+                            )
+                          }
+                          class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                        />
+                      </div>
+                      <div>
+                        <label for="calEssayErrorWeight" class={LABEL_CLASS}>
+                          Peso do erro (w)
+                        </label>
+                        <input
+                          id="calEssayErrorWeight"
+                          type="number"
+                          min={0.5}
+                          step="0.5"
+                          placeholder="2"
+                          value={draft.essayErrorWeight || ''}
+                          onInput={e =>
+                            updateField(
+                              'essayErrorWeight',
+                              (e.currentTarget as HTMLInputElement).value
+                            )
+                          }
+                          class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                        />
+                      </div>
+                    </div>
+                    {Number(draft.essayLinesWritten) > 0 && draft.essayScore !== '' && (
+                      <p
+                        class="text-xs text-content-primary m-0"
+                        role="status"
+                        data-testid="cebraspe-essay-preview"
+                      >
+                        {(() => {
+                          const calc = calculateCebraspeEssayScore({
+                            contentScore: Number(draft.essayScore) || 0,
+                            maxScore: Number(draft.essayMaxScore) || 20,
+                            linesWritten: Number(draft.essayLinesWritten),
+                            grammarErrors: Number(draft.essayGrammarErrors) || 0,
+                            errorWeight: Number(draft.essayErrorWeight) || 2,
+                          });
+                          return `Desconto gramatical: −${calc.deduction} (${calc.errorsPerLine} erros/linha) · Nota líquida final: ${calc.netScore}/${calc.maxScore} (${calc.netPercent}%)`;
+                        })()}
+                      </p>
+                    )}
                   </div>
-                );
-              })}
-            </fieldset>
+                )}
+                <fieldset class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-0 p-0 m-0 min-w-0">
+                  <legend class={`${LABEL_CLASS} col-span-full`}>
+                    Nota por critério (%), opcional: mostra onde a discursiva perde ponto
+                  </legend>
+                  {ESSAY_CRITERIA.map(({ key, label }) => {
+                    const field = (
+                      {
+                        content: 'essayContent',
+                        structure: 'essayStructure',
+                        language: 'essayLanguage',
+                      } as const
+                    )[key];
+                    return (
+                      <div key={key}>
+                        <label for={`calEssay-${key}`} class={LABEL_CLASS}>
+                          {label}
+                        </label>
+                        <input
+                          id={`calEssay-${key}`}
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="1"
+                          value={draft[field] || ''}
+                          onInput={e => updateField(field, (e.currentTarget as HTMLInputElement).value)}
+                          class={`${CONTROL_CLASS} font-mono tabular-nums`}
+                        />
+                      </div>
+                    );
+                  })}
+                </fieldset>
+              </div>
+            </details>
           </div>
         )}
 
