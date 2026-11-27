@@ -3,6 +3,14 @@ import type { TopicBookmark } from '../../../core/types.js';
 import { BookmarkBadge } from '../../components/BookmarkBadge.js';
 import { Icon } from '../../primitives/icon.js';
 
+// Same names as the wizard steps (build-onboarding-view-model.ts), in the same order.
+const WELCOME_STEPS: ReadonlyArray<readonly [string, string]> = [
+  ['Concurso e prova', 'banca, data e meta'],
+  ['Disponibilidade', 'quanto cabe em cada dia da semana'],
+  ['Edital ou matérias', 'do catálogo, de um arquivo ou à mão'],
+  ['Prévia e Hoje', 'o primeiro plano, antes de salvar'],
+];
+
 export interface NextActionSixQuestions {
   what: {
     subjectName: string;
@@ -107,13 +115,7 @@ export function NextActionCard({
             data-welcome-hero="true"
           >
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide uppercase text-secondary">
-                PRIMEIRO ACESSO AO EXTRATO DE ESTUDOS
-              </span>
-              <h3
-                id="welcomeHeroTitle"
-                className="text-lg font-semibold text-primary m-0 flex items-center gap-2"
-              >
+              <h3 id="welcomeHeroTitle" className="welcome-hero-card__title m-0">
                 {emptyState.onboardingTitle || 'Boas-vindas ao Extrato de Estudos'}
               </h3>
               <p className="text-sm text-secondary m-0 leading-relaxed">
@@ -121,6 +123,15 @@ export function NextActionCard({
                   'Organize sua rota de estudos no extrato em menos de 2 minutos.'}
               </p>
             </div>
+            {/* The wizard's own four steps, as statement lines: the first plan is the sum of them. */}
+            <ol className="welcome-hero-card__steps" aria-label="Etapas da configuração">
+              {WELCOME_STEPS.map(([step, detail]) => (
+                <li key={step}>
+                  <span>{step}</span>
+                  <small>{detail}</small>
+                </li>
+              ))}
+            </ol>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
@@ -153,6 +164,9 @@ export function NextActionCard({
                 <span>Explorar demonstração</span>
               </button>
             </div>
+            <p className="welcome-hero-card__privacy m-0">
+              Seus dados ficam neste navegador e funcionam sem internet.
+            </p>
           </section>
         </div>
       );

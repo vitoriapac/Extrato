@@ -3891,3 +3891,13 @@ button.performance-window{position:relative}button.performance-window::after{con
 /* Aviso de atraso: no celular, o título ocupa a linha toda e a orientação vem embaixo. */
 @media (max-width:520px){.replan-group{flex-direction:column;gap:4px}.replan-group span{text-align:left}}
 .compact-header .compact-brand img{width:28px;height:28px;flex:none}
+
+/* Primeiro acesso: título com peso de capa e as quatro etapas do assistente como linhas de extrato. */
+.welcome-hero-card__title{font:600 clamp(1.375rem,1.1rem + 1vw,1.75rem)/1.2 var(--font-display);color:var(--heading);text-wrap:balance}
+.welcome-hero-card__steps{list-style:none;margin:0;padding:0;display:grid;max-width:36rem;counter-reset:welcome-step}
+.welcome-hero-card__steps li{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--space-2);padding:6px 0;border-bottom:1px dotted var(--border-control);counter-increment:welcome-step;font-size:var(--text-sm)}
+.welcome-hero-card__steps li::before{content:counter(welcome-step);min-width:1.25em;font:600 var(--text-micro) var(--font-data);color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.welcome-hero-card__steps span{color:var(--ink);font-weight:600}
+.welcome-hero-card__steps small{margin-left:auto;color:var(--ink-soft);font-size:var(--text-micro)}
+.welcome-hero-card__privacy{font-size:var(--text-micro);color:var(--ink-soft)}
+@media (max-width:520px){.welcome-hero-card__steps small{flex-basis:100%;margin-left:calc(1.25em + var(--space-2))}}
