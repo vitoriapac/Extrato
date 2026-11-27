@@ -205,3 +205,27 @@ test('resultado de sessão teórica ou revisão expõe ação de encadeamento pa
   assert.doesNotMatch(questionsHtml, /chainQuestionsForTopic/);
 });
 
+
+test('a sessão que conclui a última atividade fecha o dia, uma vez só', () => {
+  const closingDay = {
+    before: { studiedMinutes: 80, progress: 75, completedActivities: 2 },
+    after: { studiedMinutes: 125, progress: 100, completedActivities: 3, plannedMinutes: 120 },
+    total: 3,
+  };
+  const model = buildSessionResultViewModel(session, null, false, { ...options, day: closingDay });
+  assert.deepEqual(model.dayClosed, { activities: 3, studied: '125 min', planned: '120 min' });
+  const html = renderSessionResult(model, { escapeHtml: String });
+  assert.match(html, /aria-label="Fechamento do dia"/);
+  assert.match(html, /Plano de hoje fechado/);
+  assert.match(html, /3 de 3 atividades<\/span><strong>125 min estudados de 120 min planejados/);
+
+  // Depois de fechado, uma sessão extra não repete o fechamento.
+  const extra = {
+    before: closingDay.after,
+    after: { ...closingDay.after, studiedMinutes: 170 },
+    total: 3,
+  };
+  assert.equal(buildSessionResultViewModel(session, null, false, { ...options, day: extra }).dayClosed, null);
+  // No meio do dia, nada de fechamento.
+  assert.equal(buildSessionResultViewModel(session, null, false, { ...options, day }).dayClosed, null);
+});

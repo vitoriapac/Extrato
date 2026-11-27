@@ -62,8 +62,22 @@ export function buildSessionResultViewModel(
               : null,
         }
       : null;
+  // The day closes once, on the session that finishes the last planned activity.
+  const total = Number(day?.total) || 0;
+  const dayClosed =
+    ledger && total > 0 && day.after.completedActivities >= total && day.before.completedActivities < total
+      ? {
+          activities: total,
+          studied: formatMinutes(Math.round(day.after.studiedMinutes)),
+          planned:
+            Number(day.after.plannedMinutes) > 0
+              ? formatMinutes(Math.round(day.after.plannedMinutes))
+              : null,
+        }
+      : null;
   return {
     sessionId: session.id || null,
+    dayClosed,
     type: typeLabels[session.type] || 'Sessão',
     subject,
     topic,

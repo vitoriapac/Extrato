@@ -9,6 +9,16 @@ function renderLedger(ledger: Record<string, any>) {
   const lines = line('Estudado hoje', ledger.studied) + line('Plano de hoje', ledger.plan);
   return `<div class="session-ledger" role="group" aria-label="Lançamento no extrato de hoje"><p class="session-ledger__credit"><span>Lançamento</span><strong>${ledger.credit}</strong></p>${ledger.detail ? `<p class="session-ledger__done">${ledger.detail}</p>` : ''}${lines ? `<dl>${lines}</dl>` : ''}${ledger.completed ? `<p class="session-ledger__done">Atividade do plano concluída · ${ledger.completed.done} de ${ledger.completed.total}</p>` : ''}</div>`;
 }
+function renderDayClosed(
+  closed: { activities: number; studied: string; planned: string | null } | null | undefined
+) {
+  if (!closed) return '';
+  const activities = `${closed.activities} de ${closed.activities} ${closed.activities === 1 ? 'atividade' : 'atividades'}`;
+  const time = closed.planned
+    ? `${closed.studied} estudados de ${closed.planned} planejados`
+    : `${closed.studied} estudados`;
+  return `<section class="day-closed" aria-label="Fechamento do dia"><p class="day-closed__title">${renderIconSvg('circle-check', { size: 16, className: 'icon-inline' })}Plano de hoje fechado</p><p class="day-closed__line"><span>${activities}</span><strong>${time}</strong></p><p class="day-closed__note">O que vier agora entra no extrato como estudo avulso.</p></section>`;
+}
 function renderEffects(effects: Record<string, any> | null) {
   if (!effects) return '';
   const { readiness, reviews, goal } = effects;
@@ -66,5 +76,5 @@ export function renderSessionResult(
       : model.simulation
         ? '<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>'
         : `<p>Consulte a Sugestão do diagnóstico para continuar.</p>${actionCluster}`;
-  return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderEffects(model.effects)}${renderAchievement(model.achievement, escapeHtml)}<small>Seus indicadores foram atualizados.</small>${next}`;
+  return `<strong>Sessão registrada</strong><p>${escapeHtml(model.type)} · ${escapeHtml(model.subject)}${model.topic ? ` · ${escapeHtml(model.topic)}` : ''} · ${escapeHtml(model.duration)}${questionSummary}</p>${renderLedger(model.ledger)}${renderDayClosed(model.dayClosed)}${renderEffects(model.effects)}${renderAchievement(model.achievement, escapeHtml)}<small>Seus indicadores foram atualizados.</small>${next}`;
 }

@@ -179,3 +179,22 @@ test('GlobalCommandPalette — renderiza dialog modal unificado com status live,
   assert.ok(openHtml.includes('Abrir cronômetro'));
   assert.ok(openHtml.includes('Visão Geral'));
 });
+
+test('performRecordSearch acha simulados por nome ou data e ordena do mais recente', async () => {
+  const { performRecordSearch } = await import('../../src/ui/controllers/search-controller.js');
+  const simulados = [
+    { id: 's1', nome: 'Simulado Cesgranrio 1', date: '2026-10-01', correct: 50, total: 80 },
+    { id: 's2', nome: 'Simulado Cesgranrio 2', date: '2026-11-10', correct: 60, total: 80 },
+    { id: 's3', nome: 'Prova antiga', date: '2026-09-05', correct: 30, total: 40 },
+  ];
+  const byName = performRecordSearch('cesgranrio', simulados);
+  assert.deepEqual(byName.map(item => item.id), ['s2', 's1']);
+  assert.equal(byName[0].description, '10/11/2026 · 60/80 acertos');
+  assert.deepEqual(performRecordSearch('05/09', simulados).map(item => item.id), ['s3']);
+  assert.deepEqual(performRecordSearch('  ', simulados), []);
+});
+
+test('a paleta tem o comando Registrar simulado', async () => {
+  const { SEARCH_COMMANDS } = await import('../../src/ui/controllers/search-controller.js');
+  assert.ok(SEARCH_COMMANDS.some(item => item.label === 'Registrar simulado' && item.action === 'add-simulation'));
+});

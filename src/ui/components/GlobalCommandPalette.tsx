@@ -1,5 +1,9 @@
 import type { JSX } from 'preact';
-import type { SearchCommand, SearchResultItem } from '../controllers/search-controller.js';
+import type {
+  SearchCommand,
+  SearchRecordItem,
+  SearchResultItem,
+} from '../controllers/search-controller.js';
 import type { IconName } from '../primitives/icon.js';
 import {
   CommandPalette,
@@ -17,6 +21,8 @@ export interface GlobalCommandPaletteProps {
   actionCommands: SearchCommand[];
   navCommands: SearchCommand[];
   topics: SearchResultItem[];
+  records?: SearchRecordItem[];
+  onSelectRecord?: (id: string) => void;
   onOpenChange: (open: boolean) => void;
   onQueryChange: (query: string) => void;
   onExecuteCommand: (command: SearchCommand) => void;
@@ -29,12 +35,15 @@ export function GlobalCommandPalette({
   actionCommands,
   navCommands,
   topics,
+  records = [],
+  onSelectRecord,
   onOpenChange,
   onQueryChange,
   onExecuteCommand,
   onSelectTopic,
 }: GlobalCommandPaletteProps): JSX.Element {
-  const hasResults = actionCommands.length > 0 || navCommands.length > 0 || topics.length > 0;
+  const hasResults =
+    actionCommands.length > 0 || navCommands.length > 0 || topics.length > 0 || records.length > 0;
   const trimmedQuery = query.trim();
 
   return (
@@ -55,7 +64,7 @@ export function GlobalCommandPalette({
     >
       <CommandPaletteInput
         placeholder="O que você quer fazer?"
-        ariaLabel="Buscar ações, páginas, tópicos, notas ou tags"
+        ariaLabel="Buscar ações, páginas, tópicos, notas, tags ou simulados"
         clearLabel="Limpar busca"
         showCloseButton={true}
         closeLabel="Fechar paleta de busca"
@@ -108,6 +117,22 @@ export function GlobalCommandPalette({
                 }
                 className="search-result-item search-topic"
                 onSelect={() => onSelectTopic(topic.subjectId, topic.topicId)}
+              />
+            ))}
+          </CommandPaletteGroup>
+        )}
+        {records.length > 0 && (
+          <CommandPaletteGroup heading="Simulados registrados">
+            {records.map(record => (
+              <CommandPaletteItem
+                key={`record-${record.id}`}
+                value={`record:${record.id}`}
+                label={record.label}
+                description={record.description}
+                icon="clipboard-text"
+                forceMount
+                className="search-result-item search-record"
+                onSelect={() => onSelectRecord?.(record.id)}
               />
             ))}
           </CommandPaletteGroup>

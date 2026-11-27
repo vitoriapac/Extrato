@@ -3863,12 +3863,13 @@ button.performance-window{position:relative}button.performance-window::after{con
 .month-day.selected{outline:2px solid var(--brand);outline-offset:-2px}
 .cal-event.event-marco{background:var(--highlight-bg);border:1px solid var(--amber);color:var(--ink)}
 
-/* Celular: busca e atalhos numa linha só (ícones), a Próxima ação sobe na primeira tela. */
+/* Celular: busca e atalhos numa linha só, cada ícone com seu rótulo curto embaixo; a Próxima ação sobe na primeira tela. */
 @media(max-width:560px){
   .global-search-row{flex-wrap:nowrap!important;gap:6px;margin-top:12px}
   .global-search-row .global-search-trigger{flex:1 1 auto;min-width:0}
-  .global-search-row .theme-toggle-btn{flex:0 0 auto;min-width:44px;min-height:44px;padding-inline:10px}
-  .global-search-row .theme-toggle-btn .theme-toggle-label{display:none}
+  .global-search-row .theme-toggle-btn{flex:0 0 auto;flex-direction:column;justify-content:center;gap:2px;min-width:48px;min-height:44px;padding:4px 6px}
+  .global-search-row .theme-toggle-btn .theme-toggle-label{display:block;font-size:11px;line-height:1.1;font-weight:var(--font-weight-medium);letter-spacing:0;text-transform:none}
+  .global-search-row .global-search-trigger__short{display:inline;font-size:var(--text-small);font-weight:var(--font-weight-medium);color:var(--ink)}
   /* Sem o rótulo decorativo e e com os espaços da faixa reduzidos, o Iniciar estudo sobe acima da barra inferior. */
   .statement-eyebrow{display:none}
   .statement{padding-block:14px}
@@ -3901,3 +3902,11 @@ button.performance-window{position:relative}button.performance-window::after{con
 .welcome-hero-card__steps small{margin-left:auto;color:var(--ink-soft);font-size:var(--text-micro)}
 .welcome-hero-card__privacy{font-size:var(--text-micro);color:var(--ink-soft)}
 @media (max-width:520px){.welcome-hero-card__steps small{flex-basis:100%;margin-left:calc(1.25em + var(--space-2))}}
+
+/* Fechamento do dia: a linha de total do extrato, com o traço duplo de conta encerrada. */
+.session-result .day-closed{display:grid;gap:var(--space-1);margin:var(--space-3) 0;padding-top:var(--space-3);border-top:3px double var(--border-control)}
+.session-result .day-closed__title{display:flex;align-items:center;gap:var(--space-2);margin:0;font:600 var(--text-title)/1.2 var(--font-display);color:var(--heading)}
+.session-result .day-closed__title .icon{color:var(--good-text)}
+.session-result .day-closed__line{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-1) var(--space-3);margin:0;font:var(--text-sm)/1.5 var(--font-data);color:var(--ink-soft)}
+.session-result .day-closed__line strong{color:var(--ink);font-variant-numeric:tabular-nums}
+.session-result .day-closed__note{margin:0;font-size:var(--text-micro);color:var(--ink-soft)}

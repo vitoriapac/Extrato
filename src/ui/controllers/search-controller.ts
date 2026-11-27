@@ -6,6 +6,7 @@ import { revealAdvanced } from '../essential-mode.js';
 import { hydrateLazy } from '../lazy-details.js';
 import { mountPreact } from '../preact-mount.js';
 import { GlobalCommandPalette } from '../components/GlobalCommandPalette.js';
+import { simulationTotals, type ScoredSimulation } from '../../domain/exams/simulation-score.js';
 
 export interface SearchCommand {
   label: string;
@@ -101,6 +102,12 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
     keywords: 'lancar registrar acertos erros',
     action: 'add-questions',
     icon: 'list-check',
+  },
+  {
+    label: 'Registrar simulado',
+    keywords: 'lancar novo simulado prova nota acertos',
+    action: 'add-simulation',
+    icon: 'clipboard-text',
   },
   {
     label: 'Abrir Planejamento e metas',
@@ -236,6 +243,39 @@ export function performGlobalSearch(query: string, subjects: any[]): SearchResul
   return results.slice(0, 8);
 }
 
+export interface SearchRecordItem {
+  id: string;
+  label: string;
+  description: string;
+}
+
+/** Simulados registrados, por nome ou data (dd/mm ou dd/mm/aaaa); os mais recentes primeiro. */
+type RecordSimulation = ScoredSimulation & { id?: unknown; nome?: string | null; date?: string | null };
+
+export function performRecordSearch(
+  query: string,
+  simulados: RecordSimulation[] = []
+): SearchRecordItem[] {
+  const q = normalizeSearchText(query.trim());
+  if (!q) return [];
+  return simulados
+    .filter(sim => sim?.id)
+    .map(sim => {
+      const [y, m, d] = String(sim.date || '').split('-');
+      const date = d ? `${d}/${m}/${y}` : '';
+      const { correct, total } = simulationTotals(sim);
+      return { sim, date, correct, total };
+    })
+    .filter(({ sim, date }) => normalizeSearchText(`${sim.nome || ''} ${date}`).includes(q))
+    .sort((a, b) => String(b.sim.date || '').localeCompare(String(a.sim.date || '')))
+    .slice(0, 5)
+    .map(({ sim, date, correct, total }) => ({
+      id: String(sim.id),
+      label: sim.nome || 'Simulado sem nome',
+      description: [date, total ? `${correct}/${total} acertos` : ''].filter(Boolean).join(' · '),
+    }));
+}
+
 export interface SearchControllerOptions {
   document: Document;
   window: Window;
@@ -270,13 +310,31 @@ export function createSearchController(options: SearchControllerOptions) {
         : SEARCH_COMMANDS
     ).slice(0, 32);
     const topics = normalized ? performGlobalSearch(q, getState().subjects || []) : [];
+    const records = normalized ? performRecordSearch(q, getState().simulados || []) : [];
     return {
       normalized,
       commands,
       actionCommands: commands.filter(item => Boolean(item.action)),
       navCommands: commands.filter(item => Boolean(item.tab)),
       topics,
+      records,
     };
+  }
+
+  // Abre Questões & Simulados na linha do simulado, com o desempenho aberto.
+  function openSimulationRecord(id: string): void {
+    activateTab('questoes');
+    const row = [...document.querySelectorAll<HTMLElement>(`#simuladosBody tr[data-id="${CSS.escape(id)}"]`)].find(
+      item => item.offsetParent !== null
+    );
+    if (!row) return;
+    const toggle = row.querySelector<HTMLElement>('[aria-expanded="false"][data-delegated-click^="toggleBreakdown"]');
+    toggle?.click();
+    const target =
+      document.querySelector<HTMLElement>(`#simuladosBody tr[data-id="${CSS.escape(id)}"]:not([hidden])`) || row;
+    target.tabIndex = -1;
+    target.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+    target.focus({ preventScroll: true });
   }
 
   function executeCommandSpec(command: { action?: string | null; tab?: string | null }): void {
@@ -294,6 +352,9 @@ export function createSearchController(options: SearchControllerOptions) {
     } else if (action === 'add-review') {
       activateTab('agenda');
       (document.getElementById('addAgendaRowBtn') as HTMLElement | null)?.click();
+    } else if (action === 'add-simulation') {
+      activateTab('questoes');
+      (document.getElementById('addSimuladoRowBtn') as HTMLElement | null)?.click();
     } else if (action === 'add-questions') {
       activateTab('questoes');
       (document.getElementById('addQuestaoRowBtn') as HTMLElement | null)?.click();
@@ -423,7 +484,7 @@ export function createSearchController(options: SearchControllerOptions) {
     }
 
     const renderPalette = () => {
-      const { actionCommands, navCommands, topics } = filterCommandsForQuery(paletteQuery);
+      const { actionCommands, navCommands, topics, records } = filterCommandsForQuery(paletteQuery);
       syncTriggerAria(paletteOpen);
       mountPreact(
         h(GlobalCommandPalette, {
@@ -432,6 +493,8 @@ export function createSearchController(options: SearchControllerOptions) {
           actionCommands,
           navCommands,
           topics,
+          records,
+          onSelectRecord: openSimulationRecord,
           onOpenChange: nextOpen => {
             paletteOpen = nextOpen;
             renderPalette();
