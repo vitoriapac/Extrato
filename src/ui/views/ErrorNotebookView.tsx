@@ -1,9 +1,10 @@
-import { useState } from 'preact/hooks';
+﻿import { useEffect, useState } from 'preact/hooks';
 import type { ErrorFlashcard, ErrorFlashcardStatus, FlashcardRating } from '../../core/types.js';
 import {
   getDueFlashcards,
   calculateFlashcardDeckStats,
   filterFlashcards,
+  reviewErrorFlashcard,
   selectWarmupFlashcards,
   type CreateFlashcardInput,
   type FlashcardDraft,
@@ -89,6 +90,41 @@ export function ErrorNotebookView({
   const dueCards = getDueFlashcards(flashcards, todayDate, { finalStretchSweep });
 
   const activeCard = dueCards[currentDeckIndex] || null;
+  const formatIntervalDays = (rating: FlashcardRating): string => {
+    if (!activeCard) return '';
+    const days = reviewErrorFlashcard(activeCard, rating, { todayDate }).intervalDays;
+    return days === 1 ? '1 dia' : `${days} dias`;
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || viewMode !== 'deck' || modalOpen || !activeCard) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) {
+        return;
+      }
+      if (event.key === ' ' && !isRevealed) {
+        event.preventDefault();
+        setIsRevealed(true);
+        return;
+      }
+      if (!isRevealed) return;
+      const ratingByKey: Record<string, FlashcardRating> = {
+        '1': 'again',
+        '2': 'hard',
+        '3': 'good',
+        '4': 'easy',
+      };
+      const rating = ratingByKey[event.key];
+      if (rating) {
+        event.preventDefault();
+        handleAnswerRating(rating);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [viewMode, modalOpen, activeCard, isRevealed]);
 
   const currentSubjectTopics = subjects.find(s => s.id === newSubjectId)?.topics || [];
 
@@ -157,13 +193,16 @@ export function ErrorNotebookView({
       onReviewFlashcard(activeCard.id, rating);
     }
 
-    const ratingLabels: Record<FlashcardRating, string> = {
-      again: 'Errei, agendado para amanhã',
-      hard: 'Difícil, agendado para 2 dias',
-      good: 'Bom, agendado para 4 dias',
-      easy: 'Fácil, agendado para 7 dias ou mais',
+    const ratingNames: Record<FlashcardRating, string> = {
+      again: 'Errei',
+      hard: 'Difícil',
+      good: 'Bom',
+      easy: 'Fácil',
     };
-    setAriaAnnouncement(`Card avaliado: ${ratingLabels[rating]}.`);
+    const nextInterval = formatIntervalDays(rating);
+    setAriaAnnouncement(
+      `Card avaliado: ${ratingNames[rating]}, agendado para ${nextInterval}.`
+    );
 
     setIsRevealed(false);
     if (currentDeckIndex < dueCards.length - 1) {
@@ -213,11 +252,11 @@ export function ErrorNotebookView({
       {/* Cabeçalho do Caderno de Erros */}
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border-default pb-4">
         <div>
-          <h2 class="text-xl font-semibold font-display text-primary m-0 flex items-center gap-2">
-            <Icon name="book" size={20} class="text-primary shrink-0" />
+          <h2 class="text-xl font-semibold font-display text-content-primary m-0 flex items-center gap-2">
+            <Icon name="book" size={20} class="text-content-primary shrink-0" />
             <span>Caderno de Erros Ativo &amp; Flashcards</span>
           </h2>
-          <p class="text-sm text-secondary mt-1">
+          <p class="text-sm text-content-secondary mt-1">
             Transforme suas questões incorretas em fixação imediata com repetição espaçada.
           </p>
         </div>
@@ -247,6 +286,7 @@ export function ErrorNotebookView({
           <Button
             variant="primary"
             size="small"
+            className="inline-flex items-center gap-1"
             onClick={() => {
               if (subjects.length > 0 && !newSubjectId) {
                 setNewSubjectId(subjects[0].id);
@@ -255,7 +295,8 @@ export function ErrorNotebookView({
               setModalOpen(true);
             }}
           >
-            + Novo Card
+            <Icon name="plus" size={14} />
+            <span>Novo Card</span>
           </Button>
         </div>
       </div>
@@ -263,11 +304,11 @@ export function ErrorNotebookView({
       {/* Sugestões: registros de questões com erros ainda sem flashcard */}
       {questionDrafts.length > 0 && (
         <section
-          class="rounded-default border border-amber/30 bg-amber/5 p-3 text-xs space-y-2"
+          class="rounded-default border border-border-subtle bg-amber-bg p-3 text-xs space-y-2"
           aria-label="Erros registrados sem flashcard"
           data-testid="error-notebook-drafts"
         >
-          <p class="m-0 font-semibold text-primary">
+          <p class="m-0 font-semibold text-content-primary">
             {questionDrafts.length === 1
               ? '1 registro de questões com erros ainda não virou flashcard'
               : `${questionDrafts.length} registros de questões com erros ainda não viraram flashcard`}
@@ -275,7 +316,7 @@ export function ErrorNotebookView({
           <ul class="m-0 p-0 list-none space-y-2">
             {questionDrafts.slice(0, MAX_VISIBLE_DRAFTS).map(draft => (
               <li key={draft.questionId} class="flex flex-wrap items-center justify-between gap-2">
-                <span class="text-secondary">
+                <span class="text-content-secondary">
                   {draft.date} · {resolveSubjectName(draft.subjectId)}
                   {draft.topicId
                     ? ` · ${resolveTopicName(draft.subjectId, draft.topicId)}`
@@ -288,7 +329,7 @@ export function ErrorNotebookView({
             ))}
           </ul>
           {questionDrafts.length > MAX_VISIBLE_DRAFTS && (
-            <p class="m-0 text-muted">+{questionDrafts.length - MAX_VISIBLE_DRAFTS} registros</p>
+            <p class="m-0 text-content-tertiary">+{questionDrafts.length - MAX_VISIBLE_DRAFTS} registros</p>
           )}
         </section>
       )}
@@ -296,25 +337,25 @@ export function ErrorNotebookView({
       {/* Resumo de Métricas do Deck */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div class="p-card rounded-default border border-border-default bg-surface-card">
-          <span class="text-secondary block font-medium">Revisões Hoje</span>
+          <span class="text-content-secondary block font-medium">Revisões Hoje</span>
           <span class="text-lg font-semibold text-amber font-display mt-1 block">
             {stats.dueCount} {stats.dueCount === 1 ? 'card' : 'cards'}
           </span>
         </div>
         <div class="p-card rounded-default border border-border-default bg-surface-card">
-          <span class="text-secondary block font-medium">Novos / Pendentes</span>
+          <span class="text-content-secondary block font-medium">Novos / Pendentes</span>
           <span class="text-lg font-semibold text-brand-secondary font-display mt-1 block">
             {stats.pendingCount}
           </span>
         </div>
         <div class="p-card rounded-default border border-border-default bg-surface-card">
-          <span class="text-secondary block font-medium">Em Fixação</span>
-          <span class="text-lg font-semibold text-primary font-display mt-1 block">
+          <span class="text-content-secondary block font-medium">Em Fixação</span>
+          <span class="text-lg font-semibold text-content-primary font-display mt-1 block">
             {stats.reviewingCount}
           </span>
         </div>
         <div class="p-card rounded-default border border-border-default bg-surface-card">
-          <span class="text-secondary block font-medium">Dominados</span>
+          <span class="text-content-secondary block font-medium">Dominados</span>
           <span class="text-lg font-semibold text-green font-display mt-1 block">
             {stats.masteredCount}
           </span>
@@ -326,8 +367,8 @@ export function ErrorNotebookView({
         <div class="space-y-4">
           {dueCards.length === 0 ? (
             <div class="text-center py-12 px-4 rounded-default border border-dashed border-border-default bg-surface-card">
-              <h3 class="text-base font-semibold text-primary">Nenhum cartão para revisar hoje</h3>
-              <p class="text-xs text-secondary max-w-md mx-auto mt-1">
+              <h3 class="text-base font-semibold text-content-primary">Nenhum cartão para revisar hoje</h3>
+              <p class="text-xs text-content-secondary max-w-md mx-auto mt-1">
                 Adicione novas armadilhas de banca ou explore o catálogo completo.
               </p>
               <div class="mt-4">
@@ -338,14 +379,14 @@ export function ErrorNotebookView({
             </div>
           ) : activeCard ? (
             <div class="max-w-2xl mx-auto space-y-4">
-              <div class="flex justify-between items-center text-xs text-secondary px-1">
+              <div class="flex justify-between items-center text-xs text-content-secondary px-1">
                 <span>
-                  Card <strong class="text-primary">{currentDeckIndex + 1}</strong> de{' '}
-                  <strong class="text-primary">{dueCards.length}</strong>
+                  Card <strong class="font-mono tabular-nums text-content-primary">{currentDeckIndex + 1}</strong> de{' '}
+                  <strong class="font-mono tabular-nums text-content-primary">{dueCards.length}</strong>
                 </span>
                 <span class="flex items-center gap-2">
                   <Badge variant="default">{resolveSubjectName(activeCard.subjectId)}</Badge>
-                  <span class="text-muted">·</span>
+                  <span class="text-content-tertiary">·</span>
                   <span>{resolveTopicName(activeCard.subjectId, activeCard.topicId)}</span>
                 </span>
               </div>
@@ -355,11 +396,11 @@ export function ErrorNotebookView({
                 {/* Frente: Enunciado / Pergunta */}
                 <div class="p-panel space-y-3">
                   <div class="flex items-center justify-between gap-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-secondary">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
                       Enunciado / Contexto da Questão
                     </span>
                     {activeCard.errorCategory && (
-                      <span class="text-xs px-2 py-1 rounded bg-surface-subtle text-secondary font-medium">
+                      <span class="text-xs px-2 py-1 rounded bg-surface-subtle text-content-secondary font-medium">
                         {ERROR_CATEGORY_LABELS[activeCard.errorCategory] ||
                           activeCard.errorCategory}
                       </span>
@@ -369,7 +410,7 @@ export function ErrorNotebookView({
                       <Badge variant="default">{activeCard.reference}</Badge>
                     )}
                   </div>
-                  <p class="text-base font-medium text-primary leading-relaxed whitespace-pre-wrap">
+                  <p class="text-base font-medium text-content-primary leading-relaxed whitespace-pre-wrap">
                     {activeCard.statementSummary}
                   </p>
                 </div>
@@ -378,74 +419,85 @@ export function ErrorNotebookView({
                 {isRevealed ? (
                   <div class="border-t border-border-default p-panel space-y-4 bg-surface-subtle">
                     {activeCard.bancaTrap && (
-                      <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
+                      <div class="rounded-default p-3 bg-amber-bg border border-border-subtle text-xs">
                         <span class="font-semibold text-amber flex items-center gap-2 mb-1">
                           <Icon name="alert-triangle" size={14} class="shrink-0" />
                           <span>Pegadinha da Banca / Armadilha:</span>
                         </span>
-                        <p class="text-primary leading-relaxed">{activeCard.bancaTrap}</p>
+                        <p class="text-content-primary leading-relaxed">{activeCard.bancaTrap}</p>
                       </div>
                     )}
 
-                    <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
+                    <div class="rounded-default p-3 bg-green-bg border border-border-subtle text-xs">
                       <span class="font-semibold text-green flex items-center gap-2 mb-1">
                         <Icon name="circle-check" size={14} class="shrink-0" />
                         <span>Conceito Correto / Fundamento:</span>
                       </span>
-                      <p class="text-primary leading-relaxed whitespace-pre-wrap">
+                      <p class="text-content-primary leading-relaxed whitespace-pre-wrap">
                         {activeCard.correctConcept}
                       </p>
                     </div>
 
                     {/* Ações de Avaliação Espaçada */}
                     <div class="pt-2">
-                      <span class="block text-center text-xs text-secondary mb-2">
-                        Como foi sua recuperação deste conceito?
+                      <span class="block text-center text-xs text-content-secondary mb-2">
+                        Como foi sua recuperação deste conceito?{' '}
+                        <span class="hidden sm:inline text-content-tertiary">
+                          (Atalhos: 1–4)
+                        </span>
                       </span>
                       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button
                           type="button"
-                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-red/30 bg-red/10 text-red hover:bg-red/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-red bg-red-bg text-red hover:opacity-90 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('again')}
                         >
                           <span class="inline-flex items-center gap-1">
                             <Icon name="circle-x" size={13} class="shrink-0" />
                             <span>Errei</span>
                           </span>
-                          <span class="block text-xs text-muted">1 dia</span>
+                          <span class="block text-xs font-mono tabular-nums text-content-tertiary">
+                            {formatIntervalDays('again')}
+                          </span>
                         </button>
                         <button
                           type="button"
-                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-amber/30 bg-amber/10 text-amber hover:bg-amber/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-amber bg-amber-bg text-amber hover:opacity-90 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('hard')}
                         >
                           <span class="inline-flex items-center gap-1">
                             <Icon name="alert-triangle" size={13} class="shrink-0" />
                             <span>Difícil</span>
                           </span>
-                          <span class="block text-xs text-muted">2 dias</span>
+                          <span class="block text-xs font-mono tabular-nums text-content-tertiary">
+                            {formatIntervalDays('hard')}
+                          </span>
                         </button>
                         <button
                           type="button"
-                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-accent bg-info-bg text-brand-secondary hover:opacity-90 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('good')}
                         >
                           <span class="inline-flex items-center gap-1">
                             <Icon name="thumb-up" size={13} class="shrink-0" />
                             <span>Bom</span>
                           </span>
-                          <span class="block text-xs text-muted">4 dias</span>
+                          <span class="block text-xs font-mono tabular-nums text-content-tertiary">
+                            {formatIntervalDays('good')}
+                          </span>
                         </button>
                         <button
                           type="button"
-                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-green/30 bg-green/10 text-green hover:bg-green/20 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
+                          class="min-h-touch px-3 py-2 text-xs font-medium rounded-default border border-green bg-green-bg text-green hover:opacity-90 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1"
                           onClick={() => handleAnswerRating('easy')}
                         >
                           <span class="inline-flex items-center gap-1">
                             <Icon name="star" size={13} class="shrink-0" />
                             <span>Fácil</span>
                           </span>
-                          <span class="block text-xs text-muted">7+ dias</span>
+                          <span class="block text-xs font-mono tabular-nums text-content-tertiary">
+                            {formatIntervalDays('easy')}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -481,7 +533,7 @@ export function ErrorNotebookView({
             <div class="flex flex-wrap items-center gap-2">
               <select
                 aria-label="Filtrar aquecimento por disciplina"
-                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-primary"
+                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-content-primary"
                 value={warmupSubjectId}
                 onChange={e => {
                   setWarmupSubjectId((e.target as HTMLSelectElement).value);
@@ -499,7 +551,7 @@ export function ErrorNotebookView({
 
               <select
                 aria-label="Filtrar aquecimento por banca"
-                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-primary"
+                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-content-primary"
                 value={warmupBanca}
                 onChange={e => {
                   setWarmupBanca((e.target as HTMLSelectElement).value);
@@ -517,7 +569,7 @@ export function ErrorNotebookView({
 
               <select
                 aria-label="Filtrar aquecimento por tipo de erro"
-                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-primary"
+                class="min-h-control text-xs px-2.5 py-1.5 rounded border border-border-default bg-surface-card text-content-primary"
                 value={warmupCategory}
                 onChange={e => {
                   setWarmupCategory((e.target as HTMLSelectElement).value);
@@ -541,11 +593,11 @@ export function ErrorNotebookView({
             </div>
           ) : (
             <div class="max-w-2xl mx-auto space-y-3">
-              <div class="flex items-center justify-between text-xs text-secondary px-1">
+              <div class="flex items-center justify-between text-xs text-content-secondary px-1">
                 <span>
                   Aquecimento {Math.min(warmupIndex + 1, warmupCards.length)} de {warmupCards.length}
                 </span>
-                <span class="font-medium text-primary">
+                <span class="font-medium text-content-primary">
                   {resolveSubjectName(activeWarmupCard.subjectId)} ·{' '}
                   {resolveTopicName(activeWarmupCard.subjectId, activeWarmupCard.topicId)}
                 </span>
@@ -554,7 +606,7 @@ export function ErrorNotebookView({
               <div class="rounded-default border border-border-default bg-surface-card overflow-hidden">
                 <div class="p-panel space-y-3">
                   <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-secondary">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
                       Revisão Rápida (SM-2 intacto)
                     </span>
                     <div class="flex flex-wrap items-center gap-1.5">
@@ -572,7 +624,7 @@ export function ErrorNotebookView({
                       )}
                     </div>
                   </div>
-                  <p class="text-base font-medium text-primary leading-relaxed whitespace-pre-wrap">
+                  <p class="text-base font-medium text-content-primary leading-relaxed whitespace-pre-wrap">
                     {activeWarmupCard.statementSummary}
                   </p>
                 </div>
@@ -580,18 +632,18 @@ export function ErrorNotebookView({
                 {warmupRevealed ? (
                   <div class="border-t border-border-default p-panel space-y-3 bg-surface-subtle">
                     {activeWarmupCard.bancaTrap && (
-                      <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
+                      <div class="rounded-default p-3 bg-amber-bg border border-border-subtle text-xs">
                         <span class="font-semibold text-amber block mb-1">
                           Pegadinha da Banca / Armadilha:
                         </span>
-                        <p class="text-primary leading-relaxed m-0">{activeWarmupCard.bancaTrap}</p>
+                        <p class="text-content-primary leading-relaxed m-0">{activeWarmupCard.bancaTrap}</p>
                       </div>
                     )}
-                    <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
+                    <div class="rounded-default p-3 bg-green-bg border border-border-subtle text-xs">
                       <span class="font-semibold text-green block mb-1">
                         Conceito Correto / Fundamento:
                       </span>
-                      <p class="text-primary leading-relaxed whitespace-pre-wrap m-0">
+                      <p class="text-content-primary leading-relaxed whitespace-pre-wrap m-0">
                         {activeWarmupCard.correctConcept}
                       </p>
                     </div>
@@ -644,7 +696,7 @@ export function ErrorNotebookView({
           <div class="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
             <div class="flex flex-wrap items-center gap-2">
               <select
-                class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={filterSubjectId}
                 onChange={e => setFilterSubjectId((e.target as HTMLSelectElement).value)}
                 aria-label="Filtrar por disciplina"
@@ -658,7 +710,7 @@ export function ErrorNotebookView({
               </select>
 
               <select
-                class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={filterStatus}
                 onChange={e => setFilterStatus((e.target as HTMLSelectElement).value as any)}
                 aria-label="Filtrar por status"
@@ -672,7 +724,7 @@ export function ErrorNotebookView({
 
             <input
               type="text"
-              class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-primary w-full sm:w-64 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="min-h-control text-xs px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary w-full sm:w-64 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               placeholder="Buscar em enunciados e conceitos..."
               value={searchQuery}
               onInput={e => setSearchQuery((e.target as HTMLInputElement).value)}
@@ -681,7 +733,7 @@ export function ErrorNotebookView({
           </div>
 
           {catalogFiltered.length === 0 ? (
-            <div class="text-center py-8 border border-dashed border-border-default rounded-default text-secondary text-xs">
+            <div class="text-center py-8 border border-dashed border-border-default rounded-default text-content-secondary text-xs">
               Nenhum flashcard encontrado com os filtros selecionados.
             </div>
           ) : (
@@ -692,54 +744,59 @@ export function ErrorNotebookView({
                   class="p-card rounded-default border border-border-default bg-surface-card space-y-2 relative group text-xs"
                 >
                   <div class="flex justify-between items-start gap-2">
-                    <span class="font-semibold text-primary">
+                    <span class="font-semibold text-content-primary">
                       {resolveSubjectName(card.subjectId)} ·{' '}
                       {resolveTopicName(card.subjectId, card.topicId)}
                     </span>
                     <div class="flex items-center gap-2 shrink-0">
-                      <span
-                        class={`px-2 py-1 rounded text-xs font-semibold ${
+                      <Badge
+                        variant={
                           card.status === 'mastered'
-                            ? 'bg-green/20 text-green'
+                            ? 'success'
                             : card.status === 'pending'
-                              ? 'bg-brand-secondary/20 text-brand-secondary'
-                              : 'bg-amber/20 text-amber'
-                        }`}
+                              ? 'info'
+                              : 'warning'
+                        }
                       >
                         {card.status === 'mastered'
                           ? 'Dominado'
                           : card.status === 'pending'
                             ? 'Pendente'
                             : 'Em revisão'}
-                      </span>
+                      </Badge>
                       {onDeleteFlashcard && (
                         <button
                           type="button"
-                          class="text-muted hover:text-red min-h-control min-w-control p-2 rounded hover:bg-red/10 flex items-center justify-center cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                          class="text-content-tertiary hover:text-red min-h-control min-w-control p-2 rounded hover:bg-red-bg flex items-center justify-center cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                           onClick={() => onDeleteFlashcard(card.id)}
                           aria-label="Excluir flashcard"
                         >
-                          <Icon name="x" size={14} />
+                          <Icon name="trash" size={14} />
                         </button>
                       )}
                     </div>
                   </div>
 
-                  <p class="text-primary font-medium">{card.statementSummary}</p>
+                  <p class="text-content-primary font-medium">{card.statementSummary}</p>
 
                   {card.bancaTrap && (
-                    <div class="p-2 rounded bg-amber/10 text-amber text-xs">
+                    <div class="p-2 rounded bg-amber-bg text-amber text-xs">
                       <strong>Pegadinha:</strong> {card.bancaTrap}
                     </div>
                   )}
 
-                  <div class="p-2 rounded bg-green/10 text-green text-xs">
+                  <div class="p-2 rounded bg-green-bg text-green text-xs">
                     <strong>Fundamento:</strong> {card.correctConcept}
                   </div>
 
-                  <div class="flex justify-between items-center text-xs text-muted pt-1 border-t border-border-subtle">
+                  <div class="flex justify-between items-center text-xs font-mono tabular-nums text-content-tertiary pt-1 border-t border-border-subtle">
                     <span>Revisões: {card.reviewCount}</span>
-                    <span>Próxima: {card.nextReviewDate || 'Hoje'}</span>
+                    <span>
+                      Próxima:{' '}
+                      {card.nextReviewDate
+                        ? card.nextReviewDate.split('-').reverse().join('/')
+                        : 'Hoje'}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -753,12 +810,12 @@ export function ErrorNotebookView({
         <div class="space-y-4 text-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label for="errCardSubject" class="block font-medium text-primary mb-1">
+              <label for="errCardSubject" class="block font-medium text-content-primary mb-1">
                 Disciplina:
               </label>
               <select
                 id="errCardSubject"
-                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newSubjectId}
                 onChange={e => handleSubjectChange((e.target as HTMLSelectElement).value)}
               >
@@ -771,12 +828,12 @@ export function ErrorNotebookView({
             </div>
 
             <div>
-              <label for="errCardTopic" class="block font-medium text-primary mb-1">
+              <label for="errCardTopic" class="block font-medium text-content-primary mb-1">
                 Tópico:
               </label>
               <select
                 id="errCardTopic"
-                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newTopicId}
                 onChange={e => setNewTopicId((e.target as HTMLSelectElement).value)}
                 disabled={currentSubjectTopics.length === 0}
@@ -792,12 +849,12 @@ export function ErrorNotebookView({
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label for="errCardCategory" class="block font-medium text-primary mb-1">
+              <label for="errCardCategory" class="block font-medium text-content-primary mb-1">
                 Motivo do Erro:
               </label>
               <select
                 id="errCardCategory"
-                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newErrorCategory}
                 onChange={e => setNewErrorCategory((e.target as HTMLSelectElement).value)}
               >
@@ -810,7 +867,7 @@ export function ErrorNotebookView({
             </div>
 
             <div>
-              <label for="errCardBanca" class="block font-medium text-primary mb-1">
+              <label for="errCardBanca" class="block font-medium text-content-primary mb-1">
                 Banca (Opcional):
               </label>
               <input
@@ -818,7 +875,7 @@ export function ErrorNotebookView({
                 type="text"
                 list="errCardBancasList"
                 placeholder="Ex.: FGV, Cebraspe, FCC"
-                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newBanca}
                 onInput={e => setNewBanca((e.target as HTMLInputElement).value)}
               />
@@ -831,26 +888,26 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label for="errCardReference" class="block font-medium text-primary mb-1">
+            <label for="errCardReference" class="block font-medium text-content-primary mb-1">
               Referência Normativa / ID da Questão (Opcional):
             </label>
             <input
               id="errCardReference"
               type="text"
               placeholder="Ex.: CF art. 37 §6º, Súmula 473 STF ou TEC #123456"
-              class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               value={newReference}
               onInput={e => setNewReference((e.target as HTMLInputElement).value)}
             />
           </div>
 
           <div>
-            <label for="errCardStatement" class="block font-medium text-primary mb-1">
+            <label for="errCardStatement" class="block font-medium text-content-primary mb-1">
               Enunciado / Contexto da Questão:*
             </label>
             <textarea
               id="errCardStatement"
-              class="w-full h-20 p-3 rounded border border-border-default bg-surface-card text-primary text-xs focus:ring-primary focus:border-primary"
+              class="w-full h-20 p-3 rounded border border-border-default bg-surface-card text-content-primary text-xs focus:ring-primary focus:border-primary"
               placeholder="Ex.: Em contratos administrativos, a alteração unilateral quantitativa pode ultrapassar 25%?"
               value={newStatement}
               onInput={e => setNewStatement((e.target as HTMLTextAreaElement).value)}
@@ -863,7 +920,7 @@ export function ErrorNotebookView({
             </label>
             <textarea
               id="errCardTrap"
-              class="w-full h-16 p-3 rounded border border-amber/30 bg-amber/5 text-primary text-xs focus:ring-amber focus:border-amber"
+              class="w-full h-16 p-3 rounded border border-amber/30 bg-amber/5 text-content-primary text-xs focus:ring-amber focus:border-amber"
               placeholder="Ex.: Confundir reforma de edifício (até 50%) com compras comuns de bens e serviços (limite de 25%)."
               value={newBancaTrap}
               onInput={e => setNewBancaTrap((e.target as HTMLTextAreaElement).value)}
@@ -876,7 +933,7 @@ export function ErrorNotebookView({
             </label>
             <textarea
               id="errCardConcept"
-              class="w-full h-20 p-3 rounded border border-green/30 bg-green/5 text-primary text-xs focus:ring-green focus:border-green"
+              class="w-full h-20 p-3 rounded border border-green/30 bg-green/5 text-content-primary text-xs focus:ring-green focus:border-green"
               placeholder="Ex.: Não, para compras comuns o limite é estrito em 25%. Apenas reformas admitem até 50% (Lei 14.133/21)."
               value={newCorrectConcept}
               onInput={e => setNewCorrectConcept((e.target as HTMLTextAreaElement).value)}

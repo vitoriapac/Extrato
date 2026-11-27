@@ -193,8 +193,9 @@ export function QuickQuestionEntryBar({
           />
           {/* A sintaxe fica à vista: o exemplo do campo some ao digitar. */}
           <p id="quickQuestionShorthandHint" class="text-xs text-content-secondary m-0">
-            q resolvidas · c acertos · b em branco · m minutos; banca e "ref" (refeitas) são
-            opcionais.
+            q resolvidas · c acertos ·{' '}
+            {scoringMode === 'certo-errado' ? 'b em branco · ' : ''}m minutos; banca e "ref"
+            (refeitas) são opcionais.
           </p>
         </div>
 
@@ -250,13 +251,15 @@ export function QuickQuestionEntryBar({
           {(parsedShorthand.banca || defaultBanca) && (
             <span>· Banca: {parsedShorthand.banca || defaultBanca}</span>
           )}
-          {parsedShorthand.minutes != null && <span>· {parsedShorthand.minutes} min</span>}
+          {parsedShorthand.minutes != null && (
+            <span class="font-mono tabular-nums">· {parsedShorthand.minutes} min</span>
+          )}
           {parsedShorthand.retry && <span>· Refeitas</span>}
         </div>
       )}
 
       {submitError && (
-        <p id="quickQuestionShorthandError" class="text-xs text-feedback-danger m-0" role="alert">
+        <p id="quickQuestionShorthandError" class="text-xs text-status-danger m-0" role="alert">
           {submitError}
         </p>
       )}

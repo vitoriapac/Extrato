@@ -77,7 +77,7 @@ export function QuestionLogTable({
     return (
       <tr>
         <td colSpan={8}>
-          <div class="empty-state" style={{ border: 'none' }}>
+          <div class="empty-state border-0">
             <p class="font-medium text-content-primary m-0">
               Nenhuma sessão de questões registrada ainda.
             </p>

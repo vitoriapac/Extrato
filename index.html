@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=86f2706fc50b">
-<link rel="stylesheet" href="styles/app.css?v=86f2706fc50b">
+<link rel="stylesheet" href="styles/tailwind.css?v=9cecdff5bdaa">
+<link rel="stylesheet" href="styles/app.css?v=9cecdff5bdaa">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -626,7 +626,7 @@
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Questões resolvidas</h2>
       <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle" aria-pressed="false">Caderno de Erros (Flashcards)</button>
-      <button class="btn" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Registrar sessão</button>
+      <button class="btn ghost small" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Registrar sessão</button>
       <div id="questionsImportMenuMount"></div>
       <label for="questionsImportFile" class="sr-only">Importar arquivo CSV de questões</label>
       <input type="file" id="questionsImportFile" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
@@ -658,28 +658,6 @@
     </div>
 
 
-    <details class="chart-card question-analysis-card" id="topicPerformanceCard" data-advanced="Análise por tópico e erros"><summary>Análise de desempenho por tópico e erros</summary>
-      <div class="section-head module-heading module-heading--section">
-        <h3 class="module-heading__title">Desempenho por tópico e tendência</h3>
-        <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
-      </div>
-      <div class="analytics-toolbar">
-        <label for="performanceSubjectSelect" class="sr-only">Disciplina analisada</label>
-        <select class="select-control" id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
-      </div>
-      <div class="question-analysis-summary" id="questionAnalyticsSummary"></div>
-      <h3>Desempenho dos tópicos</h3>
-      <div id="topicPerformanceBars"></div>
-      <h3 class="mt-6">Tendência semanal — últimas 8 semanas</h3>
-      <div id="subjectWeeklyTrend"></div>
-      <h3 class="mt-6">Perfil de erros categorizados</h3>
-      <div id="subjectErrorProfile"></div>
-      <div id="plateauDetectorMount"></div>
-    </details>
-    <details class="chart-card question-analysis-card" id="examFitCard" data-remember="questions-exam-fit" data-advanced="Banca, ritmo e refeitas"><summary>Banca, ritmo e questões refeitas</summary>
-      <div id="examFitMount"></div>
-    </details>
-
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Simulados</h2>
       <button class="btn" id="addSimuladoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Registrar simulado</button>
@@ -703,6 +681,28 @@
         <tbody id="simuladosBody"></tbody>
       </table>
     </div>
+
+    <details class="chart-card question-analysis-card" id="topicPerformanceCard" data-remember="questions-topic-performance" data-advanced="Análise por tópico e erros"><summary>Análise de desempenho por tópico e erros</summary>
+      <div class="section-head module-heading module-heading--section">
+        <h3 class="module-heading__title">Desempenho por tópico e tendência</h3>
+        <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
+      </div>
+      <div class="analytics-toolbar">
+        <label for="performanceSubjectSelect" class="sr-only">Disciplina analisada</label>
+        <select class="select-control" id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
+      </div>
+      <div class="question-analysis-summary" id="questionAnalyticsSummary"></div>
+      <h3>Desempenho dos tópicos</h3>
+      <div id="topicPerformanceBars"></div>
+      <h3 class="mt-6">Tendência semanal — últimas 8 semanas</h3>
+      <div id="subjectWeeklyTrend"></div>
+      <h3 class="mt-6">Perfil de erros categorizados</h3>
+      <div id="subjectErrorProfile"></div>
+      <div id="plateauDetectorMount"></div>
+    </details>
+    <details class="chart-card question-analysis-card" id="examFitCard" data-remember="questions-exam-fit" data-advanced="Banca, ritmo e refeitas"><summary>Banca, ritmo e questões refeitas</summary>
+      <div id="examFitMount"></div>
+    </details>
     <details class="chart-card decision-fold" id="recommendationCalibrationDetails" data-remember="questions-calibration">
       <summary>Calibração e auditoria das recomendações</summary>
       <section aria-label="Histórico de recomendações"><h3>Recomendações · 30 dias</h3><div id="recommendationHistorySummary"></div></section>
@@ -830,7 +830,7 @@
   <link rel="modulepreload" href="src/chunks/chunk-PJ3MCI22.js">
   <link rel="modulepreload" href="src/chunks/chunk-SUIAGQ6E.js">
   <link rel="modulepreload" href="src/chunks/chunk-U2JQVAN3.js">
-  <script type="module" src="src/app.bundle.js?v=86f2706fc50b"></script>
+  <script type="module" src="src/app.bundle.js?v=9cecdff5bdaa"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

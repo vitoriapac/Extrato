@@ -47,8 +47,9 @@ export function BatchQuestionEntryModal({
   const [date, setDate] = useState<string>(todayDate);
   const [banca, setBanca] = useState<string>(defaultBanca || '');
   const [retry, setRetry] = useState<boolean>(false);
-  const [rowsByTopic, setRowsByTopic] = useState<Record<string, RowDraft>>({});
+  const [rowsBySubject, setRowsBySubject] = useState<Record<string, Record<string, RowDraft>>>({});
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const rowsByTopic = rowsBySubject[subjectId] || {};
 
   useEffect(() => {
     if (open) {
@@ -58,7 +59,7 @@ export function BatchQuestionEntryModal({
       setDate(todayDate);
       setBanca(defaultBanca || '');
       setRetry(false);
-      setRowsByTopic({});
+      setRowsBySubject({});
       setErrorMsg(null);
     }
   }, [open, defaultSubjectId, defaultBanca, todayDate]);
@@ -75,32 +76,93 @@ export function BatchQuestionEntryModal({
   }, [topics]);
 
   const preview = useMemo(() => {
-    const rows = rowKeys.map(item => {
-      const draft = rowsByTopic[item.key] || EMPTY_ROW;
+    const subjectIdsToBuild = Array.from(
+      new Set([
+        subjectId,
+        ...Object.keys(rowsBySubject).filter(id =>
+          Object.values(rowsBySubject[id] || {}).some(
+            r => Boolean(r.resolved || r.correct || r.blank || r.errorCategory)
+          )
+        ),
+      ])
+    ).filter(Boolean);
+
+    const allRecords: BatchQuestionBuildResult['records'] = [];
+    let totalResolved = 0;
+    let totalCorrect = 0;
+    let totalBlank = 0;
+    let topicCount = 0;
+
+    for (const sid of subjectIdsToBuild) {
+      const subTopics = topicsForSubject(sid);
+      const subKeys = [
+        ...subTopics.map(t => ({ key: t.id, topicId: t.id, label: t.name })),
+        { key: '__general__', topicId: '', label: 'Geral da disciplina (sem tópico)' },
+      ];
+      const subRows = rowsBySubject[sid] || {};
+      const hasAnyInput = Object.values(subRows).some(
+        r => Boolean(r.resolved || r.correct || r.blank || r.errorCategory)
+      );
+      if (!hasAnyInput && sid !== subjectId) continue;
+      const rows = subKeys.map(item => {
+        const draft = subRows[item.key] || EMPTY_ROW;
+        return {
+          topicId: item.topicId || null,
+          topicName: item.label,
+          resolved: draft.resolved,
+          correct: draft.correct,
+          blank: scoringMode === 'certo-errado' ? draft.blank : null,
+          errorCategory: draft.errorCategory || null,
+        };
+      });
+      const res = buildBatchQuestionRecords({
+        date,
+        subjectId: sid,
+        banca: banca || null,
+        retry,
+        scoringMode,
+        rows,
+      });
+      if (!res.ok) {
+        if (hasAnyInput || subjectIdsToBuild.length === 1) {
+          return res;
+        }
+        continue;
+      }
+      allRecords.push(...res.records);
+      totalResolved += res.summary.totalResolved;
+      totalCorrect += res.summary.totalCorrect;
+      totalBlank += res.summary.totalBlank;
+      topicCount += res.summary.topicCount;
+    }
+
+    if (allRecords.length === 0) {
       return {
-        topicId: item.topicId || null,
-        topicName: item.label,
-        resolved: draft.resolved,
-        correct: draft.correct,
-        blank: scoringMode === 'certo-errado' ? draft.blank : null,
-        errorCategory: draft.errorCategory || null,
+        ok: false,
+        records: [],
+        summary: { topicCount: 0, totalResolved: 0, totalCorrect: 0, totalBlank: 0 },
+        error: 'Preencha ao menos um tópico com questões resolvidas.',
       };
-    });
-    return buildBatchQuestionRecords({
-      date,
-      subjectId,
-      banca: banca || null,
-      retry,
-      scoringMode,
-      rows,
-    });
-  }, [rowKeys, rowsByTopic, date, subjectId, banca, retry, scoringMode]);
+    }
+
+    return {
+      ok: true,
+      records: allRecords,
+      summary: { topicCount, totalResolved, totalCorrect, totalBlank },
+    };
+  }, [rowsBySubject, topicsForSubject, date, subjectId, banca, retry, scoringMode]);
 
   const updateRow = (key: string, field: keyof RowDraft, value: string) => {
-    setRowsByTopic(prev => ({
-      ...prev,
-      [key]: { ...(prev[key] || EMPTY_ROW), [field]: value },
-    }));
+    setRowsBySubject(prev => {
+      const subjectRows = prev[subjectId] || {};
+      return {
+        ...prev,
+        [subjectId]: {
+          ...subjectRows,
+          [key]: { ...(subjectRows[key] || EMPTY_ROW), [field]: value },
+        },
+      };
+    });
     if (errorMsg) setErrorMsg(null);
   };
 
@@ -114,11 +176,18 @@ export function BatchQuestionEntryModal({
     onClose();
   };
 
+  const hasDirtyRows = Object.values(rowsBySubject).some(subjectRows =>
+    Object.values(subjectRows).some(
+      r => Boolean(r.resolved || r.correct || r.blank || r.errorCategory)
+    )
+  );
+
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title="Lançamento em Lote — Caderno Misto"
+      closeOnBackdropClick={!hasDirtyRows}
+      title="Lançamento em lote — Caderno misto"
       maxWidth="lg"
       className="batch-question-entry-modal"
     >
@@ -139,7 +208,6 @@ export function BatchQuestionEntryModal({
               value={subjectId}
               onChange={e => {
                 setSubjectId(e.currentTarget.value);
-                setRowsByTopic({});
                 setErrorMsg(null);
               }}
             >
@@ -195,7 +263,76 @@ export function BatchQuestionEntryModal({
         </label>
 
         <div class="max-h-72 overflow-y-auto border border-border-subtle rounded-default">
-          <table class="w-full text-xs border-collapse">
+          <ul class="sm:hidden divide-y divide-border-subtle m-0 p-0 list-none">
+            {rowKeys.map(item => {
+              const draft = rowsByTopic[item.key] || EMPTY_ROW;
+              return (
+                <li key={item.key} class="p-2.5 space-y-2">
+                  <div class="text-xs font-medium text-content-primary">{item.label}</div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <label class="flex flex-col gap-0.5 text-xs text-content-secondary">
+                      <span>Total</span>
+                      <input
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        aria-label={`Total de questões em ${item.label}`}
+                        placeholder="0"
+                        class="w-full min-h-control font-mono tabular-nums text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                        value={draft.resolved}
+                        onInput={e => updateRow(item.key, 'resolved', e.currentTarget.value)}
+                      />
+                    </label>
+                    <label class="flex flex-col gap-0.5 text-xs text-content-secondary">
+                      <span>Acertos</span>
+                      <input
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        aria-label={`Acertos em ${item.label}`}
+                        placeholder="0"
+                        class="w-full min-h-control font-mono tabular-nums text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                        value={draft.correct}
+                        onInput={e => updateRow(item.key, 'correct', e.currentTarget.value)}
+                      />
+                    </label>
+                    {scoringMode === 'certo-errado' && (
+                      <label class="flex flex-col gap-0.5 text-xs text-content-secondary">
+                        <span>Brancas</span>
+                        <input
+                          type="number"
+                          min={0}
+                          inputMode="numeric"
+                          aria-label={`Questões em branco em ${item.label}`}
+                          placeholder="0"
+                          class="w-full min-h-control font-mono tabular-nums text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                          value={draft.blank}
+                          onInput={e => updateRow(item.key, 'blank', e.currentTarget.value)}
+                        />
+                      </label>
+                    )}
+                    <label class="flex flex-col gap-0.5 text-xs text-content-secondary col-span-2">
+                      <span>Erro predominante</span>
+                      <select
+                        aria-label={`Erro predominante em ${item.label}`}
+                        class="w-full min-h-control text-xs py-1 px-1.5 rounded border border-border-default bg-surface-card text-content-primary"
+                        value={draft.errorCategory}
+                        onChange={e => updateRow(item.key, 'errorCategory', e.currentTarget.value)}
+                      >
+                        <option value="">Opcional</option>
+                        {Object.entries(ERROR_CATEGORIES).map(([key, meta]) => (
+                          <option key={key} value={key}>
+                            {meta.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <table class="hidden sm:table w-full text-xs border-collapse">
             <thead class="bg-surface-subtle sticky top-0 z-10">
               <tr class="text-left text-content-secondary border-b border-border-subtle">
                 <th class="py-2 px-2.5 font-medium">Tópico</th>
@@ -220,7 +357,7 @@ export function BatchQuestionEntryModal({
                         inputMode="numeric"
                         aria-label={`Total de questões em ${item.label}`}
                         placeholder="0"
-                        class="w-full min-h-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                        class="w-full min-h-control font-mono tabular-nums text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
                         value={draft.resolved}
                         onInput={e => updateRow(item.key, 'resolved', e.currentTarget.value)}
                       />
@@ -232,7 +369,7 @@ export function BatchQuestionEntryModal({
                         inputMode="numeric"
                         aria-label={`Acertos em ${item.label}`}
                         placeholder="0"
-                        class="w-full min-h-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                        class="w-full min-h-control font-mono tabular-nums text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
                         value={draft.correct}
                         onInput={e => updateRow(item.key, 'correct', e.currentTarget.value)}
                       />
@@ -245,7 +382,7 @@ export function BatchQuestionEntryModal({
                           inputMode="numeric"
                           aria-label={`Questões em branco em ${item.label}`}
                           placeholder="0"
-                          class="w-full min-h-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                          class="w-full min-h-control font-mono tabular-nums text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
                           value={draft.blank}
                           onInput={e => updateRow(item.key, 'blank', e.currentTarget.value)}
                         />

@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
@@ -33,6 +33,18 @@ export function SimulatedRemediationModal({
   const [appliedPlan, setAppliedPlan] = useState<boolean>(false);
   const [scheduledCorrection, setScheduledCorrection] = useState<boolean>(correctionScheduled);
   const [generatedCards, setGeneratedCards] = useState<boolean>(false);
+
+  useEffect(() => {
+    setAppliedPlan(false);
+    setGeneratedCards(false);
+    setScheduledCorrection(correctionScheduled);
+  }, [
+    open,
+    diagnostic?.simulationId,
+    diagnostic?.simulationName,
+    diagnostic?.simulationDate,
+    correctionScheduled,
+  ]);
 
   if (!diagnostic) return null;
 
@@ -81,7 +93,7 @@ export function SimulatedRemediationModal({
               <span class="text-xs text-content-secondary block">
                 {diagnostic.netScoring ? 'Nota líquida' : 'Nota'}
               </span>
-              <strong class="text-xl font-semibold text-content-primary">
+              <strong class="text-xl font-mono tabular-nums font-semibold text-content-primary">
                 {formatDecimal(diagnostic.scorePercent)}%
               </strong>
             </div>
@@ -172,87 +184,81 @@ export function SimulatedRemediationModal({
           </div>
         )}
 
-        {/* Passo 1: Top 3 Vulnerabilidades (Sangria de Pontos) */}
+        {/* Passo 1: Top 3 Pontos de Atenção */}
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">
-            Passo 1 · Top 3 Vulnerabilidades — Maior Sangria de Pontos
+            Passo 1 · Top 3 Pontos de Atenção — Maior Perda de Pontos
           </h4>
           {diagnostic.topBleedingTopics.length === 0 ? (
             <p class="text-xs text-content-muted">Nenhum detalhamento por disciplina disponível.</p>
           ) : (
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <ul class="divide-y divide-border-subtle border-t border-border-subtle m-0 p-0 list-none">
               {diagnostic.topBleedingTopics.map((topic, index) => (
-                <div
+                <li
                   key={topic.id}
-                  class="rounded-default border border-border-subtle bg-surface-elevated p-3 relative flex flex-col justify-between"
+                  class="py-2.5 flex flex-wrap items-center justify-between gap-2"
                 >
-                  <div class="space-y-1">
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs font-semibold text-status-danger uppercase tracking-wider">
-                        #{index + 1} Maior Perda
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-mono tabular-nums text-xs font-semibold text-status-danger">
+                        #{index + 1}
                       </span>
-                      <Badge variant={topic.accuracy < 50 ? 'danger' : 'warning'}>
-                        {topic.accuracy}% acerto
-                      </Badge>
+                      <strong class="text-sm text-content-primary">{topic.name}</strong>
+                      <span class="text-xs text-content-secondary">· {topic.subjectName}</span>
                     </div>
-                    <strong class="text-sm block text-content-primary leading-tight">
-                      {topic.name}
-                    </strong>
-                    <small class="text-xs text-content-secondary block">{topic.subjectName}</small>
                   </div>
-
-                  <div class="mt-3 pt-2 border-t border-border-subtle flex justify-between items-center text-xs">
+                  <div class="flex items-center gap-3 text-xs font-mono tabular-nums">
+                    <Badge variant={topic.accuracy < 50 ? 'danger' : 'warning'}>
+                      {formatDecimal(topic.accuracy)}% acerto
+                    </Badge>
                     <span class="text-status-danger font-medium">
-                      -{topic.lostPoints} pontos perdidos
+                      -{formatDecimal(topic.lostPoints)} pts
                     </span>
-                    <span class="text-content-muted">{topic.shareOfLostPoints}% das falhas</span>
+                    <span class="text-content-muted">
+                      {formatDecimal(topic.shareOfLostPoints)}% das falhas
+                    </span>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 
         {/* Passo 2: Pontos Recuperáveis de Curto Prazo (Quick Wins) */}
         {(diagnostic.quickWinItems?.length ?? 0) > 0 && (
-          <div>
-            <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">
+          <details class="limits-disclosure">
+            <summary class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
               Passo 2 · Pontos recuperáveis no curto prazo (Quick Wins)
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            </summary>
+            <ul class="divide-y divide-border-subtle border-t border-border-subtle m-0 p-0 list-none pt-2">
               {diagnostic.quickWinItems.map(item => (
-                <div
+                <li
                   key={item.id}
-                  class="rounded-default border border-border-subtle bg-surface-subtle p-3 flex flex-col justify-between gap-2"
+                  class="py-2 flex flex-wrap items-center justify-between gap-2 text-xs"
                 >
-                  <div class="space-y-1">
-                    <div class="flex items-center justify-between gap-2">
-                      <strong class="text-xs text-content-primary leading-tight">
-                        {item.name}
-                      </strong>
-                      <Badge variant="success">+{item.recoverablePoints} pts</Badge>
-                    </div>
-                    <p class="text-xs text-content-secondary m-0">{item.reason}</p>
+                  <div class="min-w-0 flex-1">
+                    <strong class="text-content-primary">{item.name}</strong>
+                    <span class="text-content-secondary"> — {item.reason}</span>
+                    <span class="block text-content-muted">{item.actionHint}</span>
                   </div>
-                  <p class="text-xs text-content-muted m-0 pt-2 border-t border-border-subtle">
-                    {item.actionHint}
-                  </p>
-                </div>
+                  <Badge variant="success">+{item.recoverablePoints} pts</Badge>
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
+          </details>
         )}
 
         {/* Passo 3: Plano de Ação e Ação Imediata */}
-        <div>
+        <details class="limits-disclosure">
+          <summary class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
+            Passo 3 · Plano de remediação — 7 dias e ação imediata
+          </summary>
+          <div class="pt-3">
           <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div>
-              <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-                Passo 3 · Plano de Remediação — 7 Dias & Ação Imediata
-              </h4>
-              <p class="text-xs text-content-muted mt-1">
-                Realocação estratégica de 60% da carga horária para estancar os tópicos com maior
-                sangria.
+              <p class="text-xs text-content-muted m-0">
+                Realocação estratégica de 60% da carga horária para priorizar os tópicos com maior
+                perda de pontos.
               </p>
             </div>
             <div class="flex items-center gap-2">
@@ -267,18 +273,14 @@ export function SimulatedRemediationModal({
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+          <ul class="divide-y divide-border-subtle border-t border-border-subtle m-0 p-0 list-none">
             {diagnostic.remediationPlan7Days.dailySchedule.map((item: RemediationDailyAction) => (
-              <div
+              <li
                 key={item.day}
-                class={`p-3 rounded border text-xs flex flex-col justify-between gap-2 ${
-                  item.day <= 5
-                    ? 'border-status-info/30 bg-surface-subtle'
-                    : 'border-border-subtle bg-surface-elevated'
-                }`}
+                class="py-2 text-xs flex flex-wrap items-center justify-between gap-2"
               >
-                <div class="flex justify-between items-center">
-                  <span class="font-semibold text-content-primary">{item.dayLabel}</span>
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <span class="font-semibold text-content-primary shrink-0">{item.dayLabel}</span>
                   <Badge variant={item.activityType === 'statute' ? 'warning' : 'info'}>
                     {item.activityType === 'statute'
                       ? 'Lei Seca'
@@ -286,15 +288,16 @@ export function SimulatedRemediationModal({
                         ? 'Questões'
                         : 'Revisão'}
                   </Badge>
+                  <span class="text-content-secondary truncate">{item.focusHeadline}</span>
                 </div>
-                <p class="text-content-secondary font-medium leading-snug">{item.focusHeadline}</p>
-                <span class="text-xs text-content-muted block mt-auto">
-                  {item.allocatedMinutes} min alocados
+                <span class="font-mono tabular-nums text-xs text-content-muted shrink-0">
+                  {item.allocatedMinutes} min
                 </span>
-              </div>
+              </li>
             ))}
+          </ul>
           </div>
-        </div>
+        </details>
 
         {/* Ritual pós-simulado: corrigir os erros em até 48 horas, antes que o raciocínio se perca. */}
         {onScheduleErrorCorrection && diagnostic.correctQuestions < diagnostic.totalQuestions && (
