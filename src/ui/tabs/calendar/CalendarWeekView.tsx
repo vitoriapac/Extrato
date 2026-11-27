@@ -38,7 +38,7 @@ export function CalendarWeekView({
   onTodayWeek,
   onSelectDate,
   onAddForDate,
-  onEditItem,
+  onEditItem: _onEditItem,
   onRescheduleItem,
 }: CalendarWeekViewProps): JSX.Element {
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function CalendarWeekView({
         >
           <Icon name="chevron-left" size={16} />
         </button>
-        <h3 class="m-0 font-serif text-base font-semibold text-content-primary">{rangeLabel}</h3>
+        <h3 class="m-0 font-mono tabular-nums text-sm font-semibold text-content-primary">{rangeLabel}</h3>
         <button
           type="button"
           class="month-nav-btn inline-flex items-center justify-center"
@@ -99,12 +99,12 @@ export function CalendarWeekView({
               data-calendar-drop-date={date}
               class={`rounded-lg border p-2.5 flex flex-col gap-2 min-h-[140px] transition-colors ${
                 isDropTarget
-                  ? 'border-brand bg-surface-elevated'
+                  ? 'border-brand bg-surface-card'
                   : isSelected
-                    ? 'border-brand bg-surface-elevated'
+                    ? 'border-brand bg-surface-card'
                     : isToday
-                      ? 'border-accent bg-surface-elevated'
-                      : 'border-border bg-surface'
+                      ? 'border-accent bg-surface-card'
+                      : 'border-border-default bg-surface-paper'
               }`}
               onDragOver={e => {
                 e.preventDefault();
@@ -138,8 +138,8 @@ export function CalendarWeekView({
                 </button>
                 <button
                   type="button"
-                  aria-label={`Adicionar atividade em ${date}`}
-                  class="inline-flex items-center justify-center rounded-md p-1 text-content-secondary hover:bg-surface-elevated hover:text-content-primary"
+                  aria-label={`Adicionar atividade em ${date.split('-').reverse().join('/')}`}
+                  class="inline-flex items-center justify-center rounded-md min-h-[36px] min-w-[36px] text-content-secondary hover:bg-surface-subtle hover:text-content-primary"
                   onClick={() => onAddForDate(date)}
                 >
                   <Icon name="plus" size={14} />
@@ -165,16 +165,13 @@ export function CalendarWeekView({
                           e.dataTransfer.setData('text/plain', item.id);
                           e.dataTransfer.effectAllowed = 'move';
                         }}
-                        onClick={() => {
-                          if (item.origem === 'Calendário') onEditItem(item.id);
-                          else onSelectDate(date);
-                        }}
+                        onClick={() => onSelectDate(date)}
                         class={`w-full text-left rounded-md border px-2 py-1.5 text-xs transition-colors ${
                           item.isEvent
-                            ? 'border-accent/50 bg-accent/10 text-content-primary'
+                            ? 'border-accent bg-surface-subtle text-content-primary'
                             : isCompleted
-                              ? 'border-border bg-surface-elevated/60 text-content-secondary line-through'
-                              : 'border-border bg-surface-elevated text-content-primary hover:border-brand/50'
+                              ? 'border-border-default bg-surface-subtle text-content-secondary line-through'
+                              : 'border-border-default bg-surface-card text-content-primary hover:border-accent'
                         }`}
                       >
                         <div class="flex items-center justify-between gap-1 text-xs text-content-secondary">

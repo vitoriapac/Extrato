@@ -53,7 +53,7 @@ export function CalendarTable({
     return (
       <tr>
         <td colSpan={7}>
-          <div class="empty-state" style={{ border: 'none' }}>
+          <div class="empty-state border-0">
             <p>Nenhum item encontrado no calendário.</p>
             <Button
               type="button"
@@ -137,7 +137,7 @@ export function CalendarTable({
                       </Button>
                     </div>
                     <div class="mobile-card-metrics">
-                      <span>{view.status}</span>
+                      <span class={`history-status ${view.statusClass}`}>{view.status}</span>
                       <span>{view.daysLabel}</span>
                     </div>
                     {view.pending && (

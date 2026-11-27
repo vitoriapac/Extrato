@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useState } from 'preact/hooks';
 import {
   ESSAY_CRITERIA,
   type EssayEvolutionSummary,
@@ -33,7 +34,10 @@ export function EssayEvolutionCard({
   formatDatePt,
   onEditEssay,
 }: EssayEvolutionCardProps): JSX.Element | null {
+  const [expanded, setExpanded] = useState(false);
   if (summary.totalCount === 0) return null;
+  const visibleEntries = expanded ? summary.entries : summary.entries.slice(0, 5);
+  const hiddenCount = summary.entries.length - visibleEntries.length;
 
   return (
     <section
@@ -81,7 +85,7 @@ export function EssayEvolutionCard({
       )}
 
       <ul class="upcoming-list">
-        {summary.entries.slice(0, 8).map(entry => {
+        {visibleEntries.map(entry => {
           const badge = ESSAY_STATUS_BADGE[entry.essayStatus];
           const scoreText =
             entry.essayScore !== null
@@ -128,6 +132,16 @@ export function EssayEvolutionCard({
           );
         })}
       </ul>
+      {summary.entries.length > 5 && (
+        <Button
+          type="button"
+          variant="tertiary"
+          size="small"
+          onClick={() => setExpanded(prev => !prev)}
+        >
+          {expanded ? 'Mostrar menos' : `Mostrar mais · +${hiddenCount}`}
+        </Button>
+      )}
     </section>
   );
 }

@@ -93,9 +93,9 @@ const EMPTY_DRAFT: CalendarActivityDraft = {
 };
 
 const LABEL_CLASS =
-  'block text-xs font-semibold uppercase tracking-[0.08em] text-content-secondary mb-1';
+  'block text-xs font-medium text-content-secondary mb-1';
 const CONTROL_CLASS =
-  'w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand/40';
+  'w-full rounded-md border border-border-control bg-surface-paper px-3 py-2 text-sm text-content-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent';
 
 export function CalendarActivityModal({
   open,
@@ -109,14 +109,12 @@ export function CalendarActivityModal({
 }: CalendarActivityModalProps): JSX.Element {
   const [draft, setDraft] = useState<CalendarActivityDraft>(initialDraft || EMPTY_DRAFT);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorField, setErrorField] = useState<'title' | 'date' | 'endTime' | null>(null);
 
   useEffect(() => {
     const next = initialDraft || EMPTY_DRAFT;
     setDraft(next);
-    setConfirmDelete(false);
     setError(null);
     setErrorField(null);
     const hasAdvancedData = Boolean(
@@ -641,26 +639,28 @@ export function CalendarActivityModal({
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label for="calActivitySubject" class={LABEL_CLASS}>
-                    Disciplina
-                  </label>
-                  <select
-                    id="calActivitySubject"
-                    value={draft.subjectId}
-                    onChange={e =>
-                      updateField('subjectId', (e.currentTarget as HTMLSelectElement).value)
-                    }
-                    class={CONTROL_CLASS}
-                  >
-                    <option value="">Sem disciplina específica</option>
-                    {subjects.map(sub => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {draft.kind !== 'essay' && (
+                  <div>
+                    <label for="calActivitySubject" class={LABEL_CLASS}>
+                      Disciplina
+                    </label>
+                    <select
+                      id="calActivitySubject"
+                      value={draft.subjectId}
+                      onChange={e =>
+                        updateField('subjectId', (e.currentTarget as HTMLSelectElement).value)
+                      }
+                      class={CONTROL_CLASS}
+                    >
+                      <option value="">Sem disciplina específica</option>
+                      {subjects.map(sub => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label for="calActivityStatus" class={LABEL_CLASS}>
@@ -759,40 +759,19 @@ export function CalendarActivityModal({
           )}
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border-default pt-3">
           <div>
-            {!isNew && draft.id && onDelete && !confirmDelete && (
+            {!isNew && draft.id && onDelete && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="danger"
                 size="small"
-                className="text-danger hover:bg-danger/10 inline-flex items-center gap-1"
-                onClick={() => setConfirmDelete(true)}
+                className="inline-flex items-center gap-1"
+                onClick={() => onDelete(draft.id!)}
               >
                 <Icon name="trash" size={14} />
                 <span>Excluir</span>
               </Button>
-            )}
-            {!isNew && draft.id && onDelete && confirmDelete && (
-              <div class="inline-flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="small"
-                  className="border border-danger bg-surface text-danger hover:bg-danger/10"
-                  onClick={() => onDelete(draft.id!)}
-                >
-                  Confirmar exclusão
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="small"
-                  onClick={() => setConfirmDelete(false)}
-                >
-                  Manter
-                </Button>
-              </div>
             )}
           </div>
           <div class="flex items-center gap-2">

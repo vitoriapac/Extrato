@@ -263,10 +263,25 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
   function getFilteredAndSortedRows(): CalendarItem[] {
     const { subjectId, status, month, type } = getFilters();
+    const activityKind = getActivityKindFilter();
+    const today = todayISO();
 
     return (ctx.state.calendar || [])
       .filter(c => !subjectId || entitySubjectId(c) === subjectId)
-      .filter(c => !status || c.status === status)
+      .filter(c => {
+        if (!status) return true;
+        if (status === 'Atrasadas') {
+          return (
+            c.status !== 'Concluído' &&
+            c.status !== 'Cancelado' &&
+            (c.kind || 'task') !== 'event' &&
+            Boolean(c.date) &&
+            c.date < today
+          );
+        }
+        return c.status === status;
+      })
+      .filter(c => !activityKind || (c.kind || 'task') === activityKind)
       .filter(c => !month || monthKey(c.date) === month)
       .filter(c => !type || c.reviewType === type)
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
@@ -869,6 +884,8 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       if (!calendarUiState.filters) calendarUiState.filters = {};
       calendarUiState.filters.activityKind = event.target?.value || '';
       updateAgendaFiltersUi();
+      renderCalendar();
+      renderCalIndicadores();
       renderMonthCalendar();
     });
 

@@ -106,7 +106,7 @@ export function createCalendarPendingLists(deps: CalendarPendingListsDeps) {
           ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>`
           : '';
         const subjectPart = x.subject && x.subject !== x.title ? ` · ${escapeHtml(x.subject)}` : '';
-        return `<li class="flex flex-wrap items-center gap-1.5"><span class="dias-pill dias-hoje">${escapeHtml(kindLabel)}</span>${timeBadge}<span class="min-w-0 basis-full order-first"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span><span class="inline-flex flex-wrap items-center gap-1.5">${quickReviewButton(x, elId)}</span></li>`;
+        return `<li class="flex flex-wrap items-center gap-1.5"><span class="min-w-0 basis-full"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="dias-pill dias-hoje">${escapeHtml(kindLabel)}</span>${timeBadge}<span class="subject-progress-pill">${escapeHtml(x.status)}</span><span class="inline-flex flex-wrap items-center gap-1.5">${quickReviewButton(x, elId)}</span></li>`;
       })
       .join('');
   }
@@ -165,7 +165,7 @@ export function createCalendarPendingLists(deps: CalendarPendingListsDeps) {
       entries
         .map(([date, dateItems]) => {
           const expanded = overdueExpandedDates[elId]?.has(date);
-          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.title || x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${x.origem === 'Calendário' ? `<button type="button" class="btn ghost small" data-calendar-move-today="${escapeAttr(x.id)}">Mover para hoje</button>` : ''}${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
+          return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${Boolean(expanded)}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'pendência', 'pendências')} · ${pluralize(Math.abs(diasParaRevisao(date) || 0), 'dia', 'dias')} de atraso</small></span>${renderIconSvg('chevron-right', { size: 14, className: 'overdue-chevron' })}</button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.title || x.subject || '—')} — ${escapeHtml(defaultUnifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${x.origem === 'Calendário' ? `<button type="button" class="btn ghost small" data-calendar-move-today="${escapeAttr(x.id)}">Mover para hoje</button>` : ''}${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
         })
         .join('');
   }

@@ -54,7 +54,7 @@ export function MixedReviewBudgetPanel({
           <select
             id="weeklyReviewBudgetSelect"
             aria-label="Teto semanal de revisão em porcentagem"
-            class="select-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+            class="select-control min-h-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
             value={orcamentoRevisaoPct != null ? String(orcamentoRevisaoPct) : ''}
             onChange={e => onChangeBudgetPct(e.currentTarget.value)}
           >
@@ -259,13 +259,14 @@ export function MixedReviewBatchSheet({
                   <div class="min-w-0 flex-1">
                     <strong class="block truncate text-content-primary">{item.topicName}</strong>
                     <span class="text-content-secondary">
-                      {item.type} · {item.isOverdue ? 'Atrasada' : 'Para hoje'} ({item.date})
+                      {item.type} · {item.isOverdue ? 'Atrasada' : 'Para hoje'} (
+                      <span class="font-mono tabular-nums">{item.date.split('-').reverse().join('/')}</span>)
                     </span>
                   </div>
                   <select
                     aria-label={`Avaliação para ${item.topicName}`}
                     data-batch-topic-rating={item.id}
-                    class="select-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
+                    class="select-control min-h-control text-xs py-1 px-2 rounded border border-border-default bg-surface-card text-content-primary"
                     value={overrides[item.id] || ''}
                     onChange={e =>
                       setOverrides({

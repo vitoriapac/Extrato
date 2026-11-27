@@ -55,7 +55,7 @@ export function CalendarDayDrawer({
 
   return (
     <section
-      class="mt-4 rounded-lg border border-border bg-surface-elevated p-4 space-y-3"
+      class="mt-4 rounded-lg border border-border-default bg-surface-card p-4 space-y-3"
       aria-label={`Compromissos de ${formattedDate}`}
     >
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -93,7 +93,7 @@ export function CalendarDayDrawer({
       {allActionableDone && (
         <div
           role="status"
-          class="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs text-content-primary"
+          class="status-badge status-badge--success block px-3 py-2 text-xs"
         >
           Dia em dia — todas as atividades acionáveis desta data foram concluídas.
         </div>
@@ -102,7 +102,7 @@ export function CalendarDayDrawer({
       {isOverloaded && (
         <div
           role="status"
-          class="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-content-primary"
+          class="status-badge status-badge--warning block px-3 py-2 text-xs"
         >
           Carga estimada acima da sua disponibilidade declarada para este dia da semana. Considere reagendar alguma atividade.
         </div>
@@ -111,7 +111,7 @@ export function CalendarDayDrawer({
       {load.conflicts.length > 0 && (
         <div
           role="status"
-          class="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-content-primary"
+          class="status-badge status-badge--warning block px-3 py-2 text-xs"
         >
           Conflito de horário detectado entre{' '}
           <strong>{load.conflicts[0].first.title}</strong> e{' '}
@@ -124,18 +124,18 @@ export function CalendarDayDrawer({
           Nenhum compromisso programado para esta data.
         </p>
       ) : (
-        <ul class="space-y-2 m-0 p-0 list-none">
+        <ul class="divide-y divide-border-subtle border-t border-border-subtle m-0 p-0 list-none">
           {items.map(item => {
             const isCompleted = item.status === 'Concluído';
             const canEdit = item.origem === 'Calendário';
             return (
               <li
                 key={item.key}
-                class="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2.5"
+                class="flex flex-wrap items-center justify-between gap-2 py-2.5"
               >
                 <div class="min-w-0 flex-1 space-y-0.5">
                   <div class="flex flex-wrap items-center gap-2">
-                    <span class="inline-flex items-center rounded-md border border-border bg-surface-elevated px-2 py-0.5 text-xs font-medium text-content-secondary">
+                    <span class="inline-flex items-center rounded border border-border-default bg-surface-subtle px-2 py-0.5 text-xs font-medium text-content-secondary">
                       {kindLabel(item.kind)}
                     </span>
                     {item.startTime && (
