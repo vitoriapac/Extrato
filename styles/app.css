@@ -747,7 +747,7 @@
   table.ledger tbody td{padding:8px;border-bottom:1px solid var(--paper-line);vertical-align:middle;}
   table.ledger tbody tr:last-child td{border-bottom:none;}
   table.ledger input[type=text], table.ledger input[type=url]{
-    width:100%;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--ink);
+    width:100%;border:none;border-bottom:1px dashed var(--border-subtle);background:transparent;font-family:inherit;font-size:13px;color:var(--ink);
     padding:4px 2px;border-radius:var(--radius-control);
   }
   table.ledger input:focus{outline:1px dashed var(--accent);background:var(--white);}
@@ -3036,7 +3036,7 @@ body:has(#panel-dashboard.active #enterDemoHeroBtn) .app-footer__item--stacked{d
 :is(.today-analysis-details,.desempenho-extra-details)>summary,.chart-card:is(.today-analysis-details,.desempenho-extra-details)>summary{padding:var(--space-3) var(--space-4);border:1px solid var(--paper-line);border-radius:var(--radius-card);background:var(--surface-card);cursor:pointer;color:var(--heading);font:600 var(--text-md) var(--font-display)}
 :is(.today-analysis-details,.desempenho-extra-details)[open]>summary,.chart-card:is(.today-analysis-details,.desempenho-extra-details)[open]>summary{margin-bottom:var(--space-4);border-bottom:1px solid var(--paper-line)}
 .chart-card :is(.plateau-detector-card,.shift-energy-card),.performance-details #performanceReadinessCard,.performance-retention-card{border:0;border-top:1px solid var(--border-subtle);border-radius:0;background:transparent;padding:var(--space-4) 0 0;margin:var(--space-4) 0 0;box-shadow:none}
-.subject-name[contenteditable="true"]{border-bottom:1px dashed transparent;border-radius:2px;padding:2px 4px;transition:border-color var(--motion-duration) ease}
+.subject-name[contenteditable="true"]{border-bottom:1px dashed var(--border-subtle);border-radius:2px;padding:2px 4px;transition:border-color var(--motion-duration) ease}
 .subject-name[contenteditable="true"]:hover{border-bottom-color:var(--border-control)}
 .subject-name[contenteditable="true"]:focus-visible{background:var(--surface-card);outline:2px solid var(--accent);border-bottom-color:transparent}
 

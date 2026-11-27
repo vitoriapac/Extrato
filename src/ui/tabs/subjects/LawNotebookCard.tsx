@@ -249,41 +249,48 @@ export function LawNotebookCard({
             onInput={event => setTotal((event.target as HTMLInputElement).value)}
           />
         </label>
-        <label>
-          Do art. (recorte)
-          <input
-            type="number"
-            min="1"
-            inputMode="numeric"
-            value={startArt}
-            placeholder="Ex.: 37"
-            aria-label="Artigo inicial do recorte"
-            onInput={event => setStartArt((event.target as HTMLInputElement).value)}
-          />
-        </label>
-        <label>
-          Até o art. (recorte)
-          <input
-            type="number"
-            min="1"
-            inputMode="numeric"
-            value={endArt}
-            placeholder="Ex.: 41"
-            aria-label="Artigo final do recorte"
-            onInput={event => setEndArt((event.target as HTMLInputElement).value)}
-          />
-        </label>
-        <label>
-          Artigos quentes
-          <input
-            type="text"
-            maxLength={120}
-            value={hotArticles}
-            placeholder="Ex.: Arts. 37 §6º, 41"
-            aria-label="Artigos quentes mais cobrados"
-            onInput={event => setHotArticles((event.target as HTMLInputElement).value)}
-          />
-        </label>
+        <details class="col-span-full">
+          <summary class="text-xs font-medium cursor-pointer select-none">
+            Recorte e artigos quentes (opcional)
+          </summary>
+          <div class="law-notebook__add mt-2">
+            <label>
+              Do art. (recorte)
+              <input
+                type="number"
+                min="1"
+                inputMode="numeric"
+                value={startArt}
+                placeholder="Ex.: 37"
+                aria-label="Artigo inicial do recorte"
+                onInput={event => setStartArt((event.target as HTMLInputElement).value)}
+              />
+            </label>
+            <label>
+              Até o art. (recorte)
+              <input
+                type="number"
+                min="1"
+                inputMode="numeric"
+                value={endArt}
+                placeholder="Ex.: 41"
+                aria-label="Artigo final do recorte"
+                onInput={event => setEndArt((event.target as HTMLInputElement).value)}
+              />
+            </label>
+            <label>
+              Artigos quentes
+              <input
+                type="text"
+                maxLength={120}
+                value={hotArticles}
+                placeholder="Ex.: Arts. 37 §6º, 41"
+                aria-label="Artigos quentes mais cobrados"
+                onInput={event => setHotArticles((event.target as HTMLInputElement).value)}
+              />
+            </label>
+          </div>
+        </details>
         <button type="submit" class="btn small">
           Adicionar lei
         </button>

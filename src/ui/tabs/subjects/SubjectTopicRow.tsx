@@ -51,6 +51,16 @@ export function SubjectTopicRow({
             onBlur={e =>
               onUpdateTopic?.(subjectId, topic.id, 'name', (e.target as HTMLInputElement).value)
             }
+            onKeyDown={e => {
+              const target = e.currentTarget as HTMLInputElement;
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                target.blur();
+              } else if (e.key === 'Escape') {
+                target.value = topic.name || '';
+                target.blur();
+              }
+            }}
           />
           {((topic.examTags || []).length > 0 ||
             (topic.tags || []).length > 0 ||
@@ -81,7 +91,6 @@ export function SubjectTopicRow({
               </option>
             ))}
           </select>
-          <span class="stamp inline-flex items-center gap-1"><Icon name="check" size={11} /> ok</span>
         </td>
         <td>
           <select
@@ -146,40 +155,44 @@ export function SubjectTopicRow({
                   }
                 />
               </label>
-              <input
-                type="text"
-                class="topic-tags-input"
-                aria-label={`Tags de ${topic.name || 'tópico sem nome'}`}
-                placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
-                value={(topic.tags || []).join(', ')}
-                data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
-                onBlur={e =>
-                  onUpdateTopic?.(
-                    subjectId,
-                    topic.id,
-                    'tags',
-                    (e.target as HTMLInputElement).value
-                      .split(',')
-                      .map(t => t.trim())
-                      .filter(Boolean)
-                  )
-                }
-              />
-              <textarea
-                class="topic-notes-textarea"
-                aria-label={`Notas de ${topic.name || 'tópico sem nome'}`}
-                placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
-                value={topic.notes || ''}
-                data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
-                onBlur={e =>
-                  onUpdateTopic?.(
-                    subjectId,
-                    topic.id,
-                    'notes',
-                    (e.target as HTMLTextAreaElement).value
-                  )
-                }
-              />
+              <label>Tags
+                <input
+                  type="text"
+                  class="topic-tags-input"
+                  aria-label={`Tags de ${topic.name || 'tópico sem nome'}`}
+                  placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
+                  value={(topic.tags || []).join(', ')}
+                  data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
+                  onBlur={e =>
+                    onUpdateTopic?.(
+                      subjectId,
+                      topic.id,
+                      'tags',
+                      (e.target as HTMLInputElement).value
+                        .split(',')
+                        .map(t => t.trim())
+                        .filter(Boolean)
+                    )
+                  }
+                />
+              </label>
+              <label>Notas
+                <textarea
+                  class="topic-notes-textarea"
+                  aria-label={`Notas de ${topic.name || 'tópico sem nome'}`}
+                  placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
+                  value={topic.notes || ''}
+                  data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
+                  onBlur={e =>
+                    onUpdateTopic?.(
+                      subjectId,
+                      topic.id,
+                      'notes',
+                      (e.target as HTMLTextAreaElement).value
+                    )
+                  }
+                />
+              </label>
               {(analyticsStateHtml || strategyEditorHtml) && (
                 <details class="decision-fold topic-strategy-fold">
                   <summary>Estratégia e evidências</summary>

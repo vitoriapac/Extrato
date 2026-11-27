@@ -746,9 +746,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   function archiveSubject(id: string): void {
     const subject = ctx.getSubjectById(id);
     if (!subject) return ctx.showToast('Disciplina não encontrada.');
-    ctx.subjectService.archive(id);
-    ctx.persistAndRender();
-    ctx.showToast(`"${subject.name}" foi arquivada.`);
+    runUndoable(`"${subject.name}" foi arquivada.`, () => ctx.subjectService.archive(id));
   }
 
   function restoreSubject(id: string): void {

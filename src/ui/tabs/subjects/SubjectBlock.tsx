@@ -242,6 +242,7 @@ export function SubjectBlock({
         {!isEmptySubject && (
         <div class="subject-topic-filters">
           <select
+            class="select-control"
             aria-label={`Filtrar tópicos de ${subject.name} por status`}
             data-delegated-change={`setSubjectTopicFilter('${subject.id}','status',this.value)`}
           >
@@ -253,6 +254,7 @@ export function SubjectBlock({
             ))}
           </select>
           <select
+            class="select-control"
             aria-label={`Filtrar tópicos de ${subject.name} por dificuldade`}
             data-delegated-change={`setSubjectTopicFilter('${subject.id}','difficulty',this.value)`}
           >
@@ -266,7 +268,18 @@ export function SubjectBlock({
         </div>
         )}
 
-        {!isEmptySubject && (
+        {!isEmptySubject && visibleTopics.length === 0 ? (
+        <div class="empty-state empty-state--compact">
+          <p class="m-0">Nenhum tópico corresponde aos filtros selecionados.</p>
+          <button
+            type="button"
+            class="btn ghost small"
+            data-delegated-click={`setSubjectTopicFilter('${subject.id}','status','');setSubjectTopicFilter('${subject.id}','difficulty','')`}
+          >
+            Limpar filtros
+          </button>
+        </div>
+        ) : !isEmptySubject && (
         <div class="ledger-scroll">
           <table class="ledger">
             <thead>
