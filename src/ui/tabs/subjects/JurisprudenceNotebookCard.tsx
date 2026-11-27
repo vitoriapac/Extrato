@@ -87,7 +87,10 @@ export function JurisprudenceNotebookCard({
       </p>
 
       <details class="decision-fold" open={records.length === 0}>
-        <summary class="text-xs font-medium">+ Adicionar julgado</summary>
+        <summary class="text-xs font-medium inline-flex items-center gap-1">
+          <Icon name="plus" size={13} class="icon-inline" />
+          Adicionar julgado
+        </summary>
         <form class="law-notebook__add mt-2" id="jurisAddForm" onSubmit={handleSubmit}>
         <label htmlFor="jurisKindSelect">
           Tipo
@@ -191,11 +194,26 @@ export function JurisprudenceNotebookCard({
       )}
 
       {filtered.length === 0 ? (
-        <p class="m-0 text-xs text-content-secondary">
-          {records.length === 0
-            ? 'Nenhum informativo ou súmula cadastrado ainda.'
-            : 'Nenhum registro para os filtros selecionados.'}
-        </p>
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="m-0 text-xs text-content-secondary">
+            {records.length === 0
+              ? 'Nenhum informativo ou súmula cadastrado ainda.'
+              : 'Nenhum registro para os filtros selecionados.'}
+          </p>
+          {records.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="small"
+              onClick={() => {
+                setFilterKind('');
+                setFilterSubject('');
+              }}
+            >
+              Limpar filtros
+            </Button>
+          )}
+        </div>
       ) : (
         <ul class="law-notebook__list">
           {filtered.map(item => {
@@ -240,7 +258,7 @@ export function JurisprudenceNotebookCard({
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="danger"
                     size="small"
                     aria-label={`Excluir ${item.code}`}
                     onClick={() => onDelete(item.id)}

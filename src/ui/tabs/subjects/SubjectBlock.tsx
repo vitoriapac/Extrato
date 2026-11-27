@@ -78,27 +78,7 @@ export function SubjectBlock({
             class={`subject-color-swatch subject-color-${colorSlot}`}
             aria-hidden="true"
           />
-          <span
-            class="subject-name"
-            contentEditable={true}
-            role="textbox"
-            aria-label={`Nome da disciplina ${subject.name} (editável; Enter salva, Esc cancela)`}
-            title="Clique para editar o nome da disciplina (Enter salva, Esc cancela)"
-            data-delegated-click="event.stopPropagation()"
-            data-delegated-blur={`renameSubject('${subject.id}', this.textContent)`}
-            onKeyDown={e => {
-              const target = e.currentTarget as HTMLElement;
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                target.blur();
-              } else if (e.key === 'Escape') {
-                target.textContent = subject.name;
-                target.blur();
-              }
-            }}
-          >
-            {subject.name}
-          </span>
+          <span class="subject-name">{subject.name}</span>
         </div>
         <div class="subject-header-actions">
           <span class="subject-progress-pill">
@@ -161,6 +141,12 @@ export function SubjectBlock({
                 aria-label={`Mover ${subject.name} para baixo`}
               >
                 Mover para baixo
+              </button>
+              <button
+                type="button"
+                data-delegated-click={`event.stopPropagation();promptRenameSubject('${subject.id}')`}
+              >
+                Renomear disciplina
               </button>
               <button
                 type="button"
@@ -236,7 +222,8 @@ export function SubjectBlock({
             class="btn ghost small"
             data-delegated-click={`addTopic('${subject.id}')`}
           >
-            + Adicionar tópico
+            <Icon name="plus" size={14} class="icon-inline" />
+            Adicionar tópico
           </button>
         </div>
 

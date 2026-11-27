@@ -1,5 +1,6 @@
 import { SubjectBlock } from './SubjectBlock.js';
 import { SegmentedControl } from '../../primitives/tabs.js';
+import { Icon } from '../../primitives/icon.js';
 import { createProgressiveList } from '../../progressive-list.js';
 import { formatDateBR } from '../../../core/format-date.js';
 
@@ -64,7 +65,8 @@ export function SubjectsTab({
         <p>Nenhuma disciplina cadastrada ainda.</p>
         <div class="flex flex-wrap items-center justify-center gap-2">
           <button type="button" class="btn" data-delegated-click="addSubject()">
-            + Adicionar primeira disciplina
+            <Icon name="plus" size={14} class="icon-inline" />
+            Adicionar primeira disciplina
           </button>
           <button
             type="button"

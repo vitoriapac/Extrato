@@ -104,16 +104,16 @@ export function VerticalizedSyllabusView({
             <Icon name="clipboard-text" size={18} class="text-primary shrink-0" />
             <span>Edital Verticalizado Interativo</span>
           </h3>
-          <p class="text-xs text-secondary mt-1">
+          <p class="text-xs text-content-secondary mt-1">
             Acompanhe cada etapa de estudo (Teoria, Resumo, Lei Seca e Questões) por tópico do
             edital.
           </p>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto">
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Seletor de Disciplina */}
           <select
-            class="select-control min-h-control text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-content-primary"
+            class="select-control min-h-control min-w-0 flex-1 sm:flex-initial text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-content-primary"
             value={selectedSubjectId}
             onChange={e => setSelectedSubjectId((e.target as HTMLSelectElement).value)}
             aria-label="Filtrar por disciplina no edital verticalizado"
@@ -235,7 +235,7 @@ export function VerticalizedSyllabusView({
                           {onMarkLawRead && (
                             <button
                               type="button"
-                              class="text-xs underline text-content-secondary hover:text-content-primary cursor-pointer bg-transparent border-0 p-0"
+                              class="min-h-[36px] inline-flex items-center text-xs underline text-content-secondary hover:text-content-primary cursor-pointer bg-transparent border-0 px-1 py-0"
                               onClick={() => onMarkLawRead(topic.id)}
                             >
                               Li a lei hoje
@@ -244,7 +244,7 @@ export function VerticalizedSyllabusView({
                           {onToggleLegislativeUpdate && (
                             <button
                               type="button"
-                              class="text-xs underline text-content-secondary hover:text-content-primary cursor-pointer bg-transparent border-0 p-0"
+                              class="min-h-[36px] inline-flex items-center text-xs underline text-content-secondary hover:text-content-primary cursor-pointer bg-transparent border-0 px-1 py-0"
                               onClick={() =>
                                 onToggleLegislativeUpdate(
                                   topic.id,
@@ -339,8 +339,12 @@ export function VerticalizedSyllabusView({
                       <div class="flex flex-wrap items-center gap-2 md:pl-2 md:border-l border-border-subtle">
                         {topic.status === 'Concluído' ? (
                           <Badge variant="success">Concluído</Badge>
+                        ) : topic.status === 'Revisão' ? (
+                          <Badge variant="info">Revisão</Badge>
+                        ) : topic.status === 'Em andamento' ? (
+                          <Badge variant="warning">Em andamento</Badge>
                         ) : (
-                          <Badge variant="default">Em estudo</Badge>
+                          <Badge variant="default">Não iniciado</Badge>
                         )}
 
                         <details class="verticalized-more-actions relative">
@@ -367,7 +371,7 @@ export function VerticalizedSyllabusView({
                               practiceLinks.isCustom ? 'caderno personalizado' : 'TEC Concursos'
                             } (abre em nova aba)`}
                           >
-                            <Icon name="external-link" size={12} class="shrink-0 text-secondary" />
+                            <Icon name="external-link" size={12} class="shrink-0 text-content-secondary" />
                             <span>{practiceLinks.isCustom ? 'Caderno' : 'TEC'}</span>
                           </a>
                           <span class="w-[1px] h-3 bg-border-subtle" />

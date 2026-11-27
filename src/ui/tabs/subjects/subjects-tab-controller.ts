@@ -618,7 +618,11 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       today: todayISO(),
     });
 
-    container.innerHTML = controller.renderHtml();
+    if (typeof document !== 'undefined') {
+      mountPreact(controller.buildVNode(), container);
+    } else {
+      container.innerHTML = controller.renderHtml();
+    }
   }
 
   function updateTopicTags(subjectId: string, topicId: string, value: any): void {
@@ -736,6 +740,20 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     } else if (ctx.renderAll) {
       ctx.renderAll();
     }
+  }
+
+  function promptRenameSubject(id: string): void {
+    const found = ctx.getSubjectById(id);
+    ctx.showPrompt(
+      'Renomear disciplina',
+      {
+        label: 'Nome da disciplina',
+        initialValue: found?.name || '',
+        confirmLabel: 'Salvar',
+        validate: (name: string) => (!name.trim() ? 'Informe o nome da disciplina.' : null),
+      },
+      newName => renameSubject(id, newName)
+    );
   }
 
   function addSubject(): void {
@@ -1064,6 +1082,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     toggleAllSubjects,
     startTopicStudy,
     renameSubject,
+    promptRenameSubject,
     addSubject,
     archiveSubject,
     restoreSubject,

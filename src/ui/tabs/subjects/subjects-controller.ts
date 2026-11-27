@@ -76,54 +76,57 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
     });
   }
 
-  function renderHtml(): string {
+  function buildVNode() {
     const subjects = getFilteredSubjects();
     const archived = getArchivedSubjects();
     const query = ctx.subjectSearchController?.query || '';
 
-    return render(
-      h(SubjectsTab, {
-        subjects,
-        archivedSubjects: archived,
-        searchQuery: query,
-        subjectExamFilter: ctx.subjectExamFilter,
-        subjectProgressFn: ctx.subjectProgress,
-        subjectColorFn: (subject: any) => subjectColorOf(subject, ctx.state.subjects || []),
-        accuracyTrends: buildSubjectWeeklyAccuracy(
-          ctx.state.questoes || [],
+    return h(SubjectsTab, {
+      subjects,
+      archivedSubjects: archived,
+      searchQuery: query,
+      subjectExamFilter: ctx.subjectExamFilter,
+      subjectProgressFn: ctx.subjectProgress,
+      subjectColorFn: (subject: any) => subjectColorOf(subject, ctx.state.subjects || []),
+      accuracyTrends: buildSubjectWeeklyAccuracy(
+        ctx.state.questoes || [],
+        ctx.today || new Date().toISOString().slice(0, 10)
+      ),
+      accuracy30: new Map(
+        buildSyllabusHealthViewModel(
+          ctx.state,
           ctx.today || new Date().toISOString().slice(0, 10)
-        ),
-        accuracy30: new Map(
-          buildSyllabusHealthViewModel(
-            ctx.state,
-            ctx.today || new Date().toISOString().slice(0, 10)
-          ).subjects.map(item => [
-            item.id,
-            item.accuracySource === 'questions' ? item.accuracy : null,
-          ])
-        ),
-        subjectTopicFilters,
-        subjectTopicPages,
-        openNotesIds,
-        statusOptions: ctx.STATUS_OPTIONS,
-        statusClasses: ctx.STATUS_CLASS,
-        difficultyOptions: ctx.DIFFICULTY_OPTIONS,
-        difficultyClasses: ctx.DIFFICULTY_CLASS,
-        topicMatchesExamFn: topicMatchesExam,
-        matchesSearchFn: ctx.matchesSubjectSearch,
-        pluralizeFn: ctx.pluralize,
-        renderFooterFn: ctx.renderCollectionFooter,
-        getExamBadgesHtml: ctx.examBadges,
-        getAnalyticsStateHtml: ctx.renderTopicAnalyticsState,
-        getStrategyEditorHtml: ctx.renderTopicStrategyEditor,
-      })
-    );
+        ).subjects.map(item => [
+          item.id,
+          item.accuracySource === 'questions' ? item.accuracy : null,
+        ])
+      ),
+      subjectTopicFilters,
+      subjectTopicPages,
+      openNotesIds,
+      statusOptions: ctx.STATUS_OPTIONS,
+      statusClasses: ctx.STATUS_CLASS,
+      difficultyOptions: ctx.DIFFICULTY_OPTIONS,
+      difficultyClasses: ctx.DIFFICULTY_CLASS,
+      topicMatchesExamFn: topicMatchesExam,
+      matchesSearchFn: ctx.matchesSubjectSearch,
+      pluralizeFn: ctx.pluralize,
+      renderFooterFn: ctx.renderCollectionFooter,
+      getExamBadgesHtml: ctx.examBadges,
+      getAnalyticsStateHtml: ctx.renderTopicAnalyticsState,
+      getStrategyEditorHtml: ctx.renderTopicStrategyEditor,
+    });
+  }
+
+  function renderHtml(): string {
+    return render(buildVNode());
   }
 
   return {
     subjectTopicFilters,
     subjectTopicPages,
     openNotesIds,
+    buildVNode,
     renderHtml,
     topicMatchesExam,
     getActiveSubjects,

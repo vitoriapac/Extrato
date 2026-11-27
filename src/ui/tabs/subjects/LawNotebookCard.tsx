@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import { Badge, type BadgeVariant } from '../../primitives/badge.js';
+import { Icon } from '../../primitives/icon.js';
 import { ProgressBar } from '../../primitives/progress-bar.js';
 import { formatDateBR } from '../../../core/format-date.js';
 import {
@@ -132,7 +133,7 @@ function LawRow({
         )}
         <button
           type="button"
-          class="btn ghost small"
+          class="btn danger small"
           aria-label={`Excluir ${law.name}`}
           onClick={() => onDelete(law.id)}
         >
@@ -204,7 +205,10 @@ export function LawNotebookCard({
         {due > 0 && ` ${due} ${due === 1 ? 'lei pede' : 'leis pedem'} leitura agora.`}
       </p>
       <details class="decision-fold" open={laws.length === 0}>
-        <summary class="text-xs font-medium">+ Adicionar lei</summary>
+        <summary class="text-xs font-medium inline-flex items-center gap-1">
+          <Icon name="plus" size={13} class="icon-inline" />
+          Adicionar lei
+        </summary>
         <form class="law-notebook__add mt-2" onSubmit={add}>
         <label>
           Lei

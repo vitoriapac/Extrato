@@ -40,7 +40,7 @@ test('SubjectsTab Preact Component — exibe estado vazio quando sem disciplinas
 
   assert.ok(html.includes('empty-state'));
   assert.ok(html.includes('Nenhuma disciplina cadastrada ainda.'));
-  assert.ok(html.includes('+ Adicionar primeira disciplina'));
+  assert.ok(html.includes('Adicionar primeira disciplina'));
 });
 
 test('SubjectsTab Preact Component — renderiza disciplinas ativas e arquivadas', () => {
