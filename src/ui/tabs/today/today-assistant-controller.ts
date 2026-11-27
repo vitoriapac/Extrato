@@ -47,7 +47,10 @@ export interface TodayAssistantDeps {
 /** O Diário fica na dobra "Esforço na semana e Diário"; quem leva até ele abre a dobra. */
 function openJournalFold(mount: Element | null | undefined) {
   const fold = mount?.closest?.('details');
-  if (fold) (fold as HTMLDetailsElement).open = true;
+  if (!fold) return;
+  (fold as HTMLDetailsElement).open = true;
+  // Pedido explícito do aluno: o Modo Foco esconde esta dobra, mas não o que foi chamado.
+  fold.setAttribute('data-focus-reveal', '');
 }
 
 /** Barra do assistente da aba Hoje: ciclo de estudos, estudo rápido, copiloto e fechamento semanal. */

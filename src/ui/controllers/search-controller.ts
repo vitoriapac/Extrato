@@ -438,7 +438,10 @@ export function createSearchController(options: SearchControllerOptions) {
           '#todayJournalSidebarMount, [data-today-journal-sidebar="true"]'
         ) as HTMLElement | null;
         const fold = journal?.closest('details');
-        if (fold) fold.open = true;
+        if (fold) {
+          fold.open = true;
+          fold.setAttribute('data-focus-reveal', ''); // o Modo Foco não esconde o que foi buscado
+        }
         journal?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
       }
     } else if (action === 'study-cycle-center') {

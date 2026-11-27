@@ -3880,7 +3880,7 @@ button.performance-window{position:relative}button.performance-window::after{con
 }
 
 /* Modo Foco em Hoje: fica o plano, o cronômetro, a sugestão, os atrasos e a agenda. */
-#panel-hoje[data-daily-focus-active] :is(#todayExecutionSummary,#todayAlertsCard,#todayMoreDetails,.today-metas-section){display:none}
+#panel-hoje[data-daily-focus-active] :is(#todayExecutionSummary,#todayAlertsCard,#todayMoreDetails:not([data-focus-reveal]),.today-metas-section){display:none}
 
 /* Disciplinas como extrato: uma lista contínua com divisórias finas, não um card por disciplina. */
 .subject-block{margin-bottom:0;border-radius:0}

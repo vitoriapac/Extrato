@@ -489,7 +489,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     if (!doc) return;
     // CSS hides the secondary blocks (resumo, Atenção, metas, mais detalhes), so
     // re-renders that toggle `hidden` on them cannot bring them back while focus is on.
-    doc.getElementById('panel-hoje')?.toggleAttribute('data-daily-focus-active', active);
+    const panel = doc.getElementById('panel-hoje');
+    // Ao ligar o foco de novo, o que o aluno tinha chamado (o Diário) volta a ficar escondido.
+    if (active && !panel?.hasAttribute('data-daily-focus-active')) {
+      doc.getElementById('todayMoreDetails')?.removeAttribute('data-focus-reveal');
+    }
+    panel?.toggleAttribute('data-daily-focus-active', active);
   }
 
   function renderExecutionModeSwitch(): void {

@@ -355,7 +355,7 @@ A densidade compacta (`html[data-density="compact"]`) aperta a escala de espaço
 
 **A Regra da Duração Única.** Toda duração passa por `formatPlanMinutes` ("45 min", "2 h", "1 h 20 min"); `formatDuration` só acrescenta "X s" abaixo de um minuto. Notas de simulado usam a mesma nota ponderada pelos pesos do edital na tabela, no gráfico, em Melhor nota e em Último.
 
-**A Regra do Foco em Hoje.** O Modo Foco deixa o plano, o cronômetro, a sugestão do diagnóstico, os atrasos e a agenda; resumo de execução, Atenção, metas e Mais detalhes saem por CSS (`#panel-hoje[data-daily-focus-active]`). O check-in de sono fica na coluna lateral, com uma linha dizendo para que serve. O aviso de atraso vem depois dos blocos do plano.
+**A Regra do Foco em Hoje.** O Modo Foco deixa o plano, o cronômetro, a sugestão do diagnóstico, os atrasos e a agenda; resumo de execução, Atenção, metas e Mais detalhes saem por CSS (`#panel-hoje[data-daily-focus-active]`). O que o aluno chama de forma explícita (o atalho ou a busca do Diário) volta à tela: a dobra ganha `data-focus-reveal` até o foco ser ligado de novo. O check-in de sono fica na coluna lateral, com uma linha dizendo para que serve. O aviso de atraso vem depois dos blocos do plano.
 
 ## Elevation & Depth
 

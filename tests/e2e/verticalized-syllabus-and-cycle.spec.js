@@ -272,13 +272,20 @@ test('Funcionalidades distribuídas ficam visíveis em Visão Geral, Hoje e Plan
   await quickPanel.getByRole('button', { name: 'Estudo rápido de 15 minutos' }).click();
   await expect(quickPanel).toContainText('Proposta (15 min)');
 
-  // 3. Hoje lateral: o Diário fica na dobra "Esforço na semana e Diário" e aceita registro inline
-  await page.locator('#todayMoreDetails > summary').click();
+  // 3. Hoje lateral: o Diário fica na dobra "Esforço na semana e Diário" e aceita registro inline.
+  // Com o Modo Foco ligado a dobra sai da tela; o atalho da barra traz o Diário de volta.
   const journalSidebar = page.locator(
     '#todayJournalSidebarMount [data-today-journal-sidebar="true"]'
   );
-  await expect(journalSidebar).toBeVisible();
-  await journalSidebar.getByRole('button', { name: 'Registrar aprendizado ou dúvida' }).click();
+  const moreDetails = page.locator('#todayMoreDetails > summary');
+  if (await moreDetails.isVisible()) {
+    await moreDetails.click();
+    await expect(journalSidebar).toBeVisible();
+    await journalSidebar.getByRole('button', { name: 'Registrar aprendizado ou dúvida' }).click();
+  } else {
+    await page.getByRole('button', { name: /Diário de aprendizagem/ }).first().click();
+    await expect(journalSidebar).toBeVisible();
+  }
   await journalSidebar
     .getByLabel('O que aprendeu, dúvida ou pegadinha')
     .fill('Dúvida rápida salva direto na barra lateral de Hoje');
