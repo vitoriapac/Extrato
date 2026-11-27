@@ -4,14 +4,6 @@
 export type LucideNode = [string, Record<string, string>];
 
 export const LUCIDE_ICONS_DATA: Record<string, LucideNode[]> = {
-  "grip-vertical": [
-    ["circle", { "cx": "9", "cy": "5", "r": "1" }],
-    ["circle", { "cx": "9", "cy": "12", "r": "1" }],
-    ["circle", { "cx": "9", "cy": "19", "r": "1" }],
-    ["circle", { "cx": "15", "cy": "5", "r": "1" }],
-    ["circle", { "cx": "15", "cy": "12", "r": "1" }],
-    ["circle", { "cx": "15", "cy": "19", "r": "1" }]
-  ],
   "search": [
     [
       "path",
@@ -2857,6 +2849,30 @@ export const LUCIDE_ICONS_DATA: Record<string, LucideNode[]> = {
       "path",
       {
         "d": "M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+      }
+    ]
+  ],
+  "archive": [
+    [
+      "rect",
+      {
+        "width": "20",
+        "height": "5",
+        "x": "2",
+        "y": "3",
+        "rx": "1"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"
+      }
+    ],
+    [
+      "path",
+      {
+        "d": "M10 12h4"
       }
     ]
   ],

@@ -25,11 +25,10 @@ test.describe('concurseiro elite flows', () => {
     // 2. Recorte de artigos na lei seca e Caderno de Jurisprudência STF/STJ em Disciplinas
     await activateTab(page, 'disciplinas');
 
-    const lawSummary = page.locator('#lawNotebookCard > summary');
-    if (!(await page.locator('#lawNotebookCard').evaluate(el => el.open))) {
-      await lawSummary.click();
-    }
+    await page.locator('#subjectsTab-leis').click();
+    await expect(page.locator('#lawNotebookCard')).toBeVisible();
     await page.locator('#lawNotebookMount input[placeholder*="CF/88"]').fill('CF/88 Adm');
+    await page.locator('#lawNotebookMount summary:has-text("Recorte e artigos quentes")').click();
     await page.locator('[aria-label="Artigo inicial do recorte"]').fill('37');
     await page.locator('[aria-label="Artigo final do recorte"]').fill('41');
     await page.locator('[aria-label="Artigos quentes mais cobrados"]').fill('Art. 37 §6º');
@@ -42,10 +41,8 @@ test.describe('concurseiro elite flows', () => {
       .click();
     await expect(page.locator('#lawNotebookMount')).toContainText('Art. 39 (recorte 37–41)');
 
-    const jurisSummary = page.locator('#jurisprudenceNotebookCard > summary');
-    if (!(await page.locator('#jurisprudenceNotebookCard').evaluate(el => el.open))) {
-      await jurisSummary.click();
-    }
+    await page.locator('#subjectsTab-jurisprudencia').click();
+    await expect(page.locator('#jurisprudenceNotebookCard')).toBeVisible();
     await page.locator('#jurisCodeInput').fill('SV 13');
     await page.locator('#jurisTitleInput').fill('Vedação ao nepotismo');
     await page.locator('#jurisThesisInput').fill('Veda nomeação de parentes até 3º grau.');
@@ -57,7 +54,7 @@ test.describe('concurseiro elite flows', () => {
     expect(PICTOGRAPHIC_RE.test(await page.locator('#panel-disciplinas').innerText())).toBe(false);
 
     // 3. Raio-X Pós-Edital na visão verticalizada (somente em memória)
-    await page.locator('#verticalizedSyllabusToggleBtn').click();
+    await page.locator('#subjectsTab-verticalizado').click();
     await page.locator('#openPostEditalDiffBtn').click();
     await page
       .locator('#postEditalDiffTextarea')

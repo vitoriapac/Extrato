@@ -26,17 +26,17 @@ test('Edital Verticalizado alterna visão, exibe etapas e permite marcar checkli
 }) => {
   await prepare(page);
 
-  const toggleBtn = page.locator('#verticalizedSyllabusToggleBtn');
-  await expect(toggleBtn).toBeVisible();
-  await expect(toggleBtn).toContainText('Edital verticalizado');
+  const verticalizedTab = page.locator('#subjectsTab-verticalizado');
+  await expect(verticalizedTab).toBeVisible();
+  await expect(verticalizedTab).toContainText('Edital verticalizado');
 
   // Alterna para visão de edital verticalizado
-  await toggleBtn.click();
-  await expect(toggleBtn).toContainText('Visão padrão');
+  await verticalizedTab.click();
+  await expect(verticalizedTab).toHaveAttribute('aria-selected', 'true');
 
   const mount = page.locator('#verticalizedSyllabusMount');
   await expect(mount).toBeVisible();
-  await expect(page.locator('#subjectsContainer')).toBeHidden();
+  await expect(page.locator('#subjectsPanel-materias')).toBeHidden();
 
   // Verifica cabeçalhos de etapas (Teoria, Resumo, Lei Seca, Questões)
   await expect(mount).toContainText('Teoria');
@@ -57,7 +57,7 @@ test('Parser de Edital Bruto / PDF analisa e importa disciplinas e tópicos', as
   await prepare(page);
 
   // Alterna para visão de edital verticalizado
-  await page.locator('#verticalizedSyllabusToggleBtn').click();
+  await page.locator('#subjectsTab-verticalizado').click();
   const mount = page.locator('#verticalizedSyllabusMount');
   await expect(mount).toBeVisible();
 

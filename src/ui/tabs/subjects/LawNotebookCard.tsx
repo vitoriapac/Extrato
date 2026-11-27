@@ -1,7 +1,8 @@
 import type { JSX } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { Badge, type BadgeVariant } from '../../primitives/badge.js';
 import { ProgressBar } from '../../primitives/progress-bar.js';
+import { formatDateBR } from '../../../core/format-date.js';
 import {
   lawEffectiveRange,
   lawLapProgress,
@@ -35,8 +36,6 @@ const STATUS_BADGE: Record<LawStatusKey, BadgeVariant> = {
   new: 'default',
   resting: 'success',
 };
-
-const dateBR = (iso: string) => iso.split('-').reverse().join('/');
 
 function LawRow({
   law,
@@ -104,9 +103,9 @@ function LawRow({
             ? `${law.laps} ${law.laps === 1 ? 'volta completa' : 'voltas completas'}`
             : null,
           law.hotArticles ? `Artigos quentes: ${law.hotArticles}` : null,
-          law.lastReadAt ? `última leitura ${dateBR(law.lastReadAt)}` : null,
+          law.lastReadAt ? `última leitura ${formatDateBR(law.lastReadAt)}` : null,
           status.key === 'resting' && status.nextLapDate
-            ? `próxima volta ${dateBR(status.nextLapDate)}`
+            ? `próxima volta ${formatDateBR(status.nextLapDate)}`
             : null,
         ]
           .filter(Boolean)
@@ -163,16 +162,6 @@ export function LawNotebookCard({
   const subjectNames = new Map(subjects.map(subject => [subject.id, subject.name]));
   const due = laws.filter(law => ['due', 'stalled'].includes(lawStatus(law, today).key)).length;
 
-  useEffect(() => {
-    const summary =
-      typeof document !== 'undefined'
-        ? document.getElementById('lawNotebookCard')?.querySelector('summary')
-        : null;
-    if (summary) {
-      summary.textContent = due > 0 ? `Caderno de leis · ${due} para ler` : 'Caderno de leis';
-    }
-  }, [due]);
-
   const add = (event: Event) => {
     event.preventDefault();
     if (!name.trim()) return;
@@ -204,7 +193,11 @@ export function LawNotebookCard({
   };
 
   return (
-    <div class="law-notebook space-y-3">
+    <div class="law-notebook space-y-3" data-testid="law-notebook">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-base font-medium m-0">Caderno de leis</h3>
+        {due > 0 && <Badge variant="warning">{due} para ler</Badge>}
+      </div>
       <p class="text-xs text-content-secondary m-0">
         Registre até onde leu cada lei ou recorte de artigos do edital. Ao fechar uma volta, a
         próxima é sugerida em 7, 15 e depois 30 dias.

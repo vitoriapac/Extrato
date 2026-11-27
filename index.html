@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=3312eaf850c6">
-<link rel="stylesheet" href="styles/app.css?v=3312eaf850c6">
+<link rel="stylesheet" href="styles/tailwind.css?v=fed574bbb821">
+<link rel="stylesheet" href="styles/app.css?v=fed574bbb821">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -429,22 +429,23 @@
       <h2 class="section-title">Disciplinas e tópicos</h2>
       <div class="subjects-header-actions">
         <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução</button>
-        <button class="btn ghost small" type="button" id="verticalizedSyllabusToggleBtn" data-testid="verticalized-syllabus-toggle" aria-pressed="false">Edital verticalizado</button>
         <div id="subjectsImportMenuMount"></div>
         <input type="file" id="structuredContentFile" accept=".json,.csv,text/csv,application/json" hidden>
         <button class="btn" id="addSubjectBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Nova disciplina</button>
       </div>
     </div>
     <div id="subjectsSubtabsMount" class="mb-4"></div>
-    <div class="stat-grid mb-4" id="quickStats"></div>
-    <div id="subjectsContainer"></div>
-    <div id="verticalizedSyllabusMount" hidden></div>
-    <details class="chart-card decision-fold mt-4" id="lawNotebookCard" data-remember="subjects-law-notebook"><summary>Caderno de leis</summary>
+    <div id="subjectsPanel-materias" role="tabpanel" aria-labelledby="subjectsTab-materias">
+      <div class="stat-grid mb-4" id="quickStats"></div>
+      <div id="subjectsContainer"></div>
+    </div>
+    <div id="verticalizedSyllabusMount" role="tabpanel" aria-labelledby="subjectsTab-verticalizado" hidden></div>
+    <div class="chart-card mt-4" id="lawNotebookCard" role="tabpanel" aria-labelledby="subjectsTab-leis" hidden>
       <div id="lawNotebookMount"></div>
-    </details>
-    <details class="chart-card decision-fold mt-4" id="jurisprudenceNotebookCard" data-remember="subjects-jurisprudence-notebook"><summary>Informativos STF/STJ &amp; Súmulas</summary>
+    </div>
+    <div class="chart-card mt-4" id="jurisprudenceNotebookCard" role="tabpanel" aria-labelledby="subjectsTab-jurisprudencia" hidden>
       <div id="jurisprudenceNotebookMount"></div>
-    </details>
+    </div>
   </div>
 
   <!-- AGENDA: revisões espaçadas e tarefas de estudo numa aba só (antes eram Agenda e Calendário) -->
@@ -814,19 +815,19 @@
 <div id="whatIfSimulatorMount"></div>
 <div id="globalCommandPaletteMount"></div>
 
-  <link rel="modulepreload" href="src/chunks/chunk-5KRK53LP.js">
+  <link rel="modulepreload" href="src/chunks/chunk-4ZOY6NVY.js">
   <link rel="modulepreload" href="src/chunks/chunk-5PFPAWQM.js">
-  <link rel="modulepreload" href="src/chunks/chunk-DMJU5MKT.js">
+  <link rel="modulepreload" href="src/chunks/chunk-5PPDGYDZ.js">
+  <link rel="modulepreload" href="src/chunks/chunk-7BZAU5DQ.js">
   <link rel="modulepreload" href="src/chunks/chunk-EPH6HTAM.js">
   <link rel="modulepreload" href="src/chunks/chunk-FGVLQL72.js">
+  <link rel="modulepreload" href="src/chunks/chunk-GNUX5AIA.js">
   <link rel="modulepreload" href="src/chunks/chunk-IVOVVXKA.js">
-  <link rel="modulepreload" href="src/chunks/chunk-NVKDSI47.js">
   <link rel="modulepreload" href="src/chunks/chunk-OTRHJ3S4.js">
   <link rel="modulepreload" href="src/chunks/chunk-PJ3MCI22.js">
   <link rel="modulepreload" href="src/chunks/chunk-SUIAGQ6E.js">
   <link rel="modulepreload" href="src/chunks/chunk-U2JQVAN3.js">
-  <link rel="modulepreload" href="src/chunks/chunk-UKQ4EAO4.js">
-  <script type="module" src="src/app.bundle.js?v=3312eaf850c6"></script>
+  <script type="module" src="src/app.bundle.js?v=fed574bbb821"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

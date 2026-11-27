@@ -148,6 +148,7 @@ const iconMapping = {
   'chevrons-left': 'chevrons-left',
   'chevrons-right': 'chevrons-right',
   inbox: 'inbox',
+  archive: 'archive',
   // Ícones semânticos adicionais
   adjustments: 'sliders-horizontal',
   'calendar-plus': 'calendar-plus',

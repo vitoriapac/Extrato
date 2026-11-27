@@ -82,7 +82,7 @@ export function SubjectBlock({
             class="subject-name"
             contentEditable={true}
             role="textbox"
-            aria-label={`Nome da disciplina ${subject.name}`}
+            aria-label={`Nome da disciplina ${subject.name} (editável; Enter salva, Esc cancela)`}
             title="Clique para editar o nome da disciplina (Enter salva, Esc cancela)"
             data-delegated-click="event.stopPropagation()"
             data-delegated-blur={`renameSubject('${subject.id}', this.textContent)`}

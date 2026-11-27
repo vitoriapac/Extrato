@@ -69,7 +69,7 @@ export function SubjectsTab({
           <button
             type="button"
             class="btn ghost"
-            onClick={() => document.getElementById('verticalizedSyllabusToggleBtn')?.click()}
+            onClick={() => document.getElementById('subjectsTab-verticalizado')?.click()}
           >
             Colar Edital (PDF)
           </button>

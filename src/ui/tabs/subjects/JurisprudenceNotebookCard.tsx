@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import type { JurisprudenceKind, JurisprudenceRecord } from '../../../core/types.js';
+import { formatDateBR } from '../../../core/format-date.js';
 import {
   JURISPRUDENCE_KIND_LABELS,
   JURISPRUDENCE_KINDS,
@@ -33,8 +34,6 @@ const STATUS_BADGE: Record<JurisprudenceStatusKey, BadgeVariant> = {
   resting: 'success',
 };
 
-const dateBR = (iso: string) => iso.split('-').reverse().join('/');
-
 export function JurisprudenceNotebookCard({
   records,
   subjects,
@@ -55,19 +54,6 @@ export function JurisprudenceNotebookCard({
   const dueCount = records.filter(r =>
     ['due', 'new'].includes(jurisprudenceStatus(r, today).key)
   ).length;
-
-  useEffect(() => {
-    const summary =
-      typeof document !== 'undefined'
-        ? document.getElementById('jurisprudenceNotebookCard')?.querySelector('summary')
-        : null;
-    if (summary) {
-      summary.textContent =
-        dueCount > 0
-          ? `Informativos STF/STJ & Súmulas · ${dueCount} para revisar`
-          : 'Informativos STF/STJ & Súmulas';
-    }
-  }, [dueCount]);
 
   const handleSubmit = (event: Event) => {
     event.preventDefault();
@@ -90,6 +76,10 @@ export function JurisprudenceNotebookCard({
 
   return (
     <div class="law-notebook space-y-3" data-testid="jurisprudence-notebook">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-base font-medium m-0">Informativos STF/STJ &amp; Súmulas</h3>
+        {dueCount > 0 && <Badge variant="warning">{dueCount} para revisar</Badge>}
+      </div>
       <p class="text-xs text-content-secondary m-0">
         Caderno de Informativos STF/STJ, Súmulas e Temas Repetitivos com revisões espaçadas em 7, 21
         e 45 dias.
@@ -231,8 +221,8 @@ export function JurisprudenceNotebookCard({
                     item.laps > 0
                       ? `${item.laps} ${item.laps === 1 ? 'revisão' : 'revisões'}`
                       : 'Sem revisões ainda',
-                    item.lastReadAt ? `lido em ${dateBR(item.lastReadAt)}` : null,
-                    item.nextReviewDate ? `próxima em ${dateBR(item.nextReviewDate)}` : null,
+                    item.lastReadAt ? `lido em ${formatDateBR(item.lastReadAt)}` : null,
+                    item.nextReviewDate ? `próxima em ${formatDateBR(item.nextReviewDate)}` : null,
                   ]
                     .filter(Boolean)
                     .join(' · ')}

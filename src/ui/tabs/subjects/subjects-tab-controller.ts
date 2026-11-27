@@ -127,27 +127,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   }
 
   function selectSubjectsSubtab(key: SubjectsSubtabKey): void {
-    if (key === 'verticalizado') {
-      setVerticalizedSyllabusActive(true);
-      renderSubjects();
-      return;
-    }
-    setVerticalizedSyllabusActive(false);
+    verticalizedSyllabusActive = key === 'verticalizado';
     activeSubtab = key;
     renderSubjects();
-    if (key === 'leis') {
-      const card = ctx.document.getElementById('lawNotebookCard') as HTMLDetailsElement | null;
-      if (card) {
-        card.open = true;
-        card.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-      }
-    } else if (key === 'jurisprudencia') {
-      const card = ctx.document.getElementById('jurisprudenceNotebookCard') as HTMLDetailsElement | null;
-      if (card) {
-        card.open = true;
-        card.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-      }
-    }
   }
 
   function getSubjectExamFilter(): string {
@@ -559,36 +541,33 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   }
 
   function renderSubjects(): void {
-    renderLawNotebook();
-    renderJurisprudenceNotebook();
+    const currentSubtab: SubjectsSubtabKey = verticalizedSyllabusActive
+      ? 'verticalizado'
+      : activeSubtab;
     const subtabsMount = ctx.document.getElementById('subjectsSubtabsMount');
     if (subtabsMount) {
       mountPreact(
         h(SubjectsSubtabsNav, {
-          activeSubtab: verticalizedSyllabusActive ? 'verticalizado' : activeSubtab,
+          activeSubtab: currentSubtab,
           onSelectSubtab: selectSubjectsSubtab,
         }),
         subtabsMount
       );
     }
+    const materiasPanel = ctx.document.getElementById('subjectsPanel-materias');
     const container = ctx.document.getElementById('subjectsContainer');
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
-    const toggleBtn = ctx.document.getElementById('verticalizedSyllabusToggleBtn');
-    const quickStatsEl = ctx.document.getElementById('quickStats');
-    if (quickStatsEl && ctx.allTopics) {
-      mountPreact(h(QuickStatsGrid, buildTopicStatusSummary(ctx.allTopics())), quickStatsEl);
-    }
-    if (!container) return;
+    const lawCard = ctx.document.getElementById('lawNotebookCard');
+    const jurisCard = ctx.document.getElementById('jurisprudenceNotebookCard');
 
-    if (verticalizedSyllabusActive && mount) {
-      container.hidden = true;
-      mount.hidden = false;
-      if (toggleBtn) {
-        toggleBtn.textContent = 'Visão padrão';
-        toggleBtn.setAttribute?.('aria-pressed', 'true');
-        toggleBtn.classList.add('btn-primary');
-      }
-      renderVerticalizedSyllabus();
+    if (materiasPanel) materiasPanel.hidden = currentSubtab !== 'materias';
+    if (mount) mount.hidden = currentSubtab !== 'verticalizado';
+    if (lawCard) lawCard.hidden = currentSubtab !== 'leis';
+    if (jurisCard) jurisCard.hidden = currentSubtab !== 'jurisprudencia';
+
+    if (currentSubtab === 'verticalizado') {
+      if (container) container.hidden = true;
+      if (mount) renderVerticalizedSyllabus();
       return;
     }
 
@@ -596,12 +575,25 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       unmountPreact(mount);
       mount.hidden = true;
     }
-    container.hidden = false;
-    if (toggleBtn) {
-      toggleBtn.textContent = 'Edital verticalizado';
-      toggleBtn.setAttribute?.('aria-pressed', 'false');
-      toggleBtn.classList.remove('btn-primary');
+
+    if (currentSubtab === 'leis') {
+      if (container) container.hidden = true;
+      renderLawNotebook();
+      return;
     }
+
+    if (currentSubtab === 'jurisprudencia') {
+      if (container) container.hidden = true;
+      renderJurisprudenceNotebook();
+      return;
+    }
+
+    const quickStatsEl = ctx.document.getElementById('quickStats');
+    if (quickStatsEl && ctx.allTopics) {
+      mountPreact(h(QuickStatsGrid, buildTopicStatusSummary(ctx.allTopics())), quickStatsEl);
+    }
+    if (!container) return;
+    container.hidden = false;
 
     const controller = createSubjectsController({
       state: ctx.state,
@@ -1018,10 +1010,6 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     ctx.document
       .getElementById('loadDefaultSubjectsBtn')
       ?.addEventListener('click', () => ctx.openExamImport?.());
-    ctx.document.getElementById('verticalizedSyllabusToggleBtn')?.addEventListener('click', () => {
-      setVerticalizedSyllabusActive(!isVerticalizedSyllabusActive());
-      renderSubjects();
-    });
     ctx.document
       .getElementById('subjectsContainer')
       ?.addEventListener('keydown', (event: KeyboardEvent) => {

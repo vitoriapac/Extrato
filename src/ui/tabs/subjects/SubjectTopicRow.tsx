@@ -120,10 +120,12 @@ export function SubjectTopicRow({
             aria-expanded={isOpenNotes}
             aria-controls={`topic-notes-${topic.id}`}
             data-delegated-click={`toggleNotes('${topic.id}')`}
-            aria-label={`Detalhes de ${topic.name || 'tópico sem nome'}`}
+            aria-label={`Detalhes de ${topic.name || 'tópico sem nome'}${hasNotes ? ' (possui anotações)' : ''}`}
+            title={hasNotes ? 'Possui anotações ou tags' : undefined}
             onClick={() => onToggleNotes?.(topic.id)}
           >
             Detalhes
+            {hasNotes && <span class="sr-only"> (possui anotações)</span>}
           </button>
         </td>
         <td>
@@ -135,7 +137,7 @@ export function SubjectTopicRow({
             aria-label={`Arquivar ${topic.name || 'tópico sem nome'}`}
             onClick={() => onArchiveTopic?.(subjectId, topic.id)}
           >
-            <Icon name="inbox" size={14} />
+            <Icon name="archive" size={14} />
           </button>
         </td>
       </tr>

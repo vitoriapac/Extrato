@@ -6,11 +6,12 @@ export type SubjectsSubtabKey = 'materias' | 'verticalizado' | 'leis' | 'jurispr
 export const SUBJECTS_SUBTAB_DEFS: ReadonlyArray<{
   id: SubjectsSubtabKey;
   label: string;
+  panelId: string;
 }> = [
-  { id: 'materias', label: 'Matérias' },
-  { id: 'verticalizado', label: 'Edital verticalizado' },
-  { id: 'leis', label: 'Lei Seca' },
-  { id: 'jurisprudencia', label: 'Jurisprudência' },
+  { id: 'materias', label: 'Matérias', panelId: 'subjectsPanel-materias' },
+  { id: 'verticalizado', label: 'Edital verticalizado', panelId: 'verticalizedSyllabusMount' },
+  { id: 'leis', label: 'Lei Seca', panelId: 'lawNotebookCard' },
+  { id: 'jurisprudencia', label: 'Jurisprudência', panelId: 'jurisprudenceNotebookCard' },
 ];
 
 export interface SubjectsSubtabsNavProps {
@@ -29,6 +30,7 @@ export function SubjectsSubtabsNav({
     className: `subjects-subtab${activeSubtab === item.id ? ' active' : ''}`,
     buttonProps: {
       'data-subjects-subtab': item.id,
+      'aria-controls': item.panelId,
     },
   }));
 
