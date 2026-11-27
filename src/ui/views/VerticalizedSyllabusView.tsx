@@ -375,7 +375,7 @@ export function VerticalizedSyllabusView({
                             href={practiceLinks.qcUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="px-2 py-1 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-subtle inline-flex items-center no-underline transition-colors"
+                            class="px-2 py-1 text-xs font-medium text-content-secondary hover:text-content-primary hover:bg-surface-subtle inline-flex items-center no-underline transition-colors"
                             title={`Abrir questões de ${topic.name} no QConcursos`}
                             aria-label={`Praticar questões de ${topic.name} no QConcursos (abre em nova aba)`}
                           >

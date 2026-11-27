@@ -287,6 +287,21 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     );
   }
 
+  function startTopicStudy(subjectId: string, topicId: string): void {
+    if (ctx.state.activeTimer) {
+      Object.assign(ctx.state.activeTimer, {
+        subjectId,
+        topicId,
+        type: 'study',
+      });
+    }
+    if (ctx.populateTimerContextControls) ctx.populateTimerContextControls();
+    if (ctx.startTimer) ctx.startTimer();
+    if (ctx.activeTabName && ctx.activeTabName() !== 'dashboard' && ctx.openStudyTimerFocus) {
+      ctx.openStudyTimerFocus();
+    }
+  }
+
   function renderVerticalizedSyllabus(): void {
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     if (!mount) return;
@@ -358,20 +373,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
             ctx.persistAndRender();
           }
         },
-        onStartStudy: (subjectId: string, topicId: string) => {
-          if (ctx.state.activeTimer) {
-            Object.assign(ctx.state.activeTimer, {
-              subjectId,
-              topicId,
-              type: 'study',
-            });
-          }
-          if (ctx.populateTimerContextControls) ctx.populateTimerContextControls();
-          if (ctx.startTimer) ctx.startTimer();
-          if (ctx.activeTabName && ctx.activeTabName() !== 'dashboard' && ctx.openStudyTimerFocus) {
-            ctx.openStudyTimerFocus();
-          }
-        },
+        onStartStudy: startTopicStudy,
         onOpenTopicIntelligence: (subjectId: string, topicId: string) => {
           openTopicIntelligenceModal(subjectId, topicId);
         },
@@ -1035,6 +1037,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     setSubjectColor,
     toggleSubject,
     toggleAllSubjects,
+    startTopicStudy,
     renameSubject,
     addSubject,
     archiveSubject,

@@ -1,6 +1,7 @@
 import { SubjectBlock } from './SubjectBlock.js';
 import { SegmentedControl } from '../../primitives/tabs.js';
 import { createProgressiveList } from '../../progressive-list.js';
+import { formatDateBR } from '../../../core/format-date.js';
 
 export interface SubjectsTabProps {
   subjects: any[];
@@ -238,7 +239,7 @@ export function SubjectsTab({
                 <div class="archived-item-name">{s.name}</div>
                 <div class="archived-item-date">
                   Arquivada em{' '}
-                  {s.archivedAt ? new Date(s.archivedAt).toLocaleDateString('pt-BR') : '—'} ·{' '}
+                  {s.archivedAt ? formatDateBR(s.archivedAt) : '—'} ·{' '}
                   {pluralizeFn(s.topics.length, 'tópico')}
                 </div>
               </div>

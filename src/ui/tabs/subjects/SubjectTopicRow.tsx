@@ -143,6 +143,16 @@ export function SubjectTopicRow({
         <tr class="notes-row" id={`topic-notes-${topic.id}`}>
           <td colSpan={5}>
             <div class="space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  class="btn tonal small inline-flex items-center gap-1"
+                  data-delegated-click={`startTopicStudy('${subjectId}','${topic.id}')`}
+                >
+                  <Icon name="player-play" size={12} />
+                  <span>Estudar este tópico</span>
+                </button>
+              </div>
               <label>Link / material
                 <input
                   type="url"

@@ -155,6 +155,7 @@ export function buildDelegatedActionHandlers(
     toggleNotes: (...args: any[]) => c.subjects?.toggleNotes?.(...args),
     toggleSubject: (...args: any[]) => c.subjects?.toggleSubject?.(...args),
     toggleAllSubjects: () => c.subjects?.toggleAllSubjects?.(),
+    startTopicStudy: (...args: any[]) => c.subjects?.startTopicStudy?.(...args),
     toggleTopicPrerequisite: (...args: any[]) => c.subjects?.toggleTopicPrerequisite?.(...args),
     updateTopic: (...args: any[]) => c.subjects?.updateTopic?.(...args),
     updateTopicStatus: (...args: any[]) => c.subjects?.updateTopicStatus?.(...args),

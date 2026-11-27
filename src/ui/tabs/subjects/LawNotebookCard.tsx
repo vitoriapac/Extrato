@@ -302,7 +302,7 @@ export function LawNotebookCard({
         </p>
       )}
       {laws.length === 0 ? (
-        <p class="m-0">Nenhuma lei no caderno ainda.</p>
+        <p class="text-xs text-content-secondary m-0">Nenhuma lei no caderno ainda.</p>
       ) : (
         <ul class="law-notebook__list">
           {sortLawsForReview(laws, today).map(law => (

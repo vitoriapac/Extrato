@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import type { JurisprudenceKind, JurisprudenceRecord } from '../../../core/types.js';
 import {
@@ -55,6 +55,19 @@ export function JurisprudenceNotebookCard({
   const dueCount = records.filter(r =>
     ['due', 'new'].includes(jurisprudenceStatus(r, today).key)
   ).length;
+
+  useEffect(() => {
+    const summary =
+      typeof document !== 'undefined'
+        ? document.getElementById('jurisprudenceNotebookCard')?.querySelector('summary')
+        : null;
+    if (summary) {
+      summary.textContent =
+        dueCount > 0
+          ? `Informativos STF/STJ & Súmulas · ${dueCount} para revisar`
+          : 'Informativos STF/STJ & Súmulas';
+    }
+  }, [dueCount]);
 
   const handleSubmit = (event: Event) => {
     event.preventDefault();

@@ -1,4 +1,5 @@
 import { formatPercent } from '../../../core/format-number.js';
+import { formatDateBR } from '../../../core/format-date.js';
 import { SubjectTopicRow } from './SubjectTopicRow.js';
 import { Icon } from '../../primitives/icon.js';
 import { Sparkline, StackedBar } from '../../primitives/charts/charts.js';
@@ -329,7 +330,7 @@ export function SubjectBlock({
                   <div class="archived-item-name">{t.name || 'Tópico sem nome'}</div>
                   <div class="archived-item-date">
                     Arquivado em{' '}
-                    {t.archivedAt ? new Date(t.archivedAt).toLocaleDateString('pt-BR') : '—'}
+                    {t.archivedAt ? formatDateBR(t.archivedAt) : '—'}
                   </div>
                 </div>
                 <div class="archived-item-actions">

@@ -795,7 +795,7 @@
   .icon-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;opacity:0.5;}
   .icon-btn:hover{opacity:1;}
   .notes-toggle-btn{font-size:var(--text-micro);padding:4px 8px;white-space:nowrap;}
-  .notes-toggle-btn.has-notes{border-color:var(--accent);color:var(--amber);}
+  .notes-toggle-btn.has-notes{border-color:var(--accent);color:var(--accent);font-weight:600;}
   tr.notes-row td{padding:0 8px 12px;border-bottom:1px solid var(--paper-line);}
   .topic-notes-textarea{
     width:100%;min-height:64px;font-family:var(--font-body);font-size:13px;color:var(--ink);
@@ -1469,7 +1469,7 @@ table.cal thead th{font-size:var(--text-xs)}
 .action-menu__items button{width:100%;padding:8px 12px;border:0;background:transparent;color:var(--text-primary);font:inherit;text-align:left;cursor:pointer}
 .action-menu__items button:hover,.action-menu__items button:focus-visible{background:var(--surface-card-muted)}
 .action-menu__hint{padding:8px 12px;border-top:1px solid var(--paper-line);color:var(--text-secondary);font-size:var(--text-micro);line-height:1.4}
-.subject-action-menu>summary{min-width:38px;font-size:18px}
+.subject-action-menu>summary{min-width:38px}
 .question-analysis-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 0 16px;border-top:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line)}
 .question-analysis-metric{display:flex;flex-direction:column;gap:4px;min-width:0;padding:12px}
 .question-analysis-metric+.question-analysis-metric{border-left:1px solid var(--paper-line)}
