@@ -328,7 +328,7 @@ export function NextActionCard({
                 className="btn btn--subtle text-xs inline-flex items-center gap-1 px-3 py-2 rounded-default border border-border-default bg-surface-card hover:bg-surface-subtle text-primary transition-colors cursor-pointer"
                 aria-label={`Abrir Ficha Inteligente de ${what.topicName}`}
               >
-                <Icon name="sparkles" size={13} class="shrink-0 text-secondary" />
+                <Icon name="file-text" size={13} class="shrink-0 text-secondary" />
                 <span>Detalhar ficha</span>
               </button>
             )}

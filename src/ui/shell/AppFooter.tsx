@@ -48,7 +48,7 @@ export function AppFooter({ onOpenLegal }: AppFooterProps) {
                 id="openSalesLandingBtn"
                 aria-haspopup="dialog"
               >
-                <Icon name="sparkles" size={14} class="icon-inline" />
+                <Icon name="compass" size={14} class="icon-inline" />
                 Apresentação
               </button>
             </li>

@@ -146,12 +146,12 @@ export function TodayGoalsCard({
                 title="Ajuste rápido da meta de hoje"
                 aria-label="Meta de horas de hoje"
               />
-              {savedGoalFeedback && (
-                <span class="text-xs text-status-success font-medium" role="status" aria-live="polite">
-                  Salvo
-                </span>
-              )}
             </label>
+            {savedGoalFeedback && (
+              <span class="text-xs text-status-success font-medium ml-2" role="status" aria-live="polite">
+                Salvo
+              </span>
+            )}
           </details>
         </div>
         <div class="meta-hoje-chart mt-2">
