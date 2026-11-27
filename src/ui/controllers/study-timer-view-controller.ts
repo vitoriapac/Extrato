@@ -20,6 +20,7 @@ import type { ActiveTimerState } from '../../core/types.js';
 export interface TimerViewDocumentLike {
   title: string;
   body: any;
+  documentElement?: { dataset?: Record<string, string | undefined> };
   getElementById(id: string): any;
 }
 
@@ -203,7 +204,7 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
       running: isRunning,
       time: formatTimer(timerSeconds),
       subjectName: active.subjectId ? getSubjectName(active.subjectId) : '',
-      baseTitle: BASE_DOCUMENT_TITLE,
+      baseTitle: document.documentElement?.dataset?.routeTitle || BASE_DOCUMENT_TITLE,
     });
     if (document.title !== title) document.title = title;
 

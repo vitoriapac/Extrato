@@ -29,7 +29,7 @@ test('MobileMoreMenu — preserva seletores móveis, itens keepMounted e estado 
 
   assert.ok(html.includes('id="moreTabButton"'));
   assert.ok(html.includes('id="mobileMoreMenu"'));
-  assert.ok(html.includes('data-more-tab="questoes"'));
+  assert.ok(html.includes('data-more-tab="desempenho"'));
   assert.ok(html.includes('data-more-tab="disciplinas"'));
   assert.ok(html.includes('data-more-tab="metas"'));
   assert.ok(html.includes('data-more-tab="instrucoes"'));

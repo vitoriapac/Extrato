@@ -352,7 +352,7 @@ test('SyllabusHealthCard Preact Component — renderiza barras empilhadas e bull
   });
 
   const html = render(h(SyllabusHealthCard, { model }));
-  assert.match(html, /Saúde do Edital por Disciplina/);
+  assert.match(html, /Saúde do Edital por disciplina/);
   assert.match(html, /Direito Administrativo/);
   assert.match(html, /80% acerto/);
 });

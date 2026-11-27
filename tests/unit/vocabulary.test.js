@@ -242,7 +242,7 @@ test('nomes das abas secundárias são os mesmos na barra do desktop e no menu "
     return text.replace(/&amp;/g, '&').trim();
   };
   const menu = render(h(MobileMoreMenu, { activeTab: 'dashboard', open: true, onOpenChange: () => {}, onSelectTab: () => {} }));
-  for (const id of ['disciplinas', 'questoes', 'metas', 'instrucoes']) {
+  for (const id of ['desempenho', 'disciplinas', 'metas', 'instrucoes']) {
     const name = desktop(id);
     assert.ok(menu.replace(/&amp;/g, '&').includes(name), `menu móvel sem "${name}" (aba ${id})`);
   }

@@ -69,7 +69,7 @@ export function PerformanceTrendCard({
               id="performanceTrendTitle"
               class="font-semibold text-base text-content-primary m-0"
             >
-              Evolução de Acertos &amp; Simulados
+              Evolução de acertos e simulados
             </h3>
             <p class="text-xs text-content-secondary m-0 mt-1">
               Tendência semanal de questões e notas dos simulados vs. meta de aprovação

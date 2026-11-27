@@ -106,7 +106,7 @@ export function createCalendarPendingLists(deps: CalendarPendingListsDeps) {
           ? `<span class="dias-pill mr-1">${escapeHtml(x.startTime)}</span>`
           : '';
         const subjectPart = x.subject && x.subject !== x.title ? ` · ${escapeHtml(x.subject)}` : '';
-        return `<li class="flex flex-wrap items-center gap-1.5"><span class="dias-pill dias-hoje">${escapeHtml(kindLabel)}</span>${timeBadge}<span class="min-w-0 flex-1"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span><span class="inline-flex flex-wrap items-center gap-1.5">${quickReviewButton(x, elId)}</span></li>`;
+        return `<li class="flex flex-wrap items-center gap-1.5"><span class="dias-pill dias-hoje">${escapeHtml(kindLabel)}</span>${timeBadge}<span class="min-w-0 basis-full order-first"><strong>${escapeHtml(x.title || defaultUnifiedItemLabel(x))}</strong>${subjectPart}</span><span class="subject-progress-pill">${escapeHtml(x.status)}</span><span class="inline-flex flex-wrap items-center gap-1.5">${quickReviewButton(x, elId)}</span></li>`;
       })
       .join('');
   }

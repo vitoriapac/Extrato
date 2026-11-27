@@ -50,7 +50,7 @@
   --alerta-baixa-bg:#2E2715;--alerta-baixa-text:#D9B66B;--heat-1:#2C4A3B;--heat-2:#3F6E56;--heat-3:#5F9C7D;--heat-4:#8CC5A2;
   --info-bg:#1A2E26;--green-bright:#8CC5A2;--zebra-bg:#141F1B;
   --month-outside-bg:#0D1412;--month-outside-text:#9DADA4;--shadow-color:rgba(0,0,0,.55);
-  --on-brand:#E3EAE4;
+  --on-brand:#E3EAE4;--on-accent:#0C1411;
   /* Navy fill vanishes on navy cards: actions take the light sage the wizard already uses. */
   --action-primary-bg:#A8D3B8;--action-primary-text:#0C1411;--action-primary-hover:#C2E3CD;--action-outline:var(--ink-soft);--action-danger-hover-text:#0C1411;--action-tonal-bg:#2A4636;--action-tonal-text:#A8D3B8;--action-tonal-hover:#335441;--border-control:#6F8579;--border-input:var(--border-control);
   --wizard-bg:#16211D;--wizard-surface:#121B18;--wizard-surface-muted:#1F2D27;

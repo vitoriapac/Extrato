@@ -23,7 +23,7 @@ export function SyllabusHealthCard({
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
         <div>
           <h3 id="syllabusHealthTitle" class="font-semibold text-base text-content-primary m-0">
-            Saúde do Edital por Disciplina
+            Saúde do Edital por disciplina
           </h3>
           <p class="text-xs text-content-secondary m-0 mt-1">
             Progresso de cobertura e taxa de acerto nos últimos 30 dias

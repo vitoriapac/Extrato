@@ -128,6 +128,14 @@ export function createNavigationController({
     mobileMoreOpen = false;
     syncMore(tabName);
     if (document.body?.dataset) document.body.dataset.activeTab = tabName;
+    // Each area names the window, so history, tabs and screen readers say where you are.
+    const areaLabel = String((button.querySelector?.('.tab-label-long') || button.querySelector?.('.tab-label'))?.textContent || '').trim();
+    if (areaLabel && document.documentElement?.dataset) {
+      const routeTitle = `${areaLabel} — Extrato de Estudos`;
+      document.documentElement.dataset.routeTitle = routeTitle;
+      // A running timer owns the title; it falls back to the route title when it stops.
+      if (!/^(\[Pausado\] )?\d/.test(document.title)) document.title = routeTitle;
+    }
     // A new area opens at its top; callers that target a section scroll to it afterwards.
     if (changed) window.scrollTo?.({ top: 0, left: 0 });
     button.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: scrollBehavior() });

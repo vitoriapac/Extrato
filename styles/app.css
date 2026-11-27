@@ -3008,7 +3008,7 @@ body:has(#panel-dashboard.active #enterDemoHeroBtn) .app-footer__item--stacked{d
 .agenda-summary-grid:not(:has(.upcoming-list>li:not(.upcoming-empty))) .chart-card{display:none}
 
 /* Fechamento da Visão geral: resume e leva a Desempenho, onde mora a análise detalhada. */
-.overview-more{display:grid;gap:var(--space-2);justify-items:start}
+.overview-more{display:grid;gap:var(--space-2);justify-items:start;align-content:start}
 .overview-more h2{margin:0;font:600 var(--text-md) var(--font-display)}
 .overview-more p{margin:0;color:var(--ink-soft);max-width:60ch}
 
@@ -3880,3 +3880,14 @@ button.performance-window{position:relative}button.performance-window::after{con
 
 /* Modo Foco em Hoje: fica o plano, o cronômetro, a sugestão, os atrasos e a agenda. */
 #panel-hoje[data-daily-focus-active] :is(#todayExecutionSummary,#todayAlertsCard,#todayMoreDetails,.today-metas-section){display:none}
+
+/* Disciplinas como extrato: uma lista contínua com divisórias finas, não um card por disciplina. */
+.subject-block{margin-bottom:0;border-radius:0}
+.subject-block+.subject-block{margin-top:-1px}
+:not(.subject-block)+.subject-block,.subject-block:first-child{border-top-left-radius:var(--radius-card);border-top-right-radius:var(--radius-card)}
+.subject-block:not(:has(+.subject-block)){border-bottom-left-radius:var(--radius-card);border-bottom-right-radius:var(--radius-card);margin-bottom:16px}
+/* Até 400px o cabeçalho compacto fica só com o ícone da marca (o botão já tem aria-label), para a Prontidão e a sequência não cortarem. */
+@media (max-width:400px){.compact-header .compact-brand{font-size:0;max-width:none;gap:0}}
+/* Aviso de atraso: no celular, o título ocupa a linha toda e a orientação vem embaixo. */
+@media (max-width:520px){.replan-group{flex-direction:column;gap:4px}.replan-group span{text-align:left}}
+.compact-header .compact-brand img{width:28px;height:28px;flex:none}
