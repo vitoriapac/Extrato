@@ -20,6 +20,7 @@ import type {
 import { runUndoable } from '../../undoable.js';
 import { LawNotebookCard } from './LawNotebookCard.js';
 import { JurisprudenceNotebookCard } from './JurisprudenceNotebookCard.js';
+import { SubjectsSubtabsNav, type SubjectsSubtabKey } from '../../components/SubjectsSubtabsNav.js';
 import { completeLawLap, registerLawReading } from '../../../domain/law-notebook.js';
 import { registerJurisprudenceReading } from '../../../domain/jurisprudence-notebook.js';
 
@@ -95,6 +96,7 @@ export interface SubjectsTabControllerContext {
 
 export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   let verticalizedSyllabusActive = false;
+  let activeSubtab: SubjectsSubtabKey = 'materias';
   let subjectExamFilter = 'all';
   const openNotesIds = new Set<string>();
   const subjectTopicPages = new Map<string, number>();
@@ -121,6 +123,31 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
 
   function setVerticalizedSyllabusActive(active: boolean): void {
     verticalizedSyllabusActive = active;
+    activeSubtab = active ? 'verticalizado' : 'materias';
+  }
+
+  function selectSubjectsSubtab(key: SubjectsSubtabKey): void {
+    if (key === 'verticalizado') {
+      setVerticalizedSyllabusActive(true);
+      renderSubjects();
+      return;
+    }
+    setVerticalizedSyllabusActive(false);
+    activeSubtab = key;
+    renderSubjects();
+    if (key === 'leis') {
+      const card = ctx.document.getElementById('lawNotebookCard') as HTMLDetailsElement | null;
+      if (card) {
+        card.open = true;
+        card.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      }
+    } else if (key === 'jurisprudencia') {
+      const card = ctx.document.getElementById('jurisprudenceNotebookCard') as HTMLDetailsElement | null;
+      if (card) {
+        card.open = true;
+        card.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      }
+    }
   }
 
   function getSubjectExamFilter(): string {
@@ -534,6 +561,16 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   function renderSubjects(): void {
     renderLawNotebook();
     renderJurisprudenceNotebook();
+    const subtabsMount = ctx.document.getElementById('subjectsSubtabsMount');
+    if (subtabsMount) {
+      mountPreact(
+        h(SubjectsSubtabsNav, {
+          activeSubtab: verticalizedSyllabusActive ? 'verticalizado' : activeSubtab,
+          onSelectSubtab: selectSubjectsSubtab,
+        }),
+        subtabsMount
+      );
+    }
     const container = ctx.document.getElementById('subjectsContainer');
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     const toggleBtn = ctx.document.getElementById('verticalizedSyllabusToggleBtn');
