@@ -77,8 +77,8 @@ export function FirstAccessModal({
                   </Badge>
                 </div>
                 <p className="text-xs text-content-secondary m-0 leading-relaxed">
-                  Assistente rápido em 4 passos: prazo da prova, horas semanais, edital ou
-                  matérias e a prévia do plano para começar hoje.
+                  4 lançamentos iniciais: prova e prazo, disponibilidade semanal, edital ou
+                  matérias e a prévia do plano antes de salvar.
                 </p>
               </div>
             </div>

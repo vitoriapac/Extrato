@@ -211,13 +211,13 @@ export function ConsistencyMiniHeatmapCard({
             key={d.dateISO}
             class={`w-full aspect-square rounded-xs ${
               d.level === 4
-                ? 'bg-green opacity-100'
+                ? 'bg-[var(--heat-4)]'
                 : d.level === 3
-                  ? 'bg-green opacity-80'
+                  ? 'bg-[var(--heat-3)]'
                   : d.level === 2
-                    ? 'bg-green opacity-60'
+                    ? 'bg-[var(--heat-2)]'
                     : d.level === 1
-                      ? 'bg-green opacity-40'
+                      ? 'bg-[var(--heat-1)]'
                       : 'bg-surface-subtle'
             } ${d.isToday ? 'ring-2 ring-offset-1 ring-amber' : ''}`}
             title={d.title}

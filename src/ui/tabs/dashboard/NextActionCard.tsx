@@ -334,48 +334,53 @@ export function NextActionCard({
             )}
           </div>
           {(practiceLinks || model.practiceLinks) && (
-            <div
-              className="practice-action-links flex flex-wrap items-center gap-3 text-xs text-muted pt-0.5"
-              role="group"
-              aria-label="Atalhos para resolução de questões"
-            >
-              <span>Praticar em:</span>
-              <a
-                href={(practiceLinks || model.practiceLinks)!.tecUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-secondary hover:text-primary no-underline font-medium"
-                title={`Resolver questões de ${what.topicName} no TEC Concursos`}
-                aria-label={`Resolver questões de ${what.topicName} no TEC Concursos (abre em nova aba)`}
-              >
+            <details className="practice-links-fold text-xs text-muted pt-0.5">
+              <summary className="cursor-pointer select-none inline-flex items-center gap-1.5 text-content-secondary hover:text-content-primary font-medium py-1">
                 <Icon name="external-link" size={12} class="shrink-0" />
-                <span>Questões no TEC</span>
-              </a>
-              <a
-                href={(practiceLinks || model.practiceLinks)!.qcUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-secondary hover:text-primary no-underline font-medium"
-                title={`Resolver questões de ${what.topicName} no QConcursos`}
-                aria-label={`Resolver questões de ${what.topicName} no QConcursos (abre em nova aba)`}
+                <span>Praticar fora (TEC / QConcursos)</span>
+              </summary>
+              <div
+                className="practice-action-links flex flex-wrap items-center gap-3 pt-1.5"
+                role="group"
+                aria-label="Atalhos para resolução de questões"
               >
-                <Icon name="external-link" size={12} class="shrink-0" />
-                <span>QConcursos</span>
-              </a>
-              {(practiceLinks || model.practiceLinks)!.customUrl && (
                 <a
-                  href={(practiceLinks || model.practiceLinks)!.customUrl!}
+                  href={(practiceLinks || model.practiceLinks)!.tecUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-accent font-medium hover:underline no-underline"
-                  title="Abrir caderno personalizado do tópico"
-                  aria-label={`Abrir caderno personalizado de ${what.topicName} (abre em nova aba)`}
+                  className="inline-flex items-center gap-1 text-secondary hover:text-primary no-underline font-medium"
+                  title={`Resolver questões de ${what.topicName} no TEC Concursos`}
+                  aria-label={`Resolver questões de ${what.topicName} no TEC Concursos (abre em nova aba)`}
                 >
-                  <Icon name="bookmark" size={12} class="shrink-0 text-accent" />
-                  <span>Caderno</span>
+                  <Icon name="external-link" size={12} class="shrink-0" />
+                  <span>Questões no TEC</span>
                 </a>
-              )}
-            </div>
+                <a
+                  href={(practiceLinks || model.practiceLinks)!.qcUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-secondary hover:text-primary no-underline font-medium"
+                  title={`Resolver questões de ${what.topicName} no QConcursos`}
+                  aria-label={`Resolver questões de ${what.topicName} no QConcursos (abre em nova aba)`}
+                >
+                  <Icon name="external-link" size={12} class="shrink-0" />
+                  <span>QConcursos</span>
+                </a>
+                {(practiceLinks || model.practiceLinks)!.customUrl && (
+                  <a
+                    href={(practiceLinks || model.practiceLinks)!.customUrl!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-accent font-medium hover:underline no-underline"
+                    title="Abrir caderno personalizado do tópico"
+                    aria-label={`Abrir caderno personalizado de ${what.topicName} (abre em nova aba)`}
+                  >
+                    <Icon name="bookmark" size={12} class="shrink-0 text-accent" />
+                    <span>Caderno</span>
+                  </a>
+                )}
+              </div>
+            </details>
           )}
         </div>
 

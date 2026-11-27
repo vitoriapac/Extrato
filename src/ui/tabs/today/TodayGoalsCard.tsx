@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { BulletBar } from '../../primitives/charts/charts.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface TodayGoalsCardProps {
   /** Metas ainda nos valores iniciais e sem registros: não mostra denominadores que a pessoa não definiu. */
@@ -162,10 +163,11 @@ export function TodayGoalsCard({
         <div class="mt-2 text-right">
           <a
             href="#planejamento/semana"
-            class="text-xs text-ink-soft hover:text-brand dark:hover:text-accent hover:underline inline-flex items-center min-h-8 focus-visible:outline-2 focus-visible:outline-accent rounded px-1"
+            class="text-xs text-ink-soft hover:text-brand dark:hover:text-accent hover:underline inline-flex items-center gap-1 min-h-8 focus-visible:outline-2 focus-visible:outline-accent rounded px-1"
             title="Ajustar disponibilidade e capacidade no Planejamento"
           >
-            Ajustar na semana &rarr;
+            <span>Ajustar na semana</span>
+            <Icon name="arrow-right" size={12} class="shrink-0" />
           </a>
         </div>
       </div>
