@@ -68,7 +68,7 @@ test('Parser de Edital Bruto / PDF analisa e importa disciplinas e tópicos', as
 
   const modal = page.locator('dialog[open]');
   await expect(modal).toBeVisible();
-  await expect(modal).toContainText('Colar Conteúdo Programático do Edital (PDF)');
+  await expect(modal).toContainText('Colar conteúdo programático do edital (PDF)');
 
   // Digita conteúdo em formato de edital
   const textarea = modal.locator('textarea');

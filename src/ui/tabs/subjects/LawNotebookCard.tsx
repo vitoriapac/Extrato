@@ -123,7 +123,7 @@ function LawRow({
           value={article}
           onInput={event => setArticle((event.target as HTMLInputElement).value)}
         />
-        <button type="submit" class="btn small">
+        <button type="submit" class="btn tonal small">
           Registrar
         </button>
         {law.currentArticle > 0 && (
@@ -133,7 +133,7 @@ function LawRow({
         )}
         <button
           type="button"
-          class="btn danger small"
+          class="btn danger small ml-auto"
           aria-label={`Excluir ${law.name}`}
           onClick={() => onDelete(law.id)}
         >
@@ -246,11 +246,11 @@ export function LawNotebookCard({
             onInput={event => setTotal((event.target as HTMLInputElement).value)}
           />
         </label>
-        <details class="col-span-full">
-          <summary class="text-xs font-medium cursor-pointer select-none">
+        <div class="col-span-full pt-2 border-t border-border-subtle space-y-2">
+          <div class="text-xs font-medium text-content-secondary">
             Recorte e artigos quentes (opcional)
-          </summary>
-          <div class="law-notebook__add mt-2">
+          </div>
+          <div class="law-notebook__add">
             <label>
               Do art. (recorte)
               <input
@@ -287,7 +287,7 @@ export function LawNotebookCard({
               />
             </label>
           </div>
-        </details>
+        </div>
         <button type="submit" class="btn small">
           Adicionar lei
         </button>

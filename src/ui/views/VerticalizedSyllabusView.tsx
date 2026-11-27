@@ -102,7 +102,7 @@ export function VerticalizedSyllabusView({
         <div>
           <h3 class="text-base font-semibold text-primary flex items-center gap-2">
             <Icon name="clipboard-text" size={18} class="text-primary shrink-0" />
-            <span>Edital Verticalizado Interativo</span>
+            <span>Edital verticalizado interativo</span>
           </h3>
           <p class="text-xs text-content-secondary mt-1">
             Acompanhe cada etapa de estudo (Teoria, Resumo, Lei Seca e Questões) por tópico do
@@ -351,9 +351,10 @@ export function VerticalizedSyllabusView({
                           <summary class="btn ghost small text-xs cursor-pointer select-none">
                             Recursos
                           </summary>
+                          <div class="absolute right-0 mt-1 z-20 flex flex-wrap items-center gap-1.5 rounded-lg border border-border-default bg-surface-card p-2 shadow-[0_10px_24px_var(--shadow-color)] min-w-[200px]">
                           {/* Grupo de Questões TEC / QC */}
                           <div
-                            class="inline-flex items-center rounded-default border border-border-default bg-surface-card overflow-hidden mt-1"
+                            class="inline-flex items-center rounded-default border border-border-default bg-surface-card overflow-hidden"
                             role="group"
                             aria-label={`Praticar questões de ${topic.name}`}
                           >
@@ -390,7 +391,7 @@ export function VerticalizedSyllabusView({
                         {onOpenTopicIntelligence && (
                           <button
                             type="button"
-                            class="min-h-[36px] px-2.5 py-1.5 rounded-default text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-content-secondary hover:text-content-primary inline-flex items-center gap-1 cursor-pointer mt-1"
+                            class="min-h-[36px] px-2.5 py-1.5 rounded-default text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-content-secondary hover:text-content-primary inline-flex items-center gap-1 cursor-pointer"
                             onClick={() => onOpenTopicIntelligence(subject.id, topic.id)}
                             aria-label={`Abrir Ficha Inteligente de ${topic.name}`}
                           >
@@ -398,6 +399,7 @@ export function VerticalizedSyllabusView({
                             <span>Ficha</span>
                           </button>
                         )}
+                          </div>
                         </details>
 
                         <button
@@ -423,22 +425,22 @@ export function VerticalizedSyllabusView({
       <Dialog
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        title="Colar Conteúdo Programático do Edital (PDF)"
+        title="Colar conteúdo programático do edital (PDF)"
         maxWidth="lg"
       >
         <div class="space-y-4 text-sm">
-          <p class="text-secondary leading-relaxed text-xs">
+          <p class="text-content-secondary leading-relaxed text-xs">
             Copie o texto das matérias e tópicos diretamente do PDF do edital e cole abaixo. O
             Extrato de Estudos identificará automaticamente as disciplinas e dividirá os tópicos numerados.
           </p>
 
           <div>
-            <label for="rawSyllabusTextarea" class="block font-medium text-primary text-xs mb-1">
+            <label for="rawSyllabusTextarea" class="block font-medium text-content-primary text-xs mb-1">
               Texto bruto do edital:
             </label>
             <textarea
               id="rawSyllabusTextarea"
-              class="w-full h-44 p-3 rounded-default border border-border-default bg-surface-card text-primary font-mono text-xs focus:ring-primary focus:border-primary"
+              class="w-full h-44 p-3 rounded-default border border-border-default bg-surface-card text-content-primary font-mono text-xs focus:ring-primary focus:border-primary"
               placeholder={`DIREITO CONSTITUCIONAL: 1. Princípios fundamentais. 2. Direitos e deveres individuais. 2.1 Direitos sociais. 3. Organização do Estado.\n\nDIREITO ADMINISTRATIVO: 1. Introdução. 1.1 Regime jurídico. 2. Atos administrativos.`}
               value={rawText}
               onInput={e => setRawText((e.target as HTMLTextAreaElement).value)}
@@ -453,11 +455,11 @@ export function VerticalizedSyllabusView({
               className="inline-flex items-center gap-2"
             >
               <Icon name="search" size={14} class="shrink-0" />
-              <span>Analisar Texto</span>
+              <span>Analisar texto</span>
             </Button>
 
             {parsedPreview && (
-              <span class="text-xs text-secondary font-medium">
+              <span class="text-xs text-content-secondary font-medium">
                 {parsedPreview.totalSubjects} matérias · {parsedPreview.totalTopics} tópicos
                 encontrados
               </span>
@@ -467,10 +469,10 @@ export function VerticalizedSyllabusView({
           {/* Prévia dos Dados Analisados */}
           {parsedPreview && (
             <div class="rounded-default bg-surface-subtle p-3 border border-border-subtle max-h-52 overflow-y-auto space-y-2 text-xs">
-              <h5 class="font-semibold text-content-primary">Prévia da Estrutura:</h5>
+              <h5 class="font-semibold text-content-primary">Prévia da estrutura:</h5>
               {parsedPreview.warnings?.length > 0 && (
                 <div
-                  class="rounded border border-border-default bg-surface-card p-2 text-xs text-amber"
+                  class="rounded border border-border-default bg-surface-card p-2 text-xs text-status-warning"
                   role="status"
                 >
                   <strong>Avisos do leitor:</strong>{' '}
@@ -479,10 +481,10 @@ export function VerticalizedSyllabusView({
               )}
               {parsedPreview.subjects.map((sub, i) => (
                 <div key={i} class="space-y-1">
-                  <div class="font-semibold text-primary">
+                  <div class="font-semibold text-content-primary">
                     {sub.name} ({sub.topics.length} tópicos)
                   </div>
-                  <ul class="pl-4 list-disc text-secondary space-y-1">
+                  <ul class="pl-4 list-disc text-content-secondary space-y-1">
                     {sub.topics.slice(0, 5).map((top, j) => (
                       <li key={j}>
                         {top.code ? `${top.code} ` : ''}
@@ -490,7 +492,7 @@ export function VerticalizedSyllabusView({
                       </li>
                     ))}
                     {sub.topics.length > 5 && (
-                      <li class="text-muted italic">+ {sub.topics.length - 5} tópicos...</li>
+                      <li class="text-content-secondary italic">+ {sub.topics.length - 5} tópicos...</li>
                     )}
                   </ul>
                 </div>
@@ -508,7 +510,7 @@ export function VerticalizedSyllabusView({
               disabled={!parsedPreview || parsedPreview.totalTopics === 0}
               onClick={handleConfirmImport}
             >
-              Confirmar e Criar Tópicos
+              Confirmar e criar tópicos
             </Button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { createClock } from '../../../core/clock.js';
 import { getRovingTabIndex } from '../../primitives/tabs.js';
 import { isSubjectColor } from '../../../domain/subjects/subject-color.js';
 import { mountPreact, unmountPreact } from '../../preact-mount.js';
@@ -106,7 +107,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     ctx.uid ||
     ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
   const nowISO = ctx.nowISO || (() => new Date().toISOString());
-  const todayISO = ctx.todayISO || (() => new Date().toISOString().slice(0, 10));
+  const todayISO = ctx.todayISO || (() => createClock().today());
   const escapeHtml =
     ctx.escapeHtml ||
     ((str: string) =>
@@ -559,11 +560,15 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     const mount = ctx.document.getElementById('verticalizedSyllabusMount');
     const lawCard = ctx.document.getElementById('lawNotebookCard');
     const jurisCard = ctx.document.getElementById('jurisprudenceNotebookCard');
+    const addSubjectBtn = ctx.document.getElementById('addSubjectBtn');
+    const importMenuMount = ctx.document.getElementById('subjectsImportMenuMount');
 
     if (materiasPanel) materiasPanel.hidden = currentSubtab !== 'materias';
     if (mount) mount.hidden = currentSubtab !== 'verticalizado';
     if (lawCard) lawCard.hidden = currentSubtab !== 'leis';
     if (jurisCard) jurisCard.hidden = currentSubtab !== 'jurisprudencia';
+    if (addSubjectBtn) addSubjectBtn.hidden = currentSubtab !== 'materias';
+    if (importMenuMount) importMenuMount.hidden = currentSubtab !== 'materias';
 
     if (currentSubtab === 'verticalizado') {
       if (container) container.hidden = true;

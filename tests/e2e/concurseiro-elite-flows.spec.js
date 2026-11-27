@@ -28,7 +28,6 @@ test.describe('concurseiro elite flows', () => {
     await page.locator('#subjectsTab-leis').click();
     await expect(page.locator('#lawNotebookCard')).toBeVisible();
     await page.locator('#lawNotebookMount input[placeholder*="CF/88"]').fill('CF/88 Adm');
-    await page.locator('#lawNotebookMount summary:has-text("Recorte e artigos quentes")').click();
     await page.locator('[aria-label="Artigo inicial do recorte"]').fill('37');
     await page.locator('[aria-label="Artigo final do recorte"]').fill('41');
     await page.locator('[aria-label="Artigos quentes mais cobrados"]').fill('Art. 37 §6º');

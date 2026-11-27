@@ -206,13 +206,13 @@ export function SubjectTopicRow({
                 />
               </label>
               {(analyticsStateHtml || strategyEditorHtml) && (
-                <details class="decision-fold topic-strategy-fold">
-                  <summary>Estratégia e evidências</summary>
-                  <div class="space-y-2 pt-2">
-                    {analyticsStateHtml && <div dangerouslySetInnerHTML={{ __html: analyticsStateHtml }} />}
-                    {strategyEditorHtml && <div dangerouslySetInnerHTML={{ __html: strategyEditorHtml }} />}
+                <div class="pt-3 border-t border-border-subtle space-y-2">
+                  <div class="text-xs font-medium text-content-secondary">
+                    Estratégia e evidências
                   </div>
-                </details>
+                  {analyticsStateHtml && <div dangerouslySetInnerHTML={{ __html: analyticsStateHtml }} />}
+                  {strategyEditorHtml && <div dangerouslySetInnerHTML={{ __html: strategyEditorHtml }} />}
+                </div>
               )}
             </div>
           </td>

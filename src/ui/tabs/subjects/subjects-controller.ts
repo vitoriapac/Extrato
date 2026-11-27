@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
+import { createClock } from '../../../core/clock.js';
 import { SubjectsTab } from './SubjectsTab.js';
 import { buildSubjectWeeklyAccuracy } from '../../../application/analytics/build-subject-accuracy.js';
 import { subjectColorOf } from '../../../domain/subjects/subject-color.js';
@@ -80,6 +81,7 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
     const subjects = getFilteredSubjects();
     const archived = getArchivedSubjects();
     const query = ctx.subjectSearchController?.query || '';
+    const effectiveToday = ctx.today || createClock().today();
 
     return h(SubjectsTab, {
       subjects,
@@ -90,12 +92,12 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
       subjectColorFn: (subject: any) => subjectColorOf(subject, ctx.state.subjects || []),
       accuracyTrends: buildSubjectWeeklyAccuracy(
         ctx.state.questoes || [],
-        ctx.today || new Date().toISOString().slice(0, 10)
+        effectiveToday
       ),
       accuracy30: new Map(
         buildSyllabusHealthViewModel(
           ctx.state,
-          ctx.today || new Date().toISOString().slice(0, 10)
+          effectiveToday
         ).subjects.map(item => [
           item.id,
           item.accuracySource === 'questions' ? item.accuracy : null,

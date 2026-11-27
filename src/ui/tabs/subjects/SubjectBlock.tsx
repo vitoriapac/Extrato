@@ -72,14 +72,20 @@ export function SubjectBlock({
       data-subject-id={subject.id}
       data-subject-color={colorSlot}
     >
-      <div class="subject-header" data-delegated-click={`toggleSubject('${subject.id}')`}>
-        <div class="subject-header-left">
+      <div class="subject-header">
+        <button
+          type="button"
+          class="subject-header-trigger subject-header-left"
+          aria-expanded={!collapsed}
+          aria-controls={`subject-body-${subject.id}`}
+          data-delegated-click={`toggleSubject('${subject.id}')`}
+        >
           <span
             class={`subject-color-swatch subject-color-${colorSlot}`}
             aria-hidden="true"
           />
           <span class="subject-name">{subject.name}</span>
-        </div>
+        </button>
         <div class="subject-header-actions">
           <span class="subject-progress-pill">
             {progressPercent}% de progresso · {allVisibleTopicsCount === subjectTopics.length
