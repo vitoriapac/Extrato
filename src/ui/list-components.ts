@@ -1,5 +1,5 @@
 // Números da paginação: até 7 páginas mostra todas; acima disso, primeira, última e vizinhas da atual.
-function pageWindow(current: number, count: number): Array<number | 'gap'> {
+export function pageWindow(current: number, count: number): Array<number | 'gap'> {
   if (count <= 7) return Array.from({ length: count }, (_, i) => i + 1);
   const wanted = [...new Set([1, count, current - 1, current, current + 1])]
     .filter(n => n >= 1 && n <= count)

@@ -69,79 +69,84 @@ export function EssayEvolutionCard({
         </p>
       )}
 
-      {ESSAY_CRITERIA.some(({ key }) => summary.criteriaAverages[key] !== null) && (
-        <div class="text-xs text-content-secondary">
-          <span>Média por critério: </span>
-          {ESSAY_CRITERIA.filter(({ key }) => summary.criteriaAverages[key] !== null)
-            .map(({ key, label }) => `${label} ${summary.criteriaAverages[key]}%`)
-            .join(' · ')}
-          {summary.weakestCriterion && (
-            <p class="m-0 mt-1 text-content-primary">
-              Onde mais perde ponto: <strong>{summary.weakestCriterion.label}</strong> (
-              {summary.weakestCriterion.average}%). Priorize esse critério na próxima correção.
-            </p>
+      <details class="limits-disclosure" open={summary.latestBelowMinimum}>
+        <summary>Ver lista e critérios das redações</summary>
+        <div class="pt-2 space-y-3">
+          {ESSAY_CRITERIA.some(({ key }) => summary.criteriaAverages[key] !== null) && (
+            <div class="text-xs text-content-secondary">
+              <span>Média por critério: </span>
+              {ESSAY_CRITERIA.filter(({ key }) => summary.criteriaAverages[key] !== null)
+                .map(({ key, label }) => `${label} ${summary.criteriaAverages[key]}%`)
+                .join(' · ')}
+              {summary.weakestCriterion && (
+                <p class="m-0 mt-1 text-content-primary">
+                  Onde mais perde ponto: <strong>{summary.weakestCriterion.label}</strong> (
+                  {summary.weakestCriterion.average}%). Priorize esse critério na próxima correção.
+                </p>
+              )}
+            </div>
+          )}
+
+          <ul class="upcoming-list">
+            {visibleEntries.map(entry => {
+              const badge = ESSAY_STATUS_BADGE[entry.essayStatus];
+              const scoreText =
+                entry.essayScore !== null
+                  ? `${entry.essayScore}${entry.essayMaxScore ? `/${entry.essayMaxScore}` : ''}${
+                      entry.normalizedPercent !== null ? ` (${entry.normalizedPercent}%)` : ''
+                    }`
+                  : null;
+              return (
+                <li key={entry.id} class="flex flex-wrap items-center gap-2">
+                  <span class="upcoming-date">{formatDatePt(entry.date)}</span>
+                  <span class="min-w-0 flex-1">
+                    <strong>{entry.title}</strong>
+                    {entry.essayKind && ESSAY_KIND_LABEL[entry.essayKind] && (
+                      <span class="ml-1.5 text-xs text-content-secondary">
+                        · {ESSAY_KIND_LABEL[entry.essayKind]}
+                      </span>
+                    )}
+                    {entry.essayScoringMode === 'cebraspe_linhas' && entry.errorsPerLine !== null && (
+                      <span class="ml-1.5 text-xs text-content-secondary">
+                        (Cebraspe · {entry.errorsPerLine} erros/linha)
+                      </span>
+                    )}
+                    {entry.essayTheme && (
+                      <span class="block text-xs text-content-secondary truncate">
+                        Tema: {entry.essayTheme}
+                      </span>
+                    )}
+                  </span>
+                  <Badge variant={badge.variant}>{badge.label}</Badge>
+                  {scoreText && (
+                    <span class="font-mono tabular-nums text-xs font-semibold text-content-primary">
+                      {scoreText}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="small"
+                    onClick={() => onEditEssay(entry.id)}
+                  >
+                    {entry.essayScore !== null ? 'Editar' : 'Lançar nota'}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+          {summary.entries.length > 5 && (
+            <Button
+              type="button"
+              variant="tertiary"
+              size="small"
+              onClick={() => setExpanded(prev => !prev)}
+            >
+              {expanded ? 'Mostrar menos' : `Mostrar mais · +${hiddenCount}`}
+            </Button>
           )}
         </div>
-      )}
-
-      <ul class="upcoming-list">
-        {visibleEntries.map(entry => {
-          const badge = ESSAY_STATUS_BADGE[entry.essayStatus];
-          const scoreText =
-            entry.essayScore !== null
-              ? `${entry.essayScore}${entry.essayMaxScore ? `/${entry.essayMaxScore}` : ''}${
-                  entry.normalizedPercent !== null ? ` (${entry.normalizedPercent}%)` : ''
-                }`
-              : null;
-          return (
-            <li key={entry.id} class="flex flex-wrap items-center gap-2">
-              <span class="upcoming-date">{formatDatePt(entry.date)}</span>
-              <span class="min-w-0 flex-1">
-                <strong>{entry.title}</strong>
-                {entry.essayKind && ESSAY_KIND_LABEL[entry.essayKind] && (
-                  <span class="ml-1.5 text-xs text-content-secondary">
-                    · {ESSAY_KIND_LABEL[entry.essayKind]}
-                  </span>
-                )}
-                {entry.essayScoringMode === 'cebraspe_linhas' && entry.errorsPerLine !== null && (
-                  <span class="ml-1.5 text-xs text-content-secondary">
-                    (Cebraspe · {entry.errorsPerLine} erros/linha)
-                  </span>
-                )}
-                {entry.essayTheme && (
-                  <span class="block text-xs text-content-secondary truncate">
-                    Tema: {entry.essayTheme}
-                  </span>
-                )}
-              </span>
-              <Badge variant={badge.variant}>{badge.label}</Badge>
-              {scoreText && (
-                <span class="font-mono tabular-nums text-xs font-semibold text-content-primary">
-                  {scoreText}
-                </span>
-              )}
-              <Button
-                type="button"
-                variant="ghost"
-                size="small"
-                onClick={() => onEditEssay(entry.id)}
-              >
-                {entry.essayScore !== null ? 'Editar' : 'Lançar nota'}
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
-      {summary.entries.length > 5 && (
-        <Button
-          type="button"
-          variant="tertiary"
-          size="small"
-          onClick={() => setExpanded(prev => !prev)}
-        >
-          {expanded ? 'Mostrar menos' : `Mostrar mais · +${hiddenCount}`}
-        </Button>
-      )}
+      </details>
     </section>
   );
 }

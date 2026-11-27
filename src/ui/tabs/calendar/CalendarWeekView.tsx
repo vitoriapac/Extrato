@@ -139,7 +139,7 @@ export function CalendarWeekView({
                 <button
                   type="button"
                   aria-label={`Adicionar atividade em ${date.split('-').reverse().join('/')}`}
-                  class="inline-flex items-center justify-center rounded-md min-h-[36px] min-w-[36px] text-content-secondary hover:bg-surface-subtle hover:text-content-primary"
+                  class="inline-flex items-center justify-center rounded-md min-h-[36px] min-w-[36px] max-md:min-h-[44px] max-md:min-w-[44px] text-content-secondary hover:bg-surface-subtle hover:text-content-primary"
                   onClick={() => onAddForDate(date)}
                 >
                   <Icon name="plus" size={14} />

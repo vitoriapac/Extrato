@@ -391,6 +391,21 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!body) return;
     if (canMountPreact(body)) {
       const rows = getFilteredAndSortedRows();
+      const draft = calendarUiState.editingId ? calendarUiState.draft : null;
+      const editModel = draft
+        ? {
+            draft: {
+              ...draft,
+              subjectId: entitySubjectId(draft),
+            },
+            subjects: subjectsForSelection(entitySubjectId(draft)).map(s => ({
+              id: s.id,
+              name: s.name,
+            })),
+            statusOptions: [...STATUS_OPTIONS],
+            reviewOptions: [...REVIEW_OPTIONS],
+          }
+        : null;
       mountPreact(
         h(CalendarTable, {
           rows,
@@ -398,10 +413,19 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
           editingId: calendarUiState.editingId ?? null,
           mobile: isMobileHistoryLayout(),
           getRowModel: getCalendarRowModel,
+          editModel,
           onCompleteItem: completeCalendarItem,
           onEditItem: editCalendarItem,
           onAddItem: () =>
             openActivityModalForDate((calendarUiState as any).selectedDate || todayISO()),
+          onUpdateDraft: updateCalendarDraft,
+          onSaveEdit: saveCalendarEdit,
+          onCancelEdit: cancelCalendarEdit,
+          onDeleteRow: deleteCalRow,
+          onGoToPage: (targetPage: number) => {
+            calendarUiState.calendarPage = targetPage;
+            renderCalendar();
+          },
           renderReadRow: renderCalendarReadRow,
           renderEditRow: renderCalendarEditRow,
         }),
@@ -560,8 +584,13 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
         onStartTimer: ctx.onStartTimer,
         onRegisterSimulationResult: ctx.onRegisterSimulationResult,
         onClose: () => {
+          const prevDate = (calendarUiState as any).selectedDate;
           (calendarUiState as any).selectedDate = null;
           renderMonthCalendar();
+          if (prevDate) {
+            const prevCell = doc?.querySelector?.(`[data-calendar-date="${prevDate}"]`) as HTMLElement | null;
+            prevCell?.focus?.();
+          }
         },
       }),
       mount
@@ -768,14 +797,23 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
   function updateAgendaFiltersUi() {
     const doc = getDoc();
     if (!doc) return;
+    const mesVal = (doc.getElementById('agendaFilterMes') as HTMLSelectElement)?.value || '';
+    const tipoVal = (doc.getElementById('agendaFilterTipo') as HTMLSelectElement)?.value || '';
+    const calTipoVal = (doc.getElementById('calFilterTipo') as HTMLSelectElement)?.value || '';
     const values = [
       (doc.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '',
       (doc.getElementById('agendaFilterStatus') as HTMLSelectElement)?.value || '',
-      (doc.getElementById('agendaFilterMes') as HTMLSelectElement)?.value || '',
-      (doc.getElementById('agendaFilterTipo') as HTMLSelectElement)?.value || '',
+      mesVal,
+      tipoVal,
+      calTipoVal,
       getActivityKindFilter(),
     ];
     const activeCount = values.filter(Boolean).length;
+    const moreCount = [mesVal, tipoVal, calTipoVal].filter(Boolean).length;
+    const moreSummary = doc.querySelector?.('#agendaMoreFilters > summary') as HTMLElement | null;
+    if (moreSummary) {
+      moreSummary.textContent = moreCount > 0 ? `Mais filtros (${moreCount})` : 'Mais filtros';
+    }
     const toggleBtn = doc.getElementById('agendaFiltersToggleBtn');
     if (toggleBtn) {
       toggleBtn.textContent = filterPanelLabel(activeCount);
@@ -931,6 +969,9 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
             behavior: 'smooth',
             block: 'nearest',
           });
+          (d.getElementById('calendarDayDrawerHeading') as HTMLElement | null)?.focus?.({
+            preventScroll: true,
+          });
         }
       });
       monthContainer.addEventListener('keydown', (event: any) => {
@@ -969,6 +1010,9 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
           d.getElementById('calendarDayDrawerMount')?.scrollIntoView?.({
             behavior: 'smooth',
             block: 'nearest',
+          });
+          (d.getElementById('calendarDayDrawerHeading') as HTMLElement | null)?.focus?.({
+            preventScroll: true,
           });
         }
       });

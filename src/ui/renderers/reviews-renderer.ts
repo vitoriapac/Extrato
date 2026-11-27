@@ -1,4 +1,5 @@
 import { renderColumnChart } from '../primitives/charts/charts.js';
+import { addLocalDays } from '../../core/date-utils.js';
 export function renderReviewRead({
   item,
   view,
@@ -35,11 +36,7 @@ export function renderReviewEdit({
   return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ''}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ''} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<input type="text" value="${escapeAttr(topicName)}" ${draft.topicId ? 'readonly' : ''} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${typeOptions}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${statusOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
 }
 
-const shiftDate = (iso: string, days: number) => {
-  const date = new Date(`${iso}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-};
+const shiftDate = (iso: string, days: number) => addLocalDays(iso, days) || iso;
 
 /** Pending reviews per day from today on; overdue ones are summed apart instead of piling on today. */
 export function buildReviewLoad(reviews: Array<Record<string, any>> = [], today: string, days = 30) {

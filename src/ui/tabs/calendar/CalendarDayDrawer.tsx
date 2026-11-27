@@ -60,7 +60,11 @@ export function CalendarDayDrawer({
     >
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h4 class="font-serif text-base font-semibold text-content-primary m-0">
+          <h4
+            id="calendarDayDrawerHeading"
+            tabIndex={-1}
+            class="font-serif text-base font-semibold text-content-primary m-0 focus:outline-none"
+          >
             {formattedDate}
           </h4>
           <p class="text-xs font-mono tabular-nums text-content-secondary m-0">
