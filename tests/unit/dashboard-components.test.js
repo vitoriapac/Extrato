@@ -367,7 +367,7 @@ test('CockpitSidebarCards Preact Component — renderiza Meta de Hoje, Carga e M
   );
 
   const html = render(h(CockpitSidebarCards, { model }));
-  assert.match(html, /Meta de Hoje/);
+  assert.match(html, /Meta de hoje/);
   assert.match(html, /Tarefas e revisões/);
   assert.match(html, /Consistência \(4 Semanas\)/);
   assert.match(html, /25/);
@@ -389,7 +389,7 @@ test('TodayGoalCard inline — mostra só meta diária e questões, e some sem p
   const html = render(h(TodayGoalCard, { data, variant: 'inline' }));
   assert.match(html, /Meta diária/);
   assert.match(html, /3 de 5/);
-  assert.doesNotMatch(html, /Meta de Hoje|Estudo realizado/);
+  assert.doesNotMatch(html, /Meta de hoje|Estudo realizado/);
   assert.equal(render(h(TodayGoalCard, { data: { ...data, hasConfiguredPlan: false }, variant: 'inline' })), '');
 });
 
@@ -415,8 +415,8 @@ test('carga da semana nomeia itens mistos e não os chama todos de revisões', (
   const html = render(h(CockpitSidebarCards, { model }));
   assert.match(html, /Tarefas e revisões/);
   assert.match(html, /Semana atual/);
-  assert.match(html, /1 atrasadas/);
-  assert.doesNotMatch(html, /1 pendência atrasada/);
+  assert.match(html, /1 pendência atrasada/);
+  assert.doesNotMatch(html, /1 revisão atrasada/);
 });
 
 test('tópico legado sem status segue a mesma leitura não iniciado da disciplina', async () => {

@@ -35,7 +35,7 @@ export function TodayGoalCard({
       <article class="chart-card p-card" aria-labelledby="todayGoalTitle">
         <div class="flex items-center justify-between mb-2">
           <h3 id="todayGoalTitle" class="font-semibold text-base text-content-primary m-0">
-            Meta de Hoje
+            Meta de hoje
           </h3>
           <span class="text-xs font-data text-content-secondary">{dateLabel}</span>
         </div>
@@ -53,7 +53,7 @@ export function TodayGoalCard({
     <article class="chart-card p-card" aria-labelledby="todayGoalTitle">
       <div class="flex items-center justify-between mb-3">
         <h3 id="todayGoalTitle" class="font-semibold text-base text-content-primary m-0">
-          Meta de Hoje
+          Meta de hoje
         </h3>
         <span class="text-xs font-data text-content-secondary">{dateLabel}</span>
       </div>
@@ -135,7 +135,9 @@ export function WeeklyReviewLoadCard({ data }: { data: WeeklyReviewLoadData }): 
             overdueCount > 0 ? 'text-amber' : 'text-green'
           }`}
         >
-          {overdueCount} atrasadas
+          {overdueCount === 0
+            ? 'Em dia'
+            : `${overdueCount} ${overdueCount === 1 ? 'pendência atrasada' : 'pendências atrasadas'}`}
         </span>
       </div>
 

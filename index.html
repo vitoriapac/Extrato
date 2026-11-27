@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=c612ee2031ff">
-<link rel="stylesheet" href="styles/app.css?v=c612ee2031ff">
+<link rel="stylesheet" href="styles/tailwind.css?v=088a04341dff">
+<link rel="stylesheet" href="styles/app.css?v=088a04341dff">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -137,7 +137,6 @@
         <h2>Próxima ação</h2>
         <div id="overviewNextAction"></div>
         <div id="dailyExecutionDashboard"></div>
-        <div id="cockpitTodayGoalMount"></div>
       </article>
       <div class="overview-now-side">
         <section class="chart-card overview-exam-today" id="overviewExamToday" aria-labelledby="overviewExamTodayTitle" hidden>
@@ -351,9 +350,11 @@
               <button class="btn" id="timerStartBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-player-play icon-inline" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>Iniciar</button>
               <button class="btn" id="timerPauseBtn" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-player-pause icon-inline" aria-hidden="true"><rect x="14" y="3" width="5" height="18" rx="1"></rect><rect x="5" y="3" width="5" height="18" rx="1"></rect></svg>Pausar</button>
               <button class="btn tonal timer-finish-btn" id="timerFinishBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-square-check icon-inline" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m16 9-5.5 5.5L8 12"></path></svg>Finalizar sessão</button>
-              <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-focus-2 icon-inline" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>Modo foco</button>
-              <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-picture-in-picture icon-inline" aria-hidden="true"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"></path><rect width="10" height="7" x="12" y="13" rx="2"></rect></svg>Janela flutuante</button>
-              <button class="btn ghost timer-reset-btn" id="timerResetBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-refresh icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>Zerar</button>
+              <div class="timer-actions__secondary" role="group" aria-label="Opções secundárias do cronômetro">
+                <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-focus-2 icon-inline" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>Modo foco</button>
+                <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-picture-in-picture icon-inline" aria-hidden="true"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"></path><rect width="10" height="7" x="12" y="13" rx="2"></rect></svg>Janela flutuante</button>
+                <button class="btn ghost timer-reset-btn" id="timerResetBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-refresh icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>Zerar</button>
+              </div>
             </div>
             <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
           </div>
@@ -370,10 +371,13 @@
           <div id="studyRecommendation"></div>
         </section>
 
-        <div class="chart-card" id="todayAlertsCard">
-          <h3>Atenção</h3>
-          <div id="alertasInteligentesList"></div>
-        </div>
+        <details class="decision-fold" id="todayAlertsFold" data-remember="today-alerts">
+          <summary>Alertas e pontos de atenção</summary>
+          <div class="chart-card" id="todayAlertsCard">
+            <h3>Atenção</h3>
+            <div id="alertasInteligentesList"></div>
+          </div>
+        </details>
       </div>
 
       <!-- COLUNA LATERAL DE AGENDA, METAS E RITMO (4 cols) -->
@@ -398,9 +402,9 @@
           <div id="hojeMetas"></div>
         </section>
 
-        <div id="sleepCheckinMount"></div>
         <details class="decision-fold today-more-details" id="todayMoreDetails">
-          <summary>Esforço na semana e Diário de Aprendizagem</summary>
+          <summary>Rotina, sono, esforço na semana e Diário de Aprendizagem</summary>
+          <div id="sleepCheckinMount"></div>
           <div id="todayWeeklyRhythmSlot"></div>
         </details>
 
@@ -821,7 +825,7 @@
   <link rel="modulepreload" href="src/chunks/chunk-SUIAGQ6E.js">
   <link rel="modulepreload" href="src/chunks/chunk-U2JQVAN3.js">
   <link rel="modulepreload" href="src/chunks/chunk-UKQ4EAO4.js">
-  <script type="module" src="src/app.bundle.js?v=c612ee2031ff"></script>
+  <script type="module" src="src/app.bundle.js?v=088a04341dff"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

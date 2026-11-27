@@ -19,7 +19,6 @@ export function FirstAccessModal({
   onStartGuidedPlan,
   onStartDemo,
   onExploreManually,
-  onOpenSalesLanding,
   onPasteSyllabus,
 }: FirstAccessModalProps) {
   if (!open) return null;
@@ -55,8 +54,8 @@ export function FirstAccessModal({
       <div className="space-y-6 text-sm text-content-primary">
         <header className="space-y-2">
           <p className="text-sm text-content-secondary leading-relaxed m-0">
-            Seu copiloto de preparação para concursos e exames. Organize seu tempo,
-            acompanhe seu índice de prontidão e execute sua rotina diária sem sobrecarga.
+            Configure sua prova e disponibilidade em 4 etapas rápidas, ou explore o extrato com
+            dados fictícios.
           </p>
         </header>
 
@@ -122,7 +121,7 @@ export function FirstAccessModal({
           </article>
         </div>
 
-        {/* Rodapé: Opção Manual e Página de Apresentação */}
+        {/* Rodapé: Opção Manual */}
         <footer className="pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -145,16 +144,6 @@ export function FirstAccessModal({
               </button>
             )}
           </div>
-          {onOpenSalesLanding && (
-            <button
-              type="button"
-              onClick={onOpenSalesLanding}
-              className="btn tertiary text-xs"
-              aria-label="Ver apresentação e recursos do aplicativo"
-            >
-              Ver apresentação e recursos
-            </button>
-          )}
         </footer>
       </div>
     </Dialog>

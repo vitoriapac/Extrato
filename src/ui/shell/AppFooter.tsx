@@ -16,7 +16,7 @@ export interface AppFooterProps {
 
 export const APP_FOOTER_SHORTCUTS = Object.freeze([
   { keys: ['Ctrl/⌘', 'K'], label: 'busca' },
-  { keys: ['Ctrl/⌘', 'Shift', '1–8'], label: 'troca de área' },
+  { keys: ['Ctrl/⌘', 'Shift', '1–7'], label: 'troca de área' },
   { keys: ['Esc'], label: 'fecha' },
 ]);
 

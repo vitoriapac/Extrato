@@ -20,7 +20,7 @@ function renderReadinessSub(readiness: Record<string, any>) {
   const [, mm, dd] = String(readiness.closeDate || '').split('-');
   const close =
     readiness.preview != null && dd
-      ? `<span class="readiness-close-note">Saldo do fechamento de ${dd}/${mm} · hoje ${readiness.preview} (prévia)</span> · `
+      ? `<span class="readiness-close-note">Último fechamento (${dd}/${mm}) · hoje ${readiness.preview}/100 (prévia)</span> · `
       : '';
   if (!missing.length)
     return `${close}${lead} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
@@ -96,6 +96,7 @@ export function renderCompactHeader(model: Record<string, any>, { document, form
   if (close) {
     const [, mm, dd] = String(model.readiness.closeDate || '').split('-');
     close.textContent = dd ? `fech. ${dd}/${mm}` : '';
+    close.title = dd ? `Último fechamento em ${dd}/${mm}` : '';
     close.hidden = !dd;
   }
   const exam = document.getElementById('compactExamDate');

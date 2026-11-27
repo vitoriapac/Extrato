@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { BulletBar } from '../../primitives/charts/charts.js';
 
 export interface TodayGoalsCardProps {
@@ -37,6 +38,20 @@ export function TodayGoalsCard({
 }: TodayGoalsCardProps): JSX.Element {
   const tempoMinutos = Math.round(tempoHojeSegundos / 60);
   const metaTempoMinutos = Math.round(metaHorasHoje * 60);
+  const [savedGoalFeedback, setSavedGoalFeedback] = useState(false);
+  const savedFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (savedFeedbackTimerRef.current) clearTimeout(savedFeedbackTimerRef.current);
+    };
+  }, []);
+
+  const showSavedFeedback = () => {
+    setSavedGoalFeedback(true);
+    if (savedFeedbackTimerRef.current) clearTimeout(savedFeedbackTimerRef.current);
+    savedFeedbackTimerRef.current = setTimeout(() => setSavedGoalFeedback(false), 2000);
+  };
 
   if (goalsUnset)
     return (
@@ -44,7 +59,7 @@ export function TodayGoalsCard({
         <div class="meta-hoje-card" role="status">
           <div class="meta-hoje-label">Metas de hoje</div>
           <p>Você ainda não definiu metas. Defina as metas de tópicos, questões e horas para acompanhar o dia.</p>
-          <a class="btn tertiary" href="#metas">Definir metas</a>
+          <a class="btn tertiary" href="#planejamento/semana">Definir metas</a>
         </div>
       </div>
     );
@@ -121,9 +136,18 @@ export function TodayGoalsCard({
               step="0.25"
               value={metaHorasHoje}
               data-delegated-blur={`updateMetaHoursDay(${todayDayOfWeek},this.value)`}
+              onBlur={showSavedFeedback}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') (event.currentTarget as HTMLInputElement).blur();
+              }}
               title="Ajuste rápido da meta de hoje"
               aria-label="Meta de horas de hoje"
             />
+            {savedGoalFeedback && (
+              <span class="text-xs text-status-success font-medium" role="status" aria-live="polite">
+                Salvo
+              </span>
+            )}
           </label>
         </div>
         <div class="meta-hoje-chart mt-2">

@@ -80,7 +80,7 @@ export function TodayExecutionSummary({
       aria-label="Resumo de execução de hoje"
     >
       <header class="today-statement-header">
-        <h3 class="today-statement-title">Extrato do Dia</h3>
+        <h3 class="today-statement-title">Extrato do dia</h3>
         <span class="today-statement-date">{dateFormatted}</span>
       </header>
 

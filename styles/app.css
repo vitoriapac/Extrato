@@ -2486,6 +2486,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .priority-history-topic>summary span{font-weight:var(--font-weight-regular);font-size:var(--text-caption);margin-top:var(--space-2)}
 .priority-history-topic>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .timer-actions{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-action);margin-top:var(--space-content-action)}
+.timer-actions__secondary{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--space-2);width:100%}
 .study-distribution-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-4);margin-top:var(--space-block);padding-top:var(--space-6);border-top:1px solid var(--border-default)}
 .study-distribution-heading h3{margin:0}
 .session-filter-summary{line-height:var(--line-height-body)}
@@ -2671,6 +2672,9 @@ body:has(#moreTabButton[aria-expanded="true"]) .save-indicator{visibility:hidden
 }
 /* Entre 901 e 1399 px a linha da prova não cabe inteira: a barra desce para uma linha própria, como abaixo de 900 px. */
 @media(min-width:901px) and (max-width:1399px){.statement:not(.statement--compact) .exam-countdown{flex-wrap:wrap}.statement:not(.statement--compact) .exam-progress{flex-basis:100%;order:4}}
+@media(max-width:1100px){.statement:not(.statement--compact) .exam-countdown-figure{min-width:0;white-space:normal}}
+@media(min-width:761px){.calendar-scroll-help{display:none}}
+@media(max-width:760px),(pointer:coarse){.app-footer__shortcuts{display:none}}
 /* The welcome card already offers the demo; a second invitation above it only pushes the first step down. */
 body:has(#panel-dashboard.active [data-welcome-hero]) #demoEmptyCta{display:none}
 .overview-now:has([data-welcome-hero]){grid-template-columns:minmax(0,1fr)}
@@ -3703,7 +3707,7 @@ body.timer-focus-active .achievement-toast-viewport{top:auto;bottom:max(var(--sp
 .plan-roadmap__step{display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--paper-line);color:var(--ink-soft)}
 .plan-roadmap__mark{display:inline-flex;align-items:center;justify-content:center;width:1.75rem;height:1.75rem;border:1px solid var(--border-control);border-radius:50%;font:600 var(--text-small) var(--font-data)}
 .plan-roadmap__label{display:flex;flex-direction:column;font:var(--text-body) var(--font-body)}.plan-roadmap__label small{font:var(--text-xs) var(--font-body);color:var(--ink-soft)}
-.plan-roadmap__step.is-current{color:var(--heading)}.plan-roadmap__step.is-current .plan-roadmap__mark{background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff)}.plan-roadmap__step.is-current .plan-roadmap__label{font-weight:600}
+.plan-roadmap__step.is-current{color:var(--heading)}.plan-roadmap__step.is-current .plan-roadmap__mark{background:var(--action-primary-bg);border-color:var(--action-primary-bg);color:var(--action-primary-text)}.plan-roadmap__step.is-current .plan-roadmap__label{font-weight:600}
 .plan-roadmap__step.is-done .plan-roadmap__mark{background:var(--surface-card-muted);color:var(--chart-series-primary)}
 @media (max-width:560px){.plan-roadmap__step{grid-template-columns:2rem minmax(0,1fr)}.plan-roadmap__action{grid-column:1/-1}.plan-roadmap__action .btn{width:100%}}
 /* Essencial: metas marcadas como avançadas continuam escondidas mesmo com o display próprio do cartão. */

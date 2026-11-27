@@ -53,7 +53,7 @@ export function GlobalCommandPalette({
       listboxId="globalSearchResults"
       statusId="globalSearchStatus"
       listClassName={open ? 'search-results show' : 'search-results'}
-      autoSelectFirst={false}
+      autoSelectFirst={trimmedQuery.length > 0}
       size="lg"
       enableHotkey={true}
       label="Busca global e paleta de comandos"

@@ -144,7 +144,7 @@ test('renderGlobalSearchPanel — renderiza empty state amigável quando nada é
   assert.ok(html.includes('command-palette-footer'));
 });
 
-test('GlobalCommandPalette — renderiza dialog modal unificado com status live, swatch de tópico e autoSelectFirst=false', () => {
+test('GlobalCommandPalette — renderiza dialog modal unificado com status live, swatch de tópico e autoSelectFirst dinâmico', () => {
   const openHtml = render(
     h(GlobalCommandPalette, {
       open: true,
@@ -174,7 +174,7 @@ test('GlobalCommandPalette — renderiza dialog modal unificado com status live,
   assert.ok(openHtml.includes('search-results show'));
   assert.ok(openHtml.includes('id="globalSearchStatus"'));
   assert.ok(openHtml.includes('3 resultados para &quot;controle&quot;'));
-  assert.ok(!openHtml.includes('aria-activedescendant='));
+  assert.ok(openHtml.includes('aria-activedescendant='));
   assert.ok(openHtml.includes('subject-bg-3'));
   assert.ok(openHtml.includes('Abrir cronômetro'));
   assert.ok(openHtml.includes('Visão Geral'));
