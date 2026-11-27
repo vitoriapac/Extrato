@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Badge, type BadgeVariant } from '../../primitives/badge.js';
 import { ProgressBar } from '../../primitives/progress-bar.js';
 import {
@@ -159,8 +159,19 @@ export function LawNotebookCard({
   const [startArt, setStartArt] = useState('');
   const [endArt, setEndArt] = useState('');
   const [hotArticles, setHotArticles] = useState('');
+  const [rangeError, setRangeError] = useState('');
   const subjectNames = new Map(subjects.map(subject => [subject.id, subject.name]));
   const due = laws.filter(law => ['due', 'stalled'].includes(lawStatus(law, today).key)).length;
+
+  useEffect(() => {
+    const summary =
+      typeof document !== 'undefined'
+        ? document.getElementById('lawNotebookCard')?.querySelector('summary')
+        : null;
+    if (summary) {
+      summary.textContent = due > 0 ? `Caderno de leis · ${due} para ler` : 'Caderno de leis';
+    }
+  }, [due]);
 
   const add = (event: Event) => {
     event.preventDefault();
@@ -168,6 +179,15 @@ export function LawNotebookCard({
     const totalArticles = Math.floor(Number(total));
     const startArticle = Math.floor(Number(startArt));
     const endArticle = Math.floor(Number(endArt));
+    if (startArticle > 0 && endArticle > 0 && startArticle > endArticle) {
+      setRangeError('O artigo inicial do recorte não pode ser maior que o final.');
+      return;
+    }
+    if (totalArticles > 0 && endArticle > totalArticles) {
+      setRangeError('O artigo final do recorte não pode passar o total de artigos.');
+      return;
+    }
+    setRangeError('');
     onAdd({
       name: name.trim(),
       subjectId: subjectId || null,
@@ -266,6 +286,11 @@ export function LawNotebookCard({
           Adicionar lei
         </button>
       </form>
+      {rangeError && (
+        <p class="text-xs text-status-danger m-0" role="alert">
+          {rangeError}
+        </p>
+      )}
       {laws.length === 0 ? (
         <p class="m-0">Nenhuma lei no caderno ainda.</p>
       ) : (

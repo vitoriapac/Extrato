@@ -716,7 +716,11 @@
   .upcoming-empty{color:var(--ink-soft);font-size:13px;padding:8px 0;}
 
   /* ===== LEDGER TABLE (Disciplinas) ===== */
-  .subject-block{background:var(--white);border:1px solid var(--paper-line);border-radius:var(--radius-card);margin-bottom:16px;overflow:hidden;}
+  .subject-block{background:var(--white);border:1px solid var(--paper-line);border-radius:0;margin-bottom:0;overflow:hidden;}
+  .subject-block:first-child{border-radius:var(--radius-card) var(--radius-card) 0 0;}
+  .subject-block:last-child{border-radius:0 0 var(--radius-card) var(--radius-card);}
+  .subject-block:only-child{border-radius:var(--radius-card);}
+  .subject-block+.subject-block{border-top:0;}
   .subject-header{
     display:flex;justify-content:space-between;align-items:center;
     padding:16px;background:var(--slate-bg);cursor:pointer;
@@ -724,7 +728,7 @@
   }
   .subject-header-left{display:flex;align-items:center;gap:12px;}
   .subject-name{font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--heading);}
-  .subject-name[contenteditable]:focus{outline:1px dashed var(--accent);background:white;padding:2px 4px;}
+  .subject-name[contenteditable]:focus{outline:1px dashed var(--accent);background:var(--surface-card);padding:2px 4px;}
   .subject-progress-pill{
     font-family:var(--font-data);font-size:var(--text-micro);color:var(--ink-soft);
     background:var(--white);border:1px solid var(--paper-line);padding:4px 8px;border-radius:var(--radius-control);
@@ -3025,7 +3029,7 @@ body:has(#panel-dashboard.active #enterDemoHeroBtn) .app-footer__item--stacked{d
 .sleep-checkin{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;font-size:var(--text-micro);color:var(--ink-soft)}.sleep-checkin--done .btn{margin-left:4px}.sleep-checkin>span:first-child{flex-basis:100%;color:var(--ink);font-weight:600}.sleep-checkin__why{flex-basis:100%;order:1}
 .exam-protocol{padding:16px;border:1px solid var(--paper-line);border-left:3px solid var(--amber,var(--paper-line));background:var(--paper)}.exam-protocol__head{display:flex;align-items:center;gap:8px}.exam-protocol__head h3{font:600 var(--text-md) var(--font-display)}.exam-protocol__count{margin-left:auto;color:var(--ink-soft);font-size:var(--text-micro)}.exam-protocol__note{margin:8px 0;color:var(--ink-soft);font-size:var(--text-micro)}.exam-protocol__list{list-style:none;margin:0;padding:0;display:grid;gap:6px}.exam-protocol__list label{display:flex;align-items:flex-start;gap:8px;min-height:32px;cursor:pointer}.exam-protocol__list input{margin-top:3px}
 .review-practice{display:grid;grid-template-columns:repeat(2,minmax(0,140px)) 1fr;gap:12px;align-items:end;margin:0 0 16px;padding:12px;border:1px solid var(--paper-line)}.review-practice legend{padding:0 8px;font-weight:600}.review-practice label{display:flex;flex-direction:column;gap:4px;color:var(--ink-soft);font:var(--text-micro) var(--font-body)}.review-practice input[type=number]{min-height:38px;padding:8px 12px;border:1px solid var(--border-control);background:var(--white);color:var(--ink);font:12px var(--font-body)}.review-practice__check{flex-direction:row!important;align-items:center}.review-practice small{grid-column:1/-1;color:var(--ink-soft)}@media(max-width:600px){.review-practice{grid-template-columns:1fr 1fr}.review-practice input[type=number]{min-height:44px}}
-.law-notebook__add{display:grid;grid-template-columns:minmax(180px,2fr) minmax(150px,1.2fr) minmax(110px,.8fr) auto;gap:12px;align-items:end}.law-notebook label{display:flex;flex-direction:column;gap:4px;color:var(--ink-soft);font:var(--text-micro) var(--font-body);text-transform:uppercase}.law-notebook input,.law-notebook select{min-height:38px;padding:8px 12px;border:1px solid var(--border-control);background:var(--white);color:var(--ink);font:12px var(--font-body);text-transform:none}.law-notebook__list{list-style:none;margin:0;padding:0;border-top:1px solid var(--paper-line)}.law-row{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--paper-line)}.law-row__head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.law-row__subject,.law-row__meta{color:var(--ink-soft);font-size:var(--text-micro)}.law-row__meta{margin:0}.law-row__actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.law-row__actions label{flex-direction:row;align-items:center;text-transform:none}.law-row__actions input{width:96px}@media(max-width:600px){.law-notebook__add{grid-template-columns:1fr}.law-notebook input,.law-notebook select{min-height:44px}}
+.law-notebook__add{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:end}.law-notebook label{display:flex;flex-direction:column;gap:4px;color:var(--ink-soft);font:var(--text-micro) var(--font-body);text-transform:uppercase}.law-notebook input,.law-notebook select{min-height:38px;padding:8px 12px;border:1px solid var(--border-control);background:var(--white);color:var(--ink);font:12px var(--font-body);text-transform:none}.law-notebook__list{list-style:none;margin:0;padding:0;border-top:1px solid var(--paper-line)}.law-row{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--paper-line)}.law-row__head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.law-row__subject,.law-row__meta{color:var(--ink-soft);font-size:var(--text-micro)}.law-row__meta{margin:0}.law-row__actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.law-row__actions label{flex-direction:row;align-items:center;text-transform:none}.law-row__actions input{width:96px}@media(max-width:600px){.law-notebook__add{grid-template-columns:1fr}.law-notebook input,.law-notebook select{min-height:44px}}
 
 /* Desaninhar blocos recolhíveis e sub-cards (DESIGN.md: nunca aninhe cards para criar hierarquia) */
 :is(.today-analysis-details,.desempenho-extra-details),.chart-card:is(.today-analysis-details,.desempenho-extra-details){padding:0;border:0;background:transparent;box-shadow:none;margin-bottom:var(--space-4)}

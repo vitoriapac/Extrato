@@ -133,55 +133,63 @@ export function SubjectTopicRow({
       {isOpenNotes && (
         <tr class="notes-row" id={`topic-notes-${topic.id}`}>
           <td colSpan={5}>
-            <label>Link / material
-          <input
-            type="url"
-            value={topic.link || ''}
-            placeholder="https://..."
-            aria-label={`Link ou material de ${topic.name || 'tópico sem nome'}`}
-            data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','link', this.value)`}
-            onBlur={e =>
-              onUpdateTopic?.(subjectId, topic.id, 'link', (e.target as HTMLInputElement).value)
-            }
-          />
-            </label>
-            {analyticsStateHtml && <div dangerouslySetInnerHTML={{ __html: analyticsStateHtml }} />}
-            {strategyEditorHtml && <div dangerouslySetInnerHTML={{ __html: strategyEditorHtml }} />}
-            <input
-              type="text"
-              class="topic-tags-input"
-              aria-label={`Tags de ${topic.name || 'tópico sem nome'}`}
-              placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
-              value={(topic.tags || []).join(', ')}
-              data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
-              onBlur={e =>
-                onUpdateTopic?.(
-                  subjectId,
-                  topic.id,
-                  'tags',
-                  (e.target as HTMLInputElement).value
-                    .split(',')
-                    .map(t => t.trim())
-                    .filter(Boolean)
-                )
-              }
-            />
-            <textarea
-              class="topic-notes-textarea"
-              aria-label={`Notas de ${topic.name || 'tópico sem nome'}`}
-              placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
-              data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
-              onBlur={e =>
-                onUpdateTopic?.(
-                  subjectId,
-                  topic.id,
-                  'notes',
-                  (e.target as HTMLTextAreaElement).value
-                )
-              }
-            >
-              {topic.notes || ''}
-            </textarea>
+            <div class="space-y-3">
+              <label>Link / material
+                <input
+                  type="url"
+                  value={topic.link || ''}
+                  placeholder="https://..."
+                  aria-label={`Link ou material de ${topic.name || 'tópico sem nome'}`}
+                  data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','link', this.value)`}
+                  onBlur={e =>
+                    onUpdateTopic?.(subjectId, topic.id, 'link', (e.target as HTMLInputElement).value)
+                  }
+                />
+              </label>
+              <input
+                type="text"
+                class="topic-tags-input"
+                aria-label={`Tags de ${topic.name || 'tópico sem nome'}`}
+                placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
+                value={(topic.tags || []).join(', ')}
+                data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
+                onBlur={e =>
+                  onUpdateTopic?.(
+                    subjectId,
+                    topic.id,
+                    'tags',
+                    (e.target as HTMLInputElement).value
+                      .split(',')
+                      .map(t => t.trim())
+                      .filter(Boolean)
+                  )
+                }
+              />
+              <textarea
+                class="topic-notes-textarea"
+                aria-label={`Notas de ${topic.name || 'tópico sem nome'}`}
+                placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
+                value={topic.notes || ''}
+                data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
+                onBlur={e =>
+                  onUpdateTopic?.(
+                    subjectId,
+                    topic.id,
+                    'notes',
+                    (e.target as HTMLTextAreaElement).value
+                  )
+                }
+              />
+              {(analyticsStateHtml || strategyEditorHtml) && (
+                <details class="decision-fold topic-strategy-fold">
+                  <summary>Estratégia e evidências</summary>
+                  <div class="space-y-2 pt-2">
+                    {analyticsStateHtml && <div dangerouslySetInnerHTML={{ __html: analyticsStateHtml }} />}
+                    {strategyEditorHtml && <div dangerouslySetInnerHTML={{ __html: strategyEditorHtml }} />}
+                  </div>
+                </details>
+              )}
+            </div>
           </td>
         </tr>
       )}

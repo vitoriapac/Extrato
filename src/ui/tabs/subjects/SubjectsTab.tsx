@@ -61,27 +61,58 @@ export function SubjectsTab({
     return (
       <div class="empty-state">
         <p>Nenhuma disciplina cadastrada ainda.</p>
-        <button type="button" class="btn" data-delegated-click="addSubject()">
-          + Adicionar primeira disciplina
-        </button>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <button type="button" class="btn" data-delegated-click="addSubject()">
+            + Adicionar primeira disciplina
+          </button>
+          <button
+            type="button"
+            class="btn ghost"
+            onClick={() => document.getElementById('verticalizedSyllabusToggleBtn')?.click()}
+          >
+            Colar Edital (PDF)
+          </button>
+        </div>
       </div>
     );
   }
 
+  const KNOWN_EXAM_LABELS: Record<string, string> = {
+    bb: 'BB',
+    caixa: 'Caixa',
+    'caixa-ti': 'Caixa TI',
+  };
+  const presentExamTags = Array.from(
+    new Set([
+      ...subjects.flatMap((subject: any) =>
+        (subject.topics || []).flatMap((topic: any) =>
+          Array.isArray(topic.examTags) ? topic.examTags : []
+        )
+      ),
+      ...(subjectExamFilter !== 'all' && subjectExamFilter !== 'common'
+        ? [subjectExamFilter]
+        : []),
+    ])
+  );
   const EXAM_FILTER_BUTTONS = [
     { value: 'all', label: 'Todos' },
-    { value: 'bb', label: 'BB' },
-    { value: 'caixa', label: 'Caixa' },
-    { value: 'caixa-ti', label: 'Caixa TI' },
+    ...presentExamTags.map(tag => ({
+      value: String(tag),
+      label: KNOWN_EXAM_LABELS[String(tag)] || String(tag).toUpperCase(),
+    })),
     { value: 'common', label: 'Comuns' },
-  ] as const;
+  ];
 
   // Filtros por concurso só fazem sentido quando há conteúdo marcado para algum concurso.
-  const showExamFilter =
-    subjectExamFilter !== 'all' ||
-    subjects.some((subject: any) =>
-      (subject.topics || []).some((topic: any) => (topic.examTags || []).length > 0)
+  const showExamFilter = subjectExamFilter !== 'all' || presentExamTags.length > 0;
+
+  const toggleAllSubjects = () => {
+    const bodies = Array.from(
+      document.querySelectorAll<HTMLElement>('#subjectsContainer .subject-body')
     );
+    const anyExpanded = bodies.some(b => !b.classList.contains('collapsed'));
+    bodies.forEach(b => b.classList.toggle('collapsed', anyExpanded));
+  };
 
   return (
     <>
@@ -93,10 +124,17 @@ export function SubjectsTab({
           value={searchQuery}
           placeholder="Nome da disciplina ou tópico"
         />
-        <p role="status">
-          {subjects.length}{' '}
-          {subjects.length === 1 ? 'disciplina encontrada' : 'disciplinas encontradas'}.
-        </p>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p role="status" class="m-0">
+            {subjects.length}{' '}
+            {subjects.length === 1 ? 'disciplina encontrada' : 'disciplinas encontradas'}.
+          </p>
+          {subjects.length > 1 && (
+            <button type="button" class="btn ghost small" onClick={toggleAllSubjects}>
+              Expandir / recolher todas
+            </button>
+          )}
+        </div>
       </div>
 
       {showExamFilter && (

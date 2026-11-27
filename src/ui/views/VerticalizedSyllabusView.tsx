@@ -113,7 +113,7 @@ export function VerticalizedSyllabusView({
         <div class="flex items-center gap-2 w-full sm:w-auto">
           {/* Seletor de Disciplina */}
           <select
-            class="select-control min-h-control text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-primary"
+            class="select-control min-h-control text-xs py-2 px-3 rounded border border-border-control bg-surface-card text-content-primary"
             value={selectedSubjectId}
             onChange={e => setSelectedSubjectId((e.target as HTMLSelectElement).value)}
             aria-label="Filtrar por disciplina no edital verticalizado"
@@ -128,7 +128,7 @@ export function VerticalizedSyllabusView({
 
           {/* Botão de Importar do PDF */}
           <Button
-            variant="secondary"
+            variant="tonal"
             className="text-xs shrink-0 inline-flex items-center gap-2"
             onClick={() => {
               setImportModalOpen(true);
@@ -338,26 +338,30 @@ export function VerticalizedSyllabusView({
                       {/* Status / Ações */}
                       <div class="flex flex-wrap items-center gap-2 md:pl-2 md:border-l border-border-subtle">
                         {topic.status === 'Concluído' ? (
-                          <Badge variant="success">Dominado</Badge>
+                          <Badge variant="success">Concluído</Badge>
                         ) : (
                           <Badge variant="default">Em estudo</Badge>
                         )}
 
-                        {/* Grupo de Questões TEC / QC */}
-                        <div
-                          class="inline-flex items-center rounded-default border border-border-default bg-surface-card overflow-hidden"
-                          role="group"
-                          aria-label={`Praticar questões de ${topic.name}`}
-                        >
-                          <a
-                            href={practiceLinks.primaryUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="px-2 py-1 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-subtle inline-flex items-center gap-1 no-underline transition-colors"
-                            title={
-                              practiceLinks.isCustom
-                                ? 'Abrir caderno personalizado configurado'
-                                : `Abrir caderno de ${topic.name} no TEC Concursos`
+                        <details class="verticalized-more-actions relative">
+                          <summary class="btn ghost small text-xs cursor-pointer select-none">
+                            Recursos
+                          </summary>
+                          {/* Grupo de Questões TEC / QC */}
+                          <div
+                            class="inline-flex items-center rounded-default border border-border-default bg-surface-card overflow-hidden mt-1"
+                            role="group"
+                            aria-label={`Praticar questões de ${topic.name}`}
+                          >
+                            <a
+                              href={practiceLinks.primaryUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="px-2 py-1 text-xs font-medium text-content-secondary hover:text-content-primary hover:bg-surface-subtle inline-flex items-center gap-1 no-underline transition-colors"
+                              title={
+                                practiceLinks.isCustom
+                                  ? 'Abrir caderno personalizado configurado'
+                                  : `Abrir caderno de ${topic.name} no TEC Concursos`
                             }
                             aria-label={`Praticar questões de ${topic.name} no ${
                               practiceLinks.isCustom ? 'caderno personalizado' : 'TEC Concursos'
@@ -382,14 +386,15 @@ export function VerticalizedSyllabusView({
                         {onOpenTopicIntelligence && (
                           <button
                             type="button"
-                            class="min-h-[36px] px-2.5 py-1.5 rounded-default text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-secondary hover:text-primary inline-flex items-center gap-1 cursor-pointer"
+                            class="min-h-[36px] px-2.5 py-1.5 rounded-default text-xs font-medium bg-surface-card hover:bg-surface-subtle border border-border-default transition-colors text-content-secondary hover:text-content-primary inline-flex items-center gap-1 cursor-pointer mt-1"
                             onClick={() => onOpenTopicIntelligence(subject.id, topic.id)}
                             aria-label={`Abrir Ficha Inteligente de ${topic.name}`}
                           >
-                            <Icon name="sparkles" size={12} />
+                            <Icon name="file-text" size={12} />
                             <span>Ficha</span>
                           </button>
                         )}
+                        </details>
 
                         <button
                           type="button"
@@ -438,7 +443,7 @@ export function VerticalizedSyllabusView({
 
           <div class="flex justify-between items-center">
             <Button
-              variant="secondary"
+              variant="tonal"
               onClick={handleParseText}
               disabled={!rawText.trim()}
               className="inline-flex items-center gap-2"
@@ -482,7 +487,7 @@ export function VerticalizedSyllabusView({
 
           {/* Ações do Modal */}
           <div class="flex justify-end gap-2 pt-2 border-t border-border-subtle">
-            <Button variant="secondary" onClick={() => setImportModalOpen(false)}>
+            <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
               Cancelar
             </Button>
             <Button
