@@ -104,6 +104,12 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
       }
     }
 
+    const subjects = (opts.state.subjects || []).map((s: any) => ({ id: s.id, name: s.name }));
+    const activeSubject = (opts.state.subjects || []).find(
+      (s: any) => draft && s.id === draft.subjectId
+    );
+    const topics = (activeSubject?.topics || []).map((t: any) => ({ id: t.id, name: t.name }));
+
     return render(
       h(QuestionLogTable, {
         questions,
@@ -116,6 +122,8 @@ export function createQuestionsController(opts: QuestionsControllerOptions) {
         getCategorizedErrors: opts.questionCategorizedErrors,
         getSubjectColorSlot: (subId?: string | null) =>
           subjectColorOf({ id: subId || '' }, opts.state.subjects || []),
+        subjects,
+        topics,
         subjectOptionsHtml,
         topicOptionsHtml,
         footerHtml,

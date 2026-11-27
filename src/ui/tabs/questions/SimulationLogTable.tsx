@@ -281,7 +281,7 @@ export function SimulationLogTable({
                         Editar
                       </button>
                     </div>
-                    <div class="mobile-card-metrics">
+                    <div class="mobile-card-metrics font-mono tabular-nums">
                       <span>
                         {vm.correct} / {vm.total}
                       </span>
@@ -377,13 +377,28 @@ export function SimulationLogTable({
                                   />
                                   Disciplina
                                 </span>
-                                <select
-                                  class="select-control"
-                                  data-delegated-change={`updateBreakdownRow('${sim.id}','${row.id}','subjectId',this.value)`}
-                                  dangerouslySetInnerHTML={{
-                                    __html: `<option value="">Selecione</option>${getSubjectOptionsHtml(row.subjectId)}`,
-                                  }}
-                                />
+                                {subjects && subjects.length > 0 ? (
+                                  <select
+                                    class="select-control"
+                                    value={row.subjectId || ''}
+                                    data-delegated-change={`updateBreakdownRow('${sim.id}','${row.id}','subjectId',this.value)`}
+                                  >
+                                    <option value="">Selecione</option>
+                                    {subjects.map((sub: any) => (
+                                      <option key={sub.id} value={sub.id}>
+                                        {sub.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <select
+                                    class="select-control"
+                                    data-delegated-change={`updateBreakdownRow('${sim.id}','${row.id}','subjectId',this.value)`}
+                                    dangerouslySetInnerHTML={{
+                                      __html: `<option value="">Selecione</option>${getSubjectOptionsHtml(row.subjectId)}`,
+                                    }}
+                                  />
+                                )}
                               </label>
                               <label>
                                 <span>Acertos</span>

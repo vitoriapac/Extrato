@@ -51,6 +51,8 @@ export interface QuestionLogTableProps {
   getViewModel: (q: QuestionItem) => QuestionViewModel;
   getCategorizedErrors: (q: QuestionItem) => number;
   getSubjectColorSlot?: (subjectId?: string | null) => number;
+  subjects?: Array<{ id: string; name: string }>;
+  topics?: Array<{ id: string; name: string }>;
   subjectOptionsHtml?: string;
   topicOptionsHtml?: string;
   footerHtml?: string;
@@ -68,6 +70,8 @@ export function QuestionLogTable({
   getViewModel,
   getCategorizedErrors,
   getSubjectColorSlot,
+  subjects,
+  topics,
   subjectOptionsHtml = '',
   topicOptionsHtml = '',
   footerHtml = '',
@@ -112,24 +116,52 @@ export function QuestionLogTable({
                   </label>
                   <label>
                     Disciplina
-                    <select
-                      data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"
-                      dangerouslySetInnerHTML={{
-                        __html: `<option value="">Sem disciplina</option>${subjectOptionsHtml}`,
-                      }}
-                    />
+                    {subjects ? (
+                      <select
+                        value={draft.subjectId || ''}
+                        data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"
+                      >
+                        <option value="">Sem disciplina</option>
+                        {subjects.map(s => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"
+                        dangerouslySetInnerHTML={{
+                          __html: `<option value="">Sem disciplina</option>${subjectOptionsHtml}`,
+                        }}
+                      />
+                    )}
                   </label>
                   <label>
                     Tópico
-                    <select
-                      data-delegated-change="updateQuestionDraft('topicId',this.value||null)"
-                      dangerouslySetInnerHTML={{
-                        __html: `<option value="">Sem tópico</option>${topicOptionsHtml}`,
-                      }}
-                    />
+                    {topics ? (
+                      <select
+                        value={draft.topicId || ''}
+                        data-delegated-change="updateQuestionDraft('topicId',this.value||null)"
+                      >
+                        <option value="">Sem tópico</option>
+                        {topics.map(t => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        data-delegated-change="updateQuestionDraft('topicId',this.value||null)"
+                        dangerouslySetInnerHTML={{
+                          __html: `<option value="">Sem tópico</option>${topicOptionsHtml}`,
+                        }}
+                      />
+                    )}
                   </label>
                   <div class="stepper-field">
-                    <label for="questionDraft-resolved">Resolvidas</label>
+                    <label htmlFor="questionDraft-resolved">Resolvidas</label>
                     <div class="number-stepper">
                       <button
                         type="button"
@@ -158,7 +190,7 @@ export function QuestionLogTable({
                     </div>
                   </div>
                   <div class="stepper-field">
-                    <label for="questionDraft-correct">Acertos</label>
+                    <label htmlFor="questionDraft-correct">Acertos</label>
                     <div class="number-stepper">
                       <button
                         type="button"
@@ -317,7 +349,7 @@ export function QuestionLogTable({
                         Editar
                       </button>
                     </div>
-                    <div class="mobile-card-metrics">
+                    <div class="mobile-card-metrics font-mono tabular-nums">
                       <span>{formatDecimal(vm.resolved)} questões</span>
                       <span>{vm.correct} acertos</span>
                       <strong>{formatPercent(vm.accuracy)}</strong>

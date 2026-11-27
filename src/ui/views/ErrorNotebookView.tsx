@@ -301,50 +301,17 @@ export function ErrorNotebookView({
         </div>
       </div>
 
-      {/* Sugestões: registros de questões com erros ainda sem flashcard */}
-      {questionDrafts.length > 0 && (
-        <section
-          class="rounded-default border border-border-subtle bg-amber-bg p-3 text-xs space-y-2"
-          aria-label="Erros registrados sem flashcard"
-          data-testid="error-notebook-drafts"
-        >
-          <p class="m-0 font-semibold text-content-primary">
-            {questionDrafts.length === 1
-              ? '1 registro de questões com erros ainda não virou flashcard'
-              : `${questionDrafts.length} registros de questões com erros ainda não viraram flashcard`}
-          </p>
-          <ul class="m-0 p-0 list-none space-y-2">
-            {questionDrafts.slice(0, MAX_VISIBLE_DRAFTS).map(draft => (
-              <li key={draft.questionId} class="flex flex-wrap items-center justify-between gap-2">
-                <span class="text-content-secondary">
-                  {draft.date} · {resolveSubjectName(draft.subjectId)}
-                  {draft.topicId
-                    ? ` · ${resolveTopicName(draft.subjectId, draft.topicId)}`
-                    : ''} · {draft.errorCount === 1 ? '1 erro' : `${draft.errorCount} erros`}
-                </span>
-                <Button variant="secondary" size="small" onClick={() => openDraft(draft)}>
-                  Criar flashcard
-                </Button>
-              </li>
-            ))}
-          </ul>
-          {questionDrafts.length > MAX_VISIBLE_DRAFTS && (
-            <p class="m-0 text-content-tertiary">+{questionDrafts.length - MAX_VISIBLE_DRAFTS} registros</p>
-          )}
-        </section>
-      )}
-
       {/* Resumo de Métricas do Deck */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div class="p-card rounded-default border border-border-default bg-surface-card">
-          <span class="text-content-secondary block font-medium">Revisões Hoje</span>
-          <span class="text-lg font-semibold text-amber font-display mt-1 block">
+          <span class="text-content-secondary block font-medium">Revisões hoje</span>
+          <span class="text-lg font-mono tabular-nums font-semibold text-amber font-display mt-1 block">
             {stats.dueCount} {stats.dueCount === 1 ? 'card' : 'cards'}
           </span>
         </div>
         <div class="p-card rounded-default border border-border-default bg-surface-card">
-          <span class="text-content-secondary block font-medium">Novos / Pendentes</span>
-          <span class="text-lg font-semibold text-brand-secondary font-display mt-1 block">
+          <span class="text-content-secondary block font-medium">Novos / pendentes</span>
+          <span class="text-lg font-mono tabular-nums font-semibold text-brand-secondary font-display mt-1 block">
             {stats.pendingCount}
           </span>
         </div>
@@ -509,7 +476,8 @@ export function ErrorNotebookView({
                       iconLeft="search"
                       onClick={() => setIsRevealed(true)}
                     >
-                      Revelar Pegadinha &amp; Resposta
+                      <span>Revelar pegadinha e resposta</span>
+                      <span class="hidden sm:inline text-xs opacity-75 ml-1">(Espaço)</span>
                     </Button>
                   </div>
                 )}
@@ -805,12 +773,54 @@ export function ErrorNotebookView({
         </div>
       )}
 
+      {/* Sugestões: registros de questões com erros ainda sem flashcard */}
+      {questionDrafts.length > 0 && (
+        <section
+          class="rounded-default border border-border-subtle bg-amber-bg p-3 text-xs space-y-2"
+          aria-label="Erros registrados sem flashcard"
+          data-testid="error-notebook-drafts"
+        >
+          <p class="m-0 font-semibold text-content-primary">
+            {questionDrafts.length === 1
+              ? '1 registro de questões com erros ainda não virou flashcard'
+              : `${questionDrafts.length} registros de questões com erros ainda não viraram flashcard`}
+          </p>
+          <ul class="m-0 p-0 list-none space-y-2">
+            {questionDrafts.slice(0, MAX_VISIBLE_DRAFTS).map(draft => (
+              <li key={draft.questionId} class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-content-secondary">
+                  <span class="font-mono tabular-nums">{draft.date.split('-').reverse().join('/')}</span> ·{' '}
+                  {resolveSubjectName(draft.subjectId)}
+                  {draft.topicId
+                    ? ` · ${resolveTopicName(draft.subjectId, draft.topicId)}`
+                    : ''}{' '}
+                  · {draft.errorCount === 1 ? '1 erro' : `${draft.errorCount} erros`}
+                </span>
+                <Button variant="tonal" size="small" onClick={() => openDraft(draft)}>
+                  Criar flashcard
+                </Button>
+              </li>
+            ))}
+          </ul>
+          {questionDrafts.length > MAX_VISIBLE_DRAFTS && (
+            <p class="m-0 font-mono tabular-nums text-content-tertiary">
+              +{questionDrafts.length - MAX_VISIBLE_DRAFTS} registros
+            </p>
+          )}
+        </section>
+      )}
+
       {/* MODAL: CRIAR NOVO CARD DE ERRO */}
-      <Dialog open={modalOpen} onClose={closeModal} title="Novo Card de Erro & Flashcard">
-        <div class="space-y-4 text-xs">
+      <Dialog
+        open={modalOpen}
+        onClose={closeModal}
+        closeOnBackdropClick={!(newStatement.trim() || newCorrectConcept.trim() || newBancaTrap.trim())}
+        title="Novo card de erro e flashcard"
+      >
+        <div class="space-y-4 text-sm">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label for="errCardSubject" class="block font-medium text-content-primary mb-1">
+              <label htmlFor="errCardSubject" class="block text-xs font-medium text-content-primary mb-1">
                 Disciplina:
               </label>
               <select
@@ -828,7 +838,7 @@ export function ErrorNotebookView({
             </div>
 
             <div>
-              <label for="errCardTopic" class="block font-medium text-content-primary mb-1">
+              <label htmlFor="errCardTopic" class="block text-xs font-medium text-content-primary mb-1">
                 Tópico:
               </label>
               <select
@@ -836,21 +846,24 @@ export function ErrorNotebookView({
                 class="w-full min-h-control px-3 py-2 rounded border border-border-default bg-surface-card text-content-primary text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 value={newTopicId}
                 onChange={e => setNewTopicId((e.target as HTMLSelectElement).value)}
-                disabled={currentSubjectTopics.length === 0}
               >
-                {currentSubjectTopics.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
+                {currentSubjectTopics.length === 0 ? (
+                  <option value="">Sem tópico específico</option>
+                ) : (
+                  currentSubjectTopics.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label for="errCardCategory" class="block font-medium text-content-primary mb-1">
-                Motivo do Erro:
+              <label htmlFor="errCardCategory" class="block text-xs font-medium text-content-primary mb-1">
+                Motivo do erro:
               </label>
               <select
                 id="errCardCategory"
@@ -867,8 +880,8 @@ export function ErrorNotebookView({
             </div>
 
             <div>
-              <label for="errCardBanca" class="block font-medium text-content-primary mb-1">
-                Banca (Opcional):
+              <label htmlFor="errCardBanca" class="block text-xs font-medium text-content-primary mb-1">
+                Banca (opcional):
               </label>
               <input
                 id="errCardBanca"
@@ -888,8 +901,8 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label for="errCardReference" class="block font-medium text-content-primary mb-1">
-              Referência Normativa / ID da Questão (Opcional):
+            <label htmlFor="errCardReference" class="block text-xs font-medium text-content-primary mb-1">
+              Referência normativa / ID da questão (opcional):
             </label>
             <input
               id="errCardReference"
@@ -902,12 +915,12 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label for="errCardStatement" class="block font-medium text-content-primary mb-1">
-              Enunciado / Contexto da Questão:*
+            <label htmlFor="errCardStatement" class="block text-xs font-medium text-content-primary mb-1">
+              Enunciado / contexto da questão:*
             </label>
             <textarea
               id="errCardStatement"
-              class="w-full h-20 p-3 rounded border border-border-default bg-surface-card text-content-primary text-xs focus:ring-primary focus:border-primary"
+              class="w-full h-20 p-3 rounded border border-border-default bg-surface-card text-content-primary text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               placeholder="Ex.: Em contratos administrativos, a alteração unilateral quantitativa pode ultrapassar 25%?"
               value={newStatement}
               onInput={e => setNewStatement((e.target as HTMLTextAreaElement).value)}
@@ -915,12 +928,12 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label for="errCardTrap" class="block font-medium text-amber mb-1">
-              Pegadinha da Banca / Distrator (Opcional):
+            <label htmlFor="errCardTrap" class="block text-xs font-medium text-amber mb-1">
+              Pegadinha da banca / distrator (opcional):
             </label>
             <textarea
               id="errCardTrap"
-              class="w-full h-16 p-3 rounded border border-amber/30 bg-amber/5 text-content-primary text-xs focus:ring-amber focus:border-amber"
+              class="w-full h-16 p-3 rounded border border-border-default bg-surface-card text-content-primary text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               placeholder="Ex.: Confundir reforma de edifício (até 50%) com compras comuns de bens e serviços (limite de 25%)."
               value={newBancaTrap}
               onInput={e => setNewBancaTrap((e.target as HTMLTextAreaElement).value)}
@@ -928,17 +941,23 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label for="errCardConcept" class="block font-medium text-green mb-1">
-              Conceito Correto / Fundamento:*
+            <label htmlFor="errCardConcept" class="block text-xs font-medium text-green mb-1">
+              Conceito correto / fundamento:*
             </label>
             <textarea
               id="errCardConcept"
-              class="w-full h-20 p-3 rounded border border-green/30 bg-green/5 text-content-primary text-xs focus:ring-green focus:border-green"
+              class="w-full h-20 p-3 rounded border border-border-default bg-surface-card text-content-primary text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               placeholder="Ex.: Não, para compras comuns o limite é estrito em 25%. Apenas reformas admitem até 50% (Lei 14.133/21)."
               value={newCorrectConcept}
               onInput={e => setNewCorrectConcept((e.target as HTMLTextAreaElement).value)}
             />
           </div>
+
+          {(!newStatement.trim() || !newCorrectConcept.trim()) && (
+            <p id="errCardRequiredHint" class="text-xs text-content-secondary m-0">
+              Preencha enunciado e fundamento para salvar o card.
+            </p>
+          )}
 
           <div class="flex justify-end gap-2 pt-2 border-t border-border-default">
             <Button variant="ghost" onClick={closeModal}>
@@ -948,8 +967,13 @@ export function ErrorNotebookView({
               variant="primary"
               onClick={handleCreateCard}
               disabled={!newStatement.trim() || !newCorrectConcept.trim()}
+              aria-describedby={
+                !newStatement.trim() || !newCorrectConcept.trim()
+                  ? 'errCardRequiredHint'
+                  : undefined
+              }
             >
-              Salvar Flashcard
+              Salvar flashcard
             </Button>
           </div>
         </div>
