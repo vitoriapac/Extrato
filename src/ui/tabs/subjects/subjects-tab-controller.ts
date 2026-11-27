@@ -684,6 +684,16 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     renderSubjects();
   }
 
+  function toggleAllSubjects(): void {
+    const active = (ctx.state.subjects || []).filter((s: any) => !s.archived);
+    if (!active.length) return;
+    const anyExpanded = active.some((s: any) => !s.collapsed);
+    active.forEach((s: any) => {
+      s.collapsed = anyExpanded;
+    });
+    ctx.persistAndRender();
+  }
+
   function renameSubject(id: string, name: string): void {
     const clean = name.trim() || 'Disciplina sem nome';
     const s = ctx.appContext?.repositories?.subjects?.findById
@@ -838,9 +848,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   function archiveTopic(subjectId: string, topicId: string): void {
     const found = ctx.getTopicById(topicId);
     if (!found || found.subject.id !== subjectId) return;
-    ctx.subjectService.archiveTopic(subjectId, topicId);
-    ctx.persistAndRender();
-    ctx.showToast('Tópico arquivado.');
+    runUndoable(`Tópico "${found.topic.name || 'sem nome'}" arquivado.`, () =>
+      ctx.subjectService.archiveTopic(subjectId, topicId)
+    );
   }
 
   function restoreTopic(subjectId: string, topicId: string): void {
@@ -1026,6 +1036,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     duplicateSubject,
     setSubjectColor,
     toggleSubject,
+    toggleAllSubjects,
     renameSubject,
     addSubject,
     archiveSubject,

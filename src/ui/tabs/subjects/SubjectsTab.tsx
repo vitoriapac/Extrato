@@ -105,14 +105,7 @@ export function SubjectsTab({
 
   // Filtros por concurso só fazem sentido quando há conteúdo marcado para algum concurso.
   const showExamFilter = subjectExamFilter !== 'all' || presentExamTags.length > 0;
-
-  const toggleAllSubjects = () => {
-    const bodies = Array.from(
-      document.querySelectorAll<HTMLElement>('#subjectsContainer .subject-body')
-    );
-    const anyExpanded = bodies.some(b => !b.classList.contains('collapsed'));
-    bodies.forEach(b => b.classList.toggle('collapsed', anyExpanded));
-  };
+  const anyExpanded = subjects.some((s: any) => !s.collapsed);
 
   return (
     <>
@@ -130,8 +123,12 @@ export function SubjectsTab({
             {subjects.length === 1 ? 'disciplina encontrada' : 'disciplinas encontradas'}.
           </p>
           {subjects.length > 1 && (
-            <button type="button" class="btn ghost small" onClick={toggleAllSubjects}>
-              Expandir / recolher todas
+            <button
+              type="button"
+              class="btn ghost small"
+              data-delegated-click="toggleAllSubjects()"
+            >
+              {anyExpanded ? 'Recolher todas' : 'Expandir todas'}
             </button>
           )}
         </div>

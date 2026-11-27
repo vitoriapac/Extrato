@@ -210,7 +210,9 @@ export function LawNotebookCard({
         próxima é sugerida em 7, 15 e depois 30 dias.
         {due > 0 && ` ${due} ${due === 1 ? 'lei pede' : 'leis pedem'} leitura agora.`}
       </p>
-      <form class="law-notebook__add" onSubmit={add}>
+      <details class="decision-fold" open={laws.length === 0}>
+        <summary class="text-xs font-medium">+ Adicionar lei</summary>
+        <form class="law-notebook__add mt-2" onSubmit={add}>
         <label>
           Lei
           <input
@@ -286,6 +288,7 @@ export function LawNotebookCard({
           Adicionar lei
         </button>
       </form>
+      </details>
       {rangeError && (
         <p class="text-xs text-status-danger m-0" role="alert">
           {rangeError}

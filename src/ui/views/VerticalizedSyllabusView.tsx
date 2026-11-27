@@ -463,7 +463,16 @@ export function VerticalizedSyllabusView({
           {/* Prévia dos Dados Analisados */}
           {parsedPreview && (
             <div class="rounded-default bg-surface-subtle p-3 border border-border-subtle max-h-52 overflow-y-auto space-y-2 text-xs">
-              <h5 class="font-semibold text-primary">Prévia da Estrutura:</h5>
+              <h5 class="font-semibold text-content-primary">Prévia da Estrutura:</h5>
+              {parsedPreview.warnings?.length > 0 && (
+                <div
+                  class="rounded border border-border-default bg-surface-card p-2 text-xs text-amber"
+                  role="status"
+                >
+                  <strong>Avisos do leitor:</strong>{' '}
+                  {parsedPreview.warnings.join(' · ')}
+                </div>
+              )}
               {parsedPreview.subjects.map((sub, i) => (
                 <div key={i} class="space-y-1">
                   <div class="font-semibold text-primary">

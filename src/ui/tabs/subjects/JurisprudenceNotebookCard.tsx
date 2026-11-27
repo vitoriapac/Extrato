@@ -83,7 +83,9 @@ export function JurisprudenceNotebookCard({
         {dueCount > 0 && ` ${dueCount} ${dueCount === 1 ? 'julgado pede' : 'julgados pedem'} revisão.`}
       </p>
 
-      <form class="law-notebook__add" id="jurisAddForm" onSubmit={handleSubmit}>
+      <details class="decision-fold" open={records.length === 0}>
+        <summary class="text-xs font-medium">+ Adicionar julgado</summary>
+        <form class="law-notebook__add mt-2" id="jurisAddForm" onSubmit={handleSubmit}>
         <label htmlFor="jurisKindSelect">
           Tipo
           <select
@@ -152,6 +154,7 @@ export function JurisprudenceNotebookCard({
           Adicionar julgado
         </button>
       </form>
+      </details>
 
       {records.length > 0 && (
         <div class="flex flex-wrap items-center gap-2 text-xs">

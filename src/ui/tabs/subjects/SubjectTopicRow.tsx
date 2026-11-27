@@ -120,13 +120,13 @@ export function SubjectTopicRow({
         <td>
           <button
             type="button"
-            class="icon-btn"
+            class="icon-btn text-content-secondary"
             data-delegated-click={`archiveTopic('${subjectId}','${topic.id}')`}
             title="Arquivar tópico"
             aria-label={`Arquivar ${topic.name || 'tópico sem nome'}`}
             onClick={() => onArchiveTopic?.(subjectId, topic.id)}
           >
-            <Icon name="x" size={14} />
+            <Icon name="inbox" size={14} />
           </button>
         </td>
       </tr>

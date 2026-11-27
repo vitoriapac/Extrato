@@ -73,28 +73,6 @@ export function SubjectBlock({
     >
       <div class="subject-header" data-delegated-click={`toggleSubject('${subject.id}')`}>
         <div class="subject-header-left">
-          <div class="subject-order-btns" data-delegated-click="event.stopPropagation()">
-            <button
-              type="button"
-              class="icon-btn-nav"
-              data-delegated-click={`moveSubject('${subject.id}', -1)`}
-              disabled={isFirst}
-              title="Mover para cima"
-              aria-label={`Mover ${subject.name} para cima`}
-            >
-              <Icon name="chevron-up" size={14} />
-            </button>
-            <button
-              type="button"
-              class="icon-btn-nav"
-              data-delegated-click={`moveSubject('${subject.id}', 1)`}
-              disabled={isLast}
-              title="Mover para baixo"
-              aria-label={`Mover ${subject.name} para baixo`}
-            >
-              <Icon name="chevron-down" size={14} />
-            </button>
-          </div>
           <span
             class={`subject-color-swatch subject-color-${colorSlot}`}
             aria-hidden="true"
@@ -104,9 +82,19 @@ export function SubjectBlock({
             contentEditable={true}
             role="textbox"
             aria-label={`Nome da disciplina ${subject.name}`}
-            title="Clique para editar o nome da disciplina"
+            title="Clique para editar o nome da disciplina (Enter salva, Esc cancela)"
             data-delegated-click="event.stopPropagation()"
             data-delegated-blur={`renameSubject('${subject.id}', this.textContent)`}
+            onKeyDown={e => {
+              const target = e.currentTarget as HTMLElement;
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                target.blur();
+              } else if (e.key === 'Escape') {
+                target.textContent = subject.name;
+                target.blur();
+              }
+            }}
           >
             {subject.name}
           </span>
@@ -157,6 +145,22 @@ export function SubjectBlock({
               <Icon name="dots" size={16} />
             </summary>
             <div class="action-menu__items">
+              <button
+                type="button"
+                disabled={isFirst}
+                data-delegated-click={`event.stopPropagation();moveSubject('${subject.id}', -1)`}
+                aria-label={`Mover ${subject.name} para cima`}
+              >
+                Mover para cima
+              </button>
+              <button
+                type="button"
+                disabled={isLast}
+                data-delegated-click={`event.stopPropagation();moveSubject('${subject.id}', 1)`}
+                aria-label={`Mover ${subject.name} para baixo`}
+              >
+                Mover para baixo
+              </button>
               <button
                 type="button"
                 data-delegated-click={`event.stopPropagation();duplicateSubject('${subject.id}')`}
