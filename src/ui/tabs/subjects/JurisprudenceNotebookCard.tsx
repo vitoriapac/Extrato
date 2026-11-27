@@ -49,6 +49,7 @@ export function JurisprudenceNotebookCard({
   const [subjectId, setSubjectId] = useState('');
   const [filterKind, setFilterKind] = useState<string>('');
   const [filterSubject, setFilterSubject] = useState<string>('');
+  const [formError, setFormError] = useState('');
 
   const subjectNames = new Map(subjects.map(s => [s.id, s.name]));
   const dueCount = records.filter(r =>
@@ -57,7 +58,11 @@ export function JurisprudenceNotebookCard({
 
   const handleSubmit = (event: Event) => {
     event.preventDefault();
-    if (!code.trim() || !title.trim()) return;
+    if (!code.trim() || !title.trim()) {
+      setFormError('Informe o código e o título do julgado.');
+      return;
+    }
+    setFormError('');
     onAdd({
       kind,
       code: code.trim(),
@@ -161,6 +166,12 @@ export function JurisprudenceNotebookCard({
         </button>
       </form>
       </details>
+
+      {formError && (
+        <p class="text-xs text-status-danger m-0" role="alert">
+          {formError}
+        </p>
+      )}
 
       {records.length > 0 && (
         <div class="flex flex-wrap items-center gap-2 text-xs">

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { BookmarkBadge } from '../../components/BookmarkBadge.js';
 import { Icon } from '../../primitives/icon.js';
 
@@ -37,6 +38,36 @@ export function SubjectTopicRow({
   const statusClass = statusClasses[topic.status] || 'st-nao';
   const difficultyClass = difficultyClasses[topic.difficulty] || 'diff-medio';
   const hasNotes = Boolean(topic.notes || (topic.tags && topic.tags.length));
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
+  const [linkError, setLinkError] = useState('');
+  const savedTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current !== null && typeof window !== 'undefined') {
+        window.clearTimeout(savedTimerRef.current);
+      }
+    };
+  }, []);
+
+  const markSaved = () => {
+    setSaveStatus('saved');
+    if (typeof window !== 'undefined') {
+      if (savedTimerRef.current !== null) window.clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = window.setTimeout(() => setSaveStatus('idle'), 1500);
+    }
+  };
+
+  const isValidHttpUrl = (raw: string): boolean => {
+    const trimmed = raw.trim();
+    if (!trimmed) return true;
+    try {
+      const parsed = new URL(trimmed);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
 
   return (
     <>
@@ -142,7 +173,25 @@ export function SubjectTopicRow({
         </td>
       </tr>
       {isOpenNotes && (
-        <tr class="notes-row" id={`topic-notes-${topic.id}`}>
+        <tr
+          class="notes-row"
+          id={`topic-notes-${topic.id}`}
+          onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              const toggleBtn =
+                typeof document !== 'undefined'
+                  ? document.querySelector<HTMLButtonElement>(`#topic-row-${topic.id} .notes-toggle-btn`)
+                  : null;
+              if (onToggleNotes) {
+                onToggleNotes(topic.id);
+              } else {
+                toggleBtn?.click();
+              }
+              toggleBtn?.focus();
+            }
+          }}
+        >
           <td colSpan={5}>
             <div class="space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-2">
@@ -154,6 +203,11 @@ export function SubjectTopicRow({
                   <Icon name="player-play" size={12} />
                   <span>Estudar este tópico</span>
                 </button>
+                {saveStatus === 'saved' && (
+                  <span class="text-xs font-medium text-status-success" role="status">
+                    Salvo
+                  </span>
+                )}
               </div>
               <label>Link / material
                 <input
@@ -162,10 +216,22 @@ export function SubjectTopicRow({
                   placeholder="https://..."
                   aria-label={`Link ou material de ${topic.name || 'tópico sem nome'}`}
                   data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','link', this.value)`}
-                  onBlur={e =>
-                    onUpdateTopic?.(subjectId, topic.id, 'link', (e.target as HTMLInputElement).value)
-                  }
+                  onBlur={e => {
+                    const val = (e.target as HTMLInputElement).value;
+                    if (!isValidHttpUrl(val)) {
+                      setLinkError('Informe uma URL válida iniciando com http:// ou https://.');
+                    } else {
+                      setLinkError('');
+                      markSaved();
+                    }
+                    onUpdateTopic?.(subjectId, topic.id, 'link', val);
+                  }}
                 />
+                {linkError && (
+                  <span class="block text-xs text-status-danger mt-1" role="alert">
+                    {linkError}
+                  </span>
+                )}
               </label>
               <label>Tags
                 <input
@@ -175,7 +241,8 @@ export function SubjectTopicRow({
                   placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
                   value={(topic.tags || []).join(', ')}
                   data-delegated-blur={`updateTopicTags('${subjectId}','${topic.id}', this.value)`}
-                  onBlur={e =>
+                  onBlur={e => {
+                    markSaved();
                     onUpdateTopic?.(
                       subjectId,
                       topic.id,
@@ -184,8 +251,8 @@ export function SubjectTopicRow({
                         .split(',')
                         .map(t => t.trim())
                         .filter(Boolean)
-                    )
-                  }
+                    );
+                  }}
                 />
               </label>
               <label>Notas
@@ -195,14 +262,15 @@ export function SubjectTopicRow({
                   placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
                   value={topic.notes || ''}
                   data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
-                  onBlur={e =>
+                  onBlur={e => {
+                    markSaved();
                     onUpdateTopic?.(
                       subjectId,
                       topic.id,
                       'notes',
                       (e.target as HTMLTextAreaElement).value
-                    )
-                  }
+                    );
+                  }}
                 />
               </label>
               {(analyticsStateHtml || strategyEditorHtml) && (

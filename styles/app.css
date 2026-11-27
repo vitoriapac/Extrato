@@ -766,13 +766,6 @@
   .st-rev{background:var(--info-bg);color:var(--brand-secondary);}
   .st-con{background:var(--green-bg);color:var(--green);}
 
-  .stamp{
-    display:none;font-family:var(--font-body);font-size:var(--text-micro);color:var(--green);
-    border:2px solid var(--green);border-radius:var(--radius-control);padding:4px 8px;transform:rotate(-6deg);
-    text-transform:uppercase;letter-spacing:0.05em;
-  }
-  tr[data-status="Concluído"] .stamp{display:inline-block;}
-
   .dias-pill{
     display:inline-block;font-family:var(--font-data);font-size:var(--text-micro);font-weight:600;
     padding:4px 8px;border-radius:var(--radius-control);white-space:nowrap;

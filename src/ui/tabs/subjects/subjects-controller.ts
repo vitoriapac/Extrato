@@ -26,6 +26,7 @@ export interface SubjectsControllerContext {
   examBadges?: (topic: any) => string;
   renderTopicAnalyticsState?: (subject: any, topic: any) => string;
   renderTopicStrategyEditor?: (subject: any, topic: any) => string;
+  onSelectSubtab?: (key: 'materias' | 'verticalizado' | 'leis' | 'jurisprudencia') => void;
   today?: string;
 }
 
@@ -117,6 +118,7 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
       getExamBadgesHtml: ctx.examBadges,
       getAnalyticsStateHtml: ctx.renderTopicAnalyticsState,
       getStrategyEditorHtml: ctx.renderTopicStrategyEditor,
+      onSelectSubtab: ctx.onSelectSubtab,
     });
   }
 

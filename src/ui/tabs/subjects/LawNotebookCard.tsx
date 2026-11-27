@@ -165,7 +165,10 @@ export function LawNotebookCard({
 
   const add = (event: Event) => {
     event.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setRangeError('Informe o nome da lei.');
+      return;
+    }
     const totalArticles = Math.floor(Number(total));
     const startArticle = Math.floor(Number(startArt));
     const endArticle = Math.floor(Number(endArt));

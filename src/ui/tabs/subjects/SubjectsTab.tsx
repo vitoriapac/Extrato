@@ -27,6 +27,7 @@ export interface SubjectsTabProps {
   getExamBadgesHtml?: (topic: any) => string;
   getAnalyticsStateHtml?: (subject: any, topic: any) => string;
   getStrategyEditorHtml?: (subject: any, topic: any) => string;
+  onSelectSubtab?: (key: 'materias' | 'verticalizado' | 'leis' | 'jurisprudencia') => void;
 }
 
 export function SubjectsTab({
@@ -52,6 +53,7 @@ export function SubjectsTab({
   getExamBadgesHtml,
   getAnalyticsStateHtml,
   getStrategyEditorHtml,
+  onSelectSubtab,
 }: SubjectsTabProps) {
   // Empty state when completely clean
   if (
@@ -71,7 +73,11 @@ export function SubjectsTab({
           <button
             type="button"
             class="btn ghost"
-            onClick={() => document.getElementById('subjectsTab-verticalizado')?.click()}
+            onClick={() =>
+              onSelectSubtab
+                ? onSelectSubtab('verticalizado')
+                : document.getElementById('subjectsTab-verticalizado')?.click()
+            }
           >
             Colar Edital (PDF)
           </button>

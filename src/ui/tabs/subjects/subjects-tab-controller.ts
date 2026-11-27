@@ -620,6 +620,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       examBadges,
       renderTopicAnalyticsState,
       renderTopicStrategyEditor,
+      onSelectSubtab: selectSubjectsSubtab,
       today: todayISO(),
     });
 
