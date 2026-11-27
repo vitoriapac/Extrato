@@ -43,8 +43,8 @@ test('buildCockpitSidebarViewModel: calcula meta do dia, revisões da semana e m
   const result = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 180, reviews });
 
   assert.equal(result.todayGoal.percent, 75); // 135 / 180
-  assert.equal(result.todayGoal.studiedFormatted, '2h15');
-  assert.equal(result.todayGoal.plannedFormatted, '3h00');
+  assert.equal(result.todayGoal.studiedFormatted, '2 h 15 min');
+  assert.equal(result.todayGoal.plannedFormatted, '3 h');
   assert.equal(result.todayGoal.questionsDone, 38);
   assert.equal(result.todayGoal.questionsTarget, 40); // 280 / 7
 
@@ -71,7 +71,7 @@ test('paridade com Hoje: mesmos dias ativos, atrasadas e meta que a aba Hoje', (
   const load = buildReviewLoad(reviews, todayISO, 7);
   assert.equal(sidebar.reviewLoad.overdueCount, load.overdue);
 
-  assert.equal(sidebar.todayGoal.plannedFormatted, '2h00');
+  assert.equal(sidebar.todayGoal.plannedFormatted, '2 h');
 });
 
 test('overdueCount informado pelo seletor prevalece sobre o cálculo local', () => {
@@ -81,8 +81,8 @@ test('overdueCount informado pelo seletor prevalece sobre o cálculo local', () 
 
 test('Plano de hoje vem de planMinutes e some sem plano', () => {
   const comPlano = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 120, planMinutes: 80 });
-  assert.equal(comPlano.todayGoal.planFormatted, '1h20');
-  assert.equal(comPlano.todayGoal.plannedFormatted, '2h00');
+  assert.equal(comPlano.todayGoal.planFormatted, '1 h 20 min');
+  assert.equal(comPlano.todayGoal.plannedFormatted, '2 h');
 
   const semPlano = buildCockpitSidebarViewModel(state, todayISO, { goalMinutes: 120 });
   assert.equal(semPlano.todayGoal.planFormatted, null);

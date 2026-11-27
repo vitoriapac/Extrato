@@ -1,9 +1,6 @@
 import { buildSimulationComparison } from '../simulations/build-simulation-comparison.js';
 import { buildProjectionCalibration } from '../analytics/projection-calibration-history.js';
-import { scorePercent } from '../../domain/exams/simulation-score.js';
-
-const score = (item: Record<string, any>) =>
-  item.total ? Math.round(scorePercent(item, item.scoring) * 10) / 10 : null;
+import { weightedSimulationScore } from '../../domain/exams/simulation-score.js';
 const inRange = (date: string, range: { start: string; end: string }) =>
   Boolean(date && range?.end && date <= range.end && (!range.start || date >= range.start));
 
@@ -12,9 +9,13 @@ export function buildPerformanceSimulations({
   subjects = [],
   projectionSnapshots = [],
   activeExamTags = [],
+  blueprintSubjects = [],
   range,
   today,
 }: any = {}) {
+  // Mesma nota da tabela de simulados: ponderada pelos pesos do edital, quando houver.
+  const score = (item: Record<string, any>) =>
+    item.total ? Math.round(weightedSimulationScore(item, blueprintSubjects) * 10) / 10 : null;
   const items = simulations
     .filter((item: any) => inRange(item.date, range) && Number(item.total) > 0)
     .slice()

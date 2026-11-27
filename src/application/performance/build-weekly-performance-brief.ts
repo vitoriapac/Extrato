@@ -662,7 +662,7 @@ export function buildWeeklyPerformanceBrief({
     let tailSnippet = '.';
     // A contagem de pendências tem lugar próprio (Atenção e Hoje): este texto não a repete (D-G).
     if (weakestSubject) {
-      tailSnippet = `, sendo ${weakestSubject.name} (${formatPercent(weakestSubject.accuracy)} de acerto) a matéria que mais pede reforço agora.`;
+      tailSnippet = `, com ${weakestSubject.name} no menor acerto do período (${formatPercent(weakestSubject.accuracy)}).`;
     } else if (bestSubject) {
       tailSnippet = `, com destaque positivo para ${bestSubject.name} (${formatPercent(bestSubject.accuracy)} de acerto).`;
     } else if (overdueReviews > 0) {

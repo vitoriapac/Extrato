@@ -16,6 +16,7 @@ import {
   normalizeExamTags,
 } from '../../domain/exams/exam-scope.js';
 import { buildUnifiedReviews } from '../calendar/build-unified-reviews.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 import type { AppState } from '../../core/types.js';
 import { firstActivityDate } from './first-activity-date.js';
 import {
@@ -258,10 +259,7 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
   }
 
   function formatHoras(decimalHoras: number) {
-    const totalMin = Math.round(decimalHoras * 60);
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
+    return formatPlanMinutes(decimalHoras * 60);
   }
 
   function totalStudySeconds(filterFn?: (session: any) => boolean) {

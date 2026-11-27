@@ -1,4 +1,5 @@
 import { parseLocalDate, formatLocalDate, addLocalDays } from '../../core/date-utils.js';
+import { formatPlanMinutes } from '../../core/format-duration.js';
 
 export interface TodayGoalData {
   hasConfiguredPlan: boolean;
@@ -46,14 +47,7 @@ export interface CockpitSidebarViewModel {
   consistency: ConsistencyMiniHeatmapData;
 }
 
-function formatMinutesDuration(totalMinutes: number): string {
-  if (totalMinutes <= 0) return '0 min';
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = Math.round(totalMinutes % 60);
-  if (hours === 0) return `${minutes} min`;
-  if (minutes === 0) return `${hours}h00`;
-  return `${hours}h${String(minutes).padStart(2, '0')}`;
-}
+const formatMinutesDuration = formatPlanMinutes;
 
 const MONTH_NAMES = [
   'jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.',

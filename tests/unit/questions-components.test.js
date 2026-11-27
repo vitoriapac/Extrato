@@ -168,7 +168,7 @@ test('PlateauDetectorCard Preact Component — renderiza tópicos com estagnaç�
     })
   );
 
-  assert.match(html, /Detector de Platô/);
+  assert.match(html, /Tópicos estagnados/);
   assert.match(html, /Controle/);
   assert.match(html, /66\.7%|66,7%/);
   assert.match(html, /60 q/);

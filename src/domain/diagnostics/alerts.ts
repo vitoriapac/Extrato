@@ -1,13 +1,9 @@
 import { isHighImpact } from '../strategy/config.js';
 import { formatDecimal } from '../../core/format-number.js';
-// Same reading as the plan (1h20), so a weekly gap does not show up as thousands of minutes.
+import { formatPlanMinutes } from '../../core/format-duration.js';
+// Same reading as the plan (1 h 20 min), so a weekly gap does not show up as thousands of minutes.
 type Row = Record<string, any>;
-const hoursAndMinutes = (minutes: number) => {
-  const value = Math.round(Math.abs(minutes)),
-    hours = Math.floor(value / 60),
-    rest = value % 60;
-  return hours ? hours + 'h' + (rest ? String(rest).padStart(2, '0') : '') : value + 'min';
-};
+const hoursAndMinutes = (minutes: number) => formatPlanMinutes(Math.abs(minutes));
 export const ALERT_TYPES = Object.freeze([
   'performance_decline',
   'review_critical',

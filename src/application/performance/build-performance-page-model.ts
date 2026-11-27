@@ -242,6 +242,7 @@ export function buildPerformancePageModel({
         subjects,
         projectionSnapshots,
         activeExamTags,
+        blueprintSubjects: blueprint?.subjects || [],
         range,
         today,
       }),

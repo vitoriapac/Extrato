@@ -116,7 +116,7 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await welcome.locator('[data-guided-action="open"]').click();
   const overlay = page.locator('#guidedOnboardingOverlay');
   await expect(overlay.locator('[data-onboarding-step]')).toHaveCount(4);
-  await expect(overlay.locator('[aria-current="step"]')).toContainText('Data da prova (opcional)');
+  await expect(overlay.locator('[aria-current="step"]')).toContainText('Concurso e prova');
   await expect(overlay.locator('.is-complete')).toHaveCount(0);
   await expect(overlay.locator('#guidedExamPreset')).toHaveValue('undecided');
   await overlay.locator('#guidedOnboardingContent summary').filter({ hasText: 'Data da prova (opcional)' }).click();

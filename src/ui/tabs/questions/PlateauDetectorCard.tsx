@@ -27,7 +27,7 @@ export function PlateauDetectorCard({
           <div>
             <div class="flex items-center gap-2">
               <h3 id="plateauDetectorTitle" class="text-base font-semibold text-content-primary m-0">
-                Detector de Platô &amp; Inflexão Metodológica
+                Tópicos estagnados
               </h3>
               {hasPlateauDetected && (
                 <Badge variant="warning">{stagnantTopics.length} em estagnação</Badge>

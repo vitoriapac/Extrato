@@ -3,22 +3,16 @@
  */
 
 /**
- * Formata duração em segundos para string legível:
+ * Formata duração em segundos no formato único do app:
  * - Menos de 60 segundos: 'X s' (ex: '45 s')
- * - Menos de 1 hora: 'Xmin' (ex: '25min')
- * - Horas inteiras: 'Xh' (ex: '2h')
- * - Horas e minutos: 'XhYY' (ex: '1h05')
+ * - Demais: como formatPlanMinutes ('25 min', '2 h', '1 h 5 min')
  */
 export function formatDuration(seconds: number | null | undefined): string {
   const sec = Number(seconds) || 0;
   if (sec > 0 && sec < 60) {
     return Math.max(1, Math.floor(sec)) + ' s';
   }
-  const minutes = Math.floor(sec / 60);
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours <= 0) return `${mins}min`;
-  return mins === 0 ? `${hours}h` : `${hours}h${String(mins).padStart(2, '0')}`;
+  return formatPlanMinutes(Math.floor(sec / 60));
 }
 
 /**

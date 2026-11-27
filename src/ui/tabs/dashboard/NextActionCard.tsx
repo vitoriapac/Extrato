@@ -114,7 +114,7 @@ export function NextActionCard({
                 id="welcomeHeroTitle"
                 className="text-lg font-semibold text-primary m-0 flex items-center gap-2"
               >
-                {emptyState.onboardingTitle || 'Bem-vindo ao Extrato de Estudos'}
+                {emptyState.onboardingTitle || 'Boas-vindas ao Extrato de Estudos'}
               </h3>
               <p className="text-sm text-secondary m-0 leading-relaxed">
                 {emptyState.onboardingDescription ||

@@ -194,7 +194,7 @@ export function buildOnboardingViewModel({
   }> = [
     {
       id: 'goal',
-      label: 'Data da prova (opcional)',
+      label: 'Concurso e prova',
       complete: hasGoal || goalSkipped,
       skipped: goalSkipped,
     },
