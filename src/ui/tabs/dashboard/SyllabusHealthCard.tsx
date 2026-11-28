@@ -101,7 +101,7 @@ export function SyllabusHealthCard({
                   {/* Cobertura de Tópicos (Barra Empilhada: Concluído + Em andamento) */}
                   <div class="col-span-8">
                     <div
-                      class="w-full h-2 bg-surface-card rounded-full overflow-hidden flex"
+                      class="w-full h-2 bg-surface-card rounded-[2px] overflow-hidden flex"
                       title={`Concluído: ${subject.concludedPct}%, Em andamento: ${subject.inProgressPct}%`}
                     >
                       <div
@@ -117,7 +117,7 @@ export function SyllabusHealthCard({
 
                   {/* Aproveitamento em Questões (Bullet Bar com marcador de meta) */}
                   <div class="col-span-4 flex items-center gap-2">
-                    <div class="w-full h-2 bg-surface-card rounded-full overflow-hidden relative">
+                    <div class="w-full h-2 bg-surface-card rounded-[2px] overflow-hidden relative">
                       {hasAccuracy && (
                         <div
                           class={`h-full ${isAttention ? 'bg-amber' : 'bg-green'}`}

@@ -16,8 +16,8 @@
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles/fonts.css">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=ef6b10684e72">
-<link rel="stylesheet" href="styles/app.css?v=ef6b10684e72">
+<link rel="stylesheet" href="styles/tailwind.css?v=f52ccd9822a8">
+<link rel="stylesheet" href="styles/app.css?v=f52ccd9822a8">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -88,23 +88,6 @@
     </div>
   </div>
 
-  <div class="sticky-shell">
-    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral"><img src="icons/app-icon.svg" alt="" width="28" height="28">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b><small class="compact-readiness-close" id="compactReadinessClose" hidden></small></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flame icon-inline" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
-    <div class="primary-nav-shell">
-      <div class="tabs" role="tablist" aria-label="Seções do extrato">
-        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-layout-dashboard tab-icon" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Visão</span></span></button>
-        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-sun tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><span class="tab-label">Hoje</span></button>
-        <button class="tab-btn" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-repeat tab-icon" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span class="tab-label"><span class="tab-label-long">Agenda</span><span class="tab-label-short">Agenda</span></span></button>
-        <button class="tab-btn" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-list-check tab-icon" aria-hidden="true"><path d="M16 5H3"></path><path d="M16 12H3"></path><path d="M11 19H3"></path><path d="m15 18 2 2 4-4"></path></svg><span class="tab-label"><span class="tab-label-long">Questões &amp; Simulados</span><span class="tab-label-short">Questões</span></span></button>
-        <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chart-line tab-icon" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg><span class="tab-label">Desempenho</span></button>
-        <button class="tab-btn tab-secondary" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-books tab-icon" aria-hidden="true"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></svg><span class="tab-label"><span class="tab-label-long">Disciplinas</span><span class="tab-label-short">Disciplinas</span></span></button>
-        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-map-2 tab-icon" aria-hidden="true"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path><path d="M15 5.764v15"></path><path d="M9 3.236v15"></path></svg><span class="tab-label">Planejamento</span></button>
-        <button class="tab-btn tab-secondary tab-menu-only" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-help-circle tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg><span class="tab-label">Instruções</span></button>
-      </div>
-      <div id="mobileMoreMenuMount" class="mobile-more-menu-slot"></div>
-    </div>
-  </div>
-
   <div class="global-search-row">
     <button class="global-search-trigger" id="globalSearchOpenBtn" type="button" aria-label="Buscar ações, páginas e tópicos" title="Buscar (Ctrl+K)" aria-keyshortcuts="Control+K" aria-haspopup="dialog" aria-controls="globalCommandPaletteDialog" aria-expanded="false">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-search shrink-0" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
@@ -123,6 +106,23 @@
     </div>
     <a class="theme-toggle-btn" id="openHelpMenuLink" href="#instrucoes" aria-label="Instruções e ajuda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-help-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg><span class="theme-toggle-label">Ajuda</span></a>
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span><span class="theme-toggle-label">Tema</span><span class="pref-state" id="themeToggleState"></span></button>
+  </div>
+
+  <div class="sticky-shell">
+    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral"><img src="icons/app-icon.svg" alt="" width="28" height="28">Extrato de Estudos</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b><small class="compact-readiness-close" id="compactReadinessClose" hidden></small></span><span id="compactExamDate"></span><span class="compact-streak" id="compactStreak" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-flame icon-inline" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg><b id="compactStreakDays">0</b><span class="compact-streak__unit" id="compactStreakUnit" aria-hidden="true">dias</span><span class="sr-only" id="compactStreakLabel">dias de sequência</span></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
+    <div class="primary-nav-shell">
+      <div class="tabs" role="tablist" aria-label="Seções do extrato">
+        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-layout-dashboard tab-icon" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg><span class="tab-label"><span class="tab-label-long">Visão geral</span><span class="tab-label-short">Visão</span></span></button>
+        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-sun tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><span class="tab-label">Hoje</span></button>
+        <button class="tab-btn" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-repeat tab-icon" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span class="tab-label"><span class="tab-label-long">Agenda</span><span class="tab-label-short">Agenda</span></span></button>
+        <button class="tab-btn" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-list-check tab-icon" aria-hidden="true"><path d="M16 5H3"></path><path d="M16 12H3"></path><path d="M11 19H3"></path><path d="m15 18 2 2 4-4"></path></svg><span class="tab-label"><span class="tab-label-long">Questões &amp; Simulados</span><span class="tab-label-short">Questões</span></span></button>
+        <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-chart-line tab-icon" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg><span class="tab-label">Desempenho</span></button>
+        <button class="tab-btn tab-secondary" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-books tab-icon" aria-hidden="true"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></svg><span class="tab-label"><span class="tab-label-long">Disciplinas</span><span class="tab-label-short">Disciplinas</span></span></button>
+        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-map-2 tab-icon" aria-hidden="true"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path><path d="M15 5.764v15"></path><path d="M9 3.236v15"></path></svg><span class="tab-label">Planejamento</span></button>
+        <button class="tab-btn tab-secondary tab-menu-only" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-help-circle tab-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg><span class="tab-label">Instruções</span></button>
+      </div>
+      <div id="mobileMoreMenuMount" class="mobile-more-menu-slot"></div>
+    </div>
   </div>
 
   <!-- DASHBOARD -->
@@ -350,8 +350,8 @@
               <button class="btn" id="timerStartBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-player-play icon-inline" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>Iniciar</button>
               <button class="btn" id="timerPauseBtn" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-player-pause icon-inline" aria-hidden="true"><rect x="14" y="3" width="5" height="18" rx="1"></rect><rect x="5" y="3" width="5" height="18" rx="1"></rect></svg>Pausar</button>
               <button class="btn tonal timer-finish-btn" id="timerFinishBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-square-check icon-inline" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m16 9-5.5 5.5L8 12"></path></svg>Finalizar sessão</button>
-              <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-focus-2 icon-inline" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>Modo foco</button>
               <div class="timer-actions__secondary" role="group" aria-label="Opções secundárias do cronômetro">
+                <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-focus-2 icon-inline" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>Modo foco</button>
                 <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-picture-in-picture icon-inline" aria-hidden="true"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"></path><rect width="10" height="7" x="12" y="13" rx="2"></rect></svg>Janela flutuante</button>
                 <button class="btn ghost timer-reset-btn" id="timerResetBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-refresh icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>Zerar</button>
               </div>
@@ -518,6 +518,14 @@
                 <select id="calFilterMes" aria-label="Filtrar tarefas por mês"><option value="">Todos os meses</option></select>
     </div>
 
+    <nav class="overview-nav mb-4" aria-label="Seções da Agenda">
+      <div class="overview-nav-links">
+        <a href="#agendaStatusTitle">Status e filas</a>
+        <a href="#agendaTasksTitle">Calendário</a>
+        <a href="#agendaReviewsTitle">Revisões espaçadas</a>
+      </div>
+    </nav>
+
     <section class="agenda-section" aria-labelledby="agendaStatusTitle">
       <div class="section-head">
         <h3 class="section-title" id="agendaStatusTitle">Status das tarefas de estudo e revisões espaçadas</h3>
@@ -623,8 +631,15 @@
 
   <!-- QUESTÕES & SIMULADOS -->
   <div class="panel" id="panel-questoes" role="tabpanel" aria-labelledby="tab-questoes">
+    <nav class="overview-nav mb-4" aria-label="Seções de Questões e Simulados">
+      <div class="overview-nav-links">
+        <a href="#questoesSectionHeading">Questões</a>
+        <a href="#simuladosSectionHeading">Simulados</a>
+        <a href="#topicPerformanceCard">Análises</a>
+      </div>
+    </nav>
     <div class="section-head module-heading module-heading--section">
-      <h2 class="module-heading__title">Questões resolvidas</h2>
+      <h2 class="module-heading__title" id="questoesSectionHeading">Questões resolvidas</h2>
       <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle" aria-pressed="false">Caderno de Erros (Flashcards)</button>
       <button class="btn ghost small" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Registro detalhado</button>
       <div id="questionsImportMenuMount"></div>
@@ -659,7 +674,7 @@
 
 
     <div class="section-head module-heading module-heading--section">
-      <h2 class="module-heading__title">Simulados</h2>
+      <h2 class="module-heading__title" id="simuladosSectionHeading">Simulados</h2>
       <button class="btn" id="addSimuladoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-plus icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Registrar simulado</button>
       <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver evolução de notas e calibração<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-lucide icon-lucide-arrow-right icon-inline--end icon-inline" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
     </div>
@@ -830,7 +845,7 @@
   <link rel="modulepreload" href="src/chunks/chunk-PJ3MCI22.js">
   <link rel="modulepreload" href="src/chunks/chunk-SUIAGQ6E.js">
   <link rel="modulepreload" href="src/chunks/chunk-U2JQVAN3.js">
-  <script type="module" src="src/app.bundle.js?v=ef6b10684e72"></script>
+  <script type="module" src="src/app.bundle.js?v=f52ccd9822a8"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

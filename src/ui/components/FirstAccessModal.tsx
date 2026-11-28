@@ -1,5 +1,4 @@
 import { Dialog } from '../primitives/dialog.js';
-import { Badge } from '../primitives/badge.js';
 import { Button } from '../primitives/button.js';
 import { Icon } from '../primitives/icon.js';
 
@@ -59,23 +58,18 @@ export function FirstAccessModal({
           </p>
         </header>
 
-        {/* Opções de Início */}
-        <div className="grid grid-cols-1 gap-4 pt-1">
+        {/* Opções de Início em formato de extrato */}
+        <ol className="divide-y divide-border-subtle border-y border-border-subtle m-0 p-0 list-none">
           {/* Opção 1: Montar plano guiado */}
-          <article className="relative rounded-default border border-border-emphasis bg-surface-card p-card transition-colors hover:border-border-hover flex flex-col items-stretch gap-4">
-            <div className="flex min-w-0 flex-1 items-start gap-4">
-              <div className="p-4 rounded-default bg-surface-subtle text-accent shrink-0">
-                <Icon name="compass" size={20} class="shrink-0" />
-              </div>
+          <li className="py-4 flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <span className="font-mono tabular-nums text-xs font-semibold text-content-secondary pt-0.5 shrink-0">
+                01
+              </span>
               <div className="min-w-0 space-y-1">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <h4 className="text-base font-semibold text-content-primary m-0">
-                    Montar meu plano guiado
-                  </h4>
-                  <Badge variant="info" icon={false}>
-                    Recomendado
-                  </Badge>
-                </div>
+                <h4 className="text-base font-semibold text-content-primary m-0">
+                  Montar meu plano guiado
+                </h4>
                 <p className="text-xs text-content-secondary m-0 leading-relaxed">
                   4 lançamentos iniciais: prova e prazo, disponibilidade semanal, edital ou
                   matérias e a prévia do plano antes de salvar.
@@ -92,14 +86,14 @@ export function FirstAccessModal({
               <span>Começar agora</span>
               <Icon name="arrow-right" size={14} class="shrink-0" />
             </Button>
-          </article>
+          </li>
 
           {/* Opção 2: Demonstração Interativa */}
-          <article className="rounded-default border border-border-default bg-surface-card p-card transition-colors hover:border-border-hover flex flex-col items-stretch gap-4">
-            <div className="flex min-w-0 flex-1 items-start gap-4">
-              <div className="p-3 rounded-default bg-surface-subtle text-content-secondary shrink-0">
-                <Icon name="player-play" size={20} class="shrink-0" />
-              </div>
+          <li className="py-4 flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <span className="font-mono tabular-nums text-xs font-semibold text-content-secondary pt-0.5 shrink-0">
+                02
+              </span>
               <div className="min-w-0 space-y-1">
                 <h4 className="text-base font-semibold text-content-primary m-0">
                   Explorar demonstração interativa
@@ -110,7 +104,7 @@ export function FirstAccessModal({
               </div>
             </div>
             <Button
-              variant="secondary"
+              variant="tonal"
               size="small"
               onClick={handleStartDemo}
               aria-label="Explorar demonstração com dados fictícios"
@@ -118,8 +112,8 @@ export function FirstAccessModal({
             >
               <span>Explorar demonstração</span>
             </Button>
-          </article>
-        </div>
+          </li>
+        </ol>
 
         {/* Rodapé: Opção Manual */}
         <footer className="pt-2 border-t border-border-subtle flex flex-wrap items-center justify-between gap-2">
